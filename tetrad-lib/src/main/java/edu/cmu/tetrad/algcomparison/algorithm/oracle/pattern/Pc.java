@@ -2,6 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
@@ -16,10 +19,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Pc implements Algorithm, TakesInitialGraph {
+public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
+    private IKnowledge knowledge = new Knowledge2();
 
     public Pc(IndependenceWrapper test) {
         this.test = test;
@@ -39,6 +43,7 @@ public class Pc implements Algorithm, TakesInitialGraph {
         }
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
+        search.setKnowledge(knowledge);
 
         if (initial != null) {
             search.setInitialGraph(initial);
@@ -67,5 +72,15 @@ public class Pc implements Algorithm, TakesInitialGraph {
     @Override
     public List<String> getParameters() {
         return test.getParameters();
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

@@ -2,6 +2,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.HasParameters;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
@@ -16,10 +20,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fgs implements Algorithm, TakesInitialGraph {
+public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
+    private IKnowledge knowledge = new Knowledge2();
 
     public Fgs(ScoreWrapper score) {
         this.score = score;
@@ -40,6 +45,7 @@ public class Fgs implements Algorithm, TakesInitialGraph {
 
         edu.cmu.tetrad.search.Fgs2 search = new edu.cmu.tetrad.search.Fgs2(score.getScore(dataSet, parameters));
         search.setFaithfulnessAssumed(true);
+        search.setKnowledge(knowledge);
 
         if (initial != null) {
             search.setInitialGraph(initial);
@@ -66,5 +72,15 @@ public class Fgs implements Algorithm, TakesInitialGraph {
     @Override
     public List<String> getParameters() {
         return score.getParameters();
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

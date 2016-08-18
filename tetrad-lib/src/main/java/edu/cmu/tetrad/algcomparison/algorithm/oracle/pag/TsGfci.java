@@ -30,6 +30,7 @@ public class TsGfci implements Algorithm, HasKnowledge {
 
     public Graph search(DataSet dataSet, Parameters parameters) {
         GFci search = new GFci(score.getScore(dataSet, parameters));
+        search.setKnowledge(knowledge);
         return search.search();
     }
 

@@ -35,14 +35,16 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
+import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
@@ -61,7 +63,8 @@ import java.util.List;
 public class GeneralAlgorithmEditor extends JPanel {
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
-    private final JButton searchButton = new JButton("Search");
+    private final JButton searchButton1 = new JButton("Search");
+    private final JButton searchButton2 = new JButton("Search");
     private final JTabbedPane pane;
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
@@ -175,45 +178,125 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         pane = new JTabbedPane();
         pane.add("Algorithm", getParametersPane());
+        pane.add("Knowledge", getKnowledgePanel(runner));
         pane.add("Output Graphs", graphEditor);
 
         add(pane, BorderLayout.CENTER);
 
-        searchButton.addActionListener(new ActionListener() {
+        searchButton1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new WatchedProcess((Window) getTopLevelAncestor()) {
-                    @Override
-                    public void watch() {
-                        DataModelList dataList = runner.getDataModelList();
-                        runner.setGraphList(new ArrayList<Graph>());
-                        graphEditor.replace(new ArrayList<Graph>());
-
-                        if (dataList != null) {
-                            List<Graph> graphList = new ArrayList<>();
-                            int i = 0;
-
-                            for (DataModel data : dataList) {
-                                System.out.println("Analyzing data set # " + (++i));
-                                DataSet dataSet = (DataSet) data;
-                                Graph graph = runner.getAlgorithm().search(dataSet, parameters);
-                                graphList.add(graph);
-                            }
-
-                            for (Graph graph : graphList) {
-                                GraphUtils.circleLayout(graph, 225, 200, 150);
-                            }
-
-                            pane.setSelectedIndex(1);
-                            runner.setGraphList(graphList);
-                            graphEditor.replace(graphList);
-                            graphEditor.validate();
-                            firePropertyChange("modelChanged", null, null);
-                        }
-                    }
-                };
+                doSearch(runner);
             }
         });
+
+        searchButton2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doSearch(runner);
+            }
+        });
+    }
+
+    private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
+        class MyKnowledgeInput implements KnowledgeBoxInput {
+            private IKnowledge knowledge;
+            private String name;
+            private List<Node> variables;
+            private List<String> varNames;
+
+            public MyKnowledgeInput(IKnowledge knowledge, List<Node> variables, List<String> varNames) {
+                this.knowledge = knowledge;
+                this.variables = variables;
+                this.varNames = varNames;
+            }
+
+            @Override
+            public Graph getSourceGraph() {
+                return null;
+            }
+
+            @Override
+            public Graph getResultGraph() {
+                return null;
+            }
+
+            @Override
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public List<Node> getVariables() {
+                return variables;
+            }
+
+            @Override
+            public List<String> getVariableNames() {
+                return varNames;
+            }
+        }
+
+        MyKnowledgeInput myKnowledgeInput
+                = new MyKnowledgeInput(runner.getKnowledge(), runner.getDataModel().getVariables(),
+                runner.getDataModel().getVariableNames());
+
+        JPanel knowledgePanel = new JPanel();
+        knowledgePanel.setLayout(new BorderLayout());
+        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(
+                new KnowledgeBoxModel(parameters, myKnowledgeInput));
+        Box f = Box.createVerticalBox();
+        f.add(knowledgeEditor);
+        Box g = Box.createHorizontalBox();
+        g.add(Box.createHorizontalGlue());
+        g.add(searchButton2);
+        g.add(Box.createHorizontalGlue());
+        f.add(g);
+        return f;
+    }
+
+    private void doSearch(final GeneralAlgorithmRunner runner) {
+        new WatchedProcess((Window) getTopLevelAncestor()) {
+            @Override
+            public void watch() {
+                DataModelList dataList = runner.getDataModelList();
+                runner.setGraphList(new ArrayList<Graph>());
+                graphEditor.replace(new ArrayList<Graph>());
+
+                if (dataList != null) {
+                    List<Graph> graphList = new ArrayList<>();
+                    int i = 0;
+
+                    for (DataModel data : dataList) {
+                        System.out.println("Analyzing data set # " + (++i));
+                        DataSet dataSet = (DataSet) data;
+                        Algorithm algorithm = runner.getAlgorithm();
+
+                        if (algorithm instanceof HasKnowledge) {
+                            ((HasKnowledge) algorithm).setKnowledge(runner.getKnowledge());
+                        }
+
+                        Graph graph = algorithm.search(dataSet, parameters);
+                        graphList.add(graph);
+                    }
+
+                    for (Graph graph : graphList) {
+                        GraphUtils.circleLayout(graph, 225, 200, 150);
+                    }
+
+                    pane.setSelectedIndex(2);
+                    runner.setGraphList(graphList);
+                    graphEditor.replace(graphList);
+                    graphEditor.validate();
+                    firePropertyChange("modelChanged", null, null);
+                }
+            }
+        };
     }
 
     private void setAlgorithm() {
@@ -413,7 +496,7 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         Box d6 = Box.createHorizontalBox();
         d6.add(Box.createHorizontalGlue());
-        d6.add(searchButton);
+        d6.add(searchButton1);
         d6.add(Box.createHorizontalGlue());
         c.add(d6);
 

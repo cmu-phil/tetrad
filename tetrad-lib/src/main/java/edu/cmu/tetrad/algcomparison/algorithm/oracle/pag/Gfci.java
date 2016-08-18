@@ -2,6 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,9 +19,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Gfci implements Algorithm {
+public class Gfci implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
+    private IKnowledge knowledge = new Knowledge2();
 
     public Gfci(ScoreWrapper score) {
         this.score = score;
@@ -26,6 +30,7 @@ public class Gfci implements Algorithm {
 
     public Graph search(DataSet dataSet, Parameters parameters) {
         GFci search = new GFci(score.getScore(dataSet, parameters));
+        search.setKnowledge(knowledge);
         return search.search();
     }
 
@@ -46,5 +51,15 @@ public class Gfci implements Algorithm {
     @Override
     public List<String> getParameters() {
         return score.getParameters();
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

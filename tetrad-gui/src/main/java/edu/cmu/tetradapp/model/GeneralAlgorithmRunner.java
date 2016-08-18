@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
@@ -36,18 +37,15 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Implements a stub that basic algorithm wrappers can extend if they take
- * either a dataModel model or a workbench model as parent. Contains basic
- * methods for executing algorithm and returning results.
+ * Stores an algorithms in the format of the algorithm comparison API.
  *
- * @author Joseph Ramsey
+ * @author jdramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
         MultipleGraphSource, Unmarshallable {
 
     static final long serialVersionUID = 23L;
     private DataWrapper dataWrapper;
-
     private String name;
     private Algorithm algorithm = new Pc(new ChiSquare());
     private Parameters parameters;
@@ -56,6 +54,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph resultGraph = new EdgeListGraph();
     private Graph initialGraph;
     private List<Graph> graphList = new ArrayList<>();
+    private IKnowledge knowledge = new Knowledge2();
 
     //===========================CONSTRUCTORS===========================//
 
@@ -76,6 +75,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
+        knowledge = new Knowledge2(dataWrapper.getVariableNames());
     }
 
     /**
@@ -93,20 +93,19 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         this.parameters = parameters;
-//        this.sourceGraph = dataWrapper.getSourceGraph();
 
         DataModelList dataSource = dataWrapper.getDataModelList();
 
         this.dataWrapper = dataWrapper;
 
-        //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
-        if (knowledgeBoxModel == null) {
-            getParameters().set("knowledge", dataWrapper.getKnowledge());
-        } else {
-            getParameters().set("knowledge", knowledgeBoxModel.getKnowledge());
-        }
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
+
+        if (knowledgeBoxModel != null) {
+            knowledge = knowledgeBoxModel.getKnowledge();
+        } else {
+            knowledge = new Knowledge2();
+        }
     }
 
     /**
@@ -140,6 +139,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         getParameters().set("independenceFacts", facts.getFacts());
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
+
+        if (knowledgeBoxModel != null) {
+            knowledge = knowledgeBoxModel.getKnowledge();
+        } else {
+            knowledge = new Knowledge2();
+        }
     }
 
 
@@ -158,13 +163,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         List<String> names = measuredNames(sourceGraph);
         transferVarNamesToParams(names);
         this.sourceGraph = sourceGraph;
+        knowledge = new Knowledge2(sourceGraph.getNodeNames());
     }
 
     public GeneralAlgorithmRunner(Graph graph, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
         this(graph, parameters);
+
         if (knowledgeBoxModel != null) {
-            getParameters().set("knowledge", knowledgeBoxModel.getKnowledge());
+            knowledge = knowledgeBoxModel.getKnowledge();
+        } else {
+            knowledge = new Knowledge2();
         }
     }
 
@@ -181,23 +190,28 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         DataModel dataSource = model.getFacts();
 
-        if (knowledgeBoxModel != null) {
-            getParameters().set("knowledge", knowledgeBoxModel.getKnowledge());
-        }
-
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = dataSource;
+
+        if (knowledgeBoxModel != null) {
+            knowledge = knowledgeBoxModel.getKnowledge();
+        } else {
+            knowledge = new Knowledge2();
+        }
     }
 
     public GeneralAlgorithmRunner(Graph graph, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
         this(graph, parameters);
-        if (knowledgeBoxModel != null) {
-            getParameters().set("knowledge", knowledgeBoxModel.getKnowledge());
-        }
         if (facts != null) {
             getParameters().set("independenceFacts", facts);
+        }
+
+        if (knowledgeBoxModel != null) {
+            knowledge = knowledgeBoxModel.getKnowledge();
+        } else {
+            knowledge = new Knowledge2();
         }
     }
 
@@ -237,9 +251,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public String getAlgorithmName() {
         return null;
     }
-
-    @Override
-//    public abstract String getAlgorithmName();
 
     public final Graph getSourceGraph() {
         return this.sourceGraph;
@@ -414,6 +425,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public List<Graph> getGraphs() {
         return graphList;
+    }
+
+    public IKnowledge getKnowledge() {
+        return knowledge;
     }
 }
 

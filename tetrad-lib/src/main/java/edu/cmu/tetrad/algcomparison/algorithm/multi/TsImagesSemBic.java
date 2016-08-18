@@ -3,10 +3,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScoreImages;
@@ -24,8 +23,9 @@ import java.util.List;
  * @author jdramsey
  * @author dmalinsky
  */
-public class TsImagesSemBic implements MultiDataSetAlgorithm {
+public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private IKnowledge knowledge = new Knowledge2();
 
     public TsImagesSemBic() {
     }
@@ -40,6 +40,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm {
 
         edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new SemBicScoreImages(dataModels));
         search.setFaithfulnessAssumed(true);
+        search.setKnowledge(knowledge);
 
         return search.search();
     }
@@ -67,5 +68,15 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm {
     @Override
     public List<String> getParameters() {
         return new Fgs(new SemBicScore()).getParameters();
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }
