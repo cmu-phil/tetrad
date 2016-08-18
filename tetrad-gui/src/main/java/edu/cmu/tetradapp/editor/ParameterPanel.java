@@ -44,7 +44,7 @@ public class ParameterPanel extends JPanel {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
         a.add(b);
-        a.add(Box.createHorizontalGlue());
+//        a.add(Box.createHorizontalGlue());
 
         Box d = Box.createHorizontalBox();
         JLabel label = new JLabel("EDIT PARAMETERS:");

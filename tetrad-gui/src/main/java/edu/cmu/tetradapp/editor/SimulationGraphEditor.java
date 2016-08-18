@@ -78,7 +78,8 @@ public final class SimulationGraphEditor extends JPanel {
         removeAll();
 
         if (graphs.isEmpty()) {
-            validate();
+
+            // Do nothing.
         } else if (graphs.size() > 1) {
             for (int i = 0; i < graphs.size(); i++) {
                 this.tabbedPane.addTab(tabName(i + 1), graphDisplay(graphs.get(i)));
@@ -89,8 +90,9 @@ public final class SimulationGraphEditor extends JPanel {
             this.tabbedPane.addTab(tabName(1), graphDisplay(graphs.get(0)));
             add(this.tabbedPane, BorderLayout.CENTER);
 
-            validate();
         }
+
+        this.tabbedPane.validate();
     }
 
 

@@ -71,32 +71,32 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final SimulationGraphEditor graphEditor;
         DataEditor dataEditor;
 
-        if (simulation.getSimulation() != null) {
-            simulation.createSimulation();
-            graphEditor = new SimulationGraphEditor(Collections.singletonList(
-                    simulation.getSimulation().getTrueGraph(0)), JTabbedPane.LEFT);
-//            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(0));
-            DataWrapper wrapper = new DataWrapper();
-            wrapper.setDataModelList(simulation.getDataModelList());
-            dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
-
-            if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
-                simulation.setFixedGraph(true);
-            }
-        } else {
-            graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList(), JTabbedPane.LEFT);
+//        if (simulation.getSimulation() != null) {
+//            simulation.createSimulation();
+//            graphEditor = new SimulationGraphEditor(Collections.singletonList(
+//                    simulation.getSimulation().getTrueGraph(0)), JTabbedPane.LEFT);
+////            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(0));
+//            DataWrapper wrapper = new DataWrapper();
+//            wrapper.setDataModelList(simulation.getDataModelList());
+//            dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
+//
+//            if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
+//                simulation.setFixedGraph(true);
+//            }
+//        } else {
+        graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList(), JTabbedPane.LEFT);
 //            graphEditor = new GraphEditor(new EdgeListGraph());
-            dataEditor = new DataEditor(JTabbedPane.LEFT);
-            simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
-            simulation.setFixedSimulation(false);
-        }
+        dataEditor = new DataEditor(JTabbedPane.LEFT);
+        simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
+        simulation.setFixedSimulation(false);
+//        }
 
         final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(),
                 simulation.getParams()));
         tabbedPane.addTab("True Graph", new JScrollPane(graphEditor));
         tabbedPane.addTab("Data", dataEditor);
-        tabbedPane.setPreferredSize(new Dimension(800, 600));
+        tabbedPane.setPreferredSize(new Dimension(600, 600));
 
         final String[] graphItems = new String[]{
                 "Random Foward",
@@ -144,7 +144,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                             return;
                         }
 
-                        List<Graph> graphs = new ArrayList<Graph>();
+                        simulation.setSimulation(_simulation, simulation.getParams());
+//                        firePropertyChange("modelChanged", null, null);
+
+                        List<Graph> graphs = new ArrayList<>();
                         for (int i = 0; i < _simulation.getNumDataSets(); i++) {
                             graphs.add(_simulation.getTrueGraph(i));
                         }
@@ -153,6 +156,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         DataWrapper wrapper = new DataWrapper();
                         wrapper.setDataModelList(simulation.getDataModelList());
                         tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
+                        tabbedPane.setSelectedIndex(2);
                     }
                 };
             }
@@ -238,7 +242,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                 Graph trueGraph = _simulation.getTrueGraph(0);
                 edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
-                List<Graph> graphs = new ArrayList<Graph>();
+                List<Graph> graphs = new ArrayList<>();
                 for (int i = 0; i < _simulation.getNumDataSets(); i++) {
                     graphs.add(_simulation.getTrueGraph(i));
                 }
@@ -325,6 +329,19 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         menuBar.add(file);
 
         add(menuBar, BorderLayout.NORTH);
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        List<Graph> graphs = new ArrayList<>();
+        for (int i = 0; i < _simulation.getNumDataSets(); i++) {
+            graphs.add(_simulation.getTrueGraph(i));
+        }
+
+        graphEditor.replace(graphs);
+        DataWrapper wrapper = new DataWrapper();
+        wrapper.setDataModelList(simulation.getDataModelList());
+        tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
+
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
@@ -445,7 +462,12 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         c.add(simulationsDropdown);
         c.add(scroll);
-        c.add(simulateButton);
+
+        Box d6 = Box.createHorizontalBox();
+        d6.add(Box.createHorizontalGlue());
+        d6.add(simulateButton);
+        d6.add(Box.createHorizontalGlue());
+        c.add(d6);
 
         Box b = Box.createHorizontalBox();
         b.add(c);

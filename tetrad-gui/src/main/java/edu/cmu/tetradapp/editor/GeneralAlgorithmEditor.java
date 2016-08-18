@@ -22,11 +22,25 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
+import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.TsImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -35,7 +49,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -44,23 +59,17 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class GeneralAlgorithmEditor extends JPanel {
+    private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
+    private GeneralAlgorithmRunner runner;
     private final JButton searchButton = new JButton("Search");
     private final JTabbedPane pane;
-    private JComboBox<String> testDropdown = new JComboBox<>();
-    private JComboBox<String> scoreDropdown = new JComboBox<>();
-    private JComboBox<String> algTypesDropdown = new JComboBox<>();
-    private JComboBox<String> algorithmsDropdown = new JComboBox<>();
+    private JComboBox<TestType> testDropdown = new JComboBox<>();
+    private JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
+    private JComboBox<AlgType> algTypesDropdown = new JComboBox<>();
+    private JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
     private final SimulationGraphEditor graphEditor;
-    private Algorithm algorithm;
     private Parameters parameters;
-
-    private String[] test = {"Fisher Z", "Chi Square", "G Square"};
-    private String[] score = {"SEM BIC", "BDeu"};
-    private String[] algTypes = {"Pattern", "PAG"};
-    private String[][] algorithms = {
-            {"PC", "CPC", "FGS"},
-            {"FCI", "RFCI", "GFCI"}
-    };
+    private JLabel whatYouChose;
 
     //=========================CONSTRUCTORS============================//
 
@@ -68,28 +77,103 @@ public class GeneralAlgorithmEditor extends JPanel {
      * Opens up an editor to let the user view the given PcRunner.
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
-        this.algorithm = runner.getAlgorithm();
+        this.runner = runner;
+
+        final List<AlgorithmDescription> descriptions = new ArrayList<>();
+
+        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CPCS, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PCS, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Markov_Random_Field, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.Pattern, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.TsIMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
+
+        List<AlgName> names = new ArrayList<>();
+        mappedDescriptions = new HashMap<>();
+
+        for (AlgorithmDescription description : descriptions) {
+            names.add(description.getAlgName());
+            mappedDescriptions.put(description.getAlgName(), description);
+        }
+
         this.parameters = runner.getParameters();
         graphEditor = new SimulationGraphEditor(new ArrayList<Graph>(), JTabbedPane.LEFT);
         graphEditor.replace(runner.getGraphList());
         setLayout(new BorderLayout());
 
+        whatYouChose = new JLabel();
+
         // Initialize all of the dropdowns.
-        for (String item : test) {
+        for (TestType item : TestType.values()) {
             testDropdown.addItem(item);
         }
 
-        for (String item : score) {
+        for (ScoreType item : ScoreType.values()) {
             scoreDropdown.addItem(item);
         }
 
-        for (String item : algTypes) {
+        for (AlgType item : AlgType.values()) {
             algTypesDropdown.addItem(item);
         }
 
-        for (String item : algorithms[0]) {
-            algorithmsDropdown.addItem(item);
+        for (AlgorithmDescription description : descriptions) {
+            if (description.getAlgType() == getAlgType()) {
+                algNamesDropdown.addItem(description.getAlgName());
+            }
         }
+
+        algTypesDropdown.setSelectedItem(getAlgType());
+        algNamesDropdown.setSelectedItem(getAlgName());
+        testDropdown.setSelectedItem(getTestType());
+        scoreDropdown.setSelectedItem(getScoreType());
+
+        testDropdown.setEnabled(true);
+        scoreDropdown.setEnabled(false);
+
+        algTypesDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                algNamesDropdown.removeAllItems();
+
+                for (AlgorithmDescription description : descriptions) {
+                    if (description.getAlgType() == algTypesDropdown.getSelectedItem()) {
+                        algNamesDropdown.addItem(description.getAlgName());
+                    }
+                }
+            }
+        });
+
+        algNamesDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setAlgorithm();
+            }
+        });
+
+        testDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setAlgorithm();
+            }
+        });
+
+        scoreDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setAlgorithm();
+            }
+        });
 
         pane = new JTabbedPane();
         pane.add("Algorithm", getParametersPane());
@@ -104,21 +188,28 @@ public class GeneralAlgorithmEditor extends JPanel {
                     @Override
                     public void watch() {
                         DataModelList dataList = runner.getDataModelList();
+                        runner.setGraphList(new ArrayList<Graph>());
+                        graphEditor.replace(new ArrayList<Graph>());
 
                         if (dataList != null) {
                             List<Graph> graphList = new ArrayList<>();
+                            int i = 0;
 
                             for (DataModel data : dataList) {
+                                System.out.println("Analyzing data set # " + (++i));
                                 DataSet dataSet = (DataSet) data;
-                                Graph graph = algorithm.search(dataSet, parameters);
-                                GraphUtils.circleLayout(graph, 225, 200, 150);
+                                Graph graph = runner.getAlgorithm().search(dataSet, parameters);
                                 graphList.add(graph);
                             }
 
+                            for (Graph graph : graphList) {
+                                GraphUtils.circleLayout(graph, 225, 200, 150);
+                            }
+
+                            pane.setSelectedIndex(1);
                             runner.setGraphList(graphList);
                             graphEditor.replace(graphList);
                             graphEditor.validate();
-                            pane.setSelectedIndex(1);
                         }
                     }
                 };
@@ -126,13 +217,152 @@ public class GeneralAlgorithmEditor extends JPanel {
         });
     }
 
+    private void setAlgorithm() {
+        AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+        AlgorithmDescription description = mappedDescriptions.get(name);
+
+        if (name == null) {
+            return;
+        }
+
+        TestType test = (TestType) testDropdown.getSelectedItem();
+        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
+
+        IndependenceWrapper independenceWrapper;
+
+        switch (test) {
+            case FisherZ:
+                independenceWrapper = new FisherZ();
+                break;
+            case ChiSquare:
+                independenceWrapper = new ChiSquare();
+                break;
+            default:
+                throw new IllegalArgumentException("Please configure that test: " + test);
+        }
+
+        ScoreWrapper scoreWrapper;
+
+        switch (score) {
+            case SEM_BIC:
+                scoreWrapper = new SemBicScore();
+                break;
+            case BDeu:
+                scoreWrapper = new BdeuScore();
+                break;
+            default:
+                throw new IllegalArgumentException("Please configure that score: " + score);
+        }
+
+        Algorithm algorithm;
+
+        switch (name) {
+            case PC:
+                algorithm = new Pc(independenceWrapper);
+                break;
+            case CPC:
+                algorithm = new Cpc(independenceWrapper);
+                break;
+            case CPCS:
+                algorithm = new Cpcs(independenceWrapper);
+                break;
+            case PCS:
+                algorithm = new Pcs(independenceWrapper);
+                break;
+            case FGS:
+                algorithm = new Fgs(scoreWrapper);
+                break;
+            case FCI:
+                algorithm = new Fci(independenceWrapper);
+                break;
+            case RFCI:
+                algorithm = new Rfci(independenceWrapper);
+                break;
+            case CFCI:
+                algorithm = new Cfci(independenceWrapper);
+                break;
+            case GFCI:
+                algorithm = new Gfci(scoreWrapper);
+                break;
+            case TsFCI:
+                algorithm = new TsFci(independenceWrapper);
+                break;
+            case TsGFCI:
+                algorithm = new TsGfci(scoreWrapper);
+                break;
+            case CCD:
+                algorithm = new Ccd(independenceWrapper);
+                break;
+            case LiNGAM:
+                algorithm = new Lingam();
+                break;
+            case MGM:
+                algorithm = new Mgm();
+                break;
+            case IMaGES_BDeu:
+                algorithm = new ImagesBDeu();
+                break;
+            case IMaGES_SEM_BIC:
+                algorithm = new ImagesSemBic();
+                break;
+            case TsIMaGES_SEM_BIC:
+                algorithm = new TsImagesSemBic();
+                break;
+            default:
+                throw new IllegalArgumentException("Please configure that algorithm: " + name);
+
+        }
+
+        OracleType oracle = description.getOracleType();
+
+        if (oracle == OracleType.None) {
+            testDropdown.setEnabled(false);
+            scoreDropdown.setEnabled(false);
+        } else if (oracle == OracleType.Score) {
+            testDropdown.setEnabled(false);
+            scoreDropdown.setEnabled(true);
+        } else if (oracle == OracleType.Test) {
+            testDropdown.setEnabled(true);
+            scoreDropdown.setEnabled(false);
+        } else if (oracle == OracleType.Both) {
+            testDropdown.setEnabled(true);
+            scoreDropdown.setEnabled(true);
+        }
+
+        runner.setAlgorithm(algorithm);
+
+        setAlgName(name);
+        setTestType(test);
+        setScoreType(score);
+        setAlgType((AlgType) algTypesDropdown.getSelectedItem());
+
+        if (whatYouChose != null) {
+            whatYouChose.setText("You chose: " + algorithm.getDescription());
+        }
+
+        if (pane != null) {
+            pane.setComponentAt(0, getParametersPane());
+        }
+
+    }
+
     //=============================== Public Methods ==================================//
 
     private Box getParametersPane() {
-        ParameterPanel comp = new ParameterPanel(getAlgorithm().getParameters(), getParameters());
+        ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(graphEditor.getPreferredSize());
         Box c = Box.createVerticalBox();
+
+        JButton explain = new JButton("Explain This");
+
+        explain.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Some insighful explanation will be put here by somebody");
+            }
+        });
 
         Box d0 = Box.createHorizontalBox();
         JLabel label0 = new JLabel("Pick an agorithm and parameterize it; then click Search.");
@@ -153,50 +383,127 @@ public class GeneralAlgorithmEditor extends JPanel {
         JLabel label4 = new JLabel("WHICH ALGORITHM:");
         label4.setFont(new Font("Dialog", Font.BOLD, 12));
         d4.add(label4);
-        d4.add(algorithmsDropdown);
+        d4.add(algNamesDropdown);
         c.add(d4);
 
         Box d1 = Box.createHorizontalBox();
         JLabel label1 = new JLabel("TEST TYPE (if needed):");
         label1.setFont(new Font("Dialog", Font.BOLD, 12));
         d1.add(label1);
-        d1.add(scoreDropdown);
+        d1.add(testDropdown);
         c.add(d1);
 
         Box d2 = Box.createHorizontalBox();
         JLabel label2 = new JLabel("SCORE TYPE (if needed):");
         label2.setFont(new Font("Dialog", Font.BOLD, 12));
         d2.add(label2);
-        d2.add(testDropdown);
+        d2.add(scoreDropdown);
         c.add(d2);
         c.add(Box.createVerticalStrut(5));
 
         Box d5 = Box.createHorizontalBox();
-        JLabel label5 = new JLabel("You wisely chose: " + algorithm.getDescription());
-        label5.setFont(new Font("Dialog", Font.BOLD, 12));
-        d5.add(label5);
+        whatYouChose = new JLabel("You chose: " + runner.getAlgorithm().getDescription());
+        whatYouChose.setFont(new Font("Dialog", Font.BOLD, 12));
+        d5.add(whatYouChose);
         d5.add(Box.createHorizontalGlue());
-        d5.add(new JButton("Explain This"));
+        d5.add(explain);
         c.add(d5);
         c.add(Box.createVerticalStrut(10));
 
         c.add(scroll);
-        c.add(searchButton);
+        ;
+
+        Box d6 = Box.createHorizontalBox();
+        d6.add(Box.createHorizontalGlue());
+        d6.add(searchButton);
+        d6.add(Box.createHorizontalGlue());
+        c.add(d6);
 
         Box b = Box.createHorizontalBox();
         b.add(c);
-        b.add(Box.createHorizontalGlue());
-        return b;
-    }
 
-    public Algorithm getAlgorithm() {
-        return algorithm;
+        return b;
     }
 
     public Parameters getParameters() {
         return parameters;
     }
+
+    public AlgType getAlgType() {
+        return AlgType.valueOf(parameters.getString("algType", "Pattern"));
+    }
+
+    public void setAlgType(AlgType algType) {
+        parameters.set("algType", algType.toString());
+    }
+
+    public AlgName getAlgName() {
+        return AlgName.valueOf(parameters.getString("algName", "PC"));
+    }
+
+    public void setAlgName(AlgName algName) {
+        parameters.set("algName", algName.toString());
+    }
+
+    public Object getTestType() {
+        return TestType.valueOf(parameters.getString("testType", "ChiSquare"));
+    }
+
+    public void setTestType(TestType testType) {
+        parameters.set("testType", testType.toString());
+    }
+
+    public Object getScoreType() {
+        return ScoreType.valueOf(parameters.getString("scoreType", "BDeu"));
+    }
+
+    public void setScoreType(ScoreType scoreType) {
+        parameters.set("scoreType", scoreType.toString());
+    }
+
+    private class AlgorithmDescription {
+        private AlgName algName = AlgName.PC;
+        private AlgType algType = AlgType.PAG;
+        private OracleType oracleType = OracleType.Test;
+
+        public AlgorithmDescription(AlgName name, AlgType algType, OracleType oracleType) {
+            this.algName = name;
+            this.algType = algType;
+            this.oracleType = oracleType;
+        }
+
+        public AlgName getAlgName() {
+            return algName;
+        }
+
+        public AlgType getAlgType() {
+            return algType;
+        }
+
+        public OracleType getOracleType() {
+            return oracleType;
+        }
+    }
+
+    private enum AlgName {
+        PC, CPC, CPCS, PCS, FGS,
+        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, CCD,
+        LiNGAM, MGM,
+        IMaGES_BDeu, IMaGES_SEM_BIC,
+        TsIMaGES_SEM_BIC,
+    }
+
+    private enum OracleType {None, Test, Score, Both}
+
+    private enum AlgType {Pattern, PAG, DAG, Markov_Random_Field, Pairwise}
+
+    private enum TestType {ChiSquare, FisherZ}
+
+    public enum ScoreType {BDeu, SEM_BIC}
+
+
 }
+
 
 
 

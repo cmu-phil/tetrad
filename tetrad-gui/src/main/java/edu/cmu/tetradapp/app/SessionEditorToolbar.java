@@ -67,21 +67,22 @@ final class SessionEditorToolbar extends JPanel {
     /**
      * Node infos for all of the nodes.
      */
-    private final ButtonInfo[] buttonInfos = new ButtonInfo[]{new ButtonInfo(
-            "Select", "Select and Move", "move",
-            "<html>Select and move nodes or groups of nodes " +
-                    "<br>on the workbench.</html>"),
+    private final ButtonInfo[] buttonInfos = new ButtonInfo[]{
+            new ButtonInfo(
+                    "Select", "Select and Move", "move",
+                    "<html>Select and move nodes or groups of nodes " +
+                            "<br>on the workbench.</html>"),
             new ButtonInfo("Data", "Data & Simulation", "data",
                     "<html>Add a node for a data object.</html>"),
-            new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
             new ButtonInfo("Search", "Search", "search",
                     "<html>Add a node for a search algorithm.</html>"),
-            new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
+            new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
             new ButtonInfo("Compare", "Comparison", "compare",
                     "<html>Add a node to compare graphs or SEM IM's.</html>"),
-            new ButtonInfo( "PM", "Parametric Model", "pm",
+            new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
+            new ButtonInfo("PM", "Parametric Model", "pm",
                     "<html>Add a node for a parametric model.</html>"),
-            new ButtonInfo( "IM", "Instantiated Model", "im",
+            new ButtonInfo("IM", "Instantiated Model", "im",
                     "<html>Add a node for an instantiated model.</html>"),
 //            new ButtonInfo("GraphManip", "Graph Manipulation", "graph",
 //                    "<html>Add a node for graph manipulations</html>"),
@@ -241,8 +242,7 @@ final class SessionEditorToolbar extends JPanel {
                         if (keyCode == KeyEvent.VK_SHIFT) {
                             if (id == KeyEvent.KEY_PRESSED) {
                                 setShiftDown(true);
-                            }
-                            else if (id == KeyEvent.KEY_RELEASED) {
+                            } else if (id == KeyEvent.KEY_RELEASED) {
                                 setShiftDown(false);
                                 resetSelectMove();
                             }
@@ -332,12 +332,10 @@ final class SessionEditorToolbar extends JPanel {
 
         if ("Select".equals(buttonInfo.getNodeTypeName())) {
             button.setIcon(new ImageIcon(ImageUtils.getImage(this, "move.gif")));
-        }
-        else if ("Edge".equals(buttonInfo.getNodeTypeName())) {
+        } else if ("Edge".equals(buttonInfo.getNodeTypeName())) {
             button.setIcon(
                     new ImageIcon(ImageUtils.getImage(this, "flow.gif")));
-        }
-        else {
+        } else {
             button.setName(buttonInfo.getNodeTypeName());
             button.setText("<html><center>" + buttonInfo.getDisplayName() +
                     "</center></html>");
@@ -361,13 +359,11 @@ final class SessionEditorToolbar extends JPanel {
         if (selectType.equals(nodeType)) {
             workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             workbench.setNextButtonType(null);
-        }
-        else if (edgeType.equals(nodeType)) {
+        } else if (edgeType.equals(nodeType)) {
             workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             workbench.setNextButtonType(null);
             setCursor(workbench.getCursor());
-        }
-        else {
+        } else {
             workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
             workbench.setNextButtonType(nodeType);
             setCursor(workbench.getCursor());

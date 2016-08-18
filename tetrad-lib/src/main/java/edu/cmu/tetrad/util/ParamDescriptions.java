@@ -84,6 +84,8 @@ public class ParamDescriptions {
         put("pixelDigitalization",new ParamDescription("Pixel digitalization", 0.025));
         put("includeDishAndChipColumns",new ParamDescription("Yes if Dish and Chip columns should be included in output", true));
 
+        put("randomSelection",new ParamDescription("The number of datasets that should be taken at a time", 5));
+
     }
 
     public static ParamDescriptions instance() {

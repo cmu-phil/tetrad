@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
@@ -49,7 +50,8 @@ public class Simulation extends DataWrapper implements SessionModel,
         SimulationParamsSource, GraphSource {
     static final long serialVersionUID = 23L;
 
-    private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation
+            = new BayesNetSimulation(new RandomForward());
     private Parameters parameters;
     private String name;
     private boolean fixedGraph = true;

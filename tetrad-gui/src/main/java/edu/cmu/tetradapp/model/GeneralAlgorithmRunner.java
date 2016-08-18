@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -30,6 +31,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,11 +45,12 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable, Unmarshallable {
+
     static final long serialVersionUID = 23L;
     private DataWrapper dataWrapper;
 
     private String name;
-    private Algorithm algorithm = new Pc(new FisherZ());
+    private Algorithm algorithm = new Pc(new ChiSquare());
     private Parameters parameters;
     private transient DataModel dataModel;
     private Graph sourceGraph;
