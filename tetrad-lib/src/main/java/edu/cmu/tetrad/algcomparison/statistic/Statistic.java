@@ -2,12 +2,14 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serializable;
+
 /**
  * The interface that each statistic needs to implement.
  *
  * @author jdramsey
  */
-public interface Statistic {
+public interface Statistic extends Serializable {
     static final long serialVersionUID = 23L;
 
     /**

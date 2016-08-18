@@ -1708,7 +1708,7 @@ public final class GraphUtils {
         Graph reference = new EdgeListGraph(newVariables);
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
-        for (Edge edge : originalGraph.getEdges()) {
+            for (Edge edge : originalGraph.getEdges()) {
             Node node1 = reference.getNode(edge.getNode1().getName());
             Node node2 = reference.getNode(edge.getNode2().getName());
 

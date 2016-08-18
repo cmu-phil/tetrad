@@ -16,7 +16,6 @@ public class TabularComparisonEditor extends JPanel {
 
     public TabularComparisonEditor(TabularComparison comparison) {
         this.comparison = comparison;
-
         buildGui();
     }
 
@@ -24,8 +23,10 @@ public class TabularComparisonEditor extends JPanel {
 
         DataSet dataSet = comparison.getDataSet();
 
-        TextTable table1 = getTextTable(dataSet, new int[]{0, 1, 2, 3, 4, 5}, new DecimalFormat("0"));
-        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9, 10}, new DecimalFormat("0.00"));
+        TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
+
+//        TextTable table1 = getTextTable(dataSet, new int[]{0, 1, 2, 3, 4, 5}, new DecimalFormat("0"));
+//        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9, 10}, new DecimalFormat("0.00"));
 //        TextTable table3 = getTextTable(dataSet, new int[]{10}, new DecimalFormat("0.00"));
 
         StringBuilder builder = new StringBuilder();
@@ -38,10 +39,7 @@ public class TabularComparisonEditor extends JPanel {
         }
 
         JTextArea area = new JTextArea(
-                "\n" + builder.toString()
-                + "\n" + table1.toString()
-                + "\n\n" + table2.toString()
-//                + "\n\n" + table3.toString()
+                "\n" + table.toString()
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
@@ -66,13 +64,13 @@ public class TabularComparisonEditor extends JPanel {
         add(b);
     }
 
-    private TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
-        TextTable table  = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
+    private TextTable getTextTable(DataSet dataSet, NumberFormat nf) {
+        TextTable table = new TextTable(dataSet.getNumRows() + 2, dataSet.getNumColumns() + 1);
 
         table.setToken(0, 0, "Run #");
 
-        for (int j = 0; j < columns.length; j++) {
-            table.setToken(0, j + 1, dataSet.getVariable(columns[j]).getName());
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            table.setToken(0, j + 1, dataSet.getVariable(j).getName());
         }
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -80,18 +78,18 @@ public class TabularComparisonEditor extends JPanel {
         }
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < columns.length; j++) {
-                table.setToken(i + 1, j + 1, nf.format(dataSet.getDouble(i, columns[j])));
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                table.setToken(i + 1, j + 1, nf.format(dataSet.getDouble(i, j)));
             }
         }
 
         NumberFormat nf2 = new DecimalFormat("0.00");
 
-        for (int j = 0; j < columns.length; j++) {
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
             double sum = 0.0;
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                sum += dataSet.getDouble(i, columns[j]);
+                sum += dataSet.getDouble(i, j);
             }
 
             double avg = sum / dataSet.getNumRows();

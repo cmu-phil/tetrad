@@ -99,11 +99,9 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.TsIMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
 
-        List<AlgName> names = new ArrayList<>();
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescription description : descriptions) {
-            names.add(description.getAlgName());
             mappedDescriptions.put(description.getAlgName(), description);
         }
 
@@ -210,6 +208,7 @@ public class GeneralAlgorithmEditor extends JPanel {
                             runner.setGraphList(graphList);
                             graphEditor.replace(graphList);
                             graphEditor.validate();
+                            firePropertyChange("modelChanged", null, null);
                         }
                     }
                 };
@@ -411,7 +410,6 @@ public class GeneralAlgorithmEditor extends JPanel {
         c.add(Box.createVerticalStrut(10));
 
         c.add(scroll);
-        ;
 
         Box d6 = Box.createHorizontalBox();
         d6.add(Box.createHorizontalGlue());

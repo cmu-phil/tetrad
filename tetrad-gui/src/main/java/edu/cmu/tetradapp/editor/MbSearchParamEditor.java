@@ -22,13 +22,11 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
-import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.GraphSource;
+import edu.cmu.tetradapp.model.IndependenceFactsModel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -279,18 +277,10 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
                     "null if you want to launch a OldKnowledgeEditor.");
         }
 
-        if ((IKnowledge) params().get("knowledge", new Knowledge2()) == null) {
+        if (params().get("knowledge", new Knowledge2()) == null) {
             throw new NullPointerException(
                     "Knowledge in params object must " + "not be null.");
         }
-
-        KnowledgeEditor knowledgeEditor = new KnowledgeEditor(
-                (IKnowledge) params().get("knowledge", new Knowledge2()), varNames, (Graph) params.get("sourceGraph", null));
-
-        EditorWindow editorWindow = new EditorWindow(knowledgeEditor,
-                knowledgeEditor.getName(), "Save", false, this);
-        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-        editorWindow.setVisible(true);
     }
 
     private Parameters params() {

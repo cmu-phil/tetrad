@@ -21,9 +21,14 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
@@ -32,8 +37,8 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.text.DecimalFormat;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -46,35 +51,13 @@ import java.util.prefs.Preferences;
 public final class TabularComparison implements SessionModel, SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
-    /**
-     * @serial Can be null.
-     */
     private String name;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private Parameters params;
-
-    /**
-     * The target workbench.
-     *
-     * @serial
-     */
-    private Graph targetGraph;
-
-    /**
-     * The workbench to which the target workbench is being compared.
-     *
-     * @serial Cannot be null.
-     */
-    private Graph referenceGraph;
-
-    /**
-     * The true DAG, if available. (May be null.)
-     */
+    private List<Graph> targetGraphs;
+    private List<Graph> referenceGraphs;
     private Graph trueGraph;
     private Map<String, String> allParamSettings;
+    private DataSet dataSet;
+    private ArrayList<Statistic> statistics;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -99,93 +82,123 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             model1 = new DagWrapper(new Dag());
         }
 
-        if (!(model1 instanceof GraphSource) ||
-                !(model2 instanceof GraphSource)) {
+        if (!(model1 instanceof GraphSource) || !(model2 instanceof GraphSource)) {
             throw new IllegalArgumentException("Must be graph sources.");
         }
 
-        this.params = params;
+        String referenceName = params.getString("referenceGraphName", null);
 
-        String referenceName = this.params.getString("referenceName", null);
-        params.getString("referenceName", null);
-        String targetName = params.getString("targetName", null);
-        String datasetName = "Comparing " + referenceName + " to " + targetName;
-        this.getDataSet().setName(datasetName);
         if (referenceName == null) {
-            this.referenceGraph = ((GraphSource) model1).getGraph();
-            this.targetGraph = ((GraphSource) model2).getGraph();
-            this.params.set("referenceName", model1.getName());
-        } else if (referenceName.equals(model1.getName())) {
-            this.referenceGraph = ((GraphSource) model1).getGraph();
-            this.targetGraph = ((GraphSource) model2).getGraph();
-        } else if (referenceName.equals(model2.getName())) {
-            this.referenceGraph = ((GraphSource) model2).getGraph();
-            this.targetGraph = ((GraphSource) model1).getGraph();
+            throw new IllegalArgumentException("Must specify a reference graph.");
         } else {
-            throw new IllegalArgumentException(
-                    "Neither of the supplied session " + "models is named '" +
-                            referenceName + "'.");
-        }
+            GraphSource model11 = (GraphSource) model1;
+            GraphSource model21 = (GraphSource) model2;
 
-        this.referenceGraph = GraphUtils.replaceNodes(this.referenceGraph, this.targetGraph.getNodes());
+            if (referenceName.equals(model1.getName())) {
+                if (model11 instanceof MultipleGraphSource) {
+                    this.referenceGraphs = ((MultipleGraphSource) model11).getGraphs();
+                }
 
+                if (model21 instanceof MultipleGraphSource) {
+                    this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
+                }
 
-        Graph alteredRefGraph;
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
+                }
 
-        //Normally, one's target graph won't have latents, so we'll want to
-        // remove them from the ref graph to compare, but algorithm like
-        // MimBuild might not want to do this.
-        if (this.params != null && this.params.getBoolean("keepLatents", false)) {
-            alteredRefGraph = this.referenceGraph;
-        } else {
-            alteredRefGraph = removeLatent(this.referenceGraph);
-        }
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(model21.getGraph());
+                }
+            } else if (referenceName.equals(model2.getName())) {
+                if (model21 instanceof MultipleGraphSource) {
+                    this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
+                }
 
-        if (this.params != null) {
-            GraphUtils.GraphComparison graphComparison = SearchGraphUtils.getGraphComparison2(targetGraph, alteredRefGraph);
+                if (model11 instanceof MultipleGraphSource) {
+                    this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
+                }
 
-            List<GraphUtils.GraphComparison> records = (List<GraphUtils.GraphComparison>) this.params.get("records", null);
-            records.add(graphComparison);
-            this.params.set("records", records);
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
+                }
 
-            if (graphComparison.getAdjFn() != 0 || graphComparison.getAdjFp() != 0 ||
-                    graphComparison.getAhdFn() != 0 || graphComparison.getAhdFp() != 0) {
-                Preferences.userRoot().putBoolean("errorFound", true);
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(model11.getGraph());
+                }
+            } else {
+                throw new IllegalArgumentException(
+                        "Neither of the supplied session models is named '" +
+                                referenceName + "'.");
             }
         }
 
+        for (int i = 0; i < targetGraphs.size(); i++) {
+            targetGraphs.set(i, GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
+        }
+
+        newExecution();
+
+        for (int i = 0; i < targetGraphs.size(); i++) {
+            addRecord(i);
+        }
+
         TetradLogger.getInstance().log("info", "Graph Comparison");
-        TetradLogger.getInstance().log("comparison", getCompareString());
+    }
+
+    public final void newExecution() {
+        statistics = new ArrayList<>();
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+//        statistics.add(new ElapsedTime());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new MathewsCorrAdj());
+        statistics.add(new MathewsCorrArrow());
+        statistics.add(new SHD());
+
+        List<Node> variables = new ArrayList<>();
+
+        for (Statistic statistic : statistics) {
+            variables.add(new ContinuousVariable(statistic.getAbbreviation()));
+        }
+
+        dataSet = new ColtDataSet(0, variables);
+        dataSet.setNumberFormat(new DecimalFormat("0.00"));
+    }
+
+    public void addRecord(int i) {
+        int newRow = dataSet.getNumRows();
+
+        for (int j = 0; j < statistics.size(); j++) {
+            Statistic statistic = statistics.get(j);
+            double value = statistic.getValue(this.referenceGraphs.get(i), this.targetGraphs.get(i));
+            dataSet.setDouble(newRow, j, value);
+        }
     }
 
     public TabularComparison(GraphWrapper referenceGraph,
                              AbstractAlgorithmRunner algorithmRunner,
                              Parameters params) {
-        this(referenceGraph, (SessionModel) algorithmRunner,
-                params);
+        this(referenceGraph, (SessionModel) algorithmRunner, params);
     }
 
     public TabularComparison(GraphWrapper referenceWrapper,
                              GraphWrapper targetWrapper, Parameters params) {
-        this(referenceWrapper, (SessionModel) targetWrapper,
-                params);
+        this(referenceWrapper, (SessionModel) targetWrapper, params);
     }
 
     public TabularComparison(DagWrapper referenceGraph,
                              AbstractAlgorithmRunner algorithmRunner,
                              Parameters params) {
-        this(referenceGraph, (SessionModel) algorithmRunner,
-                params);
+        this(referenceGraph, (SessionModel) algorithmRunner, params);
     }
 
     public TabularComparison(DagWrapper referenceWrapper,
                              GraphWrapper targetWrapper, Parameters params) {
-        this(referenceWrapper, (SessionModel) targetWrapper,
-                params);
-    }
-
-    private String getCompareString() {
-        return ((DataSet) params.get("dataSet", null)).toString();
+        this(referenceWrapper, (SessionModel) targetWrapper, params);
     }
 
     /**
@@ -202,7 +215,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     //==============================PUBLIC METHODS========================//
 
     public DataSet getDataSet() {
-        return (DataSet) params.get("dataSet", null);
+        return this.dataSet;
     }
 
     public String getName() {
@@ -214,48 +227,6 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     //============================PRIVATE METHODS=========================//
-
-
-    private Graph getTargetGraph() {
-        return new EdgeListGraph(targetGraph);
-    }
-
-
-    public Graph getReferenceGraph() {
-        return new EdgeListGraph(referenceGraph);
-    }
-
-    //This removes the latent nodes in G and connects nodes that were formerly
-    //adjacent to the latent node with an undirected edge (edge type doesnt matter).
-    private static Graph removeLatent(Graph g) {
-        Graph result = new EdgeListGraph(g);
-        result.setGraphConstraintsChecked(false);
-
-        List<Node> allNodes = g.getNodes();
-        LinkedList<Node> toBeRemoved = new LinkedList<Node>();
-
-        for (Node curr : allNodes) {
-            if (curr.getNodeType() == NodeType.LATENT) {
-                List<Node> adj = result.getAdjacentNodes(curr);
-
-                for (int i = 0; i < adj.size(); i++) {
-                    Node a = adj.get(i);
-                    for (int j = i + 1; j < adj.size(); j++) {
-                        Node b = adj.get(j);
-
-                        if (!result.isAdjacentTo(a, b)) {
-                            result.addEdge(Edges.undirectedEdge(a, b));
-                        }
-                    }
-                }
-
-                toBeRemoved.add(curr);
-            }
-        }
-
-        result.removeNodes(toBeRemoved);
-        return result;
-    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method
@@ -273,14 +244,6 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        if (targetGraph == null) {
-            throw new NullPointerException();
-        }
     }
 
     public Graph getTrueGraph() {
@@ -293,12 +256,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     @Override
     public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
-
-//        paramSettings.put("True Graph", params.getReferenceGraphName());
-//        paramSettings.put("Target Graph", params.getTargetGraphName());
-
-        return paramSettings;
+        return new HashMap<>();
     }
 
     @Override

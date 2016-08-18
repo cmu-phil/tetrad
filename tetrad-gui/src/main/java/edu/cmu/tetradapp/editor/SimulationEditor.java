@@ -145,7 +145,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         }
 
                         simulation.setSimulation(_simulation, simulation.getParams());
-//                        firePropertyChange("modelChanged", null, null);
+                        firePropertyChange("modelChanged", null, null);
 
                         List<Graph> graphs = new ArrayList<>();
                         for (int i = 0; i < _simulation.getNumDataSets(); i++) {

@@ -54,12 +54,12 @@ final class ConstructTemplateAction extends AbstractAction {
 //            "--separator--",
             "Estimate",
             "Update",
+            "Compare",
 //            "--separator--",
             "Simulate Data with Fixed Graph",
             "Simulate Data with Fixed PM",
             "Simulate Data with Fixed IM",
 //            "--separator--",
-            "Compare",
             "Estimate from Simulated Data",
             "Update from Simulated Data",
     };
@@ -119,27 +119,23 @@ final class ConstructTemplateAction extends AbstractAction {
             loadOrSimulateData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[1])) {
             searchFromLoadedOrSimulatedData(leftX);
-//        } else if (this.templateName.equals(getTemplateNames()[2])) {
-//            throw new IllegalStateException("Separator!");
         } else if (this.templateName.equals(getTemplateNames()[2])) {
             estimateUsingSearchResult(leftX);
         } else if (this.templateName.equals(getTemplateNames()[3])) {
             estimateThenUpdateUsingSearchResult(leftX);
-//        } else if (this.templateName.equals(getTemplateNames()[5])) {
-//            throw new IllegalStateException("Separator!");
         } else if (this.templateName.equals(getTemplateNames()[4])) {
-            simulateDataFixedGraph(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[5])) {
-            simulateDataFixedPM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[6])) {
-            simulateDataFixedIM(leftX);
-//        } else if (this.templateName.equals(getTemplateNames()[9])) {
-//            throw new IllegalStateException("Separator!");
-        } else if (this.templateName.equals(getTemplateNames()[7])) {
             searchFromSimulatedDataWithCompare(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[5])) {
+            simulateDataFixedGraph(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[6])) {
+            simulateDataFixedPM(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[7])) {
+            simulateDataFixedIM(leftX);
         } else if (this.templateName.equals(getTemplateNames()[8])) {
-            estimateFromSimulatedData(leftX);
+            searchFromSimulatedDataWithCompare(leftX);
         } else if (this.templateName.equals(getTemplateNames()[9])) {
+            estimateFromSimulatedData(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[10])) {
             estimateThenUpdateFromSimulatedData(leftX);
         } else {
             throw new IllegalStateException(

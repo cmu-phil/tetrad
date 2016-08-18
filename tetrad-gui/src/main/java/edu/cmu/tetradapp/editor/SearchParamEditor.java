@@ -22,23 +22,20 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
-import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.model.DagWrapper;
+import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -146,7 +143,6 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
         }
 
         params.set("varNames", varNames);
-        JButton knowledgeButton = new JButton("Edit");
 
         IntTextField depthField = new IntTextField(params.getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
@@ -184,13 +180,6 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
         setBorder(new MatteBorder(10, 10, 10, 10, super.getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Knowledge:"));
-        b2.add(Box.createGlue());
-        b2.add(knowledgeButton);
-        add(b2);
-        add(Box.createVerticalStrut(10));
-
         if (!Double.isNaN(alpha)) {
             Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("Alpha Value:"));
@@ -206,36 +195,10 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
         b1.add(depthField);
         add(b1);
         add(Box.createVerticalStrut(10));
-
-        knowledgeButton.addActionListener(new ActionListener() {
-            public final void actionPerformed(ActionEvent e) {
-                openKnowledgeEditor();
-            }
-        });
     }
 
     public boolean mustBeShown() {
         return false;
-    }
-
-    /**
-     * Must pass knowledge from getMappings. If null, creates new Knowledge2
-     * object.
-     */
-    private void openKnowledgeEditor() {
-        if (this.getParams() == null) {
-            throw new NullPointerException("Parameter object must not be " +
-                    "null if you want to launch a OldKnowledgeEditor.");
-        }
-
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
-
-        KnowledgeEditor knowledgeEditor = new KnowledgeEditor(knowledge,
-                varNames, (Graph) params.get("sourceGraph", null));
-        EditorWindow window = new EditorWindow(knowledgeEditor,
-                knowledgeEditor.getName(), "Save", false, this);
-        DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-        window.setVisible(true);
     }
 
     private Parameters getParams() {

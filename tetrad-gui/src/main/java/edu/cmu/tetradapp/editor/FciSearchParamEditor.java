@@ -22,23 +22,20 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
-import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.model.DagWrapper;
+import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -150,7 +147,6 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         }
 
         params.set("varNames", varNames);
-        JButton knowledgeButton = new JButton("Edit");
 
         IntTextField depthField =
                 new IntTextField(params.getInt("depth", -1), 4);
@@ -192,7 +188,6 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Knowledge:"));
         b1.add(Box.createGlue());
-        b1.add(knowledgeButton);
         add(b1);
         add(Box.createVerticalStrut(10));
 
@@ -211,38 +206,11 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         b3.add(depthField);
         add(b3);
         add(Box.createVerticalStrut(10));
-
-        knowledgeButton.addActionListener(new ActionListener() {
-            public final void actionPerformed(ActionEvent e) {
-                openKnowledgeEditor();
-            }
-        });
     }
 
     public boolean mustBeShown() {
         return false;
     }
-
-    /**
-     * Must pass knowledge from getMappings. If null, creates new Knowledge2
-     * object.
-     */
-    private void openKnowledgeEditor() {
-        if (this.getParams() == null) {
-            throw new NullPointerException("Parameter object must not be " +
-                    "null if you want to launch a OldKnowledgeEditor.");
-        }
-
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
-
-        KnowledgeEditor knowledgeEditor = new KnowledgeEditor(knowledge,
-                varNames, (Graph) params.get("sourceGraph", null));
-        EditorWindow editorWindow = new EditorWindow(knowledgeEditor,
-                knowledgeEditor.getName(), "Save", false, this);
-        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-        editorWindow.setVisible(true);
-    }
-
     private Parameters getParams() {
         return params;
     }

@@ -243,7 +243,6 @@ public final class Misclassifications implements SessionModel {
 
         for (int i = 0; i < targetGraphs.size(); i++) {
             targetGraphs.set(i,GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
-
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
