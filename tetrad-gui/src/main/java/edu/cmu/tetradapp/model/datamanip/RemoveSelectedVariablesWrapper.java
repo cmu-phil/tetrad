@@ -36,7 +36,7 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    private RemoveSelectedVariablesWrapper(DataWrapper data) {
+    public RemoveSelectedVariablesWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }

@@ -238,15 +238,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemPmEditor
                 </editor-class>
             </model>
-            <!--<model name="Boolean Glass Gene PM" acronym="Glass PM"-->
-            <!--help="glass_pm">-->
-            <!--<model-class>edu.cmu.tetradproj.gene.tetradapp.model.BooleanGlassGenePm-->
-            <!--</model-class>-->
-            <!--<editor-class>-->
-            <!--edu.cmu.tetradapp.gene.editor.BooleanGlassGenePmEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
-        </models>
+            </models>
         <display-component image="pmIcon.gif"/>
         <model-chooser title="Types of Parameterized Models"/>
         <tooltip>
@@ -361,20 +353,6 @@
                 <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
             </model>
-            <!--</models>-->
-            <!--<display-component image="dataIcon.gif"/>-->
-            <!--<model-chooser title="Types of data Objects"/>-->
-            <!--<tooltip>-->
-            <!--<![CDATA[-->
-            <!--<html> Allowable Input Node:-->
-            <!--<br> (1) No inputs (standalone data set), OR-->
-            <!--<br> (2) IM (Bayes or SEM, to simulate data)-->
-            <!--</html>-->
-            <!--]]>-->
-            <!--</tooltip>-->
-            <!--</session-node>-->
-            <!--<session-node id="DataManip">-->
-            <!--<models>-->
             <model name="Discretize Dataset" acronym="Discretize" help="data"
                    category="Manipulation of Data">
                 <logger>

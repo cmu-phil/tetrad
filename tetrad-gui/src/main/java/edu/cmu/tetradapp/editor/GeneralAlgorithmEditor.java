@@ -40,6 +40,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
@@ -287,8 +288,14 @@ public class GeneralAlgorithmEditor extends JPanel {
                         graphList.add(graph);
                     }
 
-                    for (Graph graph : graphList) {
-                        GraphUtils.circleLayout(graph, 225, 200, 150);
+                    if (runner.getKnowledge() != null) {
+                        for (Graph graph : graphList) {
+                            SearchGraphUtils.arrangeByKnowledgeTiers(graph, runner.getKnowledge());
+                        }
+                    } else {
+                        for (Graph graph : graphList) {
+                            GraphUtils.circleLayout(graph, 225, 200, 150);
+                        }
                     }
 
                     pane.setSelectedIndex(2);

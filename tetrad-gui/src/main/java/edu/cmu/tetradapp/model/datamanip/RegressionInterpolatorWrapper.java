@@ -39,7 +39,7 @@ public class RegressionInterpolatorWrapper extends DataWrapper {
 
 
 
-    private RegressionInterpolatorWrapper(DataWrapper data) {
+    public RegressionInterpolatorWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }

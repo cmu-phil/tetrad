@@ -70,7 +70,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      * pops up a dialog. This is irritating when running unit tests.
      * jdramsey 8/29/07
      */
-    private SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Parameters params) {
+    public SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Parameters params) {
         this.params = params;
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
     }

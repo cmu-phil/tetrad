@@ -47,7 +47,7 @@ public class Whitener extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    private Whitener(DataWrapper wrapper) {
+    public Whitener(DataWrapper wrapper) {
         DataSet dataSet;
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
             DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();

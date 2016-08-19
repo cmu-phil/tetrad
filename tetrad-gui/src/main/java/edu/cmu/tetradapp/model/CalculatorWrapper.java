@@ -44,7 +44,7 @@ public class CalculatorWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    private CalculatorWrapper(DataWrapper data, Parameters params) {
+    public CalculatorWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

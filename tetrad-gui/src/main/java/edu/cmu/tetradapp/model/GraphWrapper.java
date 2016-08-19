@@ -91,7 +91,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             this.graph = new EdgeListGraph();
         } else if (parameters.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
+            Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
 
             boolean addCycles = parameters.getBoolean("randomAddCycles", false);
 
@@ -104,6 +104,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
             this.graph = graph;
         }
+
         log();
     }
 
@@ -114,7 +115,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             this.graph = new EdgeListGraph(getGraph());
         } else if (parameters.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
+            edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
         }
 
         Graph graph = graphSource.getGraph();
@@ -132,11 +133,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log();
     }
 
-    public boolean allowRandomGraph() {
-        return true;
-    }
-
-
     public GraphWrapper(DataWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getVariables()));
         GraphUtils.circleLayout(graph, 200, 200, 150);
@@ -144,6 +140,110 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
         this(getStrongestInfluenceGraph(wrapper.getSemIm()));
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static GraphWrapper serializableInstance() {
+        return new GraphWrapper(Dag.serializableInstance());
+    }
+
+    //==============================PUBLIC METHODS======================//
+
+    public Graph getGraph() {
+        return graph;
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+        log();
+    }
+
+    public boolean allowRandomGraph() {
+        return true;
+    }
+
+    @Override
+    public IndependenceTest getIndependenceTest() {
+        return new IndTestDSep(getGraph());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Graph getSourceGraph() {
+        return graph;
+    }
+
+    public Graph getResultGraph() {
+        return graph;
+    }
+
+    public List<String> getVariableNames() {
+
+        return graph.getNodeNames();
+    }
+
+    public List<Node> getVariables() {
+        return graph.getNodes();
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Vars", Integer.toString(graph.getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(graph.getNumEdges()));
+        if (graph.existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    //==========================PRIVATE METaHODS===========================//
+
+    private static String findParameter(Expression expression, String name) {
+        List<Expression> expressions = expression.getExpressions();
+
+        if (expression.getToken().equals("*")) {
+            Expression expression1 = expressions.get(1);
+            VariableExpression varExpr = (VariableExpression) expression1;
+
+            if (varExpr.getVariable().equals(name)) {
+                Expression expression2 = expressions.get(0);
+                VariableExpression constExpr = (VariableExpression) expression2;
+                return constExpr.getVariable();
+            }
+        }
+
+        for (Expression _expression : expressions) {
+            String param = findParameter(_expression, name);
+
+            if (param != null) {
+                return param;
+            }
+        }
+
+        return null;
     }
 
     private static Graph getStrongestInfluenceGraph(GeneralizedSemIm im) {
@@ -201,53 +301,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         return graph2;
     }
 
-    private static String findParameter(Expression expression, String name) {
-        List<Expression> expressions = expression.getExpressions();
-
-        if (expression.getToken().equals("*")) {
-            Expression expression1 = expressions.get(1);
-            VariableExpression varExpr = (VariableExpression) expression1;
-
-            if (varExpr.getVariable().equals(name)) {
-                Expression expression2 = expressions.get(0);
-                VariableExpression constExpr = (VariableExpression) expression2;
-                return constExpr.getVariable();
-            }
-        }
-
-        for (Expression _expression : expressions) {
-            String param = findParameter(_expression, name);
-
-            if (param != null) {
-                return param;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static GraphWrapper serializableInstance() {
-        return new GraphWrapper(Dag.serializableInstance());
-    }
-
-    //==============================PUBLIC METHODS======================//
-
-    public Graph getGraph() {
-        return graph;
-    }
-
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-        log();
-    }
-
-    //==========================PRIVATE METaHODS===========================//
-
     private void log() {
         TetradLogger.getInstance().log("info", "General Graph");
         TetradLogger.getInstance().log("graph", "" + getGraph());
@@ -269,59 +322,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(getGraph());
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Graph getSourceGraph() {
-        return graph;
-    }
-
-    public Graph getResultGraph() {
-        return graph;
-    }
-
-    public List<String> getVariableNames() {
-
-        return graph.getNodeNames();
-    }
-
-    public List<Node> getVariables() {
-        return graph.getNodes();
-    }
-
-    @Override
-    public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("# Vars", Integer.toString(graph.getNumNodes()));
-        paramSettings.put("# Edges", Integer.toString(graph.getNumEdges()));
-        if (graph.existsDirectedCycle()) paramSettings.put("Cyclic", null);
-        return paramSettings;
-    }
-
-    @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
-    }
-
-    @Override
-    public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
-    }
-
-    public Parameters getParameters() {
-        return parameters;
     }
 }
 

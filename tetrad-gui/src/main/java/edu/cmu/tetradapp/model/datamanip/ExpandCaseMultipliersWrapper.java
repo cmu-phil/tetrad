@@ -35,7 +35,7 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
 
 
 
-    private ExpandCaseMultipliersWrapper(DataWrapper data) {
+    public ExpandCaseMultipliersWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }

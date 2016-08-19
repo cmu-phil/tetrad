@@ -46,7 +46,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
-    private ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
+    public ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 

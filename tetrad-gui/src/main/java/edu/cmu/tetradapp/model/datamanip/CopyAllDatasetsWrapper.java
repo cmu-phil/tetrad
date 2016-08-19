@@ -38,7 +38,7 @@ public class CopyAllDatasetsWrapper extends DataWrapper {
 
 
 
-    private CopyAllDatasetsWrapper(DataWrapper wrapper) {
+    public CopyAllDatasetsWrapper(DataWrapper wrapper) {
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
 

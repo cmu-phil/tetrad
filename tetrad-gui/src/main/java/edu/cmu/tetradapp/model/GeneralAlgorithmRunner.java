@@ -75,7 +75,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
-        knowledge = new Knowledge2(dataWrapper.getVariableNames());
+
+        this.knowledge = dataWrapper.getKnowledge();
+
+        if (knowledge == null) {
+            this.knowledge = new Knowledge2(dataWrapper.getVariableNames());
+        }
     }
 
     /**

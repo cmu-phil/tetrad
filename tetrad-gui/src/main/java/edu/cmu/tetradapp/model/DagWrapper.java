@@ -56,7 +56,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
      */
     private Dag dag;
     private Map<String, String> allParamSettings;
-    private Parameters parameters;
+    private final Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -71,54 +71,12 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
     public DagWrapper(Parameters params) {
+        this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             dag = new Dag();
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
-        }
-        log();
-    }
-
-    public DagWrapper(DagWrapper graphWrapper, Parameters params) {
-        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            this.dag = new Dag();
-//            try {
-//                this.dag = new Dag(graphWrapper.getDag());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                this.dag = new Dag();
-//            }
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
-
-            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
-        }
-        log();
-    }
-
-    public DagWrapper(SemGraphWrapper graphWrapper, Parameters params) {
-        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-//            this.dag = new Dag(graphWrapper.getSemGraph());
-            this.dag = new Dag();
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
-        }
-        log();
-    }
-
-    public DagWrapper(GraphWrapper graphWrapper, Parameters params) {
-        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            try {
-//                this.dag = new Dag(graphWrapper.getGraph());
-                this.dag = new Dag();
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.dag = new Dag();      
-            }
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
+            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), params));
         }
         log();
     }

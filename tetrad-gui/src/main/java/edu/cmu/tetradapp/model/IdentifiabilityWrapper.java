@@ -62,7 +62,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //=============================CONSTRUCTORS============================//
 
-    private IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
+    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }

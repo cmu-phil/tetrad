@@ -82,12 +82,12 @@ final class SimulationGraphEditor extends JPanel {
             // Do nothing.
         } else if (graphs.size() > 1) {
             for (int i = 0; i < graphs.size(); i++) {
-                this.tabbedPane.addTab(tabName(i + 1), graphDisplay(graphs.get(i)));
+                this.tabbedPane.addTab(tabName(i + 1), new JScrollPane(graphDisplay(graphs.get(i))));
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
         } else {
-            this.tabbedPane.addTab(tabName(1), graphDisplay(graphs.get(0)));
+            this.tabbedPane.addTab(tabName(1), new JScrollPane(graphDisplay(graphs.get(0))));
             add(this.tabbedPane, BorderLayout.CENTER);
 
         }

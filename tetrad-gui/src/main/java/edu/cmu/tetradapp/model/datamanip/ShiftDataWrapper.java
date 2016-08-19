@@ -46,7 +46,7 @@ public class ShiftDataWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    private ShiftDataWrapper(DataWrapper data, Parameters params) {
+    public ShiftDataWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

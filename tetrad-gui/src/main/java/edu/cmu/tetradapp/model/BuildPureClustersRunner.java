@@ -97,7 +97,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * implemented in the extending class.
      */
     public void execute() {
-        boolean rKey = Preferences.userRoot().getBoolean("BPCrDown", false);
+        boolean rKey = getParams().getBoolean("BPCrDown", false);
 
         BpcAlgorithmType algorithm = (BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS);
 

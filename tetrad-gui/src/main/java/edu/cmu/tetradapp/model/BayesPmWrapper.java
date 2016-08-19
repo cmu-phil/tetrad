@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.DataSet;
@@ -383,6 +384,17 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
     public BayesPmWrapper(DagWrapper dagWrapper, Simulation dataWrapper) {
         this(dagWrapper, (DataWrapper) dataWrapper);
+    }
+
+    public BayesPmWrapper(Simulation simulation) {
+        List<Graph> graphs = simulation.getGraphs();
+
+        if (!(graphs.size() == 1)) {
+            throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
+        }
+
+        this.bayesPm = new BayesPm(graphs.get(0));
+        log(bayesPm);
     }
 
     /**

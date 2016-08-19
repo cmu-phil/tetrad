@@ -39,7 +39,7 @@ public class MeanInterpolatorWrapper extends DataWrapper {
 
 
 
-    private MeanInterpolatorWrapper(DataWrapper data) {
+    public MeanInterpolatorWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }

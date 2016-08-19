@@ -36,7 +36,7 @@ public class NonparanormalTransform extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    private NonparanormalTransform(DataWrapper wrapper) {
+    public NonparanormalTransform(DataWrapper wrapper) {
         DataSet dataSet;
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
             DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();

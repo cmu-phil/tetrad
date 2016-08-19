@@ -122,8 +122,8 @@ public class RegressionEditor extends JPanel {
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
-        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner.getParams(),
-                this.runner.getDataModel());
+        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner, runner.getParams(),
+                    this.runner.getDataModel(), false);
 
         editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

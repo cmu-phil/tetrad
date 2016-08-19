@@ -65,7 +65,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
 
     //==============================CONSTRUCTORS==========================//
 
-    private GeneralizedSemPmWrapper(Graph graph) {
+    public GeneralizedSemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -84,7 +84,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         log(semPm);
     }
 
-    private GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
+    public GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
         this(graph);
 
         // We can keep the old expression if the node exists in the old pm and all of the node expressions
@@ -177,7 +177,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         }
     }
 
-    private void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
+    public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
         Set<String> parameters = semPm.getReferencedParameters(node);
 
         for (String parameter : parameters) {
@@ -291,6 +291,16 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         this(new EdgeListGraph(wrapper.getResultGraph()));
     }
 
+    public GeneralizedSemPmWrapper(Simulation simulation) {
+        List<Graph> graphs = simulation.getGraphs();
+
+        if (!(graphs.size() == 1)) {
+            throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
+        }
+
+        this.semPm = new GeneralizedSemPm(graphs.get(0));
+        log(semPm);
+    }
     /**
      * Generates a simple exemplar of this class to test serialization.
      *

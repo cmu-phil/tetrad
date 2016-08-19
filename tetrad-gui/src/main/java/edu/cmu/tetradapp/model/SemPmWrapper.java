@@ -58,7 +58,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //==============================CONSTRUCTORS==========================//
 
-    private SemPmWrapper(Graph graph) {
+    public SemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -128,6 +128,17 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         if (graph == null) throw new IllegalArgumentException("No graph to display.");
         SemPm oldSemPm = new SemPm(graph);
         this.semPm = new SemPm(oldSemPm);
+        log(semPm);
+    }
+
+    public SemPmWrapper(Simulation simulation) {
+        List<Graph> graphs = simulation.getGraphs();
+
+        if (!(graphs.size() == 1)) {
+            throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
+        }
+
+        this.semPm = new SemPm(graphs.get(0));
         log(semPm);
     }
 

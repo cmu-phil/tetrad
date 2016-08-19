@@ -36,7 +36,7 @@ public class CopySelectedDatasetWrapper extends DataWrapper {
 
 
 
-    private CopySelectedDatasetWrapper(DataWrapper data) {
+    public CopySelectedDatasetWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

@@ -69,7 +69,10 @@ class RandomGraphEditor extends JPanel {
      * //     * that overrides the number of nodes set in the preferences.
      */
     public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
-        boolean cyclicAllowed1 = cyclicAllowed;
+        if (parameters == null) {
+            throw new NullPointerException();
+        }
+
         this.parameters = parameters;
 
         int oldNumMeasured = 0;
@@ -103,8 +106,8 @@ class RandomGraphEditor extends JPanel {
         JRadioButton randomForward = new JRadioButton("Add random forward edges");
         chooseUniform = new JRadioButton("Draw uniformly from all such DAGs");
         chooseFixed = new JRadioButton("Guarantee maximum number of edges");
-        connectedBox = new JComboBox(new String[]{"No", "Yes"});
-        JComboBox addCyclesBox = new JComboBox(new String[]{"No", "Yes"});
+        connectedBox = new JComboBox<>(new String[]{"No", "Yes"});
+        JComboBox addCyclesBox = new JComboBox<>(new String[]{"No", "Yes"});
         numTwoCyclesField = new IntTextField(getMinNumCycles(), 4);
         minCycleLengthField = new IntTextField(getMinCycleLength(), 4);
 
@@ -451,7 +454,7 @@ class RandomGraphEditor extends JPanel {
         b1.setBorder(new TitledBorder(""));
         d.add(b1);
 
-        if (cyclicAllowed1) {
+        if (cyclicAllowed) {
             Box c1 = Box.createVerticalBox();
 
             Box c2 = Box.createHorizontalBox();
@@ -460,19 +463,6 @@ class RandomGraphEditor extends JPanel {
             c2.add(addCyclesBox);
             c1.add(c2);
             c1.add(Box.createVerticalStrut(5));
-
-//            Box c3 = Box.createHorizontalBox();
-//            c3.add(new JLabel("Target number of cycles (may vary)"));
-//            c3.add(Box.createHorizontalGlue());
-//            c3.add(numTwoCyclesField);
-//            c1.add(c3);
-//            c1.add(Box.createVerticalStrut(5));
-//
-//            Box c4 = Box.createHorizontalBox();
-//            c4.add(new JLabel("Minimum cycle length"));
-//            c4.add(Box.createHorizontalGlue());
-//            c4.add(minCycleLengthField);
-//            c1.add(c4);
 
             Box c3 = Box.createHorizontalBox();
             c3.add(new JLabel("Number of two cycles to add:"));
@@ -570,11 +560,6 @@ class RandomGraphEditor extends JPanel {
                     "Max # latent confounders must be" + " >= 0: " +
                             numLatentNodes);
         }
-
-//        if (numLatentNodes > getNumNodes()) {
-//            throw new IllegalArgumentException(
-//                    "Number of latent nodes must be " + "<= number of nodes.");
-//        }
 
         parameters.set("newGraphNumLatents", numLatentNodes);
     }

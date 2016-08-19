@@ -108,8 +108,6 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
                 params.set("latentDataSaved", checkBox.isSelected());
-                Preferences.userRoot().putBoolean("latentDataSaved",
-                        checkBox.isSelected());
             }
         });
 

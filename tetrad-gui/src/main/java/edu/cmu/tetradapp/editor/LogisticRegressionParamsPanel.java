@@ -70,7 +70,7 @@ final class LogisticRegressionParamsPanel extends JPanel
 
     private transient DataModel dataModel;
 
-    private String[] regressorNames;
+    private List<String> regressorNames;
 
     private JTextField responseVar;
 
@@ -111,8 +111,10 @@ final class LogisticRegressionParamsPanel extends JPanel
 
         this.params = params;
 
-        if (params.get("varNames", null) != null) {
-            this.varNames = (List<String>) params.get("varNames", null);
+        Object varNames = params.get("varNames", null);
+
+        if (varNames != null) {
+            this.varNames = (List<String>) varNames;
         }
 
         if (this.varNames == null) {
@@ -129,7 +131,7 @@ final class LogisticRegressionParamsPanel extends JPanel
                         "Variables are not accessible.");
             }
 
-            params().set("varNames", varNames);
+            params().set("varNames", this.varNames);
         }
 
         JLabel instructions =
@@ -163,19 +165,19 @@ final class LogisticRegressionParamsPanel extends JPanel
 
         DefaultListModel predsModel =
                 (DefaultListModel) this.predictorVarListbox.getModel();
-        String[] paramNames = (String[]) params.get("regressorNames", null);
+        List<String> paramNames = (List<String>) params.get("regressorNames", null);
         for (String paramName : paramNames) {
             predsModel.addElement(paramName);
         }
 
         //Construct availableVarsList of variable names not response nor in predictors.
-        List<String> varListNames = new ArrayList<>(varNames);
+        List<String> varListNames = new ArrayList<>(this.varNames);
         String targetName = params.getString("targetName", null);
         if (varListNames.contains(targetName)) {
             varListNames.remove(targetName);
         }
 
-        String[] regNames = (String[]) params.get("regressorNames", null);
+        List<String> regNames = (List<String>) params.get("regressorNames", null);
         for (String regName : regNames) {
             if (varListNames.contains(regName)) {
                 varListNames.remove(regName);
@@ -342,7 +344,7 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
     }
 
-    private void setRegressorNames(String[] names) {
+    private void setRegressorNames(List<String> names) {
         regressorNames = names;
     }
 
@@ -501,10 +503,11 @@ final class LogisticRegressionParamsPanel extends JPanel
         int numPredictors = predsModel.size();
         Object[] predictors = new Object[numPredictors];
 
-        String[] regNames = new String[numPredictors];
+        List<String> regNames = new ArrayList<>();
+
         for (int i = 0; i < numPredictors; i++) {
             predictors[i] = predsModel.getElementAt(i);
-            regNames[i] = (String) predsModel.getElementAt(i);
+            regNames.add((String) predsModel.getElementAt(i));
         }
 
         setRegressorNames(regNames);

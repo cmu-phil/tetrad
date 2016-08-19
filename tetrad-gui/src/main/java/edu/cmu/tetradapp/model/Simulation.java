@@ -27,6 +27,7 @@ import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
@@ -237,7 +238,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         return new HashMap<>();
     }
 
-    private void createSimulation() {
+    public void createSimulation() {
         simulation.createData(parameters);
     }
 
@@ -277,6 +278,14 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public void setFixedGraph(boolean fixedGraph) {
         this.fixedGraph = fixedGraph;
+    }
+
+    public IKnowledge getKnowledge() {
+        if (simulation instanceof HasKnowledge) {
+            return ((HasKnowledge) simulation).getKnowledge();
+        } else {
+            return new Knowledge2();
+        }
     }
 }
 

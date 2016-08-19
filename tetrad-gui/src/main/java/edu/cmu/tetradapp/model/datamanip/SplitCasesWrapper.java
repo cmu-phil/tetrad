@@ -41,7 +41,7 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    private SplitCasesWrapper(DataWrapper data, Parameters params) {
+    public SplitCasesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

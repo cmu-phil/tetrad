@@ -38,7 +38,7 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
 
 
 
-    private RemoveConstantColumnsWrapper(DataWrapper data) {
+    public RemoveConstantColumnsWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }

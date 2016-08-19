@@ -152,7 +152,6 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
             public int filter(int value, int oldValue) {
                 try {
                     params.set("depth", value);
-                    Preferences.userRoot().putInt("depth", value);
                     return value;
                 }
                 catch (Exception e) {

@@ -51,15 +51,12 @@ final class ConstructTemplateAction extends AbstractAction {
     private static final String[] TEMPLATE_NAMES = new String[]{
             "Load/Simulate Data",
             "Search",
-//            "--separator--",
             "Estimate",
             "Update",
             "Compare",
-//            "--separator--",
             "Simulate Data with Fixed Graph",
             "Simulate Data with Fixed PM",
             "Simulate Data with Fixed IM",
-//            "--separator--",
             "Estimate from Simulated Data",
             "Update from Simulated Data",
     };
@@ -132,10 +129,8 @@ final class ConstructTemplateAction extends AbstractAction {
         } else if (this.templateName.equals(getTemplateNames()[7])) {
             simulateDataFixedIM(leftX);
         } else if (this.templateName.equals(getTemplateNames()[8])) {
-            searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[9])) {
             estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[10])) {
+        } else if (this.templateName.equals(getTemplateNames()[9])) {
             estimateThenUpdateFromSimulatedData(leftX);
         } else {
             throw new IllegalStateException(

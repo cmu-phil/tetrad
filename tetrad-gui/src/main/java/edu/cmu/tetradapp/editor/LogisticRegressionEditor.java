@@ -89,7 +89,8 @@ public class LogisticRegressionEditor extends JPanel {
         tabbedPane.add("Output Graph", new JScrollPane(workbench));
 
         Parameters params = regRunner.getParams();
-        RegressionParamsEditorPanel paramsPanel = new RegressionParamsEditorPanel(params, regRunner.getDataModel());
+        RegressionParamsEditorPanel paramsPanel
+                = new RegressionParamsEditorPanel(regressionRunner, params, regRunner.getDataModel(), true);
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();

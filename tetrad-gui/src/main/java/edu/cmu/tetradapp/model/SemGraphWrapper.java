@@ -57,7 +57,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	 */
 	private SemGraph semGraph;
     private Map<String, String> allParamSettings;
-	private Parameters parameters;
+	private Parameters parameters = new Parameters();
 
 	// =============================CONSTRUCTORS==========================//
 
@@ -78,7 +78,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			semGraph.setShowErrorTerms(false);
 		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
-			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
 		}
 		this.parameters = params;
 		log();
@@ -97,7 +97,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             }
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
-			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
 		}
 		log();
 	}
@@ -109,7 +109,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph.setShowErrorTerms(false);
 		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
-			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
 		}
 		log();
 	}
@@ -120,8 +120,9 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph.setShowErrorTerms(false);
 		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
-			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
 		}
+		this.parameters = params;
 		log();
 	}
 

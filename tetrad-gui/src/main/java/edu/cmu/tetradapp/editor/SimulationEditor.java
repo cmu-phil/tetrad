@@ -71,25 +71,25 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final SimulationGraphEditor graphEditor;
         DataEditor dataEditor;
 
-//        if (simulation.getSimulation() != null) {
-//            simulation.createSimulation();
-//            graphEditor = new SimulationGraphEditor(Collections.singletonList(
-//                    simulation.getSimulation().getTrueGraph(0)), JTabbedPane.LEFT);
-////            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(0));
-//            DataWrapper wrapper = new DataWrapper();
-//            wrapper.setDataModelList(simulation.getDataModelList());
-//            dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
-//
-//            if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
-//                simulation.setFixedGraph(true);
-//            }
-//        } else {
-        graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList(), JTabbedPane.LEFT);
+        if (simulation.getSimulation() != null) {
+            simulation.createSimulation();
+            graphEditor = new SimulationGraphEditor(Collections.singletonList(
+                    simulation.getSimulation().getTrueGraph(0)), JTabbedPane.LEFT);
+//            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(0));
+            DataWrapper wrapper = new DataWrapper();
+            wrapper.setDataModelList(simulation.getDataModelList());
+            dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
+
+            if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
+                simulation.setFixedGraph(true);
+            }
+        } else {
+            graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList(), JTabbedPane.LEFT);
 //            graphEditor = new GraphEditor(new EdgeListGraph());
-        dataEditor = new DataEditor(JTabbedPane.LEFT);
-        simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
-        simulation.setFixedSimulation(false);
-//        }
+            dataEditor = new DataEditor(JTabbedPane.LEFT);
+            simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
+            simulation.setFixedSimulation(false);
+        }
 
         final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(),

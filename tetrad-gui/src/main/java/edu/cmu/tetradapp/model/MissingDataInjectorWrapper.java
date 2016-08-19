@@ -47,7 +47,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
-    private MissingDataInjectorWrapper(DataWrapper wrapper,
+    public MissingDataInjectorWrapper(DataWrapper wrapper,
                                        Parameters params) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();

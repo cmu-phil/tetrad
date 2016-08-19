@@ -55,6 +55,8 @@ import java.util.List;
 class RegressionParamsEditorPanel extends JPanel {
 
 
+    private final boolean logistic;
+    private final RegressionModel regressionModel;
     /**
      * The params that are being edited.
      */
@@ -96,29 +98,22 @@ class RegressionParamsEditorPanel extends JPanel {
      * Constructs the editor given the <code>Parameters</code> and the <code>DataModel</code>
      * that should be used.
      */
-    public RegressionParamsEditorPanel(Parameters params, DataModel model) {
+    public RegressionParamsEditorPanel(RegressionModel regressionModel, Parameters parameters,
+                                       DataModel model, boolean logistic) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        if (params == null) {
+        if (parameters == null) {
             throw new NullPointerException("The given params must not be null");
         }
-        this.params = params;
-        List<String> variableNames = (List<String>) params.get("varNames", null);
-        // if null get the variables from the parent data set.
-        if (variableNames == null) {
-            if (model == null) {
-                throw new NullPointerException("Data model must not be null");
-            }
-            variableNames = model.getVariableNames();
-            if (variableNames == null) {
-                throw new IllegalStateException("Could not load variables.");
-            }
-            params.set("varNames", variableNames);
-        }
+        this.params = parameters;
+        this.logistic = logistic;
+        List<String> variableNames = regressionModel.getVariableNames();
+        this.regressionModel = regressionModel;
+
         // create components
         PREDICTORS_LIST = createList();
         VariableListModel predictorsModel = (VariableListModel) getPredictorsList().getModel();
         SOURCE_LIST = createList();
-        if (params instanceof Parameters && model instanceof DataSet) {
+        if (logistic && model instanceof DataSet) {
             buildMap((DataSet) model);
             getSourceList().setCellRenderer(new LogisticRegRenderer());
         }
@@ -126,7 +121,7 @@ class RegressionParamsEditorPanel extends JPanel {
         RESPONSE_FIELD = createResponse(getSourceList(), 100);
 
         // if regressors are already set use'em.
-        List<String> regressors = (List<String>) params.get("regressorNames", null);
+        List<String> regressors = regressionModel.getRegressorNames();
         if (regressors != null) {
             predictorsModel.addAll(regressors);
             List<String> initVars = new ArrayList<>(variableNames);
@@ -136,7 +131,7 @@ class RegressionParamsEditorPanel extends JPanel {
             variableModel.addAll(variableNames);
         }
         // if target is set use it too
-        String target = params.getString("targetName", null);
+        String target = regressionModel.getTargetName();
         if (target != null) {
             variableModel.remove(target);
             //     response.setText(target);
@@ -225,7 +220,7 @@ class RegressionParamsEditorPanel extends JPanel {
                 } else if (1 < selected.size()) {
                     JOptionPane.showMessageDialog(RegressionParamsEditorPanel.this, "Cannot have more than one response variable");
                     return;
-                } else if(params instanceof Parameters && !isBinary((String)selected.get(0))){
+                } else if(logistic && !isBinary((String)selected.get(0))){
                     JOptionPane.showMessageDialog(RegressionParamsEditorPanel.this,
                             "Response variable must be binary.");
                     return;
@@ -233,7 +228,7 @@ class RegressionParamsEditorPanel extends JPanel {
                 sourceModel.removeAll(selected);
                 getResponseField().setText((String) selected.get(0));
                 getResponseField().setCaretPosition(0);
-                params.set("targetName", (String) selected.get(0));
+                regressionModel.setTargetName((String) selected.get(0));
                 if (target != null && target.length() != 0) {
                     sourceModel.add(target);
                 }
@@ -247,7 +242,7 @@ class RegressionParamsEditorPanel extends JPanel {
                 List<Comparable> selected = getSelected(getSourceList());
                 sourceModel.removeAll(selected);
                 predictorsModel.addAll(selected);
-                params.set("regressorNames", getPredictors());
+                regressionModel.setRegressorName(getPredictors());
             }
         });
 
@@ -260,10 +255,10 @@ class RegressionParamsEditorPanel extends JPanel {
                 if (!selected.isEmpty()) {
                     predictorsModel.removeAll(selected);
                     sourceModel.addAll(selected);
-                    params.set("regressorNames", getPredictors());
+                    regressionModel.setRegressorName(getPredictors());
                 } else if (getResponseField().getText() != null && getResponseField().getText().length() != 0) {
                     String text = getResponseField().getText();
-                    params.set("targetName", (String) null);
+                    regressionModel.setTargetName(null);
                     getResponseField().setText(null);
                     sourceModel.addAll(Collections.singletonList(text));
                 }
@@ -363,7 +358,7 @@ class RegressionParamsEditorPanel extends JPanel {
         pane.setEditable(false);
         pane.setBackground(list.getBackground());
 
-        String target = params.getString("targetName", null);
+        String target = regressionModel.getTargetName();
         if (target != null) {
             pane.setText(target);
         } else {
@@ -405,11 +400,11 @@ class RegressionParamsEditorPanel extends JPanel {
     }
 
 
-    private String[] getPredictors() {
+    private List<String> getPredictors() {
         ListModel model = getPredictorsList().getModel();
-        String[] predictors = new String[model.getSize()];
+        List<String> predictors = new ArrayList<>();
         for (int i = 0; i < model.getSize(); i++) {
-            predictors[i] = (String) model.getElementAt(i);
+            predictors.add((String) model.getElementAt(i));
         }
         return predictors;
     }
@@ -504,7 +499,7 @@ class RegressionParamsEditorPanel extends JPanel {
                                     "There can only be one response variable.");
                             dtde.rejectDrop();
                             return;
-                        } else if (params instanceof Parameters && !isBinary((String) vars.get(0))) {
+                        } else if (logistic && !isBinary((String) vars.get(0))) {
                             JOptionPane.showMessageDialog(RegressionParamsEditorPanel.this,
                                     "The response variable must be binary");
                             dtde.rejectDrop();
@@ -518,8 +513,9 @@ class RegressionParamsEditorPanel extends JPanel {
                         List<Comparable> vars = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
                         model.addAll(vars);
                     }
-                    params.set("targetName", getResponseField().getText());
-                    params.set("regressorNames", getPredictors());
+
+                    regressionModel.setTargetName(getResponseField().getText());
+                    regressionModel.setRegressorName(getPredictors());
                     dtde.getDropTargetContext().dropComplete(true);
                 } catch (Exception ex) {
                     dtde.rejectDrop();
@@ -555,8 +551,9 @@ class RegressionParamsEditorPanel extends JPanel {
                             JTextField pane = (JTextField) comp;
                             pane.setText(null);
                         }
-                        params.set("targetName", getResponseField().getText());
-                        params.set("regressorNames", getPredictors());
+
+                        regressionModel.setTargetName(getResponseField().getText());
+                        regressionModel.setRegressorName(getPredictors());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

@@ -44,7 +44,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
 
     //=============================CONSTRUCTORS===========================//
 
-    private BootstrapSamplerWrapper(DataWrapper wrapper,
+    public BootstrapSamplerWrapper(DataWrapper wrapper,
                                     Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();

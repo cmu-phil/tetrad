@@ -334,12 +334,12 @@ public final class GraphEditor extends JPanel
                 int ret = JOptionPane.showConfirmDialog(
                         GraphEditor.this, editor,
                         "Edit Random DAG Parameters",
-                        JOptionPane.PLAIN_MESSAGE);
+                        JOptionPane.OK_CANCEL_OPTION);
 
                 if (ret == JOptionPane.OK_OPTION) {
                     RandomUtil.getInstance().setSeed(new Date().getTime());
 
-                    Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
+                    Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
 
                     boolean addCycles = editor.isAddCycles();
 

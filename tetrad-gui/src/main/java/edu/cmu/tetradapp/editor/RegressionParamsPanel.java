@@ -65,7 +65,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
      */
     private List<String> varNames;
 
-    private String[] regressorNames;
+    private List<String> regressorNames;
 
     //private JComboBox box;
     private JTextField responseVar;
@@ -160,7 +160,8 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             varListNames.remove(targetName);
         }
 
-        String[] regNames = (String[]) params.get("regressorNames", null);
+        List<String> regNames = (List<String>) params.get("regressorNames", null);
+
         for (String regName : regNames) {
             if (varListNames.contains(regName)) {
                 varListNames.remove(regName);
@@ -345,7 +346,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     private void setRegressorValues() {
     }
 
-    private void setRegressorNames(String[] names) {
+    private void setRegressorNames(List<String> names) {
         regressorNames = names;
     }
 
@@ -463,10 +464,10 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         int numPredictors = predsModel.size();
         Object[] predictors = new Object[numPredictors];
 
-        String[] regNames = new String[numPredictors];
+        List<String> regNames = new ArrayList<>();
         for (int i = 0; i < numPredictors; i++) {
             predictors[i] = predsModel.getElementAt(i);
-            regNames[i] = (String) predsModel.getElementAt(i);
+            regNames.add((String) predsModel.getElementAt(i));
         }
 
         /*

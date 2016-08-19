@@ -30,7 +30,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -134,7 +133,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        final String type = Preferences.userRoot().get("randomGraphType", "Uniform");
+        final String type = params.getString("randomGraphType", "Uniform");
 
         if (type.equals("Uniform")) {
             tabs.setSelectedIndex(0);
@@ -152,13 +151,13 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
                 JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
                 if (pane.getSelectedIndex() == 0) {
-                    Preferences.userRoot().put("randomGraphType", "Uniform");
+                    params.set("randomGraphType", "Uniform");
                 }
                 else if (pane.getSelectedIndex() == 1) {
-                    Preferences.userRoot().put("randomGraphType", "Mim");
+                    params.set("randomGraphType", "Mim");
                 }
                 else if (pane.getSelectedIndex() == 2) {
-                    Preferences.userRoot().put("randomGraphType", "ScaleFree");
+                    params.set("randomGraphType", "ScaleFree");
                 }
             }
         });
@@ -177,14 +176,6 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 
     public boolean mustBeShown() {
         return false;
-    }
-
-    /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
-     */
-    private synchronized Parameters getParams() {
-        return this.params;
     }
 }
 
