@@ -53,7 +53,7 @@ public final class Cfci implements GraphSearch {
     /**
      * The SepsetMap being constructed.
      */
-    private SepsetMap sepsets;
+    private SepsetMap sepsets = new SepsetMap();
 
     /**
      * The background knowledge.
@@ -198,37 +198,8 @@ public final class Cfci implements GraphSearch {
             nodes.add(variable);
         }
 
-//        this.graph = new EdgeListGraph(nodes);
-//
-//        // Step FCI A. (Zhang's step F1.)
-//        graph.fullyConnect(Endpoint.CIRCLE);
-//
-////        // Step FCI B.  (Zhang's step F2.)
-//        Fas adj = new Fas(graph, independenceTest);
-//        adj.setKnowledge(getKnowledge());
-//        adj.setDepth(depth);
-//        adj.setFci(true);
-//        graph = adj.search();
-//        sepset = adj.getSepsets();
-
         this.graph = new EdgeListGraph(nodes);
-
-//        // Step FCI A. (Zhang's step F1.)
-//        graph.fullyConnect(Endpoint.CIRCLE);
-//
-////        // Step FCI B.  (Zhang's step F2.)
-//        Fas adj = new Fas(graph, independenceTest);
-//        adj.setKnowledge(getKnowledge());
-//        adj.setDepth(depth);
-//        adj.setFci(true);
-//        graph = adj.search();
-//        this.sepsets = adj.getSepsets();
-
-        // Switching to the faster FAS, that creates its own graph with tail endpoints.
-        // The old code is commented out, above.
-
-        // Step FCI A. (Zhang's step F1.)
-//        graph.fullyConnect(Endpoint.CIRCLE);
+        this.graph.fullyConnect(Endpoint.TAIL);
 
 //        // Step FCI B.  (Zhang's step F2.)
         Fas adj = new Fas(graph, independenceTest);
@@ -238,12 +209,13 @@ public final class Cfci implements GraphSearch {
 //        adj.setFci(true);
         graph = adj.search();
         graph.reorientAllWith(Endpoint.CIRCLE);
-        this.sepsets = adj.getSepsets();
 
-//        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+        // Note we don't use the sepsets from this search.
+
+        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
             long time1 = System.currentTimeMillis();
-            ruleR0(independenceTest, depth);
+            ruleR0(independenceTest, depth, sepsets);
 
             long time2 = System.currentTimeMillis();
 
@@ -258,6 +230,8 @@ public final class Cfci implements GraphSearch {
             possibleDSep.setDepth(getDepth());
             possibleDSep.setKnowledge(getKnowledge());
             possibleDSep.setMaxPathLength(getMaxReachablePathLength());
+
+            // We use these sepsets though.
             sepsets.addAll(possibleDSep.search());
             long time4 = System.currentTimeMillis();
 
@@ -271,9 +245,8 @@ public final class Cfci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
         long time5 = System.currentTimeMillis();
-        //fciOrientbk(getKnowledge(), graph, independenceTest.getVariables());    - Robert Tillman 2008
         fciOrientbk(getKnowledge(), graph, variables);
-        ruleR0(independenceTest, depth);
+        ruleR0(independenceTest, depth, sepsets);
 
         long time6 = System.currentTimeMillis();
 
@@ -287,11 +260,10 @@ public final class Cfci implements GraphSearch {
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - beginTime;
 
-//        graph.closeInducingPaths();   //to make sure it's a legal PAG
-
         if (verbose) {
             logger.log("graph", "Returning graph: " + graph);
         }
+
         return graph;
     }
 
@@ -345,13 +317,11 @@ public final class Cfci implements GraphSearch {
         return graph;
     }
 
-    private void ruleR0(IndependenceTest test, int depth) {
+    private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
         if (verbose) {
             TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
         }
-        /*
-      The list of all unshielded triples.
-     */
+
         colliderTriples = new HashSet<>();
         noncolliderTriples = new HashSet<>();
         ambiguousTriples = new HashSet<>();
@@ -375,8 +345,9 @@ public final class Cfci implements GraphSearch {
                 }
 
                 TripleType type = getTripleType(x, y, z, test, depth);
+                List<Node> sepset = sepsets.get(x, z);
 
-                if (type == TripleType.COLLIDER) {
+                if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
                     if (isArrowpointAllowed(x, y) &&
                             isArrowpointAllowed(z, y)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
@@ -388,7 +359,7 @@ public final class Cfci implements GraphSearch {
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
-                } else if (type == TripleType.NONCOLLIDER) {
+                } else if (type == TripleType.NONCOLLIDER ||  (sepset != null && sepset.contains(y))) {
                     noncolliderTriples.add(new Triple(x, y, z));
                     if (verbose) {
                         TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(graph, x, y, z));

@@ -288,7 +288,8 @@ public class GeneralAlgorithmEditor extends JPanel {
                         graphList.add(graph);
                     }
 
-                    if (runner.getKnowledge() != null) {
+                    if (runner.getKnowledge().getVariablesNotInTiers().size()
+                            < runner.getKnowledge().getVariables().size()) {
                         for (Graph graph : graphList) {
                             SearchGraphUtils.arrangeByKnowledgeTiers(graph, runner.getKnowledge());
                         }

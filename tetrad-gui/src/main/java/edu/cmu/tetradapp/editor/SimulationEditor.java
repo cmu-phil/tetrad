@@ -371,9 +371,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 } else if (simulationItem.equals(simulationItems[1])) {
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
+                    simulation.setSimulation(new LargeSemSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[3])) {
                     simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
-//                    } else if (graphItem.equals(simulationItems[3])) {
-//                        simulation.setSimulation(new GeneralSemSimulation(randomGraph));
                 } else if (simulationItem.equals(simulationItems[3])) {
                     simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[4])) {
@@ -425,8 +425,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             simulationItems = new String[]{
                     "Bayes net",
                     "Structural Equation Model",
+                    "Large SEM Simulation",
                     "Structural Equation Model, discretizing some variables",
-//                    "General Structural Equation Model",
                     "General Structural Equation Model Special",
                     "Lee & Hastie",
                     "Time Series",
