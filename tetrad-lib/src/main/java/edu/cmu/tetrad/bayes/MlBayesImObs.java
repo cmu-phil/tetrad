@@ -935,7 +935,7 @@ public final class MlBayesImObs implements BayesIm {
                                  int[] map) {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
-        Dag dag = (Dag) graph;
+        Dag dag = new Dag(graph);
         List<Node> tierOrdering = dag.getCausalOrdering();
         int[] tiers = new int[tierOrdering.size()];
 

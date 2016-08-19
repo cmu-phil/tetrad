@@ -34,6 +34,7 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.editor.BayesImEditorObs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,19 +73,21 @@ public class Simulation extends DataWrapper implements SessionModel,
         this.fixedSimulation = false;
     }
 
-    public Simulation(GraphWrapper graph, Parameters parameters) {
-        simulation = new BayesNetSimulation(new SingleGraph(graph.getGraph()));
+    public Simulation(GraphSource graphSource, Parameters parameters) {
+        simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
         this.fixedGraph = true;
         this.parameters = parameters;
         this.fixedSimulation = false;
     }
 
-//    public Simulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
-//        this.simulation = simulation;
-//        this.parameters = parameters;
-//    }
-
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getBayesIm());
+        this.parameters = parameters;
+        createSimulation();
+        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
+    }
+
+    public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
