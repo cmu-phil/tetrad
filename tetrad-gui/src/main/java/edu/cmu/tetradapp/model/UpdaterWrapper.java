@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.ManipulatingBayesUpdater;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Stuff the GUI needs to know. Wrapped so that the GUI can access the params.

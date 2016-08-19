@@ -40,7 +40,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * Created by IntelliJ IDEA.

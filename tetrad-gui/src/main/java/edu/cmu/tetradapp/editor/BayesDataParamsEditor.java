@@ -29,7 +29,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for simulating new datasets from a Bayes net.

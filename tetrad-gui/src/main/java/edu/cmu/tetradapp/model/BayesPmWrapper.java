@@ -21,8 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -32,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -206,7 +205,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
         log(bayesPm);
     }
 
-    public BayesPmWrapper(GraphWrapper graphWrapper, DataWrapper dataWrapper) {
+    public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new Dag(graphWrapper.getGraph()), dataWrapper);
     }
 

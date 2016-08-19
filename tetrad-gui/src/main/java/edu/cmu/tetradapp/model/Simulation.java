@@ -34,7 +34,6 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.editor.BayesImEditorObs;
 
 import java.util.ArrayList;
 import java.util.HashMap;

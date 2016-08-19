@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.editor.IndependenceResult;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

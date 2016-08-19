@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ImpliedOrientation;
@@ -29,6 +28,7 @@ import edu.cmu.tetrad.search.TripleClassifier;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All

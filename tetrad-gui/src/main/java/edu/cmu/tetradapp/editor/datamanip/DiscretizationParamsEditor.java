@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.editor.datamanip;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntSpinner;

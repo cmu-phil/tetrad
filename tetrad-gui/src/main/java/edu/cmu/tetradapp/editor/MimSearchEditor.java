@@ -27,8 +27,14 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.util.*;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TaskManager;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.model.BuildPureClustersRunner;
+import edu.cmu.tetradapp.model.MimBuildRunner;
+import edu.cmu.tetradapp.model.MimRunner;
+import edu.cmu.tetradapp.model.PurifyRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;

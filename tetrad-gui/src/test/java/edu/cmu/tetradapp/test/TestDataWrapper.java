@@ -29,14 +29,11 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DataWrapper;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the basic functionality of the DataWrapper.

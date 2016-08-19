@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
 

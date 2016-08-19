@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
@@ -39,6 +40,7 @@ import java.util.*;
  */
 public final class Misclassifications implements SessionModel {
     static final long serialVersionUID = 23L;
+    private Algorithm algorithm;
     private boolean useVcpcOutputs = false;
     private boolean useCpcOutputs = false;
     private boolean usePcOutputs = false;
@@ -242,6 +244,24 @@ public final class Misclassifications implements SessionModel {
 
         for (int i = 0; i < targetGraphs.size(); i++) {
             targetGraphs.set(i,GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
+        }
+
+        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
+            throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
+        }
+
+        if (model1 instanceof GeneralAlgorithmRunner) {
+            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
+            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+        } else if (model2 instanceof GeneralAlgorithmRunner) {
+            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
+            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+        }
+
+        if (algorithm != null) {
+            for (int i = 0; i < referenceGraphs.size(); i++) {
+                referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
+            }
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");

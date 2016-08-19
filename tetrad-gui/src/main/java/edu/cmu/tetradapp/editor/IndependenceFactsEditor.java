@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
 import edu.cmu.tetradapp.model.IndTestProducer;
+import edu.cmu.tetradapp.model.IndependenceResult;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;

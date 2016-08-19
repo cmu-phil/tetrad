@@ -198,41 +198,41 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel(
-                "Should the counts table be reset or appended to with each " +
-                        "simulation?"));
-        b2.add(Box.createHorizontalGlue());
-        b1.add(b2);
-        b1.add(Box.createVerticalStrut(5));
+//        Box b2 = Box.createHorizontalBox();
+//        b2.add(new JLabel(
+//                "Should the counts table be reset or appended to with each " +
+//                        "simulation?"));
+//        b2.add(Box.createHorizontalGlue());
+//        b1.add(b2);
+//        b1.add(Box.createVerticalStrut(5));
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(resetOnExecute);
-        b3.add(Box.createHorizontalGlue());
-        b1.add(b3);
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(resetOnExecute);
+//        b3.add(Box.createHorizontalGlue());
+//        b1.add(b3);
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(dontResetOnExecute);
-        b4.add(Box.createHorizontalGlue());
-        b1.add(b4);
-        b1.add(Box.createVerticalStrut(20));
+//        Box b4 = Box.createHorizontalBox();
+//        b4.add(dontResetOnExecute);
+//        b4.add(Box.createHorizontalGlue());
+//        b1.add(b4);
+//        b1.add(Box.createVerticalStrut(20));
 
-        Box b5 = Box.createHorizontalBox();
-        b5.add(new JLabel(
-                "Will the results graph contain latents? (Requires a different algorithm.)"));
-        b5.add(Box.createHorizontalGlue());
-        b1.add(b5);
+//        Box b5 = Box.createHorizontalBox();
+//        b5.add(new JLabel(
+//                "Will the results graph contain latents? (Requires a different algorithm.)"));
+//        b5.add(Box.createHorizontalGlue());
+//        b1.add(b5);
 
-        Box b6 = Box.createHorizontalBox();
-        b6.add(latents);
-        b6.add(Box.createHorizontalGlue());
-        b1.add(b6);
+//        Box b6 = Box.createHorizontalBox();
+//        b6.add(latents);
+//        b6.add(Box.createHorizontalGlue());
+//        b1.add(b6);
 
-        Box b7 = Box.createHorizontalBox();
-        b7.add(noLatents);
-        b7.add(Box.createHorizontalGlue());
-        b1.add(b7);
-        b1.add(Box.createVerticalStrut(20));
+//        Box b7 = Box.createHorizontalBox();
+//        b7.add(noLatents);
+//        b7.add(Box.createHorizontalGlue());
+//        b1.add(b7);
+//        b1.add(Box.createVerticalStrut(20));
 
         Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("Which of the two input graphs is the true graph?"));

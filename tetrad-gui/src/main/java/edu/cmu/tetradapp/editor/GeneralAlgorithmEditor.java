@@ -79,6 +79,32 @@ public class GeneralAlgorithmEditor extends JPanel {
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
 
+        List<TestType> discreteTests = new ArrayList<>();
+        discreteTests.add(TestType.ChiSquare);
+        discreteTests.add(TestType.GSquare);
+        discreteTests.add(TestType.Conditional_Correlation);
+
+        List<TestType> continuousTests = new ArrayList<>();
+        continuousTests.add(TestType.FisherZ);
+        continuousTests.add(TestType.SEM_BIC);
+        continuousTests.add(TestType.Conditional_Correlation);
+        continuousTests.add(TestType.Conditional_Gaussian_LRT);
+
+        List<TestType> mixedTests = new ArrayList<>();
+        mixedTests.add(TestType.Conditional_Correlation);
+
+        List<ScoreType> discreteScores = new ArrayList<>();
+        discreteScores.add(ScoreType.BDeu);
+        discreteScores.add(ScoreType.Discrete_BIC);
+        discreteScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+
+        List<ScoreType> continuousScores = new ArrayList<>();
+        continuousScores.add(ScoreType.SEM_BIC);
+        continuousScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+
+        List<ScoreType> mixedScores = new ArrayList<>();
+        mixedScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
@@ -113,12 +139,46 @@ public class GeneralAlgorithmEditor extends JPanel {
         whatYouChose = new JLabel();
 
         // Initialize all of the dropdowns.
-        for (TestType item : TestType.values()) {
-            testDropdown.addItem(item);
+//        for (TestType item : TestType.values()) {
+//            testDropdown.addItem(item);
+//        }
+
+        DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
+
+        if (dataSet.isContinuous()) {
+            for (TestType item : continuousTests) {
+                testDropdown.addItem(item);
+            }
+        } else if (dataSet.isDiscrete()) {
+            for (TestType item : discreteTests) {
+                testDropdown.addItem(item);
+            }
+        } else if (dataSet.isMixed()) {
+            for (TestType item : mixedTests) {
+                testDropdown.addItem(item);
+            }
+        } else {
+            throw new IllegalArgumentException();
         }
 
-        for (ScoreType item : ScoreType.values()) {
-            scoreDropdown.addItem(item);
+//        for (ScoreType item : ScoreType.values()) {
+//            scoreDropdown.addItem(item);
+//        }
+
+        if (dataSet.isContinuous()) {
+            for (ScoreType item : continuousScores) {
+                scoreDropdown.addItem(item);
+            }
+        } else if (dataSet.isDiscrete()) {
+            for (ScoreType item : discreteScores) {
+                scoreDropdown.addItem(item);
+            }
+        } else if (dataSet.isMixed()) {
+            for (ScoreType item : mixedScores) {
+                scoreDropdown.addItem(item);
+            }
+        } else {
+            throw new IllegalArgumentException();
         }
 
         for (AlgType item : AlgType.values()) {

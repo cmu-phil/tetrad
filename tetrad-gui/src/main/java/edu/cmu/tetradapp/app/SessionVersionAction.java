@@ -22,12 +22,12 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import edu.cmu.tetradapp.util.TetradMetadataIndirectRef;
-import edu.cmu.tetrad.util.Version;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

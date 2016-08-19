@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.editor;
+package edu.cmu.tetradapp.model;
 
 import java.util.List;
 

@@ -24,8 +24,12 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.util.*;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TaskManager;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.model.FtfcRunner;
+import edu.cmu.tetradapp.model.MimRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;

@@ -72,7 +72,14 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         DataEditor dataEditor;
 
         if (simulation.getSimulation() != null) {
-            simulation.createSimulation();
+            try {
+                if (simulation.getSimulation().getNumDataSets() == 0) {
+                    simulation.createSimulation();
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Couldn't create simulation; try adjusting parameters.");
+            }
             graphEditor = new SimulationGraphEditor(Collections.singletonList(
                     simulation.getSimulation().getTrueGraph(0)), JTabbedPane.LEFT);
 //            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(0));
@@ -108,11 +115,17 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             graphsDropdown.addItem(item);
         }
 
+        graphsDropdown.setSelectedItem(simulation.getParams().getString("graphsDropdownPreference",
+                graphItems[0]));
+
         final String[] simulationItems = getSimulationItems(simulation);
 
         for (String item : simulationItems) {
             simulationsDropdown.addItem(item);
         }
+
+        simulationsDropdown.setSelectedItem(simulation.getParams().getString("simulationsDropdownPreference",
+                simulationItems[0]));
 
         graphsDropdown.addActionListener(new ActionListener() {
 
@@ -349,6 +362,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();
+            simulation.getParams().set("graphsDropdownPreference", graphItem);
 
             if (graphItem.equals(graphItems[0])) {
                 randomGraph = new RandomForward();
@@ -364,6 +378,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (!simulation.isFixedSimulation()) {
             if (simulationItems.length > 1) {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
                 simulation.setFixedGraph(false);
 
                 if (simulationItem.equals(simulationItems[0])) {
@@ -374,13 +389,13 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new LargeSemSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
                     simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[4])) {
-                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[5])) {
-                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[6])) {
+                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[7])) {
                     simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
                     simulation.setFixedGraph(true);
                 } else {

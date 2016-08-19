@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import org.junit.Test;
 
 import static org.junit.Assert.fail;
 

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -50,6 +51,7 @@ import java.util.*;
  */
 public final class TabularComparison implements SessionModel, SimulationParamsSource {
     static final long serialVersionUID = 23L;
+    private Algorithm algorithm;
 
     private String name;
     private List<Graph> targetGraphs;
@@ -84,6 +86,18 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         if (!(model1 instanceof GraphSource) || !(model2 instanceof GraphSource)) {
             throw new IllegalArgumentException("Must be graph sources.");
+        }
+
+        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
+            throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
+        }
+
+        if (model1 instanceof GeneralAlgorithmRunner) {
+            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
+            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+        } else if (model2 instanceof GeneralAlgorithmRunner) {
+            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
+            this.algorithm = generalAlgorithmRunner.getAlgorithm();
         }
 
         String referenceName = params.getString("referenceGraphName", null);
@@ -130,6 +144,12 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 throw new IllegalArgumentException(
                         "Neither of the supplied session models is named '" +
                                 referenceName + "'.");
+            }
+        }
+
+        if (algorithm != null) {
+            for (int i = 0; i < referenceGraphs.size(); i++) {
+                referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
             }
         }
 
