@@ -29,12 +29,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.TsImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
@@ -323,11 +319,23 @@ public class GeneralAlgorithmEditor extends JPanel {
         IndependenceWrapper independenceWrapper;
 
         switch (test) {
+            case ChiSquare:
+                independenceWrapper = new FisherZ();
+                break;
+            case Conditional_Correlation:
+                independenceWrapper = new ConditionalCorrelation();
+                break;
+            case Conditional_Gaussian_LRT:
+                independenceWrapper = new ConditionalGaussianLRT();
+                break;
             case FisherZ:
                 independenceWrapper = new FisherZ();
                 break;
-            case ChiSquare:
-                independenceWrapper = new ChiSquare();
+            case GSquare:
+                independenceWrapper = new GSquare();
+                break;
+            case SEM_BIC:
+                independenceWrapper = new SemBicTest();
                 break;
             default:
                 throw new IllegalArgumentException("Please configure that test: " + test);
@@ -336,11 +344,17 @@ public class GeneralAlgorithmEditor extends JPanel {
         ScoreWrapper scoreWrapper;
 
         switch (score) {
-            case SEM_BIC:
-                scoreWrapper = new SemBicScore();
-                break;
             case BDeu:
                 scoreWrapper = new BdeuScore();
+                break;
+            case Conditioanal_Gaussian_BIC:
+                scoreWrapper = new ConditionalGaussianBicScore();
+                break;
+            case Discrete_BIC:
+                scoreWrapper = new DiscreteBicScore();
+                break;
+            case SEM_BIC:
+                scoreWrapper = new SemBicScore();
                 break;
             default:
                 throw new IllegalArgumentException("Please configure that score: " + score);
@@ -588,14 +602,10 @@ public class GeneralAlgorithmEditor extends JPanel {
 
     private enum AlgType {Pattern, PAG, DAG, Markov_Random_Field, Pairwise}
 
-    private enum TestType {ChiSquare, FisherZ}
+    private enum TestType {ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, FisherZ, GSquare, SEM_BIC}
 
-    public enum ScoreType {BDeu, SEM_BIC}
-
-
+    public enum ScoreType {BDeu, Conditioanal_Gaussian_BIC, Discrete_BIC, SEM_BIC}
 }
-
-
 
 
 
