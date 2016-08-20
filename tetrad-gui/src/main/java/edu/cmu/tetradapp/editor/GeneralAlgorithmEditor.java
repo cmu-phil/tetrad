@@ -92,7 +92,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         continuousTests.add(TestType.Conditional_Gaussian_LRT);
 
         List<TestType> mixedTests = new ArrayList<>();
-        mixedTests.add(TestType.Conditional_Correlation);
+        mixedTests.add(TestType.Conditional_Gaussian_LRT);
 
         List<ScoreType> discreteScores = new ArrayList<>();
         discreteScores.add(ScoreType.BDeu);
@@ -108,15 +108,15 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
+        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCS, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCS, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
@@ -205,8 +205,8 @@ public class GeneralAlgorithmEditor extends JPanel {
             scoreDropdown.setSelectedItem(getScoreType());
         }
 
-        testDropdown.setEnabled(true);
-        scoreDropdown.setEnabled(false);
+        testDropdown.setEnabled(false);
+        scoreDropdown.setEnabled(true);
 
         algTypesDropdown.addActionListener(new ActionListener() {
             @Override
@@ -374,12 +374,11 @@ public class GeneralAlgorithmEditor extends JPanel {
         };
     }
 
-    private void setAlgorithm() {
+    public Algorithm getAlgorithmFromInterface() {
         AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
-        AlgorithmDescription description = mappedDescriptions.get(name);
 
         if (name == null) {
-            return;
+            throw new NullPointerException();
         }
 
         TestType test = (TestType) testDropdown.getSelectedItem();
@@ -432,6 +431,9 @@ public class GeneralAlgorithmEditor extends JPanel {
         Algorithm algorithm;
 
         switch (name) {
+            case FGS:
+                algorithm = new Fgs(scoreWrapper);
+                break;
             case PC:
                 algorithm = new Pc(independenceWrapper);
                 break;
@@ -444,8 +446,8 @@ public class GeneralAlgorithmEditor extends JPanel {
             case PCS:
                 algorithm = new Pcs(independenceWrapper);
                 break;
-            case FGS:
-                algorithm = new Fgs(scoreWrapper);
+            case GFCI:
+                algorithm = new Gfci(scoreWrapper);
                 break;
             case FCI:
                 algorithm = new Fci(independenceWrapper);
@@ -455,9 +457,6 @@ public class GeneralAlgorithmEditor extends JPanel {
                 break;
             case CFCI:
                 algorithm = new Cfci(independenceWrapper);
-                break;
-            case GFCI:
-                algorithm = new Gfci(scoreWrapper);
                 break;
             case TsFCI:
                 algorithm = new TsFci(independenceWrapper);
@@ -519,6 +518,22 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         }
 
+        return algorithm;
+    }
+
+    private void setAlgorithm() {
+        AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+        AlgorithmDescription description = mappedDescriptions.get(name);
+
+        if (name == null) {
+            return;
+        }
+
+        TestType test = (TestType) testDropdown.getSelectedItem();
+        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
+
+        Algorithm algorithm = getAlgorithmFromInterface();
+
         OracleType oracle = description.getOracleType();
 
         if (oracle == OracleType.None) {
@@ -554,10 +569,11 @@ public class GeneralAlgorithmEditor extends JPanel {
 
     //=============================== Public Methods ==================================//
 
+
     private Box getParametersPane() {
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         JScrollPane scroll = new JScrollPane(comp);
-        scroll.setPreferredSize(graphEditor.getPreferredSize());
+        scroll.setPreferredSize(new Dimension(600, 400));
         Box c = Box.createVerticalBox();
 
         JButton explain = new JButton("Explain This");
@@ -608,8 +624,11 @@ public class GeneralAlgorithmEditor extends JPanel {
         c.add(Box.createVerticalStrut(5));
 
         Box d5 = Box.createHorizontalBox();
-        whatYouChose = new JLabel("You chose: " + runner.getAlgorithm().getDescription());
+
+        Algorithm algorithm = getAlgorithmFromInterface();
+        whatYouChose = new JLabel("You chose: " + algorithm.getDescription());
         whatYouChose.setFont(new Font("Dialog", Font.BOLD, 12));
+
         d5.add(whatYouChose);
         d5.add(Box.createHorizontalGlue());
         d5.add(explain);
@@ -626,6 +645,9 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         Box b = Box.createHorizontalBox();
         b.add(c);
+        b.add(Box.createVerticalGlue());
+
+        runner.setAlgorithm(algorithm);
 
         return b;
     }
@@ -643,7 +665,7 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private AlgName getAlgName() {
-        return AlgName.valueOf(parameters.getString("algName", "PC"));
+        return AlgName.valueOf(parameters.getString("algName", "FGS"));
     }
 
     private void setAlgName(AlgName algName) {
@@ -667,9 +689,9 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private class AlgorithmDescription {
-        private AlgName algName = AlgName.PC;
-        private AlgType algType = AlgType.PAG;
-        private OracleType oracleType = OracleType.Test;
+        private AlgName algName;
+        private AlgType algType;
+        private OracleType oracleType;
 
         public AlgorithmDescription(AlgName name, AlgType algType, OracleType oracleType) {
             this.algName = name;
@@ -691,8 +713,8 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private enum AlgName {
-        PC, CPC, CPCS, PCS, FGS, FAS,
-        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, CCD, GCCD,
+        FGS, PC, CPC, CPCS, PCS, FAS,
+        GFCI, FCI, RFCI, CFCI, TsFCI, TsGFCI, CCD, GCCD,
         FgsMb, MBFS, PcLocal, PcMax, PcMaxLocal, Wfgs,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,

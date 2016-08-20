@@ -44,6 +44,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 import java.util.prefs.Preferences;
 
 /**
@@ -151,9 +152,18 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
                         try {
                             _simulation.createData(simulation.getParams());
-                        } catch (Exception e1) {
-                            JOptionPane.showMessageDialog(SimulationEditor.this,
-                                    "Exception in creating data. Check bounds on parameter values.");
+                        } catch (Exception e) {
+                            Throwable cause = e;
+                            if (e.getCause() != null) cause = e.getCause();
+
+                            if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
+                                JOptionPane.showMessageDialog(SimulationEditor.this,
+                                        "Exception in creating data. Check model setup or parameter settings.");
+                            } else {
+                                JOptionPane.showMessageDialog(SimulationEditor.this,
+                                        "Exception in creating data. Check model setup: " + cause.getMessage());
+                            }
+
                             return;
                         }
 

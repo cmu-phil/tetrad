@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -61,9 +62,13 @@ class ParameterPanel extends JPanel {
             JComponent p;
 
             if (defaultValue instanceof Double) {
-                p = getDoubleField(parameter, parameters, (Double) defaultValue);
+                double lowerBoundDouble = ParamDescriptions.instance().get(parameter).getLowerBoundDouble();
+                double upperBoundDouble = ParamDescriptions.instance().get(parameter).getUpperBoundDouble();
+                p = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
             } else if (defaultValue instanceof Integer) {
-                p = getIntTextField(parameter, parameters, (Integer) defaultValue);
+                int lowerBoundInt = ParamDescriptions.instance().get(parameter).getLowerBoundInt();
+                int upperBoundInt = ParamDescriptions.instance().get(parameter).getUpperBoundInt();
+                p = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
             } else if (defaultValue instanceof Boolean) {
                 p = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
             } else if (defaultValue instanceof String) {
@@ -84,13 +89,22 @@ class ParameterPanel extends JPanel {
         add(a, BorderLayout.CENTER);
     }
 
-    private DoubleTextField getDoubleField(final String parameter, final Parameters parameters, double defaultValue) {
+    private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
+                                           double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value == field.getValue()) {
+                    return oldValue;
+                }
+
+                if (value < lowerBound) {
+                    return oldValue;
+                }
+
+                if (value > upperBound) {
                     return oldValue;
                 }
 
@@ -107,12 +121,21 @@ class ParameterPanel extends JPanel {
         return field;
     }
 
-    private IntTextField getIntTextField(final String parameter, final Parameters parameters, int defaultValue) {
+    private IntTextField getIntTextField(final String parameter, final Parameters parameters,
+                                         final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == field.getValue()) {
+                    return oldValue;
+                }
+
+                if (value < lowerBound) {
+                    return oldValue;
+                }
+
+                if (value > upperBound) {
                     return oldValue;
                 }
 

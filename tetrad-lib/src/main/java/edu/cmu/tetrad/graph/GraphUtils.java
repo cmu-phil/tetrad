@@ -421,6 +421,9 @@ public final class GraphUtils {
             double alpha, double beta,
             double delta_in, double delta_out) {
 
+        if (alpha + beta >= 1) throw new IllegalArgumentException("For the Bollobas et al. algorithm," +
+                "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
+
 //        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
 //                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
 

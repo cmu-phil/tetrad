@@ -22,8 +22,11 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
@@ -48,7 +51,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     static final long serialVersionUID = 23L;
     private DataWrapper dataWrapper;
     private String name;
-    private Algorithm algorithm = new Pc(new ChiSquare());
+    private Algorithm algorithm = new Fgs(new BdeuScore());
     private Parameters parameters;
     private DataModel dataModel;
     private Graph sourceGraph;
