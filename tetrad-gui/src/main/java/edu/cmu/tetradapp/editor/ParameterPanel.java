@@ -55,6 +55,9 @@ class ParameterPanel extends JPanel {
 
         for (String parameter : parametersToEdit) {
             Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
+
+            System.out.println(parameter + " " + defaultValue);
+
             JComponent p;
 
             if (defaultValue instanceof Double) {

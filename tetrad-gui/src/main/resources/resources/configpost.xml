@@ -1039,54 +1039,54 @@
                 <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
                 <!--</editor-class>-->
             <!--</model>-->
-            <model name="PCPattern" acronym="PCPattern" help="pcpattern"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PcPatternRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="PCD" acronym="PCD" help="pcD"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PcdRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="PC-Max" acronym="PC-Max" help="pcmax" category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PcMaxRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="PCPattern" acronym="PCPattern" help="pcpattern"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PcPatternRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="PCD" acronym="PCD" help="pcD"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PcdRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="PC-Max" acronym="PC-Max" help="pcmax" category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PcMaxRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <!--<model name="CPC" acronym="CPC" help="cpc"-->
                    <!--category="Pattern Searches">-->
                 <!--<logger>-->
@@ -1103,167 +1103,152 @@
                 <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
                 <!--</editor-class>-->
             <!--</model>-->
-            <model name="VCPC" acronym="VCPC" help="vcpc"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
-                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
-                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.VcpcRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="sampleVCPC" acronym="sVCPC" help="samplevcpc"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
-                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
-                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.SampleVcpcRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="VCPCFast" acronym="fVCPC" help="fvcpc"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
-                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
-                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.VcpcFastRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="sampleVCPCFast" acronym="sfVCPC" help="samplevcpcFast"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
-                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
-                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.SampleVcpcFastRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="VCPCalt" acronym="VCPCalt" help="vcpcalt"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
-                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
-                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.VcpcAltRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
-            <model name="PClocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="edgeRemoved" description="Edge Removal"
-                           default="on"/>
-                    <event id="edgeOriented" description="Edge Orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="details" description="Misc Fine Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PcLocalRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
-                </editor-class>
-            </model>
-            <model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="edgeRemoved" description="Edge Removal"
-                           default="on"/>
-                    <event id="edgeOriented" description="Edge Orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="details" description="Misc Fine Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.CpcLocalRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
-                </editor-class>
-            </model>
-            <model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                    <event id="edgeRemoved" description="Edge Removal"
-                           default="on"/>
-                    <event id="edgeOriented" description="Edge Orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="details" description="Misc Fine Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PcMaxLocalRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
-                </editor-class>
-            </model>
-            <model name="Random Mixed" acronym="Random Mixed" help="random_mixed" category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.RandomMixedRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="VCPC" acronym="VCPC" help="vcpc"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>-->
+                    <!--<event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>-->
+                    <!--<event id="patterns" description="Disambiguated Patterns" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.VcpcRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="sampleVCPC" acronym="sVCPC" help="samplevcpc"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>-->
+                    <!--<event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>-->
+                    <!--<event id="patterns" description="Disambiguated Patterns" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.SampleVcpcRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="VCPCFast" acronym="fVCPC" help="fvcpc"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>-->
+                    <!--<event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>-->
+                    <!--<event id="patterns" description="Disambiguated Patterns" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.VcpcFastRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="sampleVCPCFast" acronym="sfVCPC" help="samplevcpcFast"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>-->
+                    <!--<event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>-->
+                    <!--<event id="patterns" description="Disambiguated Patterns" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.SampleVcpcFastRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="VCPCalt" acronym="VCPCalt" help="vcpcalt"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>-->
+                    <!--<event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>-->
+                    <!--<event id="patterns" description="Disambiguated Patterns" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.VcpcAltRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="PClocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="edgeRemoved" description="Edge Removal"-->
+                           <!--default="on"/>-->
+                    <!--<event id="edgeOriented" description="Edge Orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="details" description="Misc Fine Details"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PcLocalRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="edgeRemoved" description="Edge Removal"-->
+                           <!--default="on"/>-->
+                    <!--<event id="edgeOriented" description="Edge Orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="details" description="Misc Fine Details"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.CpcLocalRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                    <!--<event id="edgeRemoved" description="Edge Removal"-->
+                           <!--default="on"/>-->
+                    <!--<event id="edgeOriented" description="Edge Orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="details" description="Misc Fine Details"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PcMaxLocalRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <!--<model name="LiNGAM" acronym="LiNGAM" help="lingam"-->
                    <!--category="DAG Searches">-->
                 <!--<logger>-->
@@ -1276,20 +1261,20 @@
                 <!--<editor-class>edu.cmu.tetradapp.editor.LingamSearchEditor-->
                 <!--</editor-class>-->
             <!--</model>-->
-            <model name="LiNG" acronym="LiNG" help="ling"
-                   category="DG Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="fastIcaDetails" description="FastICA Details"/>
-                    <event id="lingDetails" description="Ling Details"/>
-                    <event id="stableGraphs" description="Stable Graphs" default="on"/>
-                    <event id="unstableGraphs" description="Unstable Graphs"/>
-                    <event id="wMatrices" description="W Matrices"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.LingRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.LingSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="LiNG" acronym="LiNG" help="ling"-->
+                   <!--category="DG Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="fastIcaDetails" description="FastICA Details"/>-->
+                    <!--<event id="lingDetails" description="Ling Details"/>-->
+                    <!--<event id="stableGraphs" description="Stable Graphs" default="on"/>-->
+                    <!--<event id="unstableGraphs" description="Unstable Graphs"/>-->
+                    <!--<event id="wMatrices" description="W Matrices"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.LingRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.LingSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <model name="LOFS" acronym="LOFS" help="lofs"
                    category="DAG Searches">
                 <logger>
@@ -1404,22 +1389,22 @@
                 <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
                 <!--</editor-class>-->
             <!--</model>-->
-            <model name="CCD2" acronym="CCD2" help="ccd2" category="PAG searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <!--<event id="knowledgeOrientations" description = "Knowledge orientations"/>-->
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="underlines" description="Underlines" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.CcdRunner2</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="CCD2" acronym="CCD2" help="ccd2" category="PAG searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--&lt;!&ndash;<event id="knowledgeOrientations" description = "Knowledge orientations"/>&ndash;&gt;-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="underlines" description="Underlines" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.CcdRunner2</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <!--<model name="FGS" acronym="FGS" help="fgs"-->
                    <!--category="Pattern Searches">-->
                 <!--<logger>-->
@@ -1452,21 +1437,21 @@
                 <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
                 <!--</editor-class>-->
             <!--</model>-->
-            <model name="WFGS" acronym="WFGS" help="wfgs" category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.WFgsRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="WFGS" acronym="WFGS" help="wfgs" category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.WFgsRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <!--<model name="IMaGES" acronym="IMaGES" help="fgs"-->
                    <!--category="Pattern Searches">-->
                 <!--<logger>-->
@@ -1633,25 +1618,25 @@
                 <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
             </model>
-            <model name="CEFS" acronym="CEFS" help="cef"
-                   category="Feature selection searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.CeFanSearchRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MbSearchEditor
-                </editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.MbSearchParamEditor
-                </params-editor-class>
-            </model>
+            <!--<model name="CEFS" acronym="CEFS" help="cef"-->
+                   <!--category="Feature selection searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="tripleClassifications" description="Triple Classifications" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.CeFanSearchRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.MbSearchEditor-->
+                <!--</editor-class>-->
+                <!--<params-editor-class>-->
+                    <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
+                <!--</params-editor-class>-->
+            <!--</model>-->
             <model name="Sequential Factoring with Residuals" acronym="SFR" help="sfr" category="Factor Analysis">
                 <model-class>edu.cmu.tetradapp.model.FactorAnalysisRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.FactorAnalysisEditor

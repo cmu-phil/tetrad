@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.TsImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -119,11 +120,22 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.PAG, OracleType.Score));
+
+        descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.Markov_Blanket, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.Markov_Blanket, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.Pattern, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.Markov_Random_Field, OracleType.Test));
+
         descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Markov_Random_Field, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.TsIMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Markov_Random_Field, OracleType.None));
 
         mappedDescriptions = new HashMap<>();
 
@@ -138,47 +150,38 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         whatYouChose = new JLabel();
 
-        // Initialize all of the dropdowns.
-//        for (TestType item : TestType.values()) {
-//            testDropdown.addItem(item);
-//        }
-
         DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
 
+        List<TestType> tests;
+
         if (dataSet.isContinuous()) {
-            for (TestType item : continuousTests) {
-                testDropdown.addItem(item);
-            }
+            tests = continuousTests;
         } else if (dataSet.isDiscrete()) {
-            for (TestType item : discreteTests) {
-                testDropdown.addItem(item);
-            }
+            tests = discreteTests;
         } else if (dataSet.isMixed()) {
-            for (TestType item : mixedTests) {
-                testDropdown.addItem(item);
-            }
+            tests = mixedTests;
         } else {
             throw new IllegalArgumentException();
         }
 
-//        for (ScoreType item : ScoreType.values()) {
-//            scoreDropdown.addItem(item);
-//        }
+        for (TestType item : tests) {
+            testDropdown.addItem(item);
+        }
+
+        List<ScoreType> scores;
 
         if (dataSet.isContinuous()) {
-            for (ScoreType item : continuousScores) {
-                scoreDropdown.addItem(item);
-            }
+            scores = continuousScores;
         } else if (dataSet.isDiscrete()) {
-            for (ScoreType item : discreteScores) {
-                scoreDropdown.addItem(item);
-            }
+            scores = discreteScores;
         } else if (dataSet.isMixed()) {
-            for (ScoreType item : mixedScores) {
-                scoreDropdown.addItem(item);
-            }
+            scores = mixedScores;
         } else {
             throw new IllegalArgumentException();
+        }
+
+        for (ScoreType item : scores) {
+            scoreDropdown.addItem(item);
         }
 
         for (AlgType item : AlgType.values()) {
@@ -193,8 +196,14 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         algTypesDropdown.setSelectedItem(getAlgType());
         algNamesDropdown.setSelectedItem(getAlgName());
-        testDropdown.setSelectedItem(getTestType());
-        scoreDropdown.setSelectedItem(getScoreType());
+
+        if (tests.contains(getTestType())) {
+            testDropdown.setSelectedItem(getTestType());
+        }
+
+        if (scores.contains(getScoreType())) {
+            scoreDropdown.setSelectedItem(getScoreType());
+        }
 
         testDropdown.setEnabled(true);
         scoreDropdown.setEnabled(false);
@@ -459,6 +468,34 @@ public class GeneralAlgorithmEditor extends JPanel {
             case CCD:
                 algorithm = new Ccd(independenceWrapper);
                 break;
+            case GCCD:
+                algorithm = new GCCD(scoreWrapper);
+                break;
+
+            case FAS:
+                algorithm = new FAS(independenceWrapper);
+                break;
+
+            case FgsMb:
+                algorithm = new FgsMb(scoreWrapper);
+                break;
+            case MBFS:
+                algorithm = new MBFS(independenceWrapper);
+                break;
+            case PcLocal:
+                algorithm = new PcLocal(independenceWrapper);
+                break;
+            case PcMax:
+                algorithm = new PcMax(independenceWrapper);
+                break;
+            case PcMaxLocal:
+                algorithm = new PcMaxLocal(independenceWrapper);
+                break;
+            case Wfgs:
+                algorithm = new Wfgs();
+                break;
+
+
             case LiNGAM:
                 algorithm = new Lingam();
                 break;
@@ -473,6 +510,9 @@ public class GeneralAlgorithmEditor extends JPanel {
                 break;
             case TsIMaGES_SEM_BIC:
                 algorithm = new TsImagesSemBic();
+                break;
+            case GLASSO:
+                algorithm = new Glasso();
                 break;
             default:
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
@@ -610,7 +650,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         parameters.set("algName", algName.toString());
     }
 
-    private Object getTestType() {
+    private TestType getTestType() {
         return TestType.valueOf(parameters.getString("testType", "ChiSquare"));
     }
 
@@ -618,7 +658,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         parameters.set("testType", testType.toString());
     }
 
-    private Object getScoreType() {
+    private ScoreType getScoreType() {
         return ScoreType.valueOf(parameters.getString("scoreType", "BDeu"));
     }
 
@@ -651,16 +691,18 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private enum AlgName {
-        PC, CPC, CPCS, PCS, FGS,
-        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, CCD,
+        PC, CPC, CPCS, PCS, FGS, FAS,
+        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, CCD, GCCD,
+        FgsMb, MBFS, PcLocal, PcMax, PcMaxLocal, Wfgs,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,
         TsIMaGES_SEM_BIC,
+        GLASSO
     }
 
     private enum OracleType {None, Test, Score, Both}
 
-    private enum AlgType {Pattern, PAG, DAG, Markov_Random_Field, Pairwise}
+    private enum AlgType {Pattern, PAG, DAG, Markov_Blanket, Markov_Random_Field, Pairwise}
 
     private enum TestType {ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, FisherZ, GSquare, SEM_BIC}
 

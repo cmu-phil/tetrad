@@ -39,7 +39,7 @@ import java.util.*;
  * @author Frank C. Wimberly
  * @author Joseph Ramsey
  */
-public final class Ccd2 implements GraphSearch {
+public final class GCCD implements GraphSearch {
     private Score score;
     private IndependenceTest test;
     private int depth = -1;
@@ -48,7 +48,7 @@ public final class Ccd2 implements GraphSearch {
     private boolean verbose = false;
     private boolean applyR1 = true;
 
-    public Ccd2(Score score) {
+    public GCCD(Score score) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.test = new IndTestScore(score);
