@@ -23,13 +23,12 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
@@ -106,6 +105,69 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         DataModelList dataSource = dataWrapper.getDataModelList();
 
         this.dataWrapper = dataWrapper;
+
+        List names = dataSource.getVariableNames();
+        transferVarNamesToParams(names);
+
+        if (knowledgeBoxModel != null) {
+            knowledge = knowledgeBoxModel.getKnowledge();
+        } else {
+            knowledge = new Knowledge2();
+        }
+    }
+
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        if (dataWrapper == null) {
+            throw new NullPointerException();
+        }
+        if (parameters == null) {
+            throw new NullPointerException();
+        }
+        if (graphSource == null) {
+            throw new NullPointerException();
+        }
+
+        this.parameters = parameters;
+        this.sourceGraph = dataWrapper.getSourceGraph();
+
+        DataModel dataSource = getSelectedDataModel(dataWrapper);
+
+        this.dataWrapper = dataWrapper;
+        this.sourceGraph = graphSource.getGraph();
+
+        List names = dataSource.getVariableNames();
+        transferVarNamesToParams(names);
+
+        this.knowledge = dataWrapper.getKnowledge();
+
+        if (knowledge == null) {
+            this.knowledge = new Knowledge2(dataWrapper.getVariableNames());
+        }
+    }
+
+    /**
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
+     * contain a DataSet that is either a DataSet or a DataSet or a DataList
+     * containing either a DataSet or a DataSet as its selected model.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel) {
+        if (dataWrapper == null) {
+            throw new NullPointerException();
+        }
+        if (parameters == null) {
+            throw new NullPointerException();
+        }
+        if (graphSource == null) {
+            throw new NullPointerException();
+        }
+
+        this.parameters = parameters;
+
+        DataModelList dataSource = dataWrapper.getDataModelList();
+
+        this.dataWrapper = dataWrapper;
+        this.sourceGraph = graphSource.getGraph();
 
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
@@ -221,31 +283,63 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     //============================PUBLIC METHODS==========================//
 
+    @Override
     public final Graph getResultGraph() {
         return this.resultGraph;
     }
 
     @Override
     public void execute() {
+        List<Graph> graphList = new ArrayList<>();
+        int i = 0;
 
+        for (DataModel data : getDataModelList()) {
+            System.out.println("Analyzing data set # " + (++i));
+            DataSet dataSet = (DataSet) data;
+            Algorithm algorithm = getAlgorithm();
+
+            if (algorithm instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+            }
+
+            Graph graph = algorithm.search(dataSet, parameters);
+            graphList.add(graph);
+        }
+
+        if (getKnowledge().getVariablesNotInTiers().size()
+                < getKnowledge().getVariables().size()) {
+            for (Graph graph : graphList) {
+                SearchGraphUtils.arrangeByKnowledgeTiers(graph, getKnowledge());
+            }
+        } else {
+            for (Graph graph : graphList) {
+                GraphUtils.circleLayout(graph, 225, 200, 150);
+            }
+        }
+
+        this.graphList = graphList;
     }
 
     /**
      * By default, algorithm do not support knowledge. Those that do will
      * speak up.
      */
+    @Override
     public boolean supportsKnowledge() {
         return false;
     }
 
+    @Override
     public ImpliedOrientation getMeekRules() {
         return null;
     }
 
+    @Override
     public void setInitialGraph(Graph graph) {
         this.initialGraph = graph;
     }
 
+    @Override
     public Graph getInitialGraph() {
         return this.initialGraph;
     }
@@ -255,10 +349,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return null;
     }
 
+    @Override
     public final Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
+    @Override
     public final DataModel getDataModel() {
         if (dataWrapper != null) {
             DataModelList dataModelList = dataWrapper.getDataModelList();
@@ -295,10 +391,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.parameters;
     }
 
+    @Override
     public Object getResettableParams() {
         return this.getParameters();
     }
 
+    @Override
     public void resetParams(Object params) {
         this.parameters = (Parameters) params;
     }
@@ -375,10 +473,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         s.defaultReadObject();
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -388,13 +488,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public void setAlgorithm(Algorithm algorithm) {
-        if (algorithm == null) throw new NullPointerException("Algorithm must not be null.");
+        if (algorithm == null) return;
         this.algorithm = algorithm;
-    }
-
-    @Override
-    public Graph getGraph() {
-        return graphList.get(0);
     }
 
     @Override
@@ -422,16 +517,22 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return null;
     }
 
-    public void setGraphList(List<Graph> graphList) {
-        this.graphList = graphList;
+    @Override
+    public Graph getGraph() {
+        return graphList.get(0);
     }
 
+    @Override
     public List<Graph> getGraphs() {
         return graphList;
     }
 
     public IKnowledge getKnowledge() {
         return knowledge;
+    }
+
+    public void setGraphList(List<Graph> graphList) {
+        this.graphList = graphList;
     }
 }
 

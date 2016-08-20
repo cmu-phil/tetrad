@@ -26,10 +26,13 @@ public class SkewE implements Algorithm, TakesInitialGraph {
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        Graph initial = null;
+        Graph initial = initialGraph.search(dataSet, parameters);
 
-        if (initialGraph != null) {
+        if (initial != null) {
             initial = initialGraph.search(dataSet, parameters);
+        } else {
+            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
+                    "will orient the edges in the input graph using the data");
         }
 
         List<DataSet> dataSets = new ArrayList<>();

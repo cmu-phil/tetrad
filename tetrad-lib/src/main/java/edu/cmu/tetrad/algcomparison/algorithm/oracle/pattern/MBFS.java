@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class MBFS implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class MBFS implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();

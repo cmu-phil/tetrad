@@ -30,14 +30,14 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.TsImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
+import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
@@ -137,6 +137,17 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.TsIMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Markov_Random_Field, OracleType.None));
 
+        descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R2, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R3, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R4, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.RSkew, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.RSkewE, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Skew, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.Pairwise, OracleType.None));
+
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescription description : descriptions) {
@@ -149,6 +160,10 @@ public class GeneralAlgorithmEditor extends JPanel {
         setLayout(new BorderLayout());
 
         whatYouChose = new JLabel();
+
+        if (runner.getDataModelList() == null) {
+            throw new NullPointerException("No data has been provided.");
+        }
 
         DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
 
@@ -266,13 +281,11 @@ public class GeneralAlgorithmEditor extends JPanel {
 
     private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
         class MyKnowledgeInput implements KnowledgeBoxInput {
-            private IKnowledge knowledge;
             private String name;
             private List<Node> variables;
             private List<String> varNames;
 
-            public MyKnowledgeInput(IKnowledge knowledge, List<Node> variables, List<String> varNames) {
-                this.knowledge = knowledge;
+            public MyKnowledgeInput(List<Node> variables, List<String> varNames) {
                 this.variables = variables;
                 this.varNames = varNames;
             }
@@ -309,7 +322,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         }
 
         MyKnowledgeInput myKnowledgeInput
-                = new MyKnowledgeInput(runner.getKnowledge(), runner.getDataModel().getVariables(),
+                = new MyKnowledgeInput(runner.getDataModel().getVariables(),
                 runner.getDataModel().getVariableNames());
 
         JPanel knowledgePanel = new JPanel();
@@ -337,36 +350,10 @@ public class GeneralAlgorithmEditor extends JPanel {
                 graphEditor.replace(new ArrayList<Graph>());
 
                 if (dataList != null) {
-                    List<Graph> graphList = new ArrayList<>();
-                    int i = 0;
-
-                    for (DataModel data : dataList) {
-                        System.out.println("Analyzing data set # " + (++i));
-                        DataSet dataSet = (DataSet) data;
-                        Algorithm algorithm = runner.getAlgorithm();
-
-                        if (algorithm instanceof HasKnowledge) {
-                            ((HasKnowledge) algorithm).setKnowledge(runner.getKnowledge());
-                        }
-
-                        Graph graph = algorithm.search(dataSet, parameters);
-                        graphList.add(graph);
-                    }
-
-                    if (runner.getKnowledge().getVariablesNotInTiers().size()
-                            < runner.getKnowledge().getVariables().size()) {
-                        for (Graph graph : graphList) {
-                            SearchGraphUtils.arrangeByKnowledgeTiers(graph, runner.getKnowledge());
-                        }
-                    } else {
-                        for (Graph graph : graphList) {
-                            GraphUtils.circleLayout(graph, 225, 200, 150);
-                        }
-                    }
-
+                    runner.execute();
                     pane.setSelectedIndex(2);
-                    runner.setGraphList(graphList);
-                    graphEditor.replace(graphList);
+                    runner.setGraphList(runner.getGraphs());
+                    graphEditor.replace(runner.getGraphs());
                     graphEditor.validate();
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -430,27 +417,48 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         Algorithm algorithm;
 
+
         switch (name) {
             case FGS:
-                algorithm = new Fgs(scoreWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new Fgs(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new Fgs(scoreWrapper);
+                }
                 break;
             case PC:
-                algorithm = new Pc(independenceWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new Pc(independenceWrapper);
+                }
                 break;
             case CPC:
-                algorithm = new Cpc(independenceWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new Cpc(independenceWrapper);
+                }
                 break;
             case CPCS:
                 algorithm = new Cpcs(independenceWrapper);
                 break;
             case PCS:
-                algorithm = new Pcs(independenceWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new Pcs(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new Pcs(independenceWrapper);
+                }
                 break;
             case GFCI:
                 algorithm = new Gfci(scoreWrapper);
                 break;
             case FCI:
-                algorithm = new Fci(independenceWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new Fci(independenceWrapper);
+                }
                 break;
             case RFCI:
                 algorithm = new Rfci(independenceWrapper);
@@ -459,7 +467,11 @@ public class GeneralAlgorithmEditor extends JPanel {
                 algorithm = new Cfci(independenceWrapper);
                 break;
             case TsFCI:
-                algorithm = new TsFci(independenceWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new TsFci(independenceWrapper);
+                }
                 break;
             case TsGFCI:
                 algorithm = new TsGfci(scoreWrapper);
@@ -474,9 +486,12 @@ public class GeneralAlgorithmEditor extends JPanel {
             case FAS:
                 algorithm = new FAS(independenceWrapper);
                 break;
-
             case FgsMb:
-                algorithm = new FgsMb(scoreWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new FgsMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new FgsMb(scoreWrapper);
+                }
                 break;
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);
@@ -485,7 +500,11 @@ public class GeneralAlgorithmEditor extends JPanel {
                 algorithm = new PcLocal(independenceWrapper);
                 break;
             case PcMax:
-                algorithm = new PcMax(independenceWrapper);
+                if (runner.getSourceGraph() != null) {
+                    algorithm = new PcMax(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new PcMax(independenceWrapper);
+                }
                 break;
             case PcMaxLocal:
                 algorithm = new PcMaxLocal(independenceWrapper);
@@ -493,8 +512,6 @@ public class GeneralAlgorithmEditor extends JPanel {
             case Wfgs:
                 algorithm = new Wfgs();
                 break;
-
-
             case LiNGAM:
                 algorithm = new Lingam();
                 break;
@@ -513,6 +530,39 @@ public class GeneralAlgorithmEditor extends JPanel {
             case GLASSO:
                 algorithm = new Glasso();
                 break;
+
+            // LOFS algorithms.
+            case EB:
+                algorithm = new EB(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case R1:
+                algorithm = new R1(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case R2:
+                algorithm = new R2(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case R3:
+                algorithm = new R3(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case R4:
+                algorithm = new R4(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case RSkew:
+                algorithm = new RSkew(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case RSkewE:
+                algorithm = new RSkewE(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case Skew:
+                algorithm = new Skew(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case SkewE:
+                algorithm = new SkewE(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+            case Tahn:
+                algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
+                break;
+
             default:
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
@@ -719,7 +769,8 @@ public class GeneralAlgorithmEditor extends JPanel {
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,
         TsIMaGES_SEM_BIC,
-        GLASSO
+        GLASSO,
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn
     }
 
     private enum OracleType {None, Test, Score, Both}

@@ -19,7 +19,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class PcLocal implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class PcLocal implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();

@@ -19,7 +19,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class GCCD implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class GCCD implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();

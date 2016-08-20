@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
@@ -9,7 +8,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,27 +18,27 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Wfgs implements Algorithm, HasKnowledge {
+public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private Graph graph;
 
-    public Wfgs() {
+    public SingleGraphAlg(Graph graph) {
+        this.graph = graph;
     }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.WFgs search = new edu.cmu.tetrad.search.WFgs(dataSet);
-        return search.search();
+        return graph;
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return graph;
     }
 
     @Override
     public String getDescription() {
-        return "Whimsical FGS (Fast Greedy Search)";
+        return "Given graph";
     }
 
     @Override
@@ -55,11 +53,10 @@ public class Wfgs implements Algorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+         return new Knowledge2();
     }
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
     }
 }
