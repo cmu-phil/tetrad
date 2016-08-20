@@ -626,9 +626,36 @@ public class GeneralAlgorithmEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(600, 400));
         Box c = Box.createVerticalBox();
 
-        JButton explain = new JButton("Explain This");
+        JButton explain1 = new JButton("Explain");
+        JButton explain2 = new JButton("Explain");
+        JButton explain3 = new JButton("Explain");
+        JButton explain4 = new JButton("Explain");
 
-        explain.addActionListener(new ActionListener() {
+        explain1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Some insighful explanation will be put here by somebody");
+            }
+        });
+
+        explain2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Some insighful explanation will be put here by somebody");
+            }
+        });
+
+        explain3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Some insighful explanation will be put here by somebody");
+            }
+        });
+
+        explain4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -649,6 +676,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         label3.setFont(new Font("Dialog", Font.BOLD, 12));
         d3.add(label3);
         d3.add(algTypesDropdown);
+        d3.add(explain1);
         c.add(d3);
 
         Box d4 = Box.createHorizontalBox();
@@ -656,6 +684,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         label4.setFont(new Font("Dialog", Font.BOLD, 12));
         d4.add(label4);
         d4.add(algNamesDropdown);
+        d4.add(explain2);
         c.add(d4);
 
         Box d1 = Box.createHorizontalBox();
@@ -663,6 +692,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         label1.setFont(new Font("Dialog", Font.BOLD, 12));
         d1.add(label1);
         d1.add(testDropdown);
+        d1.add(explain3);
         c.add(d1);
 
         Box d2 = Box.createHorizontalBox();
@@ -670,6 +700,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         label2.setFont(new Font("Dialog", Font.BOLD, 12));
         d2.add(label2);
         d2.add(scoreDropdown);
+        d2.add(explain4);
         c.add(d2);
         c.add(Box.createVerticalStrut(5));
 
@@ -681,7 +712,6 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         d5.add(whatYouChose);
         d5.add(Box.createHorizontalGlue());
-        d5.add(explain);
         c.add(d5);
         c.add(Box.createVerticalStrut(10));
 

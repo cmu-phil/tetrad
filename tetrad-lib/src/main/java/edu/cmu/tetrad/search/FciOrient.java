@@ -376,7 +376,6 @@ public final class FciOrient {
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
-
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
                     (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
@@ -465,6 +464,10 @@ public final class FciOrient {
 
                     if (!graph.isAdjacentTo(A, D) ||
                             !graph.isAdjacentTo(C, D)) {
+                        continue;
+                    }
+
+                    if (!sepsets.isNoncollider(A, C, C)) {
                         continue;
                     }
 
@@ -934,6 +937,8 @@ public final class FciOrient {
                 Node c = adjacents.get(choice[1]);
 
                 if (graph.isAdjacentTo(a, c)) continue;
+
+                if (!sepsets.isNoncollider(a, b, c)) continue;
 
                 if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) continue;
                 if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) continue;

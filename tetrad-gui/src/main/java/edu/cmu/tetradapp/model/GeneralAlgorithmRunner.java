@@ -519,7 +519,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public Graph getGraph() {
-        return graphList.get(0);
+        if (graphList == null || graphList.isEmpty()) {
+            return null;
+        } else {
+            return graphList.get(0);
+        }
     }
 
     @Override

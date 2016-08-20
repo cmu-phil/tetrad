@@ -293,9 +293,9 @@ public final class SimulationStudy {
             collectParentParamSettings(parent, paramSettings);
         }
 
-        if (sessionNode.getModel() instanceof SimulationParamsSource) {
-            paramSettings.putAll(((SimulationParamsSource) sessionNode.getModel()).getParamSettings());
-        }
+//        if (sessionNode.getModel() instanceof SimulationParamsSource) {
+//            paramSettings.putAll(((SimulationParamsSource) sessionNode.getModel()).getParamSettings());
+//        }
     }
 
     /**
