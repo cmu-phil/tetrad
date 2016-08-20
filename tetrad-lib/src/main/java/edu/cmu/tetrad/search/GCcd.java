@@ -83,7 +83,7 @@ public final class GCCD implements GraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         modifiedR0(graph, sepsets);
-        stepC(graph, sepsets, null);
+//        stepC(graph, sepsets, null);
         stepD(graph, sepsets, supSepsets, null);
         if (stepE(supSepsets, graph)) return graph;
         stepF(graph, sepsets, supSepsets);
