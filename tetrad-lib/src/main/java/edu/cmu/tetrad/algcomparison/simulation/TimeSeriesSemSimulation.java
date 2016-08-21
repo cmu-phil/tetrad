@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -22,22 +23,20 @@ import java.util.List;
  * @author jdramsey
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
+    private final RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;
     private IKnowledge knowledge;
+
+    public TimeSeriesSemSimulation(RandomGraph randomGraph) {
+        this.randomGraph = randomGraph;
+    }
 
     @Override
     public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
 
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+        this.graph = randomGraph.createGraph(parameters);
         this.graph = TimeSeriesUtils.GraphToLagGraph(graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
