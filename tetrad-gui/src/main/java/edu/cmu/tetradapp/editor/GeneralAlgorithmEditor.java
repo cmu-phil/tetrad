@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.data.DataModelList;
@@ -94,6 +95,9 @@ public class GeneralAlgorithmEditor extends JPanel {
         List<TestType> mixedTests = new ArrayList<>();
         mixedTests.add(TestType.Conditional_Gaussian_LRT);
 
+        List<TestType> dsepTests = new ArrayList<>();
+        dsepTests.add(TestType.D_SEPARATION);
+
         List<ScoreType> discreteScores = new ArrayList<>();
         discreteScores.add(ScoreType.BDeu);
         discreteScores.add(ScoreType.Discrete_BIC);
@@ -105,6 +109,9 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         List<ScoreType> mixedScores = new ArrayList<>();
         mixedScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+
+        List<ScoreType> dsepScores = new ArrayList<>();
+        dsepScores.add(ScoreType.D_SEPARATION);
 
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
@@ -161,22 +168,26 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         whatYouChose = new JLabel();
 
-        if (runner.getDataModelList() == null) {
-            throw new NullPointerException("No data has been provided.");
-        }
-
-        DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
+//        if (runner.getDataModelList() == null) {
+//            throw new NullPointerException("No data has been provided.");
+//        }
 
         List<TestType> tests;
 
-        if (dataSet.isContinuous()) {
-            tests = continuousTests;
-        } else if (dataSet.isDiscrete()) {
-            tests = discreteTests;
-        } else if (dataSet.isMixed()) {
-            tests = mixedTests;
+        if (runner.getDataModelList() == null) {
+            tests = dsepTests;
         } else {
-            throw new IllegalArgumentException();
+            DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
+
+            if (dataSet.isContinuous()) {
+                tests = continuousTests;
+            } else if (dataSet.isDiscrete()) {
+                tests = discreteTests;
+            } else if (dataSet.isMixed()) {
+                tests = mixedTests;
+            } else {
+                throw new IllegalArgumentException();
+            }
         }
 
         for (TestType item : tests) {
@@ -185,14 +196,20 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         List<ScoreType> scores;
 
-        if (dataSet.isContinuous()) {
-            scores = continuousScores;
-        } else if (dataSet.isDiscrete()) {
-            scores = discreteScores;
-        } else if (dataSet.isMixed()) {
-            scores = mixedScores;
+        if (runner.getDataModelList() == null) {
+            scores = dsepScores;
         } else {
-            throw new IllegalArgumentException();
+            DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
+
+            if (dataSet.isContinuous()) {
+                scores = continuousScores;
+            } else if (dataSet.isDiscrete()) {
+                scores = discreteScores;
+            } else if (dataSet.isMixed()) {
+                scores = mixedScores;
+            } else {
+                throw new IllegalArgumentException();
+            }
         }
 
         for (ScoreType item : scores) {
@@ -345,18 +362,14 @@ public class GeneralAlgorithmEditor extends JPanel {
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-                DataModelList dataList = runner.getDataModelList();
                 runner.setGraphList(new ArrayList<Graph>());
                 graphEditor.replace(new ArrayList<Graph>());
-
-                if (dataList != null) {
-                    runner.execute();
-                    pane.setSelectedIndex(2);
-                    runner.setGraphList(runner.getGraphs());
-                    graphEditor.replace(runner.getGraphs());
-                    graphEditor.validate();
-                    firePropertyChange("modelChanged", null, null);
-                }
+                runner.execute();
+                pane.setSelectedIndex(2);
+                runner.setGraphList(runner.getGraphs());
+                graphEditor.replace(runner.getGraphs());
+                graphEditor.validate();
+                firePropertyChange("modelChanged", null, null);
             }
         };
     }
@@ -392,6 +405,9 @@ public class GeneralAlgorithmEditor extends JPanel {
             case SEM_BIC:
                 independenceWrapper = new SemBicTest();
                 break;
+            case D_SEPARATION:
+                independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
+                break;
             default:
                 throw new IllegalArgumentException("Please configure that test: " + test);
         }
@@ -410,6 +426,9 @@ public class GeneralAlgorithmEditor extends JPanel {
                 break;
             case SEM_BIC:
                 scoreWrapper = new SemBicScore();
+                break;
+            case D_SEPARATION:
+                scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
                 break;
             default:
                 throw new IllegalArgumentException("Please configure that score: " + score);
@@ -807,9 +826,12 @@ public class GeneralAlgorithmEditor extends JPanel {
 
     private enum AlgType {Pattern, PAG, DAG, Markov_Blanket, Markov_Random_Field, Pairwise}
 
-    private enum TestType {ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, FisherZ, GSquare, SEM_BIC}
+    private enum TestType {
+        ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, FisherZ, GSquare,
+        SEM_BIC, D_SEPARATION
+    }
 
-    public enum ScoreType {BDeu, Conditioanal_Gaussian_BIC, Discrete_BIC, SEM_BIC}
+    public enum ScoreType {BDeu, Conditioanal_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
 }
 
 

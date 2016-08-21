@@ -22,6 +22,8 @@ public class WFgs implements GraphSearch {
     private SemBicScore score;
 
     public WFgs(DataSet data) {
+        if (data == null) throw new NullPointerException("Data was not provided.");
+
         this.searchVariables = data.getVariables();
         DataSet internalData = data.copy();
 
