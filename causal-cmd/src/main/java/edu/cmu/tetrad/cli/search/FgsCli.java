@@ -239,10 +239,10 @@ public class FgsCli {
 
         Fgs fgs = new Fgs(score);
         fgs.setOut(writer);
-        fgs.setDepth(depth);
-        fgs.setIgnoreLinearDependent(ignoreLinearDependence);
+//        fgs.setDepth(depth);
+//        fgs.setIgnoreLinearDependent(ignoreLinearDependence);
         fgs.setNumPatternsToStore(0);  // always set to zero
-        fgs.setHeuristicSpeedup(heuristicSpeedup);
+        fgs.setFaithfulnessAssumed(heuristicSpeedup);
         fgs.setParallelism(numOfThreads);
         fgs.setVerbose(verbose);
         if (knowledgeFile != null) {

@@ -1,16 +1,12 @@
 package edu.cmu.tetrad.simulation;
 
-import edu.cmu.tetrad.data.BigDataSetUtility;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Pattern;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.PatternToDag;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -52,10 +48,12 @@ public class HsimRun {
 
             //ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
             double penaltyDiscount = 2.0;
-            Fgs fgs = new Fgs(dataSet);
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            score.setPenaltyDiscount(penaltyDiscount);
+            Fgs fgs = new Fgs(score);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
-            fgs.setPenaltyDiscount(penaltyDiscount);
+//            fgs.setPenaltyDiscount(penaltyDiscount);
             //fgs.setOut(out);
             //fgs.setFaithfulnessAssumed(true);
             //fgs.setDepth(1);
@@ -106,10 +104,12 @@ public class HsimRun {
 
             DataSet dataSetOut = dataReaderOut.readInData();
 
-            Fgs fgsOut = new Fgs(dataSetOut);
+            SemBicScore _score = new SemBicScore(new CovarianceMatrix(dataSetOut));
+            _score.setPenaltyDiscount(2.0);
+            Fgs fgsOut = new Fgs(_score);
             fgsOut.setVerbose(false);
             fgsOut.setNumPatternsToStore(0);
-            fgsOut.setPenaltyDiscount(2.0);
+//            fgsOut.setPenaltyDiscount(2.0);
             //fgsOut.setOut(out);
             //fgsOut.setFaithfulnessAssumed(true);
             // fgsOut.setDepth(1);

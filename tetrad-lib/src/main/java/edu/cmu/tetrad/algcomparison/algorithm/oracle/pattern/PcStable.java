@@ -19,17 +19,17 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Pcs implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Pcs(IndependenceWrapper test) {
+    public PcStable(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public Pcs(IndependenceWrapper test, Algorithm initialGraph) {
+    public PcStable(IndependenceWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;
     }
@@ -44,6 +44,7 @@ public class Pcs implements Algorithm, TakesInitialGraph, HasKnowledge {
 
         edu.cmu.tetrad.search.PcStable search = new edu.cmu.tetrad.search.PcStable(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         if (initial != null) {
             search.setInitialGraph(initial);
@@ -70,7 +71,9 @@ public class Pcs implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("verbose");
+        return parameters;
     }
 
     @Override

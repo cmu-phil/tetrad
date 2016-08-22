@@ -732,7 +732,7 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs2 fgs = new Fgs2(score);
+                Fgs fgs = new Fgs(score);
 //                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
@@ -775,7 +775,7 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs2 fgs = new Fgs2(score);
+                Fgs fgs = new Fgs(score);
 //                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);

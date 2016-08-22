@@ -34,7 +34,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
@@ -119,7 +118,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCS, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PCS, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
@@ -365,11 +364,11 @@ public class GeneralAlgorithmEditor extends JPanel {
                 runner.setGraphList(new ArrayList<Graph>());
                 graphEditor.replace(new ArrayList<Graph>());
                 runner.execute();
-                pane.setSelectedIndex(2);
                 runner.setGraphList(runner.getGraphs());
                 graphEditor.replace(runner.getGraphs());
                 graphEditor.validate();
                 firePropertyChange("modelChanged", null, null);
+                pane.setSelectedIndex(2);
             }
         };
     }
@@ -462,11 +461,11 @@ public class GeneralAlgorithmEditor extends JPanel {
             case CPCS:
                 algorithm = new Cpcs(independenceWrapper);
                 break;
-            case PCS:
+            case PCStable:
                 if (runner.getSourceGraph() != null) {
-                    algorithm = new Pcs(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
-                    algorithm = new Pcs(independenceWrapper);
+                    algorithm = new PcStable(independenceWrapper);
                 }
                 break;
             case GFCI:
@@ -812,7 +811,7 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private enum AlgName {
-        FGS, PC, CPC, CPCS, PCS, FAS,
+        FGS, PC, CPC, CPCS, PCStable, FAS,
         GFCI, FCI, RFCI, CFCI, TsFCI, TsGFCI, CCD, GCCD,
         FgsMb, MBFS, PcLocal, PcMax, PcMaxLocal, Wfgs,
         LiNGAM, MGM,

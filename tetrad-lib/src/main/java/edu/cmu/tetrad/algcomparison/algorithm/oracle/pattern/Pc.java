@@ -44,6 +44,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
 
         if (initial != null) {
             search.setInitialGraph(initial);
@@ -71,7 +72,9 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("verbose");
+        return parameters;
     }
 
     @Override

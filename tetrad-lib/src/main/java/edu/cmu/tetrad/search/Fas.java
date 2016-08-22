@@ -313,13 +313,13 @@ public class Fas implements IFas {
                         getSepsets().set(x, y, empty);
                     }
 
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                            nf.format(test.getScore()));
-
-                    if (verbose) {
-                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
-                    }
+//                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+//                            nf.format(test.getScore()));
+//
+//                    if (verbose) {
+//                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+//                                nf.format(test.getScore()));
+//                    }
 
                 } else if (!forbiddenEdge(x, y)) {
                     adjacencies.get(x).add(y);

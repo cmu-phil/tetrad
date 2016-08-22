@@ -95,6 +95,7 @@ public class ParamDescriptions {
         put("thr", new ParamDescription("THR parameter (GLASSO)", 1e-4, 0.0, Double.MAX_VALUE));
 
         put("targetName", new ParamDescription("Target name", ""));
+        put("verbose", new ParamDescription("Yes if verbose output should be printed to standard out", false));
     }
 
     public static ParamDescriptions instance() {

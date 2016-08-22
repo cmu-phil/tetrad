@@ -199,13 +199,13 @@ public class Comparison {
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fgs search = new Fgs(score);
-            search.setHeuristicSpeedup(params.isOneEdgeFaithfulnessAssumed());
+            search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS2) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fgs search = new Fgs(score);
-            search.setHeuristicSpeedup(params.isOneEdgeFaithfulnessAssumed());
+            search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {

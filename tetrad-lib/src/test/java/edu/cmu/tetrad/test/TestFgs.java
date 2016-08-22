@@ -92,8 +92,8 @@ public class TestFgs {
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
-        fgs.setHeuristicSpeedup(true);
-        fgs.setDepth(1);
+        fgs.setFaithfulnessAssumed(true);
+//        fgs.setDepth(1);
         fgs.setCycleBound(5);
 
         Graph estPattern = fgs.search();
@@ -158,7 +158,7 @@ public class TestFgs {
         Fgs ges = new Fgs(score);
         ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
-        ges.setHeuristicSpeedup(false);
+        ges.setFaithfulnessAssumed(false);
 
         Graph estPattern = ges.search();
 
@@ -207,7 +207,7 @@ public class TestFgs {
     public void testExplore5() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setHeuristicSpeedup(false);
+        fgs.setFaithfulnessAssumed(false);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -235,7 +235,7 @@ public class TestFgs {
         g.addDirectedEdge(x4, x3);
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        Fgs2 fgs = new Fgs2(new GraphScore(g));
+        Fgs fgs = new Fgs(new GraphScore(g));
         fgs.setFaithfulnessAssumed(true);
         Graph pattern2 = fgs.search();
 
@@ -287,7 +287,7 @@ public class TestFgs {
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             GraphScore fgsScore = new GraphScore(dag);
 
-            Fgs2 fgs = new Fgs2(fgsScore);
+            Fgs fgs = new Fgs(fgsScore);
             Graph pattern1 = fgs.search();
 
             Node x1 = fgsScore.getVariable("X1");
@@ -560,7 +560,7 @@ public class TestFgs {
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Fgs2 fgs = new Fgs2(new GraphScore(dag));
+            Fgs fgs = new Fgs(new GraphScore(dag));
             fgs.setFaithfulnessAssumed(true);
             Graph pattern1 = fgs.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();

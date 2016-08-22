@@ -384,7 +384,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
         fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
-        fgs.setHeuristicSpeedup(params.getBoolean("faithfulnessAssumed", true));
+        fgs.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         fgs.setVerbose(true);
         Graph graph = fgs.search();
 

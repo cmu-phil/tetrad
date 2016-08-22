@@ -242,8 +242,8 @@ public class FgsDiscrete {
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(writer);
-        fgs.setHeuristicSpeedup(heuristicSpeedup);
-        fgs.setDepth(depth);
+        fgs.setFaithfulnessAssumed(heuristicSpeedup);
+//        fgs.setDepth(depth);
         if (knowledgeFile != null) {
             fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
         }

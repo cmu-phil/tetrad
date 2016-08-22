@@ -41,10 +41,10 @@ public class FgsApiExample {
 
         Fgs fgs = new Fgs(score);
         fgs.setOut(System.out);
-        fgs.setDepth(-1);
-        fgs.setIgnoreLinearDependent(false);
+//        fgs.setDepth(-1);
+//        fgs.setIgnoreLinearDependent(false);
         fgs.setNumPatternsToStore(0);  // always set to zero
-        fgs.setHeuristicSpeedup(true);
+        fgs.setFaithfulnessAssumed(true);
         fgs.setVerbose(true);
 
         Graph graph = fgs.search();

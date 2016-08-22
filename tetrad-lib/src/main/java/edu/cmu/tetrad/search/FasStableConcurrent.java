@@ -310,13 +310,13 @@ public class FasStableConcurrent implements IFas {
                                     getSepsets().set(x, y, empty);
                                 }
 
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                            nf.format(test.getPValue()));
-
-                                    out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                            nf.format(test.getPValue()));
-                                }
+//                                if (verbose) {
+//                                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+//                                            nf.format(test.getPValue()));
+//
+//                                    out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+//                                            nf.format(test.getPValue()));
+//                                }
                             } else if (!forbiddenEdge(x, y)) {
                                 adjacencies.get(x).add(y);
                                 adjacencies.get(y).add(x);

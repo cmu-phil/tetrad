@@ -202,37 +202,41 @@ public final class IndTestFisherZ implements IndependenceTest {
 
 //        this.pValue = pValue;
 
-        if (verbose) {
-            if (independent) {
-                if (TetradLogger.getInstance().isEventActive("independencies")) {
-                    TetradLogger.getInstance().log("independencies",
-                            SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-                }
-            } else {
-                if (pValueLogger != null) {
-                    pValueLogger.println(getPValue());
-                }
-
-                if (TetradLogger.getInstance().isEventActive("dependencies")) {
-                    TetradLogger.getInstance().log("dependencies",
-                            SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-                }
-            }
-        }
+//        if (verbose) {
+//            if (independent) {
+//                if (TetradLogger.getInstance().isEventActive("independencies")) {
+//                    TetradLogger.getInstance().log("independencies",
+//                            SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+//                }
+//            } else {
+//                if (pValueLogger != null) {
+//                    pValueLogger.println(getPValue());
+//                }
+//
+//                if (TetradLogger.getInstance().isEventActive("dependencies")) {
+//                    TetradLogger.getInstance().log("dependencies",
+//                            SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+//                }
+//            }
+//        }
 
         return independent;
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) {
-        int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
-        indices[1] = indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-        TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
-//        TetradMatrix submatrix = DataUtils.subMatrix(covMatrix, indexMap, x, y, z);
-        return StatUtils.partialCorrelation(submatrix);
-
-
+        if (z.isEmpty()) {
+            double a = covMatrix.getValue(indexMap.get(x), indexMap.get(y));
+            double b = covMatrix.getValue(indexMap.get(x), indexMap.get(x));
+            double c = covMatrix.getValue(indexMap.get(y), indexMap.get(y));
+            return -a / Math.sqrt(b * c);
+        } else {
+            int[] indices = new int[z.size() + 2];
+            indices[0] = indexMap.get(x);
+            indices[1] = indexMap.get(y);
+            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+            TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
+            return StatUtils.partialCorrelation(submatrix);
+        }
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
