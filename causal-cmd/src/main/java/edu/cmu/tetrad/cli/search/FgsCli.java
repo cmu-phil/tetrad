@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.io.DataReader;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.FgsOld;
 import edu.cmu.tetrad.search.SemBicScore;
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
@@ -237,12 +238,12 @@ public class FgsCli {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
 
-        Fgs fgs = new Fgs(score);
+        FgsOld fgs = new FgsOld(score);
         fgs.setOut(writer);
-//        fgs.setDepth(depth);
-//        fgs.setIgnoreLinearDependent(ignoreLinearDependence);
+        fgs.setDepth(depth);
+        fgs.setIgnoreLinearDependent(ignoreLinearDependence);
         fgs.setNumPatternsToStore(0);  // always set to zero
-        fgs.setFaithfulnessAssumed(heuristicSpeedup);
+        fgs.setHeuristicSpeedup(heuristicSpeedup);
         fgs.setParallelism(numOfThreads);
         fgs.setVerbose(verbose);
         if (knowledgeFile != null) {

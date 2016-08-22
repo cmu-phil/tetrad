@@ -43,7 +43,7 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(score.getScore(dataSet, parameters));
-        search.setFaithfulnessAssumed(true);
+        search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
 
@@ -72,6 +72,7 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
+        parameters.add("faithfulnessAssumed");
         parameters.add("verbose");
         return parameters;
     }

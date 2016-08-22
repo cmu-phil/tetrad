@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -151,8 +153,10 @@ final class SimulationGraphEditor extends JPanel {
      * @return the data display for the given model.
      */
     private JComponent graphDisplay(Graph graph) {
-        GraphEditor editor = new GraphEditor(graph);
-        return editor.getWorkbench();
+        GraphSelectionEditor editor = new GraphSelectionEditor(new GraphSelectionWrapper(graph, new Parameters()));
+
+//        GraphEditor editor = new GraphEditor(graph);
+        return editor;
     }
 
     private JTabbedPane tabbedPane() {

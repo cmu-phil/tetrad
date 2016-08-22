@@ -108,7 +108,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         });
 
         JScrollPane workbenchScroll = new JScrollPane(workbench);
-        workbenchScroll.setPreferredSize(new Dimension(600, 400));
+        workbenchScroll.setPreferredSize(new Dimension(450, 300));
 
         final JButton executeButton = new JButton("Graph It!");
         executeButton.addActionListener(new ActionListener() {
@@ -693,7 +693,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
             Box vBox1 = Box.createVerticalBox();
             vBox1.add(createLabel("Variables:"));
-            JScrollPane pane = createScrollPane(getSourceList(), new Dimension(100, 350));
+            JScrollPane pane = createScrollPane(getSourceList(), new Dimension(100, 300));
             vBox1.add(pane);
             vBox1.add(Box.createVerticalStrut(10));
             vBox1.add(buildSortButton());
@@ -706,7 +706,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
             Box vBox = Box.createVerticalBox();
             vBox.add(createLabel("Selected:"));
-            vBox.add(createScrollPane(getSelectedList(), new Dimension(100, 350)));
+            vBox.add(createScrollPane(getSelectedList(), new Dimension(100, 300)));
 
             vBox.add(Box.createVerticalStrut(10));
             vBox.add(buildTextButton());

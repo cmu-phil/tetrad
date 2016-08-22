@@ -71,7 +71,7 @@ public final class GCCD implements GraphSearch {
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-        fgs.setHeuristicSpeedup(false);
+        fgs.setFaithfulnessAssumed(true);
         Graph graph = fgs.search();
 
         SepsetsGreedy sepsets = new SepsetsGreedy(graph, test, null, -1);

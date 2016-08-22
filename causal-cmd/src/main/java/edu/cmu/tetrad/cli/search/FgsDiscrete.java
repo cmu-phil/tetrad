@@ -44,6 +44,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import edu.cmu.tetrad.search.FgsOld;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -237,13 +239,13 @@ public class FgsDiscrete {
         score.setSamplePrior(samplePrior);
         score.setStructurePrior(structurePrior);
 
-        Fgs fgs = new Fgs(score);
+        FgsOld fgs = new FgsOld(score);
         fgs.setParallelism(numOfThreads);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(writer);
-        fgs.setFaithfulnessAssumed(heuristicSpeedup);
-//        fgs.setDepth(depth);
+        fgs.setHeuristicSpeedup(heuristicSpeedup);
+        fgs.setDepth(depth);
         if (knowledgeFile != null) {
             fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
         }

@@ -641,7 +641,7 @@ public class GeneralAlgorithmEditor extends JPanel {
     private Box getParametersPane() {
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         JScrollPane scroll = new JScrollPane(comp);
-        scroll.setPreferredSize(new Dimension(600, 400));
+        scroll.setPreferredSize(new Dimension(1000, 300));
         Box c = Box.createVerticalBox();
 
         JButton explain1 = new JButton("Explain");
