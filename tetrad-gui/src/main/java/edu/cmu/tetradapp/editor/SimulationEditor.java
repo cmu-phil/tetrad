@@ -478,6 +478,12 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         c.add(simulationsDropdown);
+
+        Box e = Box.createHorizontalBox();
+        e.add(Box.createHorizontalGlue());
+        e.add(c);
+        e.add(Box.createHorizontalGlue());
+
         c.add(scroll);
 
         Box d6 = Box.createHorizontalBox();
@@ -488,7 +494,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         Box b = Box.createHorizontalBox();
         b.add(c);
-        b.add(Box.createHorizontalGlue());
         return b;
     }
 
