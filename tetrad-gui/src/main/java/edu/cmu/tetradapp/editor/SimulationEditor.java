@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -44,7 +45,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 import java.util.prefs.Preferences;
 
 /**
@@ -69,7 +69,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
      * Constructs the data editor with an empty list of data displays.
      */
     public SimulationEditor(final Simulation simulation) {
-        final SimulationGraphEditor graphEditor;
+        final GraphSelectionEditor graphEditor;
         DataEditor dataEditor;
 
         if (simulation.getSimulation() != null) {
@@ -81,9 +81,14 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Couldn't create simulation; try adjusting parameters.");
             }
-            graphEditor = new SimulationGraphEditor(Collections.singletonList(
-                    simulation.getSimulation().getTrueGraph(0)), JTabbedPane.LEFT);
-//            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(0));
+
+            List<Graph> trueGraphs = new ArrayList<>();
+
+            for (int i = 0; i < simulation.getSimulation().getNumDataSets(); i++) {
+                trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
+            }
+
+            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(trueGraphs, new Parameters()));
             DataWrapper wrapper = new DataWrapper();
             wrapper.setDataModelList(simulation.getDataModelList());
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
@@ -92,8 +97,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulation.setFixedGraph(true);
             }
         } else {
-            graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList(), JTabbedPane.LEFT);
-//            graphEditor = new GraphEditor(new EdgeListGraph());
+            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(Collections.<Graph>emptyList(), new Parameters()));
             dataEditor = new DataEditor(JTabbedPane.LEFT);
             simulation.setSimulation(new BayesNetSimulation(new RandomForward()), simulation.getParams());
             simulation.setFixedSimulation(false);
@@ -102,9 +106,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(),
                 simulation.getParams()));
-        tabbedPane.addTab("True Graph", new JScrollPane(graphEditor));
+        JScrollPane graphScroll = new JScrollPane(graphEditor);
+        tabbedPane.addTab("True Graph", graphScroll);
         tabbedPane.addTab("Data", dataEditor);
-        tabbedPane.setPreferredSize(new Dimension(600, 600));
+        tabbedPane.setPreferredSize(new Dimension(1000, 600));
 
         final String[] graphItems = new String[]{
                 "Random Foward",
@@ -282,10 +287,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 wrapper.setDataModelList(list);
                 tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
-                // Drastic. But seems sensible! The pane to edit simulations will unavailable
-                // after this.
-//                tabbedPane.removeTabAt(0);
-
                 simulation.setSimulation(_simulation, simulation.getParams());
 
                 resetPanel(simulation, graphItems, simulationItems, tabbedPane);
@@ -334,15 +335,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         simulation.getParams());
             }
         });
-
-//        JMenu save = new JMenu("Save Graph...");
-//
-//        save.add(new SaveGraph(graphEditor, "XML...", SaveGraph.Type.xml));
-//        save.add(new SaveGraph(graphEditor, "Text...", SaveGraph.Type.text));
-//        save.add(new SaveGraph(graphEditor, "R...", SaveGraph.Type.r));
-//
-//        file.add(save);
-//        file.add(new SaveComponentImage(graphEditor.getWorkbench(), "Save Graph Image..."));
 
         file.addSeparator();
 

@@ -33,10 +33,7 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to
@@ -58,6 +55,29 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     //=============================CONSTRUCTORS==========================//
 
+    public GraphSelectionWrapper(List<Graph> graphs, Parameters params) {
+        if (graphs == null) {
+            throw new NullPointerException("Graph must not be null.");
+        }
+
+        this.params = params;
+
+        List<Graph> oldGraphs = (List<Graph>) getGraphs(params);
+
+        if (oldGraphs != null) {
+            for (int i = 0; i < graphs.size(); i++) {
+                graphs.set(i, GraphUtils.replaceNodes(graphs.get(i), oldGraphs.get(0).getNodes()));
+            }
+        }
+
+        init(params, graphs);
+    }
+
+    private Object getGraphs(Parameters params) {
+        return params.get("graphs", null);
+    }
+
+
     public GraphSelectionWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -65,35 +85,34 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
         this.params = params;
 
-        if (params.get("graph", null) != null) {
-            graph = GraphUtils.replaceNodes(graph, ((Graph) params.get("graph", null)).getNodes());
-        }
+        List<Graph> graphs = new ArrayList<>();
+        graphs.add(graph);
 
-        params.set("graph", graph);
-        List<Node> highlighted = (List<Node>) params.get("highlightInEditor", new ArrayList<>());
-        highlighted.retainAll(graph.getNodes());
-        params.set("highlightInEditor", highlighted);
-        List<Node> selected = (List<Node>) params.get("selectedVariables", new ArrayList<Node>());
-        selected.retainAll(graph.getNodes());
-        params.set("selectedVariables", selected);
-        params.set("selectionGraph", new EdgeListGraph());
+        init(params, graphs);
+    }
+
+    private void init(Parameters params, List<Graph> graphs) {
+        setGraphs(graphs);
+
         calculateSelection();
-        GraphUtils.fruchtermanReingoldLayout((Graph) params.get("selectionGraph", new EdgeListGraph()));
+        List<Graph> selectionGraphs = getSelectionGraphs(params);
+
+        for (int i = 0; i < graphs.size(); i++) {
+            Graph graph = selectionGraphs.get(i);
+            GraphUtils.fruchtermanReingoldLayout(graph);
+        }
 
         log();
     }
 
-    public GraphSelectionWrapper(Graph graph, Parameters params, String message) {
-        this(graph, params);
+    private List<Graph> getSelectionGraphs(Parameters params) {
+        return (List<Graph>) params.get("selectionGraphs",
+                Collections.singletonList(new EdgeListGraph()));
+    }
+
+    public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
+        this(graphs, params);
         TetradLogger.getInstance().log("info", message);
-    }
-
-    public GraphSelectionWrapper(Parameters params) {
-        this(new EdgeListGraphSingleConnections(), params);
-    }
-
-    public GraphSelectionWrapper(GraphSource graph, Parameters params) {
-        this(graph.getGraph(), params);
     }
 
     /**
@@ -107,59 +126,80 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     //===============================================PUBLIC METHODS================================//
 
-    // Calculates the selection graph based on parameters.
     public void calculateSelection() {
+        List<Graph> selectedGraphs = new ArrayList<>();
+
+        for (int i = 0; i < getGraphs().size(); i++) {
+            selectedGraphs.add(calculateSelectionGraph(i));
+        }
+
+        params.set("selectionGraphs", selectedGraphs);
+    }
+
+    public List<Graph> getGraphs() {
+        List<Graph> graphs = (List<Graph>) params.get("graphs");
+
+        if (graphs == null || graphs.isEmpty()) {
+            List<Graph> _graphs = Collections.<Graph>singletonList(new EdgeListGraph());
+            params.set("graphs", _graphs);
+            return _graphs;
+        } else {
+            return graphs;
+        }
+    }
+
+    private Graph calculateSelectionGraph(int k) {
         List<Node> selectedVariables = getSelectedVariables();
-        selectedVariables = GraphUtils.replaceNodes(selectedVariables, ((Graph) params.get("graph", null)).getNodes());
+        selectedVariables = GraphUtils.replaceNodes(selectedVariables, getSelectedGraph(k).getNodes());
         Graph selectedGraph;
 
         if (params.getString("graphSelectionType", "subgraph").equals(Type.subgraph.toString())) {
-            selectedGraph = ((Graph) params.get("graph", null)).subgraph(selectedVariables);
+            selectedGraph = getSelectedGraph(k).subgraph(selectedVariables);
             params.set("highlightInEditor", selectedVariables);
         } else if (params.getString("graphSelectionType", "subgraph").equals(Type.adjacents.toString())) {
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll(((Graph) params.get("graph", null)).getAdjacentNodes(node));
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = ((Graph) params.get("graph", null)).subgraph(new ArrayList<>(adj));
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
             params.set("highlightInEditor", selectedVariables);
         } else if (params.getString("graphSelectionType", "subgraph").equals(Type.adjacentsOfAdjacents.toString())) {
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll(((Graph) params.get("graph", null)).getAdjacentNodes(node));
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
             for (Node node : new HashSet<>(adj)) {
-                adj.addAll(((Graph) params.get("graph", null)).getAdjacentNodes(node));
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = ((Graph) params.get("graph", null)).subgraph(new ArrayList<>(adj));
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
             params.set("highlightInEditor", selectedVariables);
         } else if (params.getString("graphSelectionType", "subgraph").equals(Type.adjacentsOfAdjacentsOfAdjacents)) {
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll(((Graph) params.get("graph", null)).getAdjacentNodes(node));
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
             for (Node node : new HashSet<>(adj)) {
-                adj.addAll(((Graph) params.get("graph", null)).getAdjacentNodes(node));
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
             for (Node node : new HashSet<>(adj)) {
-                adj.addAll(((Graph) params.get("graph", null)).getAdjacentNodes(node));
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = ((Graph) params.get("graph", null)).subgraph(new ArrayList<>(adj));
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
             params.set("highlightInEditor", selectedVariables);
         } else if (params.getString("graphSelectionType", "subgraph").equals(Type.yStructures.toString())) {
             Set<Edge> edges = new HashSet<>();
 
             for (Node node : selectedVariables) {
-                Set<Edge> ys = yStructures((Graph) params.get("graph", null), node);
+                Set<Edge> ys = yStructures(getGraphAtIndex(k), node, k);
                 edges.addAll(ys);
             }
 
@@ -183,7 +223,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             Set<Edge> edges = new HashSet<>();
 
             for (Node node : selectedVariables) {
-                Set<Edge> ys = pagYStructures((Graph) params.get("graph", null), node);
+                Set<Edge> ys = pagYStructures(getGraphAtIndex(k), node, k);
                 edges.addAll(ys);
             }
 
@@ -207,12 +247,12 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             Set<Node> _nodes = new HashSet<>();
 
             for (Node node : selectedVariables) {
-                Set<Node> mb = mb((Graph) params.get("graph", null), node);
+                Set<Node> mb = mb(getGraphAtIndex(k), node);
                 mb.add(node);
                 _nodes.addAll(mb);
             }
 
-            selectedGraph = ((Graph) params.get("graph", null)).subgraph(new ArrayList<>(_nodes));
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(_nodes)));
             params.set("highlightInEditor", selectedVariables);
         } else if (params.getString("graphSelectionType", "subgraph").equals(Type.treks.toString())) {
             Graph g = new EdgeListGraph(selectedVariables);
@@ -221,7 +261,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.treks((Graph) params.get("graph", null), x, y, getN() + 1);
+                    List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
 
                     if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -259,24 +299,24 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                     Node y = selectedVariables.get(j);
 
                     if (params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks((Graph) params.get("graph", null), x, y, getN() + 1);
+                        List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks((Graph) params.get("graph", null), x, y, -1);
+                        List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks((Graph) params.get("graph", null), x, y, getN() + 1);
+                        List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     }
@@ -292,7 +332,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.allPathsFromTo((Graph) params.get("graph", null), x, y, getN());
+                    List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
 
                     if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -330,24 +370,24 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                     Node y = selectedVariables.get(j);
 
                     if (params.getString("nType", "atLeast").equals(nType.atMost)) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo((Graph) params.get("graph", null), x, y, getN());
+                        List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.atLeast)) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo((Graph) params.get("graph", null), x, y, -1);
+                        List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo((Graph) params.get("graph", null), x, y, getN());
+                        List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     }
@@ -367,7 +407,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                     Node y = selectedVariables.get(j);
 
                     if (params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo((Graph) params.get("graph", null), x, y, getN());
+                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -375,7 +415,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo((Graph) params.get("graph", null), x, y, -1);
+                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -383,7 +423,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo((Graph) params.get("graph", null), x, y, getN());
+                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -405,24 +445,24 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo((Graph) params.get("graph", null), x, y, getN());
+                    List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
 
                     if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
-                                edges.addAll(getEdgesFromPath(path, (Graph) params.get("graph", null)));
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     }
@@ -436,22 +476,22 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             List<Node> nodes = new ArrayList<>();
 
             for (Node n : selectedVariables) {
-                List<Node> h = ((Graph) params.get("graph", null)).getParents(n);
+                List<Node> h = (getSelectedGraph(k).getParents(n));
 
                 if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 } else if (params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 }
             }
@@ -463,22 +503,22 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             List<Node> nodes = new ArrayList<>();
 
             for (Node n : selectedVariables) {
-                List<Node> h = ((Graph) params.get("graph", null)).getChildren(n);
+                List<Node> h = (getSelectedGraph(k).getChildren(n));
 
                 if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 } else if (params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 }
             }
@@ -490,22 +530,22 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             List<Node> nodes = new ArrayList<>();
 
             for (Node n : selectedVariables) {
-                List<Node> h = ((Graph) params.get("graph", null)).getAdjacentNodes(n);
+                List<Node> h = (getSelectedGraph(k).getAdjacentNodes(n));
 
                 if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 } else if (params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == getN()) {
                     nodes.add(n);
                     for (Node m : h) {
-                        g.add(((Graph) params.get("graph", null)).getEdge(m, n));
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 }
             }
@@ -516,27 +556,66 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             throw new IllegalArgumentException("Unrecognized selection type: " + params.getString("graphSelectionType", "subgraph"));
         }
 
-        params.set("selectionGraph", selectedGraph);
+        return selectedGraph;
+    }
+
+    private Graph getGraphAtIndex(int k) {
+        return getGraphs().get(k);
+    }
+
+    private Graph getSelectedGraph(int i) {
+        List<Graph> graphs = getGraphs();
+
+        if (graphs != null && graphs.size() > 0) {
+            return graphs.get(i);
+        } else {
+            return new EdgeListGraph();
+        }
     }
 
     // Sorry, this has to return the selection graph since its used downstream in the interface.
     public Graph getGraph() {
-        return (Graph) params.get("selectionGraph", new EdgeListGraph());
+        return getSelectionGraphs(params).get(0);
     }
 
-    public void setGraph(Graph graph) {
-        params.set("graph", graph);
-        params.set("selectedVariables", new ArrayList<Node>());
-        params.set("selectionGraph", new EdgeListGraphSingleConnections());
+    public void setGraphs(List<Graph> graphs) {
+        params.set("graphs", graphs);
+
+        List<Graph> selectionGraphs = new ArrayList<>();
+
+        for (int i = 0; i < graphs.size(); i++) {
+            selectionGraphs.add(new EdgeListGraph());
+        }
+
+        setSelectedVariables(new ArrayList<Node>());
+        params.set("selectionGraphs", selectionGraphs);
+
+        List<Node> highlighted = (List<Node>) params.get("highlightInEditor", new ArrayList<>());
+        highlighted.retainAll(getSelectedGraph(0).getNodes());
+        params.set("highlightInEditor", highlighted);
+        List<Node> selected = (List<Node>) params.get("selectedVariables", new ArrayList<Node>());
+        selected.retainAll(getSelectedGraph(0).getNodes());
+        params.set("selectedVariables", selected);
+
         log();
     }
 
-    public Graph getSelectionGraph() {
-        return (Graph) params.get("selectionGraph", new EdgeListGraph());
+    public Graph getSelectionGraph(int i) {
+        List<Graph> selectionGraphs =  (List<Graph>) params.get("selectionGraphs", new ArrayList<>());
+
+        if (selectionGraphs == null || selectionGraphs.isEmpty()) {
+            for (int j = 0; j < getGraphs().size(); j++) {
+                selectionGraphs.add(new EdgeListGraph());
+            }
+
+            params.set("selectionGraphs", selectionGraphs);
+        }
+
+        return selectionGraphs.get(i);
     }
 
     public Graph getOriginalGraph() {
-        return (Graph) params.get("graph", null);
+        return getSelectedGraph(0);
     }
 
     public void setDialogText(String dialogText) {
@@ -572,15 +651,15 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public Graph getSourceGraph() {
-        return (Graph) params.get("graph", null);
+        return getSelectedGraph(0);
     }
 
     public Graph getResultGraph() {
-        return (Graph) params.get("selectionGraph", new EdgeListGraph());
+        return (getSelectionGraphs(params)).get(0);
     }
 
     public List<String> getVariableNames() {
-        return ((Graph) params.get("graph", null)).getNodeNames();
+        return getSelectedGraph(0).getNodeNames();
     }
 
     public void setSelectedVariables(List<Node> variables) {
@@ -588,11 +667,26 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public List<Node> getSelectedVariables() {
-        return (List<Node>) params.get("selectedVariables", new ArrayList<Node>());
+        List<Node> nodes = getVariables();
+
+        List<Node> first50 = new ArrayList<>();
+
+        for (int i = 0; i < 50; i++) {
+            if (i >= nodes.size()) continue;
+            first50.add(nodes.get(i));
+        }
+
+        List<Node> variables = (List<Node>) params.get("selectedVariables");
+
+        if (variables.isEmpty()) {
+            return first50;
+        } else {
+            return variables;
+        }
     }
 
     public List<Node> getVariables() {
-        return ((Graph) params.get("graph", null)).getNodes();
+        return getSelectedGraph(0).getNodes();
     }
 
     public void setN(int n) {
@@ -648,7 +742,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         return mb;
     }
 
-    private Set<Edge> yStructures(Graph graph, Node z) {
+    private Set<Edge> yStructures(Graph graph, Node z, int i) {
         Set<Edge> edges = new HashSet<>();
 
         List<Edge> parents = new ArrayList<>();
@@ -660,20 +754,20 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             }
         }
 
-        List<Node> children = ((Graph) params.get("graph", null)).getChildren(z);
+        List<Node> children = getSelectedGraph(i).getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
             edges.addAll(parents);
 
             for (Node node : children) {
-                edges.add(((Graph) params.get("graph", null)).getEdge(node, z));
+                edges.add(getSelectedGraph(i).getEdge(node, z));
             }
         }
 
         return edges;
     }
 
-    private Set<Edge> pagYStructures(Graph graph, Node z) {
+    private Set<Edge> pagYStructures(Graph graph, Node z, int i) {
         Set<Edge> edges = new HashSet<>();
 
         List<Edge> parents = new ArrayList<>();
@@ -685,13 +779,13 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             }
         }
 
-        List<Node> children = ((Graph) params.get("graph", null)).getChildren(z);
+        List<Node> children = getSelectedGraph(i).getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
             edges.addAll(parents);
 
             for (Node node : children) {
-                edges.add(((Graph) params.get("graph", null)).getEdge(node, z));
+                edges.add(getSelectedGraph(i).getEdge(node, z));
             }
         }
 
@@ -700,7 +794,6 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     private void log() {
         TetradLogger.getInstance().log("info", "General Graph");
-        TetradLogger.getInstance().log("graph", "" + getSelectionGraph());
     }
 
     private Set<Edge> getEdgesFromPath(List<Node> path, Graph graph) {

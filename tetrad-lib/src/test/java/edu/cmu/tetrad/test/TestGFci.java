@@ -185,16 +185,16 @@ public class TestGFci {
             gfci.setCompleteRuleSetUsed(completeRuleSetUsed);
 //            GFci gfci = new GFci(new IndTestDSep(dag));
             gfci.setFaithfulnessAssumed(faithfulnessAssumed);
-            Graph pattern1 = gfci.search();
+            Graph pag1 = gfci.search();
             DagToPag dagToPag = new DagToPag(dag);
             dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-            Graph pattern = dagToPag.convert();
+            Graph pag2 = dagToPag.convert();
 
-//            System.out.println(pattern1);
+//            System.out.println(pag1);
 //            System.out.println(pattern2);
 //
-//            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
-            assertEquals(pattern, pattern1);
+//            System.out.println(MisclassificationUtils.edgeMisclassifications(pag1, pag2));
+            assertEquals(pag2, pag1);
         }
     }
 

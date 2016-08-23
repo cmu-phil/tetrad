@@ -42,10 +42,13 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
+import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,7 +71,7 @@ public class GeneralAlgorithmEditor extends JPanel {
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final JComboBox<AlgType> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
-    private final SimulationGraphEditor graphEditor;
+    private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private JLabel whatYouChose;
 
@@ -161,8 +164,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         }
 
         this.parameters = runner.getParameters();
-        graphEditor = new SimulationGraphEditor(new ArrayList<Graph>(), JTabbedPane.LEFT);
-        graphEditor.replace(runner.getGraphs());
+        graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(new ArrayList<Graph>(), new Parameters()));
         setLayout(new BorderLayout());
 
         whatYouChose = new JLabel();
@@ -276,7 +278,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         pane = new JTabbedPane();
         pane.add("Algorithm", getParametersPane());
         pane.add("Knowledge", getKnowledgePanel(runner));
-        pane.add("Output Graphs", graphEditor);
+        pane.add("Output Graph Selections", graphEditor);
 
         add(pane, BorderLayout.CENTER);
 
@@ -361,10 +363,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-                runner.setGraphList(new ArrayList<Graph>());
-                graphEditor.replace(new ArrayList<Graph>());
                 runner.execute();
-                runner.setGraphList(runner.getGraphs());
                 graphEditor.replace(runner.getGraphs());
                 graphEditor.validate();
                 firePropertyChange("modelChanged", null, null);
@@ -644,10 +643,22 @@ public class GeneralAlgorithmEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(1000, 300));
         Box c = Box.createVerticalBox();
 
-        JButton explain1 = new JButton("Explain");
-        JButton explain2 = new JButton("Explain");
-        JButton explain3 = new JButton("Explain");
-        JButton explain4 = new JButton("Explain");
+//        button.setIcon(
+//                new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
+//        button.setMaximumSize(new Dimension(80, 40));
+//        button.setPreferredSize(new Dimension(80, 40));
+
+
+
+        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+
+        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
+        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
+        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
+        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         explain1.addActionListener(new ActionListener() {
             @Override

@@ -45,38 +45,27 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
 /**
- * Allows the user to execute a multiple linear regression in the GUI. Contains
- * a panel that lets the user specify a target variable and a list of continuous
- * regressors, plus a tabbed pane that includes (a) a display to show the result
- * of the regression and (b) a graph workbench to show the graph of the target
- * with significant regressors from the regression as parents.
+ * Lets the user select a subgraph of a possible large graph and display it.
  *
- * @author Tyler Gibosn
- * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
- * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- *         Bayes estimator
+ * @author jdramsey
  */
 public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
     private final GraphSelectionEditorPanel editorPanel;
+    private final JPanel forWorkbenchScrolls;
+
+    private JTabbedPane pane;
 
     /**
-     * The workbench used to display the graph of significant regression into
-     * the target.
-     */
-    private GraphWorkbench workbench;
-
-    /**
-     * The gadget that does the regression.
+     * Holds the graphs.
      */
     private GraphSelectionWrapper wrapper;
+    private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+    private List<GraphWorkbench> workbenches;
 
     /**
      * Constructs a graph selection editor.
@@ -91,56 +80,16 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         setLayout(new BorderLayout());
 
         this.wrapper = wrapper;
-        Graph outGraph = wrapper.getSelectionGraph();
 
-        workbench = new GraphWorkbench(outGraph);
+        forWorkbenchScrolls = new JPanel();
+        forWorkbenchScrolls.setLayout(new BorderLayout());
 
-        for (Node node : wrapper.getSelectedVariables()) {
-            workbench.selectNode(node);
-        }
+        resetWorkbenchScrolls(wrapper);
+        resetGraphs(wrapper);
 
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
-            }
-        });
-
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
-        workbenchScroll.setPreferredSize(new Dimension(450, 300));
-
-        final JButton executeButton = new JButton("Graph It!");
-        executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
-
-                new WatchedProcess(owner) {
-                    public void watch() {
-
-                        wrapper.calculateSelection();
-                        Graph selection = wrapper.getSelectionGraph();
-
-                        GraphUtils.circleLayout(selection, 200, 200, 150);
-                        GraphUtils.fruchtermanReingoldLayout(selection);
-
-                        workbench.setGraph(selection);
-
-                        for (Node node : wrapper.getSelectedVariables()) {
-                            if (wrapper.getHighlightInEditor().contains(node) && workbench.getGraph().containsNode(node)) {
-                                workbench.selectNode(node);
-                            }
-                        }
-                    }
-                };
-            }
-        });
-
+        final JButton executeButton = resetWorkbenches(wrapper);
 
         JMenuBar bar = new JMenuBar();
-        JMenu file = new GraphFileMenu(this, workbench);
-
-        bar.add(file);
 
         bar.add(createEditMenu());
 
@@ -431,6 +380,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         selectInGraph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                GraphWorkbench workbench = getWorkbench();
                 List<DisplayNode> displayNodes = workbench.getSelectedNodes();
                 List<Node> newSelected = new ArrayList<>();
                 for (DisplayNode node : displayNodes) {
@@ -443,12 +393,12 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
         bar.add(select);
 
-        bar.add(new LayoutMenu(workbench));
+//        bar.add(new LayoutMenu(workbenches.get(0)));
 
         add(bar, BorderLayout.NORTH);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Selection", workbenchScroll);
+        resetWorkbenchScrolls(wrapper);
+        resetGraphs(wrapper);
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
@@ -456,7 +406,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         editorPanel.setMaximumSize(editorPanel.getMinimumSize());
 
         b1.add(editorPanel);
-        b1.add(tabbedPane);
+        b1.add(forWorkbenchScrolls);
         b.add(b1);
 
         JPanel buttonPanel = new JPanel();
@@ -466,7 +416,91 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
         add(b, BorderLayout.CENTER);
 
+        editorPanel.reset();
+
         setName("Graph Selection Result:");
+    }
+
+    private void resetWorkbenchScrolls(GraphSelectionWrapper wrapper) {
+        tabbedPane.removeAll();
+        workbenches = new ArrayList<>();
+
+        List<JScrollPane> workbenchScrolls = new ArrayList<>();
+
+        workbenchScrolls.clear();
+        List<Graph> graphs = wrapper.getGraphs();
+
+        for (int i = 0; i < graphs.size(); i++) {
+            GraphWorkbench workbench = new GraphWorkbench();
+            workbenches.add(workbench);
+
+            workbench.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("modelChanged".equals(evt.getPropertyName())) {
+                        firePropertyChange("modelChanged", null, null);
+                    }
+                }
+            });
+
+            JScrollPane workbenchScroll = new JScrollPane(workbench);
+            workbenchScroll.setPreferredSize(new Dimension(450, 300));
+
+            workbenchScrolls.add(workbenchScroll);
+        }
+
+//        wrapper.setSelectionGraphs(selectionGraphs);
+
+        resetGraphs(wrapper);
+
+        for (int i = 0; i < workbenchScrolls.size(); i++) {
+            tabbedPane.add("" + (i + 1), workbenchScrolls.get(i));
+        }
+
+        forWorkbenchScrolls.add(tabbedPane);
+        forWorkbenchScrolls.validate();
+    }
+
+    private JButton resetWorkbenches(final GraphSelectionWrapper wrapper) {
+        final JButton executeButton = new JButton("Graph It!");
+        executeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) getTopLevelAncestor();
+
+                new WatchedProcess(owner) {
+                    public void watch() {
+                        resetGraphs(wrapper);
+                    }
+                };
+            }
+        });
+
+        forWorkbenchScrolls.validate();
+
+        return executeButton;
+    }
+
+    private void resetGraphs(GraphSelectionWrapper wrapper) {
+        wrapper.calculateSelection();
+
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            Graph selection = wrapper.getSelectionGraph(i);
+
+            GraphUtils.circleLayout(selection, 200, 200, 150);
+            GraphUtils.fruchtermanReingoldLayout(selection);
+
+            GraphWorkbench workbench = getWorkbench(i);
+
+            workbench.setGraph(selection);
+
+            List<Node> selected = wrapper.getSelectedVariables();
+
+            for (Node node : selected) {
+                if (wrapper.getHighlightInEditor().contains(node) &&
+                        workbench.getGraph().containsNode(node)) {
+                    workbench.selectNode(node);
+                }
+            }
+        }
     }
 
     private JMenu createGraphMenu() {
@@ -553,19 +587,34 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
     @Override
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        if (selectedIndex == -1) selectedIndex = 0;
+        return workbenches.get(selectedIndex);
+    }
+
+    public GraphWorkbench getWorkbench(int selectionIndex) {
+        return workbenches.get(selectionIndex);
     }
 
     @Override
     public Graph getGraph() {
-        return wrapper.getSelectionGraph();
+        int selectedIndex = pane.getSelectedIndex();
+        if (selectedIndex == -1) selectedIndex = 0;
+        return wrapper.getSelectionGraph(selectedIndex);
     }
 
     @Override
     public void setGraph(Graph graph) {
-        wrapper.setGraph(graph);
+        wrapper.setGraphs(Collections.singletonList(graph));
         editorPanel.reset();
         getWorkbench().setGraph(new EdgeListGraphSingleConnections());
+    }
+
+    public void replace(List<Graph> graphs) {
+        wrapper.setGraphs(graphs);
+        resetWorkbenchScrolls(wrapper);
+        resetGraphs(wrapper);
+        editorPanel.reset();
     }
 
     /**
@@ -860,7 +909,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         }
 
         private JList createList() {
-            JList list = new JList(new VariableListModel());
+            JList list = new JList<Node>(new VariableListModel());
             list.setFont(getFONT());
             list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             list.setVisibleRowCount(10);
@@ -1164,7 +1213,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
                     "Input Variable Names as Text", "Select", false, component);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.setVisible(true);
-
 
             window.addActionListener(new ActionListener() {
                 @Override
