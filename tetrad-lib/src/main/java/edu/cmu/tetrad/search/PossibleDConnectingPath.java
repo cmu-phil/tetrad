@@ -96,12 +96,12 @@ public class PossibleDConnectingPath {
             }
         }
         if (pag.isAdjacentTo(x, y)) {
-            return Collections.singletonList(new PossibleDConnectingPath(pag, new HashSet<Node>(z), Arrays.asList(x, y)));
+            return Collections.singletonList(new PossibleDConnectingPath(pag, new HashSet<>(z), Arrays.asList(x, y)));
         }
-        List<PossibleDConnectingPath> connectingPaths = new LinkedList<PossibleDConnectingPath>();
-        Set<Node> conditions = new HashSet<Node>(z);
+        List<PossibleDConnectingPath> connectingPaths = new LinkedList<>();
+        Set<Node> conditions = new HashSet<>(z);
         Set<Node> closure = getConditioningClosure(pag, z);
-        Set<List<Node>> paths = new HashSet<List<Node>>();
+        Set<List<Node>> paths = new HashSet<>();
         findPaths(pag, paths, null, x, y, conditions, closure, new LinkedList<Node>());
         for (List<Node> path : paths) {
             connectingPaths.add(new PossibleDConnectingPath(pag, conditions, path));
@@ -123,12 +123,12 @@ public class PossibleDConnectingPath {
             }
         }
         if (pag.isAdjacentTo(x, y)) {
-            return Collections.singletonList(new PossibleDConnectingPath(pag, new HashSet<Node>(z), Arrays.asList(x, y)));
+            return Collections.singletonList(new PossibleDConnectingPath(pag, new HashSet<>(z), Arrays.asList(x, y)));
         }
-        List<PossibleDConnectingPath> connectingPaths = new LinkedList<PossibleDConnectingPath>();
-        Set<Node> conditions = new HashSet<Node>(z);
+        List<PossibleDConnectingPath> connectingPaths = new LinkedList<>();
+        Set<Node> conditions = new HashSet<>(z);
         Set<Node> closure = getConditioningClosure(pag, z);
-        Set<List<Node>> paths = new HashSet<List<Node>>();
+        Set<List<Node>> paths = new HashSet<>();
         findPathsOfLength(pag, paths, null, x, y, conditions, closure, new LinkedList<Node>(), length);
         for (List<Node> path : paths) {
             connectingPaths.add(new PossibleDConnectingPath(pag, conditions, path));
@@ -161,7 +161,7 @@ public class PossibleDConnectingPath {
 
 
     private static Set<Node> getConditioningClosure(Graph pag, Collection<Node> z) {
-        Set<Node> closure = new HashSet<Node>();
+        Set<Node> closure = new HashSet<>();
         for (Node node : z) {
             doParentClosureVisit(pag, node, closure);
         }
@@ -212,7 +212,7 @@ public class PossibleDConnectingPath {
         List<Node> adjacencies = pag.getAdjacentNodes(current);
         for (Node adj : adjacencies) {
             if (previous == null) {
-                List<Node> h = new ArrayList<Node>(history);
+                List<Node> h = new ArrayList<>(history);
                 h.add(current);
                 findPaths(pag, paths, current, adj, target, condition, conditionClosure, h);
                 continue;
@@ -227,7 +227,7 @@ public class PossibleDConnectingPath {
             }
 
             if (pass) {
-                List<Node> h = new ArrayList<Node>(history);
+                List<Node> h = new ArrayList<>(history);
                 h.add(current);
                 findPaths(pag, paths, current, adj, target, condition, conditionClosure, h);
             }
@@ -259,7 +259,7 @@ public class PossibleDConnectingPath {
         List<Node> adjacencies = pag.getAdjacentNodes(current);
         for (Node adj : adjacencies) {
             if (previous == null) {
-                List<Node> h = new ArrayList<Node>(history);
+                List<Node> h = new ArrayList<>(history);
                 h.add(current);
                 findPathsOfLength(pag, paths, current, adj, target, condition, conditionClosure, h, length);
                 continue;
@@ -274,7 +274,7 @@ public class PossibleDConnectingPath {
             }
 
             if (pass) {
-                List<Node> h = new ArrayList<Node>(history);
+                List<Node> h = new ArrayList<>(history);
                 h.add(current);
                 findPathsOfLength(pag, paths, current, adj, target, condition, conditionClosure, h, length);
             }

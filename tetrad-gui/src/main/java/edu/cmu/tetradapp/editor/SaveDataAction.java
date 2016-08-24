@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class SaveDataAction extends AbstractAction {
+final class SaveDataAction extends AbstractAction {
 
     /**
      * The dataEditor.                          -

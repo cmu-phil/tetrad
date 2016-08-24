@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class CausalOrder {
+final class CausalOrder {
 
     /**
      * The graph being laid out.
@@ -46,7 +46,7 @@ public final class CausalOrder {
     /**
      * Has information about nodes on screen.
      */
-    private LayoutEditable layoutEditable;
+    private final LayoutEditable layoutEditable;
 
     //==============================CONSTRUCTORS===========================//
 
@@ -99,10 +99,10 @@ public final class CausalOrder {
      *
      * @return the tiers of this digraph.
      */
-    public List<List<Node>> getTiers() {
-        Set<Node> found = new HashSet<Node>();
-        Set<Node> notFound = new HashSet<Node>();
-        List<List<Node>> tiers = new LinkedList<List<Node>>();
+    private List<List<Node>> getTiers() {
+        Set<Node> found = new HashSet<>();
+        Set<Node> notFound = new HashSet<>();
+        List<List<Node>> tiers = new LinkedList<>();
 
         // first copy all the nodes into 'notFound'.
         for (Node node1 : graph.getNodes()) {
@@ -113,7 +113,7 @@ public final class CausalOrder {
         // has all of its parents already in 'found', then add it to the
         // getModel tier.
         while (!notFound.isEmpty()) {
-            List<Node> thisTier = new LinkedList<Node>();
+            List<Node> thisTier = new LinkedList<>();
 
             for (Node node : notFound) {
                 if (found.containsAll(graph.getParents(node))) {
@@ -122,7 +122,7 @@ public final class CausalOrder {
             }
 
             if (thisTier.isEmpty()) {
-                tiers.add(new ArrayList<Node>(notFound));
+                tiers.add(new ArrayList<>(notFound));
                 break;
             }
 

@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -30,6 +32,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -51,7 +54,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     //============================CONSTRUCTORS============================//
 
-    public LingamStructureRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamStructureRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -62,7 +65,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Parameters(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -86,16 +89,16 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
         }
 
 //        Lingam_old lingam = new Lingam_old();
-//        lingam.setParameter1(getParams().getIndTestParams().getParameter1());
+//        lingam.setParameter1(getParameters().getParameter1());
 //        lingam.setPruningDone(true);
-//        lingam.setParameter1(getParams().getIndTestParams().getParameter1());
+//        lingam.setParameter1(getParameters().getParameter1());
 //        GraphWithParameters result = lingam.lingam(data);
 //        Graph graph = result.getGraph();
 
 
         Lingam lingam = new Lingam();
-        LingamParams params = (LingamParams) getParams();
-        lingam.setPruneFactor(params.getPruneFactor());
+        Parameters params = getParams();
+        lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
 
@@ -118,7 +121,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -128,7 +131,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -137,7 +140,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -147,9 +150,9 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
     }
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
@@ -166,7 +169,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

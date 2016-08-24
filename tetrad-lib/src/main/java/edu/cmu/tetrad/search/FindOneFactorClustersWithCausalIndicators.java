@@ -81,7 +81,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     private transient DataModel dataModel;
 
     // The depth of the PC search, -2 if the PC search should not be run.
-    private List<List<Node>> clusters = new ArrayList<List<Node>>();
+    private List<List<Node>> clusters = new ArrayList<>();
 
     private int depth = 0; // -2 to turn PC off
 
@@ -191,9 +191,9 @@ public class FindOneFactorClustersWithCausalIndicators {
         return extraShuffle;
     }
 
-    public Set<Set<Integer>> ESeeds = new HashSet<Set<Integer>>();
+    public Set<Set<Integer>> ESeeds = new HashSet<>();
 
-    public List<Set<Integer>> CSeeds = new ArrayList<Set<Integer>>();
+    public List<Set<Integer>> CSeeds = new ArrayList<>();
 
     public double CIparameter = .8;
 
@@ -216,11 +216,11 @@ public class FindOneFactorClustersWithCausalIndicators {
         Cs.removeAll(Es);
         List<List<Set<Integer>>> Clusters = new ArrayList();
         for (Set<Integer> ECluster : EClusters) {
-            List<Set<Integer>> newCluster = new ArrayList<Set<Integer>>();
+            List<Set<Integer>> newCluster = new ArrayList<>();
             newCluster.add(1, ECluster);
             Clusters.add(newCluster);
         }
-        List<Set<Integer>> EClustersArray = new ArrayList<Set<Integer>>();
+        List<Set<Integer>> EClustersArray = new ArrayList<>();
         for (Set<Integer> ECluster : EClusters) EClustersArray.add(ECluster);
         for (Integer c : Cs) {
             int match = -1;
@@ -240,7 +240,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 }
             }
             if (pass) {
-                List<Set<Integer>> modCluster = new ArrayList<Set<Integer>>();
+                List<Set<Integer>> modCluster = new ArrayList<>();
                 Set<Integer> newCs = Clusters.get(match).get(0);
                 newCs.add(c);
                 modCluster.add(newCs);
@@ -248,7 +248,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 Clusters.set(match, modCluster);
             }
         }
-        Set<List<Set<Integer>>> ClusterSet = new HashSet<List<Set<Integer>>>(Clusters);
+        Set<List<Set<Integer>>> ClusterSet = new HashSet<>(Clusters);
         return ClusterSet;
     }
 
@@ -256,16 +256,16 @@ public class FindOneFactorClustersWithCausalIndicators {
         Tetrad tetrad = null;
         List<Node> empty = new ArrayList();
         if (variables.size() < 4) {
-            Set<Set<Integer>> ESeeds = new HashSet<Set<Integer>>();
+            Set<Set<Integer>> ESeeds = new HashSet<>();
         }
 
         Map<Node, Set<Node>> adjacencies;
 
         if (depth == -2) {
-            adjacencies = new HashMap<Node, Set<Node>>();
+            adjacencies = new HashMap<>();
 
             for (Node node : variables) {
-                HashSet<Node> _nodes = new HashSet<Node>(variables);
+                HashSet<Node> _nodes = new HashSet<>(variables);
                 _nodes.remove(node);
                 adjacencies.put(node, _nodes);
             }
@@ -279,7 +279,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 //            System.out.println("...done.");
         }
 
-        List<Integer> allVariables = new ArrayList<Integer>();
+        List<Integer> allVariables = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) allVariables.add(i);
 
         log("Finding seeds.", true);
@@ -336,10 +336,10 @@ public class FindOneFactorClustersWithCausalIndicators {
                 }
             }
 
-            HashSet<Integer> _cluster = new HashSet<Integer>(triple);
+            HashSet<Integer> _cluster = new HashSet<>(triple);
 
             if (verbose) {
-                log("++" + variablesForIndices(new ArrayList<Integer>(triple)), false);
+                log("++" + variablesForIndices(new ArrayList<>(triple)), false);
             }
 
             if (EPure) {
@@ -347,17 +347,17 @@ public class FindOneFactorClustersWithCausalIndicators {
             }
             if (!EPure) {
                 if (CPure1) {
-                    Set<Integer> _cluster1 = new HashSet<Integer>(n2, n3);
+                    Set<Integer> _cluster1 = new HashSet<>(n2, n3);
                     _cluster1.addAll(CSeeds.get(n1));
                     CSeeds.set(n1, _cluster1);
                 }
                 if (CPure2) {
-                    Set<Integer> _cluster2 = new HashSet<Integer>(n1, n3);
+                    Set<Integer> _cluster2 = new HashSet<>(n1, n3);
                     _cluster2.addAll(CSeeds.get(n2));
                     CSeeds.set(n2, _cluster2);
                 }
                 if (CPure3) {
-                    Set<Integer> _cluster3 = new HashSet<Integer>(n1, n2);
+                    Set<Integer> _cluster3 = new HashSet<>(n1, n2);
                     _cluster3.addAll(CSeeds.get(n3));
                     CSeeds.set(n3, _cluster3);
                 }
@@ -376,15 +376,15 @@ public class FindOneFactorClustersWithCausalIndicators {
 
     private Set<Set<Integer>> finishESeeds(Set<Set<Integer>> ESeeds) {
         log("Growing Effect Seeds.", true);
-        Set<Set<Integer>> grown = new HashSet<Set<Integer>>();
+        Set<Set<Integer>> grown = new HashSet<>();
 
-        List<Integer> _variables = new ArrayList<Integer>();
+        List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) _variables.add(i);
 
 
         // Lax grow phase with speedup.
         if (algType == AlgType.lax) {
-            Set<Integer> t = new HashSet<Integer>();
+            Set<Integer> t = new HashSet<>();
             int count = 0;
             int total = ESeeds.size();
 
@@ -394,7 +394,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 }
 
                 Set<Integer> cluster = ESeeds.iterator().next();
-                Set<Integer> _cluster = new HashSet<Integer>(cluster);
+                Set<Integer> _cluster = new HashSet<>(cluster);
 
                 if (extraShuffle) {
                     Collections.shuffle(_variables);
@@ -403,7 +403,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 for (int o : _variables) {
                     if (_cluster.contains(o)) continue;
 
-                    List<Integer> _cluster2 = new ArrayList<Integer>(_cluster);
+                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
                     int rejected = 0;
                     int accepted = 0;
 
@@ -440,7 +440,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 // This takes out all pure clusters that are subsets of _cluster.
                 ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
                 int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<Integer>(_cluster);
+                List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
                     int n1 = _cluster3.get(choice2[0]);
@@ -456,7 +456,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 }
 
                 if (verbose) {
-                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<Integer>(_cluster)));
+                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
                 }
                 grown.add(_cluster);
             } while (!ESeeds.isEmpty());
@@ -468,8 +468,8 @@ public class FindOneFactorClustersWithCausalIndicators {
             int total = ESeeds.size();
 
             // Optimized lax version of grow phase.
-            for (Set<Integer> cluster : new HashSet<Set<Integer>>(ESeeds)) {
-                Set<Integer> _cluster = new HashSet<Integer>(cluster);
+            for (Set<Integer> cluster : new HashSet<>(ESeeds)) {
+                Set<Integer> _cluster = new HashSet<>(cluster);
 
                 if (extraShuffle) {
                     Collections.shuffle(_variables);
@@ -478,7 +478,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 for (int o : _variables) {
                     if (_cluster.contains(o)) continue;
 
-                    List<Integer> _cluster2 = new ArrayList<Integer>(_cluster);
+                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
                     int rejected = 0;
                     int accepted = 0;
 //
@@ -506,7 +506,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                     _cluster.add(o);
                 }
 
-                for (Set<Integer> c : new HashSet<Set<Integer>>(ESeeds)) {
+                for (Set<Integer> c : new HashSet<>(ESeeds)) {
                     if (_cluster.containsAll(c)) {
                         ESeeds.remove(c);
                     }
@@ -522,7 +522,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
         // Strict grow phase.
         if (algType == AlgType.strict) {
-            Set<Integer> t = new HashSet<Integer>();
+            Set<Integer> t = new HashSet<>();
             int count = 0;
             int total = ESeeds.size();
 
@@ -532,7 +532,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 }
 
                 Set<Integer> cluster = ESeeds.iterator().next();
-                Set<Integer> _cluster = new HashSet<Integer>(cluster);
+                Set<Integer> _cluster = new HashSet<>(cluster);
 
                 if (extraShuffle) {
                     Collections.shuffle(_variables);
@@ -542,7 +542,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 for (int o : _variables) {
                     if (_cluster.contains(o)) continue;
 
-                    List<Integer> _cluster2 = new ArrayList<Integer>(_cluster);
+                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
 
                     ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 2);
                     int[] choice;
@@ -569,7 +569,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 // This takes out all pure clusters that are subsets of _cluster.
                 ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
                 int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<Integer>(_cluster);
+                List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
                     int n1 = _cluster3.get(choice2[0]);
@@ -595,16 +595,16 @@ public class FindOneFactorClustersWithCausalIndicators {
         log("Choosing among grown Effect Clusters.", true);
 
         for (Set<Integer> l : grown) {
-            ArrayList<Integer> _l = new ArrayList<Integer>(l);
+            ArrayList<Integer> _l = new ArrayList<>(l);
             Collections.sort(_l);
             if (verbose) {
                 log("Grown: " + variablesForIndices(_l), false);
             }
         }
 
-        Set<Set<Integer>> out = new HashSet<Set<Integer>>();
+        Set<Set<Integer>> out = new HashSet<>();
 
-        List<Set<Integer>> list = new ArrayList<Set<Integer>>(grown);
+        List<Set<Integer>> list = new ArrayList<>(grown);
 
 //        final Map<Set<Integer>, Double> pValues = new HashMap<Set<Integer>, Double>();
 //
@@ -630,7 +630,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 //            System.out.println(variablesForIndices(new ArrayList<Integer>(o)) + "  p = " + pValues.get(o));
 //        }
 
-        Set<Integer> all = new HashSet<Integer>();
+        Set<Integer> all = new HashSet<>();
 
         CLUSTER:
         for (Set<Integer> cluster : list) {
@@ -659,7 +659,7 @@ public class FindOneFactorClustersWithCausalIndicators {
         double max = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < 1; i++) {
-            double c = getP(new ArrayList<Integer>(o), 3);
+            double c = getP(new ArrayList<>(o), 3);
             if (c > max) max = c;
         }
 
@@ -694,10 +694,10 @@ public class FindOneFactorClustersWithCausalIndicators {
             for (int i = 0; i < numRestarts; i++) {
                 Mimbuild2 mimbuild = new Mimbuild2();
 
-                List<List<Node>> clusters1 = new ArrayList<List<Node>>();
-                clusters1.add(variablesForIndices(new ArrayList<Integer>(cluster)));
+                List<List<Node>> clusters1 = new ArrayList<>();
+                clusters1.add(variablesForIndices(new ArrayList<>(cluster)));
 
-                List<String> names = new ArrayList<String>();
+                List<String> names = new ArrayList<>();
                 names.add("L");
 
                 mimbuild.search(clusters1, names, cov);
@@ -711,10 +711,10 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private double getPMulticluster(Set<Set<Integer>> o) {
-        List<List<Integer>> list = new ArrayList<List<Integer>>();
+        List<List<Integer>> list = new ArrayList<>();
 
         for (Set<Integer> _o : o) {
-            list.add(new ArrayList<Integer>(_o));
+            list.add(new ArrayList<>(_o));
         }
         return getPMulticluster(list, 3);
     }
@@ -722,7 +722,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     private double getPMulticluster(List<List<Integer>> clusters, int numRestarts) {
         if (false) {
             Graph g = new EdgeListGraph();
-            List<Node> latents = new ArrayList<Node>();
+            List<Node> latents = new ArrayList<>();
             for (int i = 0; i < clusters.size(); i++) {
                 GraphNode latent = new GraphNode("L" + i);
                 latent.setNodeType(NodeType.LATENT);
@@ -753,13 +753,13 @@ public class FindOneFactorClustersWithCausalIndicators {
             for (int i = 0; i < numRestarts; i++) {
                 Mimbuild2 mimbuild = new Mimbuild2();
 
-                List<List<Node>> _clusters = new ArrayList<List<Node>>();
+                List<List<Node>> _clusters = new ArrayList<>();
 
                 for (List<Integer> _cluster : clusters) {
                     _clusters.add(variablesForIndices(_cluster));
                 }
 
-                List<String> names = new ArrayList<String>();
+                List<String> names = new ArrayList<>();
 
                 for (int j = 0; j < clusters.size(); j++) {
                     names.add("L" + j);
@@ -985,10 +985,10 @@ public class FindOneFactorClustersWithCausalIndicators {
         Map<Node, Set<Node>> adjacencies;
 
         if (depth == -2) {
-            adjacencies = new HashMap<Node, Set<Node>>();
+            adjacencies = new HashMap<>();
 
             for (Node node : variables) {
-                HashSet<Node> _nodes = new HashSet<Node>(variables);
+                HashSet<Node> _nodes = new HashSet<>(variables);
                 _nodes.remove(node);
                 adjacencies.put(node, _nodes);
             }
@@ -1001,13 +1001,13 @@ public class FindOneFactorClustersWithCausalIndicators {
             System.out.println("...done.");
         }
 
-        List<Integer> _variables = new ArrayList<Integer>();
+        List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) _variables.add(i);
 
         Set<Set<Integer>> pureClusters = findPureClusters(_variables, adjacencies);
         for (Set<Integer> cluster : pureClusters) _variables.removeAll(cluster);
         Set<Set<Integer>> mixedClusters = findMixedClusters(_variables, unionPure(pureClusters), adjacencies);
-        Set<Set<Integer>> allClusters = new HashSet<Set<Integer>>(pureClusters);
+        Set<Set<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
         return allClusters;
 
@@ -1017,8 +1017,8 @@ public class FindOneFactorClustersWithCausalIndicators {
     private Set<Set<Integer>> findPureClusters(List<Integer> _variables, Map<Node, Set<Node>> adjacencies) {
 //        System.out.println("Original variables = " + variables);
 
-        Set<Set<Integer>> clusters = new HashSet<Set<Integer>>();
-        List<Integer> allVariables = new ArrayList<Integer>();
+        Set<Set<Integer>> clusters = new HashSet<>();
+        List<Integer> allVariables = new ArrayList<>();
         for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
 
         VARIABLES:
@@ -1027,10 +1027,10 @@ public class FindOneFactorClustersWithCausalIndicators {
 
             for (int x : _variables) {
                 Node nodeX = variables.get(x);
-                List<Node> adjX = new ArrayList<Node>(adjacencies.get(nodeX));
-                adjX.retainAll(variablesForIndices(new ArrayList<Integer>(_variables)));
+                List<Node> adjX = new ArrayList<>(adjacencies.get(nodeX));
+                adjX.retainAll(variablesForIndices(new ArrayList<>(_variables)));
 
-                for (Node node : new ArrayList<Node>(adjX)) {
+                for (Node node : new ArrayList<>(adjX)) {
                     if (adjacencies.get(node).size() < 3) {
                         adjX.remove(node);
                     }
@@ -1068,7 +1068,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                         for (int o : _variables) {
                             if (cluster.contains(o)) continue;
                             cluster.add(o);
-                            List<Integer> _cluster = new ArrayList<Integer>(cluster);
+                            List<Integer> _cluster = new ArrayList<>(cluster);
 
                             if (!clique(cluster, adjacencies)) {
                                 cluster.remove(o);
@@ -1104,7 +1104,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                             }
                         }
 
-                        System.out.println("Cluster found: " + variablesForIndices(new ArrayList<Integer>(cluster)));
+                        System.out.println("Cluster found: " + variablesForIndices(new ArrayList<>(cluster)));
                         clusters.add(cluster);
                         _variables.removeAll(cluster);
 
@@ -1123,16 +1123,16 @@ public class FindOneFactorClustersWithCausalIndicators {
     private Set<Set<Integer>> findPureClusters2(List<Integer> _variables, Map<Node, Set<Node>> adjacencies) {
         System.out.println("Original variables = " + variables);
 
-        Set<Set<Integer>> clusters = new HashSet<Set<Integer>>();
-        List<Integer> allVariables = new ArrayList<Integer>();
-        Set<Node> foundVariables = new HashSet<Node>();
+        Set<Set<Integer>> clusters = new HashSet<>();
+        List<Integer> allVariables = new ArrayList<>();
+        Set<Node> foundVariables = new HashSet<>();
         for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
 
         for (int x : _variables) {
             Node nodeX = variables.get(x);
             if (foundVariables.contains(nodeX)) continue;
 
-            List<Node> adjX = new ArrayList<Node>(adjacencies.get(nodeX));
+            List<Node> adjX = new ArrayList<>(adjacencies.get(nodeX));
             adjX.removeAll(foundVariables);
 
             if (adjX.size() < 3) continue;
@@ -1140,14 +1140,14 @@ public class FindOneFactorClustersWithCausalIndicators {
             for (Node nodeY : adjX) {
                 if (foundVariables.contains(nodeY)) continue;
 
-                List<Node> commonXY = new ArrayList<Node>(adjacencies.get(nodeY));
+                List<Node> commonXY = new ArrayList<>(adjacencies.get(nodeY));
                 commonXY.retainAll(adjX);
                 commonXY.removeAll(foundVariables);
 
                 for (Node nodeZ : commonXY) {
                     if (foundVariables.contains(nodeZ)) continue;
 
-                    List<Node> commonXZ = new ArrayList<Node>(commonXY);
+                    List<Node> commonXZ = new ArrayList<>(commonXY);
                     commonXZ.retainAll(adjacencies.get(nodeZ));
                     commonXZ.removeAll(foundVariables);
 
@@ -1183,7 +1183,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 //                                    continue O;
 //                                }
 
-                                List<Integer> _cluster = new ArrayList<Integer>(cluster);
+                                List<Integer> _cluster = new ArrayList<>(cluster);
 
                                 ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 4);
                                 int[] choice2;
@@ -1209,9 +1209,9 @@ public class FindOneFactorClustersWithCausalIndicators {
                                 }
                             }
 
-                            System.out.println("Cluster found: " + variablesForIndices(new ArrayList<Integer>(cluster)));
+                            System.out.println("Cluster found: " + variablesForIndices(new ArrayList<>(cluster)));
                             clusters.add(cluster);
-                            foundVariables.addAll(variablesForIndices(new ArrayList<Integer>(cluster)));
+                            foundVariables.addAll(variablesForIndices(new ArrayList<>(cluster)));
                         }
                     }
                 }
@@ -1223,10 +1223,10 @@ public class FindOneFactorClustersWithCausalIndicators {
 
     //  Finds clusters of size 3.
     private Set<Set<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure, Map<Node, Set<Node>> adjacencies) {
-        Set<Set<Integer>> threeClusters = new HashSet<Set<Integer>>();
+        Set<Set<Integer>> threeClusters = new HashSet<>();
 
         if (unionPure.isEmpty()) {
-            return new HashSet<Set<Integer>>();
+            return new HashSet<>();
         }
 
         REMAINING:
@@ -1241,7 +1241,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 int z = remaining.get(choice[1]);
                 int w = remaining.get(choice[2]);
 
-                Set<Integer> cluster = new HashSet<Integer>();
+                Set<Integer> cluster = new HashSet<>();
                 cluster.add(y);
                 cluster.add(z);
                 cluster.add(w);
@@ -1258,10 +1258,10 @@ public class FindOneFactorClustersWithCausalIndicators {
                 boolean allX = true;
 
                 for (int x : unionPure) {
-                    Set<Integer> _cluster = new HashSet<Integer>(cluster);
+                    Set<Integer> _cluster = new HashSet<>(cluster);
                     _cluster.add(x);
 
-                    if (!quartetVanishes(_cluster) || !significant(new ArrayList<Integer>(_cluster))) {
+                    if (!quartetVanishes(_cluster) || !significant(new ArrayList<>(_cluster))) {
                         allX = false;
                         break;
                     }
@@ -1272,7 +1272,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
 
-                    System.out.println("3-cluster found: " + variablesForIndices(new ArrayList<Integer>(cluster)));
+                    System.out.println("3-cluster found: " + variablesForIndices(new ArrayList<>(cluster)));
 
                     continue REMAINING;
                 }
@@ -1285,7 +1285,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private boolean clique(Set<Integer> cluster, Map<Node, Set<Node>> adjacencies) {
-        List<Integer> _cluster = new ArrayList<Integer>(cluster);
+        List<Integer> _cluster = new ArrayList<>(cluster);
 
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
@@ -1302,7 +1302,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private List<Node> variablesForIndices(List<Integer> cluster) {
-        List<Node> _cluster = new ArrayList<Node>();
+        List<Node> _cluster = new ArrayList<>();
 
         for (int c : cluster) {
             _cluster.add(variables.get(c));
@@ -1320,7 +1320,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 if (quartet.contains(o)) continue;
 
                 for (int p : quartet) {
-                    Set<Integer> _quartet = new HashSet<Integer>(quartet);
+                    Set<Integer> _quartet = new HashSet<>(quartet);
                     _quartet.remove(p);
                     _quartet.add(o);
 
@@ -1330,14 +1330,14 @@ public class FindOneFactorClustersWithCausalIndicators {
                 }
             }
 
-            return significant(new ArrayList<Integer>(quartet));
+            return significant(new ArrayList<>(quartet));
         }
 
         return false;
     }
 
     private Set<Integer> quartet(int x, int y, int z, int w) {
-        Set<Integer> set = new HashSet<Integer>();
+        Set<Integer> set = new HashSet<>();
         set.add(x);
         set.add(y);
         set.add(z);
@@ -1375,7 +1375,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
         Graph graph = new EdgeListGraph(variables);
 
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
         for (int i = 0; i < clusters.size(); i++) {
             Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
@@ -1383,7 +1383,7 @@ public class FindOneFactorClustersWithCausalIndicators {
             graph.addNode(latent);
         }
 
-        List<Set<Node>> _clusters = new ArrayList<Set<Node>>(clusters);
+        List<Set<Node>> _clusters = new ArrayList<>(clusters);
 
         for (int i = 0; i < latents.size(); i++) {
             for (Node node : _clusters.get(i)) {
@@ -1396,10 +1396,10 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private Graph convertToGraph(Set<Set<Integer>> allClusters) {
-        Set<Set<Node>> _clustering = new HashSet<Set<Node>>();
+        Set<Set<Node>> _clustering = new HashSet<>();
 
         for (Set<Integer> cluster : allClusters) {
-            Set<Node> nodes = new HashSet<Node>();
+            Set<Node> nodes = new HashSet<>();
 
             for (int i : cluster) {
                 nodes.add(variables.get(i));
@@ -1412,7 +1412,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private Set<Integer> unionPure(Set<Set<Integer>> pureClusters) {
-        Set<Integer> unionPure = new HashSet<Integer>();
+        Set<Integer> unionPure = new HashSet<>();
 
         for (Set<Integer> cluster : pureClusters) {
             unionPure.addAll(cluster);
@@ -1422,7 +1422,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private boolean significant(List<Integer> cluster) {
-        double p = getClusterP2(variablesForIndices(new ArrayList<Integer>(cluster)));
+        double p = getClusterP2(variablesForIndices(new ArrayList<>(cluster)));
 
         return p > alpha;
     }
@@ -1451,7 +1451,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
 
     private Set<Integer> triple(int n1, int n2, int n3) {
-        Set<Integer> triple = new HashSet<Integer>();
+        Set<Integer> triple = new HashSet<>();
         triple.add(n1);
         triple.add(n2);
         triple.add(n3);

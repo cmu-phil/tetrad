@@ -60,7 +60,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     /**
      * The SemPm being edited.
      */
-    GeneralizedSemIm semIm;
+    private GeneralizedSemIm semIm;
 
     /**
      * The graphical editor for the SemIm.
@@ -86,7 +86,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * A common map of nodes to launched editors so that they can all be closed when this editor
      * is closed.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
     //========================CONSTRUCTORS===========================//
 
@@ -442,7 +442,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         return this.paramsEditor;
     }
 
-    public GeneralizedSemIm getSemIm() {
+    private GeneralizedSemIm getSemIm() {
         return semIm;
     }
 }

@@ -66,7 +66,7 @@ public class BinaryFunctionUtils {
     }
 
     public long count() {
-        Set<Integer> variables = new HashSet<Integer>();
+        Set<Integer> variables = new HashSet<>();
         for (int i = 0; i < numArgs; i++) variables.add(i);
         long numValidated = 0;
         long numFunctions = getNumFunctions();
@@ -80,7 +80,7 @@ public class BinaryFunctionUtils {
             }
 
             function.resetFunction(index);
-            Set<Integer> validated = new HashSet<Integer>();
+            Set<Integer> validated = new HashSet<>();
 
             for (int row = 0; row < getNumRows(); row++) {
                 boolean[] vals = function.getRow(row);
@@ -123,9 +123,9 @@ public class BinaryFunctionUtils {
     }
 
     public boolean satisfiesTestPair(BinaryFunction function) {
-        Set<Integer> variables = new HashSet<Integer>();
+        Set<Integer> variables = new HashSet<>();
         for (int i = 0; i < numArgs; i++) variables.add(i);
-        Set<Integer> validated = new HashSet<Integer>();
+        Set<Integer> validated = new HashSet<>();
 
         for (int row = 0; row < getNumRows(); row++) {
             boolean[] vals = function.getRow(row);

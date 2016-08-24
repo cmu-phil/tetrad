@@ -65,7 +65,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * The independence test.
@@ -145,7 +145,7 @@ public final class ProbFci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<Node>();
+        Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -187,7 +187,7 @@ public final class ProbFci implements GraphSearch {
         setMaxReachablePathLength(maxReachablePathLength);
 
         //List<Node> variables = independenceTest.getVariables();       - Robert Tillman 2008
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
         for (Node variable : variables) {
             nodes.add(variable);
@@ -374,7 +374,7 @@ public final class ProbFci implements GraphSearch {
     // Orient colliders
     ////////////////////////////////////////////
     private void ruleR0_RFCI(List<Node[]> rTuples) {
-        List<Node[]> lTuples = new ArrayList<Node[]>();
+        List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = graph.getNodes();
 
@@ -387,7 +387,7 @@ public final class ProbFci implements GraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            List<Node> sepSet = new ArrayList<Node>();
+            List<Node> sepSet = new ArrayList<>();
             sepSet.remove(j);
 
             boolean independent1 = false;
@@ -519,7 +519,7 @@ public final class ProbFci implements GraphSearch {
     // collect in rTupleList all unshielded tuples
     ////////////////////////////////////////////////
     private List<Node[]> getRTuples() {
-        List<Node[]> rTuples = new ArrayList<Node[]>();
+        List<Node[]> rTuples = new ArrayList<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node j : nodes) {
@@ -918,7 +918,7 @@ public final class ProbFci implements GraphSearch {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     reachablePathFind(a, b, c, reachable);
 
@@ -941,15 +941,15 @@ public final class ProbFci implements GraphSearch {
     private void reachablePathFind(Node a, Node b, Node c,
                                    LinkedList<Node> reachable) {
 
-        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
+        Map<Node, Node> next = new HashMap<>();   // RFCI: stores the next node in the disciminating path
         // path containing the nodes in the traiangle
         next.put(a, b);
         next.put(b, c);
 
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -1057,7 +1057,7 @@ public final class ProbFci implements GraphSearch {
 
                 if (sepset1 == null) continue;
 
-                List<Node> sepSet2 = new ArrayList<Node>(sepset1);
+                List<Node> sepSet2 = new ArrayList<>(sepset1);
                 sepSet2.remove(r);
                 sepSet2.remove(q);
 
@@ -1079,7 +1079,7 @@ public final class ProbFci implements GraphSearch {
                             getSepsets().set(r, q, condSet);
 
                             // add new unshielded tuples to rTuples
-                            List<Node[]> rTuples = new ArrayList<Node[]>();
+                            List<Node[]> rTuples = new ArrayList<>();
                             for (Node thisNode : nodes) {
                                 List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
                                 if (adjacentNodes.contains(r) && adjacentNodes.contains(q)) {
@@ -1281,9 +1281,9 @@ public final class ProbFci implements GraphSearch {
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2) {
-        List<List<Node>> ucPdPaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        LinkedList<Node> soFar = new LinkedList<Node>();
+        LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -1326,7 +1326,7 @@ public final class ProbFci implements GraphSearch {
 
         if (curr.equals(end)) {
             // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<Node>(soFar));
+            ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
             List<Node> adjacents = graph.getAdjacentNodes(curr);
@@ -1349,7 +1349,7 @@ public final class ProbFci implements GraphSearch {
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     private List<List<Node>> getUcCirclePaths(Node n1, Node n2) {
-        List<List<Node>> ucCirclePaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2);
 
         for (List<Node> path : ucPdPaths) {

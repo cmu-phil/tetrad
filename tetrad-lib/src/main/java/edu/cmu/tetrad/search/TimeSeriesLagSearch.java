@@ -180,7 +180,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     /**
@@ -188,7 +188,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
-        return new HashSet<Triple>(colliderTriples);
+        return new HashSet<>(colliderTriples);
     }
 
     /**
@@ -196,7 +196,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<Triple>(noncolliderTriples);
+        return new HashSet<>(noncolliderTriples);
     }
 
     /**
@@ -204,7 +204,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {
-        return new HashSet<Triple>(allTriples);
+        return new HashSet<>(allTriples);
     }
 
     /**
@@ -223,10 +223,10 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         TetradLogger.getInstance().log("info", "Starting TimeSeriesLagSearch.");
         TetradLogger.getInstance().log("info", "Independence test = " + independenceTest + ".");
         long startTime = System.currentTimeMillis();
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -329,9 +329,9 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
 //        System.out.println("orientUnshieldedTriples 1");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
 //            System.out.println("orientUnshieldedTriples 2");

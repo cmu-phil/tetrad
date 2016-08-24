@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -31,9 +32,8 @@ import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.PValueImproverWrapper;
-import edu.cmu.tetradapp.model.PcIndTestParams;
-import edu.cmu.tetradapp.model.PcSearchParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -56,11 +56,10 @@ import java.util.Map;
 public class PValueImproverEditor extends JPanel implements LayoutEditable {
     private GraphWorkbench graphWorkbench;
     private PValueImproverWrapper wrapper;
-    private PcSearchParams params;
+    private final Parameters params;
 
-    private DoubleTextField alphaField;
-    private IntTextField beamWidthField;
-    private DoubleTextField zeroEdgePField;
+    private final DoubleTextField alphaField;
+    private final IntTextField beamWidthField;
 
     private JPanel panel = new JPanel();
     private SemIm originalSemIm;
@@ -68,7 +67,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
     public PValueImproverEditor(final PValueImproverWrapper wrapper) {
         this.setWrapper(wrapper);
-        this.params = (PcSearchParams) wrapper.getParams();
+        this.params = wrapper.getParams();
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -89,17 +88,17 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             setNewSemIm(im2);
         }
 
-        final PcIndTestParams indTestParams = (PcIndTestParams) getParams().getIndTestParams();
-        double alpha = indTestParams.getAlpha();
-        int beamWidth = indTestParams.getBeamWidth();
-        double zeroEdgeP = indTestParams.getZeroEdgeP();
+        final Parameters params = getParams();
+        double alpha = params.getDouble("alpha", 0.001);
+        int beamWidth = params.getInt("beamWidth", 5);
+        double zeroEdgeP = params.getDouble("zeroEdgeP", 0.05);
 
         alphaField = new DoubleTextField(alpha, 6,
                 new DecimalFormat("0.0########"));
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0 && value <= 1) {
-                    indTestParams.setAlpha(value);
+                    params.set("alpha", 0.001);
                     return value;
                 } else {
                     return oldValue;
@@ -111,7 +110,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         beamWidthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value >= 1) {
-                    indTestParams.setBeamWidth(value);
+                    params.set("beamwidth", value);
                     return value;
                 } else {
                     return oldValue;
@@ -120,12 +119,12 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         });
 
 
-        zeroEdgePField = new DoubleTextField(zeroEdgeP, 6,
+        DoubleTextField zeroEdgePField = new DoubleTextField(zeroEdgeP, 6,
                 new DecimalFormat("0.0########"));
         zeroEdgePField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0 && value <= 1) {
-                    indTestParams.setZeroEdgeP(value);
+                    params.set("zeroEdgeP", value);
                     return value;
                 } else {
                     return oldValue;
@@ -298,7 +297,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
     }
 
     public IKnowledge getKnowledge() {
-        return getWrapper().getParams().getKnowledge();
+        return (IKnowledge) getWrapper().getParams().get("knowledge", new Knowledge2());
     }
 
     public Graph getSourceGraph() {
@@ -313,11 +312,11 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         getGraphWorkbench().layoutByKnowledge();
     }
 
-    public PValueImproverWrapper getWrapper() {
+    private PValueImproverWrapper getWrapper() {
         return wrapper;
     }
 
-    public void setWrapper(PValueImproverWrapper wrapper) {
+    private void setWrapper(PValueImproverWrapper wrapper) {
         this.wrapper = wrapper;
     }
 
@@ -325,7 +324,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         return graphWorkbench;
     }
 
-    public void setGraphWorkbench(final GraphWorkbench graphWorkbench) {
+    private void setGraphWorkbench(final GraphWorkbench graphWorkbench) {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         this.graphWorkbench = graphWorkbench;
@@ -382,15 +381,15 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         firePropertyChange("modelChanged", null, null);
     }
 
-    public PcSearchParams getParams() {
+    private Parameters getParams() {
         return params;
     }
 
-    public SemIm getOriginalSemIm() {
+    private SemIm getOriginalSemIm() {
         return originalSemIm;
     }
 
-    public SemIm getNewSemIm() {
+    private SemIm getNewSemIm() {
         return newSemIm;
     }
 }

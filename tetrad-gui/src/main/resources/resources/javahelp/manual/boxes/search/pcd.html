@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: PC</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td><h2><font color="#ffffff">Search Algorithms: PCD </font></h2></td>
+    </tr>
+  </tbody>
+</table>
+<p><font color="#000000"><b><br>
+  </b></font>PCD is a modification of the PC algorithm that allows it to search over datasets in which some of the variables stand in deterministic relationships. A deterministic relationship between variables is one that is purely functional, with no random variation involved. For instance, if X = 2Y, then X and Y in the graph X&lt;--Y--&gt;Z stand in a deterministic relationships. The PC algorithm does not deal well with examples of this sort. For instance, the PC algorithm might do a statistical test to determine whether X _||_ Z | Y, in order to see whehter the edge X---Z should be removed during the adjacency phase. But since X and Y stand in a deterministic relationship, it is always the case that X _||_ Z | Y, since this is informationally equivalent to asking whether X _||_ Z | X, which is always true. But establishing that X _||_ Z | X is never a good reason for removing the edge between X and Z; if such a reason were permitted, the adjacency phase of the PC search would always return an empty graph! In the face of deterministic relationships, the PC algorithm needs to be made aware of when effective conditioning on an endpoint of an edge happens and adjustements need to be made to prevent edges from being eliminated for such reasons.</p>
+<p>To correct the problem, PCD checks before performing an independence check of the form X _||_ Z | S, whether X determines either X or Y, and if it does, refuses to do the independence check. This correct the problem for the adjacency search. There is an additional problem in the step where colliders are oriented. In this case, PCD, when considering whether to orient an unshielded triple &lt;X, Y, Z&gt; as a collider, based on a conderation of the set Sxz that was used to remove the edge X---Z from the graph during the adjacency search, first asks whether Sxz determines X or Y. If it does not, then &lt;X, Y, Z&gt; is oriented as a collider X--&gt;Y&lt;--Z if Y is not contained in Sxz.</p>
+<p>Otherwise, the assumptions and types of coltData permitted for PCD are identical to that of PC. </p>
+</body>
+</html>

@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -42,8 +41,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class AllPathsAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
+class AllPathsAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and

@@ -1,10 +1,11 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
 
@@ -13,7 +14,8 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public interface Simulation extends HasParameters {
+public interface Simulation extends HasParameters, TetradSerializable {
+    static final long serialVersionUID = 23L;
 
     /**
      * Creates a data set and simulates data.
@@ -27,8 +29,9 @@ public interface Simulation extends HasParameters {
 
     /**
      * @return That graph.
+     * @param index
      */
-    Graph getTrueGraph();
+    Graph getTrueGraph(int index);
 
     /**
      * @param index The index of the desired simulated data set.
@@ -52,4 +55,6 @@ public interface Simulation extends HasParameters {
      * parameters whose values can be varied.
      */
     List<String> getParameters();
+
+
 }

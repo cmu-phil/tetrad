@@ -40,8 +40,8 @@ import java.util.ArrayList;
  * @author Joseph Ramsey
  */
 public class LayoutMenu extends JMenu {
-    private LayoutEditable layoutEditable;
-    private CopyLayoutAction copyLayoutAction;
+    private final LayoutEditable layoutEditable;
+    private final CopyLayoutAction copyLayoutAction;
 
     public LayoutMenu(LayoutEditable layoutEditable) {
         super("Layout");
@@ -232,7 +232,7 @@ public class LayoutMenu extends JMenu {
                 final LayoutEditable layoutEditable = getLayoutEditable();
                 Graph graph = layoutEditable.getGraph();
 
-                for (Node node : new ArrayList<Node>(graph.getNodes())) {
+                for (Node node : new ArrayList<>(graph.getNodes())) {
                     if (node.getNodeType() == NodeType.ERROR) {
                         graph.removeNode(node);
                     }

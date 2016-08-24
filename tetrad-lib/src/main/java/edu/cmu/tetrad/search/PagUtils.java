@@ -103,7 +103,7 @@ public final class PagUtils {
                 Node Ad = dag.getNode(A.getName());
                 Node Bd = dag.getNode(B.getName());
 
-                List<Node> singletonB = new ArrayList<Node>();
+                List<Node> singletonB = new ArrayList<>();
                 singletonB.add(Bd);
                 List<Node> ancestorsOfB = dag.getAncestors(singletonB);
                 if (!ancestorsOfB.contains(Ad)) {

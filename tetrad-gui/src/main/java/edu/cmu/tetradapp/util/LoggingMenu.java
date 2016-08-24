@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Tyler Gibson
  */
-public class LoggingMenu extends JMenu {
+class LoggingMenu extends JMenu {
 
 
     /**
@@ -57,7 +57,7 @@ public class LoggingMenu extends JMenu {
     /**
      * Constructs the menu given the logger that the menu is to display.
      */
-    public LoggingMenu(TetradLoggerConfig config) {
+    private LoggingMenu(TetradLoggerConfig config) {
         super("Logging");
         if (config == null) {
             throw new NullPointerException("The given config must not be null");

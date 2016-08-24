@@ -267,10 +267,10 @@ public class TetradSerializableUtils {
 
             int numFields = getNumNonSerialVersionUIDFields(clazz);
 
-            if (numFields > 0 && serializableInstanceMethod(clazz) == null) {
-                throw new RuntimeException("Class " + clazz + " does not " +
-                        "\nhave a public static serializableInstance constructor.");
-            }
+//            if (numFields > 0 && serializableInstanceMethod(clazz) == null) {
+//                throw new RuntimeException("Class " + clazz + " does not " +
+//                        "\nhave a public static serializableInstance constructor.");
+//            }
 
             if (++index % 50 == 0) {
                 System.out.println(index);
@@ -432,9 +432,9 @@ public class TetradSerializableUtils {
                     "'serialVersionUID' in " + clazz +
                     ". Please make one and set it " + "to 23L."));
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Class " + clazz + "does not " +
-                    "have a public static serializableInstance constructor.",
-                    e);
+//            throw new RuntimeException("Class " + clazz + "does not " +
+//                    "have a public static serializableInstance constructor.",
+//                    e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("The method serializableInstance() of " +
                     "class " + clazz + " is not public.", e);

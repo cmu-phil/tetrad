@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.FciIndTestParamsOld;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -38,33 +38,33 @@ class FciIndTestParamsEditorOld extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private FciIndTestParamsOld params = null;
+    private Parameters params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private IntTextField depthField;
+    private final IntTextField depthField;
 
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public FciIndTestParamsEditorOld(FciIndTestParamsOld params) {
+    public FciIndTestParamsEditorOld(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"));
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -73,11 +73,11 @@ class FciIndTestParamsEditorOld extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 5);
+        depthField = new IntTextField(params().getInt("depth", -1), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -126,7 +126,7 @@ class FciIndTestParamsEditorOld extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private FciIndTestParamsOld indTestParams() {
+    private Parameters params() {
         return params;
     }
 }

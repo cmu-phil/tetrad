@@ -63,12 +63,12 @@ public class RestrictToGraphNodes extends DataWrapper {
         return new CorrMatrixConverter(wrapper);
     }
 
-    public DataModel restrictToGraphNodes(DataModel dataModel, Graph graph) {
+    private DataModel restrictToGraphNodes(DataModel dataModel, Graph graph) {
 
         if (dataModel instanceof DataSet) {
             DataSet data = (DataSet) dataModel;
 
-            List<Node> dataNodes = new ArrayList<Node>();
+            List<Node> dataNodes = new ArrayList<>();
             List<Node> graphNodes = graph.getNodes();
 
             for (Node graphNode : graphNodes) {
@@ -84,7 +84,7 @@ public class RestrictToGraphNodes extends DataWrapper {
             return dataSubset;
         } else if (dataModel instanceof ICovarianceMatrix) {
             ICovarianceMatrix cov = (ICovarianceMatrix) dataModel;
-            List<String> dataNames = new ArrayList<String>();
+            List<String> dataNames = new ArrayList<>();
             List<Node> graphNodes = graph.getNodes();
 
             for (Node graphNode : graphNodes) {

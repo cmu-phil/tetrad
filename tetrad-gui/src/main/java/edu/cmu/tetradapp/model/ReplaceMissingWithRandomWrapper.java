@@ -42,7 +42,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     /**
      * @serial Cannot be null.
      */
-    private DataSet outputDataSet;
+    private final DataSet outputDataSet;
 
     //============================CONSTRUCTORS=============================//
 

@@ -50,7 +50,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * The Jlable that contains the name
      */
-    private JLabel name = new JLabel("Note");
+    private final JLabel name = new JLabel("Note");
 
 
 

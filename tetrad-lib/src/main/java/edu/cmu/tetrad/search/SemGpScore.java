@@ -203,7 +203,7 @@
 //        throw new UnsupportedOperationException();
 //    }
 //
-//    public void setPenaltyDiscount(double penaltyDiscount) {
+//    public void setAlpha(double penaltyDiscount) {
 //        this.penaltyDiscount = penaltyDiscount;
 //    }
 //

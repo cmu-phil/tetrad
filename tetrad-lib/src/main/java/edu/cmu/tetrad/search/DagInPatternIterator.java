@@ -39,7 +39,7 @@ public class DagInPatternIterator {
      * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether or not
      * these edges have already been oriented left and/or right.
      */
-    private LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<DecoratedGraph>();
+    private LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
     private boolean returnedOne = false;
     private IKnowledge knowledge = new Knowledge2();
@@ -93,7 +93,7 @@ public class DagInPatternIterator {
 //            }
 //        }
 
-        HashMap<Graph, Set<Edge>> changedEdges = new HashMap<Graph, Set<Edge>>();
+        HashMap<Graph, Set<Edge>> changedEdges = new HashMap<>();
         changedEdges.put(pattern, new HashSet<Edge>());
 
         decoratedGraphs.add(new DecoratedGraph(pattern, getKnowledge(), changedEdges,
@@ -174,14 +174,14 @@ public class DagInPatternIterator {
         private boolean triedLeft = false;
         private boolean triedRight = false;
         private IKnowledge knowledge;
-        private Map<Graph, Set<Edge>> changedEdges = new HashMap<Graph, Set<Edge>>();
+        private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
         private boolean allowArbitraryOrientation = true;
 
         public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;
             this.edge = findUndirectedEdge(graph);
             this.knowledge = knowledge;
-            this.setChangedEdges(new HashMap<Graph, Set<Edge>>(changedEdges));
+            this.setChangedEdges(new HashMap<>(changedEdges));
             this.allowArbitraryOrientation = allowArbitraryOrientation;
         }
 
@@ -238,7 +238,7 @@ public class DagInPatternIterator {
 
             if (!triedLeft && !graph.isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) {
-                Set<Edge> edges = new HashSet<Edge>();
+                Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdge(edge.getNode1(), edge.getNode2());
@@ -246,7 +246,7 @@ public class DagInPatternIterator {
 
 
                 edges.add(graph.getEdge(edge.getNode2(), edge.getNode1()));
-                edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
+                edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
 
                 MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
@@ -271,7 +271,7 @@ public class DagInPatternIterator {
 
             if (!triedRight && !graph.isAncestorOf(node2, node1) &&
                     !getKnowledge().isForbidden(node1.getName(), node2.getName())) {
-                Set<Edge> edges = new HashSet<Edge>();
+                Set<Edge> edges = new HashSet<>();
 
 
                 Graph graph = new EdgeListGraph(this.graph);
@@ -279,7 +279,7 @@ public class DagInPatternIterator {
                 graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
 
                 edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
-                edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
+                edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
 
                 MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());

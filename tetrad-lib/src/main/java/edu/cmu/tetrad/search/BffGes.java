@@ -48,7 +48,7 @@ public final class BffGes implements Bff {
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
-    private Set<GraphWithPValue> significantModels = new HashSet<GraphWithPValue>();
+    private Set<GraphWithPValue> significantModels = new HashSet<>();
     private SemIm originalSemIm;
     private SemIm newSemIm;
     private Scorer scorer;
@@ -214,7 +214,7 @@ public final class BffGes implements Bff {
         TetradLogger.getInstance().log("info", "Initial Score = " + nf.format(bestScore));
 
         Node x, y;
-        Set<Node> t = new HashSet<Node>();
+        Set<Node> t = new HashSet<>();
 
         do {
             x = y = null;
@@ -297,10 +297,10 @@ public final class BffGes implements Bff {
         double score = initialScore;
         double bestScore = score;
         Node x, y;
-        Set<Node> t = new HashSet<Node>();
+        Set<Node> t = new HashSet<>();
         do {
             x = y = null;
-            List<Edge> graphEdges = new ArrayList<Edge>(graph.getEdges());
+            List<Edge> graphEdges = new ArrayList<>(graph.getEdges());
             Collections.shuffle(graphEdges);
 
             for (Edge edge : graphEdges) {
@@ -494,7 +494,7 @@ public final class BffGes implements Bff {
     **/
 
     private boolean validInsert(Node x, Node y, Set<Node> subset, Graph graph) {
-        List<Node> naYXT = new LinkedList<Node>(subset);
+        List<Node> naYXT = new LinkedList<>(subset);
         naYXT.addAll(findNaYX(x, y, graph));
 
         return isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
@@ -515,7 +515,7 @@ public final class BffGes implements Bff {
      * Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
      */
     private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
-        List<Node> tNeighbors = new LinkedList<Node>(graph.getAdjacentNodes(y));
+        List<Node> tNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
         tNeighbors.removeAll(graph.getAdjacentNodes(x));
 
         for (int i = tNeighbors.size() - 1; i >= 0; i--) {
@@ -534,7 +534,7 @@ public final class BffGes implements Bff {
      * Get all nodes that are connected to Y by an undirected edge and adjacent to X
      */
     private static List<Node> getHNeighbors(Node x, Node y, Graph graph) {
-        List<Node> hNeighbors = new LinkedList<Node>(graph.getAdjacentNodes(y));
+        List<Node> hNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
         hNeighbors.retainAll(graph.getAdjacentNodes(x));
 
         for (int i = hNeighbors.size() - 1; i >= 0; i--) {
@@ -555,7 +555,7 @@ public final class BffGes implements Bff {
      * adjacency list/matrix of the graph.
      */
     private static List<Node> findNaYX(Node x, Node y, Graph graph) {
-        List<Node> naYX = new LinkedList<Node>(graph.getAdjacentNodes(y));
+        List<Node> naYX = new LinkedList<>(graph.getAdjacentNodes(y));
         naYX.retainAll(graph.getAdjacentNodes(x));
 
         for (int i = 0; i < naYX.size(); i++) {
@@ -648,7 +648,7 @@ public final class BffGes implements Bff {
      * @return true iif the given set forms a clique in the given graph.
      */
     private static boolean isClique(List<Node> set, Graph graph) {
-        List<Node> setv = new LinkedList<Node>(set);
+        List<Node> setv = new LinkedList<>(set);
         for (int i = 0; i < setv.size() - 1; i++) {
             for (int j = i + 1; j < setv.size(); j++) {
                 if (!graph.isAdjacentTo(setv.get(i), setv.get(j))) {
@@ -692,10 +692,10 @@ public final class BffGes implements Bff {
     }
 
     private static List<Set<Node>> powerSet(List<Node> nodes) {
-        List<Set<Node>> subsets = new ArrayList<Set<Node>>();
+        List<Set<Node>> subsets = new ArrayList<>();
         int total = (int) Math.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
-            Set<Node> newSet = new HashSet<Node>();
+            Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);
             for (int j = selection.length() - 1; j >= 0; j--) {
                 if (selection.charAt(j) == '1') {

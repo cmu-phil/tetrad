@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.Misclassifications;
 
 import javax.swing.*;
@@ -37,7 +38,7 @@ public class MisclassificationsEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private Misclassifications comparison;
+    private final Misclassifications comparison;
 
 
     /**
@@ -60,32 +61,38 @@ public class MisclassificationsEditor extends JPanel {
     }
 
     private void setup() {
-        String compareString = comparison.getComparisonString();
+        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
+        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
-        final JTextArea textPane = new JTextArea();
-        textPane.setText(compareString);
+        for (int i = 0; i < referenceGraphs.size(); i++) {
+            String compareString = comparison.getComparisonString(i);
 
-        textPane.setFont(font);
-//        textPane.setCaretPosition(textPane.getStyledDocument().getLength());
+            Font font = new Font("Monospaced", Font.PLAIN, 14);
+            final JTextArea textPane = new JTextArea();
+            textPane.setText(compareString);
 
-        JScrollPane scroll = new JScrollPane(textPane);
-        scroll.setPreferredSize(new Dimension(400, 400));
+            textPane.setFont(font);
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.add(Box.createVerticalStrut(10));
+            JScrollPane scroll = new JScrollPane(textPane);
+            scroll.setPreferredSize(new Dimension(400, 400));
 
-        Box box = Box.createHorizontalBox();
-        this.add(box);
-        this.add(Box.createVerticalStrut(10));
+            this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            this.add(Box.createVerticalStrut(10));
 
-        Box box1 = Box.createHorizontalBox();
-        box1.add(new JLabel("Graph Comparison: "));
-        box1.add(Box.createHorizontalGlue());
+            Box box = Box.createHorizontalBox();
+            this.add(box);
+            this.add(Box.createVerticalStrut(10));
 
-        add(box1);
-        setLayout(new BorderLayout());
-        add(scroll);
+            Box box1 = Box.createHorizontalBox();
+            box1.add(new JLabel("Graph Comparison: "));
+            box1.add(Box.createHorizontalGlue());
+
+            add(box1);
+            setLayout(new BorderLayout());
+            pane.add("" + (i + 1), scroll);
+        }
+
+        add(pane);
     }
 
 }

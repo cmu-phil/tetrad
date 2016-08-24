@@ -148,7 +148,7 @@ public class BayesPmEditor extends JPanel
     /**
      * True iff the editing of measured variables is allowed.
      */
-    public boolean isEditingMeasuredVariablesAllowed() {
+    private boolean isEditingMeasuredVariablesAllowed() {
         return editingMeasuredVariablesAllowed;
     }
 
@@ -163,7 +163,7 @@ public class BayesPmEditor extends JPanel
     /**
      * True iff the editing of latent variables is allowed.
      */
-    public boolean isEditingLatentVariablesAllowed() {
+    private boolean isEditingLatentVariablesAllowed() {
         return editingLatentVariablesAllowed;
     }
 

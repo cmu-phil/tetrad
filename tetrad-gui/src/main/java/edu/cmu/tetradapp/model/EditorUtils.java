@@ -56,8 +56,8 @@ public class EditorUtils {
         return new Point(x, y);
     }
 
-    public static File nextFile(String _directory, String prefix, String suffix,
-                                boolean overwrite) {
+    private static File nextFile(String _directory, String prefix, String suffix,
+                                 boolean overwrite) {
         if (prefix.endsWith(suffix)) {
             prefix = prefix.substring(0, prefix.lastIndexOf('.'));
         }
@@ -95,7 +95,7 @@ public class EditorUtils {
      * Modifies the name of the given file if necessary to ensure that it has
      * the given suffix.
      */
-    public static File ensureSuffix(File file, String suffix) {
+    private static File ensureSuffix(File file, String suffix) {
         String fileName = file.getName();
 
         if (!fileName.endsWith(suffix)) {
@@ -169,7 +169,7 @@ public class EditorUtils {
     /**
      * @return a new JFileChooser properly set up for Tetrad.
      */
-    public static JFileChooser createJFileChooser(String name) {
+    private static JFileChooser createJFileChooser(String name) {
         if (name == null) {
             name = "Save";
         }

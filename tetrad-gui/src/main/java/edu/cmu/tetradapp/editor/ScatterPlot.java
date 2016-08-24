@@ -46,11 +46,10 @@ import static java.lang.Math.log;
  * @author Joseph Ramsey
  */
 public class ScatterPlot {
-    private String x;
-    private String y;
+    private final String x;
+    private final String y;
     private final boolean includeLine;
     private final DataSet dataSet;
-    private Vector<Point2D.Double> pairs;
     private Map<Node, double[]> continuousIntervals;
 
     /**
@@ -70,11 +69,11 @@ public class ScatterPlot {
         this.x = x;
         this.y = y;
         this.includeLine = includeLine;
-        this.continuousIntervals = new HashMap<Node, double[]>();
+        this.continuousIntervals = new HashMap<>();
     }
 
     private RegressionResult getRegressionResult() {
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
         regressors.add(dataSet.getVariable(x));
         Node target = dataSet.getVariable(y);
         Regression regression = new RegressionDataset(dataSet);
@@ -119,7 +118,7 @@ public class ScatterPlot {
         return pValue;
     }
 
-    public double fisherz(double r) {
+    private double fisherz(double r) {
         return 0.5 * Math.sqrt(getSampleSize() - 3.0) * (log(1.0 + r) - log(1.0 - r));
     }
 
@@ -178,14 +177,14 @@ public class ScatterPlot {
      * @return a vector containing the filtered values.
      */
     public Vector<Point2D.Double> getSievedValues() {
-        pairs = pairs(x, y);
+        Vector<Point2D.Double> pairs = pairs(x, y);
         return pairs;
     }
 
     /**
      * @return size of the sample.
      */
-    public int getSampleSize() {
+    private int getSampleSize() {
         return getSievedValues().size();
     }
 
@@ -264,7 +263,7 @@ public class ScatterPlot {
     }
 
     public void removeConditioningVariables() {
-        this.continuousIntervals = new HashMap<Node, double[]>();
+        this.continuousIntervals = new HashMap<>();
     }
 
     /**
@@ -284,7 +283,7 @@ public class ScatterPlot {
      */
     public double[] getContinuousData(String variable) {
         int index = dataSet.getColumn(dataSet.getVariable(variable));
-        List<Double> _data = new ArrayList<Double>();
+        List<Double> _data = new ArrayList<>();
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             _data.add(dataSet.getDouble(i, index));
@@ -304,7 +303,7 @@ public class ScatterPlot {
     private List<Double> getUnconditionedDataContinuous(String target) {
         int index = dataSet.getColumn(dataSet.getVariable(target));
 
-        List<Double> _data = new ArrayList<Double>();
+        List<Double> _data = new ArrayList<>();
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             _data.add(dataSet.getDouble(i, index));
@@ -320,7 +319,7 @@ public class ScatterPlot {
 
         int index = dataSet.getColumn(dataSet.getVariable(target));
 
-        List<Double> _data = new ArrayList<Double>();
+        List<Double> _data = new ArrayList<>();
 
         for (Integer row : rows) {
             _data.add(dataSet.getDouble(row, index));
@@ -331,7 +330,7 @@ public class ScatterPlot {
 
     // Returns the rows in the data that satisfy the conditioning constraints.
     private List<Integer> getConditionedRows() {
-        List<Integer> rows = new ArrayList<Integer>();
+        List<Integer> rows = new ArrayList<>();
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -352,7 +351,7 @@ public class ScatterPlot {
 
     private Vector<Point2D.Double> pairs(String x, String y) {
         Point2D.Double pt;
-        Vector<Point2D.Double> cleanedVals = new Vector<Point2D.Double>();
+        Vector<Point2D.Double> cleanedVals = new Vector<>();
 
         List<Double> _x = getConditionedDataContinuous(x);
         List<Double> _y = getConditionedDataContinuous(y);

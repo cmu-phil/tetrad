@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -10,9 +9,10 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs2;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +21,12 @@ import java.util.List;
  * @author jdramsey
  */
 public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
+    static final long serialVersionUID = 23L;
     public Graph search(DataSet Dk, Parameters parameters) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
         Graph p = fgs.search();
         return convertBack(Dk, p);
     }

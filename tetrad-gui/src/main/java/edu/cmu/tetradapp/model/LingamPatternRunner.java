@@ -21,11 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -47,19 +46,19 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     // ============================CONSTRUCTORS============================//
 
-    // public LingamPatternRunner(DataWrapper dataWrapper, PcSearchParams
+    // public LingamPatternRunner(DataWrapper dataWrapper, Parameters
     // params) {
     // super(dataWrapper, params);
     // }
 
     public LingamPatternRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, PcSearchParams params) {
+                               DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = graphWrapper.getGraph();
     }
 
     public LingamPatternRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, PcSearchParams params,
+                               DataWrapper dataWrapper, Parameters params,
                                KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = graphWrapper.getGraph();
@@ -68,7 +67,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamPatternRunner(GraphSource graphWrapper, PcSearchParams params,
+    public LingamPatternRunner(GraphSource graphWrapper, Parameters params,
                                KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
@@ -76,54 +75,54 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamPatternRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public LingamPatternRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
     public LingamPatternRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
@@ -135,7 +134,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance(), KnowledgeBoxModel
+                new Parameters(), KnowledgeBoxModel
                         .serializableInstance());
     }
 
@@ -166,8 +165,8 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -181,13 +180,13 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph lingamPatternEdgeVote(DataModelList dataSets, Graph pattern) {
-        List<Graph> lingamPatternGraphs = new ArrayList<Graph>();
+        List<Graph> lingamPatternGraphs = new ArrayList<>();
 
         // Images plus lingam orientation on multiple subjects.
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
             LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-            lingamPattern.setAlpha(getParams().getIndTestParams().getAlpha());
+            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
             Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
@@ -225,7 +224,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph multiLingamPattern(DataModelList dataSets, Graph pattern) {
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataModel dataModel : dataSets) {
             _dataSets.add((DataSet) dataModel);
@@ -233,7 +232,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
 //        LingOrientationFixedStructure pcLingam2 = new LingOrientationFixedStructure(pattern, _dataSets);
         LingamPattern2 pcLingam2 = new LingamPattern2(pattern, _dataSets);
-        pcLingam2.setAlpha(getParams().getIndTestParams().getAlpha());
+        pcLingam2.setAlpha(getParams().getDouble("alpha", 0.001));
 
         Graph graph = pcLingam2.search();
 
@@ -248,7 +247,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         return names;
@@ -258,7 +257,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
@@ -271,7 +270,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -292,7 +291,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }
@@ -309,7 +308,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 }

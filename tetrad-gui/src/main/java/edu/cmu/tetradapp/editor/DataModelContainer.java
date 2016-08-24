@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 /**
  * Tags a class that can return a data model.
  */
-public interface DataModelContainer {
+interface DataModelContainer {
 
     
     DataModel getDataModel();

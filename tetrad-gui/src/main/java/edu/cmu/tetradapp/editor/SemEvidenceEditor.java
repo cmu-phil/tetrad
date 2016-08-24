@@ -42,8 +42,7 @@ import java.util.Map;
  */
 class SemEvidenceEditor extends JPanel {
     private SemEvidence evidence;
-    private Map checkBoxesToVariables = new HashMap();
-    private Map variablesToCheckboxes = new HashMap();
+    private final Map checkBoxesToVariables = new HashMap();
 
     public SemEvidenceEditor(SemEvidence evidence) {
         if (evidence == null) {
@@ -85,6 +84,7 @@ class SemEvidenceEditor extends JPanel {
             };
             checkbox.setSelected(getEvidence().isManipulated(i));
             checkBoxesToVariables.put(checkbox, i);
+            Map variablesToCheckboxes = new HashMap();
             variablesToCheckboxes.put(i, checkbox);
             checkbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

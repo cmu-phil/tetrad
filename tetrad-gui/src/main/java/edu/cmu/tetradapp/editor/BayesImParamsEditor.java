@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BayesImParams;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -40,7 +39,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private BayesImParams params = null;
+    private Parameters params = null;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -49,12 +48,12 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     public BayesImParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (BayesImParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -84,39 +83,32 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         group.add(manually);
         group.add(randomly);
 
-        if (getParams().getInitializationMode() == BayesImParams.MANUAL_RETAIN)
-        {
+        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
             manually.setSelected(true);
             randomEveryTime.setEnabled(false);
             randomEveryTime.setSelected(false);
-        }
-        else
-        if (getParams().getInitializationMode() == BayesImParams.RANDOM_RETAIN)
-        {
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomRatain")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(false);
-        }
-        else if (getParams().getInitializationMode() == BayesImParams
-                .RANDOM_OVERWRITE) {
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(true);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
         manually.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesImParams.MANUAL_RETAIN);
+                getParams().set("initializationMode", "manualRetain");
                 randomEveryTime.setEnabled(false);
             }
         });
 
         randomly.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesImParams.RANDOM_RETAIN);
+                getParams().set("initializationMode", "randomRetain");
                 randomEveryTime.setEnabled(true);
                 randomEveryTime.setSelected(false);
             }
@@ -132,12 +124,9 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
 
                 if (checkBox.isSelected()) {
-                    getParams().setInitializationMode(
-                            BayesImParams.RANDOM_OVERWRITE);
-                }
-                else {
-                    getParams().setInitializationMode(
-                            BayesImParams.RANDOM_RETAIN);
+                    getParams().set("initializationMode", "randomOverwrite");
+                } else {
+                    getParams().set("initializationMode", "randomRetain");
                 }
             }
         });
@@ -170,7 +159,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b5);
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
-        setBorder(new EmptyBorder(5, 5, 5, 5));        
+        setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     public boolean mustBeShown() {
@@ -183,7 +172,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
      *
      * @return the stored simulation parameters model.
      */
-    private synchronized BayesImParams getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

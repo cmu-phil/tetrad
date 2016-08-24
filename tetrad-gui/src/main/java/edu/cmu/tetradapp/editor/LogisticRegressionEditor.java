@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.LogisticRegressionParams;
 import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -53,13 +53,13 @@ public class LogisticRegressionEditor extends JPanel {
     /**
      * Text area for display output.
      */
-    private JTextArea modelParameters;
+    private final JTextArea modelParameters;
 
 
     /**
      * The number formatter used for printing reports.
      */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
 
     public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {
@@ -88,9 +88,9 @@ public class LogisticRegressionEditor extends JPanel {
         tabbedPane.add("Model", new JScrollPane(this.modelParameters));
         tabbedPane.add("Output Graph", new JScrollPane(workbench));
 
-        LogisticRegressionParams params =
-                (LogisticRegressionParams) regRunner.getParams();
-        RegressionParamsEditorPanel paramsPanel = new RegressionParamsEditorPanel(params, regRunner.getDataModel());
+        Parameters params = regRunner.getParams();
+        RegressionParamsEditorPanel paramsPanel
+                = new RegressionParamsEditorPanel(regressionRunner, params, regRunner.getDataModel(), true);
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();

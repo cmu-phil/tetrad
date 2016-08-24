@@ -47,7 +47,7 @@ public class JsonSerializer {
     public static String serialize(Graph graph, String graphId) throws JAXBException {
         List<Node> nodes = graph.getNodes();
         Set<Edge> edgesSet = graph.getEdges();
-        HashMap<Node, Integer> nodeIndexMap = new HashMap<Node, Integer>();
+        HashMap<Node, Integer> nodeIndexMap = new HashMap<>();
 
         // declare the output JSON object
         JsonGraph jsonGraph = new JsonGraph();

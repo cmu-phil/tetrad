@@ -1,0 +1,20 @@
+<HTML>
+<HEAD><title>edu.cmu.tetrad.gene.history.glass</title></HEAD>
+
+<BODY BGCOLOR="#ffffff">
+
+<P>Contains class for implementing a linear-boolean update function, defined as
+    follows. </P>
+
+<P>Gi:L0 = Gi:L1(1 - rate) + Li(parents(Gi:L0)/Gi:L1) * Fi(parents(Gi:L0)/Gi:L1)
+    + ei,</P>
+
+<P>where Li is a linear function of the causal parents of a gene i from previous
+    time steps, F is a Boolean function of the causal parents of gene i from
+    previous
+    time steps returning +1 or -1, ei is an error term chosen from N(0, s.d.),
+    and
+    rate is a constant governing how quickly expression levels return to
+    zero.</P>
+</BODY>
+</HTML>

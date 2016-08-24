@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.ParameterEditor;
@@ -33,13 +32,9 @@ import nu.xom.Element;
 import nu.xom.Elements;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
@@ -64,12 +59,12 @@ public class TetradApplicationConfig {
     /**
      * A map from model classes to the configurations that handle them.
      */
-    private Map<Class, SessionNodeConfig> classMap = new HashMap<Class, SessionNodeConfig>();
+    private final Map<Class, SessionNodeConfig> classMap = new HashMap<>();
 
     /**
      * Constructs the configuration.
      */
-    public TetradApplicationConfig() {
+    private TetradApplicationConfig() {
         String path;
 
         if (Preferences.userRoot().getBoolean("experimental", false)) {
@@ -141,7 +136,7 @@ public class TetradApplicationConfig {
     private static Map<String, SessionNodeConfig> buildConfiguration(Element root) {
         Elements elements = root.getChildElements();
         ClassLoader loader = getClassLoader();
-        Map<String, SessionNodeConfig> configs = new HashMap<String, SessionNodeConfig>();
+        Map<String, SessionNodeConfig> configs = new HashMap<>();
         for (int i = 0; i < elements.size(); i++) {
             Element node = elements.get(i);
             String id = node.getAttributeValue("id");
@@ -190,7 +185,7 @@ public class TetradApplicationConfig {
      */
     private static List<SessionNodeModelConfig> buildModelConfigs(Element models) {
         Elements modelElements = models.getChildElements();
-        List<SessionNodeModelConfig> configs = new LinkedList<SessionNodeModelConfig>();
+        List<SessionNodeModelConfig> configs = new LinkedList<>();
         ClassLoader loader = getClassLoader();
         for (int i = 0; i < modelElements.size(); i++) {
             Element model = modelElements.get(i);
@@ -210,8 +205,8 @@ public class TetradApplicationConfig {
                     modelClass = loadClass(loader, element.getValue());
                 } else if ("editor-class".equals(element.getQualifiedName())) {
                     editorClass = loadClass(loader, element.getValue());
-                } else if ("params-class".equals(element.getQualifiedName())) {
-                    paramsClass = loadClass(loader, element.getValue());
+//                } else if ("params-class".equals(element.getQualifiedName())) {
+//                    paramsClass = loadClass(loader, element.getValue());
                 } else if ("params-editor-class".equals(element.getQualifiedName())) {
                     paramsEditorClass = loadClass(loader, element.getValue());
                 } else if ("logger".equals(element.getQualifiedName())) {
@@ -238,8 +233,8 @@ public class TetradApplicationConfig {
      */
     private static TetradLoggerConfig configureLogger(Element logger) {
         Elements elements = logger.getChildElements();
-        List<TetradLoggerConfig.Event> events = new LinkedList<TetradLoggerConfig.Event>();
-        List<String> defaultLog = new LinkedList<String>();
+        List<TetradLoggerConfig.Event> events = new LinkedList<>();
+        List<String> defaultLog = new LinkedList<>();
         for (int i = 0; i < elements.size(); i++) {
             Element event = elements.get(i);
             String eventId = event.getAttributeValue("id");
@@ -360,7 +355,7 @@ public class TetradApplicationConfig {
         /**
          * ALl the config info of the configuration.
          */
-        private Map<Class, SessionNodeModelConfig> modelMap = new HashMap<Class, SessionNodeModelConfig>();
+        private final Map<Class, SessionNodeModelConfig> modelMap = new HashMap<>();
         private List<SessionNodeModelConfig> models;
         private String image;
         private Class compClass;
@@ -413,7 +408,7 @@ public class TetradApplicationConfig {
 
             Class[] consistentClasses = sessionNode.getConsistentModelClasses();
 
-            List<SessionNodeModelConfig> filteredModels = new ArrayList<SessionNodeModelConfig>();
+            List<SessionNodeModelConfig> filteredModels = new ArrayList<>();
 
             for (SessionNodeModelConfig config : this.models) {
                 Class clazz = config.getModel();
@@ -437,7 +432,7 @@ public class TetradApplicationConfig {
             chooser.setTitle(this.chooserTitle);
 //            chooser.setNodeName(sessionNode.getDisplayName());
 //            chooser.setModelConfigs(new ArrayList<SessionNodeModelConfig>(this.models));
-            chooser.setModelConfigs(new ArrayList<SessionNodeModelConfig>(filteredModels));
+            chooser.setModelConfigs(new ArrayList<>(filteredModels));
             chooser.setup();
             return chooser;
         }
@@ -571,20 +566,20 @@ public class TetradApplicationConfig {
             }
         }
 
-        public Params getParametersInstance() {
-            if (this.params != null) {
-                try {
-                    return (Params) this.params.newInstance();
-                }
-                catch (ClassCastException e) {
-                    throw new IllegalStateException("Model params doesn't implement Params", e);
-                }
-                catch (Exception e) {
-                    throw new IllegalStateException("Error instantiating params, must be empty constructor", e);
-                }
-            }
-            return null;
-        }
+//        public Parameters getParametersInstance() {
+//            if (this.params != null) {
+//                try {
+//                    return (Parameters) this.params.newInstance();
+//                }
+//                catch (ClassCastException e) {
+//                    throw new IllegalStateException("Model params doesn't implement Parameters", e);
+//                }
+//                catch (Exception e) {
+//                    throw new IllegalStateException("Error instantiating params, must be empty constructor", e);
+//                }
+//            }
+//            return null;
+//        }
 
         public ParameterEditor getParameterEditorInstance() {
             if (this.paramsEditor != null) {
@@ -592,7 +587,7 @@ public class TetradApplicationConfig {
                     return (ParameterEditor) this.paramsEditor.newInstance();
                 }
                 catch (ClassCastException e) {
-                    throw new IllegalStateException("Params editor must implement ParameterEditor", e);
+                    throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
                 }
                 catch (Exception e) {
                     throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);

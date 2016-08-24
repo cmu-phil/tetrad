@@ -33,7 +33,7 @@ All these settings are just the first 8 lines of the code in ComparisonScript.ja
 
 For mode 2):
 
-In ComparisonScript.java set params.setDataFromFile(true) (it is false by default). maxGraphs is the number of graphs in your data directory. dataSetsPerGraph is the number of data sets you have per graph in your directory. This might be equal to one, or you might have multiple data sets for the same graph which you want to average.
+In ComparisonScript.java set parameters.setDataFromFile(true) (it is false by default). maxGraphs is the number of graphs in your data directory. dataSetsPerGraph is the number of data sets you have per graph in your directory. This might be equal to one, or you might have multiple data sets for the same graph which you want to average.
 
 You must set the path for your data directory in Comparison2.java, near the top where it says “String path = <some directory>”.
 
@@ -55,7 +55,7 @@ The default delimiter for the data is tab (“\t”). You can change this in Com
 
 For mode 3):
 
-In ComparisonScript.java set params.isNoData(true) (it is false by default). You can change numTrials to change the number of random graphs to try, the default is 100.
+In ComparisonScript.java set parameters.isNoData(true) (it is false by default). You can change numTrials to change the number of random graphs to try, the default is 100.
 
 In this mode you want to see perfect performance everywhere: perfect precision and recall, etc. If you see any deviation from this, there must be a mistake somewhere. Note that this procedure compares, for example, the output of PC or FGS with a true graph specified by DagToPattern. FCI or GFCI would be compared with the output of DagToPag. If you want to examine an algorithm which searches for something other than a standard Pattern or PAG, you have to add the appropriate method in Comparison2.java. Just search for “DagToPag” and you’ll see where it goes.
 

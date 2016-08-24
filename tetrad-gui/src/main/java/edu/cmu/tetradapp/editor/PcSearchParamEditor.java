@@ -22,23 +22,20 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
-import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.DagWrapper;
+import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -55,7 +52,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     /**
      * The parameter object being edited.
      */
-    private PcSearchParams params;
+    private Parameters params;
 
     /**
      * A text field for editing the alpha getValue.
@@ -68,22 +65,17 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     private Object[] parentModels;
 
     /**
-     * The variable names from the object being searched over (usually data).
-     */
-    private List<String> varNames;
-
-    /**
      * Opens up an editor to let the user view the given PcRunner.
      */
     public PcSearchParamEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (PcSearchParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -95,34 +87,10 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        this.varNames = params.getVarNames();
-
-        for (Object parentModel : parentModels) {
-            if (parentModel instanceof DataWrapper) {
-                DataWrapper wrapper = (DataWrapper) parentModel;
-                DataModel dataModel = wrapper.getSelectedDataModel();
-                new IndTestChooser().adjustIndTestParams(dataModel, params);
-                break;
-            }
-            else if (parentModel instanceof GraphWrapper) {
-                GraphWrapper wrapper = (GraphWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-            else if (parentModel instanceof DagWrapper) {
-                DagWrapper wrapper = (DagWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-            else if (parentModel instanceof SemGraphWrapper) {
-                SemGraphWrapper wrapper = (SemGraphWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-        }
+        /*
+      The variable names from the object being searched over (usually data).
+     */
+        List<String> varNames = (List<String>) params.get("varNames", null);
 
         DataModel dataModel1 = null;
         Graph graph = null;
@@ -150,7 +118,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         }
 
         if (dataModel1 != null) {
-            varNames = new ArrayList<String>(dataModel1.getVariableNames());
+            varNames = new ArrayList<>(dataModel1.getVariableNames());
         }
         else if (graph != null) {
             Iterator<Node> it = graph.getNodes().iterator();
@@ -172,15 +140,14 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
                             "passed to the search).");
         }
 
-        this.params.setVarNames(varNames);
-        JButton knowledgeButton = new JButton("Edit");
+        this.params.set("varNames", varNames);
 
         IntTextField depthField =
-                new IntTextField(this.params.getIndTestParams().getDepth(), 4);
+                new IntTextField(this.params.getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    PcSearchParamEditor.this.params.getIndTestParams().setDepth(value);
+                    PcSearchParamEditor.this.params.set("depth", value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
                 }
@@ -190,14 +157,14 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
             }
         });
 
-        double alpha = this.params.getIndTestParams().getAlpha();
+        double alpha = params.getDouble("alpha", 0.001);
 
         if (!Double.isNaN(alpha)) {
             alphaField = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
             alphaField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        PcSearchParamEditor.this.params.getIndTestParams().setAlpha(value);
+                        PcSearchParamEditor.this.params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
                     }
@@ -210,13 +177,6 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
 
         setBorder(new MatteBorder(10, 10, 10, 10, super.getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel("Knowledge:"));
-        b1.add(Box.createGlue());
-        b1.add(knowledgeButton);
-        add(b1);
-        add(Box.createVerticalStrut(10));
 
         if (!Double.isNaN(alpha)) {
             Box b2 = Box.createHorizontalBox();
@@ -233,41 +193,13 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         b3.add(depthField);
         add(b3);
         add(Box.createVerticalStrut(10));
-
-        knowledgeButton.addActionListener(new ActionListener() {
-            public final void actionPerformed(ActionEvent e) {
-                openKnowledgeEditor();
-            }
-        });
     }
 
     public boolean mustBeShown() {
         return false;
     }
 
-    /**
-     * Must pass knowledge from getMappings. If null, creates new Knowledge2
-     * object.
-     */
-    private void openKnowledgeEditor() {
-        if (this.getParams() == null) {
-            throw new NullPointerException("Parameter object must not be " +
-                    "null if you want to launch a OldKnowledgeEditor.");
-        }
-
-        IKnowledge knowledge = this.getParams().getKnowledge();
-
-        KnowledgeEditor knowledgeEditor = new KnowledgeEditor(knowledge,
-                varNames, params.getSourceGraph());
-        Dialog owner = (Dialog) this.getTopLevelAncestor();
-
-        EditorWindow window = new EditorWindow(knowledgeEditor,
-                knowledgeEditor.getName(), "Save", false, this);
-        DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-        window.setVisible(true);
-    }
-
-    private PcSearchParams getParams() {
+    private Parameters getParams() {
         return params;
     }
 }

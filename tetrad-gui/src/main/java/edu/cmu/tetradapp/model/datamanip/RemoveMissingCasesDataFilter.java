@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Tyler Gibson
  */
-public class RemoveMissingCasesDataFilter implements DataFilter {
+class RemoveMissingCasesDataFilter implements DataFilter {
 
 
     public DataSet filter(DataSet data) {

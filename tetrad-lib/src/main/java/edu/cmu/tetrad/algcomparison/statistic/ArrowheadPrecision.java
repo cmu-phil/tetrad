@@ -13,6 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public class ArrowheadPrecision implements Statistic {
+    static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

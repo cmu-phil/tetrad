@@ -22,8 +22,10 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.*;
@@ -37,9 +39,9 @@ public class PcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
     private Graph initialGraph = null;
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
@@ -50,21 +52,21 @@ public class PcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public PcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public PcRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -72,34 +74,34 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcRunner(Graph graph, PcSearchParams params) {
+    public PcRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, PcSearchParams params) {
+    public PcRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public PcRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public PcRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcRunner(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
+    public PcRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public PcRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -110,14 +112,13 @@ public class PcRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
-        return new PcRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new PcRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -129,8 +130,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getIndTestParams().getDepth();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        int depth = getParams().getInt("depth", -1);
         Graph graph;
         Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
@@ -160,7 +161,7 @@ public class PcRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -172,7 +173,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -183,7 +184,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -191,11 +192,11 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<Edge>(pcAdjacent);
+        return new HashSet<>(pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<Edge>(pcNonadjacent);
+        return new HashSet<>(pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -212,11 +213,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
-        }
-        return false;
+        return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
     private void setPcFields(Pc pc) {

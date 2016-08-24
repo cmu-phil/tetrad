@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class SubsetContinuousVariablesAction extends AbstractAction {
+final class SubsetContinuousVariablesAction extends AbstractAction {
 
     /**
      * The data editor.                         -

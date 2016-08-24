@@ -50,12 +50,12 @@ public class SemUpdaterEditor extends JPanel {
      */
     private SemUpdater semUpdater;
 
-    private Map<JCheckBox,Integer> checkBoxesToVariables = new HashMap<JCheckBox, Integer>();
-    private Map<Integer,JCheckBox> variablesToCheckboxes = new HashMap<Integer, JCheckBox>();
-    private Map<Integer, DoubleTextField> variablesToTextFields = new HashMap<Integer, DoubleTextField>();
+    private final Map<JCheckBox,Integer> checkBoxesToVariables = new HashMap<>();
+    private final Map<Integer,JCheckBox> variablesToCheckboxes = new HashMap<>();
+    private final Map<Integer, DoubleTextField> variablesToTextFields = new HashMap<>();
     private SemImEditor semImEditor;
-    private LinkedList<DoubleTextField> focusTraversalOrder = new LinkedList<DoubleTextField>();
-    private Map<DoubleTextField, Integer> labels = new HashMap<DoubleTextField, Integer>();
+    private final LinkedList<DoubleTextField> focusTraversalOrder = new LinkedList<>();
+    private final Map<DoubleTextField, Integer> labels = new HashMap<>();
 
     //===============================CONSTRUCTORS=========================//
 

@@ -39,7 +39,7 @@ public class LocalScoreCache {
     }
 
     public void add(int variable, int[] parents, double score) {
-        Set<Integer> _parents = new HashSet<Integer>(parents.length);
+        Set<Integer> _parents = new HashSet<>(parents.length);
 
         for (int parent : parents) {
             _parents.add(parent);
@@ -49,7 +49,7 @@ public class LocalScoreCache {
     }
 
     public double get(int variable, int[] parents) {
-        Set<Integer> _parents = new HashSet<Integer>(parents.length);
+        Set<Integer> _parents = new HashSet<>(parents.length);
 
         for (int parent : parents) {
             _parents.add(parent);

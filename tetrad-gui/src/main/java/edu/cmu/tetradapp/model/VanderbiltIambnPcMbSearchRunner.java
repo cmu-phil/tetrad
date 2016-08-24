@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.IambnPc;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * @author Tyler Gibson
@@ -30,14 +31,14 @@ public class VanderbiltIambnPcMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltIambnPcMbSearchRunner(DataWrapper data, MbSearchParams params) {
+    public VanderbiltIambnPcMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
         IambnPc search = new IambnPc(getIndependenceTest());
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

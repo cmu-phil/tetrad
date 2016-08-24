@@ -78,7 +78,7 @@ public class TestRegression {
         List<Node> nodes = data.getVariables();
 
         Node target = nodes.get(0);
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (int i = 1; i < nodes.size(); i++) {
             regressors.add(nodes.get(i));
@@ -108,7 +108,7 @@ public class TestRegression {
         List<Node> nodes = cov.getVariables();
 
         Node target = nodes.get(0);
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (int i = 1; i < nodes.size(); i++) {
             regressors.add(nodes.get(i));

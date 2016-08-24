@@ -84,8 +84,6 @@ public abstract class WatchedProcess {
      */
     private Component centeringComp;
 
-    private boolean isCanceled = false;
-
     /**
      * Constructs a new watched process.
      * @param owner The ancestor window in front of which the stop dialog
@@ -100,7 +98,7 @@ public abstract class WatchedProcess {
      * @param owner The ancestor window in front of which the stop dialog
      * is being displayed.
      */
-    public WatchedProcess(Window owner, Component centeringComp) {
+    private WatchedProcess(Window owner, Component centeringComp) {
         if (owner == null) {
             throw new NullPointerException();
         }
@@ -128,7 +126,7 @@ public abstract class WatchedProcess {
      */
     public abstract void watch();
 
-    public String getErrorMessage() {
+    private String getErrorMessage() {
         return errorMessage;
     }
 
@@ -136,19 +134,19 @@ public abstract class WatchedProcess {
         this.errorMessage = errorMessage;
     }
 
-    public JDialog getStopDialog() {
+    private JDialog getStopDialog() {
         return stopDialog;
     }
 
-    public void setStopDialog(JDialog stopDialog) {
+    private void setStopDialog(JDialog stopDialog) {
         this.stopDialog = stopDialog;
     }
 
-    public Window getOwner() {
+    private Window getOwner() {
         return owner;
     }
 
-    public boolean isShowDialog() {
+    private boolean isShowDialog() {
         return SHOW_DIALOG;
     }
 
@@ -329,6 +327,7 @@ public abstract class WatchedProcess {
      * check for this periodically and respond gracefully.
      */
     public boolean isCanceled() {
+        boolean isCanceled = false;
         return isCanceled;
     }
 }

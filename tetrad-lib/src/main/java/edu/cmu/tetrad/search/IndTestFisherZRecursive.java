@@ -325,7 +325,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -378,7 +378,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<Node>(this.variables);
+        ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
         this.variables = Collections.unmodifiableList(nodes);
     }
@@ -405,7 +405,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     private Map<String, Node> mapNames(List<Node> variables) {
-        Map<String, Node> nameMap = new ConcurrentHashMap<String, Node>();
+        Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
         for (Node node : variables) {
             nameMap.put(node.getName(), node);
@@ -415,7 +415,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<Node, Integer>();
+        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -426,7 +426,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<Node>(variables);
+        this.variables = new ArrayList<>(variables);
         covMatrix.setVariables(variables);
     }
 

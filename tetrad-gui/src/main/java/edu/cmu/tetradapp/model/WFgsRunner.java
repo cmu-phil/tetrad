@@ -22,16 +22,23 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
@@ -47,12 +54,11 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient WFgs fgs;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper dataWrapper, FgsParams params) {
+    public WFgsRunner(DataWrapper dataWrapper, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
@@ -62,8 +68,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      * @see TetradSerializableUtils
      */
     public static WFgsRunner serializableInstance() {
-        return new WFgsRunner(DataWrapper.serializableInstance(),
-                FgsParams.serializableInstance());
+        return new WFgsRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -77,18 +82,18 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         DataSet dataSet = (DataSet) getDataModel();
 
-        FgsParams params = (FgsParams) getParams();
+        Parameters params = getParams();
 
-        double penaltyDiscount = params.getComplexityPenalty();
+        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
-        fgs = new WFgs(dataSet);
+        WFgs fgs = new WFgs(dataSet);
         fgs.setPenaltyDiscount(penaltyDiscount);
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -206,14 +211,14 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new ArrayList<List<Triple>>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -222,15 +227,15 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        FgsParams params = (FgsParams) getParams();
-        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getComplexityPenalty()));
+        Parameters params = getParams();
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return paramSettings;
     }
 
@@ -251,7 +256,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

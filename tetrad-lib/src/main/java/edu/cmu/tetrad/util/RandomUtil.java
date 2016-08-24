@@ -253,6 +253,10 @@ public class RandomUtil {
     public RandomGenerator getRandomGenerator() {
         return randomGenerator;
     }
+
+    public long nextLong() {
+        return randomGenerator.nextLong();
+    }
 }
 
 

@@ -34,8 +34,8 @@ public class EdgeWeightComparison implements SessionModel {
     static final long serialVersionUID = 23L;
 
     private String name;
-    private SemIm reference;
-    private SemIm target;
+    private final SemIm reference;
+    private final SemIm target;
 
     public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target)
     {

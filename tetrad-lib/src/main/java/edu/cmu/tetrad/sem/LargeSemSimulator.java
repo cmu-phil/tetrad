@@ -451,7 +451,7 @@ public final class LargeSemSimulator {
     private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if(x.getName().equals("time") || y.getName().equals("time")){
-            return new ArrayList<List<Node>>();
+            return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
@@ -530,7 +530,7 @@ public final class LargeSemSimulator {
             }
         }
 
-        List<List<Node>> pairList = new ArrayList<List<Node>>();
+        List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
         return(pairList);

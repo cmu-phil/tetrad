@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
 import edu.cmu.tetradapp.model.IndTestProducer;
+import edu.cmu.tetradapp.model.IndependenceResult;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -54,18 +55,18 @@ public class IndependenceFactsEditor extends JPanel {
     private LinkedList<String> vars;
     private JTextField textField;
     private List<IndTestProducer> indTestProducers;
-    private List<List<IndependenceResult>> results = new ArrayList<List<IndependenceResult>>();
+    private List<List<IndependenceResult>> results = new ArrayList<>();
     private AbstractTableModel tableModel;
     private int sortDir;
     private int lastSortCol;
-    private NumberFormat nf = new DecimalFormat("0.0000");
+    private final NumberFormat nf = new DecimalFormat("0.0000");
     private boolean showPs = false;
 
     public IndependenceFactsEditor(IndTestModel model) {
         this.indTestProducers = model.getIndTestProducers();
         this.model = model;
 
-        this.vars = new LinkedList<String>();
+        this.vars = new LinkedList<>();
         this.textField = new JTextField(40);
         this.textField.setEditable(false);
         this.textField.setFont(new Font("Serif", Font.BOLD, 14));
@@ -74,7 +75,7 @@ public class IndependenceFactsEditor extends JPanel {
         this.vars = model.getVars();
         this.results = model.getResults();
         if (this.results == null) {
-            this.results = new ArrayList<List<IndependenceResult>>();
+            this.results = new ArrayList<>();
         }
 
         resetText();
@@ -88,7 +89,7 @@ public class IndependenceFactsEditor extends JPanel {
         for (int i = 1; i < indTestProducers.size(); i++) {
             List<String> _names = indTestProducers.get(i).getIndependenceTest().getVariableNames();
 
-            if (!new HashSet<String>(names).equals(new HashSet<String>(_names))) {
+            if (!new HashSet<>(names).equals(new HashSet<>(_names))) {
                 throw new IllegalArgumentException("All sources must have the same variable names.");
             }
         }
@@ -101,9 +102,9 @@ public class IndependenceFactsEditor extends JPanel {
     /**
      * Performs the action of opening a session from a file.
      */
-    public void buildGui() {
+    private void buildGui() {
 //        this.independenceTest = getIndTestProducer().getIndependenceTest();
-        final List<String> varNames = new ArrayList<String>();
+        final List<String> varNames = new ArrayList<>();
         varNames.add("VAR");
         varNames.addAll(getDataVars());
         varNames.add("?");
@@ -436,11 +437,11 @@ public class IndependenceFactsEditor extends JPanel {
         tableModel.fireTableDataChanged();
     }
 
-    public boolean isShowPs() {
+    private boolean isShowPs() {
         return showPs;
     }
 
-    public void toggleShowPs() {
+    private void toggleShowPs() {
         this.showPs = !this.showPs;
         tableModel.fireTableDataChanged();
     }
@@ -541,7 +542,7 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private void generateResults() {
-        results = new ArrayList<List<IndependenceResult>>();
+        results = new ArrayList<>();
 
         List<String> dataVars = getDataVars();
 
@@ -586,7 +587,7 @@ public class IndependenceFactsEditor extends JPanel {
             }
         }
 
-        List<String> vars1 = new ArrayList<String>(dataVars);
+        List<String> vars1 = new ArrayList<>(dataVars);
         vars1.removeAll(vars);
 
         ChoiceGenerator gen1 = new ChoiceGenerator(vars1.size(), questionMarkFirstTwoIndices.length);
@@ -596,7 +597,7 @@ public class IndependenceFactsEditor extends JPanel {
         while ((choice1 = gen1.next()) != null) {
             List<String> s2 = asList(choice1, vars1);
 
-            List<String> vars2 = new ArrayList<String>(vars1);
+            List<String> vars2 = new ArrayList<>(vars1);
             vars2.removeAll(s2);
 
             ChoiceGenerator gen2 = new ChoiceGenerator(vars2.size(), questionMarkRestIndices.length);
@@ -605,7 +606,7 @@ public class IndependenceFactsEditor extends JPanel {
             while ((choice2 = gen2.next()) != null) {
                 List<String> s3 = asList(choice2, vars2);
 
-                List<String> vars3 = new ArrayList<String>(vars2);
+                List<String> vars3 = new ArrayList<>(vars2);
                 vars3.removeAll(s3);
 
                 DepthChoiceGenerator gen3 = new DepthChoiceGenerator(vars3.size(), plusIndices.length);
@@ -639,7 +640,7 @@ public class IndependenceFactsEditor extends JPanel {
                         Node x = independenceTest.getVariable(vars4[0]);
                         Node y = independenceTest.getVariable(vars4[1]);
 
-                        List<Node> z = new ArrayList<Node>();
+                        List<Node> z = new ArrayList<>();
 
                         for (int i = 2; i < vars4.length; i++) {
                             z.add(independenceTest.getVariable(vars4[i]));
@@ -670,8 +671,8 @@ public class IndependenceFactsEditor extends JPanel {
         tableModel.fireTableDataChanged();
     }
 
-    public static List<String> asList(int[] indices, List<String> nodes) {
-        List<String> list = new LinkedList<String>();
+    private static List<String> asList(int[] indices, List<String> nodes) {
+        List<String> list = new LinkedList<>();
 
         for (int i : indices) {
             list.add(nodes.get(i));

@@ -45,7 +45,7 @@ public class TestHistogram extends TestCase {
     }
 
     public void test1() {
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
         Node x1 = new ContinuousVariable("X1");
         Node x2 = new ContinuousVariable("X2");

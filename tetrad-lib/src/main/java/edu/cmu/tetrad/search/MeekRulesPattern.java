@@ -211,7 +211,7 @@ public class MeekRulesPattern implements ImpliedOrientation {
             }
 
             for (Node b : adjacentNodes) {
-                List<Node> otherAdjacents = new LinkedList<Node>(adjacentNodes);
+                List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
                 otherAdjacents.remove(b);
 
                 if (!graph.isUndirectedFromTo(a, b)) {
@@ -280,7 +280,7 @@ public class MeekRulesPattern implements ImpliedOrientation {
                     continue;
                 }
 
-                List<Node> otherAdjacents = new LinkedList<Node>(adjacentNodes);
+                List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
                 otherAdjacents.remove(d);
 
                 ChoiceGenerator cg =

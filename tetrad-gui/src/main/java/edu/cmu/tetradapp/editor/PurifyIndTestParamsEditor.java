@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetradapp.model.PurifyIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,20 +39,19 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class PurifyIndTestParamsEditor extends JPanel {
-    private PurifyIndTestParams params;
+    private final Parameters params;
 
-    public PurifyIndTestParamsEditor(PurifyIndTestParams params,
-            boolean discreteData) {
+    public PurifyIndTestParamsEditor(Parameters params, boolean discreteData) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -67,25 +66,25 @@ class PurifyIndTestParamsEditor extends JPanel {
         if (!discreteData) {
             final TestType[] descriptions = TestType.getTestDescriptions();
             testSelector = new JComboBox(descriptions);
-            testSelector.setSelectedItem(getParams().getTetradTestType());
+            testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
             testSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JComboBox combo = (JComboBox) e.getSource();
                     TestType index = (TestType) combo.getSelectedItem();
-                    getParams().setTetradTestType(index);
+                    getParams().set("tetradTestType", index);
                 }
             });
 
 //            final TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
 //            purifySelector = new JComboBox(purifyDescriptions);
-//            purifySelector.setSelectedItem(getParams().getPurifyTestType());
+//            purifySelector.setSelectedItem(getParameters().getPurifyTestType());
 //
 //            purifySelector.addActionListener(new ActionListener() {
 //                public void actionPerformed(ActionEvent e) {
 //                    JComboBox combo = (JComboBox) e.getSource();
 //                    TestType index = (TestType) combo.getSelectedItem();
-//                    getParams().setPurifyTestType(index);
+//                    getParameters().setPurifyTestType(index);
 //                }
 //            });
         }
@@ -121,7 +120,7 @@ class PurifyIndTestParamsEditor extends JPanel {
         add(b, BorderLayout.CENTER);
     }
 
-    private PurifyIndTestParams getParams() {
+    private Parameters getParams() {
         return this.params;
     }
 }

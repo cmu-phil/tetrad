@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.util.TetradMetadataIndirectRef;
 import edu.cmu.tetrad.util.Version;
+import edu.cmu.tetradapp.util.TetradMetadataIndirectRef;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

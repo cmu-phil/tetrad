@@ -61,7 +61,7 @@ class SetupLoggingAction extends AbstractAction {
     /**
      * The component used to config logging.
      */
-    public static JComponent buildSetupLoggingComponent() {
+    private static JComponent buildSetupLoggingComponent() {
 
 
 

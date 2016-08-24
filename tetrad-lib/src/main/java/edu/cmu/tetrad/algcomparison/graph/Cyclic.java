@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
@@ -13,6 +13,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cyclic implements RandomGraph {
+    static final long serialVersionUID = 23L;
 
     @Override
     public Graph createGraph(Parameters parameters) {
@@ -28,9 +29,9 @@ public class Cyclic implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("avgDegree");
-        return parameters;
+        List<String> paramDescriptions = new ArrayList<>();
+        paramDescriptions.add("numMeasures");
+        paramDescriptions.add("avgDegree");
+        return paramDescriptions;
     }
 }

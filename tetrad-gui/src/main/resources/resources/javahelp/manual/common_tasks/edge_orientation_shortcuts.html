@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Edge Orientation Shortcuts</font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>When editing graphs, there are some shortcuts available to make reorienting edges a little easier. For directed acyclic graphs (DAGs), you can change the orientation of an edge by clicking on the tail of the edge; when you do this, the tail will become the head, and vice-versa. For example, in this graph, </p>
+<p><img src="../images/edge_orientation_shortcuts1.gif" width="576" height="549"></p>
+<p>if you click on the tail of the edge X1--&gt;X2, that edge will reverse direction:</p>
+<p><img src="../images/edge_orientation_shortcuts2.gif" width="575" height="549"> </p>
+<p>You can switch it back the other way by clicking on the endpoint near X2; in that case, it will have the orientation of the the original edge once again.</p>
+<p>In general, clicking on an endpoint of any edge in a graph will orient that edge as a directed edge in the direction of the endpoint you clicked on. This makes turning, e.g., patterns into DAGs easy. </p>
+<p>In graphs that support more types of endpoints, holding down the shift key and clicking on an endpoint cycles that endpoint between the three possible endpoints of a general graph: null (-), arrow (-&gt;), and circle (-o). So, for instance, if you copy the above graph into a General Graph model and the click on the endpoint of the edge X1&lt;--X2 near X1, it will first turn into a null endpoint:</p>
+<p><img src="../images/edge_orientation_shortcuts3.gif" width="600" height="585"> </p>
+<p>then it will turn into a circle endpoint:</p>
+<p><img src="../images/edge_orientation_shortcuts4.gif" width="599" height="590"></p>
+<p>and then, if you click one more time, it will turn back into an arrow endpoint:</p>
+<p><img src="../images/edge_orientation_shortcuts2.gif" width="575" height="549"></p>
+</body>
+</html>

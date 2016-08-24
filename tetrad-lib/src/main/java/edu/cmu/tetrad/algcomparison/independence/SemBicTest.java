@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -8,9 +8,7 @@ import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SemBicScoreImages;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Wrapper for Fisher Z test.
@@ -18,6 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemBicTest implements IndependenceWrapper {
+    static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
@@ -38,7 +37,8 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        return Collections.singletonList("alpha");
+        List<String> params = new ArrayList<>();
+        params.add("alpha");
+        return params;
     }
-
 }

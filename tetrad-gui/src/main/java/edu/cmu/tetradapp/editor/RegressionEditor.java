@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetradapp.model.RegressionParams;
 import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -73,7 +72,7 @@ public class RegressionEditor extends JPanel {
      * Presents the same information in reportText as a text preamble with a
      * table of coefficients etc.
      */
-    private JComponent textWithTable = TextWithTable.emptyCompoenent();
+    private final JComponent textWithTable = TextWithTable.emptyCompoenent();
 
     /**
      * The gadget that does the regression.
@@ -123,9 +122,8 @@ public class RegressionEditor extends JPanel {
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
-        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(
-                (RegressionParams) runner.getParams(),
-                this.runner.getDataModel());
+        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner, runner.getParams(),
+                    this.runner.getDataModel(), false);
 
         editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

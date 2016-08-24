@@ -22,8 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.StructEmBayesSearchParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -40,10 +39,10 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
     /**
      * The parameters object being edited.
      */
-    private StructEmBayesSearchParams params = null;
+    private Parameters params = null;
 
-    public void setParams(Params params) {
-        this.params = (StructEmBayesSearchParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -63,11 +62,11 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
         setLayout(new BorderLayout());
 
         final DoubleTextField toleranceField =
-                new DoubleTextField(params.getTolerance(), 8, NumberFormatUtil.getInstance().getNumberFormat());
+                new DoubleTextField(params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
         toleranceField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setTolerance(value);
+                    params.set("tolerance", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -102,7 +101,7 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    protected synchronized StructEmBayesSearchParams getParams() {
+    protected synchronized Parameters getParams() {
         return this.params;
     }
 }

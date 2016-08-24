@@ -60,12 +60,12 @@ public class Split implements Distribution {
     public Split(double a, double b) {
         if (a < 0) {
             throw new IllegalArgumentException(
-                    "The value of a must be >= 0: " + a);
+                    "When asking for a range from a to b, the value of a must be >= 0: a = " + a + " b = " + b);
         }
 
         if (b <= a) {
             throw new IllegalArgumentException(
-                    "The value of b must be > a: " + b);
+                    "When asking for a range from a to b, the value of b must be > a: a = " + a + " b = " + b);
         }
 
         this.a = a;

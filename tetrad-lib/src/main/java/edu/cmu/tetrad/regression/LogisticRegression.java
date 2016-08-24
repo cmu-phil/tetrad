@@ -119,7 +119,7 @@ public class LogisticRegression implements TetradSerializable {
             target[i] = dataSet.getInt(getRows()[i], col);
         }
 
-        List<String> regressorNames = new ArrayList<String>();
+        List<String> regressorNames = new ArrayList<>();
 
         for (Node node : regressors) {
             regressorNames.add(node.getName());

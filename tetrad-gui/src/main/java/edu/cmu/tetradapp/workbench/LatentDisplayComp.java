@@ -54,7 +54,7 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
     /**
      * @return the shape of the component.
      */
-    public Shape getShape() {
+    private Shape getShape() {
         return new Ellipse2D.Double(0, 0, getPreferredSize().width - 1,
                 getPreferredSize().height - 1);
     }
@@ -99,7 +99,7 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
         return new Dimension(width, height);
     }
 
-    public boolean isSelected() {
+    private boolean isSelected() {
         return selected;
     }
 }

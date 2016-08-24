@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.GraphComparisonParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.GraphSource;
+import edu.cmu.tetradapp.model.Simulation;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,7 +43,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
     /**
      * The parameters object being edited.
      */
-    private GraphComparisonParams params = null;
+    private Parameters params = null;
 
     /**
      * The first graph source.
@@ -54,20 +54,18 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
      * The second graph source.
      */
     private SessionModel model2;
-    private Object[] parentModels;
 
     /**
-     *
+     * The parent models. These should be graph sources.
      */
-    public GraphComparisonParamsEditor() {
-    }
+    private Object[] parentModels;
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (GraphComparisonParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -79,18 +77,16 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
     }
 
     public void setup() {
-        List graphSources = new LinkedList();
+        List<GraphSource> graphSources = new LinkedList<>();
 
         for (Object parentModel : parentModels) {
             if (parentModel instanceof GraphSource) {
-                graphSources.add(parentModel);
+                graphSources.add((GraphSource) parentModel);
             }
         }
 
         if (graphSources.size() != 2) {
             return;
-//            throw new IllegalArgumentException(
-//                    "Expecting exactly two graph " + "sources.");
         }
 
         model1 = (SessionModel) graphSources.get(0);
@@ -107,17 +103,17 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         resetOnExecute.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setResetTableOnExecute(true);
+                getParams().set("resetTableOnExecute", true);
             }
         });
 
         dontResetOnExecute.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setResetTableOnExecute(false);
+                getParams().set("resetTableOnExecute", false);
             }
         });
 
-        if (getParams().isResetTableOnExecute()) {
+        if (getParams().getBoolean("resetTableOnExecute", false)) {
             resetOnExecute.setSelected(true);
         }
         else {
@@ -133,17 +129,11 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         latents.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setKeepLatents(true);
+                getParams().set("keepLatents", true);
             }
         });
 
-//        latents.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                getParams().setKeepLatents(false);
-//            }
-//        });
-
-        if (getParams().isKeepLatents()) {
+        if (getParams().getBoolean("keepLatents", false)) {
             latents.setSelected(true);
         }
         else {
@@ -153,83 +143,96 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
         // True graph?
         JRadioButton graph1 = new JRadioButton(model1.getName());
         JRadioButton graph2 = new JRadioButton(model2.getName());
+
         ButtonGroup group3 = new ButtonGroup();
         group3.add(graph1);
         group3.add(graph2);
-        
-//        getParams().setReferenceGraphName(model1.getNode());
-//        getParams().setTargetGraphName(model2.getNode());
 
-//        getParams().setReferenceGraphName(getParams().getReferenceGraphName());
-//        getParams().setTargetGraphName(getParams().getTargetGraphName());
+        boolean alreadySet = false;
+
+        if (model1 instanceof Simulation) {
+            graph1.setSelected(true);
+            getParams().set("referenceGraphName", model1.getName());
+            getParams().set("targetGraphName", model2.getName());
+            alreadySet = true;
+        }
+
+        if (model2 instanceof Simulation) {
+            graph2.setSelected(true);
+            getParams().set("referenceGraphName", model2.getName());
+            getParams().set("targetGraphName", model1.getName());
+            alreadySet = true;
+        }
+
+        if (!alreadySet) {
+            String refName = getParams().getString("referenceGraphName", null);
+
+            if (refName == null) {
+                getParams().set("referenceGraphName", model1.getName());
+                getParams().set("targetGraphName", model2.getName());
+                graph1.setSelected(true);
+            } else {
+                String targetName = getParams().getString("targetGraphName", null);
+                if (refName.equals(model1.getName())) {
+                    graph1.setSelected(true);
+                } else if (targetName.equals(model2.getName())) {
+                    graph2.setSelected(true);
+                }
+            }
+        }
 
         graph1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setReferenceGraphName(model1.getName());
-                getParams().setTargetGraphName(model2.getName());
+                getParams().set("referenceGraphName", model1.getName());
+                getParams().set("targetGraphName", model2.getName());
             }
         });
 
         graph2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setReferenceGraphName(model2.getName());
-                getParams().setTargetGraphName(model1.getName());
+                getParams().set("referenceGraphName", model2.getName());
+                getParams().set("targetGraphName", model1.getName());
             }
         });
-
-        if (getParams().getReferenceGraphName() == null) {
-            getParams().setReferenceGraphName(model1.getName());
-            getParams().setTargetGraphName(model2.getName());
-            graph1.setSelected(true);
-        }
-        else {
-            if (getParams().getReferenceGraphName().equals(model1.getName())) {
-                graph1.setSelected(true);
-            }
-            else
-            if (getParams().getReferenceGraphName().equals(model2.getName())) {
-                graph2.setSelected(true);
-            }
-        }
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel(
-                "Should the counts table be reset or appended to with each " +
-                        "simulation?"));
-        b2.add(Box.createHorizontalGlue());
-        b1.add(b2);
-        b1.add(Box.createVerticalStrut(5));
+//        Box b2 = Box.createHorizontalBox();
+//        b2.add(new JLabel(
+//                "Should the counts table be reset or appended to with each " +
+//                        "simulation?"));
+//        b2.add(Box.createHorizontalGlue());
+//        b1.add(b2);
+//        b1.add(Box.createVerticalStrut(5));
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(resetOnExecute);
-        b3.add(Box.createHorizontalGlue());
-        b1.add(b3);
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(resetOnExecute);
+//        b3.add(Box.createHorizontalGlue());
+//        b1.add(b3);
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(dontResetOnExecute);
-        b4.add(Box.createHorizontalGlue());
-        b1.add(b4);
-        b1.add(Box.createVerticalStrut(20));
+//        Box b4 = Box.createHorizontalBox();
+//        b4.add(dontResetOnExecute);
+//        b4.add(Box.createHorizontalGlue());
+//        b1.add(b4);
+//        b1.add(Box.createVerticalStrut(20));
 
-        Box b5 = Box.createHorizontalBox();
-        b5.add(new JLabel(
-                "Will the results graph contain latents? (Requires a different algorithm.)"));
-        b5.add(Box.createHorizontalGlue());
-        b1.add(b5);
+//        Box b5 = Box.createHorizontalBox();
+//        b5.add(new JLabel(
+//                "Will the results graph contain latents? (Requires a different algorithm.)"));
+//        b5.add(Box.createHorizontalGlue());
+//        b1.add(b5);
 
-        Box b6 = Box.createHorizontalBox();
-        b6.add(latents);
-        b6.add(Box.createHorizontalGlue());
-        b1.add(b6);
+//        Box b6 = Box.createHorizontalBox();
+//        b6.add(latents);
+//        b6.add(Box.createHorizontalGlue());
+//        b1.add(b6);
 
-        Box b7 = Box.createHorizontalBox();
-        b7.add(noLatents);
-        b7.add(Box.createHorizontalGlue());
-        b1.add(b7);
-        b1.add(Box.createVerticalStrut(20));
+//        Box b7 = Box.createHorizontalBox();
+//        b7.add(noLatents);
+//        b7.add(Box.createHorizontalGlue());
+//        b1.add(b7);
+//        b1.add(Box.createVerticalStrut(20));
 
         Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("Which of the two input graphs is the true graph?"));
@@ -254,7 +257,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private synchronized GraphComparisonParams getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

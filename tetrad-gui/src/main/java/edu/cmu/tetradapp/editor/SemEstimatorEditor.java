@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.performance.ComparisonParameters;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -49,21 +50,11 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class SemEstimatorEditor extends JPanel {
-    private SemEstimatorWrapper wrapper;
-    private JPanel panel;
-    private JComboBox optimizerCombo = new JComboBox();
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    JComboBox scoreBox;
-    IntTextField restarts;
-
-
-    /**
-     * Maximum number of free parameters for which statistics will be
-     * calculated. (Calculating standard errors is high complexity.) Set this to
-     * zero to turn  off statistics calculations (which can be problematic
-     * sometimes).
-     */
-    private int maxFreeParamsForStatistics = 200;
+    private final SemEstimatorWrapper wrapper;
+    private final JPanel panel;
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final JComboBox scoreBox;
+    private final IntTextField restarts;
 
 
     public SemEstimatorEditor(SemEstimatorWrapper _wrapper) {
@@ -72,7 +63,7 @@ public final class SemEstimatorEditor extends JPanel {
         setLayout(new BorderLayout());
         add(panel, BorderLayout.CENTER);
 
-        optimizerCombo = new JComboBox();
+        JComboBox optimizerCombo = new JComboBox();
         optimizerCombo.addItem("Regression");
         optimizerCombo.addItem("EM");
         optimizerCombo.addItem("Powell");
@@ -120,13 +111,13 @@ public final class SemEstimatorEditor extends JPanel {
             }
         });
 
-        String semOptimizerType = wrapper.getParams().getSemOptimizerType();
+        String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
 
         optimizerCombo.setSelectedItem(semOptimizerType);
-        SemIm.ScoreType scoreType = wrapper.getParams().getScoreType();
+        SemIm.ScoreType scoreType = (SemIm.ScoreType) wrapper.getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic);
         if (scoreType == null) scoreType = SemIm.ScoreType.Fgls;
         scoreBox.setSelectedItem(scoreType.toString());
-        restarts.setValue(wrapper.getParams().getNumRestarts());
+        restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
         JButton estimateButton = new JButton("Estimate Again");
 
@@ -218,6 +209,13 @@ public final class SemEstimatorEditor extends JPanel {
                 builder.append(parameter.getNodeB() + "\t");
                 builder.append(typeString(parameter) + "\t");
                 builder.append(asString(paramValue(estSem, parameter)) + "\t");
+                /*
+      Maximum number of free parameters for which statistics will be
+      calculated. (Calculating standard errors is high complexity.) Set this to
+      zero to turn  off statistics calculations (which can be problematic
+      sometimes).
+     */
+                int maxFreeParamsForStatistics = 200;
                 builder.append(asString(estSem.getStandardError(parameter,
                         maxFreeParamsForStatistics)) + "\t");
                 builder.append(asString(estSem.getTValue(parameter,
@@ -344,7 +342,7 @@ public final class SemEstimatorEditor extends JPanel {
         optimizer.setNumRestarts(numRestarts);
 
         java.util.List<SemEstimator> estimators = wrapper.getMultipleResultList();
-        java.util.List<SemEstimator> newEstimators = new ArrayList<SemEstimator>();
+        java.util.List<SemEstimator> newEstimators = new ArrayList<>();
 
         for (SemEstimator estimator : estimators) {
             SemPm semPm = estimator.getSemPm();

@@ -191,7 +191,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -262,7 +262,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
 
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<Node>(variables);
+        this.variables = new ArrayList<>(variables);
         covMatrix.setVariables(variables);
     }
 
@@ -273,7 +273,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
     @Override
     public List<DataSet> getDataSets() {
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         dataSets.add(dataSet);
 

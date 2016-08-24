@@ -126,7 +126,7 @@ public class Tetrad {
     }
 
     public Set<Node> getNodes() {
-        Set<Node> nodes = new HashSet<Node>();
+        Set<Node> nodes = new HashSet<>();
         nodes.add(i);
         nodes.add(j);
         nodes.add(k);

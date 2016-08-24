@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.PcIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -40,37 +40,37 @@ class PcIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private PcIndTestParams params = null;
+    private Parameters params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private IntTextField depthField;
+    private final IntTextField depthField;
 
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcIndTestParamsEditor(PcIndTestParams params) {
+    public PcIndTestParamsEditor(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-//        alphaField = new DoubleTextField(indTestParams().getParameter1(), 5,
+//        alphaField = new DoubleTextField(params().getParameter1(), 5,
 //                NumberFormatUtil.getInstance().getNumberFormat());
         NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
         NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 6,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 6,
                 numberFormat, smallNumberFormat, .001);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -79,11 +79,11 @@ class PcIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 4);
+        depthField = new IntTextField(params().getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -126,7 +126,7 @@ class PcIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private PcIndTestParams indTestParams() {
+    private Parameters params() {
         return params;
     }
 }

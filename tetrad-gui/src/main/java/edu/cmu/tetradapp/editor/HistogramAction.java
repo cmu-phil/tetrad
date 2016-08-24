@@ -36,13 +36,13 @@ import java.awt.event.ActionEvent;
  *
  * @author Tyler Gibson
  */
-public class HistogramAction extends AbstractAction {
+class HistogramAction extends AbstractAction {
 
 
     /**
      * The data editor that action is attached to.
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**

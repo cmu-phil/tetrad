@@ -39,7 +39,7 @@ public class GraphIntersectionsEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private List<Graph> graphs;
+    private final List<Graph> graphs;
 
 
     /**

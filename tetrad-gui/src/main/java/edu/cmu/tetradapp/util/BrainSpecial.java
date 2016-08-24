@@ -37,7 +37,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public final class BrainSpecial {
+final class BrainSpecial {
 
     /**
      * The graph being laid out.
@@ -95,7 +95,7 @@ public final class BrainSpecial {
     }
 
     private Map<String, Coord> loadMap() {
-        Map<String, Coord> map = new HashMap<String, Coord>();
+        Map<String, Coord> map = new HashMap<>();
 
         try {
             File file = new File("/Users/josephramsey/Documents/proj/tetrad2/docs/notes/extended_power_labels_283.txt");
@@ -127,11 +127,11 @@ public final class BrainSpecial {
     }
 
     private class Coord {
-        private int index;
-        private int x;
-        private int y;
-        private int z;
-        private String area;
+        private final int index;
+        private final int x;
+        private final int y;
+        private final int z;
+        private final String area;
 
         public Coord(int index, int x, int y, int z, String area) {
             this.index = index;

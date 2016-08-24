@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -72,33 +73,33 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log(semIm);
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, SemImParams params) {
+    public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        semIm = new SemIm(semPmWrapper.getSemPm(), params.getSemImInitializionParams());
+        semIm = new SemIm(semPmWrapper.getSemPm(), params);
 
         log(semIm);
     }
 
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        SemImParams params) {
+                        Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         SemPm semPm = new SemPm(semPmWrapper.getSemPm());
         SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
-        if (!params.isRetainPreviousValues()) {
-            this.semIm = new SemIm(semPm, params.getSemImInitializionParams());
+        if (!params.getBoolean("retainPreviousValues", false)) {
+            this.semIm = new SemIm(semPm, params);
         } else {
-            this.semIm = new SemIm(semPm, oldSemIm, params.getSemImInitializionParams());
+            this.semIm = new SemIm(semPm, oldSemIm, params);
         }
 
         log(semIm);
@@ -137,7 +138,7 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     public static SemImWrapper serializableInstance() {
         return new SemImWrapper(SemPmWrapper.serializableInstance(),
                 new SemImWrapper(SemPmWrapper.serializableInstance(),
-                        SemImParams.serializableInstance()), new SemImParams());
+                        new Parameters()), new Parameters());
     }
 
     //===========================PUBLIC METHODS=========================//

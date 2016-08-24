@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -57,23 +58,23 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
 
     //===========================CONSTRUCTORS===========================//
 
-    public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, BayesImParams params) {
+    public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
-        if (params.getInitializationMode() == BayesImParams.MANUAL_RETAIN) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_RETAIN) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_OVERWRITE) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
         }
         log(bayesIm);
@@ -127,22 +128,22 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImParams params) {
+    public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getInitializationMode() == BayesImParams.MANUAL_RETAIN) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_RETAIN) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_OVERWRITE) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
         }
         log(bayesIm);
@@ -170,7 +171,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
      */
     public static BayesImWrapper serializableInstance() {
         return new BayesImWrapper(BayesPmWrapper.serializableInstance(),
-                BayesImParams.serializableInstance());
+                new Parameters());
     }
 
     //=============================PUBLIC METHODS=========================//

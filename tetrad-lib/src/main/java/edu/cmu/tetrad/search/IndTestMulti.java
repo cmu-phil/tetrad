@@ -59,7 +59,7 @@ public final class IndTestMulti implements IndependenceTest {
     //==========================CONSTRUCTORS=============================//
 
     public IndTestMulti(List<IndependenceTest> independenceTests, ResolveSepsets.Method method) {
-        Set<String> nodeNames = new HashSet<String>();
+        Set<String> nodeNames = new HashSet<>();
         for (IndependenceTest independenceTest : independenceTests) {
             nodeNames.addAll(independenceTest.getVariableNames());
         }
@@ -70,7 +70,7 @@ public final class IndTestMulti implements IndependenceTest {
         this.independenceTests = independenceTests;
         this.method = method;
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (IndependenceTest test : independenceTests) {
             dataSets.add((DataSet) test.getData());
@@ -128,10 +128,10 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = new ArrayList<Double>();
+        List<Double> allPValues = new ArrayList<>();
 
         for (IndependenceTest test : independenceTests) {
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(test.getVariable(node.getName()));
             }
@@ -209,7 +209,7 @@ public final class IndTestMulti implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }

@@ -51,8 +51,8 @@ public class CSVtoMatrix {
      */
     public static Matrix[] load(String filename,int sizeofInputs, int sizeofOutputs){
 
-        ArrayList<double[]> inputsList = new ArrayList<double[]>();
-        ArrayList<double[]> outputsList = new ArrayList<double[]>();
+        ArrayList<double[]> inputsList = new ArrayList<>();
+        ArrayList<double[]> outputsList = new ArrayList<>();
         BufferedReader br = null;
 
         try {

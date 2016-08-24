@@ -38,7 +38,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DirectedGraphIterator {
-    private List<Graph> graphs = new ArrayList<Graph>();
+    private List<Graph> graphs = new ArrayList<>();
     private int index = -1;
 
 
@@ -51,7 +51,7 @@ public class DirectedGraphIterator {
     public DirectedGraphIterator(Graph graph) {
         graph = new EdgeListGraph(graph);
 //        graph = DataGraphUtils.undirectedGraph(graph);
-        List<Edge> undirectedEdges = new ArrayList<Edge>();
+        List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
             if (Edges.isUndirectedEdge(edge)) {

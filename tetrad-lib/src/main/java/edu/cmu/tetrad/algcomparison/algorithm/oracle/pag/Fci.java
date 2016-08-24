@@ -2,7 +2,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,9 +19,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fci implements Algorithm, TakesInitialGraph {
+public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
+    static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
+    private IKnowledge knowledge = new Knowledge2();
 
     public Fci(IndependenceWrapper type) {
         this.test = type;
@@ -38,6 +43,7 @@ public class Fci implements Algorithm, TakesInitialGraph {
         }
 
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
+        search.setKnowledge(knowledge);
 
         if (initial != null) {
             search.setInitialGraph(initial);
@@ -65,5 +71,15 @@ public class Fci implements Algorithm, TakesInitialGraph {
     @Override
     public List<String> getParameters() {
         return test.getParameters();
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

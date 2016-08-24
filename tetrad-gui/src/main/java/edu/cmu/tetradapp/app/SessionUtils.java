@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AbstractAlgorithmRunner;
 
 import javax.swing.*;
@@ -144,8 +144,8 @@ final class SessionUtils {
      * given model class. The item at [i][j] is the jth parent model description
      * of the ith parent model combination.
      */
-    public static String[][] possibleParentCombinations(Class modelClass) {
-        List<List<String>> parentCombinations = new LinkedList<List<String>>();
+    private static String[][] possibleParentCombinations(Class modelClass) {
+        List<List<String>> parentCombinations = new LinkedList<>();
 
         Constructor[] constructors = modelClass.getConstructors();
         boolean foundNull = false;
@@ -159,7 +159,7 @@ final class SessionUtils {
                 Class parameterType = (Class) j.next();
 
                 if (!(SessionModel.class.isAssignableFrom(parameterType) ||
-                        (Params.class.isAssignableFrom(parameterType)))) {
+                        (Parameters.class.isAssignableFrom(parameterType)))) {
                     continue PARENT_SET;
                 }
 
@@ -175,7 +175,7 @@ final class SessionUtils {
                 continue;
             }
 
-            List<String> combination = new LinkedList<String>();
+            List<String> combination = new LinkedList<>();
 
             for (Object parameterType1 : parameterTypes) {
                 Class parameterType = (Class) parameterType1;

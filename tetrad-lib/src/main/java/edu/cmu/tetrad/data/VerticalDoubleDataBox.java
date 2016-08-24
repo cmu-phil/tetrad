@@ -64,6 +64,19 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
+     * Copies the data from the given data box into this one.
+     */
+    public VerticalDoubleDataBox(DataBox dataBox) {
+        data = new double[dataBox.numCols()][dataBox.numRows()];
+
+        for (int i = 0; i < dataBox.numRows(); i++) {
+            for (int j = 0; j < dataBox.numCols(); j++) {
+                data[j][i] = dataBox.get(i, j).doubleValue();
+            }
+        }
+    }
+
+    /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {

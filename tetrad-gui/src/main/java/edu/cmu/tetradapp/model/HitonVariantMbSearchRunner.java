@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.HitonVariant;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * @author Tyler Gibson
@@ -30,15 +31,15 @@ public class HitonVariantMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public HitonVariantMbSearchRunner(DataWrapper data, MbSearchParams params) {
+    public HitonVariantMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
         HitonVariant search = new HitonVariant(getIndependenceTest(),
-                getParams().getDepth());
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+                getParams().getInt("depth", -1));
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

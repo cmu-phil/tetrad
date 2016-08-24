@@ -23,10 +23,9 @@ package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.datamanip.DiscretizationParams;
 import edu.cmu.tetradapp.util.IntSpinner;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
@@ -58,13 +57,13 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * A map from nodes to their editors.
      */
-    private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<Node, DiscretizationEditor>();
+    private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<>();
 
 
     /**
      * The params we are editing.
      */
-    private DiscretizationParams params;
+//    private DiscretizationParams params;
 
 
     /**
@@ -92,8 +91,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         System.out.println("setup");
 
         final List<Node> variables = this.sourceDataSet.getVariables();
-        List<Node> allVariables = new LinkedList<Node>();
-        List<Node> discretizeVars = new LinkedList<Node>();
+        List<Node> allVariables = new LinkedList<>();
+        List<Node> discretizeVars = new LinkedList<>();
 
         for (Node node : variables) {
             discretizeVars.add(node);
@@ -148,23 +147,23 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             }
         });
         // Add entries for previously selected variables.
-        for (Node node : discretizeVars) {
-            if (node instanceof ContinuousVariable) {
-                ContinuousVariable continuousVariable = (ContinuousVariable) node;
-                ContinuousDiscretizationEditor editor =
-                        new ContinuousDiscretizationEditor(sourceDataSet, continuousVariable
-                        );
-                editor.setDiscretizationSpec(this.params.getSpecs().get(node));
-                this.nodeEditors.put(node, editor);
-            } else if (node instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) node;
-                DiscreteDiscretizationEditor editor =
-                        new DiscreteDiscretizationEditor(variable);
-                editor.setDiscretizationSpec(this.params.getSpecs().get(node));
-                this.nodeEditors.put(node, editor);
-            }
-
-        }
+//        for (Node node : discretizeVars) {
+//            if (node instanceof ContinuousVariable) {
+//                ContinuousVariable continuousVariable = (ContinuousVariable) node;
+//                ContinuousDiscretizationEditor editor =
+//                        new ContinuousDiscretizationEditor(sourceDataSet, continuousVariable
+//                        );
+//                editor.setDiscretizationSpec(this.params.getSpecs().get(node));
+//                this.nodeEditors.put(node, editor);
+//            } else if (node instanceof DiscreteVariable) {
+//                DiscreteVariable variable = (DiscreteVariable) node;
+//                DiscreteDiscretizationEditor editor =
+//                        new DiscreteDiscretizationEditor(variable);
+//                editor.setDiscretizationSpec(this.params.getSpecs().get(node));
+//                this.nodeEditors.put(node, editor);
+//            }
+//
+//        }
 
         // set up the tabbed pane
         this.editorPane = new JTabbedPane();
@@ -242,21 +241,22 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         if (this.nodeEditors.isEmpty()) {
             return false;
         }
-        Map<Node, DiscretizationSpec> map = new HashMap<Node, DiscretizationSpec>();
+        Map<Node, DiscretizationSpec> map = new HashMap<>();
         for (Node node : this.nodeEditors.keySet()) {
             DiscretizationEditor editor = this.nodeEditors.get(node);
             map.put(node, editor.getDiscretizationSpec());
         }
-        this.params.setSpecs(map);
+//        this.params.setSpecs(map);
         return true;
     }
 
 
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (DiscretizationParams) params;
+    public void setParams(Parameters params) {
+//        this.params = (DiscretizationParams) params;
     }
 
     /**
@@ -294,7 +294,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     private static List<Node> getSelected(JList list) {
         List selected = list.getSelectedValuesList();
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
         if (selected != null) {
             for (Object o : selected) {
                 nodes.add((Node) o);
@@ -511,7 +511,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
 
         public VariableListModel(List<Node> variables) {
-            this.variables = new Vector<Node>(variables);
+            this.variables = new Vector<>(variables);
         }
 
 

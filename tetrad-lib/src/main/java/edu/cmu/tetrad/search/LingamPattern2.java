@@ -88,14 +88,14 @@ public class LingamPattern2 {
 
         this.variables = dataSets.get(0).getVariables();
 
-        data = new ArrayList<TetradMatrix>();
+        data = new ArrayList<>();
 
         for (DataSet dataSet : getDataSets()) {
             TetradMatrix _data = dataSet.getDoubleData();
             data.add(_data);
         }
 
-        regressions = new ArrayList<Regression>();
+        regressions = new ArrayList<>();
 
         for (TetradMatrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
@@ -146,7 +146,7 @@ public class LingamPattern2 {
 
         // Check that all the daga and the data contain the same variables.
 
-        List<Score> scores = new ArrayList<Score>();
+        List<Score> scores = new ArrayList<>();
 
         for (Graph dag : dags) {
 //            System.out.println(dag);
@@ -233,7 +233,7 @@ public class LingamPattern2 {
     private Score getScore1(Graph dag, List<TetradMatrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
-        List<Regression> regressions = new ArrayList<Regression>();
+        List<Regression> regressions = new ArrayList<>();
 
         for (TetradMatrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
@@ -253,13 +253,13 @@ public class LingamPattern2 {
         TetradMatrix absoluteStandardizedResiduals = new TetradMatrix(totalSampleSize, numCols);
 
         for (int i = 0; i < nodes.size(); i++) {
-            List<Double> _absoluteStandardizedResiduals = new ArrayList<Double>();
+            List<Double> _absoluteStandardizedResiduals = new ArrayList<>();
 
             for (int j = 0; j < data.size(); j++) {
                 Node _target = nodes.get(i);
                 List<Node> _regressors = dag.getParents(_target);
                 Node target = getVariable(variables, _target.getName());
-                List<Node> regressors = new ArrayList<Node>();
+                List<Node> regressors = new ArrayList<>();
 
                 for (Node _regressor : _regressors) {
                     Node variable = getVariable(variables, _regressor.getName());
@@ -308,7 +308,7 @@ public class LingamPattern2 {
     private Score getScore2(Graph dag, List<TetradMatrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
-        List<Regression> regressions = new ArrayList<Regression>();
+        List<Regression> regressions = new ArrayList<>();
 
         for (TetradMatrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
@@ -328,12 +328,12 @@ public class LingamPattern2 {
         TetradMatrix residuals = new TetradMatrix(totalSampleSize, numCols);
 
         for (int j = 0; j < nodes.size(); j++) {
-            List<Double> _residuals = new ArrayList<Double>();
+            List<Double> _residuals = new ArrayList<>();
 
             Node _target = nodes.get(j);
             List<Node> _regressors = dag.getParents(_target);
             Node target = getVariable(variables, _target.getName());
-            List<Node> regressors = new ArrayList<Node>();
+            List<Node> regressors = new ArrayList<>();
 
             for (Node _regressor : _regressors) {
                 Node variable = getVariable(variables, _regressor.getName());
@@ -404,12 +404,12 @@ public class LingamPattern2 {
         TetradMatrix residuals = new TetradMatrix(totalSampleSize, numCols);
 
         for (int j = 0; j < nodes.size(); j++) {
-            List<Double> _residuals = new ArrayList<Double>();
+            List<Double> _residuals = new ArrayList<>();
 
             Node _target = nodes.get(j);
             List<Node> _regressors = dag.getParents(_target);
             Node target = getVariable(variables, _target.getName());
-            List<Node> regressors = new ArrayList<Node>();
+            List<Node> regressors = new ArrayList<>();
 
             for (Node _regressor : _regressors) {
                 Node variable = getVariable(variables, _regressor.getName());
@@ -462,12 +462,12 @@ public class LingamPattern2 {
     }
 
     private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());

@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -60,27 +61,23 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     private String name;
     private DataSet data;
     private Graph sourceGraph;
-    private MimBuildParams params;
+    private Parameters params;
 
     //=============================CONSTRUCTORS==========================//
 
-    public MeasurementModelWrapper(MimBuildParams params) {
+    public MeasurementModelWrapper(Parameters params) {
         this.setVarNames(new ArrayList<String>());
-        this.setClusters(params.getClusters());
+        this.setClusters((Clusters) params.get("clusters", null));
         this.params = params;
     }
 
-    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, MimBuildParams params) {
+    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {
         if (knowledgeInput instanceof GraphSource) {
             GraphSource graphWrapper = (GraphSource) knowledgeInput;
             Graph mim = graphWrapper.getGraph();
 
             Clusters clusters = ClusterUtils.mimClusters(mim);
-
-//            List<List<Node>> partition = ClusterUtils.mimClustering(mim, mim.getNodes());
-//            Clusters clusters = ClusterUtils.partitionToClusters(partition);
-
-            List<String> nodeNames = new ArrayList<String>();
+            List<String> nodeNames = new ArrayList<>();
 
             for (Node node : mim.getNodes()) {
                 if (node.getNodeType() != NodeType.LATENT) {
@@ -92,25 +89,25 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
             setClusters(clusters);
             this.params = params;
 
-            getParams().setClusters(clusters);
-            getParams().setVarNames(nodeNames);
+            getParams().set("clusters", clusters);
+            getParams().set("varNames", nodeNames);
         }
         else {
             this.setVarNames(knowledgeInput.getVariableNames());
-            this.setClusters(params.getClusters());
+            this.setClusters((Clusters) params.get("clusters", null));
             this.params = params;
         }
     }
 
-    public MeasurementModelWrapper(DataWrapper dataWrapper, MimBuildParams params) {
+    public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
-        this.setClusters(params.getClusters());
+        this.setClusters((Clusters) params.get("clusters", null));
         this.data = (DataSet) dataWrapper.getSelectedDataModel();
         this.params = params;
     }
 
     public static MeasurementModelWrapper serializableInstance() {
-        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new MimBuildParams());
+        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
     public void setName(String name) {
@@ -144,7 +141,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return clusters;
     }
 
-    public void setClusters(Clusters clusters) {
+    private void setClusters(Clusters clusters) {
         this.clusters = clusters;
     }
 
@@ -152,7 +149,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return varNames;
     }
 
-    public void setVarNames(List<String> varNames) {
+    private void setVarNames(List<String> varNames) {
         this.varNames = varNames;
     }
 
@@ -168,12 +165,12 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return sourceGraph;
     }
 
-    public MimBuildParams getParams() {
+    private Parameters getParams() {
         return params;
     }
 
     public void resetParams(Object params) {
-        this.params = (MimBuildParams) params;
+        this.params = (Parameters) params;
     }
 
     public Object getResettableParams() {
@@ -181,7 +178,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);

@@ -25,12 +25,15 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.LayoutEditable;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
@@ -55,9 +58,6 @@ import java.util.List;
 public class FgsSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, Indexable, DoNotScroll {
 
-    //    private JTextArea modelStatsText;
-    private JTextArea logBayesFactorsScroll;
-    private JTextArea modelStatisticsScroll;
     //    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
     private boolean alreadyLaidOut = false;
@@ -115,7 +115,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -144,7 +144,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 getWorkbench(),
@@ -231,16 +231,16 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //==========================PROTECTED METHODS============================//
@@ -319,8 +319,8 @@ public class FgsSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-//        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
-//            MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
+//        if (getAlgorithmRunner().getParameters() instanceof Parameters) {
+//            Parameters params = (Parameters) getAlgorithmRunner().getParameters();
 //            JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
 //            preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
 //            preventCycles.setSelected(params.isAggressivelyPreventCycles());
@@ -328,7 +328,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //            preventCycles.addActionListener(new ActionListener() {
 //                public void actionPerformed(ActionEvent e) {
 //                    JCheckBox box = (JCheckBox) e.getSource();
-//                    MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
+//                    Parameters params = (Parameters) getAlgorithmRunner().getParameters();
 //                    params.setAggressivelyPreventCycles(box.isSelected());
 //                }
 //            });
@@ -461,7 +461,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -561,15 +561,15 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         if (topGraphs == null) topGraphs = new ArrayList<>();
 
-        Graph latestWorkbenchGraph = runner.getParams().getSourceGraph();
+//        Graph latestWorkbenchGraph = (Graph) runner.getParameters().get("sourceGraph", null);
         Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
-        for (int i = 0; i < topGraphs.size(); i++) {
-            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraphs.get(i).getGraph(),
-                    latestWorkbenchGraph);
-        }
+//        for (int i = 0; i < topGraphs.size(); i++) {
+//            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraphs.get(i).getGraph(),
+//                    latestWorkbenchGraph);
+//        }
 
         if (!arrangedAll) {
             for (ScoredGraph topGraph : topGraphs) {
@@ -646,7 +646,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
             JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
 
 //            modelStatsText = new JTextArea();
-            logBayesFactorsScroll = new JTextArea();
+            JTextArea logBayesFactorsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -665,7 +665,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //            bootstrapPanel.setLayout(new BorderLayout());
 //            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
 
-            modelStatisticsScroll = new JTextArea();
+            JTextArea modelStatisticsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -723,7 +723,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     private String reportIfDiscrete(Graph dag, DataSet dataSet) {
         List vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -740,7 +740,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -864,17 +864,16 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Parameters params = getAlgorithmRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
@@ -882,13 +881,11 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         if (algorithmRunner instanceof  IFgsRunner) {
             IFgsRunner fgsRunner = ((IFgsRunner) algorithmRunner);
-            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
             return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
 
         if (algorithmRunner instanceof  FgsMbRunner) {
             FgsMbRunner fgsRunner = ((FgsMbRunner) algorithmRunner);
-            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
             return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
 

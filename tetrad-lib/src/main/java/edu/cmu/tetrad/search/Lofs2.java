@@ -95,7 +95,7 @@ public class Lofs2 {
         this.variables = dataSets.get(0).getVariables();
         this.varnames = dataSets.get(0).getVariableNames();
 
-        List<DataSet> dataSets2 = new ArrayList<DataSet>();
+        List<DataSet> dataSets2 = new ArrayList<>();
 
         for (int i = 0; i < dataSets.size(); i++) {
             DataSet dataSet = ColtDataSet.makeContinuousData(variables, dataSets.get(i).getDoubleData());
@@ -255,7 +255,7 @@ public class Lofs2 {
 
     private List<Regression> getRegressions() {
         if (this.regressions == null) {
-            List<Regression> regressions = new ArrayList<Regression>();
+            List<Regression> regressions = new ArrayList<>();
             this.variables = dataSets.get(0).getVariables();
 
             for (DataSet dataSet : dataSets) {
@@ -271,7 +271,7 @@ public class Lofs2 {
     private void setDataSets(List<DataSet> dataSets) {
         this.dataSets = dataSets;
 
-        matrices = new ArrayList<TetradMatrix>();
+        matrices = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             matrices.add(dataSet.getDoubleData());
@@ -279,7 +279,7 @@ public class Lofs2 {
     }
 
     private void ruleR1TimeLag(Graph skeleton, Graph graph) {
-        List<DataSet> timeSeriesDataSets = new ArrayList<DataSet>();
+        List<DataSet> timeSeriesDataSets = new ArrayList<>();
         IKnowledge knowledge = null;
         List<Node> dataNodes = null;
 
@@ -335,7 +335,7 @@ public class Lofs2 {
         lofs.setRule(Rule.R1);
         Graph _graph = lofs.orient();
 
-        graph.removeEdges(new ArrayList<Edge>(graph.getEdges()));
+        graph.removeEdges(new ArrayList<>(graph.getEdges()));
 
         for (Edge edge : _graph.getEdges()) {
             Node node1 = edge.getNode1();
@@ -364,9 +364,9 @@ public class Lofs2 {
         setDataSets(centeredData);
 
         for (Node node : nodes) {
-            SortedMap<Double, String> scoreReports = new TreeMap<Double, String>();
+            SortedMap<Double, String> scoreReports = new TreeMap<>();
 
-            List<Node> adj = new ArrayList<Node>();
+            List<Node> adj = new ArrayList<>();
 
             for (Node _node : skeleton.getAdjacentNodes(node)) {
                 if (knowledge.isForbidden(_node.getName(), node.getName())) {
@@ -452,9 +452,9 @@ public class Lofs2 {
     private void resolveOneEdgeMax2(Graph graph, Node x, Node y, boolean strong) {
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        SortedMap<Double, String> scoreReports = new TreeMap<Double, String>();
+        SortedMap<Double, String> scoreReports = new TreeMap<>();
 
-        List<Node> neighborsx = new ArrayList<Node>();
+        List<Node> neighborsx = new ArrayList<>();
 
         for (Node _node : graph.getAdjacentNodes(x)) {
             if (!knowledge.isForbidden(_node.getName(), x.getName())) {
@@ -477,7 +477,7 @@ public class Lofs2 {
 
             if (condxMinus.contains(y)) continue;
 
-            List<Node> condxPlus = new ArrayList<Node>(condxMinus);
+            List<Node> condxPlus = new ArrayList<>(condxMinus);
 
             condxPlus.add(y);
 
@@ -496,7 +496,7 @@ public class Lofs2 {
                 continue;
             }
 
-            List<Node> neighborsy = new ArrayList<Node>();
+            List<Node> neighborsy = new ArrayList<>();
 
             for (Node _node : graph.getAdjacentNodes(y)) {
                 if (!knowledge.isForbidden(_node.getName(), y.getName())) {
@@ -512,7 +512,7 @@ public class Lofs2 {
 
                 if (condyMinus.contains(x)) continue;
 
-                List<Node> condyPlus = new ArrayList<Node>(condyMinus);
+                List<Node> condyPlus = new ArrayList<>(condyMinus);
                 condyPlus.add(x);
 
                 double yPlus = score(y, condyPlus);
@@ -756,15 +756,15 @@ public class Lofs2 {
 
         // For each row, list the columns of W in that row that are parameters. Note that the diagonal
         // is fixed to 1, so diagonal elements aren't parameters.
-        List<List<Integer>> rows = new ArrayList<List<Integer>>();
-        List<List<List<Double>>> paramsforDataSets = new ArrayList<List<List<Double>>>();
-        List<List<Double>> avgParams = new ArrayList<List<Double>>();
+        List<List<Integer>> rows = new ArrayList<>();
+        List<List<List<Double>>> paramsforDataSets = new ArrayList<>();
+        List<List<Double>> avgParams = new ArrayList<>();
 
         for (int k = 0; k < nodes.size(); k++) {
             List<Node> adj = graph.getAdjacentNodes(nodes.get(k));
-            List<Integer> row = new ArrayList<Integer>();
-            List<Double> avgParam = new ArrayList<Double>();
-            List<Node> nodesInRow = new ArrayList<Node>();
+            List<Integer> row = new ArrayList<>();
+            List<Double> avgParam = new ArrayList<>();
+            List<Node> nodesInRow = new ArrayList<>();
 
             for (Node node : adj) {
                 if (knowledge.isForbidden(node.getName(), nodes.get(k).getName())) {
@@ -798,12 +798,12 @@ public class Lofs2 {
         // Estimate parameters for each data set.
         for (int i = 0; i < dataSets.size(); i++) {
             TetradMatrix data = dataSets.get(i).getDoubleData();
-            List<List<Double>> parameters = new ArrayList<List<Double>>();
+            List<List<Double>> parameters = new ArrayList<>();
 
             // Note that the 1's along the diagonal of W are hard coded into the code for calculating scores.
             // Otherwise list doubles to correspond to each parameter.
             for (int k = 0; k < nodes.size(); k++) {
-                List<Double> params = new ArrayList<Double>();
+                List<Double> params = new ArrayList<>();
 
                 for (int j : rows.get(k)) {
                     params.add(0.0);
@@ -971,14 +971,14 @@ public class Lofs2 {
 
             CombinationGenerator gen = new CombinationGenerator(dims);
             int[] comb;
-            List<Double> maxParams = new ArrayList<Double>();
+            List<Double> maxParams = new ArrayList<>();
 
             for (int i = 0; i < values.length; i++) maxParams.add(0.0);
 
             double maxV = Double.NEGATIVE_INFINITY;
 
             while ((comb = gen.next()) != null) {
-                List<Double> params = new ArrayList<Double>();
+                List<Double> params = new ArrayList<>();
 
                 for (int i = 0; i < values.length; i++) {
                     params.add(min + (max - min) * (comb[i] / (double) numBins));
@@ -1198,7 +1198,7 @@ public class Lofs2 {
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
-        Map<Node, Integer> nodesHash = new HashMap<Node, Integer>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodesHash.put(nodes.get(i), i);
@@ -1248,7 +1248,7 @@ public class Lofs2 {
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
-        Map<Node, Integer> nodesHash = new HashMap<Node, Integer>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodesHash.put(nodes.get(i), i);
@@ -1307,7 +1307,7 @@ public class Lofs2 {
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
-        Map<Node, Integer> nodesHash = new HashMap<Node, Integer>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodesHash.put(nodes.get(i), i);
@@ -1485,8 +1485,8 @@ public class Lofs2 {
         double[] xData = _data[xIndex];
         double[] yData = _data[yIndex];
 
-        List<Double> xValues = new ArrayList<Double>();
-        List<Double> yValues = new ArrayList<Double>();
+        List<Double> xValues = new ArrayList<>();
+        List<Double> yValues = new ArrayList<>();
 
         for (int i = 0; i < data.getNumRows(); i++) {
             if (!Double.isNaN(xData[i]) && !Double.isNaN(yData[i])) {
@@ -1503,7 +1503,7 @@ public class Lofs2 {
             yData[i] = yValues.get(i);
         }
 
-        List<double[]> ret = new ArrayList<double[]>();
+        List<double[]> ret = new ArrayList<>();
         ret.add(xData);
         ret.add(yData);
 
@@ -1524,8 +1524,8 @@ public class Lofs2 {
         double[] xData = concatData.getDoubleData().getColumn(xIndex).toArray();
         double[] yData = concatData.getDoubleData().getColumn(yIndex).toArray();
 
-        List<Double> xValues = new ArrayList<Double>();
-        List<Double> yValues = new ArrayList<Double>();
+        List<Double> xValues = new ArrayList<>();
+        List<Double> yValues = new ArrayList<>();
 
         for (int i = 0; i < concatData.getNumRows(); i++) {
             if (!Double.isNaN(xData[i]) && !Double.isNaN(yData[i])) {
@@ -1571,7 +1571,7 @@ public class Lofs2 {
 
         }
 
-        List<double[]> ret = new ArrayList<double[]>();
+        List<double[]> ret = new ArrayList<>();
         ret.add(xData);
         ret.add(yData);
 
@@ -1579,7 +1579,7 @@ public class Lofs2 {
     }
 
     private double regressionCoef(double[] xValues, double[] yValues) {
-        List<Node> v = new ArrayList<Node>();
+        List<Node> v = new ArrayList<>();
         v.add(new GraphNode("x"));
         v.add(new GraphNode("y"));
 
@@ -1799,7 +1799,7 @@ public class Lofs2 {
             double a = 0;
             double b = 0;
 
-            List<Pair> _x = new ArrayList<Pair>();
+            List<Pair> _x = new ArrayList<>();
 
             for (int i = 0; i < x.length; i++) {
                 _x.add(new Pair(i, x[i]));
@@ -1811,7 +1811,7 @@ public class Lofs2 {
                 }
             });
 
-            List<Pair> _y = new ArrayList<Pair>();
+            List<Pair> _y = new ArrayList<>();
 
             for (int i = 0; i < y.length; i++) {
                 _y.add(new Pair(i, y[i]));
@@ -1929,7 +1929,7 @@ public class Lofs2 {
     }
 
     private double[] removeNaN(double[] data) {
-        List<Double> _leaveOutMissing = new ArrayList<Double>();
+        List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < data.length; i++) {
             if (!Double.isNaN(data[i])) {
@@ -2066,10 +2066,10 @@ public class Lofs2 {
     }
 
     private double[] residuals(Node node, List<Node> parents, boolean standardize, boolean removeNaN) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node target = getVariable(variables, node.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : parents) {
             Node variable = getVariable(variables, _regressor.getName());
@@ -2139,10 +2139,10 @@ public class Lofs2 {
     }
 
     private double pValue(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node target = getVariable(variables, node.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : parents) {
             Node variable = getVariable(variables, _regressor.getName());

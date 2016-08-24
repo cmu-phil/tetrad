@@ -80,7 +80,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
     private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
         final Set<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<Node>(possibleDsepSet);
+        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
         List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
@@ -121,7 +121,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
      */
     private List<Node> possibleParents(Node x, List<Node> nodes,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : nodes) {

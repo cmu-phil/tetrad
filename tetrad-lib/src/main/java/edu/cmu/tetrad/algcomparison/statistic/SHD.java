@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
  * @author jdramsey
  */
 public class SHD implements Statistic {
+    static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

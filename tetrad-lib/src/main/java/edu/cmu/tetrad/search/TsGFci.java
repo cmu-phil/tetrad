@@ -181,7 +181,7 @@ public final class TsGFci implements GraphSearch {
 //        System.out.println("GFCI: FGS done");
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
-//        ((SepsetsGreedy) sepsets).setDepth(3);
+//        ((SepsetsGreedy) sepsets).setMaxIndegree(3);
 //        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
@@ -545,7 +545,7 @@ public final class TsGFci implements GraphSearch {
             List<Node> opposites = graph.getAdjacentNodes(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -638,7 +638,7 @@ public final class TsGFci implements GraphSearch {
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if(x.getName().equals("time") || y.getName().equals("time")){
-            return new ArrayList<List<Node>>();
+            return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
@@ -717,7 +717,7 @@ public final class TsGFci implements GraphSearch {
             }
         }
 
-        List<List<Node>> pairList = new ArrayList<List<Node>>();
+        List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
         return(pairList);

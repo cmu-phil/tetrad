@@ -358,7 +358,7 @@ public class TestPc {
                     search = new Fci(test);
                     break;
                 case 4:
-                    search = new GFci(score);
+                    search = new GFci(test, score);
                     break;
                 case 5:
                     search = new Rfci(test);
@@ -744,7 +744,7 @@ public class TestPc {
                     out = search.search();
                     break;
                 case 4:
-                    search = new GFci(score);
+                    search = new GFci(test, score);
                     out = search.search();
                     break;
                 case 5:

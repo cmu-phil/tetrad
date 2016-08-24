@@ -22,8 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.EmBayesEstimatorParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -40,14 +39,14 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
     /**
      * The parameters object being edited.
      */
-    private EmBayesEstimatorParams params = null;
+    private Parameters params = null;
 
     public EMBayesEstimatorParamsEditor() {
 
     }
 
-    public void setParams(Params params) {
-        this.params = (EmBayesEstimatorParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -67,11 +66,12 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
         setLayout(new BorderLayout());
 
         final DoubleTextField toleranceField =
-                new DoubleTextField(params.getTolerance(), 8, NumberFormatUtil.getInstance().getNumberFormat());
+                new DoubleTextField(
+                        params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
         toleranceField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setTolerance(value);
+                    params.set("tolerance", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -107,7 +107,7 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    protected synchronized EmBayesEstimatorParams getParams() {
+    protected synchronized Parameters getParams() {
         return this.params;
     }
 }

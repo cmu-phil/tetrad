@@ -140,14 +140,14 @@ public class IndependenceFactsEditor extends JPanel {
         return b;
     }
 
-    public void resetTextDisplay() {
+    private void resetTextDisplay() {
         getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
         getTextArea().setBorder(new CompoundBorder(new LineBorder(Color.black),
                 new EmptyBorder(3, 3, 3, 3)));
         getTextArea().setText(facts.toString());
     }
 
-    public JTextArea getTextArea() {
+    private JTextArea getTextArea() {
         return textArea;
     }
 

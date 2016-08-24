@@ -22,8 +22,10 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.*;
@@ -39,9 +41,9 @@ public class CpcRunner extends AbstractAlgorithmRunner
     private Graph trueGraph;
 //    private CPC cpc = null;
 
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -50,46 +52,46 @@ public class CpcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CpcRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public CpcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public CpcRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CpcRunner(Graph graph, PcSearchParams params) {
+    public CpcRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CpcRunner(Graph graph, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CpcRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public CpcRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CpcRunner(GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CpcRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -97,41 +99,41 @@ public class CpcRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CpcRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public CpcRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
     
-    public CpcRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public CpcRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CpcRunner(DagWrapper dagWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
     
-    public CpcRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public CpcRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CpcRunner(SemGraphWrapper dagWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
-    public CpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public CpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.trueGraph = graphWrapper.getGraph();
     }
     
-    public CpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.trueGraph = graphWrapper.getGraph();
     }
 
-    public CpcRunner(IndependenceFactsModel model, PcSearchParams params) {
+    public CpcRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public CpcRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CpcRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -141,20 +143,13 @@ public class CpcRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CpcRunner serializableInstance() {
-        return new CpcRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new CpcRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        PcSearchParams searchParams = (PcSearchParams) getParams();
-
-
-        PcIndTestParams indTestParams =
-                (PcIndTestParams) searchParams.getIndTestParams();
-
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
         if (trueGraph != null) {
             CpcOrienter orienter = new CpcOrienter(getIndependenceTest(), knowledge);
@@ -179,7 +174,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
             Cpc cpc = new Cpc(getIndependenceTest());
             cpc.setKnowledge(knowledge);
             cpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-            cpc.setDepth(indTestParams.getDepth());
+            cpc.setDepth(getParams().getInt("depth", -1));
             Graph graph = cpc.search();
 
             if (getSourceGraph() != null) {
@@ -206,7 +201,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -218,9 +213,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
-//        names.add("Colliders");
-//        names.add("Noncolliders");
+        List<String> names = new ArrayList<>();
         names.add("Ambiguous Triples");
         return names;
     }
@@ -229,20 +222,18 @@ public class CpcRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<Edge>(pcAdjacent);
+        return new HashSet<>(pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<Edge>(pcNonadjacent);
+        return new HashSet<>(pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -253,7 +244,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        meekRules.setKnowledge(getParams().getKnowledge());
+        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return meekRules;
     }
 
@@ -272,11 +263,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
-        }
-        return false;
+        return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
     private void setCpcFields(Cpc cpc) {
@@ -284,8 +271,6 @@ public class CpcRunner extends AbstractAlgorithmRunner
         pcNonadjacent = cpc.getNonadjacencies();
         pcNodes = getGraph().getNodes();
     }
-
-//    public CPC getCpc() { return cpc; }
 }
 
 

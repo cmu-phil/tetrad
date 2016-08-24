@@ -28,9 +28,12 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetradapp.model.MimBuildRunner;
+import edu.cmu.tetradapp.model.MimBuildTrekRunner;
+import edu.cmu.tetradapp.model.MimRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -81,7 +84,7 @@ public class MimbuildEditor extends JPanel {
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
     /**
      * The label for the result graph workbench.
@@ -93,8 +96,6 @@ public class MimbuildEditor extends JPanel {
      */
     private JScrollPane workbenchScroll;
     private JPanel displayPanel;
-    private GraphWorkbench structureWorkbench;
-    private ClusterEditor clusterEditor;
 
     //============================CONSTRUCTORS===========================//
 
@@ -163,7 +164,7 @@ public class MimbuildEditor extends JPanel {
 
         JCheckBox showMaxP = new JCheckBox("Show Max P Value Result");
 
-        showMaxP.setSelected(getMimRunner().getParams().isShowMaxP());
+        showMaxP.setSelected(getMimRunner().getParams().getBoolean("showMaxP", false));
 
         showMaxP.addActionListener(new ActionListener() {
             @Override
@@ -171,8 +172,8 @@ public class MimbuildEditor extends JPanel {
                 JCheckBox box = (JCheckBox) e.getSource();
                 boolean selected = box.isSelected();
 
-                MimParams params = getMimRunner().getParams();
-                params.setShowMaxP(selected);
+                Parameters params = getMimRunner().getParams();
+                params.set("showMaxP", selected);
 
                 if (selected) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -181,22 +182,23 @@ public class MimbuildEditor extends JPanel {
                 else if (!selected) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Max P mode turned off and reset.");
-                    params.setMaxP(-1);
-                    params.setMaxStructureGraph(null);
+                    double maxP = -1;
+                    params.set("maxP", maxP);
+                    params.set("maxStructureGraph", (Graph) null);
                 }
             }
         });
 
         JCheckBox include3Clusters = new JCheckBox("Include 3-clusters");
 
-        include3Clusters.setSelected(getMimRunner().getParams().isInclude3Clusters());
+        include3Clusters.setSelected(getMimRunner().getParams().getBoolean("includeThreeClusters", true));
 
         include3Clusters.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
                 boolean selected = box.isSelected();
-                getMimRunner().getParams().setInclude3Clusters(selected);
+                getMimRunner().getParams().set("includeThreeClusters", selected);
             }
         });
 
@@ -264,7 +266,7 @@ public class MimbuildEditor extends JPanel {
                 setErrorMessage(null);
 
                 try {
-//                    mimRunner.getParams().setClusters(clusterEditor.getClusters());
+//                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
                 }
                 catch (Exception e) {
@@ -438,7 +440,7 @@ public class MimbuildEditor extends JPanel {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -449,7 +451,7 @@ public class MimbuildEditor extends JPanel {
         if (getMimRunner().getClusters() != null) {
             ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
-            this.clusterEditor = editor;
+            ClusterEditor clusterEditor = editor;
             tabbedPane.add("Measurement Model", editor);
         }
 
@@ -482,7 +484,7 @@ public class MimbuildEditor extends JPanel {
 
         Graph sourceGraph = getMimRunner().getSourceGraph();
         Graph latestWorkbenchGraph =
-                getMimRunner().getParams().getSourceGraph();
+                (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
@@ -534,7 +536,7 @@ public class MimbuildEditor extends JPanel {
     }
 
     public Graph getLatestWorkbenchGraph() {
-        Graph graph = getMimRunner().getParams().getSourceGraph();
+        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -551,14 +553,14 @@ public class MimbuildEditor extends JPanel {
         }
 
         try {
-            Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
-            getMimRunner().getParams().setSourceGraph(graph);
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
+            getMimRunner().getParams().set("sourceGraph", graph);
         }
         catch (IOException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
         }
         catch (ClassNotFoundException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
@@ -574,25 +576,22 @@ public class MimbuildEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        MimParams params = getMimRunner().getParams();
-        MimIndTestParams indTestParams = params.getMimIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Parameters params = getMimRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(MimIndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof BuildPureClustersIndTestParams) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            BuildPureClustersIndTestParams params =
-                    (BuildPureClustersIndTestParams) indTestParams;
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", runner.getParams().get("varNames", null));
             DataModel dataModel = runner.getData();
 
             if (dataModel instanceof DataSet) {
@@ -606,10 +605,9 @@ public class MimbuildEditor extends JPanel {
             }
         }
 
-        if (indTestParams instanceof PurifyIndTestParams) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            PurifyIndTestParams params = (PurifyIndTestParams) indTestParams;
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", runner.getParams().get("varNames", null));
 
             boolean discreteData = false;
 
@@ -620,16 +618,14 @@ public class MimbuildEditor extends JPanel {
             return new PurifyIndTestParamsEditor(params, discreteData);
         }
 
-        if (indTestParams instanceof MimBuildIndTestParams) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            MimBuildIndTestParams params =
-                    (MimBuildIndTestParams) indTestParams;
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", runner.getParams().get("varNames", null));
             return new MimBuildIndTestParamsEditor(params);
         }
 
         throw new IllegalArgumentException(
-                "Unrecognized IndTestParams: " + indTestParams.getClass());
+                "Unrecognized Parameters: " + params.getClass());
     }
 }
 

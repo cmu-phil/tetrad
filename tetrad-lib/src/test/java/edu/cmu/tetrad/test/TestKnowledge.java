@@ -46,7 +46,7 @@ public final class TestKnowledge {
 
     @Test
     public final void test1() {
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -59,7 +59,7 @@ public final class TestKnowledge {
 
         List<Node> nodes = g.getNodes();
 
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
 
         for (Node node : nodes) {
             varNames.add(node.getName());
@@ -114,7 +114,7 @@ public final class TestKnowledge {
 
     @Test
     public final void test2() {
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
@@ -125,7 +125,7 @@ public final class TestKnowledge {
 
         List<Node> nodes = g.getNodes();
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (Node node : nodes) names.add(node.getName());
 
         Knowledge2 knowledge = new Knowledge2(names);
@@ -142,7 +142,7 @@ public final class TestKnowledge {
 
     @Test
     public final void test3() {
-        List<String> vars = new ArrayList<String>();
+        List<String> vars = new ArrayList<>();
 
         final int numVars = 1000;
 

@@ -21,9 +21,8 @@
 
 package edu.cmu.tetradapp.editor.datamanip;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.ParameterEditor;
-import edu.cmu.tetradapp.model.datamanip.BoxCoxParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,7 +38,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private BoxCoxParams params;
+    private Parameters params;
 
 
     /**
@@ -52,9 +51,10 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (BoxCoxParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     /**
@@ -68,12 +68,12 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        DoubleTextField lambda = new DoubleTextField(params.getLambda(), 8, new DecimalFormat("0.0"));
+        DoubleTextField lambda = new DoubleTextField(params.getDouble("lambda", 0), 8, new DecimalFormat("0.0"));
 
         lambda.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0) {
-                    params.setLambda(value);
+                    params.set("lambda", value);
                     return value;
                 }
                 else {

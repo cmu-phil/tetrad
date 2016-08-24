@@ -32,8 +32,6 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import javax.swing.text.Document;
-import javax.xml.soap.Text;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;

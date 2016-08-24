@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.FgsIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.FgsRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -41,19 +41,19 @@ import java.text.NumberFormat;
 
 class FgsIndTestParamsEditor extends JComponent {
     private final FgsRunner.Type type;
-    private FgsIndTestParams params;
+    private final Parameters params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
     private DoubleTextField penaltyDiscount;
-    private IntTextField numPatternsToSave;
-    private IntTextField depth;
+    private final IntTextField numPatternsToSave;
+    private final IntTextField depth;
 
     /**
      * A checkbox to allow the user to specify whether to use RFCI
      */
-    private JCheckBox faithfulnessAssumed;
+    private final JCheckBox faithfulnessAssumed;
 
-    public FgsIndTestParamsEditor(FgsIndTestParams params, FgsRunner.Type type) {
+    public FgsIndTestParamsEditor(Parameters params, FgsRunner.Type type) {
         this.params = params;
         this.type = type;
 
@@ -62,12 +62,12 @@ class FgsIndTestParamsEditor extends JComponent {
 
         if (type == FgsRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
-                    getFgsIndTestParams().getSamplePrior(),  5, nf, smallNf, 1e-4);
+                    getFgsIndTestParams().getDouble("samplePrior", 1),  5, nf, smallNf, 1e-4);
 
             this.cellPriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().setSamplePrior(value);
+                        getFgsIndTestParams().set("samplePrior", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -77,11 +77,11 @@ class FgsIndTestParamsEditor extends JComponent {
             });
 
             this.structurePriorField = new DoubleTextField(
-                    getFgsIndTestParams().getStructurePrior(), 5, nf);
+                    getFgsIndTestParams().getDouble("structurePrior", 1), 5, nf);
             this.structurePriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().setStructurePrior(value);
+                        getFgsIndTestParams().set("structurePrior", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -112,11 +112,11 @@ class FgsIndTestParamsEditor extends JComponent {
             });
         } else {
             this.penaltyDiscount = new DoubleTextField(
-                    getFgsIndTestParams().getPenaltyDiscount(), 5, nf);
+                    getFgsIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
             this.penaltyDiscount.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().setPenaltyDiscount(value);
+                        getFgsIndTestParams().set("penaltyDiscount", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -127,11 +127,11 @@ class FgsIndTestParamsEditor extends JComponent {
         }
 
         this.numPatternsToSave = new IntTextField(
-                getFgsIndTestParams().getNumPatternsToSave(), 5);
+                getFgsIndTestParams().getInt("numPatternsToSave", 1), 5);
         this.numPatternsToSave.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getFgsIndTestParams().setNumPatternsToSave(value);
+                    getFgsIndTestParams().set("numPatternsToSave", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -140,11 +140,11 @@ class FgsIndTestParamsEditor extends JComponent {
             }
         });
 
-        this.depth = new IntTextField(getFgsIndTestParams().getDepth(), 4);
+        this.depth = new IntTextField(getFgsIndTestParams().getInt("depth", -1), 4);
         this.depth.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getFgsIndTestParams().setDepth(value);
+                    getFgsIndTestParams().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -154,11 +154,11 @@ class FgsIndTestParamsEditor extends JComponent {
         });
 
         faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(getFgsIndTestParams().isFaithfulnessAssumed());
+        faithfulnessAssumed.setSelected(getFgsIndTestParams().getBoolean("faithfulnessAssumed", true));
         faithfulnessAssumed.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                getFgsIndTestParams().setFaithfulnessAssumed(source.isSelected());
+                getFgsIndTestParams().set("faithfulnessAssumed", source.isSelected());
             }
         });
 
@@ -261,7 +261,7 @@ class FgsIndTestParamsEditor extends JComponent {
 
     }
 
-    private FgsIndTestParams getFgsIndTestParams() {
+    private Parameters getFgsIndTestParams() {
         return params;
     }
 

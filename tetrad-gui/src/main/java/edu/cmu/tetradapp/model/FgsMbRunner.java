@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FgsMbRunner(DataWrapper dataWrapper, FgsParams params,
+    public FgsMbRunner(DataWrapper dataWrapper, Parameters params,
                        KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
@@ -66,58 +67,58 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FgsMbRunner(DataWrapper dataWrapper, FgsParams params) {
+    public FgsMbRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(Graph graph, FgsParams params) {
+    public FgsMbRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(GraphWrapper dagWrapper, FgsParams params) {
+    public FgsMbRunner(GraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, FgsParams params) {
+    public FgsMbRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(DagWrapper dagWrapper, FgsParams params) {
+    public FgsMbRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     /**
      * Constructs a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, FgsParams params) {
+    public FgsMbRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public FgsMbRunner(SemGraphWrapper dagWrapper, FgsParams params) {
+    public FgsMbRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FgsMbRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, FgsParams params) {
+    public FgsMbRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FgsMbRunner(IndependenceFactsModel model, FgsParams params) {
+    public FgsMbRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public FgsMbRunner(IndependenceFactsModel model, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsMbRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -129,7 +130,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      */
     public static FgsMbRunner serializableInstance() {
         return new FgsMbRunner(DataWrapper.serializableInstance(),
-                FgsParams.serializableInstance(), KnowledgeBoxModel
+                new Parameters(), KnowledgeBoxModel
                 .serializableInstance());
     }
 
@@ -140,8 +141,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        String targetName = ((FgsParams) getParams()).getTargetName();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        String targetName = getParams().getString("targetName", null);
 
         Object model = getDataModel();
 
@@ -156,15 +157,15 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsParams params = (FgsParams) getParams();
+        Parameters params = getParams();
         Node target = null;
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             target = gesScore.getVariable(targetName);
             fgs = new FgsMb2(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+            fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+            fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
             fgs.setVerbose(true);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
@@ -172,11 +173,11 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             if (dataSet.isContinuous()) {
                 SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                 target = score.getVariable(targetName);
-                score.setPenaltyDiscount(params.getComplexityPenalty());
+                score.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
                 fgs = new FgsMb2(score);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = 1;//((FgsParams) getParams()).getSamplePrior();
-                double structurePrior = 1;//((FgsParams) getParams()).getStructurePrior();
+                double samplePrior = 1;//((Parameters) getParameters()).getSamplePrior();
+                double structurePrior = 1;//((Parameters) getParameters()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -187,8 +188,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             }
         } else if (model instanceof ICovarianceMatrix) {
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
-            gesScore.setPenaltyDiscount(params.getIndTestParams().getAlpha());
-            gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+            gesScore.setPenaltyDiscount(params.getDouble("alpha", 0.001));
+            gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
             target = gesScore.getVariable(targetName);
             fgs = new FgsMb2(gesScore);
         }
@@ -207,13 +208,10 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //                        "as input. For multiple data sets as input, use IMaGES.");
 //            }
 
-            FgsParams FgsParams = (FgsParams) getParams();
-            FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
-
             if (allContinuous(list)) {
-                double penalty = ((FgsParams) getParams()).getComplexityPenalty();
+                double penalty = getParams().getDouble("penaltyDiscount", 4);
 
-                if (indTestParams.isFirstNontriangular()) {
+                if (params.getBoolean("firstNontriangular", false)) {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     target = fgsScore.getVariable(targetName);
@@ -225,15 +223,15 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     fgs = new FgsMb2(fgsScore);
                 }
             } else if (allDiscrete(list)) {
-                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
-                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
+                double structurePrior = getParams().getDouble("structurePrior", 1);
+                double samplePrior = getParams().getDouble("samplePrior", 1);
 
                 BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                 fgsScore.setSamplePrior(samplePrior);
                 fgsScore.setStructurePrior(structurePrior);
                 target = fgsScore.getVariable(targetName);
 
-                if (indTestParams.isFirstNontriangular()) {
+                if (params.getBoolean("firstNontriangular", false)) {
                     fgs = new FgsMb2(fgsScore);
                 } else {
                     fgs = new FgsMb2(fgsScore);
@@ -260,11 +258,11 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //
 //                if (dataSet.isContinuous()) {
 //                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
-//                            getParams().getIndTestParams().getAlpha());
+//                            getParameters().getAlpha());
 //                    fgs = new FgsMb(gesScore, target);
 //                } else if (dataSet.isDiscrete()) {
 //                    double structurePrior = 1;
-//                    double samplePrior = getParams().getIndTestParams().getAlpha();
+//                    double samplePrior = getParameters().getAlpha();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -275,7 +273,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            } else if (dataModel instanceof ICovarianceMatrix) {
 //                cov = (ICovarianceMatrix) dataModel;
 //                SemBicScore score = new SemBicScore(cov,
-//                        getParams().getIndTestParams().getAlpha());
+//                        getParameters().getAlpha());
 //                target = cov.getVariable(targetName);
 //                fgs = new FgsMb(score, target);
 //            } else {
@@ -289,10 +287,10 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            Node target = getIndependenceTest().getVariable(targetName);
 //            System.out.println("Target = " + target);
 //
-//            int depth = getParams().getIndTestParams().getMaxIndegree();
+//            int depth = getParameters().getMaxIndegree();
 //
 //            ScoredIndTest fgsScore = new ScoredIndTest(getIndependenceTest());
-//            fgsScore.setParameter1(getParams().getIndTestParams().getAlpha());
+//            fgsScore.setParameter1(getParameters().getAlpha());
 //            FgsMb search = new FgsMb(fgsScore, target);
 //            search.setKnowledge(knowledge);
 //            search.setMaxIndegree(depth);
@@ -310,17 +308,17 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //        }
 
 //        fgs.setInitialGraph(initialGraph);
-        fgs.setKnowledge(getParams().getKnowledge());
-        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fgs.setVerbose(true);
-//        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-        fgs.setMaxIndegree(params.getIndTestParams().getDepth());
+//        fgs.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setMaxIndegree(params.getInt("depth", -1));
         Graph graph = fgs.search(target);
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -343,8 +341,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        FgsParams params = (FgsParams) getParams();
-        IndTestType testType = params.getIndTestType();
+        Parameters params = getParams();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
@@ -398,7 +396,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -410,7 +408,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));

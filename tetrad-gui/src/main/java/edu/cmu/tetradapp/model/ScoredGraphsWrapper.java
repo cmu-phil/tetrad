@@ -56,23 +56,18 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      */
     private Graph selectedGraph;
 
-    private Map<Graph, Double> graphsToScores;
-
-    /**
-     * The index of the selected graph.
-     */
-    private int index;
+    private final Map<Graph, Double> graphsToScores;
 
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).
      */
-    private transient GraphScorer graphScorer;
+    private final transient GraphScorer graphScorer;
 
     //=============================CONSTRUCTORS==========================//
 
     public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
         final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
-        graphsToScores = new HashMap<Graph, Double>();
+        graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 
         for (Graph _graph : dags) {
@@ -86,7 +81,10 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         }
 
         if (!graphsToScores.keySet().isEmpty()) {
-            index = 0;
+            /*
+      The index of the selected graph.
+     */
+            int index = 0;
             selectedGraph = graphsToScores.keySet().iterator().next();
         }
 
@@ -129,7 +127,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==============================PUBLIC METHODS======================//
 
     public Map<Graph, Double> getGraphsToScores() {
-        Map<Graph, Double> _graphsToScores = new LinkedHashMap<Graph, Double>();
+        Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
         for (Graph graph : graphsToScores.keySet()) {
             _graphsToScores.put(new EdgeListGraph(graph), graphsToScores.get(graph));

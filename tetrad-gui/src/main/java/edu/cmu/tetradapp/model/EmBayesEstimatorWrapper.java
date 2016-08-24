@@ -27,6 +27,7 @@ import edu.cmu.tetrad.bayes.EmBayesEstimator;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -89,7 +90,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //    }
 
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, EmBayesEstimatorParams params) {
+            BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -110,7 +111,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         this.dataSet = estimator.getMixedDataSet();
 
         try {
-            estimator.maximization(params.getTolerance());
+            estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
         }
         catch (IllegalArgumentException e) {
@@ -123,7 +124,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesImWrapper bayesImWrapper, EmBayesEstimatorParams params) {
+            BayesImWrapper bayesImWrapper, Parameters params) {
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
 
         if (dataWrapper == null) {
@@ -148,7 +149,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         System.out.println("B" + dataSet.getVariables());
 
         try {
-            estimator.maximization(params.getTolerance());
+            estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
         }
         catch (IllegalArgumentException e) {
@@ -168,7 +169,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      */
     public static EmBayesEstimatorWrapper serializableInstance() {
         return new EmBayesEstimatorWrapper(DataWrapper.serializableInstance(),
-                BayesPmWrapper.serializableInstance(), new EmBayesEstimatorParams());
+                BayesPmWrapper.serializableInstance(), new Parameters());
     }
 
     //================================PUBLIC METHODS======================//

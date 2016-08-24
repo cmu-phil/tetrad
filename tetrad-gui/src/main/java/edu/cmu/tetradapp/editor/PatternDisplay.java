@@ -162,7 +162,7 @@ public class PatternDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {

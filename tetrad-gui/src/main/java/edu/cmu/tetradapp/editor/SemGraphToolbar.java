@@ -56,7 +56,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
     /**
      * The panel that the buttons are in.
      */
-    private Box buttonsPanel = Box.createVerticalBox();
+    private final Box buttonsPanel = Box.createVerticalBox();
 
     // The buttons in the toolbar.
     private JToggleButton move, addObserved, addLatent, addDirectedEdge, addBidirectedEdge;

@@ -22,8 +22,10 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.*;
@@ -39,9 +41,9 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     private Graph initialGraph = null;
 //    private PC pc = null;
 
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
@@ -51,21 +53,21 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcMaxRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public PcMaxRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public PcMaxRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -73,37 +75,37 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxRunner(Graph graph, PcSearchParams params) {
+    public PcMaxRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcMaxRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcMaxRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public PcMaxRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcMaxRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public PcMaxRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcMaxRunner(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
+    public PcMaxRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public PcMaxRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -113,14 +115,13 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcMaxRunner serializableInstance() {
-        return new PcMaxRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new PcMaxRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -132,8 +133,8 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getIndTestParams().getDepth();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        int depth = getParams().getInt("depth", -1);
 
 //        PC pc = new PC(getIndependenceTest());
         PcMax pc = new PcMax(getIndependenceTest());
@@ -164,7 +165,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -176,7 +177,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -187,7 +188,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -195,11 +196,11 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<Edge>(pcAdjacent);
+        return new HashSet<>(pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<Edge>(pcNonadjacent);
+        return new HashSet<>(pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -216,9 +217,9 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

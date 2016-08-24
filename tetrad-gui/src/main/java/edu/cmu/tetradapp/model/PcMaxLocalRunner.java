@@ -22,8 +22,10 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -49,7 +51,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcMaxLocalRunner(DataWrapper dataWrapper, PcLocalSearchParams params) {
+    public PcMaxLocalRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -59,7 +61,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcMaxLocalRunner(DataWrapper dataWrapper, PcLocalSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxLocalRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -67,7 +69,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxLocalRunner(Graph graph, PcLocalSearchParams params) {
+    public PcMaxLocalRunner(Graph graph, Parameters params) {
         super(graph, params);
         this.sourceGraph = graph;
     }
@@ -75,24 +77,24 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxLocalRunner(GraphWrapper graphWrapper, PcLocalSearchParams params) {
+    public PcMaxLocalRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
         this.sourceGraph = graphWrapper.getGraph();
     }
 
-    public PcMaxLocalRunner(DagWrapper graphWrapper, PcLocalSearchParams params) {
+    public PcMaxLocalRunner(DagWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getDag(), params);
     }
 
-    public PcMaxLocalRunner(SemGraphWrapper graphWrapper, PcLocalSearchParams params) {
+    public PcMaxLocalRunner(SemGraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcMaxLocalRunner(IndependenceFactsModel model, PcLocalSearchParams params) {
+    public PcMaxLocalRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public PcMaxLocalRunner(IndependenceFactsModel model, PcLocalSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxLocalRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -102,14 +104,13 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcMaxLocalRunner serializableInstance() {
-        return new PcMaxLocalRunner(Dag.serializableInstance(),
-                PcLocalSearchParams.serializableInstance());
+        return new PcMaxLocalRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -121,10 +122,10 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
         IndependenceTest independenceTest = getIndependenceTest();
-        PcLocalIndTestParams testParams = (PcLocalIndTestParams) getParams().getIndTestParams();
+        Parameters testParams = getParams();
 
         PcMaxLocal search = new PcMaxLocal(independenceTest);
 
@@ -163,7 +164,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -182,7 +183,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -193,7 +194,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -213,14 +214,14 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * @return the underline triples for the given node. Non-null.
      */
     public List<Triple> getUnderlineTriples(Node node) {
-        return new ArrayList<Triple>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the dotted underline triples for the given node. Non-null.
      */
     public List<Triple> getDottedUnderlineTriples(Node node) {
-        return new ArrayList<Triple>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -237,9 +238,9 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

@@ -24,9 +24,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetrad.util.Parameters;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
@@ -57,7 +56,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      *
      * @serial Cannot be null.
      */
-    private MimParams params;
+    private Parameters params;
 
     /**
      * Clusters resulting from the last run of the algorithm.
@@ -95,7 +94,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, MimParams params) {
+    AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -110,13 +109,13 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.sourceGraph = dataWrapper.getSourceGraph();
 
         DataModel data = getDataModel(dataWrapper);
-        getParams().setKnowledge(dataWrapper.getKnowledge());
+        getParams().set("knowledge", dataWrapper.getKnowledge());
         List names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, MimParams params) {
+    AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -134,13 +133,13 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MimRunner runner, MimParams params) {
+    AbstractMimRunner(MimRunner runner, Parameters params) {
         if (runner == null) {
             throw new NullPointerException();
         }
 
         this.params = params;
-        this.params.setClusters(runner.getClusters());
+        this.params.set("clusters", runner.getClusters());
         this.sourceGraph = runner.getSourceGraph();
 
         DataModel dataSource = runner.getData();
@@ -187,12 +186,12 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         }
     }
 
-    public final MimParams getParams() {
+    public final Parameters getParams() {
         return this.params;
     }
 
     public void resetParams(Object params) {
-        this.params = (MimParams) params;
+        this.params = (Parameters) params;
     }
 
     public Object getResettableParams() {
@@ -201,11 +200,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //===========================PROTECTED METHODS========================//
 
-    protected void setResultGraph(Graph graph) {
+    void setResultGraph(Graph graph) {
         this.resultGraph = graph;
     }
 
-    protected void setClusters(Clusters clusters) {
+    void setClusters(Clusters clusters) {
         if (clusters == null) {
             throw new NullPointerException();
         }
@@ -213,7 +212,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.clusters = clusters;
     }
 
-    protected void setStructureGraph(Graph graph) {
+    void setStructureGraph(Graph graph) {
         this.structureGraph = graph;
     }
 
@@ -256,7 +255,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     private void transferVarNamesToParams(List names) {
-        getParams().setVarNames(names);
+        getParams().set("varNames", names);
     }
 
     public String getName() {

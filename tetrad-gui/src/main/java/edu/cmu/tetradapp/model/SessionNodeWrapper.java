@@ -48,7 +48,7 @@ public class SessionNodeWrapper extends GraphNode
      *
      * @serial Cannot be null.
      */
-    private SessionNode sessionNode;
+    private final SessionNode sessionNode;
 
     /**
      * The button type of the session node (some string defined in the config

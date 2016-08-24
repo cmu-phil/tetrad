@@ -55,7 +55,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private DataSet internalData;
     private double alpha;
     private double lastP;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
+    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private LogisticRegression logisticRegression;
     private RegressionDataset regression;
     private boolean preferLinear;
@@ -127,9 +127,9 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             throw new IllegalArgumentException();
         }
 
-        List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
         varCats.remove(0);
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         for (String cat : varCats) {
 
@@ -175,7 +175,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             }
         }
 
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
 
         int[] _rows = getNonMissingRows(x, y, z);
         logisticRegression.setRows(_rows);
@@ -195,7 +195,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //            LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
 
             // With y.
-            List<Node> regressors1 = new ArrayList<Node>();
+            List<Node> regressors1 = new ArrayList<>();
             regressors1.addAll(variablesPerNode.get(y));
 
             for (Node _z : z) {
@@ -334,7 +334,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             }
         }
 
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
         if(y instanceof ContinuousVariable) {
             regressors.add(internalData.getVariable(y.getName()));
         } else {
@@ -420,7 +420,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }

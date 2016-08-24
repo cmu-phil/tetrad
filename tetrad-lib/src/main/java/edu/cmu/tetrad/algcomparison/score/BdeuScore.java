@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
@@ -14,6 +14,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class BdeuScore implements ScoreWrapper {
+    static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {
@@ -41,5 +42,4 @@ public class BdeuScore implements ScoreWrapper {
         parameters.add("structurePrior");
         return parameters;
     }
-
 }

@@ -66,14 +66,14 @@ public class GrowShrink implements MbSearch {
      */
     public List<Node> findMb(String targetName) {
         Node target = getVariableForName(targetName);
-        List<Node> blanket = new LinkedList<Node>();
+        List<Node> blanket = new LinkedList<>();
 
         boolean changed = true;
 
         while (changed) {
             changed = false;
 
-            List<Node> remaining = new LinkedList<Node>(variables);
+            List<Node> remaining = new LinkedList<>(variables);
             remaining.removeAll(blanket);
             remaining.remove(target);
 
@@ -90,7 +90,7 @@ public class GrowShrink implements MbSearch {
         while (changed) {
             changed = false;
 
-            for (Node node : new LinkedList<Node>(blanket)) {
+            for (Node node : new LinkedList<>(blanket)) {
                 blanket.remove(node);
 
                 if (independenceTest.isIndependent(node, target, blanket)) {

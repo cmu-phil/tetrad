@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.performance;
 
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -111,7 +112,7 @@ public class PerformanceTestsDan {
             out1.println("Depth = " + depth);
             out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
 
-            List<Node> vars = new ArrayList<Node>();
+            List<Node> vars = new ArrayList<>();
             for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
 
 //        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgesPerNode));
@@ -152,7 +153,7 @@ public class PerformanceTestsDan {
             vars_temp = vars_temp.replace("X","");
             out2.println(vars_temp);
 
-            List<Node> _vars = new ArrayList<Node>();
+            List<Node> _vars = new ArrayList<>();
 
             for (Node node : vars) {
                 if (node.getNodeType() == NodeType.MEASURED) {
@@ -173,12 +174,13 @@ public class PerformanceTestsDan {
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
             final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
+            final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
+            scoreGfci.setParameter1(penaltyDiscount);
 
             out6.println("GFCI.PAG");
 
-            GFci gFci = new GFci(independenceTestGFci);
+            GFci gFci = new GFci(independenceTestGFci, scoreGfci);
             gFci.setVerbose(false);
-            gFci.setPenaltyDiscount(penaltyDiscount);
             gFci.setMaxIndegree(depth);
             gFci.setMaxPathLength(maxPathLength);
 //            gFci.setPossibleDsepSearchDone(true);

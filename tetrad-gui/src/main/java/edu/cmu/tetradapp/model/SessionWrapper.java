@@ -62,14 +62,14 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      *
      * @serial Cannot be null.
      */
-    private Set<Node> sessionNodeWrappers = new HashSet<Node>();
+    private final Set<Node> sessionNodeWrappers = new HashSet<>();
 
     /**
      * The set of SessionEdges.
      *
      * @serial Cannot be null.
      */
-    private Set<Edge> sessionEdges = new HashSet<Edge>();
+    private final Set<Edge> sessionEdges = new HashSet<>();
 
     /**
      * The property change support.
@@ -180,10 +180,10 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         // Extract the SessionNodes from the SessionNodeWrappers
         // and pass the list of them to the Session.  Choose a unique
         // name for each of the session wrappers.
-        List<SessionNode> sessionNodes = new ArrayList<SessionNode>();
+        List<SessionNode> sessionNodes = new ArrayList<>();
         List<SessionNodeWrapper> sessionNodeWrappers =
-                new ArrayList<SessionNodeWrapper>();
-        List<Edge> sessionEdges = new ArrayList<Edge>();
+                new ArrayList<>();
+        List<Edge> sessionEdges = new ArrayList<>();
 
         Point oldUpperLeft = EditorUtils.getTopLeftPoint(sessionElements);
         int deltaX = upperLeft.x - oldUpperLeft.x;
@@ -241,7 +241,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * Indirect reference to session handler to avoid saving out listeners
      * during serialization.
      */
-    SessionHandler getSessionHandler() {
+    private SessionHandler getSessionHandler() {
         if (this.sessionHandler == null) {
             this.sessionHandler = new SessionHandler();
         }
@@ -354,7 +354,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * the edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        return new HashSet<Edge>(sessionEdges);
+        return new HashSet<>(sessionEdges);
     }
 
     public Edge getEdge(Node node1, Node node2) {
@@ -387,7 +387,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * ordering of the edges in the list is guaranteed.
      */
     public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new LinkedList<Edge>();
+        List<Edge> edgeList = new LinkedList<>();
 
         for (Edge edge : sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
@@ -438,7 +438,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      */
     public int getNumEdges(Node node) {
 
-        Set<Edge> edgeSet = new HashSet<Edge>();
+        Set<Edge> edgeSet = new HashSet<>();
 
         for (Edge edge : sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
@@ -450,14 +450,14 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<Node>(sessionNodeWrappers);
+        return new ArrayList<>(sessionNodeWrappers);
     }
 
     /**
      * @return the list of graph constraints for this graph.
      */
     public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<GraphConstraint>();
+        return new LinkedList<>();
     }
 
     /**

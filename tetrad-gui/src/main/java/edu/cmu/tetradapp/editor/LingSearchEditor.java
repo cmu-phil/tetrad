@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -31,8 +32,11 @@ import edu.cmu.tetrad.search.Ling;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetradapp.model.IGesRunner;
+import edu.cmu.tetradapp.model.KnowledgeEditable;
+import edu.cmu.tetradapp.model.LingRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -89,7 +93,7 @@ public class LingSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -156,7 +160,7 @@ public class LingSearchEditor extends AbstractSearchEditor
         Ling.StoredGraphs storedGraphs = runner.getStoredGraphs();
         if (storedGraphs == null) storedGraphs = new Ling.StoredGraphs();
 
-        Graph latestWorkbenchGraph = runner.getParams() .getSourceGraph();
+        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
         Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
@@ -204,7 +208,7 @@ public class LingSearchEditor extends AbstractSearchEditor
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
@@ -307,8 +311,8 @@ public class LingSearchEditor extends AbstractSearchEditor
 
         Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Threshold "));
-        LingParams params = (LingParams) getAlgorithmRunner().getParams();
-        double pruneFactor = params.getThreshold();
+        Parameters params = getAlgorithmRunner().getParams();
+        double pruneFactor = params.getDouble("threshold", 0.5);
         DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 
         field.setFilter(new DoubleTextField.Filter() {
@@ -344,7 +348,7 @@ public class LingSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
             Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
@@ -370,8 +374,8 @@ public class LingSearchEditor extends AbstractSearchEditor
 
 
     private void setThreshold(double value) {
-        LingParams params = (LingParams) getAlgorithmRunner().getParams();
-        params.setThreshold(value);
+        Parameters params = getAlgorithmRunner().getParams();
+        params.set("threshold", value);
     }
 
     protected void doPostExecutionSteps() {
@@ -416,8 +420,8 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
 
@@ -430,11 +434,11 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//

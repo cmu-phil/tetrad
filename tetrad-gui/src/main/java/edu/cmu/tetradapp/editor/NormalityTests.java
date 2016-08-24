@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Michael Freenor
  */
-public class NormalityTests {
+class NormalityTests {
 
     /**
      * Constructs a readable table of normality test results
@@ -71,23 +71,19 @@ public class NormalityTests {
         if (testResult) pass = "ACCEPT";
         else pass = "FAIL";
         result += "Test Result:\t\t" + pass;
-        testResult = false;
-        if (ksResults[0] < ksResults[2]) testResult = true;
+        testResult = ksResults[0] < ksResults[2];
         if (testResult) pass = "ACCEPT";
         else pass = "FAIL";
         result += "\t" + pass;
-        testResult = false;
-        if (ksResults[0] < ksResults[3]) testResult = true;
+        testResult = ksResults[0] < ksResults[3];
         if (testResult) pass = "ACCEPT";
         else pass = "FAIL";
         result += "\t" + pass;
-        testResult = false;
-        if (ksResults[0] < ksResults[4]) testResult = true;
+        testResult = ksResults[0] < ksResults[4];
         if (testResult) pass = "ACCEPT";
         else pass = "FAIL";
         result += "\t" + pass;
-        testResult = false;
-        if (ksResults[0] < ksResults[5]) testResult = true;
+        testResult = ksResults[0] < ksResults[5];
         if (testResult) pass = "ACCEPT";
         else pass = "FAIL";
         result += "\t" + pass;
@@ -139,7 +135,7 @@ public class NormalityTests {
 
         double[] _data = dataSet.getDoubleData().getColumn(columnIndex).toArray();
 
-        List<Double> _leaveOutMissing = new ArrayList<Double>();
+        List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < _data.length; i++) {
             if (!Double.isNaN(_data[i])) {
@@ -247,7 +243,7 @@ public class NormalityTests {
      * @return criticalValue the critical value for the given level
      */
 
-    public static double estimateKSCriticalValue(int level, int n)
+    private static double estimateKSCriticalValue(int level, int n)
     {
         double criticalValue = 0.0;
         //if n <= 35, lookup from table . . .
@@ -447,7 +443,7 @@ public class NormalityTests {
      * @return Ideal Normal distribution for a variable.
      */
 
-    public static Normal getNormal(DataSet dataSet, Variable variable)
+    private static Normal getNormal(DataSet dataSet, Variable variable)
     {
         double[] paramsForNormal = normalParams(dataSet, variable);
         double mean = paramsForNormal[0];
@@ -462,7 +458,7 @@ public class NormalityTests {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation
      */
 
-    public static double[] normalParams(DataSet dataSet, Variable variable)
+    private static double[] normalParams(DataSet dataSet, Variable variable)
     {
         int columnIndex = dataSet.getColumn(variable);
         double mean = 0.0;

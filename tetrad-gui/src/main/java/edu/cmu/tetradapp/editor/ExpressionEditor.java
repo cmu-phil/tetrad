@@ -45,7 +45,7 @@ class ExpressionEditor extends JPanel {
     /**
      * The variable field.
      */
-    private JTextField variable;
+    private final JTextField variable;
 
 
     /**
@@ -57,7 +57,7 @@ class ExpressionEditor extends JPanel {
     /**
      * Parser.
      */
-    private ExpressionParser parser;
+    private final ExpressionParser parser;
 
 
     /**
@@ -69,7 +69,7 @@ class ExpressionEditor extends JPanel {
     /**
      * Focus listeners.
      */
-    private List<FocusListener> listeners = new LinkedList<FocusListener>();
+    private final List<FocusListener> listeners = new LinkedList<>();
 
 
     /**
@@ -86,14 +86,14 @@ class ExpressionEditor extends JPanel {
     /**
      * The active selections if there is one.
      */
-    private List<Selection> selections = new LinkedList<Selection>();
+    private final List<Selection> selections = new LinkedList<>();
 
 
     /**
      * Normal selections color.
      */
     private static final Color SELECTION = new Color(204, 204, 255);
-    private PositionsFocusListener positionsListener;
+    private final PositionsFocusListener positionsListener;
 
 
     /**
@@ -189,7 +189,7 @@ class ExpressionEditor extends JPanel {
      * @param var    - The variable to set.
      * @param append - States whether it should append to the field's getModel value or not.
      */
-    public void setVariable(String var, boolean append) {
+    private void setVariable(String var, boolean append) {
         if (append) {
             this.variable.setText(this.variable.getText() + var);
         } else {
@@ -204,7 +204,7 @@ class ExpressionEditor extends JPanel {
      * @param exp    - Expression value to set.
      * @param append States whether it should append to the field's getModel value or not.
      */
-    public void setExpression(String exp, boolean append) {
+    private void setExpression(String exp, boolean append) {
         if (exp == null) {
             return;
         }
@@ -417,7 +417,7 @@ class ExpressionEditor extends JPanel {
      */
     private class VariableFocusListener implements FocusListener {
 
-        private JTextField field;
+        private final JTextField field;
 
         public VariableFocusListener(JTextField field) {
             this.field = field;
@@ -445,7 +445,7 @@ class ExpressionEditor extends JPanel {
      */
     private class ExpressionFocusListener implements FocusListener {
 
-        private JTextField field;
+        private final JTextField field;
 //        private int startWhenFocusLost;
 //        private int endWhenFocusLost;
 

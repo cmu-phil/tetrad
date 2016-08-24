@@ -62,6 +62,16 @@ public class VerticalIntDataBox implements DataBox {
         this.data = data;
     }
 
+    public VerticalIntDataBox(DataBox dataBox) {
+        data = new int[dataBox.numCols()][dataBox.numRows()];
+
+        for (int i = 0; i < dataBox.numRows(); i++) {
+            for (int j = 0; j < dataBox.numCols(); j++) {
+                data[j][i] = dataBox.get(i, j).intValue();
+            }
+        }
+    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      */

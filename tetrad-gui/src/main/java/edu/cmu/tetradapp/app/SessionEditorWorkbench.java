@@ -340,7 +340,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      *                              type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
-        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+            TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
 
         if (nodeConfig == null) {

@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-public final class SubsetSelectedVariablesAction extends AbstractAction {
+final class SubsetSelectedVariablesAction extends AbstractAction {
 
     /**
      * The data editor.                         -
@@ -87,7 +87,7 @@ public final class SubsetSelectedVariablesAction extends AbstractAction {
             }
 
             CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
-                    (String[]) selectedNames.toArray(new String[0]));
+                    selectedNames.toArray(new String[0]));
 
             DataModelList list = new DataModelList();
             list.add(submatrix);

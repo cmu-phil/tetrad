@@ -46,14 +46,14 @@ import java.util.Vector;
  *
  * @author Mike Freenor
  */
-public class FactorAnalysisJoe {
-    public ICovarianceMatrix covarianceMatrix;
-    public CorrelationMatrix correlationMatrix;
+class FactorAnalysisJoe {
+    private final ICovarianceMatrix covarianceMatrix;
+    private final CorrelationMatrix correlationMatrix;
 
 // method-specific fields that get used
-    public Vector<Double> dValues;
-    public Vector<TetradMatrix> factorLoadingVectors;
-    public Vector<TetradMatrix> residualMatrices;
+private Vector<Double> dValues;
+    private Vector<TetradMatrix> factorLoadingVectors;
+    private Vector<TetradMatrix> residualMatrices;
 
 
     public FactorAnalysisJoe(ICovarianceMatrix covarianceMatrix)
@@ -125,7 +125,7 @@ public class FactorAnalysisJoe {
 
     //================= FACTORING METHODS =================//
 
-    public void loadTestMatrix()
+    private void loadTestMatrix()
     {
         TetradMatrix testMatrix = new TetradMatrix(9, 9);
         //set diagonals to test
@@ -234,9 +234,9 @@ public class FactorAnalysisJoe {
     {
         loadTestMatrix();
 
-        this.factorLoadingVectors = new Vector<TetradMatrix>();
-        this.residualMatrices = new Vector<TetradMatrix>();
-        this.dValues = new Vector<Double>();
+        this.factorLoadingVectors = new Vector<>();
+        this.residualMatrices = new Vector<>();
+        this.dValues = new Vector<>();
 
         this.residualMatrices.add(correlationMatrix.getMatrix());
 
@@ -277,7 +277,7 @@ public class FactorAnalysisJoe {
      * the factor loading vector and the "d value" which is used to determine
      * the amount of total variance accounted for so far.
      */
-    public void successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector)
+    private void successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector)
     {
         TetradMatrix uVector = matrixMult(residual, approximationVector);
         TetradMatrix lVector = matrixMult(transpose(approximationVector), uVector);
@@ -406,7 +406,7 @@ public class FactorAnalysisJoe {
      * If the matrix is not a square matrix, then it compiles what WOULD be the
      * diagonal if it were, starting from the upper-left corner.
      */
-    public static TetradMatrix diag(TetradMatrix matrix)
+    private static TetradMatrix diag(TetradMatrix matrix)
     {
         //System.out.println(matrix);
         TetradMatrix diagonal = new TetradMatrix(matrix.columns(), matrix.columns());
@@ -440,11 +440,11 @@ public class FactorAnalysisJoe {
     /*
      * Subtracts b from a.
      */
-    public static TetradMatrix matrixSubtract(TetradMatrix a, TetradMatrix b)
+    private static TetradMatrix matrixSubtract(TetradMatrix a, TetradMatrix b)
     {
         if(!(a.columns() == b.columns() && a.rows() == b.rows())) {
             throw new IllegalArgumentException();
-        };
+        }
 
         TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
         for(int i = 0; i < result.rows(); i++)
@@ -461,11 +461,11 @@ public class FactorAnalysisJoe {
     /*
      * Calculates (a * b)
      */
-    public static TetradMatrix matrixMult(TetradMatrix a, TetradMatrix b)
+    private static TetradMatrix matrixMult(TetradMatrix a, TetradMatrix b)
     {
         if(a.columns() != b.rows()) {
             throw new IllegalArgumentException();
-        };
+        }
 
         TetradMatrix result = new TetradMatrix(a.rows(), b.columns());
 
@@ -506,7 +506,7 @@ public class FactorAnalysisJoe {
     {
         if(!(a.rows() == b.rows() && a.columns() == b.columns())) {
             throw new IllegalArgumentException();
-        };
+        }
 
         TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
 
@@ -522,7 +522,7 @@ public class FactorAnalysisJoe {
         return result;
     }
 
-    public static TetradMatrix matrixDiv(double scalar, TetradMatrix a)
+    private static TetradMatrix matrixDiv(double scalar, TetradMatrix a)
     {
         TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
         //System.out.println("About to divide " + a + " by " + scalar);
@@ -540,7 +540,7 @@ public class FactorAnalysisJoe {
         return result;
     }
 
-    public static TetradMatrix transpose(TetradMatrix a)
+    private static TetradMatrix transpose(TetradMatrix a)
     {
         //System.out.println("About to transpose:");
         //System.out.println(a);
@@ -560,7 +560,7 @@ public class FactorAnalysisJoe {
         return result;
     }
 
-    public static double trace(TetradMatrix a)
+    private static double trace(TetradMatrix a)
     {
         double result = 0;
         for(int i = 0; i < a.columns(); i++)
@@ -570,7 +570,7 @@ public class FactorAnalysisJoe {
         return result;
     }
 
-    public static double vectorSum(Vector<Double> vector)
+    private static double vectorSum(Vector<Double> vector)
     {
         double sum = 0;
         for(int i = 0; i < vector.size(); i++) sum += vector.get(i);

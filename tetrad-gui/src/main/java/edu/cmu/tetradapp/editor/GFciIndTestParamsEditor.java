@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.GFciIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -42,60 +42,60 @@ class GFciIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private GFciIndTestParams params = null;
+    private Parameters params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private IntTextField depthField;
+    private final IntTextField depthField;
 
-    private DoubleTextField penaltyDiscount;
-    private DoubleTextField samplePrior;
-    private DoubleTextField structurePrior;
+    private final DoubleTextField penaltyDiscount;
+    private final DoubleTextField samplePrior;
+    private final DoubleTextField structurePrior;
 
     /**
      * A checkbox to allow the user to specify whether the complete rule set should be used.
      */
-    private JCheckBox completeRuleSetCheckBox;
+    private final JCheckBox completeRuleSetCheckBox;
 
     /**
      * A checkbox to allow the user to specify whether possible DSEP should be done.
      */
-    private JCheckBox possibleDsepCheckBox;
+    private final JCheckBox possibleDsepCheckBox;
 
     /**
      * An int field to specify the maximum length of reachable undirectedPaths (in discriminating path orientation and
      * possible dsep).
      */
-    private IntTextField maxReachablePathLengthField;
+    private final IntTextField maxReachablePathLengthField;
 
     /**
      * A checkbox to allow the user to specify whether to use RFCI
      */
-    private JCheckBox faithfulnessAssumed;
+    private final JCheckBox faithfulnessAssumed;
 
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public GFciIndTestParamsEditor(GFciIndTestParams params) {
+    public GFciIndTestParamsEditor(Parameters params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -103,11 +103,11 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 5);
+        depthField = new IntTextField(params().getInt("depth", -1), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -116,12 +116,12 @@ class GFciIndTestParamsEditor extends JComponent {
         });
 
 
-        penaltyDiscount = new DoubleTextField(indTestParams().getPenaltyDiscount(), 8,
+        penaltyDiscount = new DoubleTextField(params().getDouble("penaltyDiscount", 4), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         penaltyDiscount.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setPenaltyDiscount(value);
+                    params().set("penaltyDiscount", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -129,12 +129,12 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        samplePrior = new DoubleTextField(indTestParams().getSamplePrior(), 8,
+        samplePrior = new DoubleTextField(params().getDouble("samplePrior", 1), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         samplePrior.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setSamplePrior(value);
+                    params().set("samplePrior", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -142,12 +142,12 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        structurePrior = new DoubleTextField(indTestParams().getStructurePrior(), 8,
+        structurePrior = new DoubleTextField(params().getDouble("structurePrior", 1), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         structurePrior.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setStructurePrior(value);
+                    params().set("structurePrior", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -157,28 +157,28 @@ class GFciIndTestParamsEditor extends JComponent {
 
 
         completeRuleSetCheckBox = new JCheckBox();
-        completeRuleSetCheckBox.setSelected(indTestParams().isCompleteRuleSetUsed());
+        completeRuleSetCheckBox.setSelected(params().getBoolean("completeRuleSetUsed", false));
         completeRuleSetCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setCompleteRuleSetUsed(source.isSelected());
+                params().set("completeRuleSetUsed", source.isSelected());
             }
         });
 
         possibleDsepCheckBox = new JCheckBox();
-        possibleDsepCheckBox.setSelected(indTestParams().isPossibleDsepDone());
+        possibleDsepCheckBox.setSelected(params().getBoolean("possibleDsepDone", true));
         possibleDsepCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setPossibleDsepDone(source.isSelected());
+                params().set("possibleDsepDone", source.isSelected());
             }
         });
 
-        maxReachablePathLengthField = new IntTextField(indTestParams().getMaxReachablePathLength(), 3);
+        maxReachablePathLengthField = new IntTextField(params().getInt("maxReachablePathLength", -1), 3);
         maxReachablePathLengthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setMaxReachablePathLength(value);
+                    params().set("maxReachablePathLength", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -188,11 +188,11 @@ class GFciIndTestParamsEditor extends JComponent {
 
 
         faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(indTestParams().isFaithfulnessAssumed());
+        faithfulnessAssumed.setSelected(params().getBoolean("faithfulnessAssumed", true));
         faithfulnessAssumed.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setFaithfulnessAssumed(source.isSelected());
+                params().set("faithfulnessAssumed", source.isSelected());
             }
         });
 
@@ -270,7 +270,7 @@ class GFciIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private GFciIndTestParams indTestParams() {
+    private Parameters params() {
         return params;
     }
 }

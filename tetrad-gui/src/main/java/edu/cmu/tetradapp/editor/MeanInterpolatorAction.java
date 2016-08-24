@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.MeanInterpolator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 
@@ -33,7 +32,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class MeanInterpolatorAction extends AbstractAction {
+final class MeanInterpolatorAction extends AbstractAction {
 
     /**
      * The data editor.                         -

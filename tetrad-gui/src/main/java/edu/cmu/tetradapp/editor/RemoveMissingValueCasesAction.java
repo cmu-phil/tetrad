@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-public final class RemoveMissingValueCasesAction extends AbstractAction {
+final class RemoveMissingValueCasesAction extends AbstractAction {
 
     /**
      * The data editor.                         -
@@ -61,7 +61,7 @@ public final class RemoveMissingValueCasesAction extends AbstractAction {
 
         DataModel dataModel = getDataEditor().getSelectedDataModel();
         DataSet dataSet = (DataSet) dataModel;
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             variables.add(dataSet.getVariable(j));

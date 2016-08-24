@@ -1,0 +1,31 @@
+GRAPH GOLD
+
+11	// # vars
+
+// Node names
+light	// 0
+dfr	// 1
+rr	// 2
+psba1	// 3
+psba2	// 4
+cpcb	// 5
+photo	// 6
+nblr	// 7
+nbla	// 8
+pbs	// 9 
+health // 10
+
+// Edges
+0 1 	1.0
+1 2 	1.0
+2 3   1.0
+3 4  -1.0
+4 5  -1.0
+5 7   1.0
+7 8   1.0
+8 9  -1.0
+9 10  1.0
+4 6 	1.0
+6 10  1.0
+
+

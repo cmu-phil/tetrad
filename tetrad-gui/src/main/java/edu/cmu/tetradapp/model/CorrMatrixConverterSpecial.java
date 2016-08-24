@@ -34,7 +34,7 @@ public class CorrMatrixConverterSpecial extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public CorrMatrixConverterSpecial(DataWrapper wrapper) {
+    private CorrMatrixConverterSpecial(DataWrapper wrapper) {
         ICovarianceMatrix covMatrix;
 
         if (wrapper.getSelectedDataModel() instanceof CorrelationMatrix) {

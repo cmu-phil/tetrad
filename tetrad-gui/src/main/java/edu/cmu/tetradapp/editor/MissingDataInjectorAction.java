@@ -38,7 +38,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class MissingDataInjectorAction extends AbstractAction {
+final class MissingDataInjectorAction extends AbstractAction {
 
     /**
      * The data editor.                         -

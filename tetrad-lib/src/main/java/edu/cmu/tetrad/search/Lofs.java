@@ -74,7 +74,7 @@ public class Lofs {
         this.pattern = pattern;
         this.dataSets = dataSets;
 
-        regressions = new ArrayList<Regression>();
+        regressions = new ArrayList<>();
         this.variables = dataSets.get(0).getVariables();
 
         for (DataSet dataSet : dataSets) {
@@ -112,7 +112,7 @@ public class Lofs {
 
     private void ruleR1(Graph skeleton, Graph graph, List<Node> nodes) {
         for (Node node : nodes) {
-            SortedMap<Double, String> scoreReports = new TreeMap<Double, String>();
+            SortedMap<Double, String> scoreReports = new TreeMap<>();
 
             List<Node> adj = skeleton.getAdjacentNodes(node);
 
@@ -209,7 +209,7 @@ public class Lofs {
 
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        SortedMap<Double, String> scoreReports = new TreeMap<Double, String>();
+        SortedMap<Double, String> scoreReports = new TreeMap<>();
 
         List<Node> neighborsx = graph.getAdjacentNodes(x);
         neighborsx.remove(y);
@@ -224,7 +224,7 @@ public class Lofs {
         while ((choicex = genx.next()) != null) {
             List<Node> condxMinus = GraphUtils.asList(choicex, neighborsx);
 
-            List<Node> condxPlus = new ArrayList<Node>(condxMinus);
+            List<Node> condxPlus = new ArrayList<>(condxMinus);
             condxPlus.add(y);
 
             double xPlus = score(x, condxPlus);
@@ -245,7 +245,7 @@ public class Lofs {
 //                    continue;
 //                }
 
-                List<Node> condyPlus = new ArrayList<Node>(condyMinus);
+                List<Node> condyPlus = new ArrayList<>(condyMinus);
                 condyPlus.add(x);
 
                 double yPlus = score(y, condyPlus);
@@ -434,12 +434,12 @@ public class Lofs {
     private double localScoreA(Node node, List<Node> parents) {
         double score = 0.0;
 
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());
@@ -500,7 +500,7 @@ public class Lofs {
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());
@@ -555,12 +555,12 @@ public class Lofs {
     }
 
     private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());
@@ -609,12 +609,12 @@ public class Lofs {
     }
 
     private double andersonDarlingPASquareStarB(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());
@@ -663,12 +663,12 @@ public class Lofs {
     }
 
     private double pValue(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());
@@ -715,12 +715,12 @@ public class Lofs {
     }
 
     private double[] residual(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node _target = node;
         List<Node> _regressors = parents;
         Node target = getVariable(variables, _target.getName());
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : _regressors) {
             Node variable = getVariable(variables, _regressor.getName());

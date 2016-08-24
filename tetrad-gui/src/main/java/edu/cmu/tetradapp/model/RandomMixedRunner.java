@@ -22,11 +22,17 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -50,21 +56,21 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RandomMixedRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public RandomMixedRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public RandomMixedRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -72,34 +78,34 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public RandomMixedRunner(Graph graph, PcSearchParams params) {
+    public RandomMixedRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public RandomMixedRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public RandomMixedRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public RandomMixedRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, PcSearchParams params) {
+    public RandomMixedRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public RandomMixedRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public RandomMixedRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public RandomMixedRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public RandomMixedRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public RandomMixedRunner(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
+    public RandomMixedRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public RandomMixedRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -110,14 +116,13 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static RandomMixedRunner serializableInstance() {
-        return new RandomMixedRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new RandomMixedRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -133,7 +138,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
         DataSet ds = (DataSet) getDataModelList().get(0);
 
 //        WGfci fgs = new WGfci(ds);
-//        fgs.setPenaltyDiscount(4);
+//        fgs.setAlpha(4);
 //        Graph graph = fgs.search();
 
         WFgs fgs = new WFgs(ds);
@@ -141,7 +146,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
         Graph graph = fgs.search();
 
 //        WFgs fgs = new WFgs(ds);
-//        fgs.setPenaltyDiscount(4);
+//        fgs.setAlpha(4);
 //        Graph g = fgs.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
@@ -152,19 +157,19 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        Graph gm = m.search();
 //        IndependenceTest indTest = new IndTestMixedLrt(ds, .001);
 //        Cpc pcs = new Cpc(indTest);
-//        pcs.setDepth(-1);
+//        pcs.setMaxIndegree(-1);
 //        pcs.setInitialGraph(gm);
 //        pcs.setVerbose(false);
 //        Graph graph = pcs.search();
 
 //        WFgs fgs = new WFgs(ds);
-//        fgs.setDepth(-1);
-//        fgs.setPenaltyDiscount(4);
+//        fgs.setMaxIndegree(-1);
+//        fgs.setAlpha(4);
 //        Graph graph = fgs.search();
 
 //        WFgs fgs = new WFgs(ds);
-//        fgs.setDepth(5);
-//        fgs.setPenaltyDiscount(8);
+//        fgs.setMaxIndegree(5);
+//        fgs.setAlpha(8);
 //        Graph g =  fgs.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
@@ -173,7 +178,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 
 //        ConditionalGaussianScore score = new ConditionalGaussianScore(ds);
 //        Fgs fgs = new Fgs(score);
-//        fgs.setDepth(-1);
+//        fgs.setMaxIndegree(-1);
 //        Graph graph = fgs.search();
 
         GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -188,7 +193,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -200,7 +205,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -211,7 +216,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -232,9 +237,9 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

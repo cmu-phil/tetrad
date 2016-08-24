@@ -137,7 +137,7 @@ public final class TestEndpointMatrixGraph {
 
         graph.addUndirectedEdge(x1, x2);
 
-        List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
 
         Edge e1 = edges.get(0);
 

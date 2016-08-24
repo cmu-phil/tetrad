@@ -25,16 +25,14 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.random.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
@@ -234,6 +232,10 @@ public final class MlBayesIm implements BayesIm {
      */
     public static MlBayesIm serializableInstance() {
         return new MlBayesIm(BayesPm.serializableInstance());
+    }
+
+    public static List<String> getParameterNames() {
+        return new ArrayList<>();
     }
 
     //===============================PUBLIC METHODS========================//
@@ -948,6 +950,11 @@ public final class MlBayesIm implements BayesIm {
 
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
+
+        if (graph.existsDirectedCycle()) {
+            throw new IllegalArgumentException("Graph must be acyclic to simulate from discrete Bayes net.");
+        }
+
         List<Node> tierOrdering = graph.getCausalOrdering();
         int[] tiers = new int[tierOrdering.size()];
 

@@ -102,12 +102,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.dataSet = dataSet;
         data = this.dataSet.getDoubleData().getRealMatrix();
 
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
         this.cci = new Cci(data, varNames, alpha);
 
-        indices = new HashMap<Node, Integer>();
+        indices = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             indices.put(nodes.get(i), i);
@@ -126,7 +126,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         String _x = x.getName();
         String _y = y.getName();
-        List<String> _z = new ArrayList<String>();
+        List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
@@ -150,7 +150,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public boolean isDependent(Node x, Node y, List<Node> z) {
         String _x = x.getName();
         String _y = y.getName();
-        List<String> _z = new ArrayList<String>();
+        List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
@@ -222,7 +222,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }

@@ -25,9 +25,10 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsFci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsGfci;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -41,11 +42,11 @@ public class ExampleCompareSimulationTimeSeries {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 10);
-        parameters.put("avgDegree", 4);
-        parameters.put("sampleSize", 500);
-        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 4);
+        parameters.set("sampleSize", 500);
+        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
@@ -69,11 +70,11 @@ public class ExampleCompareSimulationTimeSeries {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new TsFci(new FisherZ()));
-        algorithms.add(new TsGfci(new SemBicScore()));
+        algorithms.add(new TsGfci(new FisherZ(), new SemBicScore()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new TimeSeriesSemSimulation());
+        simulations.add(new TimeSeriesSemSimulation(new RandomForward()));
 
         new Comparison().compareAlgorithms("comparison/Comparison2.txt",
                 simulations, algorithms, statistics, parameters);

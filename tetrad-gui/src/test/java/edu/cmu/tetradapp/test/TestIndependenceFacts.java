@@ -69,7 +69,7 @@ public final class TestIndependenceFacts {
         assertTrue(_facts.isIndependent(x4, x2, x1, x2));
         assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
 
-        List<Node> l = new ArrayList<Node>();
+        List<Node> l = new ArrayList<>();
         l.add(x1);
         l.add(x2);
 

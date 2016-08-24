@@ -155,7 +155,7 @@ public class ShiftSearch {
     }
 
     private List<DataSet> truncateDataSets(List<DataSet> dataSets, int topMargin, int bottomMargin) {
-        List<DataSet> truncatedData = new ArrayList<DataSet>();
+        List<DataSet> truncatedData = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             TetradMatrix mat = dataSet.getDoubleData();

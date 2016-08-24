@@ -31,8 +31,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -48,37 +50,30 @@ class GeneralizedSemImParamsEditor extends JPanel {
     /**
      * The SemPm being edited.
      */
-    private GeneralizedSemIm semIm;
+    private final GeneralizedSemIm semIm;
 
-
-    /**
-     * This delay needs to be restored when the component is hidden.
-     */
-    private int savedTooltipDelay;
 
     /**
      * The PM being edited.
      */
-    private GeneralizedSemPm semPm;
-
-    /**
-     * The set of launched editors--or rather, the nodes for the launched editors.
-     */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private final GeneralizedSemPm semPm;
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
     public GeneralizedSemImParamsEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
         this.semIm = semIm;
-        this.launchedEditors = launchedEditors;
+        /*
+      The set of launched editors--or rather, the nodes for the launched editors.
+     */
+        Map<Object, EditorWindow> launchedEditors1 = launchedEditors;
         this.semPm = semIm.getSemPm();
         freshenDisplay();
     }
 
     //========================PRIVATE PROTECTED METHODS======================//
 
-    public void freshenDisplay() {
+    private void freshenDisplay() {
         removeAll();
         setLayout(new BorderLayout());
         JScrollPane scroll = new JScrollPane(initialValuesPane());
@@ -89,7 +84,7 @@ class GeneralizedSemImParamsEditor extends JPanel {
     private JComponent initialValuesPane() {
         Box b = Box.createVerticalBox();
 
-        java.util.List<String> parameters = new ArrayList<String>(semPm().getParameters());
+        java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
         Collections.sort(parameters);
 
         // Need to keep these in a particular order.
@@ -144,7 +139,10 @@ class GeneralizedSemImParamsEditor extends JPanel {
     }
 
     private void setSavedTooltipDelay(int savedTooltipDelay) {
-        this.savedTooltipDelay = savedTooltipDelay;
+        /*
+      This delay needs to be restored when the component is hidden.
+     */
+        int savedTooltipDelay1 = savedTooltipDelay;
     }
 }
 

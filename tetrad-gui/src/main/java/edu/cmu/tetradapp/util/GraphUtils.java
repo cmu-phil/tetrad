@@ -5,12 +5,12 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -18,32 +18,32 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class GraphUtils {
-    public static Graph makeRandomGraph(Graph graph) {
-        int newGraphNumEdges = Preferences.userRoot().getInt("newGraphNumEdges", 3);
-        boolean connected = Preferences.userRoot().getBoolean("randomGraphConnected", false);
-        boolean addCycles = Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
-        boolean graphRandomFoward = Preferences.userRoot().getBoolean("graphRandomFoward", true);
-        int newGraphNumMeasuredNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
-        int newGraphNumLatents = Preferences.userRoot().getInt("newGraphNumLatents", 0);
-        boolean graphUniformlySelected = Preferences.userRoot().getBoolean("graphUniformlySelected", true);
-        int randomGraphMaxIndegree = Preferences.userRoot().getInt("randomGraphMaxIndegree", 3);
-        int randomGraphMaxOutdegree = Preferences.userRoot().getInt("randomGraphMaxOutdegree", 1);
-        boolean randomGraphConnected = Preferences.userRoot().getBoolean("randomGraphConnected", connected);
-        int randomGraphMaxDegree = Preferences.userRoot().getInt("randomGraphMaxDegree", 6);
-        boolean graphChooseFixed = Preferences.userRoot().getBoolean("graphChooseFixed", false);
-        int numStructuralNodes = Preferences.userRoot().getInt("numStructuralNodes", 3);
-        int maxStructuralEdges = Preferences.userRoot().getInt("numStructuralEdges", 3);
-        int measurementModelDegree = Preferences.userRoot().getInt("measurementModelDegree", 3);
-        int numLatentMeasuredImpureParents = Preferences.userRoot().getInt("latentMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureParents = Preferences.userRoot().getInt("measuredMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureAssociations = Preferences.userRoot().getInt("measuredMeasuredImpureAssociations", 0);
-        double alpha = Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
-        double beta = Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
-        double deltaIn = Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
-        double deltaOut = Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
-        int numFactors = Preferences.userRoot().getInt("randomMimNumFactors", 1);
+    public static Graph makeRandomGraph(Graph graph, Parameters parameters) {
+        int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 3);
+        boolean connected = parameters.getBoolean("randomGraphConnected", false);
+        boolean addCycles = parameters.getBoolean("randomGraphAddCycles", false);
+        boolean graphRandomFoward = parameters.getBoolean("graphRandomFoward", true);
+        int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 5);
+        int newGraphNumLatents = parameters.getInt("newGraphNumLatents", 0);
+        boolean graphUniformlySelected = parameters.getBoolean("graphUniformlySelected", true);
+        int randomGraphMaxIndegree = parameters.getInt("randomGraphMaxIndegree", 3);
+        int randomGraphMaxOutdegree = parameters.getInt("randomGraphMaxOutdegree", 1);
+        boolean randomGraphConnected = parameters.getBoolean("randomGraphConnected", connected);
+        int randomGraphMaxDegree = parameters.getInt("randomGraphMaxDegree", 6);
+        boolean graphChooseFixed = parameters.getBoolean("graphChooseFixed", false);
+        int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
+        int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
+        int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
+        int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
+        double alpha = parameters.getDouble("scaleFreeAlpha", 0.2);
+        double beta = parameters.getDouble("scaleFreeBeta", 0.6);
+        double deltaIn = parameters.getDouble("scaleFreeDeltaIn", 0.2);
+        double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
+        int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        final String type = Preferences.userRoot().get("randomGraphType", "Uniform");
+        final String type = parameters.getString("randomGraphType", "Uniform");
 
         if (type.equals("Uniform")) {
             return makeRandomDag(graph,
@@ -57,7 +57,7 @@ public class GraphUtils {
                     graphUniformlySelected,
                     randomGraphConnected,
                     graphChooseFixed,
-                    addCycles);
+                    addCycles, parameters);
         } else if (type.equals("Mim")) {
             return makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
                     numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
@@ -70,16 +70,16 @@ public class GraphUtils {
         throw new IllegalStateException("Unrecognized graph type: " + type);
     }
 
-    public static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
-                                      int newGraphNumLatents,
-                                      int newGraphNumEdges, int randomGraphMaxDegree,
-                                      int randomGraphMaxIndegree,
-                                      int randomGraphMaxOutdegree,
-                                      boolean graphRandomFoward,
-                                      boolean graphUniformlySelected,
-                                      boolean randomGraphConnected,
-                                      boolean graphChooseFixed,
-                                      boolean addCycles) {
+    private static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
+                                       int newGraphNumLatents,
+                                       int newGraphNumEdges, int randomGraphMaxDegree,
+                                       int randomGraphMaxIndegree,
+                                       int randomGraphMaxOutdegree,
+                                       boolean graphRandomFoward,
+                                       boolean graphUniformlySelected,
+                                       boolean randomGraphConnected,
+                                       boolean graphChooseFixed,
+                                       boolean addCycles, Parameters parameters) {
         Graph graph = null;
 
 
@@ -139,7 +139,7 @@ public class GraphUtils {
                 graph = new EdgeListGraph(graph);
             }
 
-            int randomGraphMinNumCycles = Preferences.userRoot().getInt("randomGraphMinNumCycles", 0);
+            int randomGraphMinNumCycles = parameters.getInt("randomGraphMinNumCycles", 0);
             edu.cmu.tetrad.graph.GraphUtils.addTwoCycles(graph, randomGraphMinNumCycles);
         }
 
@@ -150,9 +150,9 @@ public class GraphUtils {
         return graph;
     }
 
-    public static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
-                                      int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
-                                      int numMeasuredMeasuredImpureAssociations) {
+    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
+                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
+                                       int numMeasuredMeasuredImpureAssociations) {
 
         Graph graph;
 
@@ -177,8 +177,8 @@ public class GraphUtils {
         return graph;
     }
 
-    public static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
-                                            double beta, double deltaIn, double deltaOut) {
+    private static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
+                                             double beta, double deltaIn, double deltaOut) {
         Graph graph = edu.cmu.tetrad.graph.GraphUtils.scaleFreeGraph(numNodes, numLatents,
                 alpha, beta, deltaIn, deltaOut);
         return graph;

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      *
      * @serial Cannot be null.
      */
-    private Map discretizationSpecs = new HashMap();
+    private final Map discretizationSpecs = new HashMap();
 
     /**
      * Stores a reference to the source workbench, if there is one.
@@ -78,9 +78,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private List<Node> knownVariables;
 
     /**
-     * The params being edited.
+     * The parameters being edited.
      */
-    private Params params = null;
+    private Parameters parameters = null;
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
@@ -90,6 +90,11 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      */
     public DataWrapper() {
         setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+    }
+
+    public DataWrapper(Simulation wrapper) {
+        this.name = wrapper.getName();
+        this.dataModelList = wrapper.getDataModelList();
     }
 
 
@@ -123,7 +128,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         if(wrapper.knownVariables != null){
-            this.knownVariables = new ArrayList<Node>(wrapper.knownVariables);
+            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
         }
 
         this.dataModelList = dataModelList;
@@ -145,7 +150,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         List<Node> nodes = graph.getNodes();
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
@@ -179,7 +184,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
     }
 
-    public DataWrapper(RegressionRunner regression, SemDataWrapper wrapper) {
+    public DataWrapper(RegressionRunner regression, Simulation wrapper) {
         this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
     }
 
@@ -237,7 +242,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    public String nextVariableName(String base, DataSet data) {
+    private String nextVariableName(String base, DataSet data) {
 
         // Variable names should start with "1."
         int i = -1;
@@ -353,7 +358,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * Sets the source graph.
      */
-    public void setSourceGraph(Graph sourceGraph) {
+    protected void setSourceGraph(Graph sourceGraph) {
         this.sourceGraph = sourceGraph;
     }
 
@@ -419,17 +424,17 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * This method is overridden by classes that can identify parameters.
      * @return null
      */
-    public Params getParams() {
-        return this.params;
+    public Parameters getParams() {
+        return this.parameters;
     }
 
-    public void setParams(Params params) {
-        this.params = params;
+    public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
     }
 
 
 	public List<String> getVariableNames() {
-		List<String> variableNames = new ArrayList<String>();
+		List<String> variableNames = new ArrayList<>();
 		for (Node n: getVariables()) {
 			variableNames.add(n.getName());
 		}

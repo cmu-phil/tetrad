@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -11,8 +10,9 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs2;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
 
@@ -20,6 +20,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class MixedFgsDiscretingContinuousVariables implements Algorithm {
+    static final long serialVersionUID = 23L;
     private ScoreWrapper score;
 
     public MixedFgsDiscretingContinuousVariables(ScoreWrapper score) {
@@ -38,7 +39,7 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
 
         dataSet = discretizer.discretize();
 
-        Fgs2 fgs = new Fgs2(score.getScore(dataSet, parameters));
+        Fgs fgs = new Fgs(score.getScore(dataSet, parameters));
         Graph p = fgs.search();
         return convertBack(dataSet, p);
     }

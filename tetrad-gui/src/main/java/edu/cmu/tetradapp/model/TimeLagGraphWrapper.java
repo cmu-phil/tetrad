@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -54,7 +55,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * @serial Cannot be null.
      */
     private TimeLagGraph graph;
-    private IKnowledge knowledge;
+    private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -63,6 +64,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
             throw new NullPointerException("Tetrad dag must not be null.");
         }
         this.graph = graph;
+        this.parameters = new Parameters();
         log();
     }
 
@@ -70,6 +72,8 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         if (graphWrapper == null) {
             throw new NullPointerException("No graph wrapper.");
         }
+
+        this.parameters = graphWrapper.getParameters();
 
         TimeLagGraph graph = new TimeLagGraph();
 
@@ -129,7 +133,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         }
 
         System.out.println("Knowledge in graph = " + knowledge1);
-        this.knowledge = knowledge1;
+        IKnowledge knowledge = knowledge1;
     }
 
     public TimeLagGraphWrapper() {
@@ -243,6 +247,10 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
         System.out.println("Knowledge in graph = " + knowledge1);
         return knowledge1;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
 

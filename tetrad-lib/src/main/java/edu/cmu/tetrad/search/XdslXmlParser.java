@@ -163,7 +163,7 @@ public class XdslXmlParser {
 
             Elements cptElements = cpt.getChildElements();
 
-            List<String> stateNames = new ArrayList<String>();
+            List<String> stateNames = new ArrayList<>();
 
             for (int j = 0; j < cptElements.size(); j++) {
                 Element cptElement = cptElements.get(j);
@@ -193,7 +193,7 @@ public class XdslXmlParser {
                 if (cptElement.getQualifiedName().equals("probabilities")) {
                     String list = cptElement.getValue();
                     String[] probsStrings = list.split(" ");
-                    List<Double> probs = new ArrayList<Double>();
+                    List<Double> probs = new ArrayList<>();
 
                     for (String probString : probsStrings) {
                         probs.add(Double.parseDouble(probString));
@@ -215,7 +215,7 @@ public class XdslXmlParser {
 
     private Map<String, String> mapDisplayNames(Element element1, boolean useDisplayNames) {
         if (useDisplayNames) {
-            Map<String, String> displayNames = new HashMap<String, String>();
+            Map<String, String> displayNames = new HashMap<>();
 
             Elements elements = element1.getChildElements();
 

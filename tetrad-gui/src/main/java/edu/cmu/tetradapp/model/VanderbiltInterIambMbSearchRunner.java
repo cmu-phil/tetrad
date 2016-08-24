@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.InterIamb;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * @author Tyler Gibson
@@ -30,14 +31,14 @@ public class VanderbiltInterIambMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltInterIambMbSearchRunner(DataWrapper data, MbSearchParams params) {
+    public VanderbiltInterIambMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
         InterIamb search = new InterIamb(getIndependenceTest());
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

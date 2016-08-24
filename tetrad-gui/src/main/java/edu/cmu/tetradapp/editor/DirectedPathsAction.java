@@ -39,8 +39,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
+class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
     private int centerX;
     private int centerY;
 

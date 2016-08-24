@@ -69,12 +69,6 @@ public final class SessionEditorNode extends DisplayNode {
     private EditorWindow spawnedEditor;
 
     /**
-     * Keeps track of whether the last model class for this node should be
-     * remembered. (But why??)
-     */
-    private boolean rememberLastClass = false;
-
-    /**
      * The simulation study (used to edit the repetition values).
      */
     private SimulationStudy simulationStudy;
@@ -88,7 +82,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * The configuration for this editor node.
      */
-    private SessionNodeConfig config;
+    private final SessionNodeConfig config;
 
     //===========================CONSTRUCTORS==============================//
 
@@ -183,7 +177,7 @@ public final class SessionEditorNode extends DisplayNode {
         if (model == null) {
             return "No model";
         } else {
-            Class<? extends Object> modelClass = model.getClass();
+            Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
 
             if (modelConfig == null) {
@@ -234,7 +228,7 @@ public final class SessionEditorNode extends DisplayNode {
             boolean cloned = getSessionNode().useClonedModel();
 
             SessionModel model = getSessionNode().getModel();
-            Class<? extends Object> modelClass = model.getClass();
+            Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
             JPanel editor;
             if (model instanceof SessionAppModule) {
@@ -693,31 +687,31 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem help = new JMenuItem("Help");
-        deleteBox.setToolTipText("<html>Shows help for this box.</html>");
+//        JMenuItem help = new JMenuItem("Help");
+//        deleteBox.setToolTipText("<html>Shows help for this box.</html>");
+//
+//        help.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                SessionNodeWrapper sessionNodeWrapper =
+//                        (SessionNodeWrapper) getModelNode();
+//                SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
+//                showInfoBoxForModel(sessionNode, sessionNode.getModelClasses());
+//            }
+//        });
 
-        help.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SessionNodeWrapper sessionNodeWrapper =
-                        (SessionNodeWrapper) getModelNode();
-                SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
-                showInfoBoxForModel(sessionNode, sessionNode.getModelClasses());
-            }
-        });
+//        JMenuItem setRepetition =
+//                new JMenuItem("Set Repeat...");
+//        setRepetition.setToolTipText(
+//                "<html>Sets the number of times this node " +
+//                        "<br>will be repeated when executing," +
+//                        "<br>at each depth first traversal of the" +
+//                        "<br>node. Useful for simulation studies.</html>");
 
-        JMenuItem setRepetition =
-                new JMenuItem("Set Repeat...");
-        setRepetition.setToolTipText(
-                "<html>Sets the number of times this node " +
-                        "<br>will be repeated when executing," +
-                        "<br>at each depth first traversal of the" +
-                        "<br>node. Useful for simulation studies.</html>");
-
-        setRepetition.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                editRepetition();
-            }
-        });
+//        setRepetition.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                editRepetition();
+//            }
+//        });
 
         JMenuItem editSimulationParameters =
                 new JMenuItem("Edit Parameters...");
@@ -741,7 +735,7 @@ public final class SessionEditorNode extends DisplayNode {
                     return;
                 }
 
-                Params param = getSessionNode().getParam(modelClass);
+                Parameters param = getSessionNode().getParam(modelClass);
                 Object[] arguments =
                         getSessionNode().getModelConstructorArguments(
                                 modelClass);
@@ -764,11 +758,11 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem simulate = new JMenuItem(new RunSimulationAction(this));
-        simulate.setToolTipText("<html>Runs a simulation study, visiting " +
-                "<br>nodes downstream recursively in depth first" +
-                "<br>order (with repetitions as noted), writing" +
-                "<br>output to a log file.</html>");
+//        JMenuItem simulate = new JMenuItem(new RunSimulationAction(this));
+//        simulate.setToolTipText("<html>Runs a simulation study, visiting " +
+//                "<br>nodes downstream recursively in depth first" +
+//                "<br>order (with repetitions as noted), writing" +
+//                "<br>output to a log file.</html>");
 
 
         popup.add(createModel);
@@ -786,13 +780,13 @@ public final class SessionEditorNode extends DisplayNode {
         addEditLoggerSettings(popup);
         popup.add(propagateDownstream);
 
-        popup.addSeparator();
+//        popup.addSeparator();
 
-        popup.add(setRepetition);
-        popup.add(simulate);
-
-        popup.addSeparator();
-        popup.add(help);
+//        popup.add(setRepetition);
+//        popup.add(simulate);
+//
+//        popup.addSeparator();
+//        popup.add(help);
 
         return popup;
     }
@@ -978,9 +972,8 @@ public final class SessionEditorNode extends DisplayNode {
         // before creating the model since it will be an argument to the
         // constructor of the model.)
         if (sessionNode.existsParameterizedConstructor(modelClass)) {
-            Params params = sessionNode.getParam(modelClass);
-            Object[] arguments = sessionNode.getModelConstructorArguments(
-                    modelClass);
+            Parameters params = sessionNode.getParam(modelClass);
+            Object[] arguments = sessionNode.getModelConstructorArguments(modelClass);
 
             if (params != null) {
                 boolean edited = editParameters(modelClass, params, arguments);
@@ -1008,6 +1001,11 @@ public final class SessionEditorNode extends DisplayNode {
         loadModelClassesFromConfig(sessionNode);
 
         // Must first ascertain the class to create.
+        /*
+      Keeps track of whether the last model class for this node should be
+      remembered. (But why??)
+     */
+        boolean rememberLastClass = false;
         Class[] modelClasses = rememberLastClass ? new Class[]{
                 sessionNode.getLastModelClass()} :
                 sessionNode.getConsistentModelClasses();
@@ -1035,7 +1033,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
-        List<Class> reducedList = new LinkedList<Class>();
+        List<Class> reducedList = new LinkedList<>();
 
         for (Class modelClass : modelClasses) {
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
@@ -1079,7 +1077,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
-        List<Class> reducedList = new LinkedList<Class>();
+        List<Class> reducedList = new LinkedList<>();
         String buttonType;
 
         for (Class modelClass : modelClasses) {
@@ -1122,9 +1120,9 @@ public final class SessionEditorNode extends DisplayNode {
             Object parent2 = (i.next()).getModel();
 
             if ((parent1 instanceof SemPmWrapper &&
-                    parent2 instanceof BayesDataWrapper) || (
+                    parent2 instanceof Simulation) || (
                     parent2 instanceof SemPmWrapper &&
-                            parent1 instanceof BayesDataWrapper) || (
+                            parent1 instanceof Simulation) || (
                     parent2 instanceof SemPmWrapper &&
                             parent1 instanceof DirichletBayesDataWrapper)) {
                 return "Sem PM incompatible with discrete data.";
@@ -1189,15 +1187,14 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
      */
-    private boolean editParameters(final Class modelClass, Params params,
-                                   Object[] parentModels)
-            throws Exception {
+    private boolean editParameters(final Class modelClass, Parameters params,
+                                   Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params cannot be null.");
+            throw new NullPointerException("Parameters cannot be null.");
         }
 
 
@@ -1309,10 +1306,8 @@ public final class SessionEditorNode extends DisplayNode {
                     continue;
 //                    throw new NullPointerException("No configuration found for model: " + clazz);
                 }
-                Params param = modelConfig.getParametersInstance();
-                if (param != null) {
-                    sessionNode.putParam(clazz, param);
-                }
+
+                sessionNode.putParam(clazz, new Parameters(sessionNode.getParameters()));
             }
         }
     }
@@ -1339,7 +1334,6 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * @return the model classes associated with the given button type.
-     *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
      */
@@ -1362,7 +1356,7 @@ public final class SessionEditorNode extends DisplayNode {
         return sessionWrapper;
     }
 
-    public SessionDisplayComp getSessionDisplayComp() {
+    private SessionDisplayComp getSessionDisplayComp() {
         return (SessionDisplayComp) getDisplayComp();
     }
 
@@ -1419,7 +1413,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
 
         private int getRepetition() {
-            return simulationStudy().getRepetition(getSessionNode());
+            return SimulationStudy.getRepetition(getSessionNode());
         }
 
         public SessionNodeWrapper getWrapper() {

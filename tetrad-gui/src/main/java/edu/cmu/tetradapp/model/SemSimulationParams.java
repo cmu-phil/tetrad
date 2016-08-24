@@ -47,7 +47,7 @@ public class SemSimulationParams implements TetradSerializable {
     /**
      * Constructs a new parameters object. Must be a blank constructor.
      */
-    public SemSimulationParams() {
+    private SemSimulationParams() {
     }
 
     /**

@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 7/29/16.
+ * Creates a random graph by adding forward edges.
+ *
+ * @author jdramsey
  */
 public class RandomForward implements RandomGraph {
+    static final long serialVersionUID = 23L;
 
     @Override
     public Graph createGraph(Parameters parameters) {
@@ -21,7 +24,7 @@ public class RandomForward implements RandomGraph {
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+                parameters.getBoolean("connected"));
     }
 
     @Override

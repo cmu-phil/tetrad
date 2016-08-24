@@ -1,0 +1,12 @@
+/*
+Lower triangular matrix for testing purposes
+By Raul Saavedra, Jan/16/2002
+*/
+
+LTMatrix ltm_test
+4  
+
+ 1
+ 0  1
+-1  1  1
+ 0 -1  0  1

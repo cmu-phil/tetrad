@@ -159,7 +159,7 @@ public class FasStable implements IFas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -211,7 +211,7 @@ public class FasStable implements IFas {
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -338,7 +338,7 @@ public class FasStable implements IFas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -368,10 +368,10 @@ public class FasStable implements IFas {
     private boolean searchAtDepth(List<Node> nodes, final IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
         int count = 0;
 
-        final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<Node, Set<Node>>();
+        final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
 
         for (Node node : adjacencies.keySet()) {
-            adjacenciesCopy.put(node, new HashSet<Node>(adjacencies.get(node)));
+            adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
         for (Node x : nodes) {
@@ -379,11 +379,11 @@ public class FasStable implements IFas {
                 if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
             }
 
-            List<Node> adjx = new ArrayList<Node>(adjacenciesCopy.get(x));
+            List<Node> adjx = new ArrayList<>(adjacenciesCopy.get(x));
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<Node>(adjx);
+                List<Node> _adjx = new ArrayList<>(adjx);
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, knowledge);
 
@@ -436,7 +436,7 @@ public class FasStable implements IFas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {

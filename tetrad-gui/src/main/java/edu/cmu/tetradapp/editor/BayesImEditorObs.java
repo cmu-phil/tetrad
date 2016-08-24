@@ -145,7 +145,7 @@ public class BayesImEditorObs extends JPanel {
     /**
      * @return a reference to this editor.
      */
-    public BayesImEditorWizardObs getWizard() {
+    private BayesImEditorWizardObs getWizard() {
         return wizard;
     }
 

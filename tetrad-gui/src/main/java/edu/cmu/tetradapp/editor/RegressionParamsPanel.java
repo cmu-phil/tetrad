@@ -25,10 +25,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.RegressionParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
@@ -53,7 +53,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     /**
      * The parameter object being edited.
      */
-    private RegressionParams params;
+    private Parameters params;
 
     /**
      * The name of the target variable or node in the regression.
@@ -65,7 +65,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
      */
     private List<String> varNames;
 
-    private String[] regressorNames;
+    private List<String> regressorNames;
 
     //private JComboBox box;
     private JTextField responseVar;
@@ -82,18 +82,18 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     /**
      * Opens up an editor to let the user view the given RegressionRunner.
      */
-    public RegressionParamsPanel(RegressionParams params,
+    public RegressionParamsPanel(Parameters params,
             Object[] parentModels) {
 
         if (params == null) {
             throw new NullPointerException(
-                    "RegressionParams must not be null.");
+                    "Parameters must not be null.");
         }
 
         this.params = params;
 
-        if (params.getVarNames() != null) {
-            this.varNames = params.getVarNames();
+        if (params.get("varNames", null) != null) {
+            this.varNames = (List<String>) params.get("varNames", null);
         }
 
         if (this.varNames == null) {
@@ -103,14 +103,14 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
                 this.varNames = getVarsFromGraph(parentModels);
             }
 
-            params.setVarNames(this.varNames);
+            params.set("varNames", this.varNames);
 
             if (this.varNames == null) {
                 throw new IllegalStateException(
                         "Variables are not accessible.");
             }
 
-            params().setVarNames(varNames);
+            params().set("varNames", varNames);
         }
 
         //predictorVarsList = new Vector();
@@ -138,7 +138,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         responseVar.setFont(new Font("SanSerif", Font.BOLD, 12));
 
         //TEST
-        responseVar.setText(params.getTargetName());
+        responseVar.setText(params.getString("targetName", null));
         if (!responseVar.getText().equals("") &&
                 responseButton.getText().equals(">")) {
             responseButton.toggleInclude();
@@ -147,7 +147,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         DefaultListModel predsModel =
                 (DefaultListModel) this.predictorVarListbox.getModel();
-        String[] paramNames = params.getRegressorNames();
+        String[] paramNames = (String[]) params.get("regressorNames", null);
         for (String paramName : paramNames) {
             predsModel.addElement(paramName);
         }
@@ -155,12 +155,13 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //Construct availableVarsList of variable names not response nor in predictors.
         //List varListNames = params.getRegressorNames();
         List<Object> varListNames = new ArrayList<Object>(varNames);
-        String targetName = params.getTargetName();
+        String targetName = params.getString("targetName", null);
         if (varListNames.contains(targetName)) {
             varListNames.remove(targetName);
         }
 
-        String[] regNames = params.getRegressorNames();
+        List<String> regNames = (List<String>) params.get("regressorNames", null);
+
         for (String regName : regNames) {
             if (varListNames.contains(regName)) {
                 varListNames.remove(regName);
@@ -193,14 +194,14 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         Box b4 = Box.createVerticalBox();
         Box b5 = Box.createVerticalBox();
 
-        DoubleTextField alphaField = new DoubleTextField(params.getAlpha(), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
-                            params().getAlpha());
+                            params().getDouble("alpha", 0.001));
                     return value;
                 }
                 catch (Exception e) {
@@ -302,7 +303,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             return null;
         }
         else {
-            return new ArrayList<String>(dataModel.getVariableNames());
+            return new ArrayList<>(dataModel.getVariableNames());
         }
     }
 
@@ -332,7 +333,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             }
 
             List<Node> nodes = graph.getNodes();
-            List<String> nodeNames = new LinkedList<String>();
+            List<String> nodeNames = new LinkedList<>();
 
             for (Node node : nodes) {
                 nodeNames.add(node.getName());
@@ -345,11 +346,11 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     private void setRegressorValues() {
     }
 
-    private void setRegressorNames(String[] names) {
+    private void setRegressorNames(List<String> names) {
         regressorNames = names;
     }
 
-    private RegressionParams params() {
+    private Parameters params() {
         return this.params;
     }
 
@@ -412,7 +413,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             //Object targetValue = box.getSelectedItem();
             String newTargetName = responseVar.getText();
             setTargetName(newTargetName);
-            params().setTargetName(targetName());
+            params().set("targetName", targetName());
         }
         /* include predictor variable */
         else if (e.getActionCommand().equals(INCLUDE_PREDICTOR)) {
@@ -463,10 +464,10 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         int numPredictors = predsModel.size();
         Object[] predictors = new Object[numPredictors];
 
-        String[] regNames = new String[numPredictors];
+        List<String> regNames = new ArrayList<>();
         for (int i = 0; i < numPredictors; i++) {
             predictors[i] = predsModel.getElementAt(i);
-            regNames[i] = (String) predsModel.getElementAt(i);
+            regNames.add((String) predsModel.getElementAt(i));
         }
 
         /*
@@ -480,7 +481,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         setRegressorValues();   //TEST
         setRegressorNames(regNames);
 
-        params().setRegressorNames(regressorNames);
+        params().set("regressorNames", regressorNames);
     }
 
 

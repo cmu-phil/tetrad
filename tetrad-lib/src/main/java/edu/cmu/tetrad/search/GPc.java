@@ -152,12 +152,12 @@ public final class GPc implements GraphSearch {
             setScore();
         }
 
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
 //        fgs.setHeuristicSpeedup(heuristicSpeedup);
-//        fgs.setDepth(fgsDepth);
+//        fgs.setMaxIndegree(fgsDepth);
         graph = fgs.search();
 
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
@@ -165,7 +165,7 @@ public final class GPc implements GraphSearch {
 //        System.out.println("GFCI: FGS done");
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
-//        ((SepsetsGreedy) sepsets).setDepth(3);
+//        ((SepsetsGreedy) sepsets).setMaxIndegree(3);
 //        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);

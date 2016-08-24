@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: MIM Build</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Search Algorithms: MIMBuild</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<p><font color="#000000"><b><br>
+</b><b>Introduction </b></font></p>
+<p>MIM Build stands for Multiple Indicator Model Build. It is one of
+the three algorithms in Tetrad designed to build <font color="#000000"><b><a
+ href="../../definitions/measurement_structural_graph.html">pure
+measurement/structural models</a></b></font> (the others are the <font
+ color="#000000"><b><a href="../../search/cluster.html">Build Pure Clusters algorithm</a></b></font>
+and the <font color="#000000"><b><a href="../../search/purify.html">Purify algorithm</a></b></font>).</p>
+<p> MIM Build should be used to learn causal relationships among latent
+variables in a <font color="#000000"> when the measurement model is
+given in advance but the structural model is unknown.</font></p>
+<p>The MIM Build algorithm also assumes that the underlying (unknown)
+coltData generating process is a linear graph. If the user strongly
+suspects that the latents or indicators may be non-linearly related<font
+ color="#000000">, MIM Build should not be used. We are also assuming
+that latents here do not have other hidden common causes.</font></p>
+<p><font color="#000000">A</font><font color="#000000">ll observed
+variables are assumed to be continuous, and therefore the current
+implementation of the algorithm accepts only continuous coltData sets as
+input. For general information about model building algorithms, consult
+the <font color="#000000"><b><a href="../../search/../search.html">Search
+Algorithms</a></b></font> page.</font></p>
+<p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
+Entering MIM Build parameters</b></font></p>
+<p>Create a new <font color="#000000">Search object</font> as
+described in the <font color="#000000"><a href="search_box.html">Search
+Algorithms</a></font> page, but in order to follow this tutorial,
+use the following graph to generate a simulated continuous coltData set:</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/mimbuild1.png"
+ width="769" height="470"></font></p>
+</blockquote>
+<p>When the MIM Build algorithm is chosen from the Search box, a window
+appears for specifying search parameters.<br>
+</p>
+<p>The parameters that are used by MIM Build can be specified in this
+window. The parameters are as follows:</p>
+<ul>
+  <li><strong>alpha value</strong>: if you choose the PC search in the
+combo box "Choice of algorithm", MIM Build uses statistical hypothesis
+tests in order to generate models automatically. The alpha value
+parameter represents the level by which such tests are used to accept
+or reject constraints that compose the final output. The default value
+is 0.05, but the user may want to experiment with different alpha
+values in order to test the sensitivity of her coltData within this
+algorithm.</li>
+  <li><strong>number of clusters</strong>: MIM Build needs a pure
+measurement model specified in advance. The measurement model is
+defined by a set of clusters of variables, where each cluster
+represents a set of pure indicators of a single latent. In this box,
+the user specifies how many latents there are in the measurement model
+based in prior knowledge. In our example, let's use three clusters.</li>
+  <li><strong>edit cluster assignments</strong>: once the number of
+latents is specified, the user should now determine which variables in
+the coltData set should be clustered together. When this button is clicked,
+the following dialog box appears:
+    <p><font color="#000000"><img src="../../images/mimbuild3.png"
+ width="1011" height="289"></font></p>
+    <p>In this example, we want to enter the measurement model that we
+know is the correct one by assumption. In other words, variables X1, X2
+and X3 should be clustered together, since they are pure indicators of
+a same latent. Variables X4, X5 and X6 form another cluster, and the
+same holds for X7, X8 and X9. In order to perform cluster assignment,
+since click the respective combo box and choose the cluster that shows
+up in the list. For example, click the X4 combo box and choose Cluster
+1. Do the same for X5 and X6. For variables X7, X8 and X9, choose
+Cluster 2. The final outcome should be as follows:</p>
+    <p><font color="#000000"><img src="../../images/mimbuild4.png"
+ width="1011" height="289"></font></p>
+  </li>
+  <li><strong>algorithm</strong>: MIM Build is actually a family of
+algorithms for the problem of learning structural models. Currently, we
+offer two alternatives, both corresponding to the case where we have no
+latent variables: the <a href="../../search/ges.html"><strong>GES</strong></a> and <a
+ href="../../search/pc.html"><strong>PC</strong></a> search algorithms. The PC
+version can be slower and less robust than GES, but might be useful to
+indicate if the assumption of no extra hidden common causes among the
+latents holds (the appearance of double directed edges is an indication
+of that possibility).</li>
+  <li><strong>view background knowledge</strong>: this button gives
+access to a <font color="#000000"><b><a
+ href="../../search/../search.html#BackgroundKnowledge">background knowledge editor</a></b></font>
+that is analogous to the one used in most search algorithms, but with
+one difference: instead of entering background knowledge about observed
+variables (in MIM Build case, all background knowledge about observed
+variables boils down to the specification of a measurement model), the
+user here enters prior knowledge about causal relations of latent
+variables. Latents are denoted by the label _L<em>x</em>, where <em>x</em>
+is the number of the respective cluster. In our example, the latent
+parent of X7, X8 and X9 is referred as _L2. <em>Note: use of
+background knowledge is not implemented for GES yet.</em></li>
+</ul>
+<p>Execute the search as explained in the <font color="#000000"><b><a
+ href="../../search/../search.html">Search Algorithms</a></b></font> page.</p>
+<p><font color="#000000"><b><a name="Interpretation" id="Interpretation"></a><br>
+</b><b>Interpreting the output</b></font></p>
+<p><font color="#000000">MIM Build returns a pattern over latent
+variables that is completely analogous to the one produced by a <b><a
+ href="../../search/pc.html">PC Search</a></b></font><font color="#000000">, or <b><a
+ href="../../search/ges.html">GES Search</a></b></font><font color="#000000">. The
+same interpretation used in such algorithms can be applied to MIM Build
+output. <br>
+</font></p>
+<p>&nbsp;</p>
+</body>
+</html>

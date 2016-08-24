@@ -1,0 +1,31 @@
+GRAPH PAPER_FIG1
+
+11	// # vars
+
+// Node names
+light	// 0
+dfr	// 1
+rr	// 2
+psba1	// 3
+psba2	// 4
+cpcb	// 5
+photo	// 6
+nblr	// 7
+nbla	// 8
+pbs	// 9 
+health // 10
+
+// Edges
+0 1	1
+1 2	1
+1 7	1
+2 3	-1
+2 4	-1
+2 5	-1
+3 6	1
+4 6	1
+6 10	-1
+7 8	1
+8 9	-1
+9 10	-1
+

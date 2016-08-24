@@ -9,6 +9,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Simulations {
+    static final long serialVersionUID = 23L;
     private List<Simulation> simulations = new ArrayList<>();
 
     public Simulations() {

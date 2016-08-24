@@ -1,0 +1,154 @@
+<html >
+
+
+
+
+
+
+
+<head>
+
+
+
+<title>Search Algorithms: Purify Clusters</title>
+
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
+
+
+
+
+
+
+
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+
+  <tr> 
+
+    <td> <h2><font color="#FFFFFF">Search Algorithms: Purify</font></h2></td>
+
+  </tr>
+
+</table>
+
+<p><font color="#000000"><b><a href="#Introduction">Introduction</a></b><br>
+  <br>
+  <b><a href="#Parameters">Entering Purify parameters</a></b> </font></p>
+<p><font color="#000000"><b><a href="#Interpretation">Interpreting the output</a></b> 
+  <br>
+  </font></p>
+<p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
+  </b><b>Introduction </b></font></p>
+<p>Purify is one of the three algorithms in Tetrad designed to build <font color="#000000"><b><a href="../../definitions/measurement_structural_graph.html">pure 
+  measurement/structural models</a></b></font> (the others are the <font color="#000000"><b><a href="mimbuild.html">MIM 
+  Build algorithm</a></b></font> and the <font color="#000000"><b><a href="purify.html">Purify 
+  algorithm</a></b></font>).</p>
+<p> Purify should be used to select indicators of a given measurement model such 
+  that the selected indicators form a pure measurement model<font color="#000000">. 
+  In other words, the user specifies a set of clusters of indicators, where each 
+  cluster containts indicators of an assumed latent variable. The task of Purify 
+  is to discard any indicator that is impure, i.e., that may have other common 
+  causes with other indicators, or that is a direct cause of other indicators.</font></p>
+<p>The Purify algorithm assumes that the population can be described as a measurement/structural 
+  model where observed variab<font color="#000000">les are linear indicators of 
+  the unknown latents, and that the given measurement model is correct, but perhaps 
+  impure. Notice that linearity among latents is not necessary (although it will 
+  be necessary for the <b><a href="mimbuild.html">MIM Build algorithm</a></b>) 
+  and latents do not need to be continuous. </font></p>
+<p><font color="#000000">All variables are assumed to be continuous, and therefore 
+  the current implementation of the algorithm accepts only continuous coltData sets
+  as input. For general information about model building algorithms, consult the 
+  <font color="#000000"><b><a href="../../search/../search.html">Search Algorithms</a></b></font> 
+  page.</font></p>
+<p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
+  Entering Purify parameters</b></font></p>
+<p>Create a new <font color="#000000">Search 
+  object</font> as described in the <font color="#000000"><b><a href="../../search/../search.html">Search 
+  Algorithms</a></b></font> page, but in order to follow this tutorial, use the 
+  following graph to generate a simulated continuous coltData set:</p>
+<blockquote> 
+  <p><font color="#000000"><img src="../../images/purify1.png" width="790" height="470"></font></p>
+</blockquote>
+<p>Notice that, in this example, X4, X5 and X7 are in impure relations. Notice 
+  also that X4 is not an impurity anymore when X7 is removed, but X5 and X7 cannot 
+  be made pure, since they are indicators of two latents. </p>
+<p>When the Purify algorithm is chosen from the Search Object combo box, the following 
+  window appears:</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/purify2.png" width="297" height="309"></font></p>
+</blockquote>
+<p>The parameters that are used by Purify can be specified in this window. The 
+  parameters are as follows:</p>
+<ul>
+  <li><strong>alpha value</strong>: Purify uses statistical hypothesis tests in
+    order to generate models automatically. The alpha value parameter represents
+    the level by which such tests are used to accept or reject constraints that 
+    compose the final output. The default value is 0.05, but the user may want 
+    to experiment with different alpha values in order to test the sensitivity
+    of her coltData within this algorithm.</li>
+  <li><strong>number of clusters</strong>: Purify needs a measurement model specified 
+    in advance. The measurement model is defined by a set of clusters of variables, 
+    where each cluster represents a set of pure indicators of a single latent. 
+    In this box, the user specifies how many latents there are in the measurement 
+    model based in prior knowledge. In our example, assuming we know the true 
+    measurement model, let's use three clusters.</li>
+  <li><strong>edit cluster assignments</strong>: this is identical to the cluster 
+    editor of the <font color="#000000"><b><a href="mimbuild.html">MIM Build algorithm</a></b></font>. 
+    Consult its documentation for details. In our example, we should create the 
+    following clustering: 
+    <p><font color="#000000"><img src="../../images/purify3.png" width="590" height="319"></font></p>
+  </li>
+  <li><strong>statistical test</strong>: as stated before, automated model building
+    is done by testing statistical hypothesis. Purify provides two basic statistical 
+    tests that can be used. Wishart's Tetrad ssumes that the given variables follow 
+    a multivariate normal distribution. Bollen's Tetrad test not make this assumption.
+    However, it needs to compute a matrix of fourth moments, which can be time 
+    consuming. It is also less robust against sampling variability when compared 
+    to Wishart's test if the coltData actually follows a multivariate normal distribution.</li>
+  <li><strong>default mode</strong>: there are basically two different strategies 
+    used by Purify. In the <em>Impure by default</em> mode, the algorithm does 
+    not assume that the user believes the measurement model is pure, and therefore 
+    will try to find constraints that guarantees that a indicator is pure with 
+    respect to other indicators. If it fails to find a condition by which indicator 
+    A is pure with respect to indicator B, then A will be marked as impure with 
+    respect to B. In the <em>Pure by default </em>mode, the algorithm assumes 
+    that the given measurement model is pure. It will try to find constraints 
+    that guarantees that a indicator is impure with respect to other indicators. 
+    If it fails to find a condition by which indicator A is impure with respect 
+    to indicator B, then A will be marked as pure with respect to B.</li>
+</ul>
+<p>Execute the search as explained in the <font color="#000000"><b><a href="../../search/../search.html">Search 
+  Algorithms</a></b></font> page.</p>
+<p><font color="#000000"><b><a name="Interpretation" id="Interpretation"></a><br>
+  </b><b>Interpreting the output</b></font></p>
+<p><font color="#000000">Although a given measurement model may have many different 
+  pure submodels, the Purify algorithm has a deterministic output: it will basically 
+  throw away indicators that violate constraints, following an order determined 
+  by the number of constraints that are violated by each indicator. It returns 
+  a pure measurement model. In our example, the outcome should be as follows if 
+  the sample is representative of the population:</font></p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/purify4.png" width="392" height="371"></font></p>
+</blockquote>
+<p>Edges with circles at the endpoints are added only to distinguish latent variables 
+  from the indicators. Purify does not make any claims about the causal relationships 
+  among latent variables (this is the role of the <font color="#000000"><b><a href="mimbuild.html">MIM 
+  Build algorithm</a></b></font>). The labels given to the latent variables are 
+  arbitrary.</p>
+<p>Sometimes some latents will not have any indicator. As an important sidenote, 
+  if some cluster has only two variables, Purify cannot find any condition by 
+  which the two indicators in this cluster can be considered pure. If the <em>Impure 
+  by default</em> method is chosen, such indicators will always be removed.</p>
+<p>&nbsp;</p>
+</body>
+
+
+
+
+
+
+
+</html>

@@ -58,9 +58,9 @@ class PossibleGraphicalChangeFinder {
             throw new NullPointerException("The given separation sets must not be null.");
         }
         this.pag = pag;
-        this.separations = new ArrayList<List<Node>>();
+        this.separations = new ArrayList<>();
         for (Collection<Node> sep : separations) {
-            this.separations.add(new ArrayList<Node>(sep));
+            this.separations.add(new ArrayList<>(sep));
         }
     }
 }

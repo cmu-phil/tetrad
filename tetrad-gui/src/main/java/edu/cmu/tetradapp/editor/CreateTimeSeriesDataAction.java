@@ -153,7 +153,7 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
         }
 
         // 2. Prepare the data the way you did.
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int s = 0; s < m; s++) {
             for (int i = 0; i < n; i++) {
@@ -167,7 +167,7 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
 
                 double[] laggedRaw = new double[size - m + 1];
                 System.arraycopy(rawData, s, laggedRaw, 0, size - m + 1);
-                variables.add((ContinuousVariable) laggedVars[s][i]);
+                variables.add(laggedVars[s][i]);
             }
         }
 
@@ -227,7 +227,7 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
         }
 
         // 2. Prepare the data the way you did.
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int s = 0; s <= m; s++) {
             for (int i = 0; i < n; i++) {

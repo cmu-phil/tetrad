@@ -34,7 +34,7 @@ import java.rmi.MarshalledObject;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class LayoutSelection implements Transferable {
+class LayoutSelection implements Transferable {
 
     /**
      * The list of session nodes that constitutes the selection.
@@ -44,7 +44,7 @@ public class LayoutSelection implements Transferable {
     /**
      * Supported dataflavors--only one.
      */
-    private DataFlavor[] dataFlavors =
+    private final DataFlavor[] dataFlavors =
             new DataFlavor[]{new DataFlavor(LayoutSelection.class, "Layout")};
 
     /**

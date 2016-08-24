@@ -21,17 +21,22 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.Tetrad;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
+import javax.help.*;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 
 /**
  * The main menubar for Tetrad.
@@ -49,7 +54,7 @@ final class TetradMenuBar extends JMenuBar {
     /**
      * Creates the main menubar for Tetrad.
      */
-    public  TetradMenuBar(TetradDesktop desktop) {
+    public TetradMenuBar(TetradDesktop desktop) {
         this.desktop = desktop;
         setBorder(new EtchedBorder());
 
@@ -57,14 +62,12 @@ final class TetradMenuBar extends JMenuBar {
         JMenu fileMenu = new JMenu("File");
         JMenu editMenu = new JMenu("Edit");
         JMenu loggingMenu = new JMenu("Logging");
-        JMenu templateMenu = new JMenu("Template");
         JMenu windowMenu = new JMenu("Window");
         JMenu helpMenu = new JMenu("Help");
 
         add(fileMenu);
         add(editMenu);
         add(loggingMenu);
-        add(templateMenu);
         add(windowMenu);
         add(helpMenu);
 
@@ -80,6 +83,22 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(newSession);
         fileMenu.add(loadSession);
         fileMenu.add(closeSession);
+        fileMenu.addSeparator();
+
+        //=======================EXAMPLES MENU=========================//
+        // Build a LoadTemplateAction for each file name in
+        // this.exampleFiles.
+        String[] templateNames = ConstructTemplateAction.getTemplateNames();
+        for (String templateName : templateNames) {
+            if ("--separator--".equals(templateName)) {
+                fileMenu.addSeparator();
+            } else {
+                ConstructTemplateAction action =
+                        new ConstructTemplateAction(templateName);
+                fileMenu.add(action);
+            }
+        }
+
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
         fileMenu.add(new SaveSessionAsAction());
@@ -142,55 +161,45 @@ final class TetradMenuBar extends JMenuBar {
                 new WindowMenuListener(windowMenu, pane);
         windowMenu.addMenuListener(windowMenuListener);
 
-        //=======================EXAMPLES MENU=========================//
-        // Build a LoadTemplateAction for each file name in
-        // this.exampleFiles.
-        String[] templateNames = ConstructTemplateAction.getTemplateNames();
-        for (String templateName : templateNames) {
-            if ("--separator--".equals(templateName)) {
-                templateMenu.addSeparator();
-            } else {
-                ConstructTemplateAction action =
-                        new ConstructTemplateAction(templateName);
-                templateMenu.add(action);
-            }
-        }
+//        //=======================EXAMPLES MENU=========================//
+//        // Build a LoadTemplateAction for each file name in
+//        // this.exampleFiles.
+//        String[] templateNames = ConstructTemplateAction.getTemplateNames();
+//        for (String templateName : templateNames) {
+//            if ("--separator--".equals(templateName)) {
+//                templateMenu.addSeparator();
+//            } else {
+//                ConstructTemplateAction action =
+//                        new ConstructTemplateAction(templateName);
+//                templateMenu.add(action);
+//            }
+//        }
 
         //=======================HELP MENU=========================//
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
-//        JMenuItem help = new JMenuItem("Tetrad Manual");
-//
-//        help.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JHelp jhelp =
-//                        new JHelp(TetradHelpBroker.getInstance().getHelpSet());
-//                JComponent centeringComp = JOptionUtils.centeringComp();
-//                Object owner = centeringComp.getTopLevelAncestor();
-//                JDialog dialog;
-//
-//                if (owner instanceof Dialog) {
-//                    dialog = new JDialog((Dialog) owner, "Tetrad Manual", true);
-//                } else {
-//                    dialog = new JDialog((Frame) owner, "Tetrad Manual", true);
-//                }
-//
-//                dialog.setResizable(true);
-//                dialog.getContentPane().add(jhelp, BorderLayout.CENTER);
-//                dialog.pack();
-//                dialog.setSize(new Dimension(900, 600));
-//                dialog.setLocationRelativeTo(centeringComp);
-//                dialog.setVisible(true);
-//            }
-//        });
 
-//        this.helpMI = help;
-//        helpMenu.add(help);
+        String helpHS = "/resources/javahelp/TetradHelp.hs";
+//        ClassLoader cl = Tetrad.class.getClassLoader();
+        HelpSet hs;
 
-//        if (TetradHelpBroker.getInstance().isHelpDefined()) {
-//            helpMI.addActionListener(new CSH.DisplayHelpFromSource(
-//                    TetradHelpBroker.getInstance()));
-//        }
+        try {
+            URL url = this.getClass().getResource(helpHS);
+//            URL hsURL = HelpSet.findHelpSet(getClass().getClassLoader(), helpHS);
+            hs = new HelpSet(null, url);
+        } catch (Exception ee) {
+            System.out.println( "HelpSet " + ee.getMessage());
+            System.out.println("HelpSet "+ helpHS +" not found");
+            return;
+        }
+
+        final HelpBroker hb = hs.createHelpBroker();
+
+        JMenuItem help = new JMenuItem("Help");
+        help.addActionListener(new CSH.DisplayHelpFromSource( hb ));
+        helpMenu.add(help);
+
+        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
 
         helpMenu.add(new AboutTetradAction());
         helpMenu.add(new WarrantyAction());
@@ -202,13 +211,6 @@ final class TetradMenuBar extends JMenuBar {
         loggingMenu.addMenuListener(new LoggingMenuListener());
 
     }
-
-//    /**
-//     * Allows other classes to display the help system by calling this method.
-//     */
-//    public void showHelp() {
-//        this.helpMI.doClick();
-//    }
 
     //================================ Private Method ===============================//
 

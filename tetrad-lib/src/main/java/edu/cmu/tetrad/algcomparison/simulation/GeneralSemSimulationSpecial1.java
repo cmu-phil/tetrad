@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -22,9 +22,10 @@ import java.util.*;
  * @author jdramsey
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
+    static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
-    private Graph graph;
-    private List<DataSet> dataSets;
+    private List<Graph> graphs = new ArrayList<>();
+    private List<DataSet> dataSets = new ArrayList<>();
 
     public GeneralSemSimulationSpecial1(RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
@@ -32,14 +33,23 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        this.randomGraph = randomGraph;
+        Graph graph = randomGraph.createGraph(parameters);
 
-        this.dataSets = new ArrayList<>();
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
+
+            if (parameters.getBoolean("differentGraphs") && i > 0) {
+                graph = randomGraph.createGraph(parameters);
+            }
+
+            graphs.add(graph);
+
             DataSet dataSet = simulate(graph, parameters);
-            this.dataSets.add(dataSet);
+            dataSet.setName("" + (i + 1));
+            dataSets.add(dataSet);
         }
     }
 
@@ -50,8 +60,8 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph() {
-        return graph;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
@@ -77,6 +87,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
+        parameters.add("differentGraphs");
         parameters.add("sampleSize");
         return parameters;
     }
@@ -88,7 +99,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         List<Node> variablesNodes = pm.getVariableNodes();
         List<Node> errorNodes = pm.getErrorNodes();
 
-        Map<String, String> paramMap = new HashMap<String, String>();
+        Map<String, String> paramMap = new HashMap<>();
         String[] funcs = {"TSUM(NEW(B)*$)", "TSUM(NEW(B)*$+NEW(C)*sin(NEW(T)*$+NEW(A)))",
                 "TSUM(NEW(B)*(.5*$ + .5*(sqrt(abs(NEW(b)*$+NEW(exoErrorType))) ) ) )"};
         paramMap.put("s", "U(1,3)");

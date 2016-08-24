@@ -33,11 +33,11 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  */
 public class NonparanormalTransform extends DataWrapper {
     static final long serialVersionUID = 23L;
-    private DataSet dataSet;
 
     //=============================CONSTRUCTORS==============================//
 
     public NonparanormalTransform(DataWrapper wrapper) {
+        DataSet dataSet;
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
             DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();
             dataSet = DataUtils.getNonparanormalTransformed(_dataSet);

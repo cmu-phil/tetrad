@@ -54,12 +54,12 @@ class GeneralizedSemPmParamsEditor extends JPanel {
     /**
      * The SemPm being edited.
      */
-    private GeneralizedSemPm semPm;
+    private final GeneralizedSemPm semPm;
 
     /**
      * The set of launched editors--or rather, the objects associated with the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
     private Box formulasBox;
 
     /**
@@ -103,7 +103,7 @@ class GeneralizedSemPmParamsEditor extends JPanel {
     public void refreshLabels() {
         formulasBox.removeAll();
 
-        java.util.List<String> parameters = new ArrayList<String>(semPm().getParameters());
+        java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
         Collections.sort(parameters);
 
         for (String parameter : parameters) {

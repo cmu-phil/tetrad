@@ -44,8 +44,8 @@ import java.beans.PropertyChangeListener;
  * @author Joseph Ramsey
  */
 public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
-    private static int SINGLE_VALUE = 0;
-    private static int MULTI_VALUE = 1;
+    private static final int SINGLE_VALUE = 0;
+    private static final int MULTI_VALUE = 1;
 
     /**
      * The Bayes updater being edited.

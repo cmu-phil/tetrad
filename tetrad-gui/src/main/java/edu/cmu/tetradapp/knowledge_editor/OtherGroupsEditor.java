@@ -66,7 +66,7 @@ class OtherGroupsEditor extends JPanel {
             throw new NullPointerException("The given list of variables must not be null");
         }
         this.knowledge = knowledge;
-        this.variables = new ArrayList<String>(vars);
+        this.variables = new ArrayList<>(vars);
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -211,7 +211,7 @@ class OtherGroupsEditor extends JPanel {
 
 
     private static Set<String> getElementsInModel(DefaultListModel model) {
-        Set<String> elements = new HashSet<String>();
+        Set<String> elements = new HashSet<>();
         for (int i = 0; i < model.getSize(); i++) {
             elements.add((String) model.getElementAt(i));
         }
@@ -236,7 +236,7 @@ class OtherGroupsEditor extends JPanel {
      */
     private static class Arrow extends JPanel {
 
-        private Color color;
+        private final Color color;
 
         public Arrow() {
             Color b = Color.BLACK;
@@ -264,8 +264,8 @@ class OtherGroupsEditor extends JPanel {
      */
     private static class VariableRenderer extends DefaultListCellRenderer {
 
-        private Color fillColor = new Color(153, 204, 204);
-        private Color selectedFillColor = new Color(255, 204, 102);
+        private final Color fillColor = new Color(153, 204, 204);
+        private final Color selectedFillColor = new Color(255, 204, 102);
 
         public VariableRenderer() {
             this.setOpaque(true);
@@ -298,7 +298,7 @@ class OtherGroupsEditor extends JPanel {
         /**
          * Index of the group that is being edited.
          */
-        private int index;
+        private final int index;
 
         /**
          * States that whether this if the "from" side or the "to" side (true=from, false=to).

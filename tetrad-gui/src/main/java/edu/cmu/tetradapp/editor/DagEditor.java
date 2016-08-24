@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.DagWrapper;
@@ -61,15 +62,18 @@ public final class DagEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
     private final GraphWorkbench workbench;
     private DagWrapper dagWrapper;
+    private Parameters parameters;
 
     public DagEditor(DagWrapper graphWrapper) {
         this(graphWrapper.getDag());
         this.dagWrapper = graphWrapper;
+        this.parameters = graphWrapper.getParameters();
     }
 
     public DagEditor(Dag dag) {
         setPreferredSize(new Dimension(550, 450));
         setLayout(new BorderLayout());
+        this.parameters = new Parameters();
 
         this.workbench = new GraphWorkbench(dag);
 
@@ -156,7 +160,7 @@ public final class DagEditor extends JPanel
         List<Component> selectedComponents =
                 getWorkbench().getSelectedComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Object comp : selectedComponents) {
             if (comp instanceof DisplayNode) {
@@ -306,7 +310,7 @@ public final class DagEditor extends JPanel
 
         randomDag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), false);
+                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), false, parameters);
 
                 int ret = JOptionPane.showConfirmDialog(
                         DagEditor.this, editor,
@@ -330,7 +334,7 @@ public final class DagEditor extends JPanel
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             GraphUtils.arrangeByLayout(dag, layout);
                         } else {
-                            List<Node> nodes = new ArrayList<Node>();
+                            List<Node> nodes = new ArrayList<>();
 
                             for (int i = 0; i < editor.getNumNodes(); i++) {
                                 nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -349,7 +353,7 @@ public final class DagEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                List<Node> nodes = new ArrayList<Node>();
+                                List<Node> nodes = new ArrayList<>();
 
                                 for (int i = 0; i < editor.getNumNodes(); i++) {
                                     nodes.add(new ContinuousVariable("X" + (i + 1)));

@@ -25,9 +25,11 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetradapp.model.FofcRunner;
+import edu.cmu.tetradapp.model.MimRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -80,7 +82,7 @@ public class FofcSearchEditor extends JPanel {
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
     /**
      * The label for the result graph workbench.
@@ -92,7 +94,6 @@ public class FofcSearchEditor extends JPanel {
      */
     private JScrollPane workbenchScroll;
     private JPanel displayPanel;
-    private GraphWorkbench structureWorkbench;
 
     //============================CONSTRUCTORS===========================//
 
@@ -174,7 +175,7 @@ public class FofcSearchEditor extends JPanel {
                 setErrorMessage(null);
 
                 try {
-//                    mimRunner.getParams().setClusters(clusterEditor.getClusters());
+//                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
                 }
                 catch (Exception e) {
@@ -348,7 +349,7 @@ public class FofcSearchEditor extends JPanel {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -391,7 +392,7 @@ public class FofcSearchEditor extends JPanel {
 
         Graph sourceGraph = getMimRunner().getSourceGraph();
         Graph latestWorkbenchGraph =
-                getMimRunner().getParams().getSourceGraph();
+                (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
@@ -443,7 +444,7 @@ public class FofcSearchEditor extends JPanel {
     }
 
     public Graph getLatestWorkbenchGraph() {
-        Graph graph = getMimRunner().getParams().getSourceGraph();
+        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -460,14 +461,14 @@ public class FofcSearchEditor extends JPanel {
         }
 
         try {
-            Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
-            getMimRunner().getParams().setSourceGraph(graph);
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
+            getMimRunner().getParams().set("sourceGraph", graph);
         }
         catch (IOException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
         }
         catch (ClassNotFoundException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
@@ -483,29 +484,27 @@ public class FofcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        MimParams params = getMimRunner().getParams();
-        MimIndTestParams indTestParams = params.getMimIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Parameters params = getMimRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(MimIndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FofcIndTestParams) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            FofcIndTestParams params =  (FofcIndTestParams) indTestParams;
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", runner.getParams().get("varNames", null));
             return new FofcIndTestParamsEditor(params);
         }
 
         throw new IllegalArgumentException(
-                "Unrecognized IndTestParams: " + indTestParams.getClass());
+                "Unrecognized Parameters: " + params.getClass());
     }
 }
 

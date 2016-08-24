@@ -49,14 +49,17 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-            "Simulate Data from IM", "Estimate from Simulated Data",
-            "Search from Simulated Data",
-            "Search from Simulated Data with Edge Comparisons", "Update IM",
-            "--separator--", "Search from Loaded Data",
-            "Estimate from Loaded Data (Bayes)",
-            "Estimate from Loaded Data (SEM)",
-            "Estimate from Search Result (Bayes)",
-            "Estimate from Search Result (SEM)",};
+            "Load/Simulate Data",
+            "Search",
+            "Estimate",
+            "Update",
+            "Compare",
+            "Simulate Data with Fixed Graph",
+            "Simulate Data with Fixed PM",
+            "Simulate Data with Fixed IM",
+            "Estimate from Simulated Data",
+            "Update from Simulated Data",
+    };
 
     /**
      * The name of the template.
@@ -110,39 +113,26 @@ final class ConstructTemplateAction extends AbstractAction {
         int leftX = getLeftX();
 
         if (this.templateName.equals(getTemplateNames()[0])) {
-            simulateData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[1])) {
+            loadOrSimulateData(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[1])) {
+            searchFromLoadedOrSimulatedData(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[2])) {
+            estimateUsingSearchResult(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[3])) {
+            estimateThenUpdateUsingSearchResult(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[4])) {
+            searchFromSimulatedDataWithCompare(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[5])) {
+            simulateDataFixedGraph(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[6])) {
+            simulateDataFixedPM(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[7])) {
+            simulateDataFixedIM(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[8])) {
             estimateFromSimulatedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[2])) {
-            searchFromSimulatedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[3])) {
-            searchFromSimulatedEdgeCompare(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[4])) {
-            updateFromSimulatedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[5])) {
-            throw new IllegalStateException("Separator!");
-        }
-        else if (this.templateName.equals(getTemplateNames()[6])) {
-            searchFromLoadedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[7])) {
-            estimateFromLoadedDataBayes(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[8])) {
-            estimateFromLoadedDataSem(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[9])) {
-            estimateUsingSearchResultBayes(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[10])) {
-            estimateUsingSearchResultSem(leftX);
-        }
-        else {
+        } else if (this.templateName.equals(getTemplateNames()[9])) {
+            estimateThenUpdateFromSimulatedData(leftX);
+        } else {
             throw new IllegalStateException(
                     "Unrecognized template name: " + this.templateName);
         }
@@ -166,7 +156,7 @@ final class ConstructTemplateAction extends AbstractAction {
         return leftX;
     }
 
-    private void searchFromLoadedData(int leftX) {
+    private void searchFromLoadedOrSimulatedData(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -174,7 +164,7 @@ final class ConstructTemplateAction extends AbstractAction {
                 sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
         String data = nextName("Data");
         String search = nextName("Search");
@@ -187,67 +177,59 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void estimateFromLoadedDataSem(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<Node>();
-
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String data = nextName("Data");
-        String estimator = nextName("Estimator");
-
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Graph", graph, 125 + leftX, 100));
-        nodes.add(addNode("PM", pm, 125 + leftX, 200));
-        nodes.add(addNode("Estimator", estimator, leftX, 200));
-
-        addEdge(data, graph);
-        addEdge(graph, pm);
-        addEdge(pm, estimator);
-        addEdge(data, estimator);
-
-        selectSubgraph(nodes);
-    }
-
-    private void estimateFromLoadedDataBayes(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<Node>();
-
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String data = nextName("Data");
-        String estimator = nextName("Estimator");
-
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Graph", graph, 125 + leftX, 100));
-        nodes.add(addNode("PM", pm, 125 + leftX, 200));
-        nodes.add(addNode("Estimator", estimator, leftX, 200));
-
-        addEdge(data, graph);
-        addEdge(graph, pm);
-        addEdge(pm, estimator);
-        addEdge(data, estimator);
-        addEdge(data, pm);
-
-        selectSubgraph(nodes);
-    }
-
-    private void simulateData(int leftX) {
+    private void loadOrSimulateData(int leftX) {
         getSessionWorkbench().deselectAll();
 
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
+
+        String data = nextName("Data");
+
+        nodes.add(addNode("Data", data, leftX, 100));
+
+        selectSubgraph(nodes);
+    }
+
+    private void simulateDataFixedGraph(int leftX) {
+        getSessionWorkbench().deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
+
+        String graph = nextName("Graph");
+        String data = nextName("Data");
+
+        nodes.add(addNode("Graph", graph, leftX, 100));
+        nodes.add(addNode("Data", data, leftX, 200));
+
+        addEdge(graph, data);
+
+        selectSubgraph(nodes);
+    }
+
+
+    private void simulateDataFixedPM(int leftX) {
+        getSessionWorkbench().deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
+
+        String graph = nextName("Graph");
+        String pm = nextName("PM");
+        String data = nextName("Data");
+
+        nodes.add(addNode("Graph", graph, leftX, 100));
+        nodes.add(addNode("PM", pm, leftX, 200));
+        nodes.add(addNode("Data", data, leftX, 300));
+
+        addEdge(graph, pm);
+        addEdge(pm, data);
+
+        selectSubgraph(nodes);
+    }
+
+
+    private void simulateDataFixedIM(int leftX) {
+        getSessionWorkbench().deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
 
         String graph = nextName("Graph");
         String pm = nextName("PM");
@@ -266,7 +248,7 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void searchFromSimulatedData(int leftX) {
+    private void searchFromSimulatedDataWithCompare(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -274,57 +256,18 @@ final class ConstructTemplateAction extends AbstractAction {
                 sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String im = nextName("IM");
         String data = nextName("Data");
         String search = nextName("Search");
+        String compare = nextName("Comparison");
 
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Data", data, leftX, 400));
-        nodes.add(addNode("Search", search, 150 + leftX, 400));
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Search", search, 150 + leftX, 100));
+        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
 
-        addEdge(graph, pm);
-        addEdge(pm, im);
-        addEdge(im, data);
         addEdge(data, search);
-
-        selectSubgraph(nodes);
-    }
-
-    private void searchFromSimulatedEdgeCompare(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<Node>();
-
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String im = nextName("IM");
-        String data = nextName("Data");
-        String search = nextName("Search");
-        String compare = nextName("Compare");
-
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Data", data, leftX, 400));
-        nodes.add(addNode("Search", search, 150 + leftX, 400));
-        nodes.add(addNode("Compare", compare, 150 + leftX, 250));
-
-        addEdge(graph, pm);
-        addEdge(pm, im);
-        addEdge(im, data);
-        addEdge(data, search);
-        addEdge(graph, compare);
+        addEdge(data, compare);
         addEdge(search, compare);
 
         selectSubgraph(nodes);
@@ -338,30 +281,24 @@ final class ConstructTemplateAction extends AbstractAction {
                 sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String im = nextName("IM");
         String data = nextName("Data");
+        String pm = nextName("PM");
         String estimator = nextName("Estimator");
 
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Data", data, leftX, 400));
-        nodes.add(addNode("Estimator", estimator, 150 + leftX, 250));
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("PM", pm, 150 + leftX, 100));
+        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
 
-        addEdge(graph, pm);
-        addEdge(pm, im);
-        addEdge(im, data);
-        addEdge(pm, estimator);
+        addEdge(data, pm);
         addEdge(data, estimator);
+        addEdge(pm, estimator);
 
         selectSubgraph(nodes);
     }
 
-    private void estimateUsingSearchResultBayes(int leftX) {
+    private void estimateThenUpdateFromSimulatedData(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -369,22 +306,51 @@ final class ConstructTemplateAction extends AbstractAction {
                 sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
+
+        String data = nextName("Data");
+        String pm = nextName("PM");
+        String estimator = nextName("Estimator");
+        String updater = nextName("Updater");
+
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("PM", pm, 150 + leftX, 100));
+        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
+        nodes.add(addNode("Updater", updater, 80 + leftX, 300));
+
+        addEdge(data, pm);
+        addEdge(data, estimator);
+        addEdge(pm, estimator);
+        addEdge(estimator, updater);
+
+        selectSubgraph(nodes);
+    }
+
+
+    private void estimateUsingSearchResult(int leftX) {
+        SessionEditorIndirectRef sessionEditorRef =
+                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench sessionWorkbench =
+                sessionEditor.getSessionWorkbench();
+        sessionWorkbench.deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
 
         String data = nextName("Data");
         String search = nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, leftX, 200));
+        nodes.add(addNode("Search", search, leftX + 150, 100));
 
         String graph = nextName("Graph");
         nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
         String pm = nextName("PM");
-        nodes.add(addNode("PM", pm, leftX + 300, 200));
+        nodes.add(addNode("PM", pm, leftX + 150, 300));
 
         String estimator = nextName("Estimator");
-        nodes.add(addNode("Estimator", estimator, leftX + 300, 100));
+        nodes.add(addNode("Estimator", estimator, leftX, 300));
 
         addEdge(data, search);
         addEdge(search, graph);
@@ -396,7 +362,7 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void estimateUsingSearchResultSem(int leftX) {
+    private void estimateThenUpdateUsingSearchResult(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -404,55 +370,33 @@ final class ConstructTemplateAction extends AbstractAction {
                 sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
         String data = nextName("Data");
         String search = nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, leftX, 200));
-
-        String graph2 = nextName("Graph");
-        nodes.add(addNode("Graph", graph2, 150 + leftX, 200));
-
-        String pm2 = nextName("PM");
-        nodes.add(addNode("PM", pm2, 300 + leftX, 200));
-
-        String estimator2 = nextName("Estimator");
-        nodes.add(addNode("Estimator", estimator2, 300 + leftX, 100));
-
-        addEdge(data, search);
-        addEdge(search, graph2);
-        addEdge(graph2, pm2);
-        addEdge(data, estimator2);
-        addEdge(pm2, estimator2);
-
-        selectSubgraph(nodes);
-    }
-
-    private void updateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<Node>();
+        nodes.add(addNode("Search", search, leftX + 150, 100));
 
         String graph = nextName("Graph");
+        nodes.add(addNode("Graph", graph, leftX + 150, 200));
+
         String pm = nextName("PM");
-        String im = nextName("IM");
+        nodes.add(addNode("PM", pm, leftX + 150, 300));
+
+        String estimator = nextName("Estimator");
+        nodes.add(addNode("Estimator", estimator, leftX, 300));
+
         String updater = nextName("Updater");
+        nodes.add(addNode("Updater", updater, leftX, 400));
 
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Updater", updater, 150 + leftX, 300));
-
+        addEdge(data, search);
+        addEdge(search, graph);
         addEdge(graph, pm);
-        addEdge(pm, im);
-        addEdge(im, updater);
+        addEdge(data, estimator);
+        addEdge(data, pm);
+        addEdge(pm, estimator);
+        addEdge(estimator, updater);
 
         selectSubgraph(nodes);
     }
@@ -548,7 +492,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private Node addNode(String nodeType, String nodeName, int centerX,
-            int centerY) {
+                         int centerY) {
         SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         getSessionWrapper().addNode(node);
@@ -585,7 +529,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-            String name) {
+                                                      String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
@@ -601,14 +545,13 @@ final class ConstructTemplateAction extends AbstractAction {
 
     /**
      * @return the model classes associated with the given button type.
-     *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
         SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
-        if(config == null){
+        if (config == null) {
             throw new NullPointerException("There is no configuration for button: " + nextButtonType);
         }
 

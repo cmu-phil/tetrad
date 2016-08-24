@@ -101,13 +101,13 @@ public class HitonMb implements MbSearch {
         numIndTests = 0;
         long time = System.currentTimeMillis();
 
-        pc = new HashMap<Node, List<Node>>();
-        trimmed = new HashSet<Node>();
+        pc = new HashMap<>();
+        trimmed = new HashSet<>();
 
         final Node t = getVariableForName(targetName);
 
         // Sort variables by decreasing association with the target.
-        sortedVariables = new LinkedList<Node>(variables);
+        sortedVariables = new LinkedList<>(variables);
 
         Collections.sort(sortedVariables, new Comparator<Node>() {
             public int compare(Node o1, Node o2) {
@@ -138,9 +138,9 @@ public class HitonMb implements MbSearch {
 
     private List<Node> hitonMb(Node t) {
         // MB <- {}
-        Set<Node> mb = new HashSet<Node>();
+        Set<Node> mb = new HashSet<>();
 
-        Set<Node> _pcpc = new HashSet<Node>();
+        Set<Node> _pcpc = new HashSet<>();
 
         for (Node node : getPc(t)) {
             List<Node> f = getPc(node);
@@ -148,13 +148,13 @@ public class HitonMb implements MbSearch {
             _pcpc.addAll(f);
         }
 
-        List<Node> pcpc = new LinkedList<Node>(_pcpc);
+        List<Node> pcpc = new LinkedList<>(_pcpc);
 
-        Set<Node> currentMb = new HashSet<Node>(getPc(t));
+        Set<Node> currentMb = new HashSet<>(getPc(t));
         currentMb.addAll(pcpc);
         currentMb.remove(t);
 
-        HashSet<Node> diff = new HashSet<Node>(currentMb);
+        HashSet<Node> diff = new HashSet<>(currentMb);
         diff.removeAll(getPc(t));
         diff.remove(t);
 
@@ -168,7 +168,7 @@ public class HitonMb implements MbSearch {
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                List<Node> _s = new LinkedList<Node>();
+                List<Node> _s = new LinkedList<>();
 
                 for (int index : choice) {
                     _s.add(pcpc.get(index));
@@ -188,7 +188,7 @@ public class HitonMb implements MbSearch {
             }
 
             // y_set <- {y in PC(t) : x in PC(y)}
-            Set<Node> ySet = new HashSet<Node>();
+            Set<Node> ySet = new HashSet<>();
             for (Node y : getPc(t)) {
                 if (this.pc.get(y).contains(x)) {
                     ySet.add(y);
@@ -199,7 +199,7 @@ public class HitonMb implements MbSearch {
             for (Node y : ySet) {
                 if (x == y) continue;
 
-                List<Node> _s = new LinkedList<Node>(s);
+                List<Node> _s = new LinkedList<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
@@ -212,22 +212,22 @@ public class HitonMb implements MbSearch {
         }
 
         mb.addAll(getPc(t));
-        return new LinkedList<Node>(mb);
+        return new LinkedList<>(mb);
     }
 
     private List<Node> hitonPc(Node t) {
-        LinkedList<Node> variables = new LinkedList<Node>(sortedVariables);
+        LinkedList<Node> variables = new LinkedList<>(sortedVariables);
 
         variables.remove(t);
 
-        List<Node> cpc = new ArrayList<Node>();
+        List<Node> cpc = new ArrayList<>();
 
         while (!variables.isEmpty()) {
             Node vi = variables.removeFirst();
             cpc.add(vi);
 
             VARS:
-            for (Node x : new LinkedList<Node>(cpc)) {
+            for (Node x : new LinkedList<>(cpc)) {
                 cpc.remove(x);
 
                 for (int d = 0; d <= Math.min(cpc.size(), depth); d++) {
@@ -236,7 +236,7 @@ public class HitonMb implements MbSearch {
                     int[] choice;
 
                     while ((choice = generator.next()) != null) {
-                        List<Node> s = new LinkedList<Node>();
+                        List<Node> s = new LinkedList<>();
 
                         for (int index : choice) {
                             s.add(cpc.get(index));
@@ -287,7 +287,7 @@ public class HitonMb implements MbSearch {
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
     private void trimPc(Node t) {
-        for (Node x : new LinkedList<Node>(pc.get(t))) {
+        for (Node x : new LinkedList<>(pc.get(t))) {
             if (!pc.containsKey(x)) {
                 pc.put(x, hitonPc(x));
             }

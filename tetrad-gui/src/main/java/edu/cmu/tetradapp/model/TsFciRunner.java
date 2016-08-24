@@ -22,8 +22,13 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IndTestType;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.TsFci;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
@@ -43,52 +48,52 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public TsFciRunner(DataWrapper dataWrapper, FciSearchParams params) {
+    public TsFciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TsFciRunner(GraphSource graphWrapper, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
-    public TsFciRunner(DataWrapper dataWrapper, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(Graph graph, FciSearchParams params) {
+    public TsFciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
-    public TsFciRunner(Graph graph, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(TimeLagGraphWrapper model, FciSearchParams params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
+    public TsFciRunner(TimeLagGraphWrapper model, Parameters params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
         super(model.getGraph(), params);
         this.knowledge = model.getKnowledge();
     }
 
-    public TsFciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
+    public TsFciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(DagWrapper dagWrapper, FciSearchParams params) {
+    public TsFciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsFciRunner(SemGraphWrapper dagWrapper, FciSearchParams params) {
+    public TsFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, FciSearchParams params) {
+    public TsFciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -99,8 +104,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static TsFciRunner serializableInstance() {
-        return new TsFciRunner(Dag.serializableInstance(),
-                FciSearchParams.serializableInstance());
+        return new TsFciRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -111,15 +115,15 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      */
     public void execute() {
         if(this.knowledge == null) {
-            knowledge = getParams().getKnowledge();
+            knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         } /*else {knowledge = this.knowledge;}*/
-        SearchParams searchParams = getParams();
+        Parameters searchParams = getParams();
 
-        FciIndTestParams indTestParams = (FciIndTestParams) searchParams.getIndTestParams();
+        Parameters params = searchParams;
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
-//            fciSearch.setDepth(indTestParams.depth());
+//            fciSearch.setMaxIndegree(params.depth());
 //            Graph graph = fciSearch.search();
 //
 //            if (knowledge.isDefaultToKnowledgeLayout()) {
@@ -129,22 +133,22 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 //            setResultGraph(graph);
         Graph graph;
 
-        if (indTestParams.isRFCI_Used()) {
+        if (params.getBoolean("rfciUsed", false)) {
             System.out.println("WARNING: there is no RFCI option for tsFCI! Just using tsFCI.");
 //            Rfci fci = new Rfci(getIndependenceTest());
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(true);
-            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            fci.setDepth(indTestParams.getDepth());
+            fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
+            fci.setDepth(params.getInt("depth", -1));
             graph = fci.search();
         } else {
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(true);
-            fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());
-            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            fci.setDepth(indTestParams.getDepth());
+            fci.setPossibleDsepSearchDone(params.getBoolean("possibleDsepDone", true));
+            fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
+            fci.setDepth(params.getInt("depth", -1));
             graph = fci.search();
         }
 
@@ -166,15 +170,15 @@ public class TsFciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
-            testType = _params.getIndTestType();
+        if (getParams() instanceof Parameters) {
+            Parameters _params = params;
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
-            FciSearchParams _params = (FciSearchParams) params;
-            testType = _params.getIndTestType();
+            Parameters _params = params;
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);
@@ -189,7 +193,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
         return names;
@@ -199,7 +203,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));

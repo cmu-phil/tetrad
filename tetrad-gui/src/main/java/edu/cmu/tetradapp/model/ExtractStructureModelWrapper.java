@@ -44,7 +44,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper {
     public ExtractStructureModelWrapper(Graph graph) {
         super(new EdgeListGraph());
 
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {

@@ -43,27 +43,27 @@ public class Dci {
     /**
      * The resulting class of graphs constructed using the datasets.
      */
-    private Set<Graph> output = new HashSet<Graph>();
+    private Set<Graph> output = new HashSet<>();
 
     /**
      * The independence tests for the datasets.
      */
-    private List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
+    private List<IndependenceTest> independenceTests = new ArrayList<>();
 
     /**
      * The variables in the datasets.
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * The sets of variables in each "marginal" dataset
      */
-    private List<Set<Node>> marginalVars = new ArrayList<Set<Node>>();
+    private List<Set<Node>> marginalVars = new ArrayList<>();
 
     /**
      * The SepsetMaps constructed for each dataset
      */
-    private List<SepsetMapDci> sepsetMaps = new ArrayList<SepsetMapDci>();
+    private List<SepsetMapDci> sepsetMaps = new ArrayList<>();
     private List<SepsetMapDci> minimalSepsetMaps;
 
     /**
@@ -79,26 +79,26 @@ public class Dci {
     /**
      * Definite noncolliders from every dataset
      */
-    private Set<Triple> definiteNoncolliders = new HashSet<Triple>();
+    private Set<Triple> definiteNoncolliders = new HashSet<>();
 
     /**
      * Definite colliders from every dataset
      */
-    private Set<Triple> definiteColliders = new HashSet<Triple>();
+    private Set<Triple> definiteColliders = new HashSet<>();
 
     /**
      * Graph change status and sets of graphs resulting from initial and final orientation rules
      */
     private boolean changeFlag = true;
-    private List<Graph> discrimGraphs = new ArrayList<Graph>();
-    private List<Graph> currentDiscrimGraphs = new ArrayList<Graph>();
-    private List<Graph> finalGraphs = new ArrayList<Graph>();
+    private List<Graph> discrimGraphs = new ArrayList<>();
+    private List<Graph> currentDiscrimGraphs = new ArrayList<>();
+    private List<Graph> finalGraphs = new ArrayList<>();
 
     /**
      * Edge sequences ensuring treks
      */
     private Map<List<Node>, Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> necessaryTreks;
-    private List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>>();
+    private List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
 
     /**
      * Keeps up with getModel graph while searching for possible unshielded sets and
@@ -109,7 +109,7 @@ public class Dci {
     /**
      * Keeps up with getModel set of colliders being considered
      */
-    private Set<Triple> currentPossibleColliders = new HashSet<Triple>();
+    private Set<Triple> currentPossibleColliders = new HashSet<>();
 
     /**
      * Current set of nodePairs
@@ -148,26 +148,26 @@ public class Dci {
     //=============================CONSTRUCTORS==========================//
 
     public Dci(List<IndependenceTest> tests) {
-        Set<Node> variables = new HashSet<Node>();
+        Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
             if (test == null) {
                 throw new NullPointerException();
             }
             this.independenceTests.add(test);
-            this.marginalVars.add(new HashSet<Node>(test.getVariables()));
+            this.marginalVars.add(new HashSet<>(test.getVariables()));
             variables.addAll(test.getVariables());
         }
         this.variables.addAll(variables);
     }
 
     public Dci(List<IndependenceTest> tests, ResolveSepsets.Method method) {
-        Set<Node> variables = new HashSet<Node>();
+        Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
             if (test == null) {
                 throw new NullPointerException();
             }
             this.independenceTests.add(test);
-            this.marginalVars.add(new HashSet<Node>(test.getVariables()));
+            this.marginalVars.add(new HashSet<>(test.getVariables()));
             variables.addAll(test.getVariables());
         }
         this.variables.addAll(variables);
@@ -313,7 +313,7 @@ public class Dci {
          */
         elapsedTime = System.currentTimeMillis() - elapsedTime;
         System.out.println(output.size());
-        return new ArrayList<Graph>(output);
+        return new ArrayList<>(output);
     }
 
     /**
@@ -329,7 +329,7 @@ public class Dci {
         for (int k = 0; k < marginalVars.size(); k++) {
             IndependenceTest independenceTest = independenceTests.get(k);
             FasDci adj;
-            Graph marginalGraph = new EdgeListGraph(new ArrayList<Node>(marginalVars.get(k)));
+            Graph marginalGraph = new EdgeListGraph(new ArrayList<>(marginalVars.get(k)));
             marginalGraph.fullyConnect(Endpoint.CIRCLE);
             if (method != null) {
                 adj = new FasDci(marginalGraph, independenceTest,
@@ -344,7 +344,7 @@ public class Dci {
         if (method == null) {
             minimalSepsetMaps = sepsetMaps;
         } else {
-            minimalSepsetMaps = new ArrayList<SepsetMapDci>();
+            minimalSepsetMaps = new ArrayList<>();
         }
     }
 
@@ -375,7 +375,7 @@ public class Dci {
             Set<Node> marginalSet = marginalVars.get(k);
             SepsetMapDci sepset = sepsetMaps.get(k);
             for (Node b : marginalSet) {
-                List<Node> adjacentNodes = new ArrayList<Node>();
+                List<Node> adjacentNodes = new ArrayList<>();
                 for (Node node : graph.getAdjacentNodes(graph.getNode(b.getName()))) {
                     if (marginalSet.contains(node)) {
                         adjacentNodes.add(node);
@@ -442,8 +442,8 @@ public class Dci {
             List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
 
             //possible A's and C's are those with arrows into B
-            List<Node> possA = new LinkedList<Node>(intoBArrows);
-            List<Node> possC = new LinkedList<Node>(intoBArrows);
+            List<Node> possA = new LinkedList<>(intoBArrows);
+            List<Node> possC = new LinkedList<>(intoBArrows);
 
             //possible D's are those with circles into B
             for (Node D : intoBCircles) {
@@ -639,11 +639,11 @@ public class Dci {
             List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
 
             //keep arrows and circles
-            List<Node> possA = new LinkedList<Node>(possAandC);
+            List<Node> possA = new LinkedList<>(possAandC);
             possA.removeAll(graph.getNodesInTo(b, Endpoint.TAIL));
 
             //keep only circles
-            List<Node> possC = new LinkedList<Node>(possAandC);
+            List<Node> possC = new LinkedList<>(possAandC);
             possC.retainAll(graph.getNodesInTo(b, Endpoint.CIRCLE));
 
             for (Node a : possA) {
@@ -664,7 +664,7 @@ public class Dci {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     reachablePathFind(graph, a, b, c, reachable);
                 }
@@ -680,10 +680,10 @@ public class Dci {
      */
     private void reachablePathFind(Graph graph, Node a, Node b, Node c,
                                    LinkedList<Node> reachable) {
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -735,7 +735,7 @@ public class Dci {
      * arguments.
      */
     private void doDdpOrientation(Graph graph, Node l, Node a, Node b, Node c) {
-        Set<Node> sepset = new HashSet<Node>();
+        Set<Node> sepset = new HashSet<>();
         for (SepsetMapDci msepset : sepsetMaps) {
             List<Node> condSet = msepset.get(l, c);
             if (condSet != null) {
@@ -774,9 +774,9 @@ public class Dci {
         for (int k = 2; k <= size; k++) {
             allPaths.put(k, new HashMap<List<Node>, Set<Node>>());
         }
-        currentNodePairs = allNodePairs(new ArrayList<Node>(marginalNodes));
+        currentNodePairs = allNodePairs(new ArrayList<>(marginalNodes));
         totalThreads = currentNodePairs.size();
-        List<FindMinimalSpanningTrek> threads = new ArrayList<FindMinimalSpanningTrek>();
+        List<FindMinimalSpanningTrek> threads = new ArrayList<>();
         for (int k = 0; k < maxThreads; k++) {
             threads.add(new FindMinimalSpanningTrek());
         }
@@ -791,7 +791,7 @@ public class Dci {
         }
         currentThread = 0;
         System.out.println("allpaths \n" + allPaths);
-        Map<List<Node>, Set<Node>> minimalSpanningTreks = new HashMap<List<Node>, Set<Node>>();
+        Map<List<Node>, Set<Node>> minimalSpanningTreks = new HashMap<>();
         for (int k = 2; k < size; k++) {
             Map<List<Node>, Set<Node>> smaller = allPaths.get(k);
             Map<List<Node>, Set<Node>> larger = allPaths.get(k + 1);
@@ -847,15 +847,15 @@ public class Dci {
                 NodePair nodePair = currentNodePairs.get(threadNum);
                 System.out.println("Finding minmal spanning treks... " + threadNum + " of " + totalThreads);
                 if (currentGraph.isAdjacentTo(currentGraph.getNode(nodePair.getFirst().getName()), currentGraph.getNode(nodePair.getSecond().getName()))) {
-                    Set<Node> otherNodes = new HashSet<Node>(currentMarginalSet);
-                    List<Node> adjacency = new ArrayList<Node>();
+                    Set<Node> otherNodes = new HashSet<>(currentMarginalSet);
+                    List<Node> adjacency = new ArrayList<>();
                     adjacency.add(nodePair.getFirst());
                     adjacency.add(nodePair.getSecond());
                     otherNodes.removeAll(adjacency);
                     allPaths.get(2).put(adjacency, otherNodes);
                     continue;
                 }
-                Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<Integer, Map<List<Node>, Set<Node>>>();
+                Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<>();
                 for (int k = 2; k <= size; k++) {
                     newPaths.put(k, new HashMap<List<Node>, Set<Node>>());
                 }
@@ -870,12 +870,12 @@ public class Dci {
                     if (!inMarginal) {
                         continue;
                     }
-                    Set<Node> otherNodes = new HashSet<Node>(currentMarginalSet);
+                    Set<Node> otherNodes = new HashSet<>(currentMarginalSet);
                     otherNodes.removeAll(trek);
 //                  allPaths.get(trek.size()).put(trek, otherNodes);
                     newPaths.get(trek.size()).put(trek, otherNodes);
                 }
-                List<List<Node>> remove = new ArrayList<List<Node>>();
+                List<List<Node>> remove = new ArrayList<>();
                 for (int k = 2; k < size; k++) {
                     Map<List<Node>, Set<Node>> trekMap = newPaths.get(k);
                     for (int l = k + 1; l <= size; l++) {
@@ -961,7 +961,7 @@ public class Dci {
      */
 
     private Set<Triple> getAllTriples(Graph graph) {
-        Set<Triple> triples = new HashSet<Triple>();
+        Set<Triple> triples = new HashSet<>();
         for (Node node : graph.getNodes()) {
             List<Node> adjNodes = graph.getAdjacentNodes(node);
             for (int i = 0; i < adjNodes.size() - 1; i++) {
@@ -990,9 +990,9 @@ public class Dci {
      * the sequence mapped to ancestral undirectedPaths
      */
     private static Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, Set<Node> conditioning) {
-        Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<Set<Edge>, Map<Triple, List<Set<Edge>>>>();
-        pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<Node>(Arrays.asList(ensureTrek.get(0))),
-                conditioning, new HashMap<Triple, NodePair>(), paths, new HashSet<Node>(Arrays.asList(ensureTrek.get(0))));
+        Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<>();
+        pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Arrays.asList(ensureTrek.get(0))),
+                conditioning, new HashMap<Triple, NodePair>(), paths, new HashSet<>(Arrays.asList(ensureTrek.get(0))));
         return paths;
     }
 
@@ -1000,10 +1000,10 @@ public class Dci {
                                           LinkedList<Node> path, Set<Node> conditioning, Map<Triple, NodePair> colliders,
                                           Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths, Set<Node> visited) {
         if (index == ensureTrek.size()) {
-            Map<Triple, List<Set<Edge>>> newColliders = new HashMap<Triple, List<Set<Edge>>>();
+            Map<Triple, List<Set<Edge>>> newColliders = new HashMap<>();
             for (Triple triple : colliders.keySet()) {
-                List<Set<Edge>> edgeSet = new ArrayList<Set<Edge>>();
-                List<List<Node>> treks = new ArrayList<List<Node>>();
+                List<Set<Edge>> edgeSet = new ArrayList<>();
+                List<List<Node>> treks = new ArrayList<>();
                 treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getFirst(), -1));
                 treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getSecond(), -1));
                 for (List<Node> trek : treks) {
@@ -1011,7 +1011,7 @@ public class Dci {
                                      continue;
                                  }
                     */
-                    Set<Edge> edges = new HashSet<Edge>();
+                    Set<Edge> edges = new HashSet<>();
                     boolean okay = true;
                     for (int k = 0; k < trek.size() - 1; k++) {
                         if (graph.getEndpoint(trek.get(k + 1), trek.get(k)).equals(Endpoint.ARROW)) {
@@ -1029,7 +1029,7 @@ public class Dci {
                 }
                 newColliders.put(triple, edgeSet);
             }
-            Set<Edge> edges = new HashSet<Edge>();
+            Set<Edge> edges = new HashSet<>();
             for (int k = 0; k < path.size() - 1; k++) {
                 edges.add(graph.getEdge(path.get(k), path.get(k + 1)));
             }
@@ -1084,7 +1084,7 @@ public class Dci {
             Set<Node> currentVisited;
             if (next.equals(node2)) {
                 index++;
-                currentVisited = new HashSet<Node>();
+                currentVisited = new HashSet<>();
                 currentVisited.add(node2);
             } else {
                 currentVisited = visited;
@@ -1095,7 +1095,7 @@ public class Dci {
                 index--;
             }
             visited.remove(next);
-            List<Triple> remove = new ArrayList<Triple>();
+            List<Triple> remove = new ArrayList<>();
             for (Triple triple : colliders.keySet()) {
                 if (triple.getY().equals(node1)) {
                     remove.add(triple);
@@ -1113,7 +1113,7 @@ public class Dci {
      * trek using only intermediary nodes not present in the marginal graph
      */
     private void ensureMinimalSpanningTreks(Graph graph) {
-        necessaryTreks = new HashMap<List<Node>, Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>>();
+        necessaryTreks = new HashMap<>();
         for (Set<Node> marginalSet : marginalVars) {
             Map<List<Node>, Set<Node>> minimalSpanningTreks = minimalSpanningTreks(graph, marginalSet);
             Set<List<Node>> treks = minimalSpanningTreks.keySet();
@@ -1136,7 +1136,7 @@ public class Dci {
             newGraph.setEndpoint(triple.getX(), triple.getY(), Endpoint.ARROW);
             newGraph.setEndpoint(triple.getZ(), triple.getY(), Endpoint.ARROW);
         }
-        List<Graph> graphs = new ArrayList<Graph>();
+        List<Graph> graphs = new ArrayList<>();
         graphs.add(newGraph);
         for (Triple triple : colliderSet.keySet()) {
             generateSkeletons(graphs, triple, colliderSet.get(triple));
@@ -1145,7 +1145,7 @@ public class Dci {
     }
 
     private void generateSkeletons(List<Graph> graphs, Triple collider, List<Set<Edge>> paths) {
-        List<Graph> newGraphs = new ArrayList<Graph>();
+        List<Graph> newGraphs = new ArrayList<>();
         for (Graph graph : graphs) {
             for (Set<Edge> edges : paths) {
                 List<Node> path = getPathFromEdges(edges, collider.getY());
@@ -1169,7 +1169,7 @@ public class Dci {
             newGraph.addNode(edge.getNode2());
             newGraph.addEdge(edge);
         }
-        List<Node> path = new ArrayList<Node>();
+        List<Node> path = new ArrayList<>();
         path.add(start);
         Node next = start;
         Node last = start;
@@ -1194,8 +1194,8 @@ public class Dci {
      */
 
     private Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> findPossibleSkeletons(Graph graph) {
-        Set<Edge> allEdges = new HashSet<Edge>(graph.getEdges());
-        Set<Edge> remove = new HashSet<Edge>();
+        Set<Edge> allEdges = new HashSet<>(graph.getEdges());
+        Set<Edge> remove = new HashSet<>();
 
         for (Edge edge : allEdges) {
             boolean necessary = false;
@@ -1232,15 +1232,15 @@ public class Dci {
             }
         }
         allEdges.removeAll(remove);
-        Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> possibleEdges = new HashMap<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>>();
-        PowerSet<Edge> pset = new PowerSet<Edge>(allEdges);
+        Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> possibleEdges = new HashMap<>();
+        PowerSet<Edge> pset = new PowerSet<>(allEdges);
         for (Set<Edge> set : pset) {
             boolean possible = true;
-            Set<Map<Triple, List<Set<Edge>>>> colliderSets = new HashSet<Map<Triple, List<Set<Edge>>>>();
+            Set<Map<Triple, List<Set<Edge>>>> colliderSets = new HashSet<>();
             for (List<Node> necessaryTrek : necessaryTreks.keySet()) {
                 Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> possiblePaths = necessaryTreks.get(necessaryTrek);
                 boolean okay = false;
-                Set<Map<Triple, List<Set<Edge>>>> necessaryColliders = new HashSet<Map<Triple, List<Set<Edge>>>>();
+                Set<Map<Triple, List<Set<Edge>>>> necessaryColliders = new HashSet<>();
                 for (Set<Edge> path : possiblePaths.keySet()) {
                     boolean pathOkay = true;
                     for (Edge edge : set) {
@@ -1256,9 +1256,9 @@ public class Dci {
                             necessaryColliders.clear();
                             break;
                         } else {
-                            Map<Triple, List<Set<Edge>>> newColliders = new HashMap<Triple, List<Set<Edge>>>();
+                            Map<Triple, List<Set<Edge>>> newColliders = new HashMap<>();
                             for (Triple triple : colliders.keySet()) {
-                                List<Set<Edge>> newEdges = new ArrayList<Set<Edge>>();
+                                List<Set<Edge>> newEdges = new ArrayList<>();
                                 for (Set<Edge> edges : colliders.get(triple)) {
                                     pathOkay = true;
                                     for (Edge edge : set) {
@@ -1308,7 +1308,7 @@ public class Dci {
         currentGraph = graph;
         for (List<Node> necessaryTrek : necessaryTreks.keySet()) {
             Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> possiblePaths = necessaryTreks.get(necessaryTrek);
-            Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> newPossiblePaths = new HashMap<Set<Edge>, Map<Triple, List<Set<Edge>>>>();
+            Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> newPossiblePaths = new HashMap<>();
             for (Set<Edge> path : possiblePaths.keySet()) {
                 boolean add = true;
                 for (Edge edgeRemoved : removedEdges) {
@@ -1330,9 +1330,9 @@ public class Dci {
                 }
                 if (add) {
                     Map<Triple, List<Set<Edge>>> colliderMap = possiblePaths.get(path);
-                    Map<Triple, List<Set<Edge>>> newColliderMap = new HashMap<Triple, List<Set<Edge>>>();
+                    Map<Triple, List<Set<Edge>>> newColliderMap = new HashMap<>();
                     for (Triple collider : colliderMap.keySet()) {
-                        List<Set<Edge>> pathSet = new ArrayList<Set<Edge>>();
+                        List<Set<Edge>> pathSet = new ArrayList<>();
                         for (Set<Edge> edges : colliderMap.get(collider)) {
                             add = true;
                             for (Edge edgeRemoved : removedEdges) {
@@ -1367,7 +1367,7 @@ public class Dci {
                 currentPossibleColliders.add(triple);
             }
         }
-        Set<Triple> remove = new HashSet<Triple>();
+        Set<Triple> remove = new HashSet<>();
         for (Triple triple : currentPossibleColliders) {
             boolean necessary = false;
             for (Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> necessaryTrek : currentNecessaryTreks) {
@@ -1413,8 +1413,8 @@ public class Dci {
     }
 
     private void simpleColliderIterator(int skeletonsLeft) {
-        Set<Set<Triple>> necessaryEdges = new HashSet<Set<Triple>>();
-        PowerSet<Triple> pset = new PowerSet<Triple>(currentPossibleColliders);
+        Set<Set<Triple>> necessaryEdges = new HashSet<>();
+        PowerSet<Triple> pset = new PowerSet<>(currentPossibleColliders);
         int psetsize = (int) java.lang.Math.pow(2, currentPossibleColliders.size());
         for (Set<Triple> set : pset) {
             System.out.println("Searching Possible PAGs: " + psetsize + " (" + skeletonsLeft + " Skeletons Remaining)");
@@ -1438,10 +1438,10 @@ public class Dci {
                 doFinalOrientation(newGraph);
                 for (Graph graph : finalGraphs) {
                     if (!predictsFalseDependence(graph)) {
-                        Set<Triple> newColliders = new HashSet<Triple>(allTriples);
+                        Set<Triple> newColliders = new HashSet<>(allTriples);
                         newColliders.removeAll(definiteColliders);
                         newColliders.removeAll(set);
-                        Set<Triple> remove = new HashSet<Triple>();
+                        Set<Triple> remove = new HashSet<>();
                         for (Triple triple : newColliders) {
                             if (!graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
                                 remove.add(triple);
@@ -1591,8 +1591,8 @@ public class Dci {
             List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
 
             //possible A's and C's are those with arrows into B
-            List<Node> possA = new LinkedList<Node>(intoBArrows);
-            List<Node> possC = new LinkedList<Node>(intoBArrows);
+            List<Node> possA = new LinkedList<>(intoBArrows);
+            List<Node> possC = new LinkedList<>(intoBArrows);
 
             //possible D's are those with circles into B
             for (Node D : intoBCircles) {
@@ -1711,11 +1711,11 @@ public class Dci {
             List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
 
             //keep arrows and circles
-            List<Node> possA = new LinkedList<Node>(possAandC);
+            List<Node> possA = new LinkedList<>(possAandC);
             possA.removeAll(graph.getNodesInTo(b, Endpoint.TAIL));
 
             //keep only circles
-            List<Node> possC = new LinkedList<Node>(possAandC);
+            List<Node> possC = new LinkedList<>(possAandC);
             possC.retainAll(graph.getNodesInTo(b, Endpoint.CIRCLE));
 
             for (Node a : possA) {
@@ -1724,7 +1724,7 @@ public class Dci {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     if (reachablePathFindOrient(graph, a, b, c, reachable)) {
                         return true;
@@ -1742,10 +1742,10 @@ public class Dci {
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
                                             LinkedList<Node> reachable) {
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -1787,7 +1787,7 @@ public class Dci {
      */
     private void doDdpOrientationFinal(Graph graph, Node l, Node a, Node b, Node c) {
         changeFlag = true;
-        List<Node> sepset = new ArrayList<Node>();
+        List<Node> sepset = new ArrayList<>();
         for (SepsetMapDci msepset : sepsetMaps) {
             List<Node> condSet = msepset.get(l, c);
             if (condSet != null) {
@@ -1847,14 +1847,14 @@ public class Dci {
      * statements
      */
     private void resolveResultingIndependencies() {
-        List<SepsetMapDci> allSepsets = new ArrayList<SepsetMapDci>();
+        List<SepsetMapDci> allSepsets = new ArrayList<>();
         Pc fci = new Pc(new IndTestSepset(combineSepsets(sepsetMaps), variables));
         System.out.println("Starting pc...");
         SepsetMapDci consSepset = new SepsetMapDci();
         doSepsetClosure(consSepset, fci.search());
         for (int k = 0; k < marginalVars.size(); k++) {
             SepsetMapDci newSepset = new SepsetMapDci();
-            List<NodePair> pairs = allNodePairs(new ArrayList<Node>(marginalVars.get(k)));
+            List<NodePair> pairs = allNodePairs(new ArrayList<>(marginalVars.get(k)));
             int p = 1;
             for (NodePair pair : pairs) {
                 Node x = pair.getFirst();
@@ -1876,10 +1876,10 @@ public class Dci {
             allSepsets.add(newSepset);
         }
         for (int k = 0; k < marginalVars.size(); k++) {
-            List<Node> variables = new ArrayList<Node>(marginalVars.get(k));
+            List<Node> variables = new ArrayList<>(marginalVars.get(k));
             Graph newGraph = new EdgeListGraph(variables);
             newGraph.fullyConnect(Endpoint.CIRCLE);
-            FasDci fas = new FasDci(newGraph, new IndTestSepset(allSepsets.get(k), new ArrayList<Node>(marginalVars.get(k))));
+            FasDci fas = new FasDci(newGraph, new IndTestSepset(allSepsets.get(k), new ArrayList<>(marginalVars.get(k))));
             minimalSepsetMaps.add(fas.search());
         }
         sepsetMaps = allSepsets;
@@ -1895,12 +1895,12 @@ public class Dci {
         Pc pc = new Pc(new IndTestSepset(combinedSepset, variables));
         Graph allInd = pc.search();
         System.out.println("PC finished...");
-        List<Node> overlap = new ArrayList<Node>(marginalVars.get(0));
+        List<Node> overlap = new ArrayList<>(marginalVars.get(0));
         System.out.println(marginalVars.get(0).size());
         for (int k = 1; k < marginalVars.size(); k++) {
             System.out.println("Size: " + marginalVars.get(k).size());
             Set<Node> marginal = marginalVars.get(k);
-            List<Node> remove = new ArrayList<Node>();
+            List<Node> remove = new ArrayList<>();
             for (Node node : overlap) {
                 if (!marginal.contains(node)) {
                     remove.add(node);
@@ -1910,7 +1910,7 @@ public class Dci {
         }
         System.out.println("Overlap: " + overlap);
         System.out.println((overlap.size() / (double) variables.size()));
-        List<Graph> marginals = new ArrayList<Graph>();
+        List<Graph> marginals = new ArrayList<>();
         for (int k = 0; k < marginalVars.size(); k++) {
             Pc mpc = new Pc(independenceTests.get(k));
             marginals.add(mpc.search());
@@ -1920,7 +1920,7 @@ public class Dci {
         //List<NodePair> pairs  = allNodePairs(overlap);
         int p = 1;
         for (NodePair pair : pairs) {
-            Set<Node> condSet = new HashSet<Node>();
+            Set<Node> condSet = new HashSet<>();
             condSet.addAll(allInd.getAdjacentNodes(pair.getFirst()));
             condSet.addAll(allInd.getAdjacentNodes(pair.getSecond()));
             for (Graph graph : marginals) {
@@ -1965,14 +1965,14 @@ public class Dci {
 //            condSet.remove(remove);
             int c = 1;
             int cs = (int) Math.pow(2, condSet.size());
-            for (Set<Node> set : new PowerSet<Node>(condSet)) {
+            for (Set<Node> set : new PowerSet<>(condSet)) {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
-                List<Node> z = new ArrayList<Node>(set);
+                List<Node> z = new ArrayList<>(set);
                 if (allInd.isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
                     continue;
                 }
-                combinedSepset.set(pair.getFirst(), pair.getSecond(), new ArrayList<Node>(set));
+                combinedSepset.set(pair.getFirst(), pair.getSecond(), new ArrayList<>(set));
 
             }
             p++;
@@ -1980,7 +1980,7 @@ public class Dci {
         sepsetMaps.clear();
         for (int k = 0; k < marginalVars.size(); k++) {
             SepsetMapDci newSepset = new SepsetMapDci();
-            List<NodePair> pairs2 = allNodePairs(new ArrayList<Node>(marginalVars.get(k)));
+            List<NodePair> pairs2 = allNodePairs(new ArrayList<>(marginalVars.get(k)));
             for (NodePair pair : pairs2) {
                 Node x = pair.getFirst();
                 Node y = pair.getSecond();
@@ -1996,7 +1996,7 @@ public class Dci {
             }
             //sepsetMaps.add(newSepset);
             sepsetMaps.add(newSepset);
-            List<Node> variables = new ArrayList<Node>(marginalVars.get(k));
+            List<Node> variables = new ArrayList<>(marginalVars.get(k));
             Graph newGraph = new EdgeListGraph(variables);
             newGraph.fullyConnect(Endpoint.CIRCLE);
             FasDci fas = new FasDci(newGraph, new IndTestSepset(newSepset, variables));
@@ -2009,7 +2009,7 @@ public class Dci {
      * statements
      */
     private void resolveResultingIndependenciesC() {
-        List<SepsetMapDci> allSepsets = new ArrayList<SepsetMapDci>();
+        List<SepsetMapDci> allSepsets = new ArrayList<>();
         Pc fci = new Pc(new IndTestSepset(combineSepsets(sepsetMaps), variables));
         System.out.println("Starting pc...");
         SepsetMapDci consSepset = new SepsetMapDci();
@@ -2017,7 +2017,7 @@ public class Dci {
         SepsetMap fciSepset = fci.getSepsets();
         for (int k = 0; k < marginalVars.size(); k++) {
             SepsetMapDci newSepset = new SepsetMapDci(sepsetMaps.get(k));
-            List<NodePair> pairs = allNodePairs(new ArrayList<Node>(marginalVars.get(k)));
+            List<NodePair> pairs = allNodePairs(new ArrayList<>(marginalVars.get(k)));
             int p = 1;
             for (NodePair pair : pairs) {
                 Node x = pair.getFirst();
@@ -2026,7 +2026,7 @@ public class Dci {
                     continue;
                 }
                 List<Node> set = fciSepset.get(x, y);
-                List<Node> currentset = new ArrayList<Node>();
+                List<Node> currentset = new ArrayList<>();
                 if (newSepset.get(x, y) != null) {
                     currentset.addAll(newSepset.get(x, y));
                 }
@@ -2036,11 +2036,11 @@ public class Dci {
                     if (currentset.contains(node)) {
                         continue;
                     }
-                    List<Node> possibleCond = new ArrayList<Node>(set);
+                    List<Node> possibleCond = new ArrayList<>(set);
                     possibleCond.remove(node);
-                    PowerSet<Node> pset = new PowerSet<Node>(possibleCond);
+                    PowerSet<Node> pset = new PowerSet<>(possibleCond);
                     for (Set<Node> inpset : pset) {
-                        List<Node> cond = new ArrayList<Node>(inpset);
+                        List<Node> cond = new ArrayList<>(inpset);
                         cond.add(node);
                         if (fciResult.isDSeparatedFrom(x, y, cond)) {
                             newSepset.set(x, y, cond);
@@ -2063,7 +2063,7 @@ public class Dci {
         List<NodePair> pairs = allNodePairs(nodes);
         int p = 1;
         for (NodePair pair : pairs) {
-            List<Node> possibleNodes = new ArrayList<Node>(nodes);
+            List<Node> possibleNodes = new ArrayList<>(nodes);
             //ist<Node> possibleNodes = new ArrayList<Node>();
             Node x = pair.getFirst();
             Node y = pair.getSecond();
@@ -2073,10 +2073,10 @@ public class Dci {
             possibleNodes.addAll(graph.getAdjacentNodes(y));
             int c = 1;
             int ps = (int) Math.pow(2, possibleNodes.size());
-            for (Set<Node> condSet : new PowerSet<Node>(possibleNodes)) {
+            for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.isDSeparatedFrom(x, y, new ArrayList<Node>(condSet))) {
-                    sepset.set(x, y, new ArrayList<Node>(condSet));
+                if (graph.isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
+                    sepset.set(x, y, new ArrayList<>(condSet));
                 }
                 c++;
             }
@@ -2106,7 +2106,7 @@ public class Dci {
      * Generates NodePairs of all possible pairs of nodes from given list of nodes.
      */
     private List<NodePair> allNodePairs(List<Node> nodes) {
-        List<NodePair> nodePairs = new ArrayList<NodePair>();
+        List<NodePair> nodePairs = new ArrayList<>();
         for (int j = 0; j < nodes.size() - 1; j++) {
             for (int k = j + 1; k < nodes.size(); k++) {
                 nodePairs.add(new NodePair(nodes.get(j), nodes.get(k)));
@@ -2131,13 +2131,13 @@ public class Dci {
          */
 
         public Iterator<Set<E>> iterator() {
-            return new PowerSetIterator<E>(this);
+            return new PowerSetIterator<>(this);
         }
 
         class PowerSetIterator<InE> implements Iterator<Set<InE>> {
             PowerSet<InE> powerSet;
-            List<InE> canonicalOrder = new ArrayList<InE>();
-            List<InE> mask = new ArrayList<InE>();
+            List<InE> canonicalOrder = new ArrayList<>();
+            List<InE> mask = new ArrayList<>();
             boolean hasNext = true;
 
             PowerSetIterator(PowerSet<InE> powerSet) {
@@ -2184,7 +2184,7 @@ public class Dci {
 
             public Set<InE> next() {
 
-                Set<InE> result = new HashSet<InE>();
+                Set<InE> result = new HashSet<>();
                 result.addAll(mask);
                 result.remove(null);
 

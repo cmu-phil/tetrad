@@ -23,8 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BootstrapSamplerParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -42,12 +41,11 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     /**
      * The parameters object being edited.
      */
-    private BootstrapSamplerParams params = null;
-    private DataSet parentDataSet;
+    private Parameters params = null;
 
 
-    public void setParams(Params params) {
-        this.params = (BootstrapSamplerParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -58,7 +56,7 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
                 DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
                 //
                 if (dataModel instanceof DataSet) {
-                    this.parentDataSet = (DataSet) dataModel;
+                    DataSet parentDataSet = (DataSet) dataModel;
                 }
             }
         }
@@ -82,24 +80,13 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     private void buildGui() {
         setLayout(new BorderLayout());
 
-        int sampleSize;
-
-        if (params.isSampleSizeSet()) {
-            sampleSize = params.getSampleSize();
-        }
-        else {
-            sampleSize = parentDataSet.getNumRows();
-            params.setSampleSize(sampleSize);
-        }
-
-        final IntTextField sampleSizeField = new IntTextField(sampleSize, 6);
+        final IntTextField sampleSizeField = new IntTextField(params.getInt("sampleSize", 1000), 6);
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params.setSampleSize(value);
+                    params.set("sampleSize", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

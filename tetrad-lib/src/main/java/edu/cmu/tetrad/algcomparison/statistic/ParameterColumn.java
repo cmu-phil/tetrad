@@ -10,6 +10,8 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public class ParameterColumn implements Statistic {
+    static final long serialVersionUID = 23L;
+
     private String parameter;
 
     /**

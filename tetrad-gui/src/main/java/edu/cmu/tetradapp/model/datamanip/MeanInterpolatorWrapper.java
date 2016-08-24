@@ -21,11 +21,7 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.MeanInterpolator;
-import edu.cmu.tetrad.data.DataFilter;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 

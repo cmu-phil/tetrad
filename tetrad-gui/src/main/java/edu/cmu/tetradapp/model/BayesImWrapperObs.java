@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -71,23 +72,23 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
 
     public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, 
 							 BayesImWrapperObs oldBayesImwrapper, 
-							 BayesImParams params) {
+							 Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
-        if (params.getInitializationMode() == BayesImParams.MANUAL_RETAIN) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_RETAIN) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_OVERWRITE) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 		
@@ -144,22 +145,22 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
     }
 	 */
 	
-    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, BayesImParams params) {
+    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getInitializationMode() == BayesImParams.MANUAL_RETAIN) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_RETAIN) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
-        } else if (params.getInitializationMode() == BayesImParams.RANDOM_OVERWRITE) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 

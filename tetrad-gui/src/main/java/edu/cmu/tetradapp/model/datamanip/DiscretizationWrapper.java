@@ -21,14 +21,17 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Created by IntelliJ IDEA.
@@ -52,7 +55,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public DiscretizationWrapper(DataWrapper data, DiscretizationParams params) {
+    public DiscretizationWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -70,10 +73,10 @@ public class DiscretizationWrapper extends DataWrapper {
 
             DataSet originalData = (DataSet) dataModel;
 
-            Discretizer discretizer = new Discretizer(originalData, params.getSpecs());
-            discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
-
-            discretizedDataSets.add(discretizer.discretize());
+//            Discretizer discretizer = new Discretizer(originalData, params.getSpecs());
+//            discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
+//
+//            discretizedDataSets.add(discretizer.discretize());
         }
  
 
@@ -91,8 +94,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DiscretizationWrapper serializableInstance() {
-        return new DiscretizationWrapper(DataWrapper.serializableInstance(),
-                DiscretizationParams.serializableInstance());
+        return new DiscretizationWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //=============================== Private Methods =========================//

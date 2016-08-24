@@ -72,7 +72,7 @@ public class DeltaTetradTest2 {
 
         this.cov = new CovarianceMatrix(dataSet);
 
-        List<DataSet> data1 = new ArrayList<DataSet>();
+        List<DataSet> data1 = new ArrayList<>();
         data1.add(dataSet);
         List<DataSet> data2 = DataUtils.center(data1);
 
@@ -83,7 +83,7 @@ public class DeltaTetradTest2 {
         this.variables = dataSet.getVariables();
 //        this.numVars = dataSet.getNumColumns();
 
-        this.variablesHash = new HashMap<Node, Integer>();
+        this.variablesHash = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             variablesHash.put(variables.get(i), i);
@@ -132,8 +132,8 @@ public class DeltaTetradTest2 {
         this.df = tetrads.length;
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
-        Set<Sigma> boldSigmaSet = new LinkedHashSet<Sigma>();
-        List<Sigma> boldSigma = new ArrayList<Sigma>();
+        Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
+        List<Sigma> boldSigma = new ArrayList<>();
 
         for (Tetrad tetrad : tetrads) {
             boldSigmaSet.add(new Sigma(tetrad.getI(), tetrad.getK()));

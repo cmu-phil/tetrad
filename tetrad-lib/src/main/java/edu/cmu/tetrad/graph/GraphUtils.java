@@ -421,6 +421,9 @@ public final class GraphUtils {
             double alpha, double beta,
             double delta_in, double delta_out) {
 
+        if (alpha + beta >= 1) throw new IllegalArgumentException("For the Bollobas et al. algorithm," +
+                "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
+
 //        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
 //                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
 
@@ -1708,7 +1711,7 @@ public final class GraphUtils {
         Graph reference = new EdgeListGraph(newVariables);
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
-        for (Edge edge : originalGraph.getEdges()) {
+            for (Edge edge : originalGraph.getEdges()) {
             Node node1 = reference.getNode(edge.getNode1().getName());
             Node node2 = reference.getNode(edge.getNode2().getName());
 
@@ -4010,7 +4013,7 @@ public final class GraphUtils {
 
     // Depth first.
     public static boolean isDConnectedTo2(Node x, Node y, List<Node> z, Graph graph) {
-        LinkedList<Node> path = new LinkedList<Node>();
+        LinkedList<Node> path = new LinkedList<>();
 
         path.add(x);
 
@@ -4069,14 +4072,14 @@ public final class GraphUtils {
     }
 
     private static Set<Node> reachableDConnectedNodes(Node x, List<Node> z, Graph graph) {
-        Set<Node> R = new HashSet<Node>();
+        Set<Node> R = new HashSet<>();
         R.add(x);
 
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<OrderedPair<Node>>();
-        Set<OrderedPair<Node>> V = new HashSet<OrderedPair<Node>>();
+        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+        Set<OrderedPair<Node>> V = new HashSet<>();
 
         for (Node node : graph.getAdjacentNodes(x)) {
-            OrderedPair<Node> edge = new OrderedPair<Node>(x, node);
+            OrderedPair<Node> edge = new OrderedPair<>(x, node);
             Q.offer(edge);
             V.add(edge);
             R.add(node);
@@ -4097,7 +4100,7 @@ public final class GraphUtils {
                 }
                 R.add(c);
 
-                OrderedPair<Node> u = new OrderedPair<Node>(b, c);
+                OrderedPair<Node> u = new OrderedPair<>(b, c);
                 if (V.contains(u)) {
                     continue;
                 }

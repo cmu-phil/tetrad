@@ -21,26 +21,20 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.IFgsRunner;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.CharArrayWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,8 +46,8 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class PathsAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
+class PathsAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
     private List<Node> nodes1, nodes2;
     private JTextArea textArea;
     private String method;
@@ -97,7 +91,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 System.out.println(node);
 
                 if ("SELECT_ALL".equals(node.getName())) {
-                    nodes1 = new ArrayList<Node>(graph.getNodes());
+                    nodes1 = new ArrayList<>(graph.getNodes());
                 } else {
                     nodes1 = Collections.singletonList(node);
                 }
@@ -128,7 +122,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 System.out.println(node);
 
                 if ("SELECT_ALL".equals(node.getName())) {
-                    nodes2 = new ArrayList<Node>(graph.getNodes());
+                    nodes2 = new ArrayList<>(graph.getNodes());
                 } else {
                     nodes2 = Collections.singletonList(node);
                 }
@@ -447,7 +441,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
-    public void setMaxLength(int maxLength) {
+    private void setMaxLength(int maxLength) {
         if (!(maxLength >= -1)) throw new IllegalArgumentException();
         Preferences.userRoot().putInt("pathMaxLength", maxLength);
     }

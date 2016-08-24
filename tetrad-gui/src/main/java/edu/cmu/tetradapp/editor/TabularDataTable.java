@@ -45,18 +45,6 @@ class TabularDataTable extends AbstractTableModel {
     private DataSet dataSet;
 
     /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingRows = 2;
-
-    /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingCols = 2;
-
-    /**
      * True iff category names for discrete variables should be shown.
      */
     private boolean categoryNamesShown = true;
@@ -64,7 +52,7 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * Fires property change events.
      */
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -382,10 +370,20 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     private int getNumLeadingRows() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingRows = 2;
         return numLeadingRows;
     }
 
     private int getNumLeadingCols() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingCols = 2;
         return numLeadingCols;
     }
 

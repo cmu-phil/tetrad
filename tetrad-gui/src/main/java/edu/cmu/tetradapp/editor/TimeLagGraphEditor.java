@@ -21,12 +21,14 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataGraphUtils;
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -66,6 +68,7 @@ public final class TimeLagGraphEditor extends JPanel
     private TimeLagGraphWrapper graphWrapper;
     private LayoutEditable layoutEditable;
     private CopyLayoutAction copyLayoutAction;
+    private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
@@ -73,6 +76,7 @@ public final class TimeLagGraphEditor extends JPanel
         this((TimeLagGraph) graphWrapper.getGraph());
         this.graphWrapper = graphWrapper;
         this.layoutEditable = this;
+        this.parameters = graphWrapper.getParameters();
 
         getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -148,7 +152,7 @@ public final class TimeLagGraphEditor extends JPanel
         List<Component> selectedComponents =
                 getWorkbench().getSelectedComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Iterator<Component> it =
              selectedComponents.iterator(); it.hasNext(); ) {
@@ -444,7 +448,7 @@ public final class TimeLagGraphEditor extends JPanel
 
         randomGraph.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true);
+                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true, parameters);
 
                 int ret = JOptionPane.showConfirmDialog(
                         TimeLagGraphEditor.this, editor,
@@ -472,7 +476,7 @@ public final class TimeLagGraphEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                List<Node> nodes = new ArrayList<Node>();
+                                List<Node> nodes = new ArrayList<>();
 
                                 for (int i = 0; i < editor.getNumNodes(); i++) {
                                     nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -494,7 +498,7 @@ public final class TimeLagGraphEditor extends JPanel
 
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
-                                    List<Node> nodes = new ArrayList<Node>();
+                                    List<Node> nodes = new ArrayList<>();
 
                                     for (int i = 0; i < editor.getNumNodes(); i++) {
                                         nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -616,7 +620,7 @@ public final class TimeLagGraphEditor extends JPanel
 
         List<Node> nodes = graph.getNodes();
 
-        List<Node> exoNodes = new LinkedList<Node>();
+        List<Node> exoNodes = new LinkedList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);

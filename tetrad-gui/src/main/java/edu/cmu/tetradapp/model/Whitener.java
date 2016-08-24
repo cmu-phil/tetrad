@@ -44,11 +44,11 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  */
 public class Whitener extends DataWrapper {
     static final long serialVersionUID = 23L;
-    private DataSet dataSet;
 
     //=============================CONSTRUCTORS==============================//
 
     public Whitener(DataWrapper wrapper) {
+        DataSet dataSet;
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
             DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();
             DoubleMatrix2D X = new DenseDoubleMatrix2D(_dataSet.getDoubleData().toArray());

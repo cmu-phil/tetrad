@@ -59,69 +59,11 @@ final class SessionEditorToolbar extends JPanel {
      */
     private final String selectType = "Select";
 
-    /**
-     * The node type of the button that is used for the edge-drawing tool.
-     */
-    private final String edgeType = "Edge";
 
-    /**
-     * Node infos for all of the nodes.
-     */
-    private final ButtonInfo[] buttonInfos = new ButtonInfo[]{new ButtonInfo(
-            "Select", "Select and Move", "move",
-            "<html>Select and move nodes or groups of nodes " +
-                    "<br>on the workbench.</html>"),
-            new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
-            new ButtonInfo("GraphManip", "Graph Manipulation", "graph",
-                    "<html>Add a node for graph manipulations</html>"),
-            new ButtonInfo("Compare", "Comparison", "compare",
-                    "<html>Add a node to compare graphs or SEM IM's.</html>"),
-            new ButtonInfo( "PM", "Parametric Model", "pm",
-            "<html>Add a node for a parametric model.</html>"),
-            new ButtonInfo( "IM", "Instantiated Model", "im",
-            "<html>Add a node for an instantiated model.</html>"),
-            new ButtonInfo("Data", "Data", "data",
-                    "<html>Add a node for a data object.</html>"),
-            new ButtonInfo("DataManip",
-                "Data Manipulation", "data",
-                "<html>Add a node for manipulated data.</html>"),
-            new ButtonInfo("Estimator", "Estimator", "estimator",
-                    "<html>Add a node for an estimator.</html>"),
-            new ButtonInfo("Updater", "Updater", "updater",
-                    "<html>Add a node for an updater.</html>"),
-            //        new ButtonInfo("MB", "Markov Blanket", "search",
-            //                "<html>Add a node for a Markov blanket.</html>"),
-            new ButtonInfo("Classify", "Classify", "search",
-                    "<html>Add a node for a classifier.</html>"),
-           new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
-                    
-            new ButtonInfo("Search", "Search", "search",
-                    "<html>Add a node for a search algorithm.</html>"),
-//            new ButtonInfo("FS", "Feature Selection", "fs", "<html>Add a node for a Markov Blanket search.</html>"),
-            new ButtonInfo("Regression", "Regression", "regression",
-                    "<html>Add a node for a regression.</html>"),
-//        new ButtonInfo("Predict",
-//                "Predict",
-//                "predict",
-//                "<html>Add a node for a prediction algorithm.</html>"),
-//            new ButtonInfo("Knowledge", "Knowledge", "knowledge",
-//                    "<html>Store knowledge for use by multiple algorithm." +
-//                            "</html>"),
-            new ButtonInfo("Edge", "Draw Edge", "flow",
-                    "<html>Add an edge from one node to another to declare" +
-                            "<br>that the object in the first node should be used " +
-                            "<br>to construct the object in the second node." +
-                            "<br>As a shortcut, hold down the Control key." +
-                            "</html>"),
-            new ButtonInfo("Note", "Note", "note",
-                    "<html>Add a note to the session.</html>")
-    };
-
-
-    /**
+    /**\
      * The map from JToggleButtons to String node types.
      */
-    private final Map<JToggleButton, String> nodeTypes = new HashMap<JToggleButton, String>();
+    private final Map<JToggleButton, String> nodeTypes = new HashMap<>();
 
     /**
      * True iff the shift key was down on last click.
@@ -153,6 +95,43 @@ final class SessionEditorToolbar extends JPanel {
         buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         // Create buttons.
+        /*
+      Node infos for all of the nodes.
+     */
+        ButtonInfo[] buttonInfos = new ButtonInfo[]{
+                new ButtonInfo(
+                        "Select", "Select and Move", "move",
+                        "<html>Select and move nodes or groups of nodes " +
+                                "<br>on the workbench.</html>"),
+                new ButtonInfo("Data", "Data & Simulation", "data",
+                        "<html>Add a node for a data object.</html>"),
+                new ButtonInfo("Search", "Search", "search",
+                        "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Compare", "Comparison", "compare",
+                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
+                new ButtonInfo("PM", "Parametric Model", "pm",
+                        "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("IM", "Instantiated Model", "im",
+                        "<html>Add a node for an instantiated model.</html>"),
+                new ButtonInfo("Estimator", "Estimator", "estimator",
+                        "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("Updater", "Updater", "updater",
+                        "<html>Add a node for an updater.</html>"),
+                new ButtonInfo("Classify", "Classify", "search",
+                        "<html>Add a node for a classifier.</html>"),
+                new ButtonInfo("Regression", "Regression", "regression",
+                        "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("Edge", "Draw Edge", "flow",
+                        "<html>Add an edge from one node to another to declare" +
+                                "<br>that the object in the first node should be used " +
+                                "<br>to construct the object in the second node." +
+                                "<br>As a shortcut, hold down the Control key." +
+                                "</html>"),
+                new ButtonInfo("Note", "Note", "note",
+                        "<html>Add a note to the session.</html>")
+        };
         JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
         for (int i = 0; i < buttonInfos.length; i++) {
@@ -241,8 +220,7 @@ final class SessionEditorToolbar extends JPanel {
                         if (keyCode == KeyEvent.VK_SHIFT) {
                             if (id == KeyEvent.KEY_PRESSED) {
                                 setShiftDown(true);
-                            }
-                            else if (id == KeyEvent.KEY_RELEASED) {
+                            } else if (id == KeyEvent.KEY_RELEASED) {
                                 setShiftDown(false);
                                 resetSelectMove();
                             }
@@ -332,12 +310,10 @@ final class SessionEditorToolbar extends JPanel {
 
         if ("Select".equals(buttonInfo.getNodeTypeName())) {
             button.setIcon(new ImageIcon(ImageUtils.getImage(this, "move.gif")));
-        }
-        else if ("Edge".equals(buttonInfo.getNodeTypeName())) {
+        } else if ("Edge".equals(buttonInfo.getNodeTypeName())) {
             button.setIcon(
                     new ImageIcon(ImageUtils.getImage(this, "flow.gif")));
-        }
-        else {
+        } else {
             button.setName(buttonInfo.getNodeTypeName());
             button.setText("<html><center>" + buttonInfo.getDisplayName() +
                     "</center></html>");
@@ -358,16 +334,18 @@ final class SessionEditorToolbar extends JPanel {
     private void setWorkbenchMode(JToggleButton button) {
         String nodeType = this.nodeTypes.get(button);
 
+        /*
+      The node type of the button that is used for the edge-drawing tool.
+     */
+        String edgeType = "Edge";
         if (selectType.equals(nodeType)) {
             workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             workbench.setNextButtonType(null);
-        }
-        else if (edgeType.equals(nodeType)) {
+        } else if (edgeType.equals(nodeType)) {
             workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             workbench.setNextButtonType(null);
             setCursor(workbench.getCursor());
-        }
-        else {
+        } else {
             workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
             workbench.setNextButtonType(nodeType);
             setCursor(workbench.getCursor());

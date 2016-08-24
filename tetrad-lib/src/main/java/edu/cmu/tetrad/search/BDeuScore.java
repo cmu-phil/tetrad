@@ -50,8 +50,8 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
 
             this.variables = dataSet.getVariables();
 
-            if (!(((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox)) {
-                throw new IllegalArgumentException();
+            if (!(dataBox instanceof VerticalIntDataBox)) {
+                dataBox = new VerticalIntDataBox(dataBox);
             }
 
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;

@@ -53,7 +53,7 @@ public class SimpleSimulationProperties implements TetradSerializable {
     /**
      * The required default constructor.
      */
-    public SimpleSimulationProperties() {
+    private SimpleSimulationProperties() {
     }
 
     /**

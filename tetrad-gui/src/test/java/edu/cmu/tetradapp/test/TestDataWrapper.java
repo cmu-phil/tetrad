@@ -29,14 +29,11 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DataWrapper;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the basic functionality of the DataWrapper.
@@ -59,13 +56,13 @@ public class TestDataWrapper {
     public void testDataModelList() {
         DataModelList modelList = new DataModelList();
 
-        List<Node> variables1 = new ArrayList<Node>();
+        List<Node> variables1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables1.add(new ContinuousVariable("X" + i));
         }
 
-        List<Node> variables2 = new ArrayList<Node>();
+        List<Node> variables2 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables2.add(new ContinuousVariable("X" + i));

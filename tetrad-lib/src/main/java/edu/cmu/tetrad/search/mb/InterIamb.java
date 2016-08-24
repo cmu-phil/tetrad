@@ -59,14 +59,14 @@ public class InterIamb implements MbSearch {
 
     public List<Node> findMb(String targetName) {
         Node target = getVariableForName(targetName);
-        List<Node> cmb = new LinkedList<Node>();
+        List<Node> cmb = new LinkedList<>();
         boolean cont = true;
 
         // Forward phase.
         while (cont) {
             cont = false;
 
-            List<Node> remaining = new LinkedList<Node>(variables);
+            List<Node> remaining = new LinkedList<>(variables);
             remaining.removeAll(cmb);
             remaining.remove(target);
 
@@ -96,7 +96,7 @@ public class InterIamb implements MbSearch {
             }
 
             // Backward phase.
-            for (Node _f : new LinkedList<Node>(cmb)) {
+            for (Node _f : new LinkedList<>(cmb)) {
                 cmb.remove(_f);
 
                 if (independenceTest.isIndependent(_f, target, cmb)) {

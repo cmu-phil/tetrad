@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.editor.IndependenceResult;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -41,7 +40,7 @@ public class IndTestModel implements SessionModel {
 
     private List<IndTestProducer> indTestProducers;
     private String name = "";
-    private LinkedList<String> vars = new LinkedList<String>();
+    private LinkedList<String> vars = new LinkedList<>();
     private List<List<IndependenceResult>> results;
 
     public IndTestModel() {
@@ -58,25 +57,25 @@ public class IndTestModel implements SessionModel {
     }
 
     public IndTestModel(IndTestProducer producer) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer);
     }
 
     public IndTestModel(IndTestProducer producer1, IndTestProducer producer2) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer1);
         indTestProducers.add(producer2);
     }
 
     public IndTestModel(IndTestProducer producer1, IndTestProducer producer2, IndTestProducer producer3) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer1);
         indTestProducers.add(producer2);
         indTestProducers.add(producer3);
     }
 
     public IndTestModel(IndTestProducer producer1, IndTestProducer producer2, IndTestProducer producer3, IndTestProducer producer4) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer1);
         indTestProducers.add(producer2);
         indTestProducers.add(producer3);

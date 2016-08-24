@@ -166,7 +166,7 @@ public class Fas implements IFas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
         for (Node node : nodes) {
             adjacencies.put(node, new TreeSet<Node>());
@@ -216,7 +216,7 @@ public class Fas implements IFas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -313,13 +313,13 @@ public class Fas implements IFas {
                         getSepsets().set(x, y, empty);
                     }
 
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                            nf.format(test.getScore()));
-
-                    if (verbose) {
-                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
-                    }
+//                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+//                            nf.format(test.getScore()));
+//
+//                    if (verbose) {
+//                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+//                                nf.format(test.getScore()));
+//                    }
 
                 } else if (!forbiddenEdge(x, y)) {
                     adjacencies.get(x).add(y);
@@ -343,7 +343,7 @@ public class Fas implements IFas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -378,7 +378,7 @@ public class Fas implements IFas {
                 if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
             }
 
-            List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
@@ -435,7 +435,7 @@ public class Fas implements IFas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {

@@ -266,9 +266,9 @@ public class FactorAnalysis {
      */
 
     public TetradMatrix successiveResidual() {
-        this.factorLoadingVectors = new Vector<TetradMatrix>();
-        this.residualMatrices = new Vector<TetradMatrix>();
-        this.dValues = new Vector<Double>();
+        this.factorLoadingVectors = new Vector<>();
+        this.residualMatrices = new Vector<>();
+        this.dValues = new Vector<>();
 
         this.residualMatrices.add(correlationMatrix.getMatrix());
 
@@ -529,7 +529,7 @@ public class FactorAnalysis {
     //as usual, vectors are treated as matrices to simplify operations elsewhere
 
     public static TetradMatrix normalizeRows(TetradMatrix matrix) {
-        Vector<TetradMatrix> normalizedRows = new Vector<TetradMatrix>();
+        Vector<TetradMatrix> normalizedRows = new Vector<>();
         for (int i = 0; i < matrix.rows(); i++) {
             TetradVector vector = matrix.getRow(i);
             TetradMatrix colVector = new TetradMatrix(matrix.columns(), 1);
@@ -571,9 +571,9 @@ public class FactorAnalysis {
         if (factorLoadingMatrix.columns() == 1)
             return factorLoadingMatrix;
 
-        Vector<TetradMatrix> residuals = new Vector<TetradMatrix>();
-        Vector<TetradMatrix> rotatedFactorVectors = new Vector<TetradMatrix>();
-        Vector<TetradMatrix> vVectors = new Vector<TetradMatrix>();
+        Vector<TetradMatrix> residuals = new Vector<>();
+        Vector<TetradMatrix> rotatedFactorVectors = new Vector<>();
+        Vector<TetradMatrix> vVectors = new Vector<>();
 
         TetradMatrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
@@ -617,9 +617,9 @@ public class FactorAnalysis {
                 }
             }
 
-            Vector<TetradMatrix> hVectors = new Vector<TetradMatrix>();
-            Vector<TetradMatrix> bVectors = new Vector<TetradMatrix>();
-            Vector<Double> alphas = new Vector<Double>();
+            Vector<TetradMatrix> hVectors = new Vector<>();
+            Vector<TetradMatrix> bVectors = new Vector<>();
+            Vector<Double> alphas = new Vector<>();
 
             hVectors.add(new TetradMatrix(residuals.lastElement().columns(), 1));
             TetradVector rowFromFactorLoading = residuals.lastElement().getRow(lIndex);

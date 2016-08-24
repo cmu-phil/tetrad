@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.FindOneFactorClusters;
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetradapp.model.FofcIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,19 +39,19 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class FofcIndTestParamsEditor extends JComponent {
-    private FofcIndTestParams fofcParams;
+    private final Parameters fofcParams;
 
-    public FofcIndTestParamsEditor(FofcIndTestParams paramsPureClusters) {
-        this.fofcParams = paramsPureClusters;
+    public FofcIndTestParamsEditor(Parameters params) {
+        this.fofcParams = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -63,7 +63,7 @@ class FofcIndTestParamsEditor extends JComponent {
         testSelector.addItem(TestType.TETRAD_DELTA);
         testSelector.addItem(TestType.TETRAD_WISHART);
 
-        TestType tetradTestType = getParams().getTetradTestType();
+        TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
         if (tetradTestType == TestType.TETRAD_DELTA || tetradTestType == TestType.TETRAD_WISHART) {
             testSelector.setSelectedItem(tetradTestType);
         } else {
@@ -75,7 +75,7 @@ class FofcIndTestParamsEditor extends JComponent {
             public void actionPerformed(ActionEvent e) {
                 TestType index = (TestType) testSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().setTetradTestType(index);
+                    getParams().set("tetradTestType", index);
                 }
             }
         });
@@ -84,14 +84,15 @@ class FofcIndTestParamsEditor extends JComponent {
         algorithmSelector.addItem(FindOneFactorClusters.Algorithm.SAG);
         algorithmSelector.addItem(FindOneFactorClusters.Algorithm.GAP);
 
-        FindOneFactorClusters.Algorithm algorithmType = getParams().getAlgorithm();
+        FindOneFactorClusters.Algorithm algorithmType = (FindOneFactorClusters.Algorithm) getParams().get("fofcAlgorithm",
+                FindOneFactorClusters.Algorithm.GAP);
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 FindOneFactorClusters.Algorithm index = (FindOneFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().setAlgorithm(index);
+                    getParams().set("fofcAlgorithm", index);
                 }
             }
         });
@@ -100,7 +101,7 @@ class FofcIndTestParamsEditor extends JComponent {
             public void actionPerformed(ActionEvent e) {
                 JComboBox combo = (JComboBox) e.getSource();
                 TestType type = (TestType) combo.getSelectedItem();
-                getParams().setTetradTestType(type);
+                getParams().set("tetradTestType", type);
             }
         });
 
@@ -128,7 +129,7 @@ class FofcIndTestParamsEditor extends JComponent {
         add(Box.createHorizontalGlue());
     }
 
-    private FofcIndTestParams getParams() {
+    private Parameters getParams() {
         return this.fofcParams;
     }
 

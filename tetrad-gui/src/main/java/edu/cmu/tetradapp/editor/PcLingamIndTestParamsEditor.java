@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.PcIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -37,13 +37,13 @@ class PcLingamIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private PcIndTestParams params = null;
+    private Parameters params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
 //    /**
 //     * A text field to allow the user to enter the number of dishes to
@@ -54,16 +54,16 @@ class PcLingamIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcLingamIndTestParamsEditor(PcIndTestParams params) {
+    public PcLingamIndTestParamsEditor(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), new DecimalFormat("0.0#####E0"), 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -72,11 +72,11 @@ class PcLingamIndTestParamsEditor extends JComponent {
             }
         });
 
-//        depthField = new IntTextField(indTestParams().getMaxIndegree(), 4);
+//        depthField = new IntTextField(params().getMaxIndegree(), 4);
 //        depthField.setFilter(new IntTextField.Filter() {
 //            public int filter(int value, int oldValue) {
 //                try {
-//                    indTestParams().setMaxIndegree(value);
+//                    params().setMaxIndegree(value);
 //                    return value;
 //                }
 //                catch (IllegalArgumentException e) {
@@ -119,7 +119,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private PcIndTestParams indTestParams() {
+    private Parameters params() {
         return params;
     }
 }

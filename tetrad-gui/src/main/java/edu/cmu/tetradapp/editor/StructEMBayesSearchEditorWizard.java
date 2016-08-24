@@ -49,7 +49,7 @@ import java.util.List;
  * @author Frank Wimberly adapted for EM Bayes estimation and Structural EM
  *         bayes estimation.
  */
-public final class StructEMBayesSearchEditorWizard extends JPanel {
+final class StructEMBayesSearchEditorWizard extends JPanel {
     private BayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;

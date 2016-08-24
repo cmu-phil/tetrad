@@ -1,13 +1,13 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestConditionalGaussianLrt;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Experimental;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,6 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
+    static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
@@ -34,7 +35,9 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
 
     @Override
     public List<String> getParameters() {
-        return Collections.singletonList("alpha");
+        List<String> params = new ArrayList<>();
+        params.add("alpha");
+        return params;
     }
 
 }

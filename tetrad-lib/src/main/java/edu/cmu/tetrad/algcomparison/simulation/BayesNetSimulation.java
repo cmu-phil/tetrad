@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -16,23 +17,46 @@ import java.util.List;
  * @author jdramsey
  */
 public class BayesNetSimulation implements Simulation {
+    static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
-    private List<DataSet> dataSets;
-    private Graph graph;
+    private BayesPm pm;
+    private BayesIm im;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public BayesNetSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    public BayesNetSimulation(BayesPm pm) {
+        this.randomGraph = new SingleGraph(pm.getDag());
+        this.pm = pm;
+    }
+
+    public BayesNetSimulation(BayesIm im ) {
+        this.randomGraph = new SingleGraph(im.getDag());
+        this.im = im;
+        this.pm = im.getBayesPm();
+    }
+
     @Override
     public void createData(Parameters parameters) {
-        this.graph = randomGraph.createGraph(parameters);
+        Graph graph = randomGraph.createGraph(parameters);
 
         dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
+
+            if (parameters.getBoolean("differentGraphs") && i > 0) {
+                graph = randomGraph.createGraph(parameters);
+            }
+
+            graphs.add(graph);
+
             DataSet dataSet = simulate(graph, parameters);
+            dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
     }
@@ -44,8 +68,8 @@ public class BayesNetSimulation implements Simulation {
 
 
     @Override
-    public Graph getTrueGraph() {
-        return graph;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
@@ -55,8 +79,22 @@ public class BayesNetSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = new ArrayList<>();
+
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
+        }
+
+        if (pm == null) {
+            parameters.addAll(BayesPm.getParameterNames());
+        }
+
+        if (im == null) {
+            parameters.addAll(MlBayesIm.getParameterNames());
+        }
+
         parameters.add("numRuns");
+        parameters.add("differentGraphs");
         parameters.add("sampleSize");
         return parameters;
     }
@@ -73,9 +111,20 @@ public class BayesNetSimulation implements Simulation {
 
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        int numCategories = parameters.getInt("numCategories");
-        BayesPm pm = new BayesPm(graph, numCategories, numCategories);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        BayesIm im = this.im;
+
+        if (im == null) {
+            BayesPm pm = this.pm;
+
+            if (pm == null) {
+                int minCategories = parameters.getInt("minCategories");
+                int maxCategories = parameters.getInt("maxCategories");
+                pm = new BayesPm(graph, minCategories, maxCategories);
+            }
+
+            im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        }
+
         return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 }

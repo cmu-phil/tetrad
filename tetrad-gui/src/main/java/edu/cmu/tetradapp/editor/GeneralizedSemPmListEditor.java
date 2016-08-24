@@ -54,7 +54,7 @@ class GeneralizedSemPmListEditor extends JPanel {
     /**
      * The SemPm being edited.
      */
-    private GeneralizedSemPm semPm;
+    private final GeneralizedSemPm semPm;
 
 
     /**
@@ -63,13 +63,13 @@ class GeneralizedSemPmListEditor extends JPanel {
     private int savedTooltipDelay;
 
 
-    private GeneralizedSemPmParamsEditor paramsEditor;
+    private final GeneralizedSemPmParamsEditor paramsEditor;
 
 
     /**
      * The set of launched editors--or rather, the nodes for the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors  = new HashMap<Object, EditorWindow>();
+    private Map<Object, EditorWindow> launchedEditors  = new HashMap<>();
     private Box formulasBox;
 
     /**

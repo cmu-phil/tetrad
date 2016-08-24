@@ -40,13 +40,13 @@ import java.beans.PropertyChangeListener;
  * @author Michael Freenor
  */
 
-public class NormalityTestAction extends AbstractAction {
+class NormalityTestAction extends AbstractAction {
 
 
     /**
      * The data edtitor that action is attached to.
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**
@@ -158,7 +158,7 @@ public class NormalityTestAction extends AbstractAction {
      */
     private static class NormalityTestListener implements PropertyChangeListener {
 
-        private JTextArea display;
+        private final JTextArea display;
 
 
         public NormalityTestListener(JTextArea display) {
