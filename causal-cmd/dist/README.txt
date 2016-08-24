@@ -17,7 +17,7 @@ Java 8 is the only prerequisite to run the software.  Note that by default Java 
 Download the this file, [http://www.ccd.pitt.edu/wp-content/uploads/files/Retention.txt Retention.txt], which is a dataset containing information on college graduation and used in the publication "What Do College Ranking Data Tell Us About Student Retention?" by Drudzel and Glymour, 1994.
 
 <pre>
-java -jar causal-cmd-5.3.0-20160330-jar-with-dependencies.jar --algorithm fgs --data Retention.txt  --depth -1 --output output --verbose
+java -jar causal-cmd-5.3.0-20160330-jar-with-dependencies.jar --algorithm fgs --data Retention.txt  --maxIndegree -1 --output output --verbose
 </pre>
 
 The program will output the results of the FGS search procedure as a text file (in this example to output).   The beginning of the file contains the algorithm parameters used in the search.
@@ -112,7 +112,7 @@ Tetrad-cli has different switches for different algorithms.
 === causal-cmd usage for FGS for continuous data ===
 <pre>
 usage: java -jar causal-cmd-<VERSION>.jar --algorithm fgs --data <arg> [--delimiter
-       <arg>] [--depth <arg>] [--exclude-variables <arg>] [--faithful]
+       <arg>] [--maxIndegree <arg>] [--exclude-variables <arg>] [--faithful]
        [--graphml] [--help] [--ignore-linear-dependence] [--knowledge
        <arg>] [--no-validation-output] [--out <arg>] [--output-prefix
        <arg>] [--penalty-discount <arg>] [--skip-non-zero-variance]
@@ -120,7 +120,7 @@ usage: java -jar causal-cmd-<VERSION>.jar --algorithm fgs --data <arg> [--delimi
     --data <arg>                 Data file.
     --delimiter <arg>            Data delimiter either comma, semicolon,
                                  space, colon, or tab. Default is tab.
-    --depth <arg>                Search depth. Must be an integer >= -1
+    --maxIndegree <arg>                Search maxIndegree. Must be an integer >= -1
                                  (-1 means unlimited). Default is -1.
     --exclude-variables <arg>    A file containing variables to exclude.
     --heuristic-speedup                   Assume faithfulness which results in a faster search

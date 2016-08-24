@@ -303,7 +303,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //            fci.setKnowledge(knowledge);
 //            fci.setCompleteRuleSetUsed(params.isCompleteRuleSetUsed());
 //            fci.setMaxPathLength(params.getMaxReachablePathLength());
-//            fci.setMaxIndegree(params.getDepth());
+//            fci.setMaxIndegree(params.getMaxIndegree());
 //            double penaltyDiscount = params.getPenaltyDiscount();
 //
 //            fci.setAlpha(penaltyDiscount);
@@ -430,7 +430,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
         ccd.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
-//        gfci.setDepth(3);
+//        gfci.setMaxIndegree(3);
 //        ccd.setHeuristicSpeedup(params.isFaithfulnessAssumed());
         Graph graph = ccd.search();
 

@@ -57,6 +57,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
     private final GraphSelectionEditorPanel editorPanel;
     private final JPanel forWorkbenchScrolls;
+    private final JButton selectInGraph;
 
     private JTabbedPane pane;
 
@@ -369,13 +370,13 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         select.add(outdegree);
         select.add(degree);
 
-        select.addSeparator();
+//        select.addSeparator();
 
-        JMenuItem selectInGraph = new JMenuItem("Use Selected Variables in Graph");
+        selectInGraph = new JButton("Select Highlighted");
 //        selectInGraph.setAccelerator(KeyStroke.getKeyStroke("ctrl G"));
-        selectInGraph.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.META_MASK));
+//        selectInGraph.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.META_MASK));
 
-        select.add(selectInGraph);
+//        select.add(selectInGraph);
 
         selectInGraph.addActionListener(new ActionListener() {
             @Override
@@ -411,6 +412,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
+        buttonPanel.add(selectInGraph);
         buttonPanel.add(executeButton);
         b.add(buttonPanel, BorderLayout.SOUTH);
 

@@ -157,18 +157,18 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        Graph gm = m.search();
 //        IndependenceTest indTest = new IndTestMixedLrt(ds, .001);
 //        Cpc pcs = new Cpc(indTest);
-//        pcs.setDepth(-1);
+//        pcs.setMaxIndegree(-1);
 //        pcs.setInitialGraph(gm);
 //        pcs.setVerbose(false);
 //        Graph graph = pcs.search();
 
 //        WFgs fgs = new WFgs(ds);
-//        fgs.setDepth(-1);
+//        fgs.setMaxIndegree(-1);
 //        fgs.setAlpha(4);
 //        Graph graph = fgs.search();
 
 //        WFgs fgs = new WFgs(ds);
-//        fgs.setDepth(5);
+//        fgs.setMaxIndegree(5);
 //        fgs.setAlpha(8);
 //        Graph g =  fgs.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
@@ -178,7 +178,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 
 //        ConditionalGaussianScore score = new ConditionalGaussianScore(ds);
 //        Fgs fgs = new Fgs(score);
-//        fgs.setDepth(-1);
+//        fgs.setMaxIndegree(-1);
 //        Graph graph = fgs.search();
 
         GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());

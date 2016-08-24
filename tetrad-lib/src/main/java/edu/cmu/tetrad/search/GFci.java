@@ -41,9 +41,6 @@ import java.util.List;
  */
 public final class GFci implements GraphSearch {
 
-    // If a graph is provided.
-    private Graph dag = null;
-
     // The PAG being constructed.
     private Graph graph;
 
@@ -74,15 +71,6 @@ public final class GFci implements GraphSearch {
     // The sample size.
     int sampleSize;
 
-    // The penalty discount for the GES search. By default 2.
-    private double penaltyDiscount = 2;
-
-    // The sample prior for the BDeu score (discrete data).
-    private double samplePrior = 10;
-
-    // The structure prior for the Bdeu score (discrete data).
-    private double structurePrior = 1;
-
     // The print stream that output is directed to.
     private PrintStream out = System.out;
 
@@ -97,49 +85,8 @@ public final class GFci implements GraphSearch {
 
     //============================CONSTRUCTORS============================//
 
-    /**
-     * Constructs a new GFCI search for the given independence test and background knowledge.
-     */
-//    public GFci(IndependenceTest independenceTest) {
-//        if (independenceTest == null || knowledge == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (independenceTest instanceof IndTestDSep) {
-//            this.dag = ((IndTestDSep) independenceTest).getGraph();
-//        }
-//
-//        this.independenceTest = independenceTest;
-//    }
-//
-//    public GFci(Score score) {
-//        if (independenceTest == null || knowledge == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (score == null) throw new NullPointerException();
-//
-//        this.score = score;
-//
-//        if (score instanceof GraphScore) {
-//            this.dag = ((GraphScore) score).getDag();
-//        }
-//
-//        this.sampleSize = score.getSampleSize();
-//        this.independenceTest = new IndTestScore(score);
-//    }
-
     public GFci(IndependenceTest test, Score score) {
         if (score == null) throw new NullPointerException();
-
-        if (score instanceof GraphScore) {
-            this.dag = ((GraphScore) score).getDag();
-        }
-
-        if (score instanceof GraphScore) {
-            this.dag = ((GraphScore) score).getDag();
-        }
-
         this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
@@ -158,15 +105,12 @@ public final class GFci implements GraphSearch {
 
         this.graph = new EdgeListGraphSingleConnections(nodes);
 
-        if (score == null) {
-            setScore();
-        }
-
         Fgs fgs = new Fgs(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(true);
+        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+        fgs.setMaxIndegree(maxIndegree);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
@@ -216,42 +160,9 @@ public final class GFci implements GraphSearch {
         return elapsedTime;
     }
 
-    private void setScore() {
-        sampleSize = independenceTest.getSampleSize();
-        double penaltyDiscount = getPenaltyDiscount();
-
-        DataSet dataSet = (DataSet) independenceTest.getData();
-        ICovarianceMatrix cov = independenceTest.getCov();
-        Score score;
-
-        if (independenceTest instanceof IndTestDSep) {
-            score = new GraphScore(dag);
-        } else if (cov != null) {
-            covarianceMatrix = cov;
-            SemBicScore score0 = new SemBicScore(cov);
-            score0.setPenaltyDiscount(penaltyDiscount);
-            score = score0;
-        } else if (dataSet.isContinuous()) {
-            covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
-            SemBicScore score0 = new SemBicScore(covarianceMatrix);
-            score0.setPenaltyDiscount(penaltyDiscount);
-            score = score0;
-        } else if (dataSet.isDiscrete()) {
-            BDeuScore score0 = new BDeuScore(dataSet);
-            score0.setSamplePrior(samplePrior);
-            score0.setStructurePrior(structurePrior);
-            score = score0;
-        } else {
-            throw new IllegalArgumentException("Mixed data not supported.");
-        }
-
-        this.score = score;
-    }
-
-    public int getMaxIndegree() {
-        return maxIndegree;
-    }
-
+    /**
+     * @param maxIndegree The maximum indegree of the output graph.
+     */
     public void setMaxIndegree(int maxIndegree) {
         if (maxIndegree < -1) {
             throw new IllegalArgumentException(
@@ -259,6 +170,13 @@ public final class GFci implements GraphSearch {
         }
 
         this.maxIndegree = maxIndegree;
+    }
+
+    /**
+     * Returns The maximum indegree of the output graph.
+     */
+    public int getMaxIndegree() {
+        return maxIndegree;
     }
 
     // Due to Spirtes.
@@ -361,14 +279,6 @@ public final class GFci implements GraphSearch {
         return independenceTest;
     }
 
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
     public ICovarianceMatrix getCovMatrix() {
         return covarianceMatrix;
     }
@@ -450,13 +360,6 @@ public final class GFci implements GraphSearch {
         logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
 }
 
 

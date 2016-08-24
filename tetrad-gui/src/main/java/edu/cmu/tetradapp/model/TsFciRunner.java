@@ -123,7 +123,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
-//            fciSearch.setDepth(params.depth());
+//            fciSearch.setMaxIndegree(params.depth());
 //            Graph graph = fciSearch.search();
 //
 //            if (knowledge.isDefaultToKnowledgeLayout()) {

@@ -639,7 +639,7 @@ public class DMSearch {
         score.setPenaltyDiscount(penalty);
         Fgs fgs = new Fgs(score);
         fgs.setKnowledge(knowledge);
-//        fgs.setDepth(this.gesDepth);
+//        fgs.setMaxIndegree(this.gesDepth);
 //        fgs.setIgnoreLinearDependent(true);
 
         Graph pattern = fgs.search();

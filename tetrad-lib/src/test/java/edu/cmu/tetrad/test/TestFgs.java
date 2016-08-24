@@ -93,7 +93,7 @@ public class TestFgs {
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
-//        fgs.setDepth(1);
+//        fgs.setMaxIndegree(1);
         fgs.setCycleBound(5);
 
         Graph estPattern = fgs.search();

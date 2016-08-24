@@ -593,7 +593,6 @@ public class PerformanceTests {
         GFci fci = new GFci(independenceTest, score);
 
         fci.setVerbose(false);
-        fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
         fci.setMaxIndegree(depth);
         fci.setFaithfulnessAssumed(false);
@@ -1243,7 +1242,6 @@ public class PerformanceTests {
             GFci fci = new GFci(independenceTest, score);
 //            TFci fci = new TFci(independenceTest);
 //            fci.setVerbose(false);
-            fci.setPenaltyDiscount(penaltyDiscount);
             fci.setMaxIndegree(depth);
             fci.setMaxPathLength(maxPathLength);
 //            fci.setPossibleDsepSearchDone(possibleDsepDone);

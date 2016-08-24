@@ -56,7 +56,7 @@ public class HsimRun {
 //            fgs.setAlpha(penaltyDiscount);
             //fgs.setOut(out);
             //fgs.setFaithfulnessAssumed(true);
-            //fgs.setDepth(1);
+            //fgs.setMaxIndegree(1);
             //fgs.setCycleBound(5);
 
             Graph estGraph = fgs.search();
@@ -112,7 +112,7 @@ public class HsimRun {
 //            fgsOut.setAlpha(2.0);
             //fgsOut.setOut(out);
             //fgsOut.setFaithfulnessAssumed(true);
-            // fgsOut.setDepth(1);
+            // fgsOut.setMaxIndegree(1);
             // fgsOut.setCycleBound(5);
 
             Graph estGraphOut = fgsOut.search();

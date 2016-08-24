@@ -29,6 +29,7 @@ public class TsGfci implements Algorithm, HasKnowledge {
 
     public TsGfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
+        this.score = score;
     }
 
     public Graph search(DataSet dataSet, Parameters parameters) {
@@ -53,7 +54,9 @@ public class TsGfci implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.addAll(score.getParameters());
+        return parameters;
     }
 
     @Override

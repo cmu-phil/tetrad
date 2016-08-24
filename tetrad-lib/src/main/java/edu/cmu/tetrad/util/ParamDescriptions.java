@@ -97,6 +97,7 @@ public class ParamDescriptions {
         put("targetName", new ParamDescription("Target name", ""));
         put("verbose", new ParamDescription("Yes if verbose output should be printed to standard out", false));
         put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
+        put("maxIndegree", new ParamDescription("The maximum indegree of the output graph", 5));
     }
 
     public static ParamDescriptions instance() {

@@ -181,7 +181,6 @@ public class PerformanceTestsDan {
 
             GFci gFci = new GFci(independenceTestGFci, scoreGfci);
             gFci.setVerbose(false);
-            gFci.setPenaltyDiscount(penaltyDiscount);
             gFci.setMaxIndegree(depth);
             gFci.setMaxPathLength(maxPathLength);
 //            gFci.setPossibleDsepSearchDone(true);

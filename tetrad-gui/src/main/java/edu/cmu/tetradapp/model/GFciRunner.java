@@ -334,7 +334,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
 //            fci.setKnowledge(knowledge);
 //            fci.setCompleteRuleSetUsed(params.isCompleteRuleSetUsed());
 //            fci.setMaxPathLength(params.getMaxReachablePathLength());
-//            fci.setMaxIndegree(params.getDepth());
+//            fci.setMaxIndegree(params.getMaxIndegree());
 //            double penaltyDiscount = params.getPenaltyDiscount();
 //
 //            fci.setAlpha(penaltyDiscount);
@@ -465,7 +465,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
 //        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
         gfci.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
-//        gfci.setDepth(3);
+//        gfci.setMaxIndegree(3);
         gfci.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = gfci.search();
 

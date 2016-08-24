@@ -33,6 +33,7 @@ public class Gfci implements Algorithm, HasKnowledge {
 
     public Graph search(DataSet dataSet, Parameters parameters) {
         GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+        search.setMaxIndegree(parameters.getInt("maxIndegree"));
         search.setKnowledge(knowledge);
         search.setFaithfulnessAssumed(true);
         return search.search();
@@ -54,7 +55,11 @@ public class Gfci implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.addAll(score.getParameters());
+        parameters.add("faithfulnessAssumed");
+        parameters.add("maxIndegree");
+        return parameters;
     }
 
     @Override
