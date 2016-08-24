@@ -24,7 +24,7 @@ public class ParamDescriptions {
         put("sampleSize", new ParamDescription("Sample size", 1000, 1, Integer.MAX_VALUE));
         put("numRuns", new ParamDescription("Number of runs", 1, 1, Integer.MAX_VALUE));
         put("differentGraphs", new ParamDescription("Yes if a different graph should be used for each run", false));
-        put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.001, 0.0, 1.0));
+        put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.01, 0.0, 1.0));
         put("penaltyDiscount", new ParamDescription("Penalty discount", 4, 0.0, Double.MAX_VALUE));
         put("fgsDepth", new ParamDescription("Maximum number of new colliders", -1, 1, Integer.MAX_VALUE));
         put("depth", new ParamDescription("Maximum size of conditioning set", -1, 0, Integer.MAX_VALUE));
