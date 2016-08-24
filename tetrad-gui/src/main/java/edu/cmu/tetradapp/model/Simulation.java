@@ -184,7 +184,6 @@ public class Simulation extends DataWrapper implements SessionModel,
     public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         this.simulation = simulation;
         this.parameters = parameters;
-        createSimulation();
     }
 
     /**

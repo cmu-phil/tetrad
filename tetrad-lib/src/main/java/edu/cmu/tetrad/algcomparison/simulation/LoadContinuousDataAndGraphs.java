@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
@@ -19,8 +20,8 @@ import java.util.*;
 public class LoadContinuousDataAndGraphs implements Simulation {
     static final long serialVersionUID = 23L;
     private String path;
-    private Graph graph;
-    private List<DataSet> dataSets;
+    private Graph graph = new EdgeListGraph();
+    private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
 
     public LoadContinuousDataAndGraphs(String path) {

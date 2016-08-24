@@ -21,8 +21,8 @@ import java.util.List;
 public class GeneralSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
-    private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
     private GeneralizedSemPm pm;
     private GeneralizedSemIm im;
 

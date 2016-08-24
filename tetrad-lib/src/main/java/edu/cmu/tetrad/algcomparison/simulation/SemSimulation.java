@@ -21,8 +21,8 @@ public class SemSimulation implements Simulation {
     private RandomGraph randomGraph;
     private SemPm pm;
     private SemIm im;
-    private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;

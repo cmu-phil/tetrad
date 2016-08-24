@@ -801,7 +801,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
         //============================= Private Methods =================================//
 
-        private List<Node> getSelected(JList list) {
+        private List<Node> getSelected(JList<Node> list) {
             List selected = list.getSelectedValuesList();
             List<Node> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
             if (selected != null) {
@@ -894,7 +894,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             return box;
         }
 
-        private JScrollPane createScrollPane(JList comp, Dimension dim) {
+        private JScrollPane createScrollPane(JList<Node> comp, Dimension dim) {
             JScrollPane pane = new JScrollPane(comp);
             LayoutUtils.setAllSizes(pane, dim);
             return pane;
@@ -910,8 +910,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             return box;
         }
 
-        private JList createList() {
-            JList list = new JList<Node>(new VariableListModel());
+        private JList<Node> createList() {
+            JList<Node> list = new JList<>(new VariableListModel());
             list.setFont(getFONT());
             list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             list.setVisibleRowCount(10);
@@ -940,11 +940,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             return selected;
         }
 
-        private JList getSelectedList() {
+        private JList<Node> getSelectedList() {
             return selectedList;
         }
 
-        private JList getSourceList() {
+        private JList<Node> getSourceList() {
             return sourceList;
         }
 
@@ -991,7 +991,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
                 if (comp instanceof JList || comp instanceof JTextField) {
                     try {
                         // if response, remove everything first
-                        JList list = (JList) comp;
+                        JList<Node> list = (JList<Node>) comp;
                         VariableListModel model = (VariableListModel) list.getModel();
                         List<Node> vars = (List<Node>) t.getTransferData(new ListTransferable(new ArrayList()).getDataFlavor());
                         model.addAll(vars);
@@ -1023,7 +1023,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
                             //noinspection unchecked
                             List<Node> o = (List<Node>) t.getTransferData(new ListTransferable(new ArrayList()).getDataFlavor());
                             if (comp instanceof JList) {
-                                JList list = (JList) comp;
+                                JList<Node> list = (JList<Node>) comp;
                                 VariableListModel model = (VariableListModel) list.getModel();
                                 for (Node c : o) {
                                     model.removeFirst(c);
@@ -1045,7 +1045,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
                 Component comp = dge.getComponent();
                 List selected = null;
                 if (comp instanceof JList) {
-                    JList list = (JList) comp;
+                    JList<Node> list = (JList<Node>) comp;
                     selected = list.getSelectedValuesList();
                 } else {
                     JTextField pane = (JTextField) comp;
@@ -1162,8 +1162,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
      */
     public static class GraphSelectionTextInputAction extends AbstractAction implements ClipboardOwner {
         private final GraphSelectionWrapper wrapper;
-        private final JList sourceList;
-        private final JList selectedList;
+        private final JList<Node> sourceList;
+        private final JList<Node> selectedList;
         private final JComponent component;
         private JTextArea textArea;
 
@@ -1172,7 +1172,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
          * clipboard.
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
-                                             JList sourceList, JList selectedList) {
+                                             JList<Node> sourceList, JList<Node> selectedList) {
             super("Text Input...");
             this.component = component;
             this.wrapper = wrapper;

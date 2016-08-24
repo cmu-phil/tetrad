@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class LargeSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
-    private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public LargeSemSimulation(RandomGraph graph) {
     }

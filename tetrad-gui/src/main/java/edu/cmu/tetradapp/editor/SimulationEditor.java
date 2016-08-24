@@ -357,6 +357,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         wrapper.setDataModelList(simulation.getDataModelList());
         tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
+        if (simulation.getDataModelList().size() > 0) {
+            tabbedPane.setSelectedIndex(2);
+        }
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {

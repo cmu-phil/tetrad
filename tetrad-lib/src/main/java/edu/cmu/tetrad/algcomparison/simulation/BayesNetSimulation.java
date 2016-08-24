@@ -21,8 +21,8 @@ public class BayesNetSimulation implements Simulation {
     private RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;
-    private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public BayesNetSimulation(RandomGraph graph) {
         this.randomGraph = graph;

@@ -496,7 +496,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
                 }
 
-                graphList.add(algorithm.search(dataSet, parameters));
+                DataType dataType = algorithm.getDataType();
+
+                if (((dataType == DataType.Continuous || dataType == DataType.Mixed) && dataSet.isContinuous())
+                        || ((dataType == DataType.Discrete || dataType == DataType.Mixed) && dataSet.isDiscrete())) {
+                    graphList.add(algorithm.search(dataSet, parameters));
+                } else {
+                    throw new IllegalArgumentException("The stored algorithms configuration is not compatible with " +
+                            "this type of data.");
+                }
             }
         } else {
             Algorithm algorithm = getAlgorithm();

@@ -7,6 +7,7 @@ import edu.cmu.tetrad.gene.tetrad.gene.graph.RandomActiveLagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedFactor;
 import edu.cmu.tetrad.gene.tetradapp.model.BooleanGlassGeneIm;
 import edu.cmu.tetrad.gene.tetradapp.model.BooleanGlassGenePm;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
@@ -23,8 +24,8 @@ import java.util.*;
 public class BooleanGlassSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
-    private List<DataSet> dataSets;
-    private Graph graph;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private Graph graph = new EdgeListGraph();
 
     public BooleanGlassSimulation(RandomGraph graph) {
         this.randomGraph = graph;

@@ -22,8 +22,8 @@ public class StandardizedSemSimulation implements Simulation {
     private RandomGraph randomGraph;
     private SemPm pm;
     private StandardizedSemIm standardizedIm;
-    private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public StandardizedSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;

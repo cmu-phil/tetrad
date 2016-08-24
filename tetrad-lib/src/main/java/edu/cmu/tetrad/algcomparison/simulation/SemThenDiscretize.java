@@ -20,8 +20,8 @@ import java.util.List;
 public class SemThenDiscretize implements Simulation {
     static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
-    private List<Graph> graphs;
-    private List<DataSet> dataSets;
+    private List<Graph> graphs = new ArrayList<>();
+    private List<DataSet> dataSets = new ArrayList<>();
     private DataType dataType;
     private List<Node> shuffledOrder;
 
