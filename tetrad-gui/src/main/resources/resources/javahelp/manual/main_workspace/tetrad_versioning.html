@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Learning the Tools</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="99%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="white">Tetrad Versioning </font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Beginning with version 4.3.2-1, saved sessions (&quot;.tet&quot; files) are intended to be backwards compatible. That is, sessions saved out using one version are intended to be loadable using versions of Tetrad with equal or higher version numbers. There may be a few problems; hopefully these will get ironed out quickly.</p>
+<p>You might want to know the exact version of Tetrad you are running for two reasons:</p>
+<ol>
+  <li>New features are regularly added to Tetrad, and bugs in old features are removed. You may want to to use a version of Tetrad with a specific version of some algorithm, or you may simply want to sync your version with a version that someone else is using, to avoid any discrepancies.</li>
+  <li>You may experience some vestigial problems with loading, which we can fix. </li>
+</ol>
+<p>If you do experience a problem loading a session that you've saved, please let us know by emailing the <em>session itself</em> (the &quot;.tet&quot; file) to Joe Ramsey at jdramsey@andrew.cmu.edu. We will attempt to fix the problem and either post a new file for that version or else let you know which later version you can load the session in. We sincerely appreciate your help on this. </p>
+<p>To find out which exact version of Tetrad you are using, you may use one of three methods. </p>
+<h3>Method 1 </h3>
+<p>In most operating systems, the version number is displayed in the title bar above the application. In the example below, it's &quot;4.3.2-3&quot;. The &quot;4&quot; in this case is the major version, the first &quot;3&quot; the minor version, the &quot;2&quot; the minor subversion, and the &quot;3&quot; the incremental release number. This appears in the title bar like this: </p>
+<p><img src="../images/main_workbench2.gif" width="592" height="97"> </p>
+<h3>Method 2 </h3>
+<p>You can also find the version number by selecting &quot;Session Version&quot; from the main File menu: </p>
+<p><img src="../images/main_workbench3.gif" width="243" height="272"></p>
+<p>A dialog will appear telling you the version number and date the last time the current session was saved, and the current version of Tetrad:</p>
+<p><img src="../images/main_workbench4.gif" width="335" height="160"></p>
+<p>Each saved &quot;.tet&quot; file is stamped with a version and a date in such a way that, even if the file itself cannot be loaded, at least this meta-information can be loaded. So if you have a file that won't load, you can still see the version it was saved under and the date it was saved. This allows you to go to the Tetrad website and launch the version of Tetrad that was used to save out the file. You can then load the file under that version. </p>
+<h3>Method 3 </h3>
+<p>The current version number is also displayed in the &quot;About Tetrad&quot; menu item in the &quot;Help&quot; menu.</p>
+</body>
+</html>

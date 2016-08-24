@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: PC</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Search Algorithms: PC</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<p>The PC algorithm is designed to search for causal explanations of
+observational or mixed observational and experimental coltData in which it
+may be assumed that the true causal hypothesis is acyclic and there is
+no hidden common cause between any two variables in the dataset. (It
+is also assumed that no relationship between variables in the coltData is
+deterministic--see PCD).</p>
+
+<p>The algorithm operates by asking a conditional independence oracle
+to make judgements about the independence of pairs of variables (e.g.,
+X, Z) conditional on sets of variables (e.g., {Y}). Conditional
+indepedence tests are available for datasets that consist either
+entirely of continuous variables or entirely of discrete variables;
+hence, datasets of these types can be used as input to the
+algorithm. As a way of getting one's head around how the algorithm
+should behave in the ideal, when independence tests always give
+correct answers, one may also use a DAG as an input to the algorithm,
+in which case graphical d-separation will be substituted for an actual
+independence test. </p> 
+
+<p>In the case where a continuous dataset is used as input, the
+available conditional independence tests assume that the direct causal
+influence of any variable on any other is linear and that the
+distribution of each variable is Normal. </p> 
+
+<p><font color="#000000">Some of the above assumptions are not
+testable using observational coltData. They should come from prior
+knowledge or partial experiments.</font></p> 
+
+<p>Pseudocode for the version of PC implemented in Tetrad IV is given
+below. As shown in the pseudocode, the algorithm can be broken into
+two phases: an adjacency phase and an orientation phase. In the
+adjacency phase, a complete undirected graph over the variables is
+initially constructed and then edges X---Y are removed if some set S
+among either the adjacents of X or the adjacents of Y can be found (of
+a certain size, or &quot;depth&quot;) such that I(X, Y | S). Once the
+adjacency structure over V has been well estimated by this procedure,
+an orientation phase is begun. The first step of the orientation phase
+is to examine unshielded triples and consider whether to orient them
+as colliders. An unshielded triple is a triple &lt;X, Y, Z&gt; where X
+is adjacent to Y, Y is adjacent to Z, but X is not adjacent to
+Z. Since X is not adjacent to Z, the edge X---Z must have been removed
+during the adjacency search by conditioning on some set Sxz; &lt;X, Y,
+Z&gt; is oriented as a collider X--&gt;Y&lt;--Z just in case Y is not
+in this Sxz. Once all such unshielded triples have been oriented as
+colliders by this rule that can be, a series of orientation rules is
+applied (in this case, the complete orientation rule set from Meek
+1995) to orient any edges whose orientations are implied by previous
+orientations. The log of particular decisions the algorithm makes, as
+described above, when searching on an actual dataset is available
+through the Logging menu in the interface. </p> 
+
+<p><font color="#000000"><b><br> Entering PC parameters</b></font></p>
+
+<p>Consider the following &quot;true&quot; causal hypothesis (a
+DAG):</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/pcsearch1.png"
+  alt="" width="508" height="470" style="width: 508px; height:
+  470px;"></font></p>
+</blockquote>
+<p>When the PC algorithm is chosen from the Search dropdown, window
+appears in which on may enter an <em>alpha value</em> and edit
+<em>knowledge</em>. The alpha value is the significance level of the
+statistical test used as a conditional independence oracle for the
+algorithm. The default value is 0.05, although it is useful to
+experiment with different alpha levels to test the sensitivity of the
+analysis to this parameter. (Typical values for experimenting are
+0.01, 0.05, and 0.10.)</p>
+
+<p>PC is sensitive to background knowledge--that is, sensitive to
+specifications that certain edges are either required in the model or
+forbidden to be in the model. To edit this information, click the edit
+button for background knowledge and enter the information in that
+interface. </p>
+
+<p>When parameters are set to their desired values, click
+&quot;Execute&quot; to run the algorithm. The output will be a pattern
+like the following: </p>
+
+<p align="center"><font color="#000000"><img
+src="../../images/pcsearch2.png" alt="" width="588" height="519"
+style="height: 519px; width: 588px;"><b><br> </b></font></p>
+
+<p align="left"><font color="#000000"><b>Interpreting the
+output</b></font></p> <p>The are basically two types of edges that can
+appear in PC output:</p>
+<ul>
+  <li><strong>a directed edge: </strong>
+    <p><font color="#000000"><img src="../../images/directedEdge.png" alt="" width="236" height="53"
+ style="height: 53px; width: 236px;"></font></p>
+    <p><font color="#000000">In this case, the PC algorithm deduced
+that A is a direct cause of B, i.e., the causal effect goes from A to B
+and it is not intermediated by any of the other observed variable</font></p>
+  </li>
+  <li><font color="#000000"><strong>a undirected edge:</strong></font>
+    <p><font color="#000000"><img src="../../images/undirected_edge.png" alt="" width="236" height="53"
+ style="height: 53px; width: 236px;"></font></p>
+    <p><font color="#000000">In this case, the PC algorithm cannot tell
+if A causes B or if B causes A.</font></p>
+  </li>
+</ul>
+<p><font color="#000000">The absence of an edge between any pair of
+nodes means they are independent, or that the causal effect of one modelNode
+in the other is intermediate by other observed variables.</font></p>
+
+<p><font color="#000000">Sometimes a double directed edge sometimes
+appear in a PC search output. </font>Such edges are the result of a
+partial failure of the PC search.  They may appear due to failure of
+assumptions (e.g., relationships are non-linear, the population graph
+is cyclic, etc.) or because the sample is not large enough and some
+statistical decisions are inconsistent. In a situation like that, the
+user may introduce prior knowledge to constraint the direction such
+edge may assume, collect more coltData or use a different
+algorithm. Knowledge of the domain will be essential.</p>
+
+<p>Finally, a triplet of nodes may assume the following pattern:</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/pcsearch3.png" alt="" width="295" height="185"
+ style="height: 185px; width: 295px;"></font></p>
+</blockquote>
+<p>In other words, in such patterns, A and B are connected by an
+undirected edge, A and C are connected by an undirected edge, and B and
+C are not connected by an edge. By the PC search assumptions, this
+means that B and C cannot both be cause of A. The three possible
+scenarios are:</p>
+<ul>
+  <li>A is a common cause of B and C</li>
+  <li>B is a direct cause of A, and A is a direct cause of C</li>
+  <li>C is a direct cause of A, and A is a direct cause of B</li>
+</ul>
+<p>In our example, some edges were compelled to be directed: X2 and X3
+are causes of X4, and X4 is a cause of X5. However, we cannot tell much
+about the triplet (X1, X2, X3), but we know that X2 and X3 cannot both
+be causes of X1.<font color="#000000"><br>
+</font></p>
+<font color="#000000"><h3>Pseudocode for PC</h3>
+<p>The following is pseudocode representing the way PC is implemented in Tetrad.</p>
+<pre>
+Step A:
+
+Form the complete undirected graph G over v1,...,vn.
+
+Step B (Fast Adjacency Search):
+
+For each depth d = 0, 1, ...:
+   For for each variable x:
+
+      "next_y":
+      For each adjacent modelNode y to v:
+         Let adjX = adj(x) - {y}
+         Let adjY = adj(y) - {x}
+
+         For each subset Sx of adjX up to size d:
+            If x _||_ y | Sx, remove x---y from G.
+            Continue "next_y."
+
+         For each subset Sy of adjY up to size d:
+            if x _||_ y | Sy, remove x---y from G.
+            Continue "next_y."
+
+
+Step C:
+
+Orient colliders in G, as follows:
+
+For each modelNode x:
+   For each pair of nodes y, z adjacent to x:
+      If y and z are not adjacent:
+         If ~(y _||_ z | x):
+            Orient y-->x<--z as a collider.
+
+Step D:
+
+Apply orientation rules until no more orientations are possible.
+Rules to use: away from collider, away from cycle, kite1, kite2.
+(These are Meek's rules R1, R2, R3, and R4.)
+
+Away from collider:
+
+For each modelNode a:
+   For each b, c in adj(a):
+      If b-->a---c:
+         Orient b-->a-->c.
+      Else if c-->a---b:
+         Orient c-->a-->b.
+
+
+Away from cycle:
+
+For each modelNode a:
+   For b, c in adj(a):
+      If a-->b-->c and a---c:
+         Orient a-->c.
+      Else if c-->b-->a and c---a:
+         Orient c-->a.
+
+Kite 1:
+
+For each modelNode a:
+   For each nodes b, c, d in adj(a) such that a---b, a---c,
+   a---d, and !(c---d):
+      If c-->b and d-->b:
+         Orient a-->b.
+
+
+Kite 2:
+
+For each modelNode a:
+   For each nodes b, c, d in adj(a) such that a---b, a---d,
+   b is not adjacent to d, and either a---c, a-->c, or c-->a,
+      If b-->c and c-->d:
+         Orient a-->d.
+      Else if d-->c and c-->b:
+         Orient a-->b.
+</pre>
+</font>
+<p>&nbsp;</p>
+<h3>References: </h3>
+<p>Spirtes, Glymour, and Scheines (2000). Causation, Prediction, and Search.</p>
+<p>Chris Meek (1995), &quot;Causal inference and causal explanation with background knowledge.&quot;</p>
+</body>
+</html>

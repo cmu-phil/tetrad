@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: GES</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Search Algorithms: GES</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p><br>
+  GES (Greedy Equivalence Search) is a Bayesian algorithm that searches over Markov equivalence classes, represented by <em>patterns</em>, for a coltData set D over a set of variables V. </p>
+<p>A pattern is an acyclic graph that consists whose edges are either directed (--&gt;) or undirected (---) and represents an equivalence class of DAGs, as follows: each directed edge in the pattern is so directed in every DAG in the equivalence class, and for each undirected edge X---Y in the pattern, a DAG exists in the equivalence class with that edge directed as X&lt;--Y and a DAG exists in the equivalence class with that edge directed as X--&gt;Y. To put it differently, a pattern represent the set of edges that can be determined by the search, with as many of these edges oriented as can be, using the available information.</p>
+<p>It is assumed (as with PC) that the true causal graph is acyclic and the no common hidden causes exist between pairs of variables in the graph. GES can be run on datasets that are either entirely continuous or entirely discrete (but not directly on graphs using d-separation). In the continuous case, it is assumed that the direct causal influence of any variable into any other is linear, with the distribution of each variable being Normal. Under these assumptions, the algorithm is pointwise consistent. </p>
+<p>GES searches over patterns by <em>scoring</em> the patterns themselves. There is a forward sweep in the algorithm and a backward sweep. In the forward sweep, at each step, GES tries to find the edge which, once added, increases the score the most over not adding any edge at all. (After adding each such edge, the pattern is rebuilt by orienting any edge as --- that does not participate in a collider and then applying Meek's PC orientation rules to add any implied orientations.) Once the algorithm gets to the point where there is no edge that can be added that would increase the score, the backward sweep begins. In the backward sweep, GES tries at each step to find the one edge it can remove that will increase the score of the resulting the most over the previous pattern. Once it gets to the point where there is no edge anymore than once removed increases the score, the algorithm stops.</p>
+<p><font color="#000000">There are some differences in assumptions and
+expected behavior between this algorithm and the PC algorithm. When, contrary to assumptions, there is actually a latent common cause of two measured
+variables the PC algorithm will sometimes discover that fact; GES will
+not. </font></p>
+<p><font color="#000000">Information about how precisely GES makes decisions about adding or removing edges can be found in the logs, which can be accessed using the Logging menu. </font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b> Entering GES parameters</b></font></p>
+<p>Consider the following example:<br>
+<br>
+</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/pcsearch1.png"
+ width="508" height="470"><br>
+  <br>
+  </font></p>
+</blockquote>
+<p>When the PC algorithm is chosen from the Search Object combo box,
+the following window appears:<br>
+<br>
+</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/ges1.png" width="268"
+ height="205"><br>
+  <br>
+  </font></p>
+</blockquote>
+<p>The parameters that are used by the GES algorithm can be specified
+in this window. The parameters are as follows:</p>
+<ul>
+  <li><strong>view background knowledge</strong>: this button gives
+access to a <font color="#000000"><b><a
+ href="../../search/../search.html#BackgroundKnowledge">background knowledge editor</a></b></font>
+that is analogous to the one used in most search algorithms.</li>
+</ul>
+<p>Execute the search.</p>
+<p><font color="#000000"><b><a name="Interpretation" id="Interpretation"></a><br>
+</b><b>Interpreting the output</b></font></p>
+<p><font color="#000000">The GES algorithm returns a partially oriented
+graph where the nodes represent the variables given as input. In our
+example, the outcome should be as follows if the sample is
+representative of the population:<br>
+<br>
+</font></p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/pcsearch2.png"
+ width="588" height="519"><br>
+  <br>
+  </font></p>
+</blockquote>
+<p>The are basically two types of edges that can appear in GES output:</p>
+<ul>
+  <li><strong>a directed edge: </strong>
+    <p><font color="#000000"><img src="../../images/directedEdge.png"
+ width="236" height="53"></font></p>
+    <p><font color="#000000">In this case, the GES algorithm deduced
+that A is a direct cause of B, i.e., the causal effect goes from A to B
+and it is not intermediated by any of the other observed variable</font></p>
+  </li>
+  <li><font color="#000000"><strong>a undirected edge:</strong></font>
+    <p><font color="#000000"><img src="../../images/undirected_edge.png"
+ width="236" height="53"></font></p>
+    <p><font color="#000000">In this case, the GES algorithm cannot
+tell if A causes B or if B causes A.</font></p>
+  </li>
+</ul>
+<p><font color="#000000">The absence of an edge between any pair of
+nodes means they are independent, or that the causal effect of one modelNode
+in the other is intermediate by other observed variables. Unlike the PC
+algorithm, no accidental double-directed edges can appear. It does not
+mean that GES will be immune to the sample variation that caused the
+unexpected behavior of the PC search. It is a good idea to run both
+searches and compare the result.</font></p>
+<p>Finally, a triplet of nodes may assume the following pattern:</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/pcsearch3.png"
+ width="295" height="185"></font></p>
+</blockquote>
+<p>In other words, in such patterns, A and B are connected by an
+undirected edge, A and C are connected by an undirected edge, and B and
+C are not connected by an edge. By the PC search assumptions, this
+means that B and C cannot both be cause of A. The three possible
+scenarios are:</p>
+<ul>
+  <li>A is a common cause of B and C</li>
+  <li>B is a direct cause of A, and A is a direct cause of C</li>
+  <li>C is a direct cause of A, and A is a direct cause of B</li>
+</ul>
+<p>In our example, some edges were compelled to be directed: X2 and X3
+are causes of X4, and X4 is a cause of X5. However, we cannot tell much
+about the triplet (X1, X2, X3), but we know that X2 and X3 cannot both
+be causes of X1.</p>
+<h3>References: </h3>
+<p>Chickering (2002). Optimal structure identification with greedy search. <em>Journal of Machine Learning Research.</em></p>
+<p>&nbsp;</p>
+</body>
+</html>

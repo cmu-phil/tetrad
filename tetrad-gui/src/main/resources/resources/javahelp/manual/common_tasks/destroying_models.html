@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Destroying Contents of Boxes </font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>When you create a flowchart by placing boxes on the session workbench and drawing edges between them, you set up dependencies between the models that are in the boxes. For instance, if you place a Graph box and a PM box on the workbench, with an edge from the Graph box to the PM box, whatever model you put in the PM box will be dependent on the model you put in the Graph box. Let's say you put a DAG in the Graph box and a Bayes PM in the PM box, as follows:</p>
+<p><img src="../images/flowchart_dependencies1.gif" width="114" height="216"></p>
+<p>Then if you change the DAG by adding a node, the Bayes PM is no longer valid, since it doesn't have the same variables as the graph. Tetrad in such a case will offer you choice to either have the Bayes PM automatically updated to reflect the new variable or to have the edge between the Graph box and PM box removed. </p>
+<p><img src="../images/flowchart_dependencies2.gif" width="475" height="201"></p>
+<p>If you select &quot;Execute,&quot; the Bayes PM will be replaced by a new Bayes PM that adds the new variable and copies over as much of the information from the old Bayes PM as possible.</p>
+<p>It is possible that information may be lost in this process. For example, if you add an IM box to the above session and place a Bayes IM in this box, if you change the number of categories for some variable, some of the conditional probability tables for the Bayes IM will inevitably lose information.</p>
+<p>Note that all models in boxes downstream will be revised when you click &quot;Execute.&quot; This is because of dependencies created by arrows between boxes downstream.</p>
+</body>
+</html>

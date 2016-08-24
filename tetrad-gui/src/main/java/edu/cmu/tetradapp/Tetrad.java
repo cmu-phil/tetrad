@@ -36,7 +36,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.Locale;
+import javax.help.*;
+
 
 /**
  * <p>Launches Tetrad as an application.  The intended class path in either case
@@ -198,7 +201,6 @@ public final class Tetrad implements PropertyChangeListener {
         });
 
         SplashScreen.hide();
-
 
 
     }

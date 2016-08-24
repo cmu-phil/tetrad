@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='ISO-8859-1'  ?>
+
+<!DOCTYPE toc
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+
+<toc version="1.0">
+    <tocitem text="TETRAD Overview" target="tetrad_overview"/>
+    <tocitem text="TETRAD Manual" target="manual">
+        <tocitem text="Main Workspace Explained" target="main_workspace_explained">
+            <tocitem text="Tetrad Versioning" target="tetrad_versioning"/>
+            <tocitem text="Tetrad Menubar" target="tetrad_menubar"/>
+            <tocitem text="Tetrad Toolbar" target="tetrad_toolbar"/>
+            <tocitem text="How to Build a Session" target="how_to_build_a_session"/>
+        </tocitem>
+        <tocitem text="Each Box Explained" image="toplevelfolder" target="each_box_explained">
+            <tocitem text="Graph" target="graph_box">
+                <tocitem text="Directed Acyclic Graph" target="graph_dag"/>
+                <tocitem text="SEM Graph" target="graph_sem"/>
+                <tocitem text="Time Series Graph" target="graph_time"/>
+            </tocitem>
+            <tocitem text="Parametric Model (PM)" target="pm_box">
+                <tocitem text="Bayes Parametric Model" target="pm_bayes"/>
+                <tocitem text="SEM Parametric Model" target="pm_sem"/>
+            </tocitem>
+            <tocitem text="Instantiated Model (IM)" target="im_box">
+                <tocitem text="Bayes Instantiated Model" target="bayes_im"/>
+                <tocitem text="Dirichlet Bayes IM" target="dirichlet_bayes_im"/>
+                <tocitem text="SEM Instantiated Model" target="sem_im"/>
+            </tocitem>
+            <tocitem text="Data" target="data_box">
+                <tocitem text="Data Set List" target="data_set_list"/>
+            </tocitem>
+            <tocitem text="Manipulated Data" target="manipulated_data_box">
+                <tocitem text="Manipulated Data" target="manipulated_data"/>
+            </tocitem>
+            <tocitem text="Estimate" target="estimate_box">
+                <tocitem text="ML Bayes Estimator" target="bayes_estimator"/>
+                <tocitem text="Dirichlet Bayes Estimator" target="dirichlet_bayes_estimator"/>
+                <tocitem text="SEM Estimator" target="sem_estimator"/>
+            </tocitem>
+            <tocitem text="Update" target="update_box">
+                <tocitem text="Row Summing Updater" target="row_summing_updater"/>
+                <tocitem text="CPT Invariant Updater" target="cpt_invariant_updater"/>
+                <tocitem text="Approximate Updater" target="approximate_updater"/>
+            </tocitem>
+            <tocitem text="Search" target="search_box">
+                <tocitem text="PC" target="pc"/>
+                <tocitem text="CPC" target="cpc"/>
+                <tocitem text="PCD" target="pcd"/>
+                <tocitem text="FCI" target="fci"/>
+                <tocitem text="CFCI" target="cfci"/>
+                <tocitem text="CCD" target="ccd"/>
+                <tocitem text="GES" target="ges"/>
+                <tocitem text="MBF" target="mbf"/>
+                <tocitem text="MIMBuild" target="mimbuild"/>
+                <tocitem text="BPC" target="bpc"/>
+                <tocitem text="Purify" target="purify"/>
+            </tocitem>
+            <tocitem text="Regression" target="regression_box">
+                <tocitem text="Multiple Linear Regression" target="linear_regression"/>
+            </tocitem>
+            <tocitem text="Classify" target="classify_box">
+                <tocitem text="Classify" target="classify"/>
+            </tocitem>
+            <tocitem text="Compare" target="compare_box">
+                <tocitem text="Compare" target="compare"/>
+            </tocitem>
+        </tocitem>
+        <!--    <tocitem text="Each Module Explained" image="toplevelfolder" target="each_module_explained">-->
+        <!--    </tocitem>-->
+        <tocitem text="Some Common Tasks" image="toplevelfolder" target="common_tasks">
+            <tocitem text="Copying, Cutting, Pasting" target="copying_and_pasting"/>
+            <tocitem text="Defining Discrete Variables" target="defining_discrete_variables"/>
+            <tocitem text="Destroying Models" target="destroying_models"/>
+            <tocitem text="Discretizing Data" target="discretizing_data"/>
+            <tocitem text="Editing Knowledge" target="editing_knowledge"/>
+            <tocitem text="Editing Node Properties" target="editing_node_properties"/>
+            <tocitem text="Exiting TETRAD" target="exiting_tetrad"/>
+            <tocitem text="Generating Random DAGs" target="generating_random_dags"/>
+            <tocitem text="Handling Missing Data" target="handling_missing_data"/>            
+            <tocitem text="Opening Sessions" target="opening_sessions"/>
+            <tocitem text="Saving Screenshots" target="saving_screenshots"/>
+            <tocitem text="Saving Sessions" target="saving_sessions"/>
+            <tocitem text="Selecting Groups of Nodes" target="selecting_groups_of_nodes"/>
+            <tocitem text="Using Popup Menus" target="using_popup_menus"/>
+            <tocitem text="Using Templates" target="using_templates"/>
+        </tocitem>
+        <tocitem text="Some Definitions" image="toplevelfolder" target="definitions">
+            <tocitem text="Measure-Structural Graph" target="measurement_structural_graph"/>
+            <tocitem text="Measured and Latent Variables" target="measured_latent_variables"/>
+            <tocitem text="Tetrad Graph Types" target="tetrad_graph_types"/>
+        </tocitem>
+    </tocitem>
+    <tocitem text="Why Doesn't TETRAD...?" target="why_doesnt_tetrad"/>
+    <tocitem text="For Further Help..." target="for_further_help"/>
+    <tocitem text="References" target="references"/>
+</toc>
+

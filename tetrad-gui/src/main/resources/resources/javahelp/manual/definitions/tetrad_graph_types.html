@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Tetrad Graph Types </font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>The theory of causal search that the Tetrad program implements uses graphs of a variety of different types, some simple and some fairly sophisticated. A brief description of each of the main types is given below. For more details, consult the Bibliography, especially Spirtes, Glymour and Scheines (2002), <em>Causation, Prediction, and Search</em>. </p>
+<p>&nbsp;</p>
+<h3>Directed Graphs.</h3>
+<p>A directed graph is a set of variables V together with a set of directed edges Vi--&gt;Vj for Vi, Vj in V, Vi not equal to Vj. A directed graph may contain cycles--that is, paths of the form X--&gt;...--&gt;X, for some X in V. </p>
+<p>&nbsp;</p>
+<h3>Directed Acyclic Graphs (DAG).</h3>
+<p>A directed acyclic graph is a directed graph that does not contain cycles. This type of graph can be used to construct a Bayes or SEM parametric model. A Bayes parametric model requires a DAG.</p>
+<h3>SEM Graph. </h3>
+<p>A SEM graph is a directed graph over a set of variables V which has been embellished by adidtional variables E representing error terms for endogenous variables in V, edges from each e in E to its corresponding variable in V, and a set of bidirected edges over this embellished graph. SEM graphs are used to represent the causal structure of SEM models. </p>
+<h3>Pattern.</h3>
+<p>From Causation, Prediction and Search (2002), p. 61: &quot;A pattern Pi is a mixed graph with directed and undirected edges. A graph G is in the set of graphs represented by Pi if and only if:</p>
+<p>(i) G has the same adjacency relations as Pi;<br>
+(ii) if the edge between A and B is oriented A--&gt;B in Pi, then it is oriented A--&gt;B in G;<br>
+(iii) if Y is an unshielded collider on the path &lt;X, Y, Z&gt; in G then Y is an unshielded collider on &lt;X, Y, Z&gt; in Pi.&quot;</p>
+<p>Y is an unshielded collider on path &lt;X, Y, Z&gt; iff X--&gt;Y&lt;--Z and X and Z are not adjacent. </p>
+<p>Patterns are theoretically output by the PC and GES algorithms. Sometimes the PC algorithm includes in its output bidirected edges. When this happens, it is because there is conflicting independence test information. This usually means that the assumption of causal sufficiency has been violated and that FCI should be run as well for comparison. </p>
+<h3>POIPG.</h3>
+<p>POIPG's (pronounced &quot;poip-G&quot;) were output by earlier versions of FCI; due to theoretical advances since then, FCI now outputs PAGs (see below).</p>
+<p>&nbsp;</p>
+<h3>Partial Ancestral Graph (PAG).</h3>
+<p>A PAG is ...</p>
+<p>PAGs are output by FCI and CCD. </p>
+<p>&nbsp;</p>
+<h3><strong>Mixed Ancestral Graphs (MAG).</strong></h3>
+<p>Definition. </p>
+</body>
+</html>
