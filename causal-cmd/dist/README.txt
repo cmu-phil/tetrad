@@ -17,7 +17,7 @@ Java 8 is the only prerequisite to run the software.  Note that by default Java 
 Download the this file, [http://www.ccd.pitt.edu/wp-content/uploads/files/Retention.txt Retention.txt], which is a dataset containing information on college graduation and used in the publication "What Do College Ranking Data Tell Us About Student Retention?" by Drudzel and Glymour, 1994.
 
 <pre>
-java -jar causal-cmd-5.3.0-20160330-jar-with-dependencies.jar --algorithm fgs --data Retention.txt  --maxIndegree -1 --output output --verbose
+java -jar causal-cmd-5.3.0-20160330-jar-with-dependencies.jar --algorithm fgs --data Retention.txt  --depth -1 --output output --verbose
 </pre>
 
 The program will output the results of the FGS search procedure as a text file (in this example to output).   The beginning of the file contains the algorithm parameters used in the search.
@@ -36,7 +36,7 @@ Graph Edges:
 9. tst_scores --- stdt_clss_stndng
 </pre>
 
-In FGS, "Elapsed getEffectEdges = XXms" refers to the amount of time it took to evaluate all pairs of variables for correlation.  The file then details each step taken in the greedy search procedure i.e., insertion or deletion of edges based on a scoring function (i.e., BIC test difference for each chosen search operation).
+In FGS, "Elapsed getEffectEdges = XXms" refers to the amount of time it took to evaluate all pairs of variables for correlation.  The file then details each step taken in the greedy search procedure i.e., insertion or deletion of edges based on a scoring function (i.e., BIC score difference for each chosen search operation).
 
 The end of the file contains the causal graph from the search procedure.  Here is a key to the edge types
 <pre>
@@ -111,31 +111,50 @@ Tetrad-cli has different switches for different algorithms.
 
 === causal-cmd usage for FGS for continuous data ===
 <pre>
-usage: java -jar causal-cmd-<VERSION>.jar --algorithm fgs --data <arg> [--delimiter
-       <arg>] [--maxIndegree <arg>] [--exclude-variables <arg>] [--faithful]
-       [--graphml] [--help] [--ignore-linear-dependence] [--knowledge
-       <arg>] [--no-validation-output] [--out <arg>] [--output-prefix
-       <arg>] [--penalty-discount <arg>] [--skip-non-zero-variance]
-       [--skip-unique-var-name] [--thread <arg>] [--verbose]
-    --data <arg>                 Data file.
-    --delimiter <arg>            Data delimiter either comma, semicolon,
-                                 space, colon, or tab. Default is tab.
-    --maxIndegree <arg>                Search maxIndegree. Must be an integer >= -1
-                                 (-1 means unlimited). Default is -1.
-    --exclude-variables <arg>    A file containing variables to exclude.
-    --heuristic-speedup                   Assume faithfulness which results in a faster search
-    --graphml                    Create graphML output.
-    --help                       Show help.
-    --ignore-linear-dependence   Ignore linear dependence.
-    --knowledge <arg>            A file containing prior knowledge.
-    --no-validation-output       No validation output files created.
-    --out <arg>                  Output directory.
-    --output-prefix <arg>        Prefix name of output files.
-    --penalty-discount <arg>     Penalty discount. Default is 4.0
-    --skip-non-zero-variance     Skip check for zero variance variables.
-    --skip-unique-var-name       Skip check for unique variable names.
-    --thread <arg>               Number of threads.
-    --verbose                    Print additional information.
+usage: java -jar causal-cmd-5.3.0-SNAPSHOT.jar --algorithm fgs [-d <arg>] [--depth <arg>] [--disable-heuristic-speedup] [--exclude-variables <arg>] -f <arg> [--graphml] [--help] [--ignore-linear-dependence] [--json] [--knowledge <arg>] [--no-validation-output] [-o <arg>] [--output-prefix <arg>] [--penalty-discount <arg>] [--skip-non-zero-variance] [--skip-unique-var-name] [--thread <arg>] [--verbose]
+ -d,--delimiter <arg>             Data delimiter either comma, semicolon, space, colon, or tab. Default: comma for *.csv, else tab.
+    --depth <arg>                 Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.
+    --disable-heuristic-speedup   Disable heuristic speedup. Default is false.
+    --exclude-variables <arg>     A file containing variables to exclude.
+ -f,--data <arg>                  Data file.
+    --graphml                     Create graphML output.
+    --help                        Show help.
+    --ignore-linear-dependence    Ignore linear dependence.
+    --json                        Create JSON output.
+    --knowledge <arg>             A file containing prior knowledge.
+    --no-validation-output        No validation output files created.
+ -o,--out <arg>                   Output directory.
+    --output-prefix <arg>         Prefix name of output files.
+    --penalty-discount <arg>      Penalty discount. Default is 4.0
+    --skip-non-zero-variance      Skip check for zero variance variables.
+    --skip-unique-var-name        Skip check for unique variable names.
+    --thread <arg>                Number of threads.
+    --verbose                     Print additional information.
+
+</pre>
+
+=== causal-cmd usage for FGS for discrete data ===
+<pre>
+usage: java -jar causal-cmd-5.3.0-SNAPSHOT.jar --algorithm fgs-discrete [-d <arg>] [--depth <arg>] [--disable-heuristic-speedup] [--exclude-variables <arg>] -f <arg> [--graphml] [--help] [--json] [--knowledge <arg>] [--no-validation-output] [-o <arg>] [--output-prefix <arg>] [--sample-prior <arg>] [--skip-category-limit] [--skip-unique-var-name] [--structure-prior <arg>] [--thread <arg>] [--verbose]
+ -d,--delimiter <arg>             Data delimiter either comma, semicolon, space, colon, or tab. Default: comma for *.csv, else tab.
+    --depth <arg>                 Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.
+    --disable-heuristic-speedup   Heuristic speedup. Default is false.
+    --exclude-variables <arg>     A file containing variables to exclude.
+ -f,--data <arg>                  Data file.
+    --graphml                     Create graphML output.
+    --help                        Show help.
+    --json                        Create JSON output.
+    --knowledge <arg>             A file containing prior knowledge.
+    --no-validation-output        No validation output files created.
+ -o,--out <arg>                   Output directory.
+    --output-prefix <arg>         Prefix name of output files.
+    --sample-prior <arg>          Sample prior.
+    --skip-category-limit         Skip 'limit number of categories' check.
+    --skip-unique-var-name        Skip 'unique variable name' check.
+    --structure-prior <arg>       Structure prior.
+    --thread <arg>                Number of threads.
+    --verbose                     Print additional information.
+
 
 </pre>
 
