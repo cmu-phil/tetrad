@@ -337,7 +337,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
 //            fci.setMaxIndegree(params.getDepth());
 //            double penaltyDiscount = params.getPenaltyDiscount();
 //
-//            fci.setPenaltyDiscount(penaltyDiscount);
+//            fci.setAlpha(penaltyDiscount);
 //            fci.setSamplePrior(params.getSamplePrior());
 //            fci.setStructurePrior(params.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);
@@ -378,8 +378,9 @@ public class GFciRunner extends AbstractAlgorithmRunner
         double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
         if (model instanceof Graph) {
+            IndependenceTest test = new IndTestDSep((Graph) model);
             GraphScore gesScore = new GraphScore((Graph) model);
-            gfci = new GFci(gesScore);
+            gfci = new GFci(test, gesScore);
             gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             gfci.setVerbose(true);
         } else {
@@ -388,13 +389,15 @@ public class GFciRunner extends AbstractAlgorithmRunner
                 DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
+                    IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly((DataSet) model), 0.001);
                     SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
 //                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
 //                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    gfci = new GFci(gesScore);
+                    gfci = new GFci(test, gesScore);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -408,10 +411,11 @@ public class GFciRunner extends AbstractAlgorithmRunner
                     throw new IllegalStateException("Data set must either be continuous or discrete.");
                 }
             } else if (model instanceof ICovarianceMatrix) {
+                IndependenceTest test = new IndTestFisherZ((ICovarianceMatrix) model, 0.001);
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                gfci = new GFci(gesScore);
+                gfci = new GFci(test, gesScore);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -434,8 +438,9 @@ public class GFciRunner extends AbstractAlgorithmRunner
                     double penalty = params.getDouble("penaltyDiscount", 4);
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    IndTestScore test = new IndTestScore(fgsScore);
                     fgsScore.setPenaltyDiscount(penalty);
-                    gfci = new GFci(fgsScore);
+                    gfci = new GFci(test, fgsScore);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();

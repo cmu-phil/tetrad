@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -21,16 +22,19 @@ import java.util.List;
  */
 public class Gfci implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Gfci(ScoreWrapper score) {
+    public Gfci(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
     public Graph search(DataSet dataSet, Parameters parameters) {
-        GFci search = new GFci(score.getScore(dataSet, parameters));
+        GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setFaithfulnessAssumed(true);
         return search.search();
     }
 
@@ -40,17 +44,17 @@ public class Gfci implements Algorithm, HasKnowledge {
     }
 
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + score.getDescription();
+        return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        return score.getParameters();
+        return test.getParameters();
     }
 
     @Override

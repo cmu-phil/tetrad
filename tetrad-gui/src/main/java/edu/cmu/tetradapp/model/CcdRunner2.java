@@ -306,7 +306,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //            fci.setMaxIndegree(params.getDepth());
 //            double penaltyDiscount = params.getPenaltyDiscount();
 //
-//            fci.setPenaltyDiscount(penaltyDiscount);
+//            fci.setAlpha(penaltyDiscount);
 //            fci.setSamplePrior(params.getSamplePrior());
 //            fci.setStructurePrior(params.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);

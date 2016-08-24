@@ -53,7 +53,7 @@ public class HsimRun {
             Fgs fgs = new Fgs(score);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
-//            fgs.setPenaltyDiscount(penaltyDiscount);
+//            fgs.setAlpha(penaltyDiscount);
             //fgs.setOut(out);
             //fgs.setFaithfulnessAssumed(true);
             //fgs.setDepth(1);
@@ -109,7 +109,7 @@ public class HsimRun {
             Fgs fgsOut = new Fgs(_score);
             fgsOut.setVerbose(false);
             fgsOut.setNumPatternsToStore(0);
-//            fgsOut.setPenaltyDiscount(2.0);
+//            fgsOut.setAlpha(2.0);
             //fgsOut.setOut(out);
             //fgsOut.setFaithfulnessAssumed(true);
             // fgsOut.setDepth(1);

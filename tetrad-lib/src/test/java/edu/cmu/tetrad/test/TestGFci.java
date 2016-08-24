@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -83,10 +85,12 @@ public class TestGFci {
         ICovarianceMatrix cov = new CovarianceMatrix(data);
 
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+        SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(penaltyDiscount);
 
         independenceTest.setAlpha(alpha);
 
-        GFci gFci = new GFci(independenceTest);
+        GFci gFci = new GFci(independenceTest, score);
         gFci.setVerbose(false);
         gFci.setPenaltyDiscount(penaltyDiscount);
         gFci.setMaxIndegree(depth);
@@ -145,7 +149,7 @@ public class TestGFci {
         g1.addDirectedEdge(L, x2);
         g1.addDirectedEdge(L, x3);
 
-        GFci gfci = new GFci(new IndTestDSep(g1));
+        GFci gfci = new GFci(new IndTestDSep(g1), new GraphScore(g1));
 
         Graph pag = gfci.search();
 
@@ -181,7 +185,7 @@ public class TestGFci {
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
-            GFci gfci = new GFci(new GraphScore(dag));
+            GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
             gfci.setCompleteRuleSetUsed(completeRuleSetUsed);
 //            GFci gfci = new GFci(new IndTestDSep(dag));
             gfci.setFaithfulnessAssumed(faithfulnessAssumed);
@@ -224,9 +228,10 @@ public class TestGFci {
 
         data = DataUtils.restrictToMeasured(data);
 
+        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly(data), 0.001);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
         score.setPenaltyDiscount(4);
-        GFci gFci = new GFci(score);
+        GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
         long start = System.currentTimeMillis();

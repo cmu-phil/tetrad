@@ -100,28 +100,49 @@ public final class GFci implements GraphSearch {
     /**
      * Constructs a new GFCI search for the given independence test and background knowledge.
      */
-    public GFci(IndependenceTest independenceTest) {
-        if (independenceTest == null || knowledge == null) {
-            throw new NullPointerException();
-        }
+//    public GFci(IndependenceTest independenceTest) {
+//        if (independenceTest == null || knowledge == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (independenceTest instanceof IndTestDSep) {
+//            this.dag = ((IndTestDSep) independenceTest).getGraph();
+//        }
+//
+//        this.independenceTest = independenceTest;
+//    }
+//
+//    public GFci(Score score) {
+//        if (independenceTest == null || knowledge == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (score == null) throw new NullPointerException();
+//
+//        this.score = score;
+//
+//        if (score instanceof GraphScore) {
+//            this.dag = ((GraphScore) score).getDag();
+//        }
+//
+//        this.sampleSize = score.getSampleSize();
+//        this.independenceTest = new IndTestScore(score);
+//    }
 
-        if (independenceTest instanceof IndTestDSep) {
-            this.dag = ((IndTestDSep) independenceTest).getGraph();
-        }
-
-        this.independenceTest = independenceTest;
-    }
-
-    public GFci(Score score) {
+    public GFci(IndependenceTest test, Score score) {
         if (score == null) throw new NullPointerException();
-        this.score = score;
+
+        if (score instanceof GraphScore) {
+            this.dag = ((GraphScore) score).getDag();
+        }
 
         if (score instanceof GraphScore) {
             this.dag = ((GraphScore) score).getDag();
         }
 
         this.sampleSize = score.getSampleSize();
-        this.independenceTest = new IndTestScore(score);
+        this.score = score;
+        this.independenceTest = test;
     }
 
     //========================PUBLIC METHODS==========================//

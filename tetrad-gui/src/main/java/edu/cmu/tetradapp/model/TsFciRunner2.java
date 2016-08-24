@@ -110,13 +110,16 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
 
         Graph graph;
 
-        if (getIndependenceTest() instanceof  IndTestDSep) {
-            final DagToPag dagToPag = new DagToPag(((IndTestDSep) getIndependenceTest()).getGraph());
+        IndependenceTest independenceTest = getIndependenceTest();
+        Score score = new ScoredIndTest(independenceTest);
+
+        if (independenceTest instanceof  IndTestDSep) {
+            final DagToPag dagToPag = new DagToPag(((IndTestDSep) independenceTest).getGraph());
             dagToPag.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
             graph = dagToPag.convert();
         }
         else {
-            GFci fci = new GFci(getIndependenceTest());
+            GFci fci = new GFci(independenceTest, score);
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
             fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));

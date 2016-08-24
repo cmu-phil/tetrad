@@ -122,12 +122,12 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCS, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.PAG, OracleType.Score));
 
@@ -468,7 +468,7 @@ public class GeneralAlgorithmEditor extends JPanel {
                 }
                 break;
             case GFCI:
-                algorithm = new Gfci(scoreWrapper);
+                algorithm = new Gfci(independenceWrapper, scoreWrapper);
                 break;
             case FCI:
                 if (runner.getSourceGraph() != null) {
@@ -491,7 +491,7 @@ public class GeneralAlgorithmEditor extends JPanel {
                 }
                 break;
             case TsGFCI:
-                algorithm = new TsGfci(scoreWrapper);
+                algorithm = new TsGfci(independenceWrapper, scoreWrapper);
                 break;
             case CCD:
                 algorithm = new Ccd(independenceWrapper);

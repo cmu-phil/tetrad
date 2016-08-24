@@ -376,6 +376,7 @@ public final class FciOrient {
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
                     (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
@@ -467,7 +468,7 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (!sepsets.isNoncollider(A, C, C)) {
+                    if (!sepsets.isNoncollider(A, D, C)) {
                         continue;
                     }
 
@@ -546,7 +547,7 @@ public final class FciOrient {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<>();
+                    LinkedList<Node> reachable = new LinkedList<Node>();
                     reachable.add(a);
 
                     if (verbose) {
@@ -570,10 +571,10 @@ public final class FciOrient {
 //        next.put(a, b);
 //        next.put(b, c);
 
-        Set<Node> cParents = new HashSet<>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<>();
+        Set<Node> visited = new HashSet<Node>();
         visited.add(b);
         visited.add(c);
 
@@ -708,13 +709,13 @@ public final class FciOrient {
      * a DDP consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
+        Queue<Node> Q = new ArrayDeque<Node>();
+        Set<Node> V = new HashSet<Node>();
 
         Node e = null;
         int distance = 0;
 
-        Map<Node, Node> previous = new HashMap<>();
+        Map<Node, Node> previous = new HashMap<Node, Node>();
 
         List<Node> cParents = graph.getParents(c);
 
@@ -794,7 +795,7 @@ public final class FciOrient {
 
         boolean ind = getSepsets().isIndependent(d, c, path);
 
-        List<Node> path2 = new ArrayList<>(path);
+        List<Node> path2 = new ArrayList<Node>(path);
 
         path2.remove(b);
 
@@ -853,7 +854,7 @@ public final class FciOrient {
     }
 
     private void printDdp(Node d, List<Node> path, Node a, Node b, Node c, Graph graph) {
-        List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<Node>();
         nodes.add(d);
         nodes.addAll(path);
         nodes.add(a);
@@ -866,7 +867,7 @@ public final class FciOrient {
     }
 
     private List<Node> getPath(Node c, Map<Node, Node> previous) {
-        List<Node> l = new ArrayList<>();
+        List<Node> l = new ArrayList<Node>();
 
         Node p = c;
 
@@ -937,8 +938,6 @@ public final class FciOrient {
                 Node c = adjacents.get(choice[1]);
 
                 if (graph.isAdjacentTo(a, c)) continue;
-
-                if (!sepsets.isNoncollider(a, b, c)) continue;
 
                 if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) continue;
                 if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) continue;
@@ -1026,9 +1025,9 @@ public final class FciOrient {
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucPdPaths = new LinkedList<>();
+        List<List<Node>> ucPdPaths = new LinkedList<List<Node>>();
 
-        LinkedList<Node> soFar = new LinkedList<>();
+        LinkedList<Node> soFar = new LinkedList<Node>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -1071,7 +1070,7 @@ public final class FciOrient {
 
         if (curr.equals(end)) {
             // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<>(soFar));
+            ucPdPaths.add(new LinkedList<Node>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
             List<Node> adjacents = graph.getAdjacentNodes(curr);
@@ -1094,7 +1093,7 @@ public final class FciOrient {
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     private List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucCirclePaths = new LinkedList<>();
+        List<List<Node>> ucCirclePaths = new LinkedList<List<Node>>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
 
         for (List<Node> path : ucPdPaths) {

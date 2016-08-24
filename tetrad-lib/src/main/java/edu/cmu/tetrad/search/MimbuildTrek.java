@@ -145,7 +145,7 @@ public class MimbuildTrek {
 
 //        try {
 //            Ges search = new Ges(latentscov);
-//            search.setPenaltyDiscount(penaltyDiscount);
+//            search.setAlpha(penaltyDiscount);
 //            search.setKnowledge(knowledge);
 //            graph = search.search();
 //        } catch (Exception e) {

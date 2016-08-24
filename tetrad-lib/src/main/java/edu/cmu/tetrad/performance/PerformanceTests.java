@@ -585,12 +585,12 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
-//        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+        IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
 //        GFci fci = new GFci(independenceTest);
-////
+
         SemBicScore score = new SemBicScore(cov);
-        score.setPenaltyDiscount(4);
-        GFci fci = new GFci(score);
+        score.setPenaltyDiscount(penaltyDiscount);
+        GFci fci = new GFci(independenceTest, score);
 
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
@@ -1228,6 +1228,8 @@ public class PerformanceTests {
 
             // Independence test.
             final IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+            final SemBicScore score = new SemBicScore(cov);
+            score.setPenaltyDiscount(penaltyDiscount);
 
             Graph estPag;
             long elapsed;
@@ -1238,7 +1240,7 @@ public class PerformanceTests {
             long ta1 = System.currentTimeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            GFci fci = new GFci(independenceTest);
+            GFci fci = new GFci(independenceTest, score);
 //            TFci fci = new TFci(independenceTest);
 //            fci.setVerbose(false);
             fci.setPenaltyDiscount(penaltyDiscount);
@@ -1546,7 +1548,7 @@ public class PerformanceTests {
 //
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
-//            GFci.setPenaltyDiscount(penaltyDiscount);
+//            GFci.setAlpha(penaltyDiscount);
 //            GFci.setMaxIndegree(depth);
 //            GFci.setMaxPathLength(maxPathLength);
 //            GFci.setPossibleDsepSearchDone(true);

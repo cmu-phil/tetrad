@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.performance;
 
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -173,10 +174,12 @@ public class PerformanceTestsDan {
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
             final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
+            final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
+            scoreGfci.setParameter1(penaltyDiscount);
 
             out6.println("GFCI.PAG");
 
-            GFci gFci = new GFci(independenceTestGFci);
+            GFci gFci = new GFci(independenceTestGFci, scoreGfci);
             gFci.setVerbose(false);
             gFci.setPenaltyDiscount(penaltyDiscount);
             gFci.setMaxIndegree(depth);
