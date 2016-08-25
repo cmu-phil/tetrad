@@ -38,7 +38,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -47,11 +46,15 @@ import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +76,7 @@ public class GeneralAlgorithmEditor extends JPanel {
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
+    private final HelpSet helpSet;
     private JLabel whatYouChose;
 
     //=========================CONSTRUCTORS============================//
@@ -82,6 +86,17 @@ public class GeneralAlgorithmEditor extends JPanel {
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
+
+        String helpHS = "/resources/javahelp/TetradHelp.hs";
+
+        try {
+            URL url = this.getClass().getResource(helpHS);
+            this.helpSet = new HelpSet(null, url);
+        } catch (Exception ee) {
+            System.out.println("HelpSet " + ee.getMessage());
+            System.out.println("HelpSet " + helpHS + " not found");
+            throw new IllegalArgumentException();
+        }
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -258,6 +273,13 @@ public class GeneralAlgorithmEditor extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setAlgorithm();
+
+                JComboBox<AlgName> box = (JComboBox<AlgName>) e.getSource();
+                Object selectedItem = box.getSelectedItem();
+
+                if (selectedItem != null) {
+                    helpSet.setHomeID(selectedItem.toString());
+                }
             }
         });
 
@@ -386,7 +408,7 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         switch (test) {
             case ChiSquare:
-                independenceWrapper = new FisherZ();
+                independenceWrapper = new ChiSquare();
                 break;
             case Conditional_Correlation:
                 independenceWrapper = new ConditionalCorrelation();
@@ -638,17 +660,13 @@ public class GeneralAlgorithmEditor extends JPanel {
 
 
     private Box getParametersPane() {
+
+//        helpSet.setHomeID("tetrad_overview");
+
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(new Dimension(1000, 300));
         Box c = Box.createVerticalBox();
-
-//        button.setIcon(
-//                new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
-//        button.setMaximumSize(new Dimension(80, 40));
-//        button.setPreferredSize(new Dimension(80, 40));
-
-
 
         JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
         JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
@@ -663,32 +681,50 @@ public class GeneralAlgorithmEditor extends JPanel {
         explain1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Some insighful explanation will be put here by somebody");
+                JComboBox box = (JComboBox) algNamesDropdown;
+                String name = box.getSelectedItem().toString();
+                helpSet.setHomeID(name);
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
             }
         });
 
         explain2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Some insighful explanation will be put here by somebody");
+                JComboBox box = (JComboBox) algNamesDropdown;
+                String name = box.getSelectedItem().toString();
+                helpSet.setHomeID(name.toLowerCase());
+                HelpBroker broker = helpSet.createHelpBroker();
+//                broker.setCurrentID(name);
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
             }
         });
 
         explain3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Some insighful explanation will be put here by somebody");
+                JComboBox box = (JComboBox) algNamesDropdown;
+                String name = box.getSelectedItem().toString();
+//                helpSet.setHomeID(name);
+                HelpBroker broker = helpSet.createHelpBroker();
+                broker.setCurrentID(name);
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
             }
         });
 
         explain4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Some insighful explanation will be put here by somebody");
+                JComboBox box = (JComboBox) algNamesDropdown;
+                String name = box.getSelectedItem().toString();
+                helpSet.setHomeID(name);
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
             }
         });
 
@@ -733,6 +769,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         c.add(d2);
         c.add(Box.createVerticalStrut(5));
 
+
         Box d5 = Box.createHorizontalBox();
 
         Algorithm algorithm = getAlgorithmFromInterface();
@@ -759,6 +796,15 @@ public class GeneralAlgorithmEditor extends JPanel {
         runner.setAlgorithm(algorithm);
 
         return b;
+    }
+
+    private void addHelpListener(JButton button, ActionListener listener) {
+       button.addActionListener(listener);
+    }
+
+    private HelpSet getHelpSet() {
+
+        return helpSet;
     }
 
     private Parameters getParameters() {

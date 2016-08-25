@@ -74,17 +74,45 @@
     <mapID target="row_summing_updater" url="manual/Update.html"/>
     <mapID target="cpt_updater" url="manual/Update.html"/>
 
-    <mapID target="pc" url="manual/boxes/search/pc.html"/>
-    <mapID target="cpc" url="manual/boxes/search/cpc.html"/>
-    <mapID target="pcd" url="manual/boxes/search/pcd.html"/>
-    <mapID target="fci" url="manual/boxes/search/fci.html"/>
-    <mapID target="cfci" url="manual/boxes/search/cfci.html"/>
-    <mapID target="ccd" url="manual/boxes/search/ccd.html"/>
-    <mapID target="ges" url="manual/boxes/search/ges.html"/>
-    <mapID target="mbf" url="manual/boxes/search/mbf.html"/>
-    <mapID target="mimbuild" url="manual/boxes/search/mimbuild.html"/>
     <mapID target="bpc" url="manual/boxes/search/bpc.html"/>
+    <mapID target="ccd" url="manual/boxes/search/ccd.html"/>
+    <mapID target="cfci" url="manual/boxes/search/cfci.html"/>
+    <mapID target="cpc" url="manual/boxes/search/cpc.html"/>
+    <mapID target="cpcs" url="manual/boxes/search/cpcs.html"/>
+    <mapID target="eb" url="manual/boxes/search/eb.html"/>
+    <mapID target="fas" url="manual/boxes/search/fas.html"/>
+    <mapID target="fci" url="manual/boxes/search/fci.html"/>
+    <mapID target="fgs" url="manual/boxes/search/fgs.html"/>
+    <mapID target="fgsmb" url="manual/boxes/search/fgsmb.html"/>
+    <mapID target="gccd" url="manual/boxes/search/gccd.html"/>
+    <mapID target="gfci" url="manual/boxes/search/gfci.html"/>
+    <mapID target="glasso" url="manual/boxes/search/glasso.html"/>
+    <mapID target="images" url="manual/boxes/search/images.html"/>
+    <mapID target="lingam" url="manual/boxes/search/lingam.html"/>
+    <mapID target="mbfs" url="manual/boxes/search/mbfs.html"/>
+    <mapID target="mgm" url="manual/boxes/search/mgm.html"/>
+    <mapID target="mimbuild" url="manual/boxes/search/mimbuild.html"/>
+    <mapID target="pc" url="manual/boxes/search/pc.html"/>
+    <mapID target="pcd" url="manual/boxes/search/pcd.html"/>
+    <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
+    <mapID target="pcmax" url="manual/boxes/search/pcmax.html"/>
+    <mapID target="pcmaxlocal" url="manual/boxes/search/pcmaxlocal.html"/>
+    <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
+    <mapID target="pcstable" url="manual/boxes/search/pcs.html"/>
     <mapID target="purify" url="manual/boxes/search/purify.html"/>
+    <mapID target="r1" url="manual/boxes/search/r1.html"/>
+    <mapID target="r2" url="manual/boxes/search/r2.html"/>
+    <mapID target="r3" url="manual/boxes/search/r3.html"/>
+    <mapID target="r4" url="manual/boxes/search/r4.html"/>
+    <mapID target="rfci" url="manual/boxes/search/rfci.html"/>
+    <mapID target="rskew" url="manual/boxes/search/rskew.html"/>
+    <mapID target="rskewe" url="manual/boxes/search/rskewe.html"/>
+    <mapID target="skew" url="manual/boxes/search/skew.html"/>
+    <mapID target="skewe" url="manual/boxes/search/skewe.html"/>
+    <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
+    <mapID target="tsfci" url="manual/boxes/search/tsfci.html"/>
+    <mapID target="tsgfci" url="manual/boxes/search/tsgfci.html"/>
+    <mapID target="wfgs" url="manual/boxes/search/wfgs.html"/>
 
     <!-- Common Tasks -->
     <mapID target="common_tasks" url="manual/common_tasks/common_tasks.html"/>
