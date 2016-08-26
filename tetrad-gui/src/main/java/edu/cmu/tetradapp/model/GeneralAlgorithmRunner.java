@@ -495,8 +495,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 DataType algDataType = algorithm.getDataType();
 
-                if (((algDataType == DataType.Continuous || algDataType == DataType.Mixed) && dataSet.isContinuous())
-                        || ((algDataType == DataType.Discrete || algDataType == DataType.Mixed) && dataSet.isDiscrete())) {
+                if (dataSet.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+                    graphList.add(algorithm.search(dataSet, parameters));
+                } else if (dataSet.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed) && dataSet.isDiscrete()) {
+                    graphList.add(algorithm.search(dataSet, parameters));
+                } else if (((DataSet) data).isMixed() && algDataType == DataType.Mixed) {
                     graphList.add(algorithm.search(dataSet, parameters));
                 } else {
                     throw new IllegalArgumentException("The stored algorithm configuration is not compatible with " +
