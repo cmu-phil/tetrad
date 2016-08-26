@@ -42,7 +42,6 @@ public class ConditionalGaussianLikelihood {
     // The variables of the continuousData set.
     private List<Node> variables;
 
-
     // Indices of variables.
     private Map<Node, Integer> nodesHash;
 
