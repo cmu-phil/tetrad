@@ -70,10 +70,10 @@ public class GeneralAlgorithmEditor extends JPanel {
     private final JButton searchButton1 = new JButton("Search");
     private final JButton searchButton2 = new JButton("Search");
     private final JTabbedPane pane;
-    private final JComboBox<TestType> testDropdown = new JComboBox<>();
-    private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final JComboBox<AlgType> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
+    private final JComboBox<TestType> testDropdown = new JComboBox<>();
+    private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
@@ -104,7 +104,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         discreteTests.add(TestType.Conditional_Correlation);
 
         List<TestType> continuousTests = new ArrayList<>();
-        continuousTests.add(TestType.FisherZ);
+        continuousTests.add(TestType.Fisher_Z);
         continuousTests.add(TestType.SEM_BIC);
         continuousTests.add(TestType.Conditional_Correlation);
         continuousTests.add(TestType.Conditional_Gaussian_LRT);
@@ -118,14 +118,14 @@ public class GeneralAlgorithmEditor extends JPanel {
         List<ScoreType> discreteScores = new ArrayList<>();
         discreteScores.add(ScoreType.BDeu);
         discreteScores.add(ScoreType.Discrete_BIC);
-        discreteScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+        discreteScores.add(ScoreType.Conditional_Gaussian_BIC);
 
         List<ScoreType> continuousScores = new ArrayList<>();
         continuousScores.add(ScoreType.SEM_BIC);
-        continuousScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+        continuousScores.add(ScoreType.Conditional_Gaussian_BIC);
 
         List<ScoreType> mixedScores = new ArrayList<>();
-        mixedScores.add(ScoreType.Conditioanal_Gaussian_BIC);
+        mixedScores.add(ScoreType.Conditional_Gaussian_BIC);
 
         List<ScoreType> dsepScores = new ArrayList<>();
         dsepScores.add(ScoreType.D_SEPARATION);
@@ -152,14 +152,14 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.Pattern, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.Markov_Random_Field, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.Undirected_Graph, OracleType.Test));
 
         descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Markov_Random_Field, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Undirected_Graph, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.TsIMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Markov_Random_Field, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Undirected_Graph, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.Pairwise, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.Pairwise, OracleType.None));
@@ -416,7 +416,7 @@ public class GeneralAlgorithmEditor extends JPanel {
             case Conditional_Gaussian_LRT:
                 independenceWrapper = new ConditionalGaussianLRT();
                 break;
-            case FisherZ:
+            case Fisher_Z:
                 independenceWrapper = new FisherZ();
                 break;
             case GSquare:
@@ -438,7 +438,7 @@ public class GeneralAlgorithmEditor extends JPanel {
             case BDeu:
                 scoreWrapper = new BdeuScore();
                 break;
-            case Conditioanal_Gaussian_BIC:
+            case Conditional_Gaussian_BIC:
                 scoreWrapper = new ConditionalGaussianBicScore();
                 break;
             case Discrete_BIC:
@@ -664,7 +664,7 @@ public class GeneralAlgorithmEditor extends JPanel {
 //        helpSet.setHomeID("tetrad_overview");
 
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        JScrollPane scroll = new JScrollPane(comp);
+        final JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(new Dimension(1000, 300));
         Box c = Box.createVerticalBox();
 
@@ -681,9 +681,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         explain1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) algNamesDropdown;
-                String name = box.getSelectedItem().toString();
-                helpSet.setHomeID(name);
+                helpSet.setHomeID("types_of_algorithms");
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
@@ -697,7 +695,6 @@ public class GeneralAlgorithmEditor extends JPanel {
                 String name = box.getSelectedItem().toString();
                 helpSet.setHomeID(name.toLowerCase());
                 HelpBroker broker = helpSet.createHelpBroker();
-//                broker.setCurrentID(name);
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
             }
@@ -706,11 +703,10 @@ public class GeneralAlgorithmEditor extends JPanel {
         explain3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) algNamesDropdown;
+                JComboBox box = (JComboBox) testDropdown;
                 String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name);
+                helpSet.setHomeID(name.toLowerCase());
                 HelpBroker broker = helpSet.createHelpBroker();
-                broker.setCurrentID(name);
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
             }
@@ -719,9 +715,9 @@ public class GeneralAlgorithmEditor extends JPanel {
         explain4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) algNamesDropdown;
+                JComboBox box = (JComboBox) scoreDropdown;
                 String name = box.getSelectedItem().toString();
-                helpSet.setHomeID(name);
+                helpSet.setHomeID(name.toLowerCase());
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
@@ -880,14 +876,14 @@ public class GeneralAlgorithmEditor extends JPanel {
 
     private enum OracleType {None, Test, Score, Both}
 
-    private enum AlgType {Pattern, PAG, DAG, Markov_Blanket, Markov_Random_Field, Pairwise}
+    private enum AlgType {Pattern, PAG, DAG, Markov_Blanket, Undirected_Graph, Pairwise}
 
     private enum TestType {
-        ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, FisherZ, GSquare,
+        ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
         SEM_BIC, D_SEPARATION
     }
 
-    public enum ScoreType {BDeu, Conditioanal_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
+    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
 }
 
 

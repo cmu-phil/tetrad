@@ -74,6 +74,8 @@
     <mapID target="row_summing_updater" url="manual/Update.html"/>
     <mapID target="cpt_updater" url="manual/Update.html"/>
 
+    <mapID target="types_of_algorithms" url="manual/boxes/search/types_of_algorithms.html"/>
+
     <mapID target="bpc" url="manual/boxes/search/bpc.html"/>
     <mapID target="ccd" url="manual/boxes/search/ccd.html"/>
     <mapID target="cfci" url="manual/boxes/search/cfci.html"/>
@@ -113,6 +115,19 @@
     <mapID target="tsfci" url="manual/boxes/search/tsfci.html"/>
     <mapID target="tsgfci" url="manual/boxes/search/tsgfci.html"/>
     <mapID target="wfgs" url="manual/boxes/search/wfgs.html"/>
+
+
+    <mapID target="bdeu" url="manual/boxes/search/bdeu.html"/>
+    <mapID target="conditional_gaussian_bic" url="manual/boxes/search/conditional_gaussian_bic.html"/>
+    <mapID target="discrete_bic" url="manual/boxes/search/discrete_bic.html"/>
+    <mapID target="sem_bic" url="manual/boxes/search/sem_bic.html"/>
+    <mapID target="conditional_correlation" url="manual/boxes/search/conditional_correlation.html"/>
+    <mapID target="chisquare" url="manual/boxes/search/chisquare.html"/>
+    <mapID target="gsquare" url="manual/boxes/search/gsquare.html"/>
+    <mapID target="conditional_gaussian_lrt" url="manual/boxes/search/conditional_gaussian_lrt.html"/>
+    <mapID target="conditional_correlation" url="manual/boxes/search/conditional_correlation.html"/>
+    <mapID target="fisher_z" url="manual/boxes/search/fisher_z.html"/>
+    <mapID target="d_separation" url="manual/boxes/search/d_separation.html"/>
 
     <!-- Common Tasks -->
     <mapID target="common_tasks" url="manual/common_tasks/common_tasks.html"/>

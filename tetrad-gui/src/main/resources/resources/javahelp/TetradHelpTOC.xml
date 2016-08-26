@@ -45,6 +45,7 @@
                 <tocitem text="Approximate Updater" target="approximate_updater"/>
             </tocitem>
             <tocitem text="Search" target="search_box">
+                <tocitem text="Types of Algorithms" target="types_of_algorithms"/>
                 <tocitem text="BPC" target="bpc"/>
                 <tocitem text="CCD" target="ccd"/>
                 <tocitem text="CFCI" target="cfci"/>
@@ -83,6 +84,18 @@
                 <tocitem text="TSFCI" target="tsfci"/>
                 <tocitem text="TSGFCI" target="tsgfci"/>
                 <tocitem text="WFGS" target="wfgs"/>
+
+                <tocitem text="BDeu Score" target="bdeu"/>
+                <tocitem text="Conditional Gaussian BIC score" target="conditional_gaussian_bic"/>
+                <tocitem text="Discrete BIC score" target="discrete_bic"/>
+                <tocitem text="SEM BIC score" target="sem_bic"/>
+                <tocitem text="Conditional Correlation Test" target="conditional_correlation"/>
+                <tocitem text="Chi Square Test" target="chisquare"/>
+                <tocitem text="G Square Test" target="gsquare"/>
+                <tocitem text="Conditional Gaussian LRT" target="conditional_gaussian_lrt"/>
+                <tocitem text="Conditional Correlation" target="conditional_correlation"/>
+                <tocitem text="Fisher Z Test" target="fisher_z"/>
+                <tocitem text="D-Separation" target="d_separation"/>
             </tocitem>
             <tocitem text="Regression" target="regression_box">
                 <tocitem text="Multiple Linear Regression" target="linear_regression"/>
