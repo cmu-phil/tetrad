@@ -42,7 +42,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
 
     public BDeuScore(DataSet dataSet) {
         if (dataSet == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Data was not provided.");
         }
 
         if (dataSet instanceof BoxDataSet) {

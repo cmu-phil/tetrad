@@ -8,7 +8,7 @@
 
    <!-- maps -->
    <maps>
-     <homeID>top </homeID>
+     <homeID>tetrad_overview</homeID>
      <mapref location="Map.jhm" />
    </maps>
 
@@ -64,9 +64,9 @@
    -->
    <presentation default=true>
        <name>main window</name>
-       <size width="400" height="400" />
-       <location x="200" y="200" />
-       <title>Project X Help</title>
+       <size width="800" height="600" />
+       <location x="100" y="100" />
+       <title>Project Tetrad Help</title>
        <toolbar>
            <helpaction>javax.help.BackAction</helpaction>
            <helpaction>javax.help.ForwardAction</helpaction>

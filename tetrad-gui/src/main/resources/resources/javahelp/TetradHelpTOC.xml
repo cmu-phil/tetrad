@@ -45,17 +45,57 @@
                 <tocitem text="Approximate Updater" target="approximate_updater"/>
             </tocitem>
             <tocitem text="Search" target="search_box">
-                <tocitem text="PC" target="pc"/>
-                <tocitem text="CPC" target="cpc"/>
-                <tocitem text="PCD" target="pcd"/>
-                <tocitem text="FCI" target="fci"/>
-                <tocitem text="CFCI" target="cfci"/>
-                <tocitem text="CCD" target="ccd"/>
-                <tocitem text="GES" target="ges"/>
-                <tocitem text="MBF" target="mbf"/>
-                <tocitem text="MIMBuild" target="mimbuild"/>
+                <tocitem text="Types of Algorithms" target="types_of_algorithms"/>
                 <tocitem text="BPC" target="bpc"/>
-                <tocitem text="Purify" target="purify"/>
+                <tocitem text="CCD" target="ccd"/>
+                <tocitem text="CFCI" target="cfci"/>
+                <tocitem text="CPC" target="cpc"/>
+                <tocitem text="CPCSTABLE" target="cpcs"/>
+                <tocitem text="EB" target="eb"/>
+                <tocitem text="FAS" target="fas"/>
+                <tocitem text="FCI" target="fci"/>
+                <tocitem text="FGS" target="fgs"/>
+                <tocitem text="FGSMB" target="fgsmb"/>
+                <tocitem text="GCCD" target="gccd"/>
+                <tocitem text="GFCI" target="gfci"/>
+                <tocitem text="GLASSO" target="glasso"/>
+                <tocitem text="IMAGES" target="images"/>
+                <tocitem text="LINGAM" target="lingam"/>
+                <tocitem text="MBFS" target="mbfs"/>
+                <tocitem text="MGM" target="mgm"/>
+                <tocitem text="MIMBUILD" target="mimbuild"/>
+                <tocitem text="PC" target="pc"/>
+                <tocitem text="PCD" target="pcd"/>
+                <tocitem text="PCLOCAL" target="pclocal"/>
+                <tocitem text="PCMAX" target="pcmax"/>
+                <tocitem text="PCMAXLOCAL" target="pcmaxlocal"/>
+                <tocitem text="PCSTABLE" target="pcstable"/>
+                <tocitem text="PURIFY" target="purify"/>
+                <tocitem text="R1" target="r1"/>
+                <tocitem text="R2" target="r2"/>
+                <tocitem text="R3" target="r3"/>
+                <tocitem text="R4" target="r4"/>
+                <tocitem text="RFCI" target="rfci"/>
+                <tocitem text="RSKEW" target="rskew"/>
+                <tocitem text="RSKEWE" target="rskewe"/>
+                <tocitem text="SKEW" target="skew"/>
+                <tocitem text="SKEWE" target="skewe"/>
+                <tocitem text="PCLOCAL" target="pclocal"/>
+                <tocitem text="TSFCI" target="tsfci"/>
+                <tocitem text="TSGFCI" target="tsgfci"/>
+                <tocitem text="WFGS" target="wfgs"/>
+
+                <tocitem text="BDeu Score" target="bdeu"/>
+                <tocitem text="Conditional Gaussian BIC score" target="conditional_gaussian_bic"/>
+                <tocitem text="Discrete BIC score" target="discrete_bic"/>
+                <tocitem text="SEM BIC score" target="sem_bic"/>
+                <tocitem text="Conditional Correlation Test" target="conditional_correlation"/>
+                <tocitem text="Chi Square Test" target="chisquare"/>
+                <tocitem text="G Square Test" target="gsquare"/>
+                <tocitem text="Conditional Gaussian LRT" target="conditional_gaussian_lrt"/>
+                <tocitem text="Conditional Correlation" target="conditional_correlation"/>
+                <tocitem text="Fisher Z Test" target="fisher_z"/>
+                <tocitem text="D-Separation" target="d_separation"/>
             </tocitem>
             <tocitem text="Regression" target="regression_box">
                 <tocitem text="Multiple Linear Regression" target="linear_regression"/>

@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.Tetrad;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -32,7 +30,6 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -180,12 +177,10 @@ final class TetradMenuBar extends JMenuBar {
         // it can be "clicked" from other classes.
 
         String helpHS = "/resources/javahelp/TetradHelp.hs";
-//        ClassLoader cl = Tetrad.class.getClassLoader();
         HelpSet hs;
 
         try {
             URL url = this.getClass().getResource(helpHS);
-//            URL hsURL = HelpSet.findHelpSet(getClass().getClassLoader(), helpHS);
             hs = new HelpSet(null, url);
         } catch (Exception ee) {
             System.out.println( "HelpSet " + ee.getMessage());
@@ -195,7 +190,7 @@ final class TetradMenuBar extends JMenuBar {
 
         final HelpBroker hb = hs.createHelpBroker();
 
-        JMenuItem help = new JMenuItem("Help");
+        JMenuItem help = new JMenuItem("Tetrad Help");
         help.addActionListener(new CSH.DisplayHelpFromSource( hb ));
         helpMenu.add(help);
 
