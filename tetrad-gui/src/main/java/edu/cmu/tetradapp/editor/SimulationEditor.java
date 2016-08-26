@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -363,7 +364,17 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
-        RandomGraph randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph(0));
+        Graph trueGraph = null;
+
+        if (simulation.getSimulation().getNumDataSets() > 0) {
+            trueGraph = simulation.getSimulation().getTrueGraph(0);
+        }
+
+        if (trueGraph == null) {
+            trueGraph = new EdgeListGraph();
+        }
+
+        RandomGraph randomGraph = new SingleGraph(trueGraph);
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();

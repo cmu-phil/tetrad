@@ -48,6 +48,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         MultipleGraphSource, Unmarshallable {
 
     static final long serialVersionUID = 23L;
+
     private DataWrapper dataWrapper;
     private String name;
     private Algorithm algorithm = new Fgs(new BdeuScore());
@@ -482,10 +483,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         List<Graph> graphList = new ArrayList<>();
         int i = 0;
 
-//        if (getDataModelList() == null) {
-//            throw new IllegalArgumentException("Datasets are not available to run the algorithm.");
-//        }
-
         if (getDataModelList() != null) {
             for (DataModel data : getDataModelList()) {
                 System.out.println("Analyzing data set # " + (++i));
@@ -589,7 +586,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public final DataModelList getDataModelList() {
-        if (dataWrapper == null) return null;
+        if (dataWrapper == null) return new DataModelList();
         return dataWrapper.getDataModelList();
     }
 
