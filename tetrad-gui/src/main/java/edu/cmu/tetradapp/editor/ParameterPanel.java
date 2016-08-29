@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -45,14 +44,15 @@ class ParameterPanel extends JPanel {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
         a.add(b);
-//        a.add(Box.createHorizontalGlue());
 
         Box d = Box.createHorizontalBox();
-        JLabel label = new JLabel("EDIT PARAMETERS:");
-        label.setFont(new Font("Dialog", Font.BOLD, 12));
+        JLabel label = new JLabel("Please choose values for the following parameters:");
+        label.setFont(new Font("Dialog", Font.BOLD, 13));
         d.add(label);
         d.add(Box.createHorizontalGlue());
         b.add(d);
+
+        b.add(Box.createVerticalStrut(10));
 
         for (String parameter : parametersToEdit) {
             Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();

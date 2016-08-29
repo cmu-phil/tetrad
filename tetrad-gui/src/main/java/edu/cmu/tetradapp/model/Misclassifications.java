@@ -86,6 +86,10 @@ public final class Misclassifications implements SessionModel {
 
     //=============================CONSTRUCTORS==========================//
 
+    public Misclassifications(GeneralAlgorithmRunner model, Parameters params) {
+        this(model, model.getDataWrapper(), params);
+    }
+
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods

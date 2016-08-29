@@ -72,6 +72,14 @@ public class Simulation extends DataWrapper implements SessionModel,
         this.fixedSimulation = false;
     }
 
+    public Simulation(Simulation simulation) {
+        this.simulation = simulation.simulation;
+        this.parameters = new Parameters(simulation.parameters);
+        this.name = simulation.name + ".copy";
+        this.fixedGraph = simulation.fixedGraph;
+        this.fixedSimulation = simulation.fixedSimulation;
+    }
+
     public Simulation(GraphSource graphSource, Parameters parameters) {
         simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
         this.fixedGraph = true;
@@ -287,6 +295,10 @@ public class Simulation extends DataWrapper implements SessionModel,
         } else {
             return new Knowledge2();
         }
+    }
+
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+        this.simulation = simulation;
     }
 }
 

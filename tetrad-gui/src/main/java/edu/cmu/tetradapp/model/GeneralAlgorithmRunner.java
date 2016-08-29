@@ -748,6 +748,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public void setGraphList(List<Graph> graphList) {
         this.graphList = graphList;
     }
+
+    public DataWrapper getDataWrapper() {
+        return dataWrapper;
+    }
 }
 
 

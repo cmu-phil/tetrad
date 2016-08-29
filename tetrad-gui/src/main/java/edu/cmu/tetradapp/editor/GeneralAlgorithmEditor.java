@@ -38,7 +38,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -673,6 +672,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         final JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(new Dimension(800, 300));
+        scroll.setBorder(new EmptyBorder(0, 0, 0, 0));
         Box c = Box.createVerticalBox();
 
         JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
@@ -803,15 +803,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d5.add(whatYouChose);
         d5.add(Box.createHorizontalGlue());
         c.add(d5);
-        c.add(Box.createVerticalStrut(10));
+        c.add(Box.createVerticalStrut(20));
 
-        Box d0 = Box.createHorizontalBox();
-        JLabel label0 = new JLabel("Next, pick values for the parameters listed below and then click 'Search'. ");
-        label0.setFont(new Font("Dialog", Font.BOLD, 13));
-        d0.add(label0);
-        d0.add(Box.createHorizontalGlue());
-        c.add(d0);
-        c.add(Box.createVerticalStrut(10));
+//        Box d0 = Box.createHorizontalBox();
+//        JLabel label0 = new JLabel("Next, pick values for the parameters listed below and then click 'Search'. ");
+//        label0.setFont(new Font("Dialog", Font.BOLD, 13));
+//        d0.add(label0);
+//        d0.add(Box.createHorizontalGlue());
+//        c.add(d0);
+//        c.add(Box.createVerticalStrut(10));
 
         c.add(scroll);
 
@@ -823,7 +823,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box b = Box.createHorizontalBox();
         b.add(c);
-        b.add(Box.createVerticalGlue());
+        b.add(Box.createHorizontalBox());
 
         runner.setAlgorithm(algorithm);
 

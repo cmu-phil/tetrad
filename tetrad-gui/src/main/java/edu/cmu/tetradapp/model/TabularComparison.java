@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -62,6 +63,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     private ArrayList<Statistic> statistics;
 
     //=============================CONSTRUCTORS==========================//
+
+    public TabularComparison(GeneralAlgorithmRunner model, Parameters params) {
+        this(model, model.getDataWrapper(), params);
+    }
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors

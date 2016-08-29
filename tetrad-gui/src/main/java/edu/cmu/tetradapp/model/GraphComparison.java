@@ -56,6 +56,10 @@ public final class GraphComparison implements SessionModel {
 
     //=============================CONSTRUCTORS==========================//
 
+    public GraphComparison(GeneralAlgorithmRunner model, Parameters params) {
+        this(model, model.getDataWrapper(), params);
+    }
+
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
