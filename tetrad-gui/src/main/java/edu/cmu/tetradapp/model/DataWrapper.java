@@ -120,7 +120,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         if (selected > -1) {
-            dataModelList.setSelectedModel(this.getDataModelList().get(selected));
+            dataModelList.setSelectedModel(dataModelList.get(selected));
         }
 
         if(wrapper.sourceGraph != null){

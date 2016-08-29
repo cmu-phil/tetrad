@@ -132,7 +132,6 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
-        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCS, AlgType.Pattern, OracleType.Test));
@@ -141,6 +140,7 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
@@ -158,7 +158,9 @@ public class GeneralAlgorithmEditor extends JPanel {
         descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Undirected_Graph, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.TsIMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.PAG, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Undirected_Graph, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.Pairwise, OracleType.None));
@@ -513,7 +515,10 @@ public class GeneralAlgorithmEditor extends JPanel {
                 }
                 break;
             case TsGFCI:
-                algorithm = new TsGfci(independenceWrapper, scoreWrapper);
+                algorithm = new TsGfci(independenceWrapper);
+                break;
+            case TsImages:
+                algorithm = new TsImagesSemBic();
                 break;
             case CCD:
                 algorithm = new Ccd(independenceWrapper);
@@ -562,9 +567,6 @@ public class GeneralAlgorithmEditor extends JPanel {
                 break;
             case IMaGES_SEM_BIC:
                 algorithm = new ImagesSemBic();
-                break;
-            case TsIMaGES_SEM_BIC:
-                algorithm = new TsImagesSemBic();
                 break;
             case GLASSO:
                 algorithm = new Glasso();
@@ -724,16 +726,8 @@ public class GeneralAlgorithmEditor extends JPanel {
             }
         });
 
-        Box d0 = Box.createHorizontalBox();
-        JLabel label0 = new JLabel("Pick an agorithm and parameterize it; then click Search.");
-        label0.setFont(new Font("Dialog", Font.BOLD, 12));
-        d0.add(label0);
-        d0.add(Box.createHorizontalGlue());
-        c.add(d0);
-        c.add(Box.createVerticalStrut(5));
-
-        Box d3 = Box.createHorizontalBox();
-        JLabel label3 = new JLabel("TYPE OF ALGORITHM:");
+         Box d3 = Box.createHorizontalBox();
+        JLabel label3 = new JLabel("Choose a type of algorithm (click on the 'i' for more help):");
         label3.setFont(new Font("Dialog", Font.BOLD, 12));
         d3.add(label3);
         d3.add(algTypesDropdown);
@@ -741,40 +735,55 @@ public class GeneralAlgorithmEditor extends JPanel {
         c.add(d3);
 
         Box d4 = Box.createHorizontalBox();
-        JLabel label4 = new JLabel("WHICH ALGORITHM:");
+        JLabel label4 = new JLabel("Next, choose an algorithm of that type; only algorithms compatible with your data " +
+                "will be shown:");
         label4.setFont(new Font("Dialog", Font.BOLD, 12));
         d4.add(label4);
         d4.add(algNamesDropdown);
         d4.add(explain2);
         c.add(d4);
 
+        Box d7 = Box.createHorizontalBox();
+        JLabel label7 = new JLabel("Next, choose a score or a test, or both. If they're not needed, they will be grayed out.");
+        label7.setFont(new Font("Dialog", Font.BOLD, 12));
+        d7.add(label7);
+        d7.add(Box.createHorizontalGlue());
+        c.add(d7);
+
         Box d1 = Box.createHorizontalBox();
-        JLabel label1 = new JLabel("TEST TYPE (if needed):");
+        JLabel label1 = new JLabel("Test type:");
         label1.setFont(new Font("Dialog", Font.BOLD, 12));
         d1.add(label1);
         d1.add(testDropdown);
         d1.add(explain3);
-        c.add(d1);
 
-        Box d2 = Box.createHorizontalBox();
-        JLabel label2 = new JLabel("SCORE TYPE (if needed):");
+        JLabel label2 = new JLabel("Score type:");
         label2.setFont(new Font("Dialog", Font.BOLD, 12));
-        d2.add(label2);
-        d2.add(scoreDropdown);
-        d2.add(explain4);
-        c.add(d2);
+        d1.add(Box.createHorizontalStrut(20));
+        d1.add(label2);
+        d1.add(scoreDropdown);
+        d1.add(explain4);
+        c.add(d1);
         c.add(Box.createVerticalStrut(5));
 
 
         Box d5 = Box.createHorizontalBox();
 
         Algorithm algorithm = getAlgorithmFromInterface();
-        whatYouChose = new JLabel("You chose: " + algorithm.getDescription());
+        whatYouChose = new JLabel("You chose: " + algorithm.getDescription() + ".");
         whatYouChose.setFont(new Font("Dialog", Font.BOLD, 12));
 
         d5.add(whatYouChose);
         d5.add(Box.createHorizontalGlue());
         c.add(d5);
+        c.add(Box.createVerticalStrut(10));
+
+        Box d0 = Box.createHorizontalBox();
+        JLabel label0 = new JLabel("Next, pick parameter values for your algorithm and then click 'Search'.");
+        label0.setFont(new Font("Dialog", Font.BOLD, 12));
+        d0.add(label0);
+        d0.add(Box.createHorizontalGlue());
+        c.add(d0);
         c.add(Box.createVerticalStrut(10));
 
         c.add(scroll);
@@ -794,15 +803,6 @@ public class GeneralAlgorithmEditor extends JPanel {
         return b;
     }
 
-    private void addHelpListener(JButton button, ActionListener listener) {
-       button.addActionListener(listener);
-    }
-
-    private HelpSet getHelpSet() {
-
-        return helpSet;
-    }
-
     private Parameters getParameters() {
         return parameters;
     }
@@ -816,7 +816,7 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private AlgName getAlgName() {
-        return AlgName.valueOf(parameters.getString("algName", "FGS"));
+        return AlgName.valueOf(parameters.getString("algName", "PC"));
     }
 
     private void setAlgName(AlgName algName) {
@@ -864,12 +864,11 @@ public class GeneralAlgorithmEditor extends JPanel {
     }
 
     private enum AlgName {
-        FGS, PC, CPC, CPCS, PCStable, FAS,
-        GFCI, FCI, RFCI, CFCI, TsFCI, TsGFCI, CCD, GCCD,
+        PC, CPC, CPCS, PCStable, FAS,
+        GFCI, FCI, RFCI, CFCI, FGS, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         FgsMb, MBFS, PcLocal, PcMax, PcMaxLocal, Wfgs,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,
-        TsIMaGES_SEM_BIC,
         GLASSO,
         EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn
     }

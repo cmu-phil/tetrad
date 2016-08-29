@@ -49,7 +49,7 @@
         be necessary for the <b><a href="mimbuild.html">MIM Build algorithm</a></b>)
         and latents do not need to be continuous. </font></p>
 <p><font color="#000000">All variables are assumed to be continuous, and therefore
-    the current implementation of the algorithm accepts only continuous coltData sets
+    the current implementation of the algorithm accepts only continuous data sets
     as input. For general information about model building algorithms, consult the
     <font color="#000000"><b><a href="../../search/../search.html">Search Algorithms</a></b></font>
     page.</font></p>
@@ -58,7 +58,7 @@
 <p>Create a new <font color="#000000">Search
     object</font> as described in the <font color="#000000"><b><a href="../../search/../search.html">Search
     Algorithms</a></b></font> page, but in order to follow this tutorial, use the
-    following graph to generate a simulated continuous coltData set:</p>
+    following graph to generate a simulated continuous data set:</p>
 <blockquote>
     <p><font color="#000000"><img src="../../images/purify1.png" width="790" height="470"></font></p>
 </blockquote>
@@ -78,7 +78,7 @@
         the level by which such tests are used to accept or reject constraints that
         compose the final output. The default value is 0.05, but the user may want
         to experiment with different alpha values in order to test the sensitivity
-        of her coltData within this algorithm.
+        of her data within this algorithm.
     </li>
     <li><strong>number of clusters</strong>: Purify needs a measurement model specified
         in advance. The measurement model is defined by a set of clusters of variables,
@@ -99,7 +99,7 @@
         a multivariate normal distribution. Bollen's Tetrad test not make this assumption.
         However, it needs to compute a matrix of fourth moments, which can be time
         consuming. It is also less robust against sampling variability when compared
-        to Wishart's test if the coltData actually follows a multivariate normal distribution.
+        to Wishart's test if the data actually follows a multivariate normal distribution.
     </li>
     <li><strong>default mode</strong>: there are basically two different strategies
         used by Purify. In the <em>Impure by default</em> mode, the algorithm does

@@ -29,12 +29,14 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Displays a toolbar and workbench for editing Session's.
@@ -79,6 +81,16 @@ public final class SessionEditor extends JComponent
         }
 
         workbench.setName(name);
+
+        int initialHelpMessageCount = Preferences.userRoot().getInt("initialHelpMessageCount", 1);
+
+        if (initialHelpMessageCount <= 3) {
+            workbench.setBorder(new TitledBorder(" To put a box on the workbench, click on " +
+                    "a button to the left and then click on this workbench. Right click or double click boxes to edit. "));
+        }
+
+        Preferences.userRoot().putInt("initialHelpMessageCount", initialHelpMessageCount + 1);
+
         setWorkbench(workbench);
         setToolbar(new SessionEditorToolbar(workbench));
         JScrollPane workbenchScroll = new JScrollPane(workbench);
