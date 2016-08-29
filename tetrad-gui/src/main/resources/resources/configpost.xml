@@ -1359,20 +1359,20 @@
                 <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
                 <!--</editor-class>-->
             <!--</model>-->
-            <model name="ION" acronym="ION" help="ion" category="PAG searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="colliderOrientations" description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.IonRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.IonSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="ION" acronym="ION" help="ion" category="PAG searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations" description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.IonRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.IonSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <!--<model name="CCD" acronym="CCD" help="ccd" category="PAG searches">-->
                 <!--<logger>-->
                     <!--<event id="info" description="Information" default="on"/>-->
@@ -1485,102 +1485,102 @@
                 <!--</editor-class>-->
             <!--</model>-->
             <!--Heuristic Best Significant Model Search-->
-            <model name="BFF" acronym="BFF" help="bff"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor
-                </editor-class>
-            </model>
-            <model name="MIMBuild" acronym="MIMBuild" help="mimbuild"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                    <event id="maxmodel" description="Max P Value Model" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.MimBuildRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MimbuildEditor
-                </editor-class>
-            </model>
-            <model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                    <event id="maxmodel" description="Max P Value Model" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.MimBuildTrekRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MimbuildEditor
-                </editor-class>
-            </model>
-            <model name="Cluster Search" acronym="Cluster" help="cluster"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="detail" description="Details"/>
-                    <event id="tetrads" description="Tetrads"/>
-                    <event id="sextadPValues" description="Sextad P Values"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="clusters" description="Clusters"/>
-                    <event id="elapsed" description="Elapsed Time"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.BuildPureClustersRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2
-                </editor-class>
-            </model>
-            <model name="FOFC" acronym="FOFC" help="fofc"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="detail" description="Details"/>
-                    <event id="tetrads" description="Tetrads"/>
-                    <event id="sextadPValues" description="Sextad P Values"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="clusters" description="Clusters"/>
-                    <event id="elapsed" description="Elapsed Time"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.FofcRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FofcSearchEditor
-                </editor-class>
-            </model>
-            <model name="FTFC" acronym="FTFC" help="ftfc"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="detail" description="Details"/>
-                    <event id="tetrads" description="Tetrads"/>
-                    <event id="sextadPValues" description="Sextad P Values"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="clusters" description="Clusters"/>
-                    <event id="elapsed" description="Elapsed Time"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.FtfcRunner
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FtfcSearchEditor
-                </editor-class>
-            </model>
-            <model name="Purify" acronym="Purify" help="purify"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                    <event id="tetrads" description="Tetrads"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PurifyRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2
-                </editor-class>
-            </model>
+            <!--<model name="BFF" acronym="BFF" help="bff"-->
+                   <!--category="Pattern Searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="MIMBuild" acronym="MIMBuild" help="mimbuild"-->
+                   <!--category="Multiple Indicator Model searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+                    <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.MimBuildRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"-->
+                   <!--category="Multiple Indicator Model searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+                    <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.MimBuildTrekRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="Cluster Search" acronym="Cluster" help="cluster"-->
+                   <!--category="Multiple Indicator Model searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="detail" description="Details"/>-->
+                    <!--<event id="tetrads" description="Tetrads"/>-->
+                    <!--<event id="sextadPValues" description="Sextad P Values"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="clusters" description="Clusters"/>-->
+                    <!--<event id="elapsed" description="Elapsed Time"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.BuildPureClustersRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="FOFC" acronym="FOFC" help="fofc"-->
+                   <!--category="Multiple Indicator Model searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="detail" description="Details"/>-->
+                    <!--<event id="tetrads" description="Tetrads"/>-->
+                    <!--<event id="sextadPValues" description="Sextad P Values"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="clusters" description="Clusters"/>-->
+                    <!--<event id="elapsed" description="Elapsed Time"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.FofcRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.FofcSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="FTFC" acronym="FTFC" help="ftfc"-->
+                   <!--category="Multiple Indicator Model searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="detail" description="Details"/>-->
+                    <!--<event id="tetrads" description="Tetrads"/>-->
+                    <!--<event id="sextadPValues" description="Sextad P Values"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="clusters" description="Clusters"/>-->
+                    <!--<event id="elapsed" description="Elapsed Time"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.FtfcRunner-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.FtfcSearchEditor-->
+                <!--</editor-class>-->
+            <!--</model>-->
+            <!--<model name="Purify" acronym="Purify" help="purify"-->
+                   <!--category="Multiple Indicator Model searches">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="details" description="Misc Fine Details" default="on"/>-->
+                    <!--<event id="tetrads" description="Tetrads"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.PurifyRunner</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2-->
+                <!--</editor-class>-->
+            <!--</model>-->
             <!--<model name="MBFS" acronym="MBFS" help="mbf"-->
                    <!--category="Feature selection searches">-->
                 <!--<logger>-->
@@ -1637,11 +1637,8 @@
                     <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
                 <!--</params-editor-class>-->
             <!--</model>-->
-            <model name="Sequential Factoring with Residuals" acronym="SFR" help="sfr" category="Factor Analysis">
-                <model-class>edu.cmu.tetradapp.model.FactorAnalysisRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FactorAnalysisEditor
-                </editor-class>
-            </model>
+            <!--<model name="Sequential Fa
+            -->
             <!--<model name="PC Adjacency Search" acronym="FAS" help="fas" category="Undirected Graph Searches">-->
                 <!--<logger>-->
                     <!--<event id="info" description="Information" default="on"/>-->

@@ -187,8 +187,7 @@ public final class SessionEditor extends JComponent
 
     public void saveSessionImage() {
         Action action = new SaveComponentImage(workbench, "Save Session Image...");
-        action.actionPerformed(
-                new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Save"));
+        action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Save"));
     }
 
     public void firePropertyChange(String s, Object o, String name) {

@@ -1,7 +1,11 @@
 package edu.cmu.tetradapp.util;
 
 /**
- * Created by jdramsey on 8/28/16.
+ * Actions an editor needs to perform before closing. If it's OK to close the
+ * finalalizeEditor method will return true; otherwise, false.
+ *
+ * @author jdramsey
  */
 public interface FinalizingEditor {
+    boolean finalizeEditor();
 }

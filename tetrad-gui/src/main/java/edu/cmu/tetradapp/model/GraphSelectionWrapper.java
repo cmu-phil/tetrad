@@ -44,6 +44,8 @@ import java.util.*;
 public class GraphSelectionWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
     static final long serialVersionUID = 23L;
     private final Parameters params;
+    private List<Node> selectedVariables;
+    private List<Graph> graphs = new ArrayList<>();
 
     public enum Type {
         adjacents, adjacentsOfAdjacents, adjacentsOfAdjacentsOfAdjacents, markovBlankets, treks, trekEdges,
@@ -102,7 +104,27 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             GraphUtils.fruchtermanReingoldLayout(graph);
         }
 
+        List<Node> nodes = getVariables();
+
+        List<Node> first50 = new ArrayList<>();
+
+        for (int i = 0; i < 50; i++) {
+            if (i >= nodes.size()) continue;
+            first50.add(nodes.get(i));
+        }
+
+        if (nodes.isEmpty()) {
+            setSelectedVariables(first50);
+        } else {
+            setSelectedVariables(nodes);
+        }
+
         log();
+    }
+
+
+    public List<Node> getSelectedVariables() {
+        return selectedVariables;
     }
 
     private List<Graph> getSelectionGraphs(Parameters params) {
@@ -137,7 +159,6 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public List<Graph> getGraphs() {
-        List<Graph> graphs = (List<Graph>) params.get("graphs");
 
         if (graphs == null || graphs.isEmpty()) {
             List<Graph> _graphs = Collections.<Graph>singletonList(new EdgeListGraph());
@@ -579,7 +600,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public void setGraphs(List<Graph> graphs) {
-        params.set("graphs", graphs);
+        this.graphs = graphs;
 
         List<Graph> selectionGraphs = new ArrayList<>();
 
@@ -593,9 +614,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         List<Node> highlighted = (List<Node>) params.get("highlightInEditor", new ArrayList<>());
         highlighted.retainAll(getSelectedGraph(0).getNodes());
         params.set("highlightInEditor", highlighted);
-        List<Node> selected = (List<Node>) params.get("selectedVariables", new ArrayList<Node>());
+        List<Node> selected = getSelectedVariables();
         selected.retainAll(getSelectedGraph(0).getNodes());
-        params.set("selectedVariables", selected);
+        setSelectedVariables(selected);
 
         log();
     }
@@ -663,27 +684,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public void setSelectedVariables(List<Node> variables) {
-        params.set("selectedVariables", variables);
+        this.selectedVariables = variables;
     }
 
-    public List<Node> getSelectedVariables() {
-        List<Node> nodes = getVariables();
-
-        List<Node> first50 = new ArrayList<>();
-
-        for (int i = 0; i < 50; i++) {
-            if (i >= nodes.size()) continue;
-            first50.add(nodes.get(i));
-        }
-
-        List<Node> variables = (List<Node>) params.get("selectedVariables");
-
-        if (variables.isEmpty()) {
-            return first50;
-        } else {
-            return variables;
-        }
-    }
 
     public List<Node> getVariables() {
         return getSelectedGraph(0).getNodes();

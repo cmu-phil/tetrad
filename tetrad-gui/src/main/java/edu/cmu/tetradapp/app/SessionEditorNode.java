@@ -244,8 +244,7 @@ public final class SessionEditorNode extends DisplayNode {
             String descrip = modelConfig.getName();
             editor.setName(getName() + " (" + descrip + ")");
 
-            EditorWindow editorWindow =
-                    new EditorWindow(editor, editor.getName(), "Save", cloned, this);
+            EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Save", cloned, this);
 
             editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                 public void internalFrameClosing(InternalFrameEvent e) {

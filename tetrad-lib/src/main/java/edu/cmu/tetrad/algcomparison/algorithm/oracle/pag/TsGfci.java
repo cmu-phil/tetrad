@@ -3,13 +3,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
 
@@ -29,24 +29,24 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.test = type;
     }
 
-    public TsGfci(IndependenceWrapper type, Algorithm initialGraph) {
-        this.test = type;
-        this.initialGraph = initialGraph;
-    }
+//    public TsGfci(IndependenceWrapper type, Algorithm initialGraph) {
+//        this.test = type;
+//        this.initialGraph = initialGraph;
+//    }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        Graph initial = null;
+//        Graph initial = null;
+//
+//        if (initialGraph != null) {
+//            initial = initialGraph.search(dataSet, parameters);
+//        }
 
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
+        edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters));
 
-        edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
-
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         search.setKnowledge(knowledge);
 
