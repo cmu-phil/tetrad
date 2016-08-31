@@ -47,7 +47,7 @@ public class TestDataWrapper {
     @Test
     public void testConstruction() {
 
-        this.dataWrapper = new DataWrapper();
+        this.dataWrapper = new DataWrapper(dataWrapper);
 
         assertNotNull(dataWrapper);
     }

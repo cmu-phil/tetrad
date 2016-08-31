@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -35,7 +36,7 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
 
 
 
-    public ExpandCaseMultipliersWrapper(DataWrapper data) {
+    public ExpandCaseMultipliersWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
@@ -57,7 +58,7 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static ExpandCaseMultipliersWrapper serializableInstance() {
-        return new ExpandCaseMultipliersWrapper(DataWrapper.serializableInstance());
+        return new ExpandCaseMultipliersWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
 

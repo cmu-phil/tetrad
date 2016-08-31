@@ -70,7 +70,7 @@ public final class SemEstimatorEditor extends JPanel {
         optimizerCombo.addItem("Random Search");
         optimizerCombo.addItem("RICF");
 
-        optimizerCombo.setMaximumSize(new Dimension(200, 25));
+//        optimizerCombo.setMaximumSize(new Dimension(200, 25));
 
         optimizerCombo.addActionListener(new ActionListener() {
             @Override
@@ -85,7 +85,7 @@ public final class SemEstimatorEditor extends JPanel {
 
         scoreBox.addItem("Fgls");
         scoreBox.addItem("Fml");
-        scoreBox.setMaximumSize(new Dimension(100, 25));
+//        scoreBox.setMaximumSize(new Dimension(100, 25));
 
         scoreBox.addActionListener(new ActionListener() {
             @Override
@@ -161,18 +161,20 @@ public final class SemEstimatorEditor extends JPanel {
         }));
 
         Box lowerBarA = Box.createHorizontalBox();
-        lowerBarA.add(Box.createHorizontalGlue());
+//        lowerBarA.add(Box.createHorizontalGlue());
         lowerBarA.add(new JLabel("Score"));
         lowerBarA.add(scoreBox);
         lowerBarA.add(new JLabel("Random Restarts"));
         lowerBarA.add(restarts);
+//        lowerBarA.add(Box.createHorizontalGlue());
 
         Box lowerBarB = Box.createHorizontalBox();
-        lowerBarB.add(Box.createHorizontalGlue());
+//        lowerBarB.add(Box.createHorizontalGlue());
         lowerBarB.add(new JLabel("Choose Optimizer:  "));
         lowerBarB.add(optimizerCombo);
         lowerBarB.add(Box.createHorizontalStrut(10));
         lowerBarB.add(estimateButton);
+//        lowerBarB.add(Box.createHorizontalGlue());
 
         Box lowerBar = Box.createVerticalBox();
         lowerBar.add(lowerBarA);
@@ -382,26 +384,27 @@ public final class SemEstimatorEditor extends JPanel {
         if (semEstimators.size() == 1) {
             SemEstimator estimatedSem = semEstimators.get(0);
             SemImEditor editor = new SemImEditor(estimatedSem.getEstimatedSem());
-            final JPanel _panel = new JPanel();
-            _panel.setLayout(new BorderLayout());
-            _panel.add(editor, BorderLayout.CENTER);
+//            final JPanel _panel = new JPanel();
+//            _panel.setLayout(new BorderLayout());
+//            _panel.add(editor, BorderLayout.CENTER);
 
             panel.removeAll();
-            panel.add(_panel, BorderLayout.CENTER);
+            panel.add(editor, BorderLayout.CENTER);
             panel.revalidate();
             panel.repaint();
 
-            // Fixes the problem of the IM panel not resizing correctly. -jdramsey 2/2/12
-            panel.addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentResized(ComponentEvent componentEvent) {
-                    Component component = componentEvent.getComponent();
-                    _panel.setPreferredSize(component.getSize());
-//                    _panel.setMinimumSize(component.getSize());
-                    panel.revalidate();
-                    panel.repaint();
-                }
-            });
+//            // Doesn't work now.
+//            // Fixes the problem of the IM panel not resizing correctly. -jdramsey 2/2/12
+//            panel.addComponentListener(new ComponentAdapter() {
+//                @Override
+//                public void componentResized(ComponentEvent componentEvent) {
+//                    Component component = componentEvent.getComponent();
+//                    panel.setPreferredSize(component.getSize());
+//                    panel.setMinimumSize(component.getSize());
+//                    panel.revalidate();
+//                    panel.repaint();
+//                }
+//            });
 
         } else {
             JTabbedPane tabs = new JTabbedPane();
@@ -417,8 +420,8 @@ public final class SemEstimatorEditor extends JPanel {
 
             panel.removeAll();
             panel.add(tabs);
-            panel.revalidate();
-            panel.repaint();
+            panel.validate();
+//            panel.repaint();
         }
     }
 }

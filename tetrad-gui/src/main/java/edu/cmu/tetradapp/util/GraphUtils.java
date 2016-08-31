@@ -43,7 +43,7 @@ public class GraphUtils {
         double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        final String type = parameters.getString("randomGraphType", "Uniform");
+        final String type = parameters.getString("randomGraphType", "ScaleFree");
 
         if (type.equals("Uniform")) {
             return makeRandomDag(graph,

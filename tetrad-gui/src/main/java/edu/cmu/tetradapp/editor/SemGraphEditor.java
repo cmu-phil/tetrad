@@ -28,12 +28,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.PointXy;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -42,7 +40,10 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -369,150 +370,39 @@ public final class SemGraphEditor extends JPanel
 
         randomGraph.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true, parameters);
+                final GraphParamsEditor editor = new GraphParamsEditor();
+                editor.setParams(parameters);
 
-                int ret = JOptionPane.showConfirmDialog(
-                        SemGraphEditor.this, editor,
-                        "Edit Random DAG Parameters",
-                        JOptionPane.PLAIN_MESSAGE);
+                EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
+                        "Done", false, SemGraphEditor.this);
 
-                if (ret == JOptionPane.OK_OPTION) {
-                    Graph graph = null;
-                    Graph dag = new EdgeListGraph();
-                    int numTrials = 0;
-
-                    while (graph == null && ++numTrials < 100) {
-
-                        if (editor.isRandomForward()) {
-                            dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, false, true);
-                            GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
-                            HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-                            GraphUtils.arrangeByLayout(dag, layout);
-                        } else if (editor.isUniformlySelected()) {
-                            if (getGraph().getNumNodes() == editor.getNumNodes()) {
-                                HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-
-                                dag = GraphUtils.randomGraph(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
-                                GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
-
-                                GraphUtils.arrangeByLayout(dag, layout);
-                            } else {
-                                List<Node> nodes = new ArrayList<>();
-
-                                for (int i = 0; i < editor.getNumNodes(); i++) {
-                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
-                                }
-
-                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
-                                        editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
-                            }
-                        } else if (editor.isChooseFixed()) {
-                            do {
-                                if (getGraph().getNumNodes() == editor.getNumNodes()) {
-                                    HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-
-                                    dag = GraphUtils.randomGraph(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, editor.isConnected());
+                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                editorWindow.pack();
+                editorWindow.setVisible(true);
 
 
-                                    GraphUtils.arrangeByLayout(dag, layout);
-                                } else {
-                                    List<Node> nodes = new ArrayList<>();
+                editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                    public void internalFrameClosed(InternalFrameEvent e1) {
+                        EditorWindow window = (EditorWindow) e1.getSource();
 
-                                    for (int i = 0; i < editor.getNumNodes(); i++) {
-                                        nodes.add(new ContinuousVariable("X" + (i + 1)));
-                                    }
-
-                                    dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
-                                            30, 15, 15, editor.isConnected());
-                                }
-                            } while (dag.getNumEdges() < editor.getMaxEdges());
+                        if (window.isCanceled()) {
+                            return;
                         }
 
-                        boolean addCycles = editor.isAddCycles();
+                        RandomUtil.getInstance().setSeed(new Date().getTime());
+                        Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
+
+                        boolean addCycles = parameters.getBoolean("randomAddCycles", false);
 
                         if (addCycles) {
-                            int minCycleLength = editor.getMinCycleLength();
-                            int minNumCycles = editor.getMinNumCycles();
-
-//                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
-
-                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
-                        } else {
-                            graph = new EdgeListGraph(dag);
+                            int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
+                            int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
+                            graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges);
                         }
+
+                        getWorkbench().setGraph(graph1);
                     }
-
-                    int minNumCycles = editor.getMinNumCycles();
-                    GraphUtils.addTwoCycles(graph, minNumCycles);
-
-                    if (graph == null) {
-                        JOptionPane.showMessageDialog(SemGraphEditor.this,
-                                "Could not find a graph that fits those constrains.");
-                        getWorkbench().setGraph(new SemGraph(dag));
-                    } else {
-                        getWorkbench().setGraph(new SemGraph(graph));
-                    }
-
-//                    getWorkbench().setGraph(new EdgeListGraph(dag));
-//                    getWorkbench().setGraph(graph);
-                }
-            }
-        });
-
-
-        JMenuItem randomIndicatorModel =
-                new JMenuItem("Random Multiple Indicator Model");
-        graph.add(randomIndicatorModel);
-
-        randomIndicatorModel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RandomMimParamsEditor editor = new RandomMimParamsEditor();
-
-                int ret = JOptionPane.showConfirmDialog(
-                        JOptionUtils.centeringComp(), editor,
-                        "Edit Random MIM Parameters",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.PLAIN_MESSAGE);
-
-                if (ret == JOptionPane.OK_OPTION) {
-                    int numFactors = parameters.getInt("randomMimNumFactors", 1);
-                    int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
-                    int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
-                    int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
-                    int numLatentMeasuredImpureParents = parameters
-                            .getInt("latentMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureParents = parameters
-                            .getInt("measuredMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureAssociations = parameters
-                            .getInt("measuredMeasuredImpureAssociations",
-                                    0);
-
-                    Graph graph;
-
-                    if (numFactors == 1) {
-                        graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                                maxStructuralEdges, measurementModelDegree,
-                                numLatentMeasuredImpureParents,
-                                numMeasuredMeasuredImpureParents,
-                                numMeasuredMeasuredImpureAssociations);
-                    } else if (numFactors == 2) {
-                        graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
-                                maxStructuralEdges, measurementModelDegree,
-                                numLatentMeasuredImpureParents,
-                                numMeasuredMeasuredImpureParents,
-                                numMeasuredMeasuredImpureAssociations);
-                    } else {
-                        throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                                "sorry dude.");
-                    }
-
-                    SemGraph semGraph = new SemGraph(graph);
-                    semGraph.setShowErrorTerms(false);
-
-                    workbench.setGraph(semGraph);
-                    getSemGraphWrapper().setSemGraph(semGraph);
-                    errorTerms.setText("Show Error Terms");
-                }
+                });
             }
         });
 

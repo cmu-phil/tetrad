@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2013, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
+// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
 // Ramsey, and Clark Glymour.                                                //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
@@ -34,10 +34,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
+import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -135,8 +137,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPCS, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
@@ -148,10 +153,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.PAG, OracleType.Score));
 
         descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.Markov_Blanket, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.Markov_Blanket, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.Markov_Blanket, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.Undirected_Graph, OracleType.Test));
 
@@ -193,10 +195,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         List<TestType> tests;
 
-        if (runner.getDataModelList() == null) {
+        DataModelList dataModelList = runner.getDataModelList();
+
+        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
             tests = dsepTests;
-        } else {
-            DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
+        } else if (!(dataModelList.isEmpty())) {
+            DataSet dataSet = (DataSet) dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 tests = continuousTests;
@@ -207,6 +211,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             } else {
                 throw new IllegalArgumentException();
             }
+        } else {
+            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
         }
 
         for (TestType item : tests) {
@@ -215,10 +221,28 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         List<ScoreType> scores;
 
-        if (runner.getDataModelList() == null) {
-            scores = dsepScores;
+        if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
+            tests = dsepTests;
+        } else if (!dataModelList.isEmpty()) {
+            DataSet dataSet = (DataSet) dataModelList.get(0);
+
+            if (dataSet.isContinuous()) {
+                tests = continuousTests;
+            } else if (dataSet.isDiscrete()) {
+                tests = discreteTests;
+            } else if (dataSet.isMixed()) {
+                tests = mixedTests;
+            } else {
+                throw new IllegalArgumentException();
+            }
         } else {
-            DataSet dataSet = (DataSet) runner.getDataModelList().get(0);
+            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
+        }
+
+        if ((dataModelList == null || dataModelList.isEmpty() && runner.getGraphs() != null)) {
+            scores = dsepScores;
+        } else if (!(dataModelList.isEmpty())) {
+            DataSet dataSet = (DataSet) dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 scores = continuousScores;
@@ -229,6 +253,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             } else {
                 throw new IllegalArgumentException();
             }
+        } else {
+            throw new IllegalArgumentException("You need either some data sets or a graph as input.");
         }
 
         for (ScoreType item : scores) {
@@ -304,7 +330,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         pane.add("Algorithm", getParametersPane());
         pane.add("Knowledge", getKnowledgePanel(runner));
         pane.add("Output Graph Selections", graphEditor);
-
         add(pane, BorderLayout.CENTER);
 
         searchButton1.addActionListener(new ActionListener() {
@@ -462,31 +487,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         switch (name) {
             case FGS:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new Fgs(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new Fgs(scoreWrapper);
                 }
                 break;
             case PC:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new Pc(independenceWrapper);
                 }
                 break;
             case CPC:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new Cpc(independenceWrapper);
                 }
                 break;
-            case CPCS:
+            case CPCStable:
                 algorithm = new Cpcs(independenceWrapper);
                 break;
             case PCStable:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new PcStable(independenceWrapper);
@@ -496,7 +521,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Gfci(independenceWrapper, scoreWrapper);
                 break;
             case FCI:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new Fci(independenceWrapper);
@@ -509,7 +534,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Cfci(independenceWrapper);
                 break;
             case TsFCI:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new TsFci(independenceWrapper);
@@ -532,7 +557,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new FAS(independenceWrapper);
                 break;
             case FgsMb:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new FgsMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new FgsMb(scoreWrapper);
@@ -545,7 +570,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new PcLocal(independenceWrapper);
                 break;
             case PcMax:
-                if (runner.getSourceGraph() != null) {
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new PcMax(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new PcMax(independenceWrapper);
@@ -665,14 +690,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     //=============================== Public Methods ==================================//
 
 
-    private Box getParametersPane() {
+    private JPanel getParametersPane() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
 
 //        helpSet.setHomeID("tetrad_overview");
 
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         final JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(new Dimension(800, 300));
-        scroll.setBorder(new EmptyBorder(0, 0, 0, 0));
         Box c = Box.createVerticalBox();
 
         JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
@@ -684,6 +710,25 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
         explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
         explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+
+//        scroll.setBorder(new EmptyBorder(0, 0, 0, 0));
+//        Box c = Box.createVerticalBox();
+//
+////        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+////        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+////        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+////        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+//
+//        JButton explain1 = new JButton("Explain");
+//        JButton explain2 = new JButton("Explain");
+//        JButton explain3 = new JButton("Explain");
+//        JButton explain4 = new JButton("Explain");
+//
+////        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
+////        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
+////        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
+////        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         explain1.addActionListener(new ActionListener() {
             @Override
@@ -731,87 +776,79 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        algTypesDropdown.setMaximumSize(algTypesDropdown.getPreferredSize());
-        algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
-        testDropdown.setMaximumSize(testDropdown.getPreferredSize());
-        scoreDropdown.setMaximumSize(scoreDropdown.getPreferredSize());
-
 //        Box d8 = Box.createHorizontalBox();
-//        JLabel label8 = new JLabel("Choose a type of algorithm, then an algorithm of that type. Compatible algorithms will be listed.");
+//        JLabel label8 = new JLabel("You have a lot of options.");
 //        label8.setFont(new Font("Dialog", Font.BOLD, 13));
 //        d8.add(label8);
 //        d8.add(Box.createHorizontalGlue());
 //        c.add(d8);
 //        c.add(Box.createVerticalStrut(10));
 
-        Box d4 = Box.createHorizontalBox();
-        JLabel label4 = new JLabel("Algorithm:");
-        label4.setFont(new Font("Dialog", Font.BOLD, 13));
-        d4.add(label4);
-        d4.add(algNamesDropdown);
-        d4.add(explain2);
-        d4.add(Box.createHorizontalGlue());
-        c.add(d4);
-        c.add(Box.createVerticalStrut(10));
-
         Box d3 = Box.createHorizontalBox();
-        JLabel label3 = new JLabel("Type of algorithm:");
+        JLabel label3 = new JLabel("First, choose a type of algorithm:");
         label3.setFont(new Font("Dialog", Font.BOLD, 13));
         d3.add(label3);
+        d3.add(Box.createHorizontalGlue());
+        algTypesDropdown.setMaximumSize(algTypesDropdown.getPreferredSize());
         d3.add(algTypesDropdown);
         d3.add(explain1);
-        d3.add(Box.createHorizontalGlue());
         c.add(d3);
         c.add(Box.createVerticalStrut(10));
 
-//        Box d7 = Box.createHorizontalBox();
-//        JLabel label7 = new JLabel("Next, choose a score or a test, or both. If they're not needed, they will be grayed out.");
-//        label7.setFont(new Font("Dialog", Font.BOLD, 13));
-//        d7.add(label7);
-//        d7.add(Box.createHorizontalGlue());
-//        c.add(d7);
-//        c.add(Box.createVerticalStrut(10));
+        Box d4 = Box.createHorizontalBox();
+        JLabel label4 = new JLabel("Next, choose an algorithm of that type; only algorithms compatible with your data " +
+                "will be shown:");
+        label4.setFont(new Font("Dialog", Font.BOLD, 13));
+        d4.add(label4);
+        d4.add(Box.createHorizontalGlue());
+        algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
+        d4.add(algNamesDropdown);
+        d4.add(explain2);
+        c.add(d4);
+        c.add(Box.createVerticalStrut(10));
+
+        Box d7 = Box.createHorizontalBox();
+        JLabel label7 = new JLabel("Next, choose a score or a test, or both. If they're not needed, they will be grayed out.");
+        label7.setFont(new Font("Dialog", Font.BOLD, 13));
+        d7.add(label7);
+        d7.add(Box.createHorizontalGlue());
+        c.add(d7);
+        c.add(Box.createVerticalStrut(10));
 
         Box d1 = Box.createHorizontalBox();
-        JLabel label1 = new JLabel("Test type (if needed):");
+        JLabel label1 = new JLabel("Test type:");
         label1.setFont(new Font("Dialog", Font.BOLD, 13));
         d1.add(label1);
         d1.add(testDropdown);
         d1.add(explain3);
-        d1.add(Box.createHorizontalGlue());
-        c.add(d1);
-        c.add(Box.createVerticalStrut(10));
-//        d1.add(Box.createHorizontalGlue());
 
-        Box d2 = Box.createHorizontalBox();
-        JLabel label2 = new JLabel("Score type (if needed):");
+        JLabel label2 = new JLabel("Score type:");
         label2.setFont(new Font("Dialog", Font.BOLD, 13));
-//        d2.add(Box.createHorizontalStrut(20));
-        d2.add(label2);
-        d2.add(scoreDropdown);
-        d2.add(explain4);
-        d2.add(Box.createHorizontalGlue());
-        c.add(d2);
+        d1.add(Box.createHorizontalStrut(20));
+        d1.add(label2);
+        d1.add(scoreDropdown);
+        d1.add(explain4);
+        c.add(d1);
         c.add(Box.createVerticalStrut(10));
 
         Box d5 = Box.createHorizontalBox();
 
         Algorithm algorithm = getAlgorithmFromInterface();
-        whatYouChose = new JLabel("You've chosen " + algorithm.getDescription() + ".");
+        whatYouChose = new JLabel("You chose: " + algorithm.getDescription() + ".");
         whatYouChose.setFont(new Font("Dialog", Font.BOLD, 13));
 
         d5.add(whatYouChose);
         d5.add(Box.createHorizontalGlue());
         c.add(d5);
-        c.add(Box.createVerticalStrut(20));
+        c.add(Box.createVerticalStrut(15));
 
-//        Box d0 = Box.createHorizontalBox();
-//        JLabel label0 = new JLabel("Next, pick values for the parameters listed below and then click 'Search'. ");
-//        label0.setFont(new Font("Dialog", Font.BOLD, 13));
-//        d0.add(label0);
-//        d0.add(Box.createHorizontalGlue());
-//        c.add(d0);
-//        c.add(Box.createVerticalStrut(10));
+        Box d0 = Box.createHorizontalBox();
+        JLabel label0 = new JLabel("Parameters for your algorithm are listed below. Please adjust the parameter values." );
+        label0.setFont(new Font("Dialog", Font.BOLD, 13));
+        d0.add(label0);
+        d0.add(Box.createHorizontalGlue());
+        c.add(d0);
+        c.add(Box.createVerticalStrut(10));
 
         c.add(scroll);
 
@@ -823,11 +860,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box b = Box.createHorizontalBox();
         b.add(c);
-        b.add(Box.createHorizontalBox());
+        b.add(Box.createVerticalGlue());
 
         runner.setAlgorithm(algorithm);
 
-        return b;
+        panel.add(b, BorderLayout.CENTER);
+
+        return panel;
     }
 
     private Parameters getParameters() {
@@ -904,9 +943,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, CPC, CPCS, PCStable, FAS,
+        PC, PCStable, CPC, CPCStable, PcLocal, PcMax, PcMaxLocal, FAS,
+        FgsMb, MBFS, Wfgs,
         FCI, RFCI, CFCI, GFCI, FGS, TsFCI, TsGFCI, TsImages, CCD, GCCD,
-        FgsMb, MBFS, PcLocal, PcMax, PcMaxLocal, Wfgs,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,
         GLASSO,

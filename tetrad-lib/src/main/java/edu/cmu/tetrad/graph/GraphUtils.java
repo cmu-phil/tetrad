@@ -326,13 +326,20 @@ public final class GraphUtils {
 
         final Graph dag = new EdgeListGraphSingleConnections(nodes);
 
+
+        if (connected) {
+            for (int i = 0; i < nodes.size() - 1; i++) {
+                dag.addDirectedEdge(nodes.get(i), nodes.get(i + 1));
+            }
+        }
+
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
 
 //        Collections.shuffle(nodes2);
         int trials = 0;
         boolean added = false;
 
-        for (int i = 0; i < numEdges; i++) {
+        for (int i = dag.getNumEdges() - 1; i < numEdges; i++) {
 
             if ((i + 1) % 1000 == 0) {
                 System.out.println("# edges = " + (i + 1));

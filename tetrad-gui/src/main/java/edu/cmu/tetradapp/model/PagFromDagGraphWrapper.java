@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -34,7 +35,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public PagFromDagGraphWrapper(GraphSource source) {
+    public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 

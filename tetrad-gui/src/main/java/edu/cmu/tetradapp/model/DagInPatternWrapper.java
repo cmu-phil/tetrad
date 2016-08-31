@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -34,7 +35,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 public class DagInPatternWrapper extends GraphWrapper{
     static final long serialVersionUID = 23L;
 
-    public DagInPatternWrapper(GraphSource source){
+    public DagInPatternWrapper(GraphSource source, Parameters parameters){
         this(source.getGraph());
     }
 
@@ -44,7 +45,7 @@ public class DagInPatternWrapper extends GraphWrapper{
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
-    public DagInPatternWrapper(DagInPatternWrapper wrapper) {
+    public DagInPatternWrapper(DagInPatternWrapper wrapper, Parameters parameters) {
         super(getGraph(wrapper.getGraph()));
     }
 

@@ -1179,11 +1179,10 @@ public class SessionNode implements TetradSerializable {
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
-
         for (Class parameterType1 : parameterTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
-                        "Parameter types must all be " + "non-null.");
+                        "Parameter types must all be non-null.");
             }
         }
 
@@ -1194,26 +1193,77 @@ public class SessionNode implements TetradSerializable {
         // objects left over, return null. Otherwise, return the
         // constructed argument array.
         Object[] arguments = new Object[parameterTypes.length];
-        List _objects = removeNulls(objects);
+        List<Object> _objects = removeNulls(objects);
 
-        loop:
-        for (int i = 0; i < arguments.length; i++) {
-            Class parameterType = parameterTypes[i];
-
-            for (int j = 0; j < _objects.size(); j++) {
-                Object _object = _objects.get(j);
-
-                if (parameterType.isAssignableFrom(_object.getClass())) {
-                    arguments[i] = _object;
-                    _objects.remove(_object);
-                    continue loop;
-                }
-            }
-
+        if (parameterTypes.length != _objects.size()) {
             return null;
         }
 
-        return (_objects.size() > 0) ? null : arguments;
+        PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
+        int[] perm;
+        boolean foundAConstructor = false;
+
+        while ((perm = gen.next()) != null) {
+            boolean allAssigned = true;
+
+            for (int i = 0; i < perm.length; i++) {
+
+                Class<?> parameterType = parameterTypes[i];
+                Class<?> aClass = _objects.get(perm[i]).getClass();
+
+                if (parameterType.isAssignableFrom(aClass)) {
+                    arguments[i] = _objects.get(perm[i]);
+                } else {
+                    allAssigned = false;
+                }
+            }
+
+            if (allAssigned) {
+                foundAConstructor = true;
+                break;
+            }
+        }
+
+        if (foundAConstructor) {
+            return arguments;
+        } else {
+            return null;
+        }
+    }
+
+    public boolean assignClasses(Class[] parameterTypes, Class[] modelTypes)
+            throws RuntimeException {
+        for (Class parameterType1 : parameterTypes) {
+            if (parameterType1 == null) {
+                throw new NullPointerException(
+                        "Parameter types must all be non-null.");
+            }
+        }
+
+        PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
+        int[] perm;
+        boolean foundAConstructor = false;
+
+        while ((perm = gen.next()) != null) {
+            boolean allAssigned = true;
+
+            for (int i = 0; i < perm.length; i++) {
+
+                Class<?> parameterType = parameterTypes[i];
+                Class<?> aClass = modelTypes[perm[i]];
+
+                if (!parameterType.isAssignableFrom(aClass)) {
+                    allAssigned = false;
+                }
+            }
+
+            if (allAssigned) {
+                foundAConstructor = true;
+                break;
+            }
+        }
+
+        return foundAConstructor;
     }
 
     /**
@@ -1334,6 +1384,8 @@ public class SessionNode implements TetradSerializable {
             Class[] parameterTypes = constructor.getParameterTypes();
             Object[] arguments = assignParameters(parameterTypes, models);
 
+            if (parameterTypes.length == 0) continue;
+
             if (arguments != null) {
                 try {
                     this.model = (SessionModel) constructor.newInstance(arguments);
@@ -1369,7 +1421,7 @@ public class SessionNode implements TetradSerializable {
 
                 getSessionSupport().fireModelCreated(this);
 //                continue;
-//                break;
+                break;
             }
         }
     }
@@ -1419,29 +1471,38 @@ public class SessionNode implements TetradSerializable {
      * A faster substitute for isConsistentModelClass1.
      * jdramsey 20150801.
      */
-    private boolean isConsistentModelClass(Class modelClass,
-                                           Class[][] parentClasses) {
+    private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses) {
         Constructor[] constructors = modelClass.getConstructors();
 
-        for (Constructor constructor : constructors) {
-            List<Class> types2 = new ArrayList<>();
+        int[] dims = new int[parentClasses.length];
 
-            Class[] types = constructor.getParameterTypes();
+        for (int i = 0; i < parentClasses.length; i++) {
+            dims[i] = parentClasses[i].length;
+        }
 
-            TYPES:
-            for (int i = 0; i < types.length; i++) {
-                for (int j = 0; j < parentClasses.length; j++) {
-                    for (int k = 0; k < parentClasses[j].length; k++) {
-                        if (types[i].isAssignableFrom(parentClasses[j][k])) {
-                            types2.add(parentClasses[j][k]);
-                            continue TYPES;
-                        }
-                    }
-                }
+        CombinationIterator iterator = new CombinationIterator(dims);
+
+        while (iterator.hasNext()) {
+            int[] comb = iterator.next();
+
+            Class[] modelTypes = new Class[comb.length + 1];
+
+            for (int i = 0; i < comb.length; i++) {
+                modelTypes[i] = parentClasses[i][comb[i]];
             }
 
-            if (types2.size() == parentClasses.length) {
-                return true;
+            modelTypes[comb.length] = Parameters.class;
+
+            for (Constructor constructor : constructors) {
+                Class[] constructorTypes = constructor.getParameterTypes();
+
+                if (modelTypes.length != constructorTypes.length) {
+                    continue;
+                }
+
+                if (assignClasses(constructorTypes, modelTypes)) {
+                    return true;
+                }
             }
         }
 
@@ -1459,7 +1520,7 @@ public class SessionNode implements TetradSerializable {
         return null;
     }
 
-    private List removeNulls(List objects) {
+    private List<Object> removeNulls(List objects) {
         List<Object> _objects = new ArrayList<>();
 
         for (Object o : objects) {

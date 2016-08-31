@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -39,42 +40,42 @@ import java.util.List;
 public class ConcatenateDatasetsWrapper extends DataWrapper {
        static final long serialVersionUID = 23L;
 
-    public ConcatenateDatasetsWrapper(DataWrapper data1) {
+    public ConcatenateDatasetsWrapper(DataWrapper data1, Parameters params) {
         construct(data1);
     }
 
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2) {
+    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, Parameters params) {
         construct(data1, data2);
     }
 
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3) {
+    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3, Parameters params) {
         construct(data1, data2, data3);
     }
 
     public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4) {
+                                DataWrapper data4, Parameters params) {
         construct(data1, data2, data3, data4);
     }
 
     public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5) {
+                                DataWrapper data4, DataWrapper data5, Parameters params) {
         construct(data1, data2, data3, data4, data5);
     }
 
     public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6) {
+                                DataWrapper data4, DataWrapper data5, DataWrapper data6, Parameters params) {
         construct(data1, data2, data3, data4, data5, data6);
     }
 
     public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
                                 DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7) {
+                                DataWrapper data7, Parameters params) {
         construct(data1, data2, data3, data4, data5, data6, data7);
     }
 
     public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
                                 DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, DataWrapper data8) {
+                                DataWrapper data7, DataWrapper data8, Parameters params) {
         construct(data1, data2, data3, data4, data5, data6, data7, data8);
     }
 
@@ -109,7 +110,7 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
      */
     public static ConcatenateDatasetsWrapper serializableInstance() {
         return new ConcatenateDatasetsWrapper(DataWrapper.serializableInstance(),
-                DataWrapper.serializableInstance());
+                DataWrapper.serializableInstance(), new Parameters());
     }
 
 

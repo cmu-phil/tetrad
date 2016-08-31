@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.ExtraCategoryInterpolator;
 import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
@@ -36,7 +37,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class ExtraCategoryInterpolatorWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ExtraCategoryInterpolatorWrapper(DataWrapper wrapper) {
+    public ExtraCategoryInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
         DataFilter interpolator = new ExtraCategoryInterpolator();
         DataSet columnDataModel =
                 (DataSet) wrapper.getSelectedDataModel();
@@ -54,7 +55,7 @@ public class ExtraCategoryInterpolatorWrapper extends DataWrapper {
      */
     public static DataWrapper serializableInstance() {
         return new ExtraCategoryInterpolatorWrapper(
-                DataWrapper.serializableInstance());
+                DataWrapper.serializableInstance(), new Parameters());
     }
 }
 

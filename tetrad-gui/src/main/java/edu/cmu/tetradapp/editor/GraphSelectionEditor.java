@@ -239,11 +239,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             first50.add(nodes.get(i));
         }
 
-        if (nodes.isEmpty()) {
-            wrapper.setSelectedVariables(first50);
-        } else {
-            wrapper.setSelectedVariables(nodes);
-        }
+        wrapper.setSelectedVariables(first50);
     }
 
     private void resetWorkbenchScrolls(GraphSelectionWrapper wrapper) {
@@ -325,13 +321,16 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             Graph selection = wrapper.getSelectionGraph(i);
 
+            if (selection.getNumNodes() > 500) {
+                throw new IllegalArgumentException("That is too many nodes for me to display (" +
+                        selection.getNumNodes() + ") I can only go up to 500 nodes.\n" +
+                        "Try a smaller selection.");
+            }
+
             GraphUtils.circleLayout(selection, 200, 200, 150);
-            GraphUtils.fruchtermanReingoldLayout(selection);
-
+//            GraphUtils.fruchtermanReingoldLayout(selection);
             GraphWorkbench workbench = getWorkbench(i);
-
             workbench.setGraph(selection);
-
             List<Node> selected = wrapper.getSelectedVariables();
 
             for (Node node : selected) {

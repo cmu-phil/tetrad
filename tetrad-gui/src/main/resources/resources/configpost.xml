@@ -22,6 +22,15 @@
 <tetrad-configuration>
     <session-node id="Graph">
         <models>
+            <model name="Graph" acronym="Graph" help="general_graph" category="Basic Graph Types">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GraphWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
+                </editor-class>
+            </model>
             <model name="Directed Acyclic Graph" acronym="DAG" help="dag" category="Basic Graph Types">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -29,8 +38,6 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.DagWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DagEditor</editor-class>
-                <params-editor-class>edu.cmu.tetradapp.editor.GraphParamsEditor
-                </params-editor-class>
             </model>
             <model name="Structural Equation Model Graph" acronym="SEM Graph"
                    help="sem_graph" category="Basic Graph Types">
@@ -42,19 +49,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.SemGraphEditor
                 </editor-class>
-                <params-editor-class>edu.cmu.tetradapp.editor.GraphParamsEditor
-                </params-editor-class>
-            </model>
-            <model name="General Graph" acronym="Graph" help="general_graph" category="Basic Graph Types">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.GraphWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
-                </editor-class>
-                <params-editor-class>edu.cmu.tetradapp.editor.GraphParamsEditor
-                </params-editor-class>
             </model>
             <model name="Time Lag Graph" acronym="Lag Graph" help="time_lag_graph" category="Basic Graph Types">
                 <logger>
@@ -67,6 +61,17 @@
             </model>
 
             <!--Graph manip-->
+            <model name="Display Subgraphs" acronym="Graph Select"
+                   help="graph_selections" category="Graph Manipulations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="result" description="Result" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GraphSelectionWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
+                </editor-class>
+            </model>
             <model name="Choose Dag in Pattern" acronym="Dag in Pattern"
                    help="graph" category="Graph Manipulations">
                 <logger>
@@ -174,17 +179,6 @@
                 <model-class>edu.cmu.tetradapp.model.ExtractStructureModelWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
-                </editor-class>
-            </model>
-            <model name="Graph Selections" acronym="Graph Select"
-                   help="graph_selections" category="Graph Manipulations">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="result" description="Result" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.GraphSelectionWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
             </model>
         </models>
@@ -340,11 +334,11 @@
     </session-node>
     <session-node id="Data">
         <models>
-            <model name="Loaded Data" acronym="Data" help="data" category="Data">
+            <model name="Load Data" acronym="Data" help="data" category="Data">
                 <model-class>edu.cmu.tetradapp.model.DataWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Simulation" acronym="Simulation"
+            <model name="Simulate" acronym="Simulation"
                    help="data" category="Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -356,7 +350,8 @@
             <model name="Discretize Dataset" acronym="Discretize" help="data"
                    category="Manipulation of Data">
                 <logger>
-                    <event id="info" description="Information" default="on"/>
+                    <event id="inf
+                    o" description="Information" default="on"/>
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>

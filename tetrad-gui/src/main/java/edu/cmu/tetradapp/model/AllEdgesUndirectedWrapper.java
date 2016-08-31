@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -36,7 +37,7 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper{
 
 
 
-    public AllEdgesUndirectedWrapper(GraphSource source){
+    public AllEdgesUndirectedWrapper(GraphSource source, Parameters parameters){
         this(source.getGraph());
     }
 

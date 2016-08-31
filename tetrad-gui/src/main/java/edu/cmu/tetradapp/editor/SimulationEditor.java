@@ -74,23 +74,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         DataEditor dataEditor;
 
         if (simulation.getSimulation() != null) {
-            try {
-                if (simulation.getSimulation().getNumDataSets() == 0) {
-                    simulation.createSimulation();
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Couldn't create simulation; try adjusting parameters.");
-            }
-
             List<Graph> trueGraphs = new ArrayList<>();
 
-            for (int i = 0; i < simulation.getSimulation().getNumDataSets(); i++) {
+            int numDataSets = simulation.getSimulation().getNumDataSets();
+
+            for (int i = 0; i < numDataSets; i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
             }
 
-            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(trueGraphs, new Parameters()));
-            DataWrapper wrapper = new DataWrapper();
+            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(new ArrayList<Graph>(), new Parameters()));
+            DataWrapper wrapper = new DataWrapper(new Parameters());
             wrapper.setDataModelList(simulation.getDataModelList());
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
 
@@ -110,7 +103,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         JScrollPane graphScroll = new JScrollPane(graphEditor);
         tabbedPane.addTab("True Graph", graphScroll);
         tabbedPane.addTab("Data", dataEditor);
-        tabbedPane.setPreferredSize(new Dimension(1000, 600));
+        tabbedPane.setPreferredSize(new Dimension(800, 600));
 
         final String[] graphItems = new String[]{
                 "Random Foward",
@@ -132,7 +125,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         simulationsDropdown.setSelectedItem(simulation.getParams().getString("simulationsDropdownPreference",
-                simulationItems[0]));
+                simulationItems[1]));
 
         graphsDropdown.addActionListener(new ActionListener() {
 
@@ -159,21 +152,20 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         try {
                             _simulation.createData(simulation.getParams());
                         } catch (Exception e) {
+                            e.printStackTrace();
                             Throwable cause = e;
                             if (e.getCause() != null) cause = e.getCause();
 
                             if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
-                                JOptionPane.showMessageDialog(SimulationEditor.this,
+                                throw new IllegalArgumentException(
                                         "Exception in creating data. Check model setup or parameter settings.");
                             } else {
-                                JOptionPane.showMessageDialog(SimulationEditor.this,
-                                        "Exception in creating data. Check model setup: " + cause.getMessage());
+                                throw new IllegalArgumentException(
+                                        "Exception in creating data. Check model setup or parameter settings.");
                             }
-
-                            return;
                         }
 
-                        simulation.setSimulation(_simulation, simulation.getParams());
+//                        simulation.setSimulation(_simulation, simulation.getParams());
                         firePropertyChange("modelChanged", null, null);
 
                         List<Graph> graphs = new ArrayList<>();
@@ -182,7 +174,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         }
 
                         graphEditor.replace(graphs);
-                        DataWrapper wrapper = new DataWrapper();
+                        DataWrapper wrapper = new DataWrapper(new Parameters());
                         wrapper.setDataModelList(simulation.getDataModelList());
                         tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
                         tabbedPane.setSelectedIndex(2);
@@ -277,7 +269,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 }
 
                 graphEditor.replace(graphs);
-                DataWrapper wrapper = new DataWrapper();
+                DataWrapper wrapper = new DataWrapper(new Parameters());
 
                 DataModelList list = new DataModelList();
 
@@ -354,27 +346,25 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         graphEditor.replace(graphs);
-        DataWrapper wrapper = new DataWrapper();
+        DataWrapper wrapper = new DataWrapper(new Parameters());
         wrapper.setDataModelList(simulation.getDataModelList());
         tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
         if (simulation.getDataModelList().size() > 0) {
             tabbedPane.setSelectedIndex(2);
         }
+
+        resetPanel(simulation, graphItems, simulationItems, tabbedPane);
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
-        Graph trueGraph = null;
+        RandomGraph randomGraph;
 
-        if (simulation.getSimulation().getNumDataSets() > 0) {
-            trueGraph = simulation.getSimulation().getTrueGraph(0);
+        if (simulation.getSourceGraph() != null) {
+            randomGraph = new SingleGraph(simulation.getSourceGraph());
+        } else {
+            randomGraph = new SingleGraph(new EdgeListGraph());
         }
-
-        if (trueGraph == null) {
-            trueGraph = new EdgeListGraph();
-        }
-
-        RandomGraph randomGraph = new SingleGraph(trueGraph);
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();
@@ -392,10 +382,40 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         if (!simulation.isFixedSimulation()) {
-            if (simulationItems.length > 1) {
+            if (simulation.getSourceGraph() != null) {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
                 simulation.getParams().set("simulationsDropdownPreference", simulationItem);
                 simulation.setFixedGraph(false);
+
+                if (randomGraph instanceof SingleGraph) {
+                    simulation.setFixedGraph(true);
+                }
+
+                if (simulationItem.equals(simulationItems[0])) {
+                    simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[1])) {
+                    simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[2])) {
+                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[3])) {
+                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[4])) {
+                    simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[5])) {
+                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                } else {
+                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                }
+
+            }
+            else {
+                String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+                simulation.setFixedGraph(false);
+
+                if (randomGraph instanceof SingleGraph) {
+                    simulation.setFixedGraph(true);
+                }
 
                 if (simulationItem.equals(simulationItems[0])) {
                     simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
@@ -453,16 +473,27 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         + simulation.getSimulation().getClass());
             }
         } else {
-            simulationItems = new String[]{
-                    "Bayes net",
-                    "Structural Equation Model",
-                    "Large SEM Simulation",
-                    "Structural Equation Model, discretizing some variables",
-                    "General Structural Equation Model Special",
-                    "Lee & Hastie",
-                    "Time Series",
-                    "Boolean Glass"
-            };
+            if (simulation.getSourceGraph() != null) {
+                simulationItems = new String[]{
+                        "Bayes net",
+                        "Structural Equation Model",
+                        "Structural Equation Model, discretizing some variables",
+                        "General Structural Equation Model Special",
+                        "Lee & Hastie",
+                        "Time Series"
+                };
+            } else {
+                simulationItems = new String[]{
+                        "Bayes net",
+                        "Structural Equation Model",
+                        "Large SEM Simulation",
+                        "Structural Equation Model, discretizing some variables",
+                        "General Structural Equation Model Special",
+                        "Lee & Hastie",
+                        "Time Series",
+                        "Boolean Glass"
+                };
+            }
         }
         return simulationItems;
     }
@@ -480,18 +511,44 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             scroll = new JScrollPane();
         }
 
-        graphsDropdown.setEnabled(!_simulation.isFixedGraph());
+        boolean fixedGraph = _simulation.isFixedGraph();
+        graphsDropdown.setEnabled(!fixedGraph);
         simulationsDropdown.setEnabled(!_simulation.isFixedSimulation());
 
         scroll.setPreferredSize(scroll.getMaximumSize());
 
         Box c = Box.createVerticalBox();
 
-        if (!_simulation.isFixedGraph()) {
-            c.add(graphsDropdown);
+        if (!fixedGraph) {
+            Box f = Box.createHorizontalBox();
+            JLabel lf = new JLabel("Type of Graph: ");
+            lf.setFont(new Font("Dialog", Font.BOLD, 13));
+            f.add(lf);
+            f.add(Box.createGlue());
+            graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
+            f.add(graphsDropdown);
+            c.add(f);
         }
 
-        c.add(simulationsDropdown);
+        Box g = Box.createHorizontalBox();
+        JLabel lg = new JLabel("Type of Simulation Model: ");
+        lg.setFont(new Font("Dialog", Font.BOLD, 13));
+        g.add(lg);
+        g.add(Box.createGlue());
+        simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
+        g.add(simulationsDropdown);
+        c.add(g);
+
+        c.add(Box.createVerticalStrut(15));
+
+        Box d0 = Box.createHorizontalBox();
+        JLabel label0 = new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values.");
+        label0.setFont(new Font("Dialog", Font.BOLD, 13));
+        d0.add(label0);
+        d0.add(Box.createHorizontalGlue());
+        c.add(d0);
+        c.add(Box.createVerticalStrut(10));
+
 
         Box e = Box.createHorizontalBox();
         e.add(Box.createHorizontalGlue());

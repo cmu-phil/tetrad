@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -40,7 +41,7 @@ import java.util.List;
 public class CovMatrixAverageWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public CovMatrixAverageWrapper(DataWrapper cov1) {
+    public CovMatrixAverageWrapper(DataWrapper cov1, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -48,7 +49,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
         calcAverage(matrices);
     }
 
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2) {
+    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -56,7 +57,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
         calcAverage(matrices);
     }
 
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3) {
+    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -66,7 +67,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     }
 
     public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4) {
+                                   DataWrapper cov4, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -77,7 +78,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     }
 
     public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4, DataWrapper cov5) {
+                                   DataWrapper cov4, DataWrapper cov5, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -89,7 +90,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     }
 
     public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4, DataWrapper cov5, DataWrapper cov6) {
+                                   DataWrapper cov4, DataWrapper cov5, DataWrapper cov6, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -103,7 +104,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
 
     public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
                                    DataWrapper cov4, DataWrapper cov5, DataWrapper cov6,
-                                   DataWrapper cov7) {
+                                   DataWrapper cov7, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);
@@ -119,7 +120,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
 
     public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
                                    DataWrapper cov4, DataWrapper cov5, DataWrapper cov6,
-                                   DataWrapper cov7, DataWrapper cov8) {
+                                   DataWrapper cov7, DataWrapper cov8, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
         matrices.add(cov1);

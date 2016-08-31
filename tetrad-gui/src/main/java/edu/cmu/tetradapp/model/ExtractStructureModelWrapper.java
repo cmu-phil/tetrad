@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.rmi.MarshalledObject;
@@ -36,7 +37,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public ExtractStructureModelWrapper(GraphSource source) {
+    public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 

@@ -85,16 +85,23 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     //==============================CONSTRUCTORS===========================//
 
+    protected DataWrapper() {
+        setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        this.parameters = new Parameters();
+    }
+
     /**
      * Constructs a data wrapper using a new DataSet as data model.
      */
-    public DataWrapper() {
+    public DataWrapper(Parameters parameters) {
         setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        this.parameters = parameters;
     }
 
-    public DataWrapper(Simulation wrapper) {
+    public DataWrapper(Simulation wrapper, Parameters parameters) {
         this.name = wrapper.getName();
         this.dataModelList = wrapper.getDataModelList();
+        this.parameters = parameters;
     }
 
 
@@ -123,11 +130,11 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
             dataModelList.setSelectedModel(dataModelList.get(selected));
         }
 
-        if(wrapper.sourceGraph != null){
+        if (wrapper.sourceGraph != null) {
             this.sourceGraph = new EdgeListGraph(wrapper.sourceGraph);
         }
 
-        if(wrapper.knownVariables != null){
+        if (wrapper.knownVariables != null) {
             this.knownVariables = new ArrayList<>(wrapper.knownVariables);
         }
 
@@ -254,8 +261,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
             if (i == 0) {
                 name = base;
-            }
-            else {
+            } else {
                 name = base + i;
             }
 
@@ -274,8 +280,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
@@ -287,8 +294,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * Stores a reference to the data model being wrapped.
      *
-     * @serial Cannot be null.
-     */ /**
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
@@ -422,6 +427,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * This method is overridden by classes that can identify parameters.
+     *
      * @return null
      */
     public Parameters getParams() {
@@ -433,13 +439,13 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
 
-	public List<String> getVariableNames() {
-		List<String> variableNames = new ArrayList<>();
-		for (Node n: getVariables()) {
-			variableNames.add(n.getName());
-		}
-		return variableNames;
-	}
+    public List<String> getVariableNames() {
+        List<String> variableNames = new ArrayList<>();
+        for (Node n : getVariables()) {
+            variableNames.add(n.getName());
+        }
+        return variableNames;
+    }
 
     @Override
     public Map<String, String> getParamSettings() {

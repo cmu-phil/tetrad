@@ -31,6 +31,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -57,6 +59,10 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     //=============================CONSTRUCTORS==========================//
 
+    public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
+        this(graphWrapper.getGraph(), parameters);
+    }
+
     public GraphSelectionWrapper(List<Graph> graphs, Parameters params) {
         if (graphs == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -64,7 +70,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
         this.params = params;
 
-        List<Graph> oldGraphs = (List<Graph>) getGraphs(params);
+        List<Graph> oldGraphs = getGraphs();
 
         if (oldGraphs != null) {
             for (int i = 0; i < graphs.size(); i++) {
@@ -75,9 +81,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         init(params, graphs);
     }
 
-    private Object getGraphs(Parameters params) {
-        return params.get("graphs", null);
-    }
+//    private Object getGraphs(Parameters params) {
+//        return params.get("graphs", null);
+//    }
 
 
     public GraphSelectionWrapper(Graph graph, Parameters params) {
@@ -113,11 +119,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
             first50.add(nodes.get(i));
         }
 
-        if (nodes.isEmpty()) {
-            setSelectedVariables(first50);
-        } else {
-            setSelectedVariables(nodes);
-        }
+        setSelectedVariables(first50);
 
         log();
     }
@@ -622,7 +624,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     }
 
     public Graph getSelectionGraph(int i) {
-        List<Graph> selectionGraphs =  (List<Graph>) params.get("selectionGraphs", new ArrayList<>());
+        List<Graph> selectionGraphs = (List<Graph>) params.get("selectionGraphs", new ArrayList<>());
 
         if (selectionGraphs == null || selectionGraphs.isEmpty()) {
             for (int j = 0; j < getGraphs().size(); j++) {

@@ -60,23 +60,23 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
     //============================CONSTRUCTORS============================//
 
     public TsImagesRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
         type = computeType();
     }
 
     public TsImagesRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
         type = computeType();
     }
 
     public TsImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
     public TsImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
         this.graph = graph.getGraph();
         type = computeType();
     }
@@ -87,7 +87,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
-                        dataWrapper2
+                        dataWrapper2, params
                 ),
                 params, null);
         type = computeType();
@@ -102,7 +102,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
                         dataWrapper2,
-                        dataWrapper3
+                        dataWrapper3, params
                 ),
                 params, null);
 
@@ -119,7 +119,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper1,
                         dataWrapper2,
                         dataWrapper3,
-                        dataWrapper4
+                        dataWrapper4, params
                 ),
                 params, null);
 
@@ -138,7 +138,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper2,
                         dataWrapper3,
                         dataWrapper4,
-                        dataWrapper5
+                        dataWrapper5, params
                 ),
                 params, null);
 
@@ -159,7 +159,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper3,
                         dataWrapper4,
                         dataWrapper5,
-                        dataWrapper6
+                        dataWrapper6, params
                 ),
                 params, null);
 
@@ -182,7 +182,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper4,
                         dataWrapper5,
                         dataWrapper6,
-                        dataWrapper7
+                        dataWrapper7, params
                 ),
                 params, null);
 
@@ -207,7 +207,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper5,
                         dataWrapper6,
                         dataWrapper7,
-                        dataWrapper8
+                        dataWrapper8, params
                 ),
                 params, null);
 
@@ -234,7 +234,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper6,
                         dataWrapper7,
                         dataWrapper8,
-                        dataWrapper9
+                        dataWrapper9, params
                 ),
                 params, null);
 
@@ -263,7 +263,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                         dataWrapper7,
                         dataWrapper8,
                         dataWrapper9,
-                        dataWrapper10
+                        dataWrapper10, params
                 ),
                 params, null);
 
@@ -558,7 +558,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 //        }
 //    }
 
-//    public GraphScorer getGraphScorer() {
+    //    public GraphScorer getGraphScorer() {
 //        return fgs;
 //    }
     public TsGFci getGraphScorer() {

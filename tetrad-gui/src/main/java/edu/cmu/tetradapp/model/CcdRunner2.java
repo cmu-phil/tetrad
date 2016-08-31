@@ -81,7 +81,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     }
 
     public CcdRunner2(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
     }
 
     public CcdRunner2(DataWrapper dataWrapper1,
@@ -90,7 +90,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
-                        dataWrapper2),
+                        dataWrapper2, params),
                 params, null);
 
     }
@@ -103,7 +103,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
                         dataWrapper2,
-                        dataWrapper3
+                        dataWrapper3, params
                 ),
                 params, null);
 
@@ -119,7 +119,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper1,
                         dataWrapper2,
                         dataWrapper3,
-                        dataWrapper4
+                        dataWrapper4, params
                 ),
                 params, null);
 
@@ -137,7 +137,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper2,
                         dataWrapper3,
                         dataWrapper4,
-                        dataWrapper5
+                        dataWrapper5, params
                 ),
                 params, null);
 
@@ -157,7 +157,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper3,
                         dataWrapper4,
                         dataWrapper5,
-                        dataWrapper6
+                        dataWrapper6, params
                 ),
                 params, null);
 
@@ -179,7 +179,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper4,
                         dataWrapper5,
                         dataWrapper6,
-                        dataWrapper7
+                        dataWrapper7, params
                 ),
                 params, null);
 
@@ -203,7 +203,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper5,
                         dataWrapper6,
                         dataWrapper7,
-                        dataWrapper8
+                        dataWrapper8, params
                 ),
                 params, null);
 
@@ -229,7 +229,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper6,
                         dataWrapper7,
                         dataWrapper8,
-                        dataWrapper9
+                        dataWrapper9, params
                 ),
                 params, null);
 
@@ -257,7 +257,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                         dataWrapper7,
                         dataWrapper8,
                         dataWrapper9,
-                        dataWrapper10
+                        dataWrapper10, params
                 ),
                 params, null);
 

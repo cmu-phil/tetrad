@@ -32,14 +32,19 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.IonInput;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to
@@ -48,7 +53,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
-        SimulationParamsSource {
+        SimulationParamsSource, GraphEditable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -64,6 +69,8 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
+
+    private GraphWrapper() {}
 
     public GraphWrapper(Graph graph) {
         if (graph == null) {
@@ -85,50 +92,13 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public GraphWrapper(Parameters parameters) {
         this.parameters = parameters;
-
-        if (parameters.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            this.graph = new EdgeListGraph();
-        } else if (parameters.getString("newGraphInitializationMode", "manual").equals("random")) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
-            Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
-
-            boolean addCycles = parameters.getBoolean("randomAddCycles", false);
-
-            if (addCycles) {
-                int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
-                int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
-                graph = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes ,newGraphNumEdges);
-            }
-//            GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
-
-            this.graph = graph;
-        }
-
+        this.graph = new EdgeListGraph();
         log();
     }
 
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = parameters;
-
-        if (getGraph() != null) {
-            this.graph = new EdgeListGraph(getGraph());
-        } else if (parameters.getString("newGraphInitializationMode", "manual").equals("random")) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
-            edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
-        }
-
-        Graph graph = graphSource.getGraph();
-        if (graph != null) {
-            try {
-                this.graph = new EdgeListGraph(graph);
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.graph = new EdgeListGraph();
-            }
-        } else if (parameters.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            this.graph = new EdgeListGraph();
-        }
-
+        this.graph = new EdgeListGraph(graphSource.getGraph());
         log();
     }
 
@@ -176,6 +146,21 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public List getSelectedModelComponents() {
+        return null;
+    }
+
+    @Override
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
+
+    }
+
+    @Override
+    public GraphWorkbench getWorkbench() {
+        return null;
     }
 
     public Graph getSourceGraph() {

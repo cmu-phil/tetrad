@@ -35,7 +35,7 @@ public class LargeSemSimulation implements Simulation {
         List<Node> vars = new ArrayList<>();
 
         String numVars = "numMeasures";
-        double edgeFactor = parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2;
+        int numEdges = (int) (parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2.0);
 
         for (int i = 0; i < parameters.getInt(numVars, 10); i++) {
             vars.add(new ContinuousVariable("X" + (i + 1)));
@@ -43,13 +43,13 @@ public class LargeSemSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
-        Graph graph = randomGraph(vars, edgeFactor);
+        Graph graph = randomGraph(vars, numEdges);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean("differentGraphs") && i > 0) {
-                graph = randomGraph(vars, edgeFactor);
+                graph = randomGraph(vars, numEdges);
             }
 
             graphs.add(graph);
@@ -61,8 +61,8 @@ public class LargeSemSimulation implements Simulation {
         }
     }
 
-    private Graph randomGraph(List<Node> vars, double edgeFactor) {
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (edgeFactor),
+    private Graph randomGraph(List<Node> vars, int numEdges) {
+        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges,
                     30, 15, 15, false, true);
     }
 

@@ -62,29 +62,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     //===========================CONSTRUCTORS===========================//
 
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
 
+    public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters) {
+        this(runner.getDataWrapper(), runner, parameters, null, null);
+        this.sourceGraph = runner.sourceGraph;
+        this.knowledge = runner.knowledge;
+        this.algorithm = runner.algorithm;
         this.parameters = parameters;
-        this.sourceGraph = dataWrapper.getSourceGraph();
+    }
 
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-        this.dataWrapper = dataWrapper;
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        this.knowledge = dataWrapper.getKnowledge();
-
-        if (knowledge == null) {
-            this.knowledge = new Knowledge2(dataWrapper.getVariableNames());
-        }
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters) {
+        this(dataWrapper, null, parameters, null, null);
     }
 
     /**
@@ -94,90 +82,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-
-        DataModelList dataSource = dataWrapper.getDataModelList();
-
-        this.dataWrapper = dataWrapper;
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
+        this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-        if (graphSource == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-        this.sourceGraph = dataWrapper.getSourceGraph();
-
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-        this.dataWrapper = dataWrapper;
-        this.sourceGraph = graphSource.getGraph();
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        this.knowledge = dataWrapper.getKnowledge();
-
-        if (knowledge == null) {
-            this.knowledge = new Knowledge2(dataWrapper.getVariableNames());
-        }
-    }
-
-    /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
-     */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-        if (graphSource == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-
-        DataModelList dataSource = dataWrapper.getDataModelList();
-
-        this.dataWrapper = dataWrapper;
-        this.sourceGraph = graphSource.getGraph();
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
+        this(dataWrapper, graphSource, parameters, null, null);
     }
 
     /**
@@ -187,57 +96,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-        this.sourceGraph = dataWrapper.getSourceGraph();
-
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-        this.dataWrapper = dataWrapper;
-
-        getParameters().set("independenceFacts", facts.getFacts());
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
+        this(dataWrapper, null, parameters, knowledgeBoxModel, facts);
     }
 
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-        this.sourceGraph = dataWrapper.getSourceGraph();
-
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-        this.dataWrapper = dataWrapper;
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        this.knowledge = dataWrapper.getKnowledge();
-
-        if (knowledge == null) {
-            this.knowledge = new Knowledge2(dataWrapper.getVariableNames());
-        }
-
-        this.name = runner.name;
+        this(dataWrapper, null, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
 
@@ -248,62 +112,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-
-        DataModelList dataSource = dataWrapper.getDataModelList();
-
-        this.dataWrapper = dataWrapper;
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
-
-        this.name = runner.name;
+        this(dataWrapper, null, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
                                   Parameters parameters) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-        if (graphSource == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-        this.sourceGraph = dataWrapper.getSourceGraph();
-
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-        this.dataWrapper = dataWrapper;
-        this.sourceGraph = graphSource.getGraph();
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        this.knowledge = dataWrapper.getKnowledge();
-
-        if (knowledge == null) {
-            this.knowledge = new Knowledge2(dataWrapper.getVariableNames());
-        }
-
-        this.name = runner.name;
+        this(dataWrapper, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
 
@@ -315,158 +130,79 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
                                   Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-        if (graphSource == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-
-        DataModelList dataSource = dataWrapper.getDataModelList();
-
-        this.dataWrapper = dataWrapper;
-        this.sourceGraph = graphSource.getGraph();
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
-
-        this.name = runner.name;
+        this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
-
-    /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
-     */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-        this.sourceGraph = dataWrapper.getSourceGraph();
-
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-        this.dataWrapper = dataWrapper;
-
-        getParameters().set("independenceFacts", facts.getFacts());
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
-
-        this.name = runner.name;
-        this.algorithm = runner.algorithm;
-    }
-
 
     /**
      * Constucts a wrapper for the given graph.
      */
-    public GeneralAlgorithmRunner(Graph sourceGraph, GeneralAlgorithmRunner runner, Parameters parameters) {
-        if (sourceGraph == null) {
-            throw new NullPointerException(
-                    "Source graph must not be null.");
-        }
-        if (parameters == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-        this.parameters = parameters;
-        List<String> names = measuredNames(sourceGraph);
-        transferVarNamesToParams(names);
-        this.sourceGraph = sourceGraph;
-        knowledge = new Knowledge2(sourceGraph.getNodeNames());
-
-        this.name = runner.name;
+    public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters) {
+        this(null, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
 
 
-    public GeneralAlgorithmRunner(GraphSource graph, Parameters parameters,
+    public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
-        this(graph, parameters);
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
+        this(null, graphSource, parameters, null, null);
     }
 
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
                                   Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
-        if (model == null) {
-            throw new NullPointerException();
-        }
-        if (parameters == null) {
-            throw new NullPointerException();
-        }
-
-        this.parameters = parameters;
-
-        DataModel dataSource = model.getFacts();
-
-        List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-        this.dataModel = dataSource;
-
-        if (knowledgeBoxModel != null) {
-            knowledge = knowledgeBoxModel.getKnowledge();
-        } else {
-            knowledge = new Knowledge2();
-        }
+        this(null, null, parameters, knowledgeBoxModel, model);
     }
 
     /**
      * Constucts a wrapper for the given graph.
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters) {
-        if (graphSource == null) {
-            throw new NullPointerException(
-                    "Source graph must not be null.");
-        }
-        if (parameters == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-        this.parameters = parameters;
-        this.sourceGraph = graphSource.getGraph();
-        List<String> names = measuredNames(sourceGraph);
-        transferVarNamesToParams(names);
-        knowledge = new Knowledge2(sourceGraph.getNodeNames());
+        this(null, graphSource, parameters, null, null);
     }
 
-    public GeneralAlgorithmRunner(GraphSource graph, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
-        this(graph, parameters);
-        if (facts != null) {
-            getParameters().set("independenceFacts", facts);
+
+    /**
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
+     * contain a DataSet that is either a DataSet or a DataSet or a DataList
+     * containing either a DataSet or a DataSet as its selected model.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+        if (parameters == null) {
+            throw new NullPointerException();
+        }
+
+        this.parameters = parameters;
+
+        if (dataWrapper != null) {
+            this.dataWrapper = dataWrapper;
+
+            if (dataWrapper.getDataModelList().isEmpty() && dataWrapper instanceof Simulation) {
+                ((Simulation) dataWrapper).createSimulation();
+            }
+        }
+
+        if (graphSource != null) {
+            if (dataWrapper == null && graphSource instanceof DataWrapper) {
+                this.dataWrapper = (DataWrapper) graphSource;
+            } else {
+                this.sourceGraph = graphSource.getGraph();
+            }
+        }
+
+        if (dataWrapper != null) {
+            List<String> names = this.dataWrapper.getVariableNames();
+            transferVarNamesToParams(names);
         }
 
         if (knowledgeBoxModel != null) {
             knowledge = knowledgeBoxModel.getKnowledge();
         } else {
             knowledge = new Knowledge2();
+        }
+
+        if (facts != null) {
+            getParameters().set("independenceFacts", facts.getFacts());
         }
     }
 
@@ -483,7 +219,20 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         List<Graph> graphList = new ArrayList<>();
         int i = 0;
 
-        if (getDataModelList() != null) {
+        if (getDataModelList().isEmpty()) {
+            if (getSourceGraph() != null) {
+                Algorithm algorithm = getAlgorithm();
+
+                if (algorithm instanceof HasKnowledge) {
+                    ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                }
+
+                graphList.add(algorithm.search(null, parameters));
+            } else {
+                throw new IllegalArgumentException("The parent boxes did not include any datasets or graphs. Try opening\n" +
+                        "the editors for those boxes and loading or simulating them.");
+            }
+        } else {
             for (DataModel data : getDataModelList()) {
                 System.out.println("Analyzing data set # " + (++i));
                 DataSet dataSet = (DataSet) data;
@@ -502,19 +251,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 } else if (((DataSet) data).isMixed() && algDataType == DataType.Mixed) {
                     graphList.add(algorithm.search(dataSet, parameters));
                 } else {
-                    throw new IllegalArgumentException("The stored algorithm configuration is not compatible with " +
-                            "this type of data.");
+                    throw new IllegalArgumentException("The type of data changed; try opening up the search editor and " +
+                            "running the algorithm there.");
                 }
             }
-        } else {
-            Algorithm algorithm = getAlgorithm();
-
-            if (algorithm instanceof HasKnowledge) {
-                ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
-            }
-
-            graphList.add(algorithm.search(null, parameters));
         }
+
 
         if (getKnowledge().getVariablesNotInTiers().size()
                 < getKnowledge().getVariables().size()) {

@@ -244,7 +244,7 @@ public final class SessionEditorNode extends DisplayNode {
             String descrip = modelConfig.getName();
             editor.setName(getName() + " (" + descrip + ")");
 
-            EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Save", cloned, this);
+            EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, this);
 
             editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                 public void internalFrameClosing(InternalFrameEvent e) {
@@ -1195,7 +1195,6 @@ public final class SessionEditorNode extends DisplayNode {
         if (params == null) {
             throw new NullPointerException("Parameters cannot be null.");
         }
-
 
         SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
         final ParameterEditor paramEditor = modelConfig.getParameterEditorInstance();

@@ -81,6 +81,8 @@ public class EditorWindow extends JInternalFrame
         doSetup(editor, cancellable);
 
         this.centeringComp = centeringComp;
+
+        setClosable(false);
     }
 
     @Override

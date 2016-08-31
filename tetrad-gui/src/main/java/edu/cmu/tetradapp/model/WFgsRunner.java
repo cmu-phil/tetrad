@@ -59,7 +59,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     //============================CONSTRUCTORS============================//
 
     public WFgsRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
     }
 
     /**

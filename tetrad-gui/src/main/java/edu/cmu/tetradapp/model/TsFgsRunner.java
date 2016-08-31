@@ -62,22 +62,22 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
     //============================CONSTRUCTORS============================//
 
     public TsFgsRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
     }
 
     public TsFgsRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
     }
 
     public TsFgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
 //        if (graph == dataWrapper) throw new IllegalArgumentException();
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
     public TsFgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
@@ -88,7 +88,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
-                        dataWrapper2),
+                        dataWrapper2, params),
                 params, null);
 
     }
@@ -101,7 +101,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
                         dataWrapper2,
-                        dataWrapper3
+                        dataWrapper3, params
                 ),
                 params, null);
 
@@ -117,7 +117,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper1,
                         dataWrapper2,
                         dataWrapper3,
-                        dataWrapper4
+                        dataWrapper4, params
                 ),
                 params, null);
 
@@ -135,7 +135,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper2,
                         dataWrapper3,
                         dataWrapper4,
-                        dataWrapper5
+                        dataWrapper5, params
                 ),
                 params, null);
 
@@ -155,7 +155,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper3,
                         dataWrapper4,
                         dataWrapper5,
-                        dataWrapper6
+                        dataWrapper6, params
                 ),
                 params, null);
 
@@ -177,7 +177,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper4,
                         dataWrapper5,
                         dataWrapper6,
-                        dataWrapper7
+                        dataWrapper7, params
                 ),
                 params, null);
 
@@ -201,7 +201,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper5,
                         dataWrapper6,
                         dataWrapper7,
-                        dataWrapper8
+                        dataWrapper8, params
                 ),
                 params, null);
 
@@ -227,7 +227,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper6,
                         dataWrapper7,
                         dataWrapper8,
-                        dataWrapper9
+                        dataWrapper9, params
                 ),
                 params, null);
 
@@ -255,7 +255,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         dataWrapper7,
                         dataWrapper8,
                         dataWrapper9,
-                        dataWrapper10
+                        dataWrapper10, params
                 ),
                 params, null);
 

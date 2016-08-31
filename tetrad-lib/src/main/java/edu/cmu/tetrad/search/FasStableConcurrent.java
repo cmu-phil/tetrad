@@ -310,6 +310,7 @@ public class FasStableConcurrent implements IFas {
                                     getSepsets().set(x, y, empty);
                                 }
 
+                                // This creates a bottleneck for the parallel search.
 //                                if (verbose) {
 //                                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
 //                                            nf.format(test.getPValue()));
@@ -468,11 +469,12 @@ public class FasStableConcurrent implements IFas {
 
                                         getSepsets().set(x, y, condSet);
 
-                                        if (verbose) {
-                                            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                                    nf.format(test.getPValue()));
-                                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-                                        }
+                                        // This creates a bottleneck for the parallel search.
+//                                        if (verbose) {
+//                                            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
+//                                                    nf.format(test.getPValue()));
+//                                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
+//                                        }
 
                                         continue EDGE;
                                     }
