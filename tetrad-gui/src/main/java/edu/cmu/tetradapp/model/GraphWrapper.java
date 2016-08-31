@@ -36,7 +36,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.IonInput;
-import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import java.awt.*;
 import java.io.IOException;
@@ -53,7 +52,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
-        SimulationParamsSource, GraphEditable {
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -146,21 +145,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public List getSelectedModelComponents() {
-        return null;
-    }
-
-    @Override
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
-
-    }
-
-    @Override
-    public GraphWorkbench getWorkbench() {
-        return null;
     }
 
     public Graph getSourceGraph() {

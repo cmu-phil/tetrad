@@ -339,7 +339,7 @@ public final class GraphUtils {
         int trials = 0;
         boolean added = false;
 
-        for (int i = dag.getNumEdges() - 1; i < numEdges; i++) {
+        for (int i = dag.getNumEdges() - 1; i < numEdges - 1; i++) {
 
             if ((i + 1) % 1000 == 0) {
                 System.out.println("# edges = " + (i + 1));

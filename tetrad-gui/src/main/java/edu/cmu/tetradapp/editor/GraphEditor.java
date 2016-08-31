@@ -61,12 +61,12 @@ import java.util.List;
 public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
     private final GraphWorkbench workbench;
-    private GraphEditable graphEditable;
+    private GraphSettable graphEditable;
     private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
-    public GraphEditor(GraphWrapper graphWrapper) {
+    public GraphEditor(GraphSettable graphWrapper) {
         this(graphWrapper.getGraph());
         this.graphEditable = graphWrapper;
         this.parameters = graphWrapper.getParameters();
@@ -227,7 +227,7 @@ public final class GraphEditor extends JPanel
         return getWorkbench().getVisibleRect();
     }
 
-    private GraphEditable getGraphWrapper() {
+    private GraphSettable getGraphWrapper() {
         return graphEditable;
     }
 

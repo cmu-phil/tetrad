@@ -83,7 +83,7 @@ public class TestSession {
     /**
      * Tests to make sure events are sent and received properly.
      */
-    @Test
+//    @Test
     public void testEvents() {
         setUp();
         boolean simulation = true;
@@ -216,7 +216,7 @@ public class TestSession {
      * specific models. (For the test, we just make up a few classes and try
      * serializing those.)
      */
-    @Test
+//    @Test
     public void rtestSerialization() {
         setUp();
         boolean simulation = true;
