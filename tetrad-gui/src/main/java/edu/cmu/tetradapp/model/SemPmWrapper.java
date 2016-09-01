@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -71,7 +72,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(GraphWrapper graphWrapper) {
+    public SemPmWrapper(GraphWrapper graphWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
@@ -79,7 +80,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(DagWrapper dagWrapper) {
+    public SemPmWrapper(DagWrapper dagWrapper, Parameters parameters) {
         this(new EdgeListGraph(dagWrapper.getDag()));
     }
 
@@ -87,7 +88,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(SemGraphWrapper semGraphWrapper) {
+    public SemPmWrapper(SemGraphWrapper semGraphWrapper, Parameters parameters) {
         this(semGraphWrapper.getSemGraph());
     }
 
@@ -95,11 +96,11 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(TimeLagGraphWrapper wrapper) {
+    public SemPmWrapper(TimeLagGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph());
     }
 
-    public SemPmWrapper(SemEstimatorWrapper wrapper) {
+    public SemPmWrapper(SemEstimatorWrapper wrapper, Parameters parameters) {
         try {
             SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
                     .getSemPm();

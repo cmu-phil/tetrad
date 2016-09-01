@@ -1240,30 +1240,36 @@ public class SessionNode implements TetradSerializable {
             }
         }
 
-        PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
-        int[] perm;
-        boolean foundAConstructor = false;
+        if (modelTypes.length > parameterTypes.length) {
+            return false;
+        }
 
-        while ((perm = gen.next()) != null) {
-            boolean allAssigned = true;
+        PermutationGenerator gen0 = new PermutationGenerator(parameterTypes.length);
+        int[] paramPerm;
 
-            for (int i = 0; i < perm.length; i++) {
+        while ((paramPerm = gen0.next()) != null) {
+            PermutationGenerator gen = new PermutationGenerator(modelTypes.length);
+            int[] modelPerm;
 
-                Class<?> parameterType = parameterTypes[i];
-                Class<?> aClass = modelTypes[perm[i]];
+            while ((modelPerm = gen.next()) != null) {
+                boolean allAssigned = true;
 
-                if (!parameterType.isAssignableFrom(aClass)) {
-                    allAssigned = false;
+                for (int i = 0; i < modelPerm.length; i++) {
+                    Class<?> parameterType = parameterTypes[paramPerm[i]];
+                    Class<?> aClass = modelTypes[modelPerm[i]];
+
+                    if (!parameterType.isAssignableFrom(aClass)) {
+                        allAssigned = false;
+                    }
                 }
-            }
 
-            if (allAssigned) {
-                foundAConstructor = true;
-                break;
+                if (allAssigned) {
+                    return true;
+                }
             }
         }
 
-        return foundAConstructor;
+        return false;
     }
 
     /**
@@ -1496,9 +1502,9 @@ public class SessionNode implements TetradSerializable {
             for (Constructor constructor : constructors) {
                 Class[] constructorTypes = constructor.getParameterTypes();
 
-                if (modelTypes.length != constructorTypes.length) {
-                    continue;
-                }
+//                if (modelTypes.length != constructorTypes.length) {
+//                    continue;
+//                }
 
                 if (assignClasses(constructorTypes, modelTypes)) {
                     return true;

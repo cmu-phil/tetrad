@@ -90,7 +90,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
         this.params = params;
 
-        if (dataModel instanceof DataModelList) {
+        if (dataModel != null) {
             multipleResults = true;
 
             if (setParams(semPmWrapper, (DataModelList) dataModel)) return;
