@@ -22,10 +22,14 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphSource;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,105 +41,16 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GraphAdjacencyIntersectionWrapper implements SessionModel {
+public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private List<Graph> graphs;
     private String name = "";
 
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1) {
+    public GraphAdjacencyIntersectionWrapper(GraphSource[] data1, Parameters parameters) {
         construct(data1);
     }
 
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2) {
-        construct(data1, data2);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3) {
-        construct(data1, data2, data3);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4) {
-        construct(data1, data2, data3, data4);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5) {
-        construct(data1, data2, data3, data4, data5);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6) {
-        construct(data1, data2, data3, data4, data5, data6);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7) {
-        construct(data1, data2, data3, data4, data5, data6, data7);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9,
-                                             GraphSource data10) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9,
-                                             GraphSource data10, GraphSource data11) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9,
-                                             GraphSource data10, GraphSource data11, GraphSource data12) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9,
-                                             GraphSource data10, GraphSource data11, GraphSource data12,
-                                             GraphSource data13) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12,
-                data13);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9,
-                                             GraphSource data10, GraphSource data11, GraphSource data12,
-                                             GraphSource data13, GraphSource data14) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12,
-                data13, data14);
-    }
-
-    public GraphAdjacencyIntersectionWrapper(GraphSource data1, GraphSource data2, GraphSource data3,
-                                             GraphSource data4, GraphSource data5, GraphSource data6,
-                                             GraphSource data7, GraphSource data8, GraphSource data9,
-                                             GraphSource data10, GraphSource data11, GraphSource data12,
-                                             GraphSource data13, GraphSource data14, GraphSource data15) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12,
-                data13, data14, data15);
-    }
-
-    private void construct(GraphSource... GraphSources) {
+    private void construct(GraphSource...GraphSources) {
         for (GraphSource wrapper : GraphSources) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
@@ -156,9 +71,8 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static GraphAdjacencyIntersectionWrapper serializableInstance() {
-        return new GraphAdjacencyIntersectionWrapper(GraphWrapper.serializableInstance(),
-                GraphWrapper.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
 

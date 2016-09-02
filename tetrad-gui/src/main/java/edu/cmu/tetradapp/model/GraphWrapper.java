@@ -34,11 +34,8 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.editor.GraphEditable;
-import edu.cmu.tetradapp.editor.GraphSettable;
 import edu.cmu.tetradapp.util.IonInput;
 
-import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;

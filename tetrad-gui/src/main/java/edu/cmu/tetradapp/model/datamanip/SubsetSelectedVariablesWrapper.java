@@ -44,8 +44,8 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
 
         DataModel model = data.getSelectedDataModel();
 
-        if (model instanceof ColtDataSet) {
-            this.setDataModel(createRectangularModel(new ColtDataSet((ColtDataSet) model)));
+        if (model instanceof DataSet) {
+            this.setDataModel(createRectangularModel(((DataSet) model).copy()));
         } else if (model instanceof ICovarianceMatrix) {
             this.setDataModel(createCovarianceModel((ICovarianceMatrix) model));
         } else {

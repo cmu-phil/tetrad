@@ -36,7 +36,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +48,6 @@ import java.util.Map;
 public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
         PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel, Unmarshallable {
     static final long serialVersionUID = 23L;
-    private LinkedHashMap<String, String> allParamSettings;
 
     public enum Type {CONTINUOUS, DISCRETE, MIXED, GRAPH}
 
@@ -61,204 +59,24 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     //============================CONSTRUCTORS============================//
 
-    public FgsRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
+    public FgsRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
+    public FgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
-//        if (graph == dataWrapper) throw new IllegalArgumentException();
+    public FgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
+    public FgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2, params),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     DataWrapper dataWrapper9,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9, params
-                ),
-                params, null);
-
-    }
-
-    public FgsRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     DataWrapper dataWrapper9,
-                     DataWrapper dataWrapper10,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9,
-                        dataWrapper10, params
-                ),
-                params, null);
-
     }
 
     public FgsRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -274,9 +92,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
      *
      * @see TetradSerializableUtils
      */
-    public static FgsRunner serializableInstance() {
-        return new FgsRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -339,8 +156,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 fgs = new Fgs(gesScore);
-            }
-            else if (model instanceof DataModelList) {
+            } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
                 for (DataModel dataModel : list) {

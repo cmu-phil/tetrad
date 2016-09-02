@@ -373,17 +373,17 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Expand Case Multipliers" acronym="Expand" help="data"
-                   category="Manipulation of Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>
-                    edu.cmu.tetradapp.model.datamanip.ExpandCaseMultipliersWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
+            <!--<model name="Expand Case Multipliers" acronym="Expand" help="data"-->
+                   <!--category="Manipulation of Data">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="data" description="Data"/>-->
+                <!--</logger>-->
+                <!--<model-class>-->
+                    <!--edu.cmu.tetradapp.model.datamanip.ExpandCaseMultipliersWrapper-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
             <model name="Calculator" acronym="Calculator" help="data"
                    category="Manipulation of Data">
                 <logger>
@@ -397,28 +397,28 @@
                 <params-editor-class>edu.cmu.tetradapp.editor.CalculatorEditor
                 </params-editor-class>
             </model>
-            <model name="Copy Selected Dataset" acronym="Copy Selected"
-                   help="copyselecteddata" category="Manipulation of Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>
-                    edu.cmu.tetradapp.model.datamanip.CopySelectedDatasetWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
-            <model name="Copy All Datasets" acronym="Copy All"
-                   help="copyselecteddata" category="Manipulation of Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>
-                    edu.cmu.tetradapp.model.datamanip.CopyAllDatasetsWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
+            <!--<model name="Copy Selected Dataset" acronym="Copy Selected"-->
+                   <!--help="copyselecteddata" category="Manipulation of Data">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="data" description="Data"/>-->
+                <!--</logger>-->
+                <!--<model-class>-->
+                    <!--edu.cmu.tetradapp.model.datamanip.CopySelectedDatasetWrapper-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
+            <!--<model name="Copy All Datasets" acronym="Copy All"-->
+                   <!--help="copyselecteddata" category="Manipulation of Data">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="data" description="Data"/>-->
+                <!--</logger>-->
+                <!--<model-class>-->
+                    <!--edu.cmu.tetradapp.model.datamanip.CopyAllDatasetsWrapper-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
             <model name="Merge Datasets" acronym="Merge Datasets"
                    help="mergedatasets" category="Manipulation of Data">
                 <logger>

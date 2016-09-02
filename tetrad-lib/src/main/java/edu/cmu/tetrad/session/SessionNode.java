@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.*;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.MarshalledObject;
@@ -528,6 +529,7 @@ public class SessionNode implements TetradSerializable {
         Object param = getParam(modelClass);
         this.model = null;
 
+
         List<Object> expandedModels = new ArrayList<>(parentModels);
 
         if (oldModel != null && (!(DoNotAddOldModel.class.isAssignableFrom(modelClass)))) {
@@ -549,28 +551,6 @@ public class SessionNode implements TetradSerializable {
 
             createModelUsingArguments(modelClass, expandedModels);
         }
-
-//        if (this.model == null) {
-//            if (!parentModels.isEmpty()) {
-//                Class clazz = parentModels.get(0).getClass();
-//
-//                Object arr = Array.newInstance(clazz, parentModels.size());
-//
-//                for (int i = 0; i < parentModels.size(); i++) {
-//                    Array.set(arr, i, parentModels.get(i));
-//                }
-//
-//                List<Object> expandedModels = new ArrayList<Object>();
-//
-//                if (param != null) {
-//                    expandedModels.add(param);
-//                }
-//
-//                expandedModels.add(arr);
-//
-//                createModelUsingArguments(modelClass, expandedModels);
-//            }
-//        }
 
         if (this.model == null) {
             createModelUsingArguments(modelClass, parentModels);
@@ -1179,6 +1159,14 @@ public class SessionNode implements TetradSerializable {
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
+
+        System.out.println("HHH");
+
+
+        if (parameterTypes.length > 5) {
+            System.out.println("Oops");
+        }
+
         for (Class parameterType1 : parameterTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
@@ -1198,6 +1186,9 @@ public class SessionNode implements TetradSerializable {
         if (parameterTypes.length != _objects.size()) {
             return null;
         }
+
+        System.out.println("hhh" + parameterTypes.length);
+
 
         PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
         int[] perm;
@@ -1231,20 +1222,24 @@ public class SessionNode implements TetradSerializable {
         }
     }
 
-    public boolean assignClasses(Class[] parameterTypes, Class[] modelTypes)
+    public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes)
             throws RuntimeException {
-        for (Class parameterType1 : parameterTypes) {
+        System.out.println("GGG");
+
+        for (Class parameterType1 : constructorTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
                         "Parameter types must all be non-null.");
             }
         }
 
-        if (modelTypes.length > parameterTypes.length) {
+        if (modelTypes.length > constructorTypes.length) {
             return false;
         }
 
-        PermutationGenerator gen0 = new PermutationGenerator(parameterTypes.length);
+        System.out.println("ggg" + constructorTypes.length);
+
+        PermutationGenerator gen0 = new PermutationGenerator(constructorTypes.length);
         int[] paramPerm;
 
         while ((paramPerm = gen0.next()) != null) {
@@ -1255,10 +1250,10 @@ public class SessionNode implements TetradSerializable {
                 boolean allAssigned = true;
 
                 for (int i = 0; i < modelPerm.length; i++) {
-                    Class<?> parameterType = parameterTypes[paramPerm[i]];
-                    Class<?> aClass = modelTypes[modelPerm[i]];
+                    Class<?> constructorType = constructorTypes[paramPerm[i]];
+                    Class<?> modelType = modelTypes[modelPerm[i]];
 
-                    if (!parameterType.isAssignableFrom(aClass)) {
+                    if (!constructorType.isAssignableFrom(modelType)) {
                         allAssigned = false;
                     }
                 }
@@ -1375,7 +1370,7 @@ public class SessionNode implements TetradSerializable {
      * Creates model using the given arguments, if possible. If not possible,
      * the field this.model is unchanged.
      */
-    private void createModelUsingArguments(Class modelClass, List models)
+    private void createModelUsingArguments(Class modelClass, List<Object> models)
             throws Exception {
         if (!(SessionModel.class.isAssignableFrom(modelClass))) {
             throw new ClassCastException(
@@ -1387,10 +1382,42 @@ public class SessionNode implements TetradSerializable {
         Constructor[] constructors = modelClass.getConstructors();
 
         for (Constructor constructor : constructors) {
-            Class[] parameterTypes = constructor.getParameterTypes();
-            Object[] arguments = assignParameters(parameterTypes, models);
+            Class[] constructorTypes = constructor.getParameterTypes();
+            Object[] arguments = null;
 
-            if (parameterTypes.length == 0) continue;
+            if (constructorTypes.length == 2 && constructorTypes[0].isArray() &&
+                    constructorTypes[1] == Parameters.class) {
+                List<Object> _objects = new ArrayList<>();
+                Class<?> c1 = constructorTypes[0].getComponentType();
+                Parameters parameters = null;
+
+                for (int i = 0; i < models.size(); i++) {
+                    Class<?> c2 = models.get(i).getClass();
+
+                    if ((c1.isAssignableFrom(c2))) {
+                        _objects.add(models.get(i));
+                    }
+
+                    if (c2 == Parameters.class) {
+                        parameters = (Parameters) models.get(i);
+                    }
+                }
+
+                if (parameters != null) {
+                    Object o = Array.newInstance(c1, _objects.size());
+                    for (int i = 0; i < _objects.size(); i++) {
+                        Array.set(o, i, _objects.get(i));
+                    }
+
+                    arguments = new Object[]{o, parameters};
+                }
+            }
+
+            if (arguments == null) {
+                arguments = assignParameters(constructorTypes, models);
+            }
+
+            if (constructorTypes.length == 0) continue;
 
             if (arguments != null) {
                 try {
@@ -1422,7 +1449,7 @@ public class SessionNode implements TetradSerializable {
                     );
                 }
 
-                this.modelParamTypes = parameterTypes;
+                this.modelParamTypes = constructorTypes;
                 this.lastModelClass = modelClass;
 
                 getSessionSupport().fireModelCreated(this);
@@ -1433,78 +1460,80 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Determines whether a given model class is consistent with some
-     * combination of models parentClasses[i][a[i]], i = 0, 1, ...,
-     * parentClasses.length - 1.
-     */
-    private boolean isConsistentModelClass1(Class modelClass,
-                                            Class[][] parentClasses) {
-
-        // Test whether for some combination of the model classes
-        // for the parent nodes there is some model class for this
-        // node that can take that can take that combination of
-        // parent model classes as arguments to one of its
-        // constructors.
-        int[] combination;
-        Class[] parameterTypes = new Class[parentClasses.length];
-
-        // Calculate the number of models for each parent.
-        int[] numModels = new int[parentClasses.length];
-
-        for (int i = 0; i < parentClasses.length; i++) {
-            numModels[i] = parentClasses[i].length;
-        }
-
-        // Iterate through each combination of parent models.
-        for (int i = 0; i < getProduct(numModels); i++) {
-            combination = getValueCombination(i, numModels);
-
-            // Read off that combination of model classes from the
-            // parent classes array.
-            for (int j = 0; j < parentClasses.length; j++) {
-                parameterTypes[j] = parentClasses[j][combination[j]];
-            }
-
-            if (existsConstructor(modelClass, parameterTypes)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * A faster substitute for isConsistentModelClass1.
-     * jdramsey 20150801.
+     * New version 2015901.
      */
     private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses) {
         Constructor[] constructors = modelClass.getConstructors();
 
-        int[] dims = new int[parentClasses.length];
+        // If the constructor takes the special form of an array followed by Parameters,
+        // public Clazz(C1[] c1, Parameters paramters);
+        // just check to make sure all models besides Parameters are of class C1.
 
-        for (int i = 0; i < parentClasses.length; i++) {
-            dims[i] = parentClasses[i].length;
-        }
+        L:
+        for (Constructor constructor : constructors) {
+            Class<?>[] constructorTypes = constructor.getParameterTypes();
 
-        CombinationIterator iterator = new CombinationIterator(dims);
+            if (constructorTypes.length == 2) {
+                if (constructorTypes[0].isArray() && constructorTypes[1] == Parameters.class) {
+                    for (int i = 0; i < parentClasses.length; i++) {
+                        boolean found = false;
 
-        while (iterator.hasNext()) {
-            int[] comb = iterator.next();
+                        for (int j = 0; j < parentClasses[i].length; j++) {
+                            Class<?> c1 = constructorTypes[0].getComponentType();
+                            Class<?> c2 = parentClasses[i][j];
 
-            Class[] modelTypes = new Class[comb.length + 1];
+                            if (c2 == Parameters.class || c1.isAssignableFrom(c2)) {
+                                found = true;
+                                break;
+                            }
+                        }
 
-            for (int i = 0; i < comb.length; i++) {
-                modelTypes[i] = parentClasses[i][comb[i]];
+                        if (!found) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
             }
 
-            modelTypes[comb.length] = Parameters.class;
+            List<List<Class>> summary = new ArrayList<>();
 
-            for (Constructor constructor : constructors) {
-                Class[] constructorTypes = constructor.getParameterTypes();
+            for (int i = 0; i < parentClasses.length; i++) {
+                summary.add(new ArrayList<Class>());
+            }
 
-//                if (modelTypes.length != constructorTypes.length) {
-//                    continue;
-//                }
+            for (int i = 0; i < parentClasses.length; i++) {
+                for (int j = 0; j < parentClasses[i].length; j++) {
+                    for (int k = 0; k < constructorTypes.length; k++) {
+                        if (constructorTypes[k].isAssignableFrom(parentClasses[i][j])) {
+                            if (!summary.get(i).contains(constructorTypes[k])) {
+                                summary.get(i).add(constructorTypes[k]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            int[] dims = new int[parentClasses.length];
+
+            for (int i = 0; i < parentClasses.length; i++) {
+                dims[i] = summary.get(i).size();
+                if (dims[i] == 0) continue L;
+            }
+
+            CombinationIterator iterator = new CombinationIterator(dims);
+
+            while (iterator.hasNext()) {
+                int[] comb = iterator.next();
+
+                Class[] modelTypes = new Class[comb.length + 1];
+
+                for (int i = 0; i < comb.length; i++) {
+                    modelTypes[i] = summary.get(i).get(comb[i]);
+                }
+
+                modelTypes[comb.length] = Parameters.class;
 
                 if (assignClasses(constructorTypes, modelTypes)) {
                     return true;

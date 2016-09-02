@@ -40,45 +40,9 @@ import java.util.List;
 public class ConcatenateDatasetsWrapper extends DataWrapper {
        static final long serialVersionUID = 23L;
 
-    public ConcatenateDatasetsWrapper(DataWrapper data1, Parameters params) {
-        construct(data1);
+    public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
+        construct(data);
     }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, Parameters params) {
-        construct(data1, data2);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3, Parameters params) {
-        construct(data1, data2, data3);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, Parameters params) {
-        construct(data1, data2, data3, data4);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, Parameters params) {
-        construct(data1, data2, data3, data4, data5);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6, Parameters params) {
-        construct(data1, data2, data3, data4, data5, data6);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, Parameters params) {
-        construct(data1, data2, data3, data4, data5, data6, data7);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, DataWrapper data8, Parameters params) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8);
-    }
-
     private void construct(DataWrapper...dataWrappers) {
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
@@ -90,12 +54,16 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
 
         for (DataWrapper wrapper : dataWrappers) {
             for (DataModel model : wrapper.getDataModelList()) {
+                if (!(model instanceof DataSet)) {
+                    throw new IllegalArgumentException("Sorry, I am only willing to concatenate tabular datasets.");
+                }
                 DataSet dataSet = (DataSet) model;
                 dataSets.add(dataSet);
             }
         }
 
         DataSet concatenated = DataUtils.concatenate(dataSets);
+        concatenated.setName("Concatenated");
 
         this.setDataModel(concatenated);
 
@@ -108,14 +76,8 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static ConcatenateDatasetsWrapper serializableInstance() {
-        return new ConcatenateDatasetsWrapper(DataWrapper.serializableInstance(),
-                DataWrapper.serializableInstance(), new Parameters());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
-
-
-
-
-
 }
 

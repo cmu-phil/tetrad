@@ -522,11 +522,11 @@ public final class DataReader {
             RegexTokenizer tokenizer1 = new RegexTokenizer(line2, description.getDelimiter(),
                     quoteChar);
 
-            if (description.isMultColumnIncluded() && tokenizer1.hasMoreTokens()) {
-                String token = tokenizer1.nextToken().trim();
-                int multiplier = Integer.parseInt(token);
-                dataSet.setMultiplier(row, multiplier);
-            }
+//            if (description.isMultColumnIncluded() && tokenizer1.hasMoreTokens()) {
+//                String token = tokenizer1.nextToken().trim();
+//                int multiplier = Integer.parseInt(token);
+//                dataSet.setMultiplier(row, multiplier);
+//            }
 
             int col = -1;
 
@@ -1004,17 +1004,18 @@ public final class DataReader {
         private final int idIndex;
         private final boolean variablesSectionIncluded;
         private final Pattern delimiter;
-        private final boolean multColumnIncluded;
+//        private final boolean multColumnIncluded;
 
         public DataSetDescription(List<Node> variables, int numRows, int idIndex,
-                boolean variablesSectionIncluded, Pattern delimiter,
-                boolean multColumnIncluded) {
+                boolean variablesSectionIncluded, Pattern delimiter
+//                , boolean multColumnIncluded
+        ) {
             this.variables = variables;
             this.numRows = numRows;
             this.idIndex = idIndex;
             this.variablesSectionIncluded = variablesSectionIncluded;
             this.delimiter = delimiter;
-            this.multColumnIncluded = multColumnIncluded;
+//            this.multColumnIncluded = multColumnIncluded;
         }
 
         public List<Node> getVariables() {
@@ -1037,9 +1038,9 @@ public final class DataReader {
             return delimiter;
         }
 
-        public boolean isMultColumnIncluded() {
-            return multColumnIncluded;
-        }
+//        public boolean isMultColumnIncluded() {
+//            return multColumnIncluded;
+//        }
     }
 
     /**
@@ -1190,11 +1191,11 @@ public final class DataReader {
 
         boolean multColumnIncluded = false;
 
-        if (variables.get(0).getName().equals("MULT")) {
-            multColumnIncluded = true;
-            variables.remove(0);
-            varNames.remove(0);
-        }
+//        if (variables.get(0).getName().equals("MULT")) {
+//            multColumnIncluded = true;
+//            variables.remove(0);
+//            varNames.remove(0);
+//        }
 
         // Print out a report of the variable definitions guessed at (or
         // read in through the /variables section or specified as known
@@ -1228,7 +1229,7 @@ public final class DataReader {
         }
 
         return new DataSetDescription(variables, numRows, idIndex, variableSectionIncluded,
-                delimiter, multColumnIncluded);
+                delimiter/*, multColumnIncluded*/);
     }
 
     private boolean tooManyDiscreteValues(Set<String> strings) {

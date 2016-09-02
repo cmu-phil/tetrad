@@ -61,204 +61,24 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
     //============================CONSTRUCTORS============================//
 
-    public TsFgsRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
+    public TsFgsRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
+    public TsFgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
-//        if (graph == dataWrapper) throw new IllegalArgumentException();
+    public TsFgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, knowledgeBoxModel);
+    public TsFgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2, params),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       DataWrapper dataWrapper8,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       DataWrapper dataWrapper8,
-                       DataWrapper dataWrapper9,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9, params
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       DataWrapper dataWrapper8,
-                       DataWrapper dataWrapper9,
-                       DataWrapper dataWrapper10,
-                       Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9,
-                        dataWrapper10, params
-                ),
-                params, null);
-
     }
 
     public TsFgsRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -274,9 +94,8 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
      *
      * @see TetradSerializableUtils
      */
-    public static TsFgsRunner serializableInstance() {
-        return new TsFgsRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//

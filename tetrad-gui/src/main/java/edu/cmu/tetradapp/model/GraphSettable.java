@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.editor;
+package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;

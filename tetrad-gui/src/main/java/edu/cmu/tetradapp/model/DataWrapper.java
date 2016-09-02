@@ -108,7 +108,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * Copy constructor.
      */
-    public DataWrapper(DataWrapper wrapper) {
+    public DataWrapper(DataWrapper wrapper,Parameters parameters) {
         this.name = wrapper.name;
         DataModelList dataModelList = new DataModelList();
         int selected = -1;
@@ -151,7 +151,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         setDataModel(dataSet);
     }
 
-    public DataWrapper(Graph graph) {
+    public DataWrapper(Graph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -175,28 +175,28 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(DagWrapper dagWrapper) {
-        this(dagWrapper.getDag());
+    public DataWrapper(DagWrapper dagWrapper, Parameters parameters) {
+        this(dagWrapper.getDag(), parameters);
     }
 
-    public DataWrapper(SemGraphWrapper wrapper) {
-        this(wrapper.getGraph());
+    public DataWrapper(SemGraphWrapper wrapper, Parameters parameters) {
+        this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(GraphWrapper wrapper) {
-        this(wrapper.getGraph());
+    public DataWrapper(GraphWrapper wrapper, Parameters parameters) {
+        this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(RegressionRunner regression, DataWrapper wrapper) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
+    public DataWrapper(RegressionRunner regression, DataWrapper wrapper, Parameters parameters) {
+        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
-    public DataWrapper(RegressionRunner regression, Simulation wrapper) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
+    public DataWrapper(RegressionRunner regression, Simulation wrapper, Parameters parameters) {
+        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
     // Computes regression predictions.
-    public DataWrapper(RegressionResult result, DataSet data) {
+    public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
 //        if (!data.isContinuous()) {
 //            throw new IllegalArgumentException("Must provide a continuous data set.");
 //        }
@@ -233,7 +233,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(MimBuildRunner mimBuild) {
+    public DataWrapper(MimBuildRunner mimBuild, Parameters parameters) {
         ICovarianceMatrix cov = mimBuild.getCovMatrix();
 
         DataModelList dataModelList = new DataModelList();

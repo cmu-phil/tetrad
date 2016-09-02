@@ -538,7 +538,7 @@ public final class SessionEditorNode extends DisplayNode {
                     if (getSessionNode().getModel() == null) {
                         Component centeringComp = SessionEditorNode.this;
                         JOptionPane.showMessageDialog(centeringComp,
-                                "No model has been created yet.");
+                                "Sorry, no model has been created yet; there's nothing to edit.");
                     } else {
                         doDoubleClickAction();
                     }
@@ -562,18 +562,29 @@ public final class SessionEditorNode extends DisplayNode {
 
                 if (getSessionNode().getModel() == null) {
                     JOptionPane.showMessageDialog(centeringComp,
-                            "This box does not contain a model.");
+                            "Sorry, this box does not contain a model to destroy.");
                     return;
                 }
 
-                int ret = JOptionPane.showConfirmDialog(centeringComp,
-                        "Really destroy model in box? This will destroy models " +
-                                "downstream as well.", "Confirm",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.WARNING_MESSAGE);
+                Set<SessionNode> children = getSessionNode().getChildren();
+                boolean found = false;
 
-                if (ret != JOptionPane.YES_OPTION) {
-                    return;
+                for (SessionNode child : children) {
+                    if (child.getModel() != null) {
+                        found = true;
+                    }
+                }
+
+                if (found) {
+                    int ret = JOptionPane.showConfirmDialog(centeringComp,
+                            "Destroying the model in this box will also destroy models in any boxes\n" +
+                                    "downstream. Is that OK?", null,
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.WARNING_MESSAGE);
+
+                    if (ret != JOptionPane.YES_OPTION) {
+                        return;
+                    }
                 }
 
                 destroyModel();
@@ -663,19 +674,19 @@ public final class SessionEditorNode extends DisplayNode {
         deleteBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (getSessionNode().getModel() == null) {
-                    Component centeringComp = SessionEditorNode.this;
-                    int ret = JOptionPane.showConfirmDialog(centeringComp,
-                            "Really delete box?");
-
-                    if (ret != JOptionPane.YES_OPTION) {
-                        return;
-                    }
+                    //
+//                    Component centeringComp = SessionEditorNode.this;
+//                    int ret = JOptionPane.showConfirmDialog(centeringComp,
+//                            "Are you sure you want to delete this box? It contains something.");
+//
+//                    if (ret != JOptionPane.YES_OPTION) {
+//                        return;
+//                    }
                 } else {
                     Component centeringComp = SessionEditorNode.this;
                     int ret = JOptionPane.showConfirmDialog(centeringComp,
-                            "<html>" +
-                                    "Really delete box? Any information it contains will<br>" +
-                                    "be destroyed." + "</html>");
+                            "Are you sure you want to delete this box? It contains some work.",
+                            null, JOptionPane.YES_NO_OPTION);
 
                     if (ret != JOptionPane.YES_OPTION) {
                         return;
@@ -743,7 +754,8 @@ public final class SessionEditorNode extends DisplayNode {
                     try {
                         editParameters(modelClass, param, arguments);
                         int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                "Create a new model with these parameters and erase\nall downstream models?",
+                                "Should I overwrite the contents of this box and all delete the contents\n" +
+                                        "of all boxes downstream?",
                                 "Double check...", JOptionPane.YES_NO_OPTION);
                         if (ret == JOptionPane.YES_OPTION) {
                             getSessionNode().destroyModel();

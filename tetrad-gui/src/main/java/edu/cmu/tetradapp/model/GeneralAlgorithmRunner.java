@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -45,7 +46,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
-        MultipleGraphSource, Unmarshallable {
+        MultipleGraphSource, Unmarshallable, SessionModel {
 
     static final long serialVersionUID = 23L;
 

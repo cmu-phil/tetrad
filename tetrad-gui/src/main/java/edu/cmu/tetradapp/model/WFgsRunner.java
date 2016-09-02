@@ -58,8 +58,8 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper, params), params, null);
+    public WFgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
     /**
@@ -67,8 +67,8 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      *
      * @see TetradSerializableUtils
      */
-    public static WFgsRunner serializableInstance() {
-        return new WFgsRunner(DataWrapper.serializableInstance(), new Parameters());
+    public static DataWrapper serializableInstance() {
+        return DataWrapper.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//

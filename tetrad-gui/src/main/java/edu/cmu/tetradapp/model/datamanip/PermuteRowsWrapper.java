@@ -44,8 +44,8 @@ public class PermuteRowsWrapper extends DataWrapper {
             throw new NullPointerException("The given data must not be null");
         }
 
-        ColtDataSet originalData = (ColtDataSet) data.getSelectedDataModel();
-        DataSet copy = new ColtDataSet(originalData);
+        DataSet originalData = (DataSet) data.getSelectedDataModel();
+        DataSet copy = originalData.copy();
         copy.permuteRows();
         this.setDataModel(copy);
         this.setSourceGraph(data.getSourceGraph());

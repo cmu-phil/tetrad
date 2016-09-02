@@ -1551,7 +1551,9 @@ public final class DataUtils {
         List<DataSet> ret = new ArrayList<>();
 
         for (DataSet m : dataSets) {
-            ret.add(m.subsetColumns(vars));
+            DataSet data = m.subsetColumns(vars);
+            data.setName(m.getName() + ".reordered");
+            ret.add(data);
         }
 
         return ret;
