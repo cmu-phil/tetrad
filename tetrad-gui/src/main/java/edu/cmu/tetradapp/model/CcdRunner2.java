@@ -41,7 +41,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     static final long serialVersionUID = 23L;
 
     private transient List<PropertyChangeListener> listeners;
-    private transient GCCD ccd;
+    private transient GCcd ccd;
 
 
     //=========================CONSTRUCTORS================================//
@@ -349,7 +349,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            ccd = new GCCD(gesScore);
+            ccd = new GCcd(gesScore);
 //            ccd.setKnowledge(getParameters().getKnowledge());
             ccd.setVerbose(true);
         } else {
@@ -364,7 +364,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    ccd = new GCCD(gesScore);
+                    ccd = new GCcd(gesScore);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -381,7 +381,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                ccd = new GCCD(gesScore);
+                ccd = new GCcd(gesScore);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -405,7 +405,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    ccd = new GCCD(fgsScore);
+                    ccd = new GCcd(fgsScore);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();

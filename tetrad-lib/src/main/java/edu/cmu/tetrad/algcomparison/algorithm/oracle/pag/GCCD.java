@@ -30,7 +30,7 @@ public class GCCD implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.GCCD search = new edu.cmu.tetrad.search.GCCD(score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(score.getScore(dataSet, parameters));
         search.setKnowledge(knowledge);
 
         return search.search();
