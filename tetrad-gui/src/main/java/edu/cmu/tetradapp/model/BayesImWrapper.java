@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -81,8 +82,30 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(Simulation simulation, Parameters parameters) {
-        this(new BayesPmWrapper(simulation.getGraph(), parameters), parameters);
+    public BayesImWrapper(Simulation simulation) {
+        BayesIm bayesIm = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof BayesNetSimulation)) {
+            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+        }
+
+        bayesIm = ((BayesNetSimulation) _simulation).getBayesIm();
+
+        if (bayesIm == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        this.bayesIm = bayesIm;
     }
 
     public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {

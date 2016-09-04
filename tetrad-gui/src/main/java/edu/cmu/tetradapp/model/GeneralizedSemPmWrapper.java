@@ -21,8 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
+import com.sun.tools.javac.jvm.Gen;
+import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
+import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
@@ -64,6 +68,34 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
+
+    public GeneralizedSemPmWrapper(Simulation simulation) {
+        GeneralizedSemPm semPm = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof GeneralSemSimulation)) {
+            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+        }
+
+        GeneralizedSemIm im = ((GeneralSemSimulation) _simulation).getIm();
+
+        if (im == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        semPm = im.getGeneralizedSemPm();
+
+        this.semPm = semPm;
+    }
 
     public GeneralizedSemPmWrapper(Graph graph) {
         if (graph == null) {
@@ -291,16 +323,6 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         this(new EdgeListGraph(wrapper.getResultGraph()));
     }
 
-    public GeneralizedSemPmWrapper(Simulation simulation) {
-        List<Graph> graphs = simulation.getGraphs();
-
-        if (!(graphs.size() == 1)) {
-            throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
-        }
-
-        this.semPm = new GeneralizedSemPm(graphs.get(0));
-        log(semPm);
-    }
     /**
      * Generates a simple exemplar of this class to test serialization.
      *

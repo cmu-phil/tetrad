@@ -127,7 +127,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
 
         simulationsDropdown.setSelectedItem(simulation.getParams().getString("simulationsDropdownPreference",
-                simulationItems[1]));
+                simulationItems[0]));
 
         graphsDropdown.addActionListener(new ActionListener() {
 

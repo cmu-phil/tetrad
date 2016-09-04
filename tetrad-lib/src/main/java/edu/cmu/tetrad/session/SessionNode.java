@@ -1159,10 +1159,6 @@ public class SessionNode implements TetradSerializable {
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
-
-        System.out.println("HHH");
-
-
         if (parameterTypes.length > 5) {
             System.out.println("Oops");
         }
@@ -1186,9 +1182,6 @@ public class SessionNode implements TetradSerializable {
         if (parameterTypes.length != _objects.size()) {
             return null;
         }
-
-        System.out.println("hhh" + parameterTypes.length);
-
 
         PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
         int[] perm;
@@ -1406,6 +1399,13 @@ public class SessionNode implements TetradSerializable {
                     }
 
                     arguments = new Object[]{o, parameters};
+                } else {
+                    Object o = Array.newInstance(c1, _objects.size());
+                    for (int i = 0; i < _objects.size(); i++) {
+                        Array.set(o, i, _objects.get(i));
+                    }
+
+                    arguments = new Object[]{o};
                 }
             }
 
@@ -1469,6 +1469,12 @@ public class SessionNode implements TetradSerializable {
         for (Constructor constructor : constructors) {
             Class<?>[] constructorTypes = constructor.getParameterTypes();
 
+            boolean hasParameters = false;
+
+            for (int j = 0; j < constructorTypes.length; j++) {
+                if (constructorTypes[j] == Parameters.class) hasParameters = true;
+            }
+
             if (constructorTypes.length == 2) {
                 if (constructorTypes[0].isArray() && constructorTypes[1] == Parameters.class) {
                     for (int i = 0; i < parentClasses.length; i++) {
@@ -1521,18 +1527,33 @@ public class SessionNode implements TetradSerializable {
             CombinationIterator iterator = new CombinationIterator(dims);
 
             while (iterator.hasNext()) {
-                int[] comb = iterator.next();
+                if (hasParameters) {
+                    int[] comb = iterator.next();
 
-                Class[] modelTypes = new Class[comb.length + 1];
+                    Class[] modelTypes = new Class[comb.length + 1];
 
-                for (int i = 0; i < comb.length; i++) {
-                    modelTypes[i] = summary.get(i).get(comb[i]);
-                }
+                    for (int i = 0; i < comb.length; i++) {
+                        modelTypes[i] = summary.get(i).get(comb[i]);
+                    }
 
-                modelTypes[comb.length] = Parameters.class;
 
-                if (assignClasses(constructorTypes, modelTypes)) {
-                    return true;
+                    modelTypes[comb.length] = Parameters.class;
+
+                    if (assignClasses(constructorTypes, modelTypes)) {
+                        return true;
+                    }
+                } else {
+                    int[] comb = iterator.next();
+
+                    Class[] modelTypes = new Class[comb.length];
+
+                    for (int i = 0; i < comb.length; i++) {
+                        modelTypes[i] = summary.get(i).get(comb[i]);
+                    }
+
+                    if (assignClasses(constructorTypes, modelTypes)) {
+                        return true;
+                    }
                 }
             }
         }

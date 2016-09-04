@@ -48,6 +48,7 @@ public class GeneralSemSimulation implements Simulation {
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
+        im = null;
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
@@ -78,6 +79,7 @@ public class GeneralSemSimulation implements Simulation {
             }
 
             im = new GeneralizedSemIm(pm);
+            this.im = im;
         }
 
         return im.simulateData(parameters.getInt("sampleSize"), false);
@@ -158,5 +160,9 @@ public class GeneralSemSimulation implements Simulation {
         }
 
         return pm;
+    }
+
+    public GeneralizedSemIm getIm() {
+        return im;
     }
 }

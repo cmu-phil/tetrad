@@ -46,6 +46,7 @@ public class SemSimulation implements Simulation {
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
+        im = null;
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
@@ -123,8 +124,14 @@ public class SemSimulation implements Simulation {
             }
 
             im = new SemIm(pm, parameters);
+
+            this.im = im;
         }
 
         return im.simulateData(parameters.getInt("sampleSize"), false);
+    }
+
+    public SemIm getSemIm() {
+        return im;
     }
 }

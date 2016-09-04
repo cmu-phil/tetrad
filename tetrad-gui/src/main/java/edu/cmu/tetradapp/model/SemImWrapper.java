@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -73,14 +74,30 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log(semIm);
     }
 
-    public SemImWrapper(Simulation simulation, Parameters params) {
+    public SemImWrapper(Simulation simulation) {
+        SemIm semIm = null;
+
         if (simulation == null) {
-            throw new NullPointerException("SemPmWrapper must not be null.");
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        semIm = new SemIm(new SemPm(simulation.getGraph()), params);
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
-        log(semIm);
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof SemSimulation)) {
+            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+        }
+
+        semIm = ((SemSimulation) _simulation).getSemIm();
+
+        if (semIm == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        this.semIm = semIm;
     }
 
 

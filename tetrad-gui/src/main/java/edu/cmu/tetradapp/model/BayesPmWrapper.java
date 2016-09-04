@@ -21,6 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -29,6 +32,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -89,8 +93,30 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
         log(bayesPm);
     }
 
-    public BayesPmWrapper(Simulation simulation, Parameters parameters) {
-        this(simulation.getGraph(), parameters);
+    public BayesPmWrapper(Simulation simulation) {
+        BayesIm bayesIm = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof BayesNetSimulation)) {
+            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+        }
+
+        bayesIm = ((BayesNetSimulation) _simulation).getBayesIm();
+
+        if (bayesPm == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        this.bayesPm = bayesIm.getBayesPm();
     }
 
     public BayesPmWrapper(Dag graph, BayesPm bayesPm, Parameters params) {
@@ -387,17 +413,6 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
     public BayesPmWrapper(DagWrapper dagWrapper, Simulation dataWrapper) {
         this(dagWrapper, (DataWrapper) dataWrapper);
-    }
-
-    public BayesPmWrapper(Simulation simulation) {
-        List<Graph> graphs = simulation.getGraphs();
-
-        if (!(graphs.size() == 1)) {
-            throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
-        }
-
-        this.bayesPm = new BayesPm(graphs.get(0));
-        log(bayesPm);
     }
 
     /**

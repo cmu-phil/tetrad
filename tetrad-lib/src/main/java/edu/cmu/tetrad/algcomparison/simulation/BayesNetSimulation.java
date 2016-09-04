@@ -43,6 +43,7 @@ public class BayesNetSimulation implements Simulation {
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
+        im = null;
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
@@ -128,8 +129,13 @@ public class BayesNetSimulation implements Simulation {
             }
 
             im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+            this.im = im;
         }
 
         return im.simulateData(parameters.getInt("sampleSize"), false);
+    }
+
+    public BayesIm getBayesIm() {
+        return im;
     }
 }

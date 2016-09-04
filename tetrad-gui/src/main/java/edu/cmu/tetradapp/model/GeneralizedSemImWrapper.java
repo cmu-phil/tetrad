@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -61,6 +62,33 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
+
+    public GeneralizedSemImWrapper(Simulation simulation) {
+        GeneralizedSemIm semIm = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof GeneralSemSimulation)) {
+            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+        }
+
+        semIm = ((GeneralSemSimulation) _simulation).getIm();
+
+        if (semIm == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        this.semIm = semIm;
+    }
+
 
     private GeneralizedSemImWrapper(GeneralizedSemPm semPm) {
         if (semPm == null) {
