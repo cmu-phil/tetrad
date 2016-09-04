@@ -334,11 +334,11 @@
     </session-node>
     <session-node id="Data">
         <models>
-            <model name="Load Data" acronym="Data" help="data" category="Data">
+            <model name="Data" acronym="Data" help="data" category="Data">
                 <model-class>edu.cmu.tetradapp.model.DataWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Simulate" acronym="Simulation"
+            <model name="Simulation" acronym="Simulation"
                    help="data" category="Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -430,19 +430,19 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Shift Data" acronym="Shift Data" help="data"
-                   category="Manipulation of Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>
-                    edu.cmu.tetradapp.model.datamanip.ShiftDataWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-editor-class>edu.cmu.tetradapp.editor.datamanip.ShiftDataParamsEditor
-                </params-editor-class>
-            </model>
+            <!--<model name="Shift Data" acronym="Shift Data" help="data"-->
+                   <!--category="Manipulation of Data">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="data" description="Data"/>-->
+                <!--</logger>-->
+                <!--<model-class>-->
+                    <!--edu.cmu.tetradapp.model.datamanip.ShiftDataWrapper-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+                <!--<params-editor-class>edu.cmu.tetradapp.editor.datamanip.ShiftDataParamsEditor-->
+                <!--</params-editor-class>-->
+            <!--</model>-->
             <model name="Convert to Correlation Matrix" acronym="Corr Matrix"
                    help="corr" category="Conversion of Data">
                 <logger>
@@ -809,16 +809,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Average Over Clusters" acronym="AvgClusters"
-                   help="avgclusters" category="Column operations">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.AverageOverClusters
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-            </model>
+            <!--<model name="Average Over Clusters" acronym="AvgClusters"-->
+                   <!--help="avgclusters" category="Column operations">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="data" description="Data"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.AverageOverClusters-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--</model>-->
             <model name="Implied Covariance Matrix--Measured" acronym="Implied Covar Meas" help="data"
                    category="implied">
                 <logger>

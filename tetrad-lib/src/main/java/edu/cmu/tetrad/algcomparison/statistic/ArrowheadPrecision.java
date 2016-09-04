@@ -28,11 +28,11 @@ public class ArrowheadPrecision implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int arrowsTp = adjConfusion.getArrowsTp();
-        int arrowsFp = adjConfusion.getArrowsFp();
-        int arrowsFn = adjConfusion.getArrowsFn();
-        int arrowsTn = adjConfusion.getArrowsTn();
-        return arrowsTp / (double) (arrowsTp + arrowsFp);
+        double arrowsTp = adjConfusion.getArrowsTp();
+        double arrowsFp = adjConfusion.getArrowsFp();
+        double den = arrowsTp + arrowsFp;
+        double v = arrowsTp / den;
+        return v;
     }
 
     @Override

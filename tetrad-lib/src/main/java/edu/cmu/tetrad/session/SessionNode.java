@@ -1224,8 +1224,6 @@ public class SessionNode implements TetradSerializable {
 
     public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes)
             throws RuntimeException {
-        System.out.println("GGG");
-
         for (Class parameterType1 : constructorTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
@@ -1236,8 +1234,6 @@ public class SessionNode implements TetradSerializable {
         if (modelTypes.length > constructorTypes.length) {
             return false;
         }
-
-        System.out.println("ggg" + constructorTypes.length);
 
         PermutationGenerator gen0 = new PermutationGenerator(constructorTypes.length);
         int[] paramPerm;

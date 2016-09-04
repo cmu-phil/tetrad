@@ -182,6 +182,10 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
             }
         }
 
+        if (resultGraph == null) {
+            throw new NullPointerException("I couldn't find a parent graph.");
+        }
+
         List<Node> nodes = resultGraph.getNodes();
 
         for (int i = 0; i < nodes.size(); i++) {

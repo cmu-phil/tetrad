@@ -19,33 +19,31 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.examples;
+package edu.cmu.richard;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * An example script to save out data files and graphs from a simulation.
  *
  * @author jdramsey
  */
-public class ExampleSave {
+public class RichardSaveData {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 2);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
-        parameters.set("sampleSize", 100, 500);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 20);
+        parameters.set("avgDegree", 2, 6);
+        parameters.set("sampleSize", 50, 100, 500, 1000, 5000);
 
         Simulation simulation = new SemSimulation(new RandomForward());
-        Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.saveDataSetAndGraphs("comparison/save1", simulation,
-                parameters);
+        new Comparison().saveDataSetAndGraphs("richard/save", simulation, parameters);
     }
 }
 

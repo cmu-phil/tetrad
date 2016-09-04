@@ -48,11 +48,11 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
         DataModel model2 = wrapper2.getSelectedDataModel();
 
         if (!(model1 instanceof ICovarianceMatrix)) {
-            throw new IllegalArgumentException("Expecting corrariance matrices.");
+            throw new IllegalArgumentException("Expecting covariance matrices.");
         }
 
         if (!(model2 instanceof ICovarianceMatrix)) {
-            throw new IllegalArgumentException("Expecting corrariance matrices.");
+            throw new IllegalArgumentException("Expecting covariance matrices.");
         }
 
         TetradMatrix corr1 = ((ICovarianceMatrix) model1).getMatrix();

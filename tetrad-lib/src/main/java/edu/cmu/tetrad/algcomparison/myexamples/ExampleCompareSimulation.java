@@ -63,9 +63,6 @@ public class ExampleCompareSimulation {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
@@ -77,7 +74,12 @@ public class ExampleCompareSimulation {
 
         simulations.add(new SemSimulation(new RandomForward()));
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+        Comparison comparison = new Comparison();
+
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+
+        comparison.compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

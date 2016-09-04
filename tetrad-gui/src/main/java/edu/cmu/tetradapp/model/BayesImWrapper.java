@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.Parameters;
@@ -80,7 +81,11 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(BayesEstimatorWrapper wrapper) {
+    public BayesImWrapper(Simulation simulation, Parameters parameters) {
+        this(new BayesPmWrapper(simulation.getGraph(), parameters), parameters);
+    }
+
+    public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -88,7 +93,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(DirichletEstimatorWrapper wrapper) {
+    public BayesImWrapper(DirichletEstimatorWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -96,7 +101,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(DirichletBayesImWrapper wrapper) {
+    public BayesImWrapper(DirichletBayesImWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -104,7 +109,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(RowSummingExactWrapper wrapper) {
+    public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -112,7 +117,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(CptInvariantUpdaterWrapper wrapper) {
+    public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -120,7 +125,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         log(bayesIm);
     }
 
-    public BayesImWrapper(ApproximateUpdaterWrapper wrapper) {
+    public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }

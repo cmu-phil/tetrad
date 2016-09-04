@@ -65,9 +65,6 @@ public class ExampleCompareSimulationTimeSeries {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new TsFci(new FisherZ()));
@@ -78,7 +75,12 @@ public class ExampleCompareSimulationTimeSeries {
 
         simulations.add(new TimeSeriesSemSimulation(new RandomForward()));
 
-        new Comparison().compareAlgorithms("comparison/Comparison2.txt",
+        Comparison comparison = new Comparison();
+
+        comparison.setSortByUtility(true);
+        comparison.setShowUtilities(true);
+
+        comparison.compareAlgorithms("comparison/Comparison2.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

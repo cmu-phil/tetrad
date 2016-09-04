@@ -43,7 +43,7 @@ public class ExampleCompareSimulation {
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 4, 6);
         parameters.set("sampleSize", 500);
         parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
@@ -63,21 +63,23 @@ public class ExampleCompareSimulation {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new Cpcs(new FisherZ()));
+//        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
+//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new Cpcs(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
         simulations.add(new SemSimulation(new RandomForward()));
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+        Comparison comparison = new Comparison();
+
+        comparison.setSortByUtility(true);
+        comparison.setShowUtilities(true);
+
+        comparison.compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

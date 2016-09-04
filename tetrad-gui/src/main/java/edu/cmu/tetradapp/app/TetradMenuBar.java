@@ -190,11 +190,11 @@ final class TetradMenuBar extends JMenuBar {
 
         final HelpBroker hb = hs.createHelpBroker();
 
-        JMenuItem help = new JMenuItem("Tetrad Help");
-        help.addActionListener(new CSH.DisplayHelpFromSource( hb ));
-        helpMenu.add(help);
+//        JMenuItem help = new JMenuItem("Tetrad Help");
+//        help.addActionListener(new CSH.DisplayHelpFromSource( hb ));
+//        helpMenu.add(help);
 
-        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
+//        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
 
         helpMenu.add(new AboutTetradAction());
         helpMenu.add(new WarrantyAction());

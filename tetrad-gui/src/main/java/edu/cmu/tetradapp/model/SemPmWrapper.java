@@ -72,6 +72,14 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
+    public SemPmWrapper(Simulation simulation, Parameters parameters) {
+        this(new EdgeListGraph(simulation.getGraph()));
+    }
+
+    /**
+     * Creates a new SemPm from the given workbench and uses it to construct a
+     * new BayesPm.
+     */
     public SemPmWrapper(GraphWrapper graphWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }

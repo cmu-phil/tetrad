@@ -67,7 +67,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
      * Creates a new BayesPm from the given DAG and uses it to construct a new
      * BayesPm.
      */
-    public BayesPmWrapper(Dag graph, Parameters params) {
+    public BayesPmWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -87,6 +87,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
         log(bayesPm);
+    }
+
+    public BayesPmWrapper(Simulation simulation, Parameters parameters) {
+        this(simulation.getGraph(), parameters);
     }
 
     public BayesPmWrapper(Dag graph, BayesPm bayesPm, Parameters params) {

@@ -73,6 +73,17 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log(semIm);
     }
 
+    public SemImWrapper(Simulation simulation, Parameters params) {
+        if (simulation == null) {
+            throw new NullPointerException("SemPmWrapper must not be null.");
+        }
+
+        semIm = new SemIm(new SemPm(simulation.getGraph()), params);
+
+        log(semIm);
+    }
+
+
     public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");

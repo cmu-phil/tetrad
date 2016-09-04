@@ -34,8 +34,15 @@ public class ArrowConfusion {
         allOriented.addAll(this.est.getEdges());
 
         for (Edge edge : allOriented) {
-            Endpoint e1Est = edge.getProximalEndpoint(edge.getNode1());
-            Endpoint e2Est = edge.getProximalEndpoint(edge.getNode2());
+            Edge edge1 = this.est.getEdge(edge.getNode1(), edge.getNode2());
+
+            Endpoint e1Est = null;
+            Endpoint e2Est = null;
+
+            if (edge1 != null) {
+                e1Est = edge.getProximalEndpoint(edge.getNode1());
+                e2Est = edge.getProximalEndpoint(edge.getNode2());
+            }
 
             Edge edge2 = this.truth.getEdge(edge.getNode1(), edge.getNode2());
 
@@ -45,6 +52,13 @@ public class ArrowConfusion {
             if (edge2 != null) {
                 e1True = edge2.getProximalEndpoint(edge.getNode1());
                 e2True = edge2.getProximalEndpoint(edge.getNode2());
+            }
+
+            edge = this.est.getEdge(edge.getNode1(), edge.getNode2());
+
+            if (edge != null) {
+                e1Est = edge.getProximalEndpoint(edge.getNode1());
+                e2Est = edge.getProximalEndpoint(edge.getNode2());
             }
 
             if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
@@ -70,10 +84,18 @@ public class ArrowConfusion {
             if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
                 arrowsTp++;
             }
+
+            if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW) {
+                arrowsTn++;
+            }
+
+            if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW) {
+                arrowsTn++;
+            }
         }
 
-        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
-        arrowsTn = allEdges - arrowsFn;
+//        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
+//        arrowsTn = allEdges - arrowsFn;
     }
 
     public int getArrowsTp() {
