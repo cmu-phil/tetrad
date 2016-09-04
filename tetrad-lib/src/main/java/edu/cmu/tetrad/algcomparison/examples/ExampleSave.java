@@ -44,8 +44,7 @@ public class ExampleSave {
         Simulation simulation = new SemSimulation(new RandomForward());
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.saveDataSetAndGraphs("comparison/save1", simulation,
-                parameters);
+        comparison.saveToFiles("comparison", simulation, parameters);
     }
 }
 

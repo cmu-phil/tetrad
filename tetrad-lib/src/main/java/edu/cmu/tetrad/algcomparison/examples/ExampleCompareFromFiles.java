@@ -82,9 +82,7 @@ public class ExampleCompareFromFiles {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
 
-        comparison.compareAlgorithms("comparison/save1",
-                "comparison/Comparison.txt",
-                algorithms, statistics, parameters);
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 

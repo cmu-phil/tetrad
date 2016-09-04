@@ -28,7 +28,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsGfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsImages;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
@@ -80,8 +79,7 @@ public class ExampleCompareSimulationTimeSeries {
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
 
-        comparison.compareAlgorithms("comparison/Comparison2.txt",
-                simulations, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 }
 

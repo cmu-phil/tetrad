@@ -23,13 +23,11 @@ package edu.cmu.richard;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -67,12 +65,6 @@ public class RichardCompareFromFiles {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
-//        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);
@@ -90,16 +82,15 @@ public class RichardCompareFromFiles {
         comparison.setShowUtilities(false);
         comparison.setSortByUtility(false);
         comparison.setTabDelimitedTables(true);
-        comparison.setSaveGraphs(true);
+        comparison.setSaveGraphs(false);
 
         Simulations simulations = new Simulations();
         Simulation simulation = new SemSimulation(new RandomForward());
         simulations.add(simulation);
 
-        new Comparison().saveDataSetAndGraphs("richard/save", simulation, parameters);
+        new Comparison().saveToFiles("richard", simulation, parameters);
 
-        comparison.compareAlgorithms("richard/save", "richard/Comparison.txt",
-               algorithms, statistics, parameters);
+        comparison.compareFromFiles("richard", algorithms, statistics, parameters);
     }
 }
 
