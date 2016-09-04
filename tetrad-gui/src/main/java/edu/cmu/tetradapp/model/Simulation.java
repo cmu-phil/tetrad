@@ -53,8 +53,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         SimulationParamsSource, GraphSource, MultipleGraphSource {
     static final long serialVersionUID = 23L;
 
-    private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation
-            = new SemSimulation(new RandomForward());
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
     private Parameters parameters;
     private String name;
     private boolean fixedGraph = true;
@@ -66,10 +65,12 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public Simulation(Parameters parameters) {
-        this.simulation = null;
-        this.parameters = parameters;
-        this.fixedGraph = false;
-        this.fixedSimulation = false;
+        if (simulation == null) {
+            this.simulation = new SemSimulation(new RandomForward());
+            this.parameters = parameters;
+            this.fixedGraph = false;
+            this.fixedSimulation = false;
+        }
     }
 
 //    public Simulation(Simulation simulation) {

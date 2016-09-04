@@ -75,16 +75,18 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         if (simulation.getSimulation() != null) {
             List<Graph> trueGraphs = new ArrayList<>();
+            DataModelList dataModelList = new DataModelList();
 
             int numDataSets = simulation.getSimulation().getNumDataSets();
 
             for (int i = 0; i < numDataSets; i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
+                dataModelList.add(simulation.getSimulation().getDataSet(i));
             }
 
-            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(new ArrayList<Graph>(), new Parameters()));
+            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(trueGraphs, new Parameters()));
             DataWrapper wrapper = new DataWrapper(new Parameters());
-            wrapper.setDataModelList(simulation.getDataModelList());
+            wrapper.setDataModelList(dataModelList);
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
 
             if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
@@ -353,8 +355,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (simulation.getDataModelList().size() > 0) {
             tabbedPane.setSelectedIndex(2);
         }
-
-        resetPanel(simulation, graphItems, simulationItems, tabbedPane);
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
@@ -495,6 +495,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 };
             }
         }
+
         return simulationItems;
     }
 
