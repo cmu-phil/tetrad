@@ -19,10 +19,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.richard;
+package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgsMeasurement;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -42,7 +43,7 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class RichardCompareFromFiles {
+public class MeasurementComparison {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
@@ -73,7 +74,7 @@ public class RichardCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FgsRichard(new SemBicScore()));
+        algorithms.add(new FgsMeasurement(new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
@@ -88,9 +89,8 @@ public class RichardCompareFromFiles {
         Simulation simulation = new SemSimulation(new RandomForward());
         simulations.add(simulation);
 
-        new Comparison().saveToFiles("richard", simulation, parameters);
-
-        comparison.compareFromFiles("richard", algorithms, statistics, parameters);
+        comparison.saveToFiles("comparison", simulation, parameters);
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 

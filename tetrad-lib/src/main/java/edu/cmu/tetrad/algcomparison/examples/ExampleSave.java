@@ -38,8 +38,8 @@ public class ExampleSave {
 
         parameters.set("numRuns", 2);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
-        parameters.set("sampleSize", 100, 500);
+        parameters.set("avgDegree", 2, 4, 6);
+        parameters.set("sampleSize", 100, 500, 1000);
 
         Simulation simulation = new SemSimulation(new RandomForward());
         Comparison comparison = new Comparison();

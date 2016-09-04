@@ -1,4 +1,4 @@
-package edu.cmu.richard;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -18,17 +18,17 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FgsRichard implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class FgsMeasurement implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FgsRichard(ScoreWrapper score) {
+    public FgsMeasurement(ScoreWrapper score) {
         this.score = score;
     }
 
-    public FgsRichard(ScoreWrapper score, Algorithm initialGraph) {
+    public FgsMeasurement(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
         this.initialGraph = initialGraph;
     }
