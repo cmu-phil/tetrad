@@ -61,33 +61,24 @@ import java.util.List;
 public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
     private final GraphWorkbench workbench;
-    private GraphSettable graphEditable;
+    private GraphSource graphSource;
     private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
-    public GraphEditor(GraphSettable graphWrapper) {
+    public GraphEditor(GraphSource graphWrapper) {
         this(graphWrapper.getGraph());
-        this.graphEditable = graphWrapper;
-        this.parameters = graphWrapper.getParameters();
+        this.graphSource = graphWrapper;
 
         getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("graph".equals(evt.getPropertyName())) {
-                    getGraphWrapper().setGraph((Graph) evt.getNewValue());
+                    getWorkbench().setGraph((Graph) evt.getNewValue());
                 } else if ("modelChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
-    }
-
-    public GraphEditor(DagInPatternWrapper wrapper) {
-        this(wrapper.getGraph());
-    }
-
-    public GraphEditor(CompletedPatternWrapper wrapper) {
-        this(wrapper.getGraph());
     }
 
     //===========================PRIVATE METHODS======================//
@@ -119,15 +110,15 @@ public final class GraphEditor extends JPanel
 
         add(b, BorderLayout.SOUTH);
 
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
 
                 if ("graph".equals(propertyName)) {
                     Graph _graph = (Graph) evt.getNewValue();
 
-                    if (getWorkbench() != null && getGraphWrapper() != null) {
-                        getGraphWrapper().setGraph(_graph);
+                    if (getWorkbench() != null && getGraphSource() != null) {
+                        getWorkbench().setGraph(_graph);
                     }
                 }
             }
@@ -227,8 +218,8 @@ public final class GraphEditor extends JPanel
         return getWorkbench().getVisibleRect();
     }
 
-    private GraphSettable getGraphWrapper() {
-        return graphEditable;
+    private GraphSource getGraphSource() {
+        return graphSource;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -247,23 +238,6 @@ public final class GraphEditor extends JPanel
 
         return menuBar;
     }
-
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(getWorkbench(), "Save Graph Image..."));
-//
-//        return file;
-//    }
 
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
@@ -392,11 +366,6 @@ public final class GraphEditor extends JPanel
                 JMenuItem(new SelectLatentsAction(getWorkbench()
 
         )));
-
-//        graph.addSeparator();
-//        IndependenceFactsAction action = new IndependenceFactsAction(
-//                JOptionUtils.centeringComp(), this, "D Separation Facts...");
-//        graph.add(action);
 
         return graph;
     }

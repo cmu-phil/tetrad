@@ -2129,6 +2129,40 @@ public final class SearchGraphUtils {
 //        return dag;
     }
 
+    public static Graph chooseMagInPag(Graph graph) {
+        graph = new EdgeListGraph(graph);
+        SepsetProducer sepsets = new DagSepsets(graph);
+
+        FciOrient orient = new FciOrient(sepsets);
+
+        while (true) {
+            boolean oriented = orientCircle(graph);
+            if (!oriented) break;
+            orient.doFinalOrientation(graph);
+        }
+
+        return graph;
+    }
+
+    private static boolean orientCircle(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
+
+            if (edge.getEndpoint1() == Endpoint.CIRCLE) {
+                graph.setEndpoint(node2, node1, Endpoint.ARROW);
+                return true;
+            }
+
+            if (edge.getEndpoint2() == Endpoint.CIRCLE) {
+                graph.setEndpoint(node1, node2, Endpoint.ARROW);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static Graph patternForDag(final Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
 //        return new PC(test).search();

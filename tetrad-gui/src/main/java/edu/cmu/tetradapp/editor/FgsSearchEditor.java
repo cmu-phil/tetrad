@@ -421,7 +421,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getResultGraph();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -587,7 +587,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = getAlgorithmRunner().getResultGraph();
+        Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();

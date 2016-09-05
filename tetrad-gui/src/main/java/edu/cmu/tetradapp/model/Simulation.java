@@ -50,7 +50,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, GraphSource, MultipleGraphSource {
+        SimulationParamsSource, MultipleGraphSource, MultipleDataSource {
     static final long serialVersionUID = 23L;
 
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
@@ -233,6 +233,19 @@ public class Simulation extends DataWrapper implements SessionModel,
         return list;
     }
 
+    /**
+     * @return the list of models.
+     */
+    public List<DataModel> getDataModels() {
+        List<DataModel> list = new ArrayList<>();
+
+        for (int i = 0; i < simulation.getNumDataSets(); i++) {
+            list.add(simulation.getDataSet(i));
+        }
+
+        return list;
+    }
+
     public void setDataModelList(DataModelList dataModelList) {
         throw new UnsupportedOperationException();
     }
@@ -250,14 +263,6 @@ public class Simulation extends DataWrapper implements SessionModel,
         if (simulation.getNumDataSets() == 0) {
             simulation.createData(parameters);
         }
-    }
-
-    @Override
-    /**
-     * Returns the first graph in the simulation.
-     */
-    public Graph getGraph() {
-        return getGraphs().get(0);
     }
 
     @Override

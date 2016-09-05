@@ -22,71 +22,17 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.search.TripleClassifier;
-import edu.cmu.tetrad.session.Executable;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Parameters;
+
+import java.util.List;
 
 /**
- * Specifies the methods that all algorithm runners must implement. All
- * algorithm runners must know what their parameters are, must know what their
- * source graph is, and must know what their result graph is (if it has been
- * calculated).
+ * Indicates a class that can returns multiple models.
  *
  * @author Joseph Ramsey
  */
-public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
-        TripleClassifier, SimulationParamsSource, MultipleGraphSource {
-    long serialVersionUID = 23L;
-
-    /**
-     * @return the data used to execute this algorithm. Might possibly be a
-     * graph.
-     */
-    DataModel getDataModel();
-
-    /**
-     * @return the search parameters for this algorithm.
-     */
-    Parameters getParams();
-
-    /**
-     * @return the graph from which data was originally generated, if such a
-     * graph is available. Otherwise, returns null.
-     */
-    Graph getSourceGraph();
-
-    /**
-     * Executes the algorithm.
-     */
-    void execute();
-
-    /**
-     * @return true if the algorithm supports knowledge.
-     */
-    boolean supportsKnowledge();
-
-    /**
-     * @return the orientation rules for this search.
-     */
-    ImpliedOrientation getMeekRules();
-
-    /**
-     * Sets the initial graph for the algorithm, if feasible.
-     */
-    void setInitialGraph(Graph graph);
-
-    /**
-     * @return the initial graph, if there is one, or null if not.
-     */
-    Graph getInitialGraph();
-
-    String getAlgorithmName();
+interface MultipleDataSource {
+    List<DataModel> getDataModels();
 }
-
 
 
 

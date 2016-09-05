@@ -211,11 +211,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     //============================PUBLIC METHODS==========================//
 
     @Override
-    public final Graph getResultGraph() {
-        return this.resultGraph;
-    }
-
-    @Override
     public void execute() {
         List<Graph> graphList = new ArrayList<>();
         int i = 0;

@@ -99,24 +99,23 @@ final class SessionEditorToolbar extends JPanel {
       Node infos for all of the nodes.
      */
         ButtonInfo[] buttonInfos = new ButtonInfo[]{
-                new ButtonInfo(
-                        "Select", "Select and Move", "move",
+                new ButtonInfo("Select", "Select and Move", "move",
                         "<html>Select and move nodes or groups of nodes " +
                                 "<br>on the workbench.</html>"),
-                new ButtonInfo("Data", "Data & Simulation", "data",
-                        "<html>Add a node for a data object.</html>"),
-                new ButtonInfo("Search", "Search", "search",
-                        "<html>Add a node for a search algorithm.</html>"),
-                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
-                new ButtonInfo("Compare", "Comparison", "compare",
-                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
                 new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
                 new ButtonInfo("PM", "Parametric Model", "pm",
                         "<html>Add a node for a parametric model.</html>"),
                 new ButtonInfo("IM", "Instantiated Model", "im",
                         "<html>Add a node for an instantiated model.</html>"),
+                new ButtonInfo("Data", "Data & Simulation", "data",
+                        "<html>Add a node for a data object.</html>"),
                 new ButtonInfo("Estimator", "Estimator", "estimator",
                         "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Search", "Search", "search",
+                        "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Compare", "Comparison", "compare",
+                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
                 new ButtonInfo("Updater", "Updater", "updater",
                         "<html>Add a node for an updater.</html>"),
                 new ButtonInfo("Classify", "Classify", "search",

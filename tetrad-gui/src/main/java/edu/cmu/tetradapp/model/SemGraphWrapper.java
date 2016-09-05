@@ -84,11 +84,17 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		log();
 	}
 
-	public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
+	public SemGraphWrapper(GraphSource graphWrapper, Parameters params) {
 		this.parameters = params;
 		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             try {
-				this.semGraph = new SemGraph(graphWrapper.getSemGraph());
+				if (graphWrapper.getGraph() instanceof SemGraph) {
+					SemGraph graph = (SemGraph) graphWrapper.getGraph();
+					graph.setShowErrorTerms(false);
+					this.semGraph = new SemGraph(graph);
+				} else {
+					this.semGraph = new SemGraph(graphWrapper.getGraph());
+				}
                 this.semGraph.setShowErrorTerms(false);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -100,80 +106,6 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
 		}
 		log();
-	}
-
-	public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
-		this.parameters = params;
-		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-			this.semGraph = new SemGraph(graphWrapper.getDag());
-			this.semGraph.setShowErrorTerms(false);
-		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-			RandomUtil.getInstance().setSeed(new Date().getTime());
-			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
-		}
-		log();
-	}
-
-	public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
-		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-			this.semGraph = new SemGraph(graphWrapper.getGraph());
-			this.semGraph.setShowErrorTerms(false);
-		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-			RandomUtil.getInstance().setSeed(new Date().getTime());
-			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters));
-		}
-		this.parameters = params;
-		log();
-	}
-
-	public SemGraphWrapper(AbstractAlgorithmRunner wrapper) {
-		this(new SemGraph(wrapper.getResultGraph()));
-	}
-
-	public SemGraphWrapper(DataWrapper wrapper) {
-		this(new SemGraph(new EdgeListGraph(wrapper.getVariables())));
-		GraphUtils.circleLayout(semGraph, 200, 200, 150);
-	}
-
-	public SemGraphWrapper(BayesPmWrapper wrapper) {
-		this(new SemGraph(wrapper.getBayesPm().getDag()));
-	}
-
-	public SemGraphWrapper(BayesImWrapper wrapper) {
-		this(new SemGraph(wrapper.getBayesIm().getBayesPm().getDag()));
-	}
-
-	public SemGraphWrapper(BayesEstimatorWrapper wrapper) {
-		this(new SemGraph(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
-	}
-
-	public SemGraphWrapper(CptInvariantUpdaterWrapper wrapper) {
-		this(new SemGraph(wrapper.getBayesUpdater().getManipulatedGraph()));
-	}
-
-	public SemGraphWrapper(SemPmWrapper wrapper) {
-		this(new SemGraph(wrapper.getSemPm().getGraph()));
-	}
-
-	public SemGraphWrapper(SemImWrapper wrapper) {
-		this(new SemGraph(wrapper.getSemIm().getSemPm().getGraph()));
-	}
-
-	public SemGraphWrapper(SemEstimatorWrapper wrapper) {
-		this(new SemGraph(wrapper.getSemEstimator().getEstimatedSem()
-				.getSemPm().getGraph()));
-	}
-
-	public SemGraphWrapper(RegressionRunner wrapper) {
-		this(new SemGraph(wrapper.getResultGraph()));
-	}
-
-	public SemGraphWrapper(BuildPureClustersRunner wrapper) {
-		this(new SemGraph(wrapper.getResultGraph()));
-	}
-
-	public SemGraphWrapper(MimBuildRunner wrapper) {
-		this(new SemGraph(wrapper.getResultGraph()));
 	}
 
 	/**

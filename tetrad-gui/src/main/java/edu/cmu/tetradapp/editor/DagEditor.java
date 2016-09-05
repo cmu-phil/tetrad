@@ -69,10 +69,9 @@ public final class DagEditor extends JPanel
     public DagEditor(DagWrapper graphWrapper) {
         this(graphWrapper.getDag());
         this.dagWrapper = graphWrapper;
-        this.parameters = graphWrapper.getParameters();
     }
 
-    public DagEditor(Dag dag) {
+    public DagEditor(Graph dag) {
         setPreferredSize(new Dimension(550, 450));
         setLayout(new BorderLayout());
         this.parameters = new Parameters();
@@ -83,7 +82,7 @@ public final class DagEditor extends JPanel
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("graph".equals(evt.getPropertyName())) {
                     if (getDagWrapper() != null) {
-                        getDagWrapper().setDag((Dag) evt.getNewValue());
+                        getDagWrapper().setDag((Graph) evt.getNewValue());
                     }
                 }
             }
@@ -280,32 +279,11 @@ public final class DagEditor extends JPanel
         return edit;
     }
 
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-//
-//        return file;
-//    }
-
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
 
         JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
@@ -347,15 +325,6 @@ public final class DagEditor extends JPanel
                 });
             }
         });
-
-//        graph.addSeparator();
-//        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
-//        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
-
-//        graph.addSeparator();
-//        IndependenceFactsAction action = new IndependenceFactsAction(
-//                JOptionUtils.centeringComp(), this, "D Separation Facts...");
-//        graph.add(action);
 
         return graph;
     }

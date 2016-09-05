@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.model.GraphSource;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -73,10 +74,9 @@ public final class SemGraphEditor extends JPanel
             throw new NullPointerException();
         }
 
-        this.parameters = new Parameters(semGraphWrapper.getParameters());
-
         this.semGraphWrapper = semGraphWrapper;
         this.workbench = new GraphWorkbench(semGraphWrapper.getGraph());
+        this.parameters = semGraphWrapper.getParameters();
 
         setLayout(new BorderLayout());
 

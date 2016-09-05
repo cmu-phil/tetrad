@@ -30,10 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.regression.RegressionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.model.DagWrapper;
-import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.SemGraphWrapper;
+import edu.cmu.tetradapp.model.*;
 
 /**
  * @author Tyler
@@ -55,7 +52,7 @@ public class ResidualsWrapper extends DataWrapper {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            Dag dag = dagWrapper.getDag();
+            Graph dag = dagWrapper.getDag();
             dataSet = RegressionUtils.residuals(dataSet, dag);
             newList.add(dataSet);
         }
@@ -105,16 +102,6 @@ public class ResidualsWrapper extends DataWrapper {
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static DataWrapper serializableInstance() {
-        return new ResidualsWrapper(DataWrapper.serializableInstance(),
-                DagWrapper.serializableInstance(), new Parameters());
     }
 }
 

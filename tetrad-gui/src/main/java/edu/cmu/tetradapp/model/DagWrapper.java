@@ -22,7 +22,9 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SessionModel;
@@ -57,24 +59,29 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     /**
      * @serial Cannot be null.
      */
-    private Dag dag;
+    private Graph dag;
     private Map<String, String> allParamSettings;
-    private final Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
-    public DagWrapper(Dag graph) {
+    public DagWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
-        this.dag = graph;
-        this.parameters = new Parameters();
+        try {
+            this.dag = new Dag(graph);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("That wasn't a DAG.");
+        }
         log();
+    }
+
+    public DagWrapper(GraphSource graph) {
+        this(graph.getGraph());
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
     public DagWrapper(Parameters params) {
-        this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             dag = new Dag();
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
@@ -84,92 +91,22 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         log();
     }
 
-    public DagWrapper(AbstractAlgorithmRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(PcRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(CcdRunner2 wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(MimBuildRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(PurifyRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(BuildPureClustersRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(MbfsRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(CeFanSearchRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(DataWrapper wrapper) {
-        this(new Dag(new EdgeListGraph(wrapper.getVariables())));
-        GraphUtils.circleLayout(dag, 200, 200, 150);
-    }
-
-    public DagWrapper(BayesPmWrapper wrapper) {
-        this(new Dag(wrapper.getBayesPm().getDag()));
-    }
-
-    public DagWrapper(BayesImWrapper wrapper) {
-        this(new Dag(wrapper.getBayesIm().getBayesPm().getDag()));
-    }
-
-    public DagWrapper(BayesEstimatorWrapper wrapper) {
-        this(new Dag(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
-    }
-
-    public DagWrapper(CptInvariantUpdaterWrapper wrapper) {
-        this(new Dag(wrapper.getBayesUpdater().getManipulatedGraph()));
-    }
-
-    public DagWrapper(SemPmWrapper wrapper) {
-        this(new Dag(wrapper.getSemPm().getGraph()));
-    }
-
-    public DagWrapper(SemImWrapper wrapper) {
-        this(new Dag(wrapper.getSemIm().getSemPm().getGraph()));
-    }
-
-    public DagWrapper(SemEstimatorWrapper wrapper) {
-        this(new Dag(wrapper.getSemEstimator().getEstimatedSem().getSemPm()
-                .getGraph()));
-    }
-
-    public DagWrapper(RegressionRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
-    public static DagWrapper serializableInstance() {
-        return new DagWrapper(Dag.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //================================PUBLIC METHODS=======================//
 
-    public Dag getDag() {
+    public Graph getDag() {
         return dag;
     }
 
-    public void setDag(Dag graph) {
+    public void setDag(Graph graph) {
         this.dag = graph;
         log();
     }
@@ -253,10 +190,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     @Override
     public Map<String, String> getAllParamSettings() {
         return allParamSettings;
-    }
-
-    public Parameters getParameters() {
-        return parameters;
     }
 }
 

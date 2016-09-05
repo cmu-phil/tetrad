@@ -44,7 +44,7 @@ import java.util.*;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
-        DoNotAddOldModel, SimulationParamsSource {
+        DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -298,6 +298,14 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      */
     public DataModelList getDataModelList() {
         return this.dataModelList;
+    }
+
+    public List<DataModel> getDataModels() {
+        List<DataModel> dataModels = new ArrayList<>();
+        for (DataModel model : this.dataModelList) {
+            dataModels.add(model);
+        }
+        return dataModels;
     }
 
     public void setDataModelList(DataModelList dataModelList) {

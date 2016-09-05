@@ -25,24 +25,26 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
  * algorithm.
  *
- * @author Frank Wimberly after Joe Ramsey's PcRunner
+ * @author Frank Wimberly
  */
-public class LogisticRegressionRunner implements AlgorithmRunner, RegressionModel {
+public class LogisticRegressionRunner implements SessionModel, RegressionModel {
     static final long serialVersionUID = 23L;
 
     private String name;
@@ -224,16 +226,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         throw new UnsupportedOperationException();
     }
 
-    public void setInitialGraph(Graph graph) {
-    }
-
     public Graph getInitialGraph() {
         return null;
-    }
-
-    @Override
-    public String getAlgorithmName() {
-        return "Logistic-Regression";
     }
 
     public Graph getOutGraph() {
@@ -292,40 +286,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
 
     public Graph getGraph() {
         return outGraph;
-    }
-
-    /**
-     * @return the names of the triple classifications. Coordinates with
-     */
-    public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<>();
-    }
-
-    /**
-     * @param node The node that the classifications are for. All triple from adjacencies to this
-     *             node to adjacencies to this node through the given node will be considered.
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
-     */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<>();
-    }
-
-    @Override
-    public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("Algorithm", "Regression");
-        return paramSettings;
-    }
-
-    @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-//        Map<String, String> allParamsSettings = paramSettings;
-    }
-
-    @Override
-    public Map<String, String> getAllParamSettings() {
-        return null;
     }
 }
 

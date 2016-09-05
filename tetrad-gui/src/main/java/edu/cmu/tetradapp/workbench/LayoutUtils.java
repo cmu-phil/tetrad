@@ -540,7 +540,8 @@ public class LayoutUtils {
 
         for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
-                graph.removeNode(node);
+                ((SemGraph) graph).setShowErrorTerms(false);
+//                graph.removeNode(node);
             }
         }
 
@@ -565,7 +566,8 @@ public class LayoutUtils {
 
                 for (Node node : new ArrayList<>(graph.getNodes())) {
                     if (node.getNodeType() == NodeType.ERROR) {
-                        graph.removeNode(node);
+                        ((SemGraph) graph).setShowErrorTerms(false);
+//                        graph.removeNode(node);
                     }
                 }
 
@@ -600,7 +602,7 @@ public class LayoutUtils {
 
         for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
-                graph.removeNode(node);
+                ((SemGraph) graph).setShowErrorTerms(false);
             }
         }
 
