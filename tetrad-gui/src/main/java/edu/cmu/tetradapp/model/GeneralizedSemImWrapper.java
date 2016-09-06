@@ -77,7 +77,7 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
         }
 
         if (!(_simulation instanceof GeneralSemSimulation)) {
-            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+            throw new IllegalArgumentException("That was not Generalized SEM simulation. Sorry.");
         }
 
         semIm = ((GeneralSemSimulation) _simulation).getIm();

@@ -88,7 +88,7 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         }
 
         if (!(_simulation instanceof SemSimulation)) {
-            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+            throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
         }
 
         semIm = ((SemSimulation) _simulation).getSemIm();

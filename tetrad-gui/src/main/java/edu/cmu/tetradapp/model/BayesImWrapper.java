@@ -96,7 +96,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         }
 
         if (!(_simulation instanceof BayesNetSimulation)) {
-            throw new IllegalArgumentException("The given simulation is not a linear, Gaussain SEM simulation.");
+            throw new IllegalArgumentException("That was not a discrete Bayes net simulation.");
         }
 
         bayesIm = ((BayesNetSimulation) _simulation).getBayesIm();
