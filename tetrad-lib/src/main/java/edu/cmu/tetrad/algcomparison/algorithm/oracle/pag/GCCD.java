@@ -53,7 +53,9 @@ public class GCCD implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return score.getParameters();
+        List<String> parameters = score.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 
     @Override

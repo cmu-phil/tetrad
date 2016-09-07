@@ -1427,6 +1427,39 @@ public final class SearchGraphUtils {
 ////        return graph;
     }
 
+    public static Graph pagToMag(Graph pag) {
+        Graph graph = new EdgeListGraph(pag);
+        SepsetProducer sepsets = new DagSepsets(graph);
+        FciOrient fciOrient = new FciOrient(sepsets);
+
+        while (true) {
+            boolean oriented = orientOneCircle(graph);
+            if (!oriented) break;
+            fciOrient.doFinalOrientation(graph);
+        }
+
+        return graph;
+    }
+
+    private static boolean orientOneCircle(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                graph.setEndpoint(x, y, Endpoint.ARROW);
+                return true;
+            }
+
+            if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
+                graph.setEndpoint(y, x, Endpoint.ARROW);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static void arrangeByKnowledgeTiers(Graph graph,
                                                IKnowledge knowledge) {
         if (knowledge.getNumTiers() == 0) {

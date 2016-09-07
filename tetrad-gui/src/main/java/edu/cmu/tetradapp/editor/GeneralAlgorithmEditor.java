@@ -39,21 +39,18 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
+import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -139,9 +136,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
@@ -429,59 +427,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             throw new NullPointerException();
         }
 
-        TestType test = (TestType) testDropdown.getSelectedItem();
-        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
+        IndependenceWrapper independenceWrapper = getIndependenceWrapper();
+        ScoreWrapper scoreWrapper = getScoreWrapper();
+        return getAlgorithm(name, independenceWrapper, scoreWrapper);
+    }
 
-        IndependenceWrapper independenceWrapper;
-
-        switch (test) {
-            case ChiSquare:
-                independenceWrapper = new ChiSquare();
-                break;
-            case Conditional_Correlation:
-                independenceWrapper = new ConditionalCorrelation();
-                break;
-            case Conditional_Gaussian_LRT:
-                independenceWrapper = new ConditionalGaussianLRT();
-                break;
-            case Fisher_Z:
-                independenceWrapper = new FisherZ();
-                break;
-            case GSquare:
-                independenceWrapper = new GSquare();
-                break;
-            case SEM_BIC:
-                independenceWrapper = new SemBicTest();
-                break;
-            case D_SEPARATION:
-                independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
-                break;
-            default:
-                throw new IllegalArgumentException("Please configure that test: " + test);
-        }
-
-        ScoreWrapper scoreWrapper;
-
-        switch (score) {
-            case BDeu:
-                scoreWrapper = new BdeuScore();
-                break;
-            case Conditional_Gaussian_BIC:
-                scoreWrapper = new ConditionalGaussianBicScore();
-                break;
-            case Discrete_BIC:
-                scoreWrapper = new DiscreteBicScore();
-                break;
-            case SEM_BIC:
-                scoreWrapper = new SemBicScore();
-                break;
-            case D_SEPARATION:
-                scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
-                break;
-            default:
-                throw new IllegalArgumentException("Please configure that score: " + score);
-        }
-
+    private Algorithm getAlgorithm(AlgName name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
         Algorithm algorithm;
 
 
@@ -579,6 +530,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case PcMaxLocal:
                 algorithm = new PcMaxLocal(independenceWrapper);
                 break;
+            case JCPC:
+                algorithm = new Jcpc(independenceWrapper);
+                break;
             case Wfgs:
                 algorithm = new Wfgs();
                 break;
@@ -634,8 +588,68 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
         }
-
         return algorithm;
+    }
+
+    private ScoreWrapper getScoreWrapper() {
+        ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
+        ScoreWrapper scoreWrapper;
+
+        switch (score) {
+            case BDeu:
+                scoreWrapper = new BdeuScore();
+                break;
+            case Conditional_Gaussian_BIC:
+                scoreWrapper = new ConditionalGaussianBicScore();
+                break;
+            case Discrete_BIC:
+                scoreWrapper = new DiscreteBicScore();
+                break;
+            case SEM_BIC:
+                scoreWrapper = new SemBicScore();
+                break;
+            case D_SEPARATION:
+                scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
+                break;
+            default:
+                throw new IllegalArgumentException("Please configure that score: " + score);
+        }
+        return scoreWrapper;
+    }
+
+    private IndependenceWrapper getIndependenceWrapper() {
+        TestType test = (TestType) testDropdown.getSelectedItem();
+
+        IndependenceWrapper independenceWrapper;
+
+        switch (test) {
+            case ChiSquare:
+                independenceWrapper = new ChiSquare();
+                break;
+            case Conditional_Correlation:
+                independenceWrapper = new ConditionalCorrelation();
+                break;
+            case Conditional_Gaussian_LRT:
+                independenceWrapper = new ConditionalGaussianLRT();
+                break;
+            case Fisher_Z:
+                independenceWrapper = new FisherZ();
+                break;
+            case GSquare:
+                independenceWrapper = new GSquare();
+                break;
+            case SEM_BIC:
+                independenceWrapper = new SemBicTest();
+                break;
+            case D_SEPARATION:
+                independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
+                break;
+            default:
+                throw new IllegalArgumentException("Please configure that test: " + test);
+        }
+
+        runner.setIndependenceTest(independenceWrapper.getTest((DataSet) runner.getDataModel(), parameters));
+        return independenceWrapper;
     }
 
     private void setAlgorithm() {
@@ -944,7 +958,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum AlgName {
         PC, PCStable, CPC, CPCStable, PcLocal, PcMax, PcMaxLocal, FAS,
-        FgsMb, MBFS, Wfgs,
+        FgsMb, MBFS, Wfgs, JCPC,
         FCI, RFCI, CFCI, GFCI, FGS, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,

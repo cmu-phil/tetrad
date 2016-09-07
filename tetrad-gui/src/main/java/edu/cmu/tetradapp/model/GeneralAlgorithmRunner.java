@@ -23,11 +23,14 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
@@ -46,7 +49,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
-        MultipleGraphSource, Unmarshallable, SessionModel {
+        MultipleGraphSource, Unmarshallable, SessionModel, IndTestProducer  {
 
     static final long serialVersionUID = 23L;
 
@@ -60,6 +63,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph initialGraph;
     private List<Graph> graphList = new ArrayList<>();
     private IKnowledge knowledge = new Knowledge2();
+    private transient IndependenceTest independenceTest = null;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -427,6 +431,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
+    public IndependenceTest getIndependenceTest() {
+        return independenceTest;
+    }
+
+    @Override
     public String getName() {
         return name;
     }
@@ -494,6 +503,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public DataWrapper getDataWrapper() {
         return dataWrapper;
+    }
+
+    public void setIndependenceTest(IndependenceTest independenceTest) {
+        this.independenceTest = independenceTest;
     }
 }
 

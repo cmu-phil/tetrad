@@ -15,23 +15,40 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
- * PC.
+ * CPC.
  *
  * @author jdramsey
  */
-public class CpcLocal implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CpcLocal(IndependenceWrapper test) {
-        this.test = test;
+    public Jcpc(IndependenceWrapper type) {
+        this.test = type;
+    }
+
+    public Jcpc(IndependenceWrapper type, Algorithm initialGraph) {
+        this.test = type;
+        this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.CpcLocal search = new edu.cmu.tetrad.search.CpcLocal(test.getTest(dataSet, parameters));
+        Graph initial = null;
+
+        if (initialGraph != null) {
+            initial = initialGraph.search(dataSet, parameters);
+        }
+
+        edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+
+        if (initial != null) {
+            search.setInitialGraph(initial);
+        }
+
         return search.search();
     }
 
@@ -42,7 +59,8 @@ public class CpcLocal implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "Local CPC (\"Peter and Clark\") using " + test.getDescription();
+        return "JCPC (Joe's CPC) using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
+                initialGraph.getDescription() : "");
     }
 
     @Override

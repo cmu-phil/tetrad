@@ -72,6 +72,7 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
+        parameters.add("depth");
         parameters.add("verbose");
         return parameters;
     }

@@ -66,7 +66,7 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(Parameters parameters) {
         if (simulation == null) {
-            this.simulation = new SemSimulation(new RandomForward());
+            this.simulation = new BayesNetSimulation(new RandomForward());
             this.parameters = parameters;
             this.fixedGraph = false;
             this.fixedSimulation = false;

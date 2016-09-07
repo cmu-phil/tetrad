@@ -40,7 +40,7 @@ public class Ccd implements Algorithm, HasKnowledge {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
 
         if (initial != null) {
@@ -67,7 +67,9 @@ public class Ccd implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 
     @Override

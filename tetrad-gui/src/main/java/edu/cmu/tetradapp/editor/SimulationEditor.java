@@ -162,8 +162,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                                 throw new IllegalArgumentException(
                                         "Exception in creating data. Check model setup or parameter settings.");
                             } else {
-                                throw new IllegalArgumentException(
-                                        "Exception in creating data. Check model setup or parameter settings.");
+                                throw new IllegalArgumentException(cause.getMessage());
                             }
                         }
 
