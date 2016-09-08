@@ -318,7 +318,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
     }
 
     public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
-        this(new EdgeListGraph(wrapper.getResultGraph()));
+        this(new EdgeListGraph(wrapper.getGraph()));
     }
 
     /**

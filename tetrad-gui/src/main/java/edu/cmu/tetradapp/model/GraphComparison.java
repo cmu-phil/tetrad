@@ -187,20 +187,6 @@ public final class GraphComparison implements SessionModel {
                 params);
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-
-    public static GraphComparison serializableInstance() {
-        DagWrapper wrapper1 = DagWrapper.serializableInstance();
-        wrapper1.setName("Ref");
-        DagWrapper wrapper2 = DagWrapper.serializableInstance();
-        new Parameters().set("referenceGraphName", "Ref");
-        return new GraphComparison(wrapper1, wrapper2, new Parameters());
-    }
-
     //==============================PUBLIC METHODS========================//
 
     public DataSet getDataSet() {

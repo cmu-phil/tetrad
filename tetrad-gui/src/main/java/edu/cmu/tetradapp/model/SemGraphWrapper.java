@@ -37,11 +37,11 @@ import java.util.*;
 /**
  * Holds a tetrad dag with all of the constructors necessary for it to serve as
  * a model for the tetrad application.
- * 
+ *
  * @author Joseph Ramsey
  */
 public class SemGraphWrapper implements SessionModel, GraphSource,
-        KnowledgeBoxInput, SimulationParamsSource {
+		KnowledgeBoxInput, SimulationParamsSource {
 	static final long serialVersionUID = 23L;
 	private int numModels = 1;
 	private int modelIndex = 0;
@@ -56,7 +56,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	 * @serial Cannot be null.
 	 */
 	private List<SemGraph> graphs;
-    private Map<String, String> allParamSettings;
+	private Map<String, String> allParamSettings;
 	private Parameters parameters = new Parameters();
 
 	// =============================CONSTRUCTORS==========================//
@@ -90,7 +90,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		log();
 	}
 
-    // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
+	// Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
 	public SemGraphWrapper(Parameters params) {
 		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
 			SemGraph semGraph = new SemGraph();
@@ -111,17 +111,17 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
 		this.parameters = params;
 		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            try {
+			try {
 				SemGraph semGraph = new SemGraph(graphWrapper.getSemGraph());
-                semGraph.setShowErrorTerms(false);
+				semGraph.setShowErrorTerms(false);
 				setSemGraph(semGraph);
-            } catch (Exception e) {
-                e.printStackTrace();
-                SemGraph semGraph = new SemGraph();
-                semGraph.setShowErrorTerms(false);
+			} catch (Exception e) {
+				e.printStackTrace();
+				SemGraph semGraph = new SemGraph();
+				semGraph.setShowErrorTerms(false);
 				setSemGraph(semGraph);
-            }
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+			}
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
 			setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
 		}
@@ -206,7 +206,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 
 	/**
 	 * Generates a simple exemplar of this class to test serialization.
-	 * 
+	 *
 	 * @see TetradSerializableUtils
 	 */
 	public static SemGraphWrapper serializableInstance() {
@@ -223,14 +223,14 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		this.graphs = new ArrayList<>();
 		graph.setShowErrorTerms(false);
 		this.graphs.add(graph);
-        log();
+		log();
 	}
 
 	// ============================PRIVATE METHODS========================//
 
 	private void log() {
-        TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
-        TetradLogger.getInstance().log("graph", "" + getGraph());
+		TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
+		TetradLogger.getInstance().log("graph", "" + getGraph());
 	}
 
 	/**
@@ -242,7 +242,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	 * class, even if Tetrad sessions were previously saved out using a version
 	 * of the class that didn't include it. (That's what the
 	 * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-	 * 
+	 *
 	 * @throws java.io.IOException
 	 * @throws ClassNotFoundException
 	 */
@@ -267,11 +267,11 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		return getGraph();
 	}
 
-    public Graph getResultGraph() {
-        return getGraph();
-    }
+	public Graph getResultGraph() {
+		return getGraph();
+	}
 
-    public List<String> getVariableNames() {
+	public List<String> getVariableNames() {
 		return getGraph().getNodeNames();
 	}
 
@@ -282,23 +282,23 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	@Override
 	public Map<String, String> getParamSettings() {
 		Map<String, String> paramSettings = new HashMap<>();
-        if (!paramSettings.containsKey("# Vars")) {
-            paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
-        }
+		if (!paramSettings.containsKey("# Vars")) {
+			paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
+		}
 		paramSettings.put("# Edges", Integer.toString(getSemGraph().getNumEdges()));
 		if (getSemGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
 		return paramSettings;
 	}
 
-    @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
-    }
+	@Override
+	public void setAllParamSettings(Map<String, String> paramSettings) {
+		this.allParamSettings = paramSettings;
+	}
 
-    @Override
-    public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
-    }
+	@Override
+	public Map<String, String> getAllParamSettings() {
+		return allParamSettings;
+	}
 
 	public Parameters getParameters() {
 		return parameters;

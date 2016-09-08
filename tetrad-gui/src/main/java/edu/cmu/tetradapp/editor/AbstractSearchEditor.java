@@ -326,7 +326,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     //===========================PRIVATE METHODS==========================//
 
     private Graph resultGraph() {
-        Graph resultGraph = algorithmRunner.getResultGraph();
+        Graph resultGraph = algorithmRunner.getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();

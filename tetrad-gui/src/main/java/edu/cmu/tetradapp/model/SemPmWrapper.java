@@ -189,7 +189,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public SemPmWrapper(AlgorithmRunner wrapper) {
-        this(new EdgeListGraph(wrapper.getResultGraph()));
+        this(new EdgeListGraph(wrapper.getGraph()));
     }
 
     public SemPmWrapper(DagInPatternWrapper wrapper) {

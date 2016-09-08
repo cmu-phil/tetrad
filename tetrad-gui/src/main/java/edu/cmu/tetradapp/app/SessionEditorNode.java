@@ -230,14 +230,10 @@ public final class SessionEditorNode extends DisplayNode {
             SessionModel model = getSessionNode().getModel();
             Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
-            JPanel editor;
-            if (model instanceof SessionAppModule) {
-                editor = ((SessionAppModule) model).newEditor();
-            } else {
+
                 Object[] arguments = new Object[]{model};
-                editor = modelConfig.getEditorInstance(arguments);
-                addEditorListener(editor);
-            }
+            JPanel editor = modelConfig.getEditorInstance(arguments);
+            addEditorListener(editor);
 
             ModificationRegistery.registerEditor(getSessionNode(), editor);
 

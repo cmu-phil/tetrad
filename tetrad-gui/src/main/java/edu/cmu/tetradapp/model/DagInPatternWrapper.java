@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  *
  * @author Tyler Gibson
  */
-public class DagInPatternWrapper extends GraphWrapper{
+public class DagInPatternWrapper extends GraphWrapper {
     static final long serialVersionUID = 23L;
 
     public DagInPatternWrapper(GraphSource source, Parameters parameters){
@@ -43,10 +43,6 @@ public class DagInPatternWrapper extends GraphWrapper{
     public DagInPatternWrapper(final Graph graph){
         super(getGraph(graph), "Choose DAG in pattern.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
-    }
-
-    public DagInPatternWrapper(DagInPatternWrapper wrapper, Parameters parameters) {
-        super(getGraph(wrapper.getGraph()));
     }
 
     private static Graph getGraph(Graph graph) {
