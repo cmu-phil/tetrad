@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.EmBayesEstimator;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
@@ -32,6 +31,8 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -47,39 +48,63 @@ import java.beans.PropertyChangeListener;
  */
 public class BayesImEditor extends JPanel {
 
+    private JPanel targetPanel;
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
     private BayesImEditorWizard wizard;
     private BayesImWrapper wrapper;
 
-    public BayesImEditor(BayesIm im) {
-        if (im == null) {
-            throw new NullPointerException();
-        }
-
-        init(im);
-    }
-
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    public BayesImEditor(BayesImWrapper wrapper, BayesIm bayesIm) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-
+    public BayesImEditor(final BayesImWrapper wrapper) {
         this.wrapper = wrapper;
-        init(bayesIm);
+        setLayout(new BorderLayout());
+
+        targetPanel = new JPanel();
+        targetPanel.setLayout(new BorderLayout());
+
+        setEditorPanel();
+
+        add(targetPanel, BorderLayout.CENTER);
+        validate();
+
+        if (wrapper.getNumModels() > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < wrapper.getNumModels(); i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    setEditorPanel();
+                    validate();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(wrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
     }
 
-    private void init(BayesIm bayesIm) {
-        if (bayesIm == null) {
-            throw new NullPointerException("Bayes IM must not be null.");
-        }
+    private void setEditorPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
 
-        BayesPm bayesPm = bayesIm.getBayesPm();
-        Graph graph = bayesPm.getDag();
+        BayesIm bayesIm = wrapper.getBayesIm();
+        Graph graph = bayesIm.getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
         JMenuBar menuBar = new JMenuBar();
@@ -91,7 +116,7 @@ public class BayesImEditor extends JPanel {
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
-        add(menuBar, BorderLayout.NORTH);
+        panel.add(menuBar, BorderLayout.NORTH);
 
         wizard = new BayesImEditorWizard(bayesIm, workbench);
 
@@ -112,7 +137,7 @@ public class BayesImEditor extends JPanel {
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
-        add(splitPane, BorderLayout.CENTER);
+        panel.add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Editor");
         getWizard().addPropertyChangeListener(new PropertyChangeListener() {
@@ -132,31 +157,9 @@ public class BayesImEditor extends JPanel {
                 }
             }
         });
-    }
 
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-    public BayesImEditor(BayesImWrapper bayesImWrapper) {
-        this(bayesImWrapper, bayesImWrapper.getBayesIm());
-    }
-
-    /**
-     * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
-     */
-    public BayesImEditor(BayesEstimatorWrapper bayesEstWrapper) {
-        this(null, bayesEstWrapper.getEstimatedBayesIm());
-    }
-
-    public BayesImEditor(EmBayesEstimator wrapper) {
-        this(null, wrapper.getEstimatedIm());
-    }
-
-    /**
-     * Constructs a new Bayes IM Editor from a Dirichlet Prior.
-     */
-    public BayesImEditor(DirichletEstimatorWrapper dirichletEstWrapper) {
-        this(null, dirichletEstWrapper.getEstimatedBayesIm());
+        targetPanel.add(panel, BorderLayout.CENTER);
+        validate();
     }
 
     /**
@@ -178,7 +181,7 @@ public class BayesImEditor extends JPanel {
     public void getBayesIm(BayesIm bayesIm) {
         this.wrapper.setBayesIm(bayesIm);
         removeAll();
-        init(this.wrapper.getBayesIm());
+        setEditorPanel();
         revalidate();
         repaint();
         firePropertyChange("modelChanged", null, null);

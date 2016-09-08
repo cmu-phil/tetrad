@@ -55,7 +55,7 @@ public class ResidualsWrapper extends DataWrapper {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            Dag dag = dagWrapper.getDag();
+            Graph dag = dagWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, dag);
             newList.add(dataSet);
         }

@@ -35,6 +35,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,16 +45,17 @@ import java.util.List;
  */
 public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
+    private List<SemIm> semIms;
 
     /**
      * @serial Can be null.
      */
     private String name;
 
-    /**
-     * @serial Cannot be null.
-     */
-    private final SemIm semIm;
+
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     //============================CONSTRUCTORS==========================//
 
@@ -65,13 +67,11 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
 
         try {
-            this.semIm = (SemIm) new MarshalledObject(oldSemIm).get();
+            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
         }
         catch (Exception e) {
             throw new RuntimeException("SemIm could not be deep cloned.", e);
         }
-
-        log(semIm);
     }
 
     public SemImWrapper(Simulation simulation) {
@@ -91,24 +91,23 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
         }
 
-        semIm = ((SemSimulation) _simulation).getSemIm();
+        semIms = ((SemSimulation) _simulation).getSemIms();
 
-        if (semIm == null) {
+        if (semIms == null) {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        this.semIm = semIm;
+        this.numModels = simulation.getDataModelList().size();
+        this.modelIndex = 0;
+        this.modelSourceName = simulation.getName();
     }
-
 
     public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        semIm = new SemIm(semPmWrapper.getSemPm(), params);
-
-        log(semIm);
+        setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
     }
 
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
@@ -125,12 +124,10 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
         if (!params.getBoolean("retainPreviousValues", false)) {
-            this.semIm = new SemIm(semPm, params);
+            setSemIm(new SemIm(semPm, params));
         } else {
-            this.semIm = new SemIm(semPm, oldSemIm, params);
+            setSemIm(new SemIm(semPm, oldSemIm, params));
         }
-
-        log(semIm);
     }
 
     public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
@@ -138,9 +135,12 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        this.semIm =
-                new SemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
-        log(semIm);
+        setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
+    }
+
+    private void setSemIm(SemIm updatedSemIm) {
+        semIms = new ArrayList<>();
+        semIms.add(new SemIm(updatedSemIm));
     }
 
     public SemImWrapper(SemImWrapper semImWrapper) {
@@ -148,14 +148,12 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        this.semIm = new SemIm(semImWrapper.getSemIm());
-        log(semIm);
+        setSemIm(semImWrapper.getSemIm());
     }
 
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();
-        this.semIm = new SemIm(oldSemIm);
-        log(semIm);
+        setSemIm(oldSemIm);
     }
 
     /**
@@ -172,12 +170,12 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     //===========================PUBLIC METHODS=========================//
 
     public SemIm getSemIm() {
-        return this.semIm;
+        return this.semIms.get(getModelIndex());
     }
 
 
     public Graph getGraph() {
-        return semIm.getSemPm().getGraph();
+        return getSemIm().getSemPm().getGraph();
     }
 
     public String getName() {
@@ -211,10 +209,6 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (semIm == null) {
-            throw new NullPointerException();
-        }
     }
 
 	public Graph getSourceGraph() {
@@ -233,6 +227,17 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 		return getGraph().getNodes();
 	}
 
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
 }
 
 

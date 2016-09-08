@@ -23,6 +23,7 @@ public class SemSimulation implements Simulation {
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
+    private List<SemIm> ims = new ArrayList<>();
 
     public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -50,6 +51,7 @@ public class SemSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
+        ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
@@ -121,17 +123,22 @@ public class SemSimulation implements Simulation {
 
             if (pm == null) {
                 pm = new SemPm(graph);
+                im = new SemIm(pm, parameters);
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
+            } else {
+                im = new SemIm(pm, parameters);
+                this.im = im;
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
             }
-
-            im = new SemIm(pm, parameters);
-
-            this.im = im;
+        } else {
+            ims.add(im);
+            return im.simulateData(parameters.getInt("sampleSize"), false);
         }
-
-        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
-    public SemIm getSemIm() {
-        return im;
+    public List<SemIm> getSemIms() {
+        return ims;
     }
 }

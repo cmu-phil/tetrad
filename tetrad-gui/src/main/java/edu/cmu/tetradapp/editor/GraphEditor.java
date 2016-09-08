@@ -60,16 +60,64 @@ import java.util.List;
  */
 public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
-    private final GraphWorkbench workbench;
+    private GraphWorkbench workbench;
     private GraphSettable graphEditable;
     private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
     public GraphEditor(GraphSettable graphWrapper) {
-        this(graphWrapper.getGraph());
+        setLayout(new BorderLayout());
         this.graphEditable = graphWrapper;
         this.parameters = graphWrapper.getParameters();
+
+        editGraph(graphWrapper.getGraph());
+
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getGraphWrapper() != null) {
+                        getGraphWrapper().setGraph(_graph);
+                    }
+                }
+            }
+        });
+
+        int numModels = graphEditable.getNumModels();
+
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    graphEditable.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    editGraph(graphEditable.getGraph());
+                    validate();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(graphEditable.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
 
         getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -80,24 +128,23 @@ public final class GraphEditor extends JPanel
                 }
             }
         });
+
+        validate();
+
     }
 
-    public GraphEditor(DagInPatternWrapper wrapper) {
-        this(wrapper.getGraph());
-    }
-
-    public GraphEditor(CompletedPatternWrapper wrapper) {
-        this(wrapper.getGraph());
-    }
+//    public GraphEditor(DagInPatternWrapper wrapper) {
+//        this(wrapper.getGraph());
+//    }
+//
+//    public GraphEditor(CompletedPatternWrapper wrapper) {
+//        this(wrapper.getGraph());
+//    }
 
     //===========================PRIVATE METHODS======================//
 
-    /**
-     * Constructs a new GraphEditor for the given EdgeListGraph.
-     */
-    public GraphEditor(Graph graph) {
-        setLayout(new BorderLayout());
 
+    private void editGraph(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
         GraphToolbar toolbar = new GraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
@@ -118,20 +165,7 @@ public final class GraphEditor extends JPanel
         b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 
         add(b, BorderLayout.SOUTH);
-
-        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("graph".equals(propertyName)) {
-                    Graph _graph = (Graph) evt.getNewValue();
-
-                    if (getWorkbench() != null && getGraphWrapper() != null) {
-                        getGraphWrapper().setGraph(_graph);
-                    }
-                }
-            }
-        });
+        validate();
     }
 
     /**

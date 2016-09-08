@@ -106,7 +106,7 @@ public class FasStableConcurrent implements IFas {
     //==========================CONSTRUCTORS=============================//
 
     /**
-     * Constructs a new FastAdjacencySearch.
+     * Constructs a new FastAdjacencySearch.    wd
      */
     public FasStableConcurrent(IndependenceTest test) {
         this.test = test;

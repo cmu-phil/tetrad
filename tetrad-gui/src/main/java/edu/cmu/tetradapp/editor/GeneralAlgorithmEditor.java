@@ -34,6 +34,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
@@ -44,7 +45,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
-import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -138,8 +138,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.Pattern, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.Pattern, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
@@ -152,10 +152,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.Markov_Blanket, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.Markov_Blanket, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.Pattern, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.Undirected_Graph, OracleType.Test));
 
-        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Undirected_Graph, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.Pattern, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
@@ -329,6 +329,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         pane.add("Knowledge", getKnowledgePanel(runner));
         pane.add("Output Graph Selections", graphEditor);
         add(pane, BorderLayout.CENTER);
+
+        if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
+            pane.setSelectedComponent(graphEditor);
+        }
 
         searchButton1.addActionListener(new ActionListener() {
             @Override
@@ -648,7 +652,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 throw new IllegalArgumentException("Please configure that test: " + test);
         }
 
-        runner.setIndependenceTest(independenceWrapper.getTest((DataSet) runner.getDataModel(), parameters));
+        List<IndependenceTest> tests = new ArrayList<>();
+
+        for (DataModel dataModel : runner.getDataModelList()) {
+            if (!(dataModel instanceof DataSet)) {
+                throw new IllegalArgumentException("I was expecting a data set to save out indepenedence tests, sorry.");
+            }
+
+            IndependenceTest _test = independenceWrapper.getTest((DataSet) dataModel, parameters);
+            tests.add(_test);
+        }
+
+        runner.setIndependenceTests(tests);
         return independenceWrapper;
     }
 
@@ -968,7 +983,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum OracleType {None, Test, Score, Both}
 
-    private enum AlgType {Pattern, PAG, DAG, Markov_Blanket, Undirected_Graph, Pairwise}
+    private enum AlgType {Pattern, PAG, /*DAG, */Markov_Blanket, Undirected_Graph, Pairwise}
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,

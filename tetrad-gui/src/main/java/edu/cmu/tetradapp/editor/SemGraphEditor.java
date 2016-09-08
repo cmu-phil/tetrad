@@ -61,24 +61,96 @@ import java.util.List;
  */
 public final class SemGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
-    private final GraphWorkbench workbench;
+    private GraphWorkbench workbench;
     private SemGraphWrapper semGraphWrapper;
     private JMenuItem errorTerms;
     private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
-    public SemGraphEditor(SemGraphWrapper semGraphWrapper) {
+    public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
         }
 
+//        setLayout(new BorderLayout());
+//
+//        setEditor(semGraphWrapper);
+
+        setLayout(new BorderLayout());
+        this.semGraphWrapper = semGraphWrapper;
+        this.parameters = semGraphWrapper.getParameters();
+
+        setEditor(semGraphWrapper);
+
+//        editGraph(graphWrapper.getGraph());
+
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getSemGraphWrapper() != null) {
+                        getSemGraphWrapper().setGraph(_graph);
+                    }
+                }
+            }
+        });
+
+        int numModels = getSemGraphWrapper().getNumModels();
+
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getSemGraphWrapper().setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    setEditor(semGraphWrapper);
+//                    editGraph(getSemGraphWrapper().getGraph());
+                    validate();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(semGraphWrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
+
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("graph".equals(evt.getPropertyName())) {
+                    getSemGraphWrapper().setGraph((Graph) evt.getNewValue());
+                } else if ("modelChanged".equals(evt.getPropertyName())) {
+                    firePropertyChange("modelChanged", null, null);
+                }
+            }
+        });
+
+        validate();
+
+    }
+
+    private void setEditor(SemGraphWrapper semGraphWrapper) {
         this.parameters = new Parameters(semGraphWrapper.getParameters());
 
         this.semGraphWrapper = semGraphWrapper;
         this.workbench = new GraphWorkbench(semGraphWrapper.getGraph());
-
-        setLayout(new BorderLayout());
 
         SemGraphToolbar toolbar = new SemGraphToolbar(getWorkbench());
         JMenuBar menuBar = createMenuBar();

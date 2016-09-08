@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,7 +34,7 @@ import java.util.List;
  * <score>
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsMinScore implements SepsetProducer {
+public class SepsetsMinScore2 implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
@@ -42,7 +43,7 @@ public class SepsetsMinScore implements SepsetProducer {
     private boolean verbose = false;
     private double p = Double.NaN;
 
-    public SepsetsMinScore(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsMinScore2(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -70,18 +71,13 @@ public class SepsetsMinScore implements SepsetProducer {
         double score = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
 
-        if (extraSepsets != null) {
-            final List<Node> v = extraSepsets.get(i, k);
-            if (v != null) {
-                independenceTest.isIndependent(i, k, v);
-                double _score = independenceTest.getScore();
+        getIndependenceTest().isIndependent(i, k, new ArrayList<Node>());
+        double _score = getIndependenceTest().getScore();
 
-                if (/*_score < 0 && */_score < score) {
-                    score = _score;
-                    this.p = independenceTest.getScore();
-                    _v = v;
-                }
-            }
+        if (_score < 0 && _score < score) {
+            score = _score;
+            this.p = independenceTest.getPValue();
+            _v = new ArrayList<>();
         }
 
         List<Node> adji = graph.getAdjacentNodes(i);
@@ -90,42 +86,45 @@ public class SepsetsMinScore implements SepsetProducer {
         adjk.remove(i);
 
         for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adji.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
-            int[] choice;
+            List<Node> v = new ArrayList<>();
 
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adji);
+            while (v.size() < adji.size()) {
+                for (int p = 0; p < adji.size(); p++) {
+                    Node A = adji.get(p);
+                    if (!v.contains(A)) v.add(A);
+                    getIndependenceTest().isIndependent(i, k, v);
+                    double s0 = getIndependenceTest().getScore();
 
-                getIndependenceTest().isIndependent(i, k, v);
-                double _score = getIndependenceTest().getScore();
-
-                if (/*_score < 0 && */_score < score) {
-                    score = _score;
-                    this.p = independenceTest.getScore();
-                    _v = v;
+                    if (_score < 0 && _score < score) {
+                        score = _score;
+                        this.p = independenceTest.getPValue();
+                        _v = v;
+                    }
                 }
             }
         }
 
         for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adjk.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
-            int[] choice;
+            List<Node> v = new ArrayList<>();
 
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adjk);
+            while (v.size() < adjk.size()) {
 
-                getIndependenceTest().isIndependent(i, k, v);
-                double _score = getIndependenceTest().getScore();
+                for (int p = 0; p < adjk.size(); p++) {
+                    Node A = adjk.get(p);
+                    if (!v.contains(A)) v.add(A);
+                    getIndependenceTest().isIndependent(i, k, v);
+                    double s0 = getIndependenceTest().getScore();
 
-                if (/*_score < 0 &&*/ _score < score) {
-                    score = _score;
-                    this.p = independenceTest.getPValue();
-                    _v = v;
+                    if (_score < 0 && _score < score) {
+                        score = _score;
+                        this.p = independenceTest.getPValue();
+                        _v = v;
+                    }
                 }
             }
         }
 
-        this.score = score;
+        this.score = _score;
         return _v;
     }
 

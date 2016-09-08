@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.app.SessionEditorNode;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,6 +44,7 @@ public final class MultiModelSessionNode<T> implements SessionModel {
     static final long serialVersionUID = 23L;
     private final List<List<SessionModel>> parentModels;
     private String name;
+    private SessionEditorNode sessionEditorNode;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -50,6 +52,44 @@ public final class MultiModelSessionNode<T> implements SessionModel {
         this.parentModels = parentModels;
 
 
+    }
+
+    private boolean createModel(boolean simulation, SessionEditorNode sessionEditorNode) throws Exception {
+        SessionNode sessionNode = sessionEditorNode.getSessionNode();
+
+        if (sessionNode.getModel() != null) {
+            return true;
+        }
+
+        this.sessionEditorNode = sessionEditorNode;
+        Class modelClass = sessionEditorNode.determineTheModelClass(sessionNode);
+
+        if (modelClass == null) {
+            return false;
+        }
+
+        // Must determine whether that model has a parameterizing object
+        // associated with it and if so edit that. (This has to be done
+        // before creating the model since it will be an argument to the
+        // constructor of the model.)
+        if (sessionNode.existsParameterizedConstructor(modelClass)) {
+            Parameters params = sessionNode.getParam(modelClass);
+            Object[] arguments = sessionNode.getModelConstructorArguments(modelClass);
+
+            if (params != null) {
+                boolean edited = sessionEditorNode.editParameters(modelClass, params, arguments);
+
+                if (!edited) {
+                    return false;
+                }
+            }
+        }
+
+        // Finally, create the model. Don't worry, if anything goes wrong
+        // in the process, an exception will be thrown with an
+        // appropriate message.
+        sessionNode.createModel(modelClass, simulation);
+        return true;
     }
 
     @Override

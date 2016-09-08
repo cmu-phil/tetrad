@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -24,6 +26,7 @@ public class BayesNetSimulation implements Simulation {
     private BayesIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
+    private List<BayesIm> ims = new ArrayList<>();
 
     public BayesNetSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -126,16 +129,22 @@ public class BayesNetSimulation implements Simulation {
                 int minCategories = parameters.getInt("minCategories");
                 int maxCategories = parameters.getInt("maxCategories");
                 pm = new BayesPm(graph, minCategories, maxCategories);
+                im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
+            } else {
+                im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                this.im = im;
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
             }
-
-            im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-            this.im = im;
+        } else {
+            ims.add(im);
+            return im.simulateData(parameters.getInt("sampleSize"), false);
         }
-
-        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
-    public BayesIm getBayesIm() {
-        return im;
+    public List<BayesIm> getBayesIms() {
+        return ims;
     }
 }

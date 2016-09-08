@@ -62,37 +62,145 @@ import java.util.List;
  */
 public final class DagEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
-    private final GraphWorkbench workbench;
+    private GraphWorkbench workbench;
     private DagWrapper dagWrapper;
     private Parameters parameters;
 
     public DagEditor(DagWrapper graphWrapper) {
-        this(graphWrapper.getDag());
+        setLayout(new BorderLayout());
         this.dagWrapper = graphWrapper;
         this.parameters = graphWrapper.getParameters();
-    }
 
-    public DagEditor(Dag dag) {
-        setPreferredSize(new Dimension(550, 450));
-        setLayout(new BorderLayout());
-        this.parameters = new Parameters();
+        editGraph(graphWrapper.getGraph());
 
-        this.workbench = new GraphWorkbench(dag);
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    if (getDagWrapper() != null) {
-                        getDagWrapper().setDag((Dag) evt.getNewValue());
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getDagWrapper() != null) {
+                        getDagWrapper().setGraph(_graph);
                     }
                 }
             }
         });
 
-        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
-        JMenuBar menuBar = createGraphMenuBar();
+        int numModels = dagWrapper.getNumModels();
 
-        add(new JScrollPane(getWorkbench()), BorderLayout.CENTER);
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dagWrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    editGraph(dagWrapper.getGraph());
+                    validate();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(dagWrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
+
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("graph".equals(evt.getPropertyName())) {
+                    dagWrapper.setGraph((Graph) evt.getNewValue());
+                } else if ("modelChanged".equals(evt.getPropertyName())) {
+                    firePropertyChange("modelChanged", null, null);
+                }
+            }
+        });
+
+        validate();
+    }
+
+//    public DagEditor(Dag dag) {
+//        setPreferredSize(new Dimension(550, 450));
+//        setLayout(new BorderLayout());
+//        this.parameters = new Parameters();
+//
+//        this.workbench = new GraphWorkbench(dag);
+//
+//        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                if ("graph".equals(evt.getPropertyName())) {
+//                    if (getDagWrapper() != null) {
+//                        getDagWrapper().setDag((Dag) evt.getNewValue());
+//                    }
+//                }
+//            }
+//        });
+//
+//        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
+//        JMenuBar menuBar = createGraphMenuBar();
+//
+//        add(new JScrollPane(getWorkbench()), BorderLayout.CENTER);
+//        add(toolbar, BorderLayout.WEST);
+//        add(menuBar, BorderLayout.NORTH);
+//
+//        JLabel label = new JLabel("Double click variable to change name.");
+//        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+//        Box b = Box.createHorizontalBox();
+//        b.add(Box.createHorizontalStrut(2));
+//        b.add(label);
+//        b.add(Box.createHorizontalGlue());
+//        b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
+//
+//        add(b, BorderLayout.SOUTH);
+//
+//        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                String propertyName = evt.getPropertyName();
+//
+//                if ("dag".equals(propertyName)) {
+//                    Dag _graph = (Dag) evt.getNewValue();
+//
+//                    if (getWorkbench() != null) {
+//                        getDagWrapper().setDag(_graph);
+//                    }
+//                }
+//            }
+//        });
+//
+//        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                String propertyName = evt.getPropertyName();
+//
+//                if ("modelChanged".equals(propertyName)) {
+//                    firePropertyChange("modelChanged", evt.getOldValue(),
+//                            evt.getNewValue());
+//                }
+//            }
+//        });
+//    }
+
+    private void editGraph(Graph graph) {
+        this.workbench = new GraphWorkbench(graph);
+        GraphToolbar toolbar = new GraphToolbar(getWorkbench());
+        JMenuBar menuBar = createGraphMenuBar();
+        JScrollPane scroll = new JScrollPane();
+        scroll.setPreferredSize(new Dimension(450, 450));
+        scroll.setViewportView(getWorkbench());
+
+        add(scroll, BorderLayout.CENTER);
         add(toolbar, BorderLayout.WEST);
         add(menuBar, BorderLayout.NORTH);
 
@@ -105,32 +213,9 @@ public final class DagEditor extends JPanel
         b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 
         add(b, BorderLayout.SOUTH);
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("dag".equals(propertyName)) {
-                    Dag _graph = (Dag) evt.getNewValue();
-
-                    if (getWorkbench() != null) {
-                        getDagWrapper().setDag(_graph);
-                    }
-                }
-            }
-        });
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
-                            evt.getNewValue());
-                }
-            }
-        });
+        validate();
     }
+
 
     /**
      * Sets the name of this editor.

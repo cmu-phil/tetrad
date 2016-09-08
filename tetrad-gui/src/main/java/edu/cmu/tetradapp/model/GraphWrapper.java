@@ -34,6 +34,7 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
@@ -50,8 +51,11 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
-        SimulationParamsSource, GraphSettable {
+        SimulationParamsSource, GraphSettable, MultipleGraphSource {
     static final long serialVersionUID = 23L;
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     /**
      * @serial Can be null.
@@ -61,19 +65,20 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     /**
      * @serial Cannot be null.
      */
-    private Graph graph;
+    private List<Graph> graphs;
     private Map<String, String> allParamSettings;
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
-    private GraphWrapper() {}
+    private GraphWrapper() {
+    }
 
     public GraphWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
-        this.graph = graph;
+        setGraph(graph);
         log();
     }
 
@@ -84,24 +89,33 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.graph = graph;
+        setGraph(graph);
     }
 
     public GraphWrapper(Parameters parameters) {
         this.parameters = parameters;
-        this.graph = new EdgeListGraph();
+        setGraph(new EdgeListGraph());
         log();
     }
 
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
-        this.parameters = parameters;
-        this.graph = new EdgeListGraph(graphSource.getGraph());
+        if (graphSource instanceof  Simulation) {
+            Simulation simulation = (Simulation) graphSource;
+            this.graphs = simulation.getGraphs();
+            this.numModels = graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            setGraph(new EdgeListGraph(graphSource.getGraph()));
+        }
+
         log();
     }
 
+
     public GraphWrapper(DataWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getVariables()));
-        GraphUtils.circleLayout(graph, 200, 200, 150);
+        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
@@ -120,11 +134,12 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     //==============================PUBLIC METHODS======================//
 
     public Graph getGraph() {
-        return graph;
+        return graphs.get(getModelIndex());
     }
 
     public void setGraph(Graph graph) {
-        this.graph = graph;
+        graphs = new ArrayList<>();
+        graphs.add(graph);
         log();
     }
 
@@ -146,28 +161,27 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public Graph getSourceGraph() {
-        return graph;
+        return getGraph();
     }
 
     public Graph getResultGraph() {
-        return graph;
+        return getGraph();
     }
 
     public List<String> getVariableNames() {
-
-        return graph.getNodeNames();
+        return getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return graph.getNodes();
+        return getGraph().getNodes();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("# Vars", Integer.toString(graph.getNumNodes()));
-        paramSettings.put("# Edges", Integer.toString(graph.getNumEdges()));
-        if (graph.existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
+        if (getGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
         return paramSettings;
     }
 
@@ -288,6 +302,27 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
+    }
+
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
+
+    @Override
+    public List<Graph> getGraphs() {
+        return graphs;
     }
 }
 

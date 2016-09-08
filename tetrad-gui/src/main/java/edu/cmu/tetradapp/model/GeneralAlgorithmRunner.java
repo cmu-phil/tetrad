@@ -23,13 +23,11 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
@@ -63,7 +61,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph initialGraph;
     private List<Graph> graphList = new ArrayList<>();
     private IKnowledge knowledge = new Knowledge2();
-    private transient IndependenceTest independenceTest = null;
+    private transient List<IndependenceTest> independenceTests = null;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -432,7 +430,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return independenceTests.get(0);
     }
 
     @Override
@@ -505,8 +503,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return dataWrapper;
     }
 
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
+    public void setIndependenceTests(List<IndependenceTest> independenceTests) {
+        this.independenceTests = this.independenceTests;
     }
 }
 

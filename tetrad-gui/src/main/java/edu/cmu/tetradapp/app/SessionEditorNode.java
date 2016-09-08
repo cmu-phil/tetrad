@@ -966,7 +966,7 @@ public final class SessionEditorNode extends DisplayNode {
      *                               why the model cannot be created is in the
      *                               message of the exception.
      */
-    private boolean createModel(boolean simulation) throws Exception {
+    public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
             return true;
         }
@@ -1005,7 +1005,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * @return the model class, or null if no model class was determined.
      */
-    private Class determineTheModelClass(SessionNode sessionNode) {
+    public Class determineTheModelClass(SessionNode sessionNode) {
 
         // The config file lists which model classes the node can be
         // associated with, based on the node's type.
@@ -1198,7 +1198,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
      */
-    private boolean editParameters(final Class modelClass, Parameters params,
+    public boolean editParameters(final Class modelClass, Parameters params,
                                    Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
