@@ -350,6 +350,11 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
+
+    @Override
+    public List<Graph> getGraphs() {
+        return null;
+    }
 }
 
 

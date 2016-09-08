@@ -366,6 +366,11 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         dataSets = new ArrayList<>();
         dataSets.add(dataSet);
     }
+
+    @Override
+    public List<Graph> getGraphs() {
+        return null;
+    }
 }
 
 

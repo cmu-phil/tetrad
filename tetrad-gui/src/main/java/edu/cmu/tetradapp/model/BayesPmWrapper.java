@@ -299,15 +299,15 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
     }
 
     public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
-        this(new Dag(wrapper.getResultGraph()), params);
+        this(new Dag(wrapper.getGraph()), params);
     }
 
     public BayesPmWrapper(AlgorithmRunner wrapper, DataWrapper dataWrapper) {
-        this(new Dag(wrapper.getResultGraph()), dataWrapper);
+        this(new Dag(wrapper.getGraph()), dataWrapper);
     }
 
     public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
-        this(new Dag(wrapper.getResultGraph()), simulation);
+        this(new Dag(wrapper.getGraph()), simulation);
     }
 
     public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
