@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import com.sun.tools.javac.jvm.Gen;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
