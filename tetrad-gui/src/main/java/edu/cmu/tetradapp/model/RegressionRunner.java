@@ -51,11 +51,15 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     private String name;
     private Parameters params;
     private String targetName;
-    private DataModel dataModel;
+    private DataModelList dataModels;
     private Graph outGraph;
     private RegressionResult result;
     private Map<String, String> allParamsSettings;
     private List<String> variableNames;
+
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     //=========================CONSTRUCTORS===============================//
 
@@ -73,6 +77,13 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
             throw new NullPointerException();
         }
 
+        if (dataWrapper instanceof  Simulation) {
+            Simulation simulation = (Simulation) dataWrapper;
+            this.numModels = dataWrapper.getDataModelList().size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        }
+
         this.params = params;
 
         DataModel dataModel = dataWrapper.getSelectedDataModel();
@@ -84,7 +95,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
             }
         }
 
-        this.dataModel = dataModel;
+        dataModels = dataWrapper.getDataModelList();
 
         this.variableNames = dataModel.getVariableNames();
         this.targetName = null;
@@ -128,7 +139,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
     public DataModel getDataModel() {
         //return (DataModel) this.dataWrapper.getDataModelList().get(0);
-        return this.dataModel;
+        return this.dataModels.get(getModelIndex());
     }
 
     public Parameters getParams() {
@@ -167,8 +178,8 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         Node target;
         List<Node> regressors;
 
-        if (dataModel instanceof DataSet) {
-            DataSet _dataSet = (DataSet) dataModel;
+        if (getDataModel() instanceof DataSet) {
+            DataSet _dataSet = (DataSet) getDataModel();
             regression = new RegressionDataset(_dataSet);
             target = _dataSet.getVariable(targetName);
             regressors = new LinkedList<>();
@@ -182,8 +193,8 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
             result = regression.regress(target, regressors);
             outGraph = regression.getGraph();
-        } else if (dataModel instanceof ICovarianceMatrix) {
-            ICovarianceMatrix covariances = (ICovarianceMatrix) dataModel;
+        } else if (getDataModel() instanceof ICovarianceMatrix) {
+            ICovarianceMatrix covariances = (ICovarianceMatrix) getDataModel();
             regression = new RegressionCovariance(covariances);
             target = covariances.getVariable(targetName);
             regressors = new LinkedList<>();
@@ -322,6 +333,22 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamsSettings;
+    }
+
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
     }
 }
 

@@ -62,7 +62,7 @@ public class LogisticRegressionEditor extends JPanel {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
 
-    public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {
+    public LogisticRegressionEditor(final LogisticRegressionRunner regressionRunner) {
         final LogisticRegressionRunner regRunner = regressionRunner;
         final GraphWorkbench workbench = new GraphWorkbench();
         this.modelParameters = new JTextArea();
@@ -105,6 +105,36 @@ public class LogisticRegressionEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
+
+        int numModels = regressionRunner.getNumModels();
+
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    regressionRunner.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box c = Box.createHorizontalBox();
+            c.add(new JLabel("Using model"));
+            c.add(comp);
+            c.add(new JLabel("from "));
+            c.add(new JLabel(regressionRunner.getModelSourceName()));
+            c.add(Box.createHorizontalGlue());
+
+            add(c, BorderLayout.NORTH);
+        }
     }
 
     /**
