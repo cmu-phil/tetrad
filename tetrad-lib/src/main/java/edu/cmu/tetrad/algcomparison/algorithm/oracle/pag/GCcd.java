@@ -8,7 +8,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GCcd;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -19,18 +18,18 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class GCCD implements Algorithm, HasKnowledge {
+public class GCcd implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GCCD(ScoreWrapper score) {
+    public GCcd(ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        GCcd search = new GCcd(score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(score.getScore(dataSet, parameters));
         search.setKnowledge(knowledge);
 
         return search.search();

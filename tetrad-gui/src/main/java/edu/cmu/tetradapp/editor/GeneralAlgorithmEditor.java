@@ -509,7 +509,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Ccd(independenceWrapper);
                 break;
             case GCCD:
-                algorithm = new GCCD(scoreWrapper);
+                algorithm = new GCcd(scoreWrapper);
                 break;
 
             case FAS:
