@@ -312,10 +312,10 @@ class SemPmGraphicalEditor extends JPanel {
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
                     workbench = new GraphWorkbench(graph());
                     workbench.setAllowDoubleClickActions(false);
                     resetLabels();
-                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
                     setSemPm();
                 }
             });

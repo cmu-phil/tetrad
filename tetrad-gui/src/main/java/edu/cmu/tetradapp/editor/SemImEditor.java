@@ -547,7 +547,7 @@ final class SemImGraphicalEditor extends JPanel {
      */
     private final ISemIm semIm;
 
-    /**
+    /**w
      * Workbench for the graphical editor.
      */
     private GraphWorkbench workbench;

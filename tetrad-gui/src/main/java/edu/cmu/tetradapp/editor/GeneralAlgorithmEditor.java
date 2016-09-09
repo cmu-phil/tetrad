@@ -47,10 +47,14 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.FinalizingEditor;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
+import javax.help.CSH;
+import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -723,22 +727,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-//        helpSet.setHomeID("tetrad_overview");
+        helpSet.setHomeID("tetrad_overview");
 
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         final JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(new Dimension(800, 300));
         Box c = Box.createVerticalBox();
 
-//        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//
-//        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
-//        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
-//        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
-//        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
+        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+
+        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
+        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
+        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
+        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
 
 
 //        scroll.setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -759,51 +763,51 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 ////        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
 ////        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
 
-//        explain1.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                helpSet.setHomeID("types_of_algorithms");
-//                HelpBroker broker = helpSet.createHelpBroker();
-//                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//                listener.actionPerformed(e);
-//            }
-//        });
-//
-//        explain2.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                JComboBox box = (JComboBox) algNamesDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-//                HelpBroker broker = helpSet.createHelpBroker();
-//                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//                listener.actionPerformed(e);
-//            }
-//        });
-//
-//        explain3.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                JComboBox box = (JComboBox) testDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-//                HelpBroker broker = helpSet.createHelpBroker();
-//                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//                listener.actionPerformed(e);
-//            }
-//        });
-//
-//        explain4.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                JComboBox box = (JComboBox) scoreDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-//                HelpBroker broker = helpSet.createHelpBroker();
-//                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//                listener.actionPerformed(e);
-//            }
-//        });
+        explain1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                helpSet.setHomeID("types_of_algorithms");
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
+
+        explain2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox box = (JComboBox) algNamesDropdown;
+                String name = box.getSelectedItem().toString();
+                helpSet.setHomeID(name.toLowerCase());
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
+
+        explain3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox box = (JComboBox) testDropdown;
+                String name = box.getSelectedItem().toString();
+                helpSet.setHomeID(name.toLowerCase());
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
+
+        explain4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox box = (JComboBox) scoreDropdown;
+                String name = box.getSelectedItem().toString();
+                helpSet.setHomeID(name.toLowerCase());
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
 
 //        Box d8 = Box.createHorizontalBox();
 //        JLabel label8 = new JLabel("You have a lot of options.");
@@ -820,7 +824,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d3.add(Box.createHorizontalGlue());
         algTypesDropdown.setMaximumSize(algTypesDropdown.getPreferredSize());
         d3.add(algTypesDropdown);
-//        d3.add(explain1);
+        d3.add(explain1);
         c.add(d3);
         c.add(Box.createVerticalStrut(10));
 
@@ -832,7 +836,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d4.add(Box.createHorizontalGlue());
         algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
         d4.add(algNamesDropdown);
-//        d4.add(explain2);
+        d4.add(explain2);
         c.add(d4);
         c.add(Box.createVerticalStrut(10));
 
@@ -849,14 +853,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         label1.setFont(new Font("Dialog", Font.BOLD, 13));
         d1.add(label1);
         d1.add(testDropdown);
-//        d1.add(explain3);
+        d1.add(explain3);
 
         JLabel label2 = new JLabel("Score type:");
         label2.setFont(new Font("Dialog", Font.BOLD, 13));
         d1.add(Box.createHorizontalStrut(20));
         d1.add(label2);
         d1.add(scoreDropdown);
-//        d1.add(explain4);
+        d1.add(explain4);
         c.add(d1);
         c.add(Box.createVerticalStrut(10));
 
