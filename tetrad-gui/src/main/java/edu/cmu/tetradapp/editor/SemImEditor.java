@@ -73,7 +73,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
      */
     public SemImEditor(SemImWrapper semImWrapper) {
-        this(semImWrapper, "GraphicalEditor", "Tabular Editor", TabbedPaneDefault.GRAPHICAL);
+        this(semImWrapper, "Graphical Editor", "Tabular Editor", TabbedPaneDefault.GRAPHICAL);
     }
 
     /**
@@ -120,7 +120,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
-            comp.setMaximumSize(comp.getPreferredSize());
+//            comp.setMaximumSize(comp.getPreferredSize());
 
             Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
@@ -141,32 +141,32 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     @Override
     public Graph getGraph() {
-        return null;
+        return oneEditorPanel.getGraph();
     }
 
     @Override
     public Map<Edge, Object> getModelEdgesToDisplay() {
-        return null;
+        return oneEditorPanel.getModelEdgesToDisplay();
     }
 
     @Override
     public Map<Node, Object> getModelNodesToDisplay() {
-        return null;
+        return oneEditorPanel.getModelNodesToDisplay();
     }
 
     @Override
     public IKnowledge getKnowledge() {
-        return null;
+        return oneEditorPanel.getKnowledge();
     }
 
     @Override
     public Graph getSourceGraph() {
-        return null;
+        return oneEditorPanel.getSourceGraph();
     }
 
     @Override
     public void layoutByGraph(Graph graph) {
-
+        oneEditorPanel.layoutByGraph(graph);
     }
 
     @Override
@@ -186,24 +186,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         return matrixSelection;
     }
 
-    public void setMatrixSelection(Object matrixSelection) {
-        this.matrixSelection = matrixSelection;
-    }
-
-    public void displaySemIm(SemIm updatedSem, Object tabSelectionIndex, Object matrixSelection) {
-
-    }
-
     public GraphWorkbench getWorkbench() {
         return oneEditorPanel.getWorkbench();
     }
 
     public enum TabbedPaneDefault {GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS}
     private SemImWrapper wrapper;
-
-    private ISemIm getSemIm() {
-        return wrapper.getSemIm();
-    }
 
     private class OneEditor extends JPanel implements LayoutEditable {
         private final TabbedPaneDefault tabbedPanedDefault;
@@ -688,7 +676,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             setLayout(new BorderLayout());
             JScrollPane scroll = new JScrollPane(workbench());
-            scroll.setPreferredSize(new Dimension(450, 450));
+//            scroll.setPreferredSize(new Dimension(450, 450));
 
             add(scroll, BorderLayout.CENTER);
 

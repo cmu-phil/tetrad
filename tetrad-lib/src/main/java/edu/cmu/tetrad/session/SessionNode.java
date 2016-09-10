@@ -1599,6 +1599,12 @@ public class SessionNode implements TetradSerializable {
             return;
         }
 
+        for (Class clazz : this.modelParamTypes) {
+            if (clazz == null) {
+                return;
+            }
+        }
+
         // Collect up the model types from the parents.
         List<Class<? extends Object>> list1 =
                 new ArrayList<>();

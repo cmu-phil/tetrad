@@ -1822,6 +1822,12 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.EdgeWeightComparisonEditor</editor-class>
             </model>
+            <model name="Model Fit" acronym="Model Fit"
+                   help="Model Fit" category="Simuation-Algorithm Comparisons">
+                <model-class>edu.cmu.tetradapp.model.ModelFitModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.ModelFitEditor</editor-class>
+            </model>
         </models>
         <display-component image="graphIcon.gif"/>
         <model-chooser title="Types of Comparisons">

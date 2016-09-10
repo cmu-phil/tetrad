@@ -1253,7 +1253,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         Graph nullModel = new SemGraph(getSemPm().getGraph());
         nullModel.removeEdges(nullModel.getEdges());
         SemPm nullPm = new SemPm(nullModel);
-        CovarianceMatrix sampleCovar = new CovarianceMatrix(sampleCovarVariables, getSampleCovar(), getSampleSize());
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(getVariableNodes(), getSampleCovar(), getSampleSize());
         return new SemEstimator(sampleCovar, nullPm).estimate();
     }
 

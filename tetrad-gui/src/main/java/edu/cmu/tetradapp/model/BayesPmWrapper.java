@@ -258,7 +258,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
         this(new Dag(graphWrapper.getGraph()), dataWrapper);
     }
 
-    public BayesPmWrapper(Dag graph, DataWrapper dataWrapper) {
+    public BayesPmWrapper(Graph graph, DataWrapper dataWrapper) {
         DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
         List vars = dataSet.getVariables();

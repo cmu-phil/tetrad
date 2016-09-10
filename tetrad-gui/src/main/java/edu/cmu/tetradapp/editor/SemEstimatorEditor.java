@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.performance.ComparisonParameters;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
@@ -58,11 +59,14 @@ public final class SemEstimatorEditor extends JPanel {
     private final IntTextField restarts;
 
 
+    public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
+        this(new SemEstimatorWrapper(dataSet, semPm, new Parameters()));
+    }
+
     public SemEstimatorEditor(SemEstimatorWrapper _wrapper) {
-        wrapper = _wrapper;
+        this.wrapper = _wrapper;
         panel = new JPanel();
         setLayout(new BorderLayout());
-        add(panel, BorderLayout.CENTER);
 
         JComboBox optimizerCombo = new JComboBox();
         optimizerCombo.addItem("Regression");
@@ -70,8 +74,6 @@ public final class SemEstimatorEditor extends JPanel {
         optimizerCombo.addItem("Powell");
         optimizerCombo.addItem("Random Search");
         optimizerCombo.addItem("RICF");
-
-//        optimizerCombo.setMaximumSize(new Dimension(200, 25));
 
         optimizerCombo.addActionListener(new ActionListener() {
             @Override
@@ -86,7 +88,6 @@ public final class SemEstimatorEditor extends JPanel {
 
         scoreBox.addItem("Fgls");
         scoreBox.addItem("Fml");
-//        scoreBox.setMaximumSize(new Dimension(100, 25));
 
         scoreBox.addActionListener(new ActionListener() {
             @Override
@@ -115,7 +116,7 @@ public final class SemEstimatorEditor extends JPanel {
         String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
 
         optimizerCombo.setSelectedItem(semOptimizerType);
-        SemIm.ScoreType scoreType = (SemIm.ScoreType) wrapper.getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic);
+        SemIm.ScoreType scoreType = (SemIm.ScoreType) wrapper.getParams().get("scoreType", SemIm.ScoreType.Fgls);
         if (scoreType == null) scoreType = SemIm.ScoreType.Fgls;
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
@@ -140,7 +141,6 @@ public final class SemEstimatorEditor extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 final JTextArea textArea = new JTextArea();
                 JScrollPane scroll = new JScrollPane(textArea);
-//                scroll.setPreferredSize(new Dimension(600, 600));
 
                 textArea.append(compileReport());
 
@@ -162,20 +162,17 @@ public final class SemEstimatorEditor extends JPanel {
         }));
 
         Box lowerBarA = Box.createHorizontalBox();
-//        lowerBarA.add(Box.createHorizontalGlue());
         lowerBarA.add(new JLabel("Score"));
         lowerBarA.add(scoreBox);
+        lowerBarA.add(Box.createHorizontalGlue());
         lowerBarA.add(new JLabel("Random Restarts"));
         lowerBarA.add(restarts);
-//        lowerBarA.add(Box.createHorizontalGlue());
 
         Box lowerBarB = Box.createHorizontalBox();
-//        lowerBarB.add(Box.createHorizontalGlue());
         lowerBarB.add(new JLabel("Choose Optimizer:  "));
         lowerBarB.add(optimizerCombo);
-        lowerBarB.add(Box.createHorizontalStrut(10));
+        lowerBarB.add(Box.createHorizontalGlue());
         lowerBarB.add(estimateButton);
-//        lowerBarB.add(Box.createHorizontalGlue());
 
         Box lowerBar = Box.createVerticalBox();
         lowerBar.add(lowerBarA);
@@ -187,10 +184,12 @@ public final class SemEstimatorEditor extends JPanel {
 
         add(lowerBar, BorderLayout.SOUTH);
 
-//        setPreferredSize(new Dimension(600,  600));
-
         resetSemImEditor();
+
+        add(panel, BorderLayout.CENTER);
+        validate();
     }
+
 
     private String compileReport() {
         StringBuilder builder = new StringBuilder();
@@ -212,7 +211,7 @@ public final class SemEstimatorEditor extends JPanel {
                 builder.append(parameter.getNodeB() + "\t");
                 builder.append(typeString(parameter) + "\t");
                 builder.append(asString(paramValue(estSem, parameter)) + "\t");
-                /*
+     /*
       Maximum number of free parameters for which statistics will be
       calculated. (Calculating standard errors is high complexity.) Set this to
       zero to turn  off statistics calculations (which can be problematic
@@ -271,16 +270,6 @@ public final class SemEstimatorEditor extends JPanel {
             return "Coef";
         }
 
-//        if (editor.isEditCovariancesAsCorrelations()) {
-//            if (type == ParamType.VAR) {
-//                return "Correlation";
-//            }
-//
-//            if (type == ParamType.COVAR) {
-//                return "Correlation";
-//            }
-//        }
-
         if (type == ParamType.VAR) {
             //return "Variance";
             return "StdDev";
@@ -296,31 +285,15 @@ public final class SemEstimatorEditor extends JPanel {
     private double paramValue(SemIm im, Parameter parameter) {
         double paramValue = im.getParamValue(parameter);
 
-//        if (editor.isEditCovariancesAsCorrelations()) {
-//            if (parameter.getType() == ParamType.VAR) {
-//                paramValue = 1.0;
-//            }
-//            if (parameter.getType() == ParamType.COVAR) {
-//                Node nodeA = parameter.getNodeA();
-//                Node nodeB = parameter.getNodeB();
-//
-//                double varA = semIm().getParamValue(nodeA, nodeA);
-//                double varB = semIm().getParamValue(nodeB, nodeB);
-//
-//                paramValue *= Math.sqrt(varA * varB);
-//            }
-//        } else {
         if (parameter.getType() == ParamType.VAR) {
             paramValue = Math.sqrt(paramValue);
         }
-//        }
 
         return paramValue;
     }
 
     private void reestimate() {
         SemOptimizer optimizer;
-//        Object type = optimizerCombo.getSelectedItem();
 
         String type = wrapper.getSemOptimizerType();
 
@@ -385,27 +358,10 @@ public final class SemEstimatorEditor extends JPanel {
         if (semEstimators.size() == 1) {
             SemEstimator estimatedSem = semEstimators.get(0);
             SemImEditor editor = new SemImEditor(new SemImWrapper(estimatedSem.getEstimatedSem()));
-//            final JPanel _panel = new JPanel();
-//            _panel.setLayout(new BorderLayout());
-//            _panel.add(editor, BorderLayout.CENTER);
-
             panel.removeAll();
             panel.add(editor, BorderLayout.CENTER);
             panel.revalidate();
             panel.repaint();
-
-//            // Doesn't work now.
-//            // Fixes the problem of the IM panel not resizing correctly. -jdramsey 2/2/12
-//            panel.addComponentListener(new ComponentAdapter() {
-//                @Override
-//                public void componentResized(ComponentEvent componentEvent) {
-//                    Component component = componentEvent.getComponent();
-//                    panel.setPreferredSize(component.getSize());
-//                    panel.setMinimumSize(component.getSize());
-//                    panel.revalidate();
-//                    panel.repaint();
-//                }
-//            });
 
         } else {
             JTabbedPane tabs = new JTabbedPane();
@@ -422,7 +378,6 @@ public final class SemEstimatorEditor extends JPanel {
             panel.removeAll();
             panel.add(tabs);
             panel.validate();
-//            panel.repaint();
         }
     }
 }
