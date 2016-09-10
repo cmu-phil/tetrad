@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.ISemIm;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
@@ -60,6 +61,10 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //============================CONSTRUCTORS==========================//
 
+    public SemImWrapper(SemIm semIm) {
+        setSemIm(semIm);
+    }
+
     public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
         if (semEstWrapper == null) {
             throw new NullPointerException();
@@ -76,8 +81,6 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public SemImWrapper(Simulation simulation) {
-        SemIm semIm = null;
-
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
@@ -243,6 +246,10 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public String getModelSourceName() {
         return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
     }
 }
 

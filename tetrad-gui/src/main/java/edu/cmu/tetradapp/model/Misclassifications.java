@@ -192,8 +192,8 @@ public final class Misclassifications implements SessionModel {
             model1 = new DagWrapper(new Dag());
         }
 
-        if (!(model1 instanceof GraphSource) ||
-                !(model2 instanceof GraphSource)) {
+        if (!(model1 instanceof MultipleGraphSource) ||
+                !(model2 instanceof MultipleGraphSource)) {
             throw new IllegalArgumentException("Must be graph sources.");
         }
 
@@ -204,8 +204,8 @@ public final class Misclassifications implements SessionModel {
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
         } else {
-            GraphSource model11 = (GraphSource) model1;
-            GraphSource model21 = (GraphSource) model2;
+            MultipleGraphSource model11 = (MultipleGraphSource) model1;
+            MultipleGraphSource model21 = (MultipleGraphSource) model2;
 
             if (referenceName.equals(model1.getName())) {
                 if (model11 instanceof MultipleGraphSource) {
@@ -216,13 +216,13 @@ public final class Misclassifications implements SessionModel {
                     this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
                 }
 
-                if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
-                }
-
-                if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(model21.getGraph());
-                }
+//                if (referenceGraphs == null) {
+//                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
+//                }
+//
+//                if (targetGraphs == null) {
+//                    this.targetGraphs = Collections.singletonList(model21.getGraph());
+//                }
             } else if (referenceName.equals(model2.getName())) {
                 if (model21 instanceof MultipleGraphSource) {
                     this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
@@ -232,13 +232,13 @@ public final class Misclassifications implements SessionModel {
                     this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
                 }
 
-                if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
-                }
-
-                if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(model11.getGraph());
-                }
+//                if (referenceGraphs == null) {
+//                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
+//                }
+//
+//                if (targetGraphs == null) {
+//                    this.targetGraphs = Collections.singletonList(model11.getGraph());
+//                }
             } else {
                 throw new IllegalArgumentException(
                         "Neither of the supplied session models is named '" +

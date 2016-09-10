@@ -265,7 +265,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
 
     @Override
     public List<String> getRegressorNames() {
-        return variableNames;
+        return new ArrayList<>();
     }
 
     @Override

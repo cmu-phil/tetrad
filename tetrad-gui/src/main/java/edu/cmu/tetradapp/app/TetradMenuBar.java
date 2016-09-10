@@ -59,12 +59,14 @@ final class TetradMenuBar extends JMenuBar {
         JMenu fileMenu = new JMenu("File");
         JMenu editMenu = new JMenu("Edit");
         JMenu loggingMenu = new JMenu("Logging");
+        JMenu templateMenu = new JMenu("Pipelines");
         JMenu windowMenu = new JMenu("Window");
         JMenu helpMenu = new JMenu("Help");
 
         add(fileMenu);
         add(editMenu);
         add(loggingMenu);
+        add(templateMenu);
         add(windowMenu);
         add(helpMenu);
 
@@ -80,21 +82,21 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(newSession);
         fileMenu.add(loadSession);
         fileMenu.add(closeSession);
-        fileMenu.addSeparator();
-
-        //=======================EXAMPLES MENU=========================//
-        // Build a LoadTemplateAction for each file name in
-        // this.exampleFiles.
-        String[] templateNames = ConstructTemplateAction.getTemplateNames();
-        for (String templateName : templateNames) {
-            if ("--separator--".equals(templateName)) {
-                fileMenu.addSeparator();
-            } else {
-                ConstructTemplateAction action =
-                        new ConstructTemplateAction(templateName);
-                fileMenu.add(action);
-            }
-        }
+//        fileMenu.addSeparator();
+//
+//        //=======================EXAMPLES MENU=========================//
+//        // Build a LoadTemplateAction for each file name in
+//        // this.exampleFiles.
+//        String[] templateNames = ConstructTemplateAction.getTemplateNames();
+//        for (String templateName : templateNames) {
+//            if ("--separator--".equals(templateName)) {
+//                fileMenu.addSeparator();
+//            } else {
+//                ConstructTemplateAction action =
+//                        new ConstructTemplateAction(templateName);
+//                fileMenu.add(action);
+//            }
+//        }
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
@@ -161,16 +163,16 @@ final class TetradMenuBar extends JMenuBar {
 //        //=======================EXAMPLES MENU=========================//
 //        // Build a LoadTemplateAction for each file name in
 //        // this.exampleFiles.
-//        String[] templateNames = ConstructTemplateAction.getTemplateNames();
-//        for (String templateName : templateNames) {
-//            if ("--separator--".equals(templateName)) {
-//                templateMenu.addSeparator();
-//            } else {
-//                ConstructTemplateAction action =
-//                        new ConstructTemplateAction(templateName);
-//                templateMenu.add(action);
-//            }
-//        }
+        String[] templateNames = ConstructTemplateAction.getTemplateNames();
+        for (String templateName : templateNames) {
+            if ("--separator--".equals(templateName)) {
+                templateMenu.addSeparator();
+            } else {
+                ConstructTemplateAction action =
+                        new ConstructTemplateAction(templateName);
+                templateMenu.add(action);
+            }
+        }
 
         //=======================HELP MENU=========================//
         // A reference to the help item is stored at class level so that
@@ -192,7 +194,7 @@ final class TetradMenuBar extends JMenuBar {
 
         JMenuItem help = new JMenuItem("Tetrad Help");
         help.addActionListener(new CSH.DisplayHelpFromSource( hb ));
-        helpMenu.add(help);
+//        helpMenu.add(help);
 
         help.addActionListener(new CSH.DisplayHelpFromSource(hb));
 

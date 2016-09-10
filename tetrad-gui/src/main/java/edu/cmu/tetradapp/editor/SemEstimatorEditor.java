@@ -29,6 +29,7 @@ import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
+import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -383,7 +384,7 @@ public final class SemEstimatorEditor extends JPanel {
 
         if (semEstimators.size() == 1) {
             SemEstimator estimatedSem = semEstimators.get(0);
-            SemImEditor editor = new SemImEditor(estimatedSem.getEstimatedSem());
+            SemImEditor editor = new SemImEditor(new SemImWrapper(estimatedSem.getEstimatedSem()));
 //            final JPanel _panel = new JPanel();
 //            _panel.setLayout(new BorderLayout());
 //            _panel.add(editor, BorderLayout.CENTER);
@@ -411,7 +412,7 @@ public final class SemEstimatorEditor extends JPanel {
 
             for (int i = 0; i < semEstimators.size(); i++) {
                 SemEstimator estimatedSem = semEstimators.get(i);
-                SemImEditor editor = new SemImEditor(estimatedSem.getEstimatedSem());
+                SemImEditor editor = new SemImEditor(new SemImWrapper(estimatedSem.getEstimatedSem()));
                 JPanel _panel = new JPanel();
                 _panel.setLayout(new BorderLayout());
                 _panel.add(editor, BorderLayout.CENTER);

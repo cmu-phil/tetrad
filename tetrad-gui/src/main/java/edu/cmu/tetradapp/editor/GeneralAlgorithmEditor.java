@@ -331,7 +331,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         pane = new JTabbedPane();
         pane.add("Algorithm", getParametersPane());
         pane.add("Knowledge", getKnowledgePanel(runner));
-        pane.add("Output Graph Selections", graphEditor);
+        pane.add("Output Graphs", graphEditor);
         add(pane, BorderLayout.CENTER);
 
         if (runner.getGraphs() != null && runner.getGraphs().size() > 0) {
@@ -395,9 +395,29 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         }
 
-        MyKnowledgeInput myKnowledgeInput
-                = new MyKnowledgeInput(runner.getDataModel().getVariables(),
-                runner.getDataModel().getVariableNames());
+        List<Node> variables = null;
+        MyKnowledgeInput myKnowledgeInput;
+
+        if (runner.getDataModel() != null) {
+            variables = runner.getDataModelList().get(0).getVariables();
+        }
+
+        if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
+            variables = runner.getSourceGraph().getNodes();
+        }
+
+        if (variables == null) {
+            throw new IllegalArgumentException("No source of variables!");
+        }
+
+
+        List<String> varNames = new ArrayList<>();
+
+        for (Node node : variables) {
+            varNames.add(node.getName());
+        }
+
+        myKnowledgeInput = new MyKnowledgeInput(variables, varNames);
 
         JPanel knowledgePanel = new JPanel();
         knowledgePanel.setLayout(new BorderLayout());
@@ -766,7 +786,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         explain1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                helpSet.setHomeID("types_of_algorithms");
+//                helpSet.setHomeID("types_of_algorithms");
+                helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
@@ -778,7 +799,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void actionPerformed(ActionEvent e) {
                 JComboBox box = (JComboBox) algNamesDropdown;
                 String name = box.getSelectedItem().toString();
-                helpSet.setHomeID(name.toLowerCase());
+//                helpSet.setHomeID(name.toLowerCase());
+                helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
@@ -790,7 +812,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void actionPerformed(ActionEvent e) {
                 JComboBox box = (JComboBox) testDropdown;
                 String name = box.getSelectedItem().toString();
-                helpSet.setHomeID(name.toLowerCase());
+//                helpSet.setHomeID(name.toLowerCase());
+                helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
@@ -802,7 +825,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void actionPerformed(ActionEvent e) {
                 JComboBox box = (JComboBox) scoreDropdown;
                 String name = box.getSelectedItem().toString();
-                helpSet.setHomeID(name.toLowerCase());
+//                helpSet.setHomeID(name.toLowerCase());
+                helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);
@@ -876,7 +900,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         c.add(Box.createVerticalStrut(15));
 
         Box d0 = Box.createHorizontalBox();
-        JLabel label0 = new JLabel("Parameters for your algorithm are listed below. Please adjust the parameter values." );
+        JLabel label0 = new JLabel("Parameters for your algorithm are listed below. Please adjust the parameter values.");
         label0.setFont(new Font("Dialog", Font.BOLD, 13));
         d0.add(label0);
         d0.add(Box.createHorizontalGlue());
