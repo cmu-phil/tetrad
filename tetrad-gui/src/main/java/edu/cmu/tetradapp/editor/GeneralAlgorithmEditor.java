@@ -34,6 +34,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -81,6 +82,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
+    private Box knowledgePanel;
     private JLabel whatYouChose;
 
     //=========================CONSTRUCTORS============================//
@@ -330,7 +332,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         pane = new JTabbedPane();
         pane.add("Algorithm", getParametersPane());
-        pane.add("Knowledge", getKnowledgePanel(runner));
+        getAlgorithmFromInterface();
         pane.add("Output Graphs", graphEditor);
         add(pane, BorderLayout.CENTER);
 
@@ -423,8 +425,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         knowledgePanel.setLayout(new BorderLayout());
         KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(parameters, myKnowledgeInput);
         knowledgeBoxModel.setKnowledge(runner.getKnowledge());
-        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(
-                knowledgeBoxModel);
+        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(knowledgeBoxModel);
         Box f = Box.createVerticalBox();
         f.add(knowledgeEditor);
         Box g = Box.createHorizontalBox();
@@ -443,7 +444,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 graphEditor.replace(runner.getGraphs());
                 graphEditor.validate();
                 firePropertyChange("modelChanged", null, null);
-                pane.setSelectedIndex(2);
+                pane.setSelectedComponent(graphEditor);
             }
         };
     }
@@ -457,7 +458,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         IndependenceWrapper independenceWrapper = getIndependenceWrapper();
         ScoreWrapper scoreWrapper = getScoreWrapper();
-        return getAlgorithm(name, independenceWrapper, scoreWrapper);
+
+        Algorithm algorithm = getAlgorithm(name, independenceWrapper, scoreWrapper);
+
+        if (algorithm instanceof HasKnowledge) {
+            if (knowledgePanel == null) {
+                knowledgePanel = getKnowledgePanel(runner);
+            }
+
+            pane.remove(graphEditor);
+            pane.add("Knowledge", knowledgePanel);
+            pane.add("Output Graphs", graphEditor);
+        } else {
+            pane.remove(knowledgePanel);
+        }
+
+        return algorithm;
     }
 
     private Algorithm getAlgorithm(AlgName name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {

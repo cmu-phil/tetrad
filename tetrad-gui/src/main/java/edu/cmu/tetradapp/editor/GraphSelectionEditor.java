@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -232,14 +233,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private void initSelection(GraphSelectionWrapper wrapper) {
         List<Node> nodes = wrapper.getVariables();
 
-        List<Node> first50 = new ArrayList<>();
+        List<Node> first500 = new ArrayList<>();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 500; i++) {
             if (i >= nodes.size()) continue;
-            first50.add(nodes.get(i));
+            first500.add(nodes.get(i));
         }
 
-        wrapper.setSelectedVariables(first50);
+        wrapper.setSelectedVariables(first500);
     }
 
     private void resetWorkbenchScrolls(GraphSelectionWrapper wrapper) {

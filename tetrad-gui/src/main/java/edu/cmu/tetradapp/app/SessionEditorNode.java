@@ -107,6 +107,7 @@ public final class SessionEditorNode extends DisplayNode {
         displayComp.setName(modelNode.getSessionName());
 
         if (displayComp instanceof NoteDisplayComp) {
+            createParamObjects(this);
             setDisplayComp(displayComp);
             setLayout(new BorderLayout());
             add((JComponent) getSessionDisplayComp(), BorderLayout.CENTER);

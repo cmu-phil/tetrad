@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import javax.swing.text.DefaultStyledDocument;
@@ -42,7 +43,7 @@ public class NoteModel implements SessionModel {
     private StyledDocument note = new DefaultStyledDocument();
     private String name;
 
-    public NoteModel() {
+    public NoteModel(Parameters parameters) {
         
     }
 
@@ -52,7 +53,7 @@ public class NoteModel implements SessionModel {
      * @see TetradSerializableUtils
      */
     public static NoteModel serializableInstance() {
-        return new NoteModel();
+        return new NoteModel(new Parameters());
     }
 
     public StyledDocument getNote() {

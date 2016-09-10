@@ -40,7 +40,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GraphComparisonParamsEditor extends JPanel implements ParameterEditor {
+public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * The parameters object being edited.

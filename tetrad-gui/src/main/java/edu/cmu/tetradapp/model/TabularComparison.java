@@ -111,7 +111,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             throw new IllegalArgumentException("Must specify a reference graph.");
         } else {
             MultipleGraphSource model11 = (MultipleGraphSource) model1;
-            GraphSource model21 = (GraphSource) model2;
+            Object model21 = model2;
 
             if (referenceName.equals(model1.getName())) {
                 if (model11 instanceof MultipleGraphSource) {
@@ -122,13 +122,13 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                     this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
                 }
 
-//                if (referenceGraphs == null) {
-//                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
-//                }
-//
-//                if (targetGraphs == null) {
-//                    this.targetGraphs = Collections.singletonList(model21.getGraph());
-//                }
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
+                }
             } else if (referenceName.equals(model2.getName())) {
                 if (model21 instanceof MultipleGraphSource) {
                     this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
@@ -138,13 +138,13 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                     this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
                 }
 //
-//                if (referenceGraphs == null) {
-//                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
-//                }
-//
-//                if (targetGraphs == null) {
-//                    this.targetGraphs = Collections.singletonList(model11.getGraph());
-//                }
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
+                }
             } else {
                 throw new IllegalArgumentException(
                         "Neither of the supplied session models is named '" +
@@ -292,6 +292,14 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     @Override
     public Map<String, String> getAllParamSettings() {
         return allParamSettings;
+    }
+
+    public List<Graph> getReferenceGraphs() {
+        return referenceGraphs;
+    }
+
+    public List<Graph> getTargetGraphs() {
+        return targetGraphs;
     }
 }
 

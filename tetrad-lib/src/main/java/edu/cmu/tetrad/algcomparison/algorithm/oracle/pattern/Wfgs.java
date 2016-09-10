@@ -20,9 +20,8 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Wfgs implements Algorithm, HasKnowledge {
+public class Wfgs implements Algorithm {
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
 
     public Wfgs() {
     }
@@ -51,15 +50,5 @@ public class Wfgs implements Algorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         return new ArrayList<>();
-    }
-
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
     }
 }

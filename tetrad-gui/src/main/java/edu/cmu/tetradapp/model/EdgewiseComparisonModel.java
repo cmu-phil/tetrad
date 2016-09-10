@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -44,7 +43,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class GraphComparison implements SessionModel {
+public final class EdgewiseComparisonModel implements SessionModel {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
 
@@ -52,11 +51,11 @@ public final class GraphComparison implements SessionModel {
     private Parameters params;
     private List<Graph> targetGraphs;
     private List<Graph> referenceGraphs;
-    private Graph trueGraph;
+//    private Graph trueGraph;
 
     //=============================CONSTRUCTORS==========================//
 
-    public GraphComparison(GeneralAlgorithmRunner model, Parameters params) {
+    public EdgewiseComparisonModel(GeneralAlgorithmRunner model, Parameters params) {
         this(model, model.getDataWrapper(), params);
     }
 
@@ -65,8 +64,8 @@ public final class GraphComparison implements SessionModel {
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public GraphComparison(SessionModel model1, SessionModel model2,
-                           Parameters params) {
+    public EdgewiseComparisonModel(SessionModel model1, SessionModel model2,
+                                   Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -105,8 +104,8 @@ public final class GraphComparison implements SessionModel {
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
         } else {
-            MultipleGraphSource model11 = (MultipleGraphSource) model1;
-            MultipleGraphSource model21 = (MultipleGraphSource) model2;
+            Object model11 = model1;
+            Object model21 = model2;
 
             if (referenceName.equals(model1.getName())) {
                 if (model11 instanceof MultipleGraphSource) {
@@ -117,13 +116,13 @@ public final class GraphComparison implements SessionModel {
                     this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
                 }
 
-//                if (referenceGraphs == null) {
-//                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
-//                }
-//
-//                if (targetGraphs == null) {
-//                    this.targetGraphs = Collections.singletonList(model21.getGraph());
-//                }
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
+                }
             } else if (referenceName.equals(model2.getName())) {
                 if (model21 instanceof MultipleGraphSource) {
                     this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
@@ -133,13 +132,13 @@ public final class GraphComparison implements SessionModel {
                     this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
                 }
 
-//                if (referenceGraphs == null) {
-//                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
-//                }
-//
-//                if (targetGraphs == null) {
-//                    this.targetGraphs = Collections.singletonList(model11.getGraph());
-//                }
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
+                }
             } else {
                 throw new IllegalArgumentException(
                         "Neither of the supplied session models is named '" +
@@ -161,28 +160,28 @@ public final class GraphComparison implements SessionModel {
         }
     }
 
-    public GraphComparison(GraphWrapper referenceGraph,
-                           AbstractAlgorithmRunner algorithmRunner,
-                           Parameters params) {
+    public EdgewiseComparisonModel(GraphWrapper referenceGraph,
+                                   AbstractAlgorithmRunner algorithmRunner,
+                                   Parameters params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
-    public GraphComparison(GraphWrapper referenceWrapper,
-                           GraphWrapper targetWrapper, Parameters params) {
+    public EdgewiseComparisonModel(GraphWrapper referenceWrapper,
+                                   GraphWrapper targetWrapper, Parameters params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
 
-    public GraphComparison(DagWrapper referenceGraph,
-                           AbstractAlgorithmRunner algorithmRunner,
-                           Parameters params) {
+    public EdgewiseComparisonModel(DagWrapper referenceGraph,
+                                   AbstractAlgorithmRunner algorithmRunner,
+                                   Parameters params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
-    public GraphComparison(DagWrapper referenceWrapper,
-                           GraphWrapper targetWrapper, Parameters params) {
+    public EdgewiseComparisonModel(DagWrapper referenceWrapper,
+                                   GraphWrapper targetWrapper, Parameters params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
@@ -225,19 +224,22 @@ public final class GraphComparison implements SessionModel {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
-
-    public Graph getTrueGraph() {
-        return trueGraph;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
+//
+//    public Graph getTrueGraph() {
+//        return trueGraph;
+//    }
+//
+//    public void setTrueGraph(Graph trueGraph) {
+//        this.trueGraph = trueGraph;
+//    }
 
     private Parameters getParams() {
         return params;
     }
 
+    public List<Graph> getTargetGraphs() {
+        return targetGraphs;
+    }
     public List<Graph> getReferenceGraphs() {
         return referenceGraphs;
     }

@@ -1754,11 +1754,11 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.GraphComparison
+                <model-class>edu.cmu.tetradapp.model.EdgewiseComparisonModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GraphComparisonEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.EdgewiseComparisonEditor</editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.GraphComparisonParamsEditor
+                    edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>
             </model>
             <model name="Tabular Comparison" acronym="TabularComp"
@@ -1771,7 +1771,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.GraphComparisonParamsEditor
+                    edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>
             </model>
             <model name="Misclassifications" acronym="Misclassifications"
@@ -1788,7 +1788,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.MisclassificationsEditor</editor-class>
                 <params-editor-class>
-                    edu.cmu.tetradapp.editor.GraphComparisonParamsEditor
+                    edu.cmu.tetradapp.editor.EdgewiseComparisonParamsEditor
                 </params-editor-class>
             </model>
             <model name="Graph Intersections" acronym="Intersections"

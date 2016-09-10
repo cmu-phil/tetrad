@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class GCcd implements Algorithm, HasKnowledge {
+public class GCcd implements Algorithm {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
@@ -55,15 +55,5 @@ public class GCcd implements Algorithm, HasKnowledge {
         List<String> parameters = score.getParameters();
         parameters.add("depth");
         return parameters;
-    }
-
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
     }
 }

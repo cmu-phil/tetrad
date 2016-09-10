@@ -114,7 +114,16 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
 
     public GraphWrapper(DataWrapper wrapper) {
-        this(new EdgeListGraph(wrapper.getVariables()));
+        if (wrapper instanceof  Simulation) {
+            Simulation simulation = (Simulation) wrapper;
+            this.graphs = simulation.getGraphs();
+            this.numModels = graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            setGraph(new EdgeListGraph(wrapper.getVariables()));
+        }
+
         GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 

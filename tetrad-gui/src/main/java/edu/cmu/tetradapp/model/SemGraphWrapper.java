@@ -159,8 +159,24 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
 	public SemGraphWrapper(DataWrapper wrapper) {
-		this(new SemGraph(new EdgeListGraph(wrapper.getVariables())));
-		GraphUtils.circleLayout(getSemGraph(), 200, 200, 150);
+		if (wrapper instanceof  Simulation) {
+			Simulation simulation = (Simulation) wrapper;
+			this.graphs = new ArrayList<>();
+
+			for (Graph graph : simulation.getGraphs()) {
+				SemGraph semGraph = new SemGraph(graph);
+				semGraph.setShowErrorTerms(false);
+				this.graphs.add(semGraph);
+			}
+
+			this.numModels = graphs.size();
+			this.modelIndex = 0;
+			this.modelSourceName = simulation.getName();
+		} else {
+			setGraph(new EdgeListGraph(wrapper.getVariables()));
+		}
+
+		GraphUtils.circleLayout(getGraph(), 200, 200, 150);
 	}
 
 	public SemGraphWrapper(BayesPmWrapper wrapper) {

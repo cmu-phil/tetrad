@@ -132,7 +132,16 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(DataWrapper wrapper) {
-        this(new Dag(new EdgeListGraph(wrapper.getVariables())));
+        if (wrapper instanceof  Simulation) {
+            Simulation simulation = (Simulation) wrapper;
+            this.dags = simulation.getGraphs();
+            this.numModels = dags.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            setGraph(new EdgeListGraph(wrapper.getVariables()));
+        }
+
         GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 

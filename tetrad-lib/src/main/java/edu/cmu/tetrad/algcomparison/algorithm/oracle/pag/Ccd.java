@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Ccd implements Algorithm, HasKnowledge {
+public class Ccd implements Algorithm {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
@@ -70,15 +70,5 @@ public class Ccd implements Algorithm, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         return parameters;
-    }
-
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
     }
 }
