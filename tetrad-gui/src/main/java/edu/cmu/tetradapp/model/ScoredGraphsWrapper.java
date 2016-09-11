@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.GraphScorer;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -44,7 +45,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable {
+public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
     /**

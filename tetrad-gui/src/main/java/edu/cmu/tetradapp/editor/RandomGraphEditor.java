@@ -535,7 +535,7 @@ class RandomGraphEditor extends JPanel {
     }
 
     private int getNumMeasuredNodes() {
-        return parameters.getInt("newGraphNumMeasuredNodes", 5);
+        return parameters.getInt("newGraphNumMeasuredNodes", 10);
     }
 
     private void setNumMeasuredNodes(int numMeasuredNodes) {
@@ -565,7 +565,7 @@ class RandomGraphEditor extends JPanel {
     }
 
     public int getMaxEdges() {
-        return parameters.getInt("newGraphNumEdges", 3);
+        return parameters.getInt("newGraphNumEdges", 10);
     }
 
 

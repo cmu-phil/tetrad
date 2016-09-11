@@ -67,7 +67,7 @@ import java.util.Map;
 public final class SemImEditor extends JPanel implements LayoutEditable, DoNotScroll {
     private OneEditor oneEditorPanel;
     private JPanel targetPanel;
-    private Object matrixSelection;
+    private int matrixSelection;
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
@@ -115,7 +115,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
                     oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
                     targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
-//                    displaySemIm(getSemIm(), graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
                     validate();
                 }
             });
@@ -134,7 +133,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
-//        displaySemIm(getSemIm(), graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
     }
 
 
@@ -178,16 +176,20 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         oneEditorPanel.setEditable(editable);
     }
 
-    public Object getTabSelectionIndex() {
+    public int getTabSelectionIndex() {
         return oneEditorPanel.getTabSelectionIndex();
     }
 
-    public Object getMatrixSelection() {
+    public int getMatrixSelection() {
         return matrixSelection;
     }
 
     public GraphWorkbench getWorkbench() {
         return oneEditorPanel.getWorkbench();
+    }
+
+    public void displaySemIm(SemIm updatedSem, int tabSelectionIndex, int matrixSelection) {
+        oneEditorPanel.displaySemIm(updatedSem, tabSelectionIndex, matrixSelection);
     }
 
     public enum TabbedPaneDefault {GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS}

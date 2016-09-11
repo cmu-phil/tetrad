@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  * @author Tyler Gibson
  */
-public class ExtractStructureModelWrapper extends GraphWrapper {
+public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
 

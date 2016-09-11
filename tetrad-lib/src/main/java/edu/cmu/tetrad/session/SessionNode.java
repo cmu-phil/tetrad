@@ -1116,8 +1116,7 @@ public class SessionNode implements TetradSerializable {
 
             loop2:
             for (Class argumentType : argumentTypes) {
-                Class type =
-                        findMatchingType(remainingParameterTypes, argumentType);
+                Class type = findMatchingType(remainingParameterTypes, argumentType);
 
                 if (type == null) {
                     continue loop;
@@ -1224,7 +1223,7 @@ public class SessionNode implements TetradSerializable {
             }
         }
 
-        if (modelTypes.length > constructorTypes.length) {
+        if (modelTypes.length != constructorTypes.length) {
             return false;
         }
 

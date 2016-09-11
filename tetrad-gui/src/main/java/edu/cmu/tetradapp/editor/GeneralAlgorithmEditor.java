@@ -401,7 +401,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         MyKnowledgeInput myKnowledgeInput;
 
         if (runner.getDataModel() != null) {
-            variables = runner.getDataModelList().get(0).getVariables();
+            DataModelList dataModelList = runner.getDataModelList();
+            if (dataModelList.size() > 0) {
+                variables = dataModelList.get(0).getVariables();
+            }
         }
 
         if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {

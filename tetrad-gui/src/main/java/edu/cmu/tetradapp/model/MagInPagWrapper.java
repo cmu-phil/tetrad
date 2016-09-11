@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -33,21 +34,17 @@ import edu.cmu.tetrad.util.TetradLogger;
  *
  * @author Tyler Gibson
  */
-public class MagInPagWrapper extends GraphWrapper{
+public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
-    public MagInPagWrapper(GraphSource source, Parameters parameters){
+    public MagInPagWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public MagInPagWrapper(final Graph graph){
+    public MagInPagWrapper(final Graph graph) {
         super(getGraph(graph), "Choose DAG in pattern.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
-    }
-
-    public MagInPagWrapper(MagInPagWrapper wrapper, Parameters parameters) {
-        super(getGraph(wrapper.getGraph()));
     }
 
     private static Graph getGraph(Graph graph) {
@@ -55,7 +52,7 @@ public class MagInPagWrapper extends GraphWrapper{
     }
 
 
-    public static MagInPagWrapper serializableInstance(){
+    public static MagInPagWrapper serializableInstance() {
         return new MagInPagWrapper(EdgeListGraph.serializableInstance());
     }
 
