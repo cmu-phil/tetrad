@@ -44,9 +44,9 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
         edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         search.setKnowledge(knowledge);
 

@@ -43,9 +43,9 @@ public class Ccd implements Algorithm {
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }

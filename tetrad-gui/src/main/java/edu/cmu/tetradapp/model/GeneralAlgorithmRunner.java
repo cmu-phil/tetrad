@@ -26,7 +26,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -55,9 +58,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private String name;
     private Algorithm algorithm = new Fgs(new BdeuScore());
     private Parameters parameters;
-    private DataModel dataModel;
     private Graph sourceGraph;
-    private Graph resultGraph = new EdgeListGraph();
     private Graph initialGraph;
     private List<Graph> graphList = new ArrayList<>();
     private IKnowledge knowledge = new Knowledge2();
@@ -148,7 +149,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
-        this(null, graphSource, parameters, null, null);
+        this(null, graphSource, parameters, knowledgeBoxModel, null);
     }
 
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
@@ -314,8 +315,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             } else {
                 return dataModelList;
             }
-        } else if (dataModel != null) {
-            return dataModel;
         } else {
 
             // Do not throw an exception here!
@@ -333,10 +332,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return dataWrapper.getDataModelList();
     }
 
-    public final void setResultGraph(Graph resultGraph) {
-        this.resultGraph = resultGraph;
-    }
-
     public final Parameters getParameters() {
         return this.parameters;
     }
@@ -352,54 +347,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     //===========================PRIVATE METHODS==========================//
-
-    /**
-     * Find the dataModel model. (If it's a list, take the one that's
-     * selected.)
-     */
-    private DataModel getSelectedDataModel(DataWrapper dataWrapper) {
-        DataModelList dataModelList = dataWrapper.getDataModelList();
-
-        if (dataModelList.size() > 1) {
-            return dataModelList;
-        }
-
-        DataModel dataModel = dataWrapper.getSelectedDataModel();
-
-        if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
-
-            if (dataSet.isDiscrete()) {
-                return dataSet;
-            } else if (dataSet.isContinuous()) {
-                return dataSet;
-            } else if (dataSet.isMixed()) {
-                return dataSet;
-            }
-
-            throw new IllegalArgumentException("<html>" +
-                    "This data set contains a mixture of discrete and continuous " +
-                    "<br>columns; there are no algorithm in Tetrad currently to " +
-                    "<br>search over such data sets." + "</html>");
-        } else if (dataModel instanceof ICovarianceMatrix) {
-            return dataModel;
-        } else if (dataModel instanceof TimeSeriesData) {
-            return dataModel;
-        }
-
-        throw new IllegalArgumentException(
-                "Unexpected dataModel source: " + dataModel);
-    }
-
-    private List<String> measuredNames(Graph graph) {
-        List<String> names = new ArrayList<>();
-        for (Node node : graph.getNodes()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                names.add(node.getName());
-            }
-        }
-        return names;
-    }
 
     private void transferVarNamesToParams(List names) {
         getParameters().set("varNames", names);
@@ -490,16 +437,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return knowledge;
     }
 
-    public void setGraphList(List<Graph> graphList) {
-        this.graphList = graphList;
-    }
-
     public DataWrapper getDataWrapper() {
         return dataWrapper;
     }
 
     public void setIndependenceTests(List<IndependenceTest> independenceTests) {
-        this.independenceTests = this.independenceTests;
+        this.independenceTests = independenceTests;
     }
 }
 

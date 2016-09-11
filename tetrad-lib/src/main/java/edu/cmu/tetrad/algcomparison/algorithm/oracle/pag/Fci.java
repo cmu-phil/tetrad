@@ -45,9 +45,9 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }

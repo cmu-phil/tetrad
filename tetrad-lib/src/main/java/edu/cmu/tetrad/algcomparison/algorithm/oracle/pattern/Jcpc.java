@@ -45,9 +45,9 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }

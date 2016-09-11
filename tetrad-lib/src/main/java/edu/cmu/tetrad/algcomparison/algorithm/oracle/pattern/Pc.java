@@ -46,9 +46,9 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }
