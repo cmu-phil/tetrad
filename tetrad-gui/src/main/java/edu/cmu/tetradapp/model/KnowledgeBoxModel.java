@@ -54,6 +54,10 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private final Graph sourceGraph = new EdgeListGraph();
     private IKnowledge knowledge = new Knowledge2();
 
+    public KnowledgeBoxModel(GeneralAlgorithmRunner runner) {
+        this.knowledge = runner.getKnowledge();
+    }
+
     /**
      * Constructor from dataWrapper edge
      */

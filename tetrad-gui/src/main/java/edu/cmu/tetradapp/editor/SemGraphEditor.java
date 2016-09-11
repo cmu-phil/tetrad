@@ -132,12 +132,16 @@ public final class SemGraphEditor extends JPanel
             add(b, BorderLayout.NORTH);
         }
 
-        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    getSemGraphWrapper().setGraph((Graph) evt.getNewValue());
-                } else if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getSemGraphWrapper() != null) {
+                        getSemGraphWrapper().setGraph(_graph);
+                    }
                 }
             }
         });
@@ -176,24 +180,14 @@ public final class SemGraphEditor extends JPanel
                 String propertyName = evt.getPropertyName();
 
                 if ("graph".equals(propertyName)) {
-                    SemGraph _graph = (SemGraph) evt.getNewValue();
+                    Graph _graph = (Graph) evt.getNewValue();
 
                     if (getWorkbench() != null) {
-                        getSemGraphWrapper().setSemGraph(_graph);
+                        getSemGraphWrapper().setGraph(_graph);
                     }
                 }
             }
         });
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    getSemGraphWrapper().setSemGraph(
-                            (SemGraph) evt.getNewValue());
-                }
-            }
-        });
-
 
         this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

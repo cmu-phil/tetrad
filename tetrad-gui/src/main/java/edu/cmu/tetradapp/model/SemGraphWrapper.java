@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
@@ -41,7 +42,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class SemGraphWrapper implements SessionModel, GraphSource,
-		KnowledgeBoxInput, SimulationParamsSource {
+		KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel {
 	static final long serialVersionUID = 23L;
 	private int numModels = 1;
 	private int modelIndex = 0;
@@ -346,7 +347,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 
 	public void setGraph(Graph graph) {
 		graphs = new ArrayList<>();
-		graphs.add((SemGraph) graph);
+		graphs.add(new SemGraph(graph));
 		log();
 	}
 }
