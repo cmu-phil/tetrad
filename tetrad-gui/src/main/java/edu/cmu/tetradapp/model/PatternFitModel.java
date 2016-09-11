@@ -50,7 +50,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class ModelFitModel implements SessionModel {
+public final class PatternFitModel implements SessionModel {
     static final long serialVersionUID = 23L;
     private final Parameters parameters;
 
@@ -70,7 +70,7 @@ public final class ModelFitModel implements SessionModel {
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public ModelFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
+    public PatternFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }

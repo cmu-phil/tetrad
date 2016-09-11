@@ -356,7 +356,7 @@ public final class SessionEditorNode extends DisplayNode {
 
             public void modelUnclear(SessionEvent sessionEvent) {
                 try {
-                    boolean created = sessionEditorNode.createModel(false);
+                    boolean created = sessionEditorNode.createModel(simulationStudy != null);
 
                     if (!created) {
                         return;
@@ -880,7 +880,7 @@ public final class SessionEditorNode extends DisplayNode {
         SessionNode sessionNode = getSessionNode();
         Class modelClass = determineTheModelClass(sessionNode);
 
-        if (modelClass == null) {
+        if (modelClass == null && !simulation) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     config.getNodeSpecificMessage());
             return false;

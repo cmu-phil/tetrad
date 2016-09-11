@@ -186,6 +186,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             throw new NullPointerException();
         }
 
+        this.params = params;
+
         DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
         SemPm semPm = semImWrapper.getSemIm().getSemPm();
@@ -449,7 +451,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
 
     private SemOptimizer getDefaultOptimization() {
-        if (semPm == null) throw new NullPointerException();
+        if (semPm == null) throw new NullPointerException(
+                "Sorry, I didn't see a SEM PM as parent to the estimator; perhaps the parents are wrong.");
 
         boolean containsLatent = false;
 

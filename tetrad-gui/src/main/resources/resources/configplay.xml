@@ -1828,9 +1828,9 @@
             </model>
             <model name="Model Fit" acronym="Model Fit"
                    help="Model Fit" category="Simuation-Algorithm Comparisons">
-                <model-class>edu.cmu.tetradapp.model.ModelFitModel
+                <model-class>edu.cmu.tetradapp.model.PatternFitModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ModelFitEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.PatternFitEditor</editor-class>
             </model>
         </models>
         <display-component image="graphIcon.gif"/>

@@ -25,8 +25,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetradapp.model.ModelFitModel;
-import edu.cmu.tetradapp.model.SemEstimatorWrapper;
+import edu.cmu.tetradapp.model.PatternFitModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,18 +37,18 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class ModelFitEditor extends JPanel {
+public class PatternFitEditor extends JPanel {
 
     /**
      * The model for the note.
      */
-    private final ModelFitModel comparison;
+    private final PatternFitModel comparison;
 
 
     /**
      * Constructs the editor given the model
      */
-    public ModelFitEditor(ModelFitModel comparison) {
+    public PatternFitEditor(PatternFitModel comparison) {
         this.comparison = comparison;
         setup();
     }

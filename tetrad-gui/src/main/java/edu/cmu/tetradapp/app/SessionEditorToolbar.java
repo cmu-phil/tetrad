@@ -112,7 +112,7 @@ final class SessionEditorToolbar extends JPanel {
                         "<html>Add a node for a data object.</html>"),
                 new ButtonInfo("Search", "Search", "search",
                         "<html>Add a node for a search algorithm.</html>"),
-                new ButtonInfo("Compare", "Comparison", "compare",
+                new ButtonInfo("Comparison", "Comparison", "compare",
                         "<html>Add a node to compare graphs or SEM IM's.</html>"),
                 new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
                 new ButtonInfo("PM", "Parametric Model", "pm",

@@ -201,11 +201,11 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
 //        log(bayesIm);
     }
 
-    public BayesImWrapper() {
-        Dag graph = new Dag();
-        BayesPm pm = new BayesPm(graph);
-        setBayesIm(new MlBayesIm(pm));
-    }
+//    public BayesImWrapper() {
+//        Dag graph = new Dag();
+//        BayesPm pm = new BayesPm(graph);
+//        setBayesIm(new MlBayesIm(pm));
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

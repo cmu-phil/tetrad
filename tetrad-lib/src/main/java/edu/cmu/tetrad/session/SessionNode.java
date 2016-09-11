@@ -1223,7 +1223,11 @@ public class SessionNode implements TetradSerializable {
             }
         }
 
-        if (modelTypes.length != constructorTypes.length) {
+        if (modelTypes.length > constructorTypes.length) {
+            return false;
+        }
+
+        if (numWithoutParams(modelTypes) == 0 && numWithoutParams(constructorTypes) > 0) {
             return false;
         }
 
@@ -1253,6 +1257,18 @@ public class SessionNode implements TetradSerializable {
         }
 
         return false;
+    }
+
+    private int numWithoutParams(Class[] modelTypes) {
+        int n = 0;
+
+        for (Class clazz : modelTypes) {
+            if (clazz != Parameters.class) {
+                n++;
+            }
+        }
+
+        return n;
     }
 
     /**
@@ -1391,8 +1407,13 @@ public class SessionNode implements TetradSerializable {
                     }
                 }
 
+                if (_objects.isEmpty()) {
+                    return;
+                }
+
                 if (parameters != null) {
                     Object o = Array.newInstance(c1, _objects.size());
+
                     for (int i = 0; i < _objects.size(); i++) {
                         Array.set(o, i, _objects.get(i));
                     }
@@ -1483,6 +1504,10 @@ public class SessionNode implements TetradSerializable {
 
             if (constructorTypes.length == 2) {
                 if (constructorTypes[0].isArray() && constructorTypes[1] == Parameters.class) {
+                    if (parents != null && parents.size() == 0) {
+                        return false;
+                    }
+
                     for (int i = 0; i < parentClasses.length; i++) {
                         boolean found = false;
 
