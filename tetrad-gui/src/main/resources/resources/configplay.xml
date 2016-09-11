@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE tetrad-configuration [
         <!ELEMENT tetrad-configuration (session-node*)>
-        <!ELEMENT session-node (models, display-component, model-chooser, node-specific-text)>
+        <!ELEMENT session-node (models, display-component, model-chooser, node-specific-message)>
         <!ELEMENT models (model+)>
         <!ELEMENT model (logger?, model-class, editor-class, params-editor-class?)>
         <!ELEMENT params-editor-class (#PCDATA)>
@@ -11,7 +11,7 @@
         <!ELEMENT editor-class (#PCDATA)>
         <!ELEMENT display-component (#PCDATA)>
         <!ELEMENT model-chooser (#PCDATA)>
-        <!ELEMENT node-specific-text (#PCDATA)>
+        <!ELEMENT node-specific-message (#PCDATA)>
 
         <!ATTLIST event id NMTOKENS #REQUIRED description CDATA #REQUIRED default (on|off) #IMPLIED>
         <!ATTLIST display-component image NMTOKENS #IMPLIED>
@@ -197,16 +197,16 @@
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
         <!--<model-chooser title="Graph Types"/>-->
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Node:
-                 <br> (1) No inputs OR
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) No inputs
                  <br> (2) Data (to extract variables)
-                 <br><i> Also (to extract a graph) any of these:
-                 <br>Search, PM, IM, Estimator, Updator</i>
+                 <br> (3) Also (to extract a graph) any of these: Search, PM, IM, Estimator, Updator
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="PM">
         <models>
@@ -245,16 +245,16 @@
         </models>
         <display-component image="pmIcon.gif"/>
         <model-chooser title="Types of Parameterized Models"/>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Node:
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Graph, OR
                  <br> (2) Graph AND Data (to extract discrete categories)
-                 <br><i> Also (to extract a PM) any of these:
-                 <br>IM, Estimator</i>
+                 <br> (3) Also (to extract a PM) any of these: IM, Estimator
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="IM">
         <models>
@@ -332,15 +332,16 @@
         </models>
         <display-component image="imIcon.gif"/>
         <model-chooser title="Types of Instantiated Models"/>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Node:
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
                  <br> (1) PM (Bayes or SEM), OR
                  <br> (2) IM (to convert Dirichlet Bayes IM to Bayes IM), OR
                  <br> (3) Estimator (to extract IM)
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Data">
         <models>
@@ -854,14 +855,15 @@
         <model-chooser title="Types of Data Manipulations">
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Notes:
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Data, OR
                  <br> (2) Data Manipulation Node
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Estimator">
         <models>
@@ -925,14 +927,15 @@
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Combinations:
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
                  <br> (1) PM and Data, OR
                  <br> (2) IM and Data (shortcut for IM->PM + Data)
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Updater">
         <models>
@@ -989,13 +992,14 @@
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Updaters"/>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Nodes:
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
                  <br> (1) IM (Bayes only)
-               </html>
+                 <br> Note that for the parent boxes, models need to have been created.
+                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Search">
         <models>
@@ -1679,15 +1683,15 @@
         <model-chooser title="Types of Search Algorithms">
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Nodes:
-                 <br> (1) Data (Continous or Discrete), OR
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Data or Simulation, OR
                  <br> (2) Graph (searches directly over graph) OR
-                 <br> (3) for struct EM: Discrete Data + Bayes PM
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Regression">
         <models>
@@ -1716,13 +1720,13 @@
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Regression"/>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
                <html> Allowable Input Nodes:
                  <br> (1) Data (Continuous)
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Classify">
         <models>
@@ -1738,13 +1742,13 @@
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Classifiers"/>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
                <html> Allowable Input Combinations:
                  <br> (1) IM (Bayes only) + Data (discrete only)
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Compare">
         <models>
@@ -1833,15 +1837,16 @@
         <model-chooser title="Types of Comparisons">
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
-        <node-specific-text>
+        <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Combinations:
-                 <br> (1) Search AND Graph
-                 <br> (2) Graph (reference) and Graph (target)
-                 <br> (3) SEM IM (reference) and SEM Estimator (target)
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Simulation and Search
+                 <br> (2) Several boxes containing graphs.
+                 <br> (3) Several boxes containing independence tests.
+                 <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
-        </node-specific-text>
+        </node-specific-message>
     </session-node>
     <session-node id="Note">
         <models>
@@ -1853,7 +1858,7 @@
         <display-component>edu.cmu.tetradapp.app.NoteDisplayComp
         </display-component>
         <model-chooser title="Types of Notes"/>
-        <node-specific-text></node-specific-text>
+        <node-specific-message></node-specific-message>
     </session-node>
     <session-node id="Knowledge">
         <models>
@@ -1903,6 +1908,13 @@
         <display-component image="searchIcon.gif"/>
         <!--<display-component image="graduation_hat1.png"/>-->
         <model-chooser title="Types of Knowledge"/>
-        <node-specific-text></node-specific-text>
+        <node-specific-message>
+            <![CDATA[
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Any box that contains a set of variables.
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
     </session-node>
 </tetrad-configuration>

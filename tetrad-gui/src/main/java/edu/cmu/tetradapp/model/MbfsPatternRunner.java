@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -54,7 +55,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
     }
 
     public MbfsPatternRunner(DataWrapper dataWrapper, Parameters params) {
-        super(dataWrapper, params, new KnowledgeBoxModel(dataWrapper, new Parameters()));
+        super(dataWrapper, params, new KnowledgeBoxModel(new KnowledgeBoxInput[]{dataWrapper}, new Parameters()));
     }
 
 //    public MbfsPatternRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {

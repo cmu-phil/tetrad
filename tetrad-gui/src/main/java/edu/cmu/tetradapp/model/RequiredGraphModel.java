@@ -137,7 +137,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      */
     public RequiredGraphModel(Parameters params, KnowledgeBoxInput input) {
-        super(params, input);
+        super(new KnowledgeBoxInput[]{input}, params);
 
         if (params == null) {
             throw new NullPointerException();

@@ -135,7 +135,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      */
     public ForbiddenGraphModel(Parameters params, KnowledgeBoxInput input) {
-        super(params, input);
+        super(new KnowledgeBoxInput[]{input}, params);
 
         if (params == null) {
             throw new NullPointerException();

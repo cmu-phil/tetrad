@@ -199,11 +199,12 @@
         <!--<model-chooser title="Graph Types"/>-->
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) No inputs
-                 <br> (2) Data (to extract variables)
-                 <br> (3) Also (to extract a graph) any of these: Search, PM, IM, Estimator, Updator
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html> Sorry, this box requires either no input boxes or else of the following:
+                 <br>(1) A Data box (to extract variables), or
+                 <br>(2) Also (to extract a graph) any of these: Search, PM, IM, Estimator, Updator
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
                </html>
             ]]>
         </node-specific-message>
@@ -247,11 +248,13 @@
         <model-chooser title="Types of Parameterized Models"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> Sorry, this box requires either no input boxes or else of the following:
                  <br> (1) Graph, OR
                  <br> (2) Graph AND Data (to extract discrete categories)
                  <br> (3) Also (to extract a PM) any of these: IM, Estimator
-                 <br> Note that for the parent boxes, models need to have been created.
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
                </html>
             ]]>
         </node-specific-message>
@@ -334,11 +337,13 @@
         <model-chooser title="Types of Instantiated Models"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> Sorry, this box requires input boxes of the following sort:
                  <br> (1) PM (Bayes or SEM), OR
                  <br> (2) IM (to convert Dirichlet Bayes IM to Bayes IM), OR
                  <br> (3) Estimator (to extract IM)
-                 <br> Note that for the parent boxes, models need to have been created.
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
                </html>
             ]]>
         </node-specific-message>
@@ -857,12 +862,13 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> Sorry, this box requires input boxes of the following sort:
                  <br> (1) Data, OR
                  <br> (2) Data Manipulation Node
-                 <br> Note that for the parent boxes, models need to have been created.
-               </html>
-            ]]>
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
+               </html>               ]]>
         </node-specific-message>
     </session-node>
     <session-node id="Estimator">
@@ -929,12 +935,13 @@
         <model-chooser title="Types of Estimators"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) PM and Data, OR
-                 <br> (2) IM and Data (shortcut for IM->PM + Data)
-                 <br> Note that for the parent boxes, models need to have been created.
-               </html>
-            ]]>
+               <html> Sorry, this box requires input boxes of the following sort:
+                <br> (1) Data, OR
+                 <br> (2) Data Manipulation Node
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
+               </html>                ]]>
         </node-specific-message>
     </session-node>
     <session-node id="Updater">
@@ -994,10 +1001,12 @@
         <model-chooser title="Types of Updaters"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> Sorry, this box requires input boxes of the following sort:
                  <br> (1) IM (Bayes only)
-                 <br> Note that for the parent boxes, models need to have been created.
-                </html>
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
+               </html>
             ]]>
         </node-specific-message>
     </session-node>
@@ -1685,11 +1694,10 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Data or Simulation, OR
-                 <br> (2) Graph (searches directly over graph) OR
-                 <br> Note that for the parent boxes, models need to have been created.
-               </html>
+            <html>
+            <br>This box requires inputs; see the manual for more information. It can take a data box
+            <br>as input, for searching over data, or a graph box, for searching using d-separation facts.
+            </html
             ]]>
         </node-specific-message>
     </session-node>
@@ -1839,11 +1847,13 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+                <html> Sorry, this box requires input boxes of the following sort:
                  <br> (1) Simulation and Search
                  <br> (2) Several boxes containing graphs.
                  <br> (3) Several boxes containing independence tests.
-                 <br> Note that for the parent boxes, models need to have been created.
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
                </html>
             ]]>
         </node-specific-message>
@@ -1910,9 +1920,11 @@
         <model-chooser title="Types of Knowledge"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> Sorry, this box requires input boxes of the following sort:
                  <br> (1) Any box that contains a set of variables.
-                 <br> Note that for the parent boxes, models need to have been created.
+                 <br>You need to first create models in the parent boxes and then create a model in this box. You
+                 <br>can add adjust the parent boxes in the workbench and then draw arrows from those boxes to
+                 <br>to this box.See the manual for more information.
                </html>
             ]]>
         </node-specific-message>

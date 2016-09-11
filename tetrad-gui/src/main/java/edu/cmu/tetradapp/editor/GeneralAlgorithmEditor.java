@@ -426,7 +426,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         JPanel knowledgePanel = new JPanel();
         knowledgePanel.setLayout(new BorderLayout());
-        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(parameters, myKnowledgeInput);
+        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(new KnowledgeBoxInput[]{myKnowledgeInput}, parameters);
         knowledgeBoxModel.setKnowledge(runner.getKnowledge());
         KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(knowledgeBoxModel);
         Box f = Box.createVerticalBox();
