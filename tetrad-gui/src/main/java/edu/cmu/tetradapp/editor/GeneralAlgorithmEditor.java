@@ -151,6 +151,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
+//        descriptions.add(new AlgorithmDescription(AlgName.FgsMeasurement, AlgType.Pattern, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
@@ -491,6 +492,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     algorithm = new Fgs(scoreWrapper);
                 }
                 break;
+//            case FgsMeasurement:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new FgsMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new FgsMeasurement(scoreWrapper);
+//                }
+//                break;
             case PC:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -1019,9 +1027,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, PcLocal, PcMax, PcMaxLocal, FAS,
-        FgsMb, MBFS, Wfgs, JCPC,
-        FCI, RFCI, CFCI, GFCI, FGS, TsFCI, TsGFCI, TsImages, CCD, GCCD,
+        PC, PCStable, CPC, CPCStable, FGS, PcLocal, PcMax, PcMaxLocal, FAS,
+        FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
+        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,
         GLASSO,

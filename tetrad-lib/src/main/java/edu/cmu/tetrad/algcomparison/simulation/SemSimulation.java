@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -9,6 +10,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,23 @@ public class SemSimulation implements Simulation {
             graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getBoolean("standardize")) {
+                dataSet = DataUtils.standardizeData(dataSet);
+            }
+
+            double variance = parameters.getDouble("measurementVariance");
+
+            if (variance > 0) {
+                for (int k = 0; k < dataSet.getNumRows(); k++) {
+                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                        double d = dataSet.getDouble(k, j);
+                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        dataSet.setDouble(k, j, d + norm);
+                    }
+                }
+            }
+
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
@@ -99,6 +118,8 @@ public class SemSimulation implements Simulation {
             parameters.addAll(SemIm.getParameterNames());
         }
 
+        parameters.add("standardize");
+        parameters.add("measurementVariance");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
