@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE tetrad-configuration [
         <!ELEMENT tetrad-configuration (session-node*)>
-        <!ELEMENT session-node (models, display-component, model-chooser, tooltip)>
+        <!ELEMENT session-node (models, display-component, model-chooser, node-specific-text)>
         <!ELEMENT models (model+)>
         <!ELEMENT model (logger?, model-class, editor-class, params-editor-class?)>
         <!ELEMENT params-editor-class (#PCDATA)>
@@ -11,7 +11,7 @@
         <!ELEMENT editor-class (#PCDATA)>
         <!ELEMENT display-component (#PCDATA)>
         <!ELEMENT model-chooser (#PCDATA)>
-        <!ELEMENT tooltip (#PCDATA)>
+        <!ELEMENT node-specific-text (#PCDATA)>
 
         <!ATTLIST event id NMTOKENS #REQUIRED description CDATA #REQUIRED default (on|off) #IMPLIED>
         <!ATTLIST display-component image NMTOKENS #IMPLIED>
@@ -197,7 +197,7 @@
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
         <!--<model-chooser title="Graph Types"/>-->
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Node:
                  <br> (1) No inputs OR
@@ -206,7 +206,7 @@
                  <br>Search, PM, IM, Estimator, Updator</i>
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="PM">
         <models>
@@ -245,7 +245,7 @@
         </models>
         <display-component image="pmIcon.gif"/>
         <model-chooser title="Types of Parameterized Models"/>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Node:
                  <br> (1) Graph, OR
@@ -254,7 +254,7 @@
                  <br>IM, Estimator</i>
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="IM">
         <models>
@@ -332,7 +332,7 @@
         </models>
         <display-component image="imIcon.gif"/>
         <model-chooser title="Types of Instantiated Models"/>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Node:
                  <br> (1) PM (Bayes or SEM), OR
@@ -340,7 +340,7 @@
                  <br> (3) Estimator (to extract IM)
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Data">
         <models>
@@ -854,14 +854,14 @@
         <model-chooser title="Types of Data Manipulations">
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Notes:
                  <br> (1) Data, OR
                  <br> (2) Data Manipulation Node
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Estimator">
         <models>
@@ -925,14 +925,14 @@
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Combinations:
                  <br> (1) PM and Data, OR
                  <br> (2) IM and Data (shortcut for IM->PM + Data)
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Updater">
         <models>
@@ -989,13 +989,13 @@
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Updaters"/>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Nodes:
                  <br> (1) IM (Bayes only)
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Search">
         <models>
@@ -1679,7 +1679,7 @@
         <model-chooser title="Types of Search Algorithms">
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Nodes:
                  <br> (1) Data (Continous or Discrete), OR
@@ -1687,7 +1687,7 @@
                  <br> (3) for struct EM: Discrete Data + Bayes PM
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Regression">
         <models>
@@ -1716,13 +1716,13 @@
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Regression"/>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Nodes:
                  <br> (1) Data (Continuous)
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Classify">
         <models>
@@ -1738,13 +1738,13 @@
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Classifiers"/>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Combinations:
                  <br> (1) IM (Bayes only) + Data (discrete only)
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Compare">
         <models>
@@ -1833,7 +1833,7 @@
         <model-chooser title="Types of Comparisons">
             edu.cmu.tetradapp.app.CategorizingModelChooser
         </model-chooser>
-        <tooltip>
+        <node-specific-text>
             <![CDATA[
                <html> Allowable Input Combinations:
                  <br> (1) Search AND Graph
@@ -1841,7 +1841,7 @@
                  <br> (3) SEM IM (reference) and SEM Estimator (target)
                </html>
             ]]>
-        </tooltip>
+        </node-specific-text>
     </session-node>
     <session-node id="Note">
         <models>
@@ -1853,7 +1853,7 @@
         <display-component>edu.cmu.tetradapp.app.NoteDisplayComp
         </display-component>
         <model-chooser title="Types of Notes"/>
-        <tooltip></tooltip>
+        <node-specific-text></node-specific-text>
     </session-node>
     <session-node id="Knowledge">
         <models>
@@ -1903,6 +1903,6 @@
         <display-component image="searchIcon.gif"/>
         <!--<display-component image="graduation_hat1.png"/>-->
         <model-chooser title="Types of Knowledge"/>
-        <tooltip></tooltip>
+        <node-specific-text></node-specific-text>
     </session-node>
 </tetrad-configuration>

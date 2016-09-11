@@ -429,13 +429,13 @@ class ExpressionEditor extends JPanel {
         }
 
         public void focusLost(FocusEvent e) {
-            if (field.getText() != null && field.getText().length() != 0
-                    && !NamingProtocol.isLegalName(field.getText())) {
-                field.setToolTipText(NamingProtocol.getProtocolDescription());
-            } else {
-                field.setSelectionColor(SELECTION);
-                field.setToolTipText(null);
-            }
+//            if (field.getText() != null && field.getText().length() != 0
+//                    && !NamingProtocol.isLegalName(field.getText())) {
+//                field.setToolTipText(NamingProtocol.getProtocolDescription());
+//            } else {
+//                field.setSelectionColor(SELECTION);
+//                field.setToolTipText(null);
+//            }
         }
     }
 
@@ -476,13 +476,13 @@ class ExpressionEditor extends JPanel {
 //
 //            System.out.println("a " + startWhenFocusLost + " " + endWhenFocusLost);
 
-            try {
-                parser.parseExpression(field.getText());
-                field.setSelectionColor(SELECTION);
-                field.setToolTipText(null);
-            } catch (ParseException e1) {
-                field.setToolTipText(e1.getMessage());
-            }
+//            try {
+//                parser.parseExpression(field.getText());
+//                field.setSelectionColor(SELECTION);
+//                field.setToolTipText(null);
+//            } catch (ParseException e1) {
+//                field.setToolTipText(e1.getMessage());
+//            }
         }
 
 //        public int getStartWhenFocusLost() {

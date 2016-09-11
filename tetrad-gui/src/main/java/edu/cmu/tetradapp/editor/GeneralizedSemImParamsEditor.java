@@ -133,17 +133,6 @@ class GeneralizedSemImParamsEditor extends JPanel {
     private GeneralizedSemPm semPm() {
         return this.semPm;
     }
-
-    private Graph graph() {
-        return semPm().getGraph();
-    }
-
-    private void setSavedTooltipDelay(int savedTooltipDelay) {
-        /*
-      This delay needs to be restored when the component is hidden.
-     */
-        int savedTooltipDelay1 = savedTooltipDelay;
-    }
 }
 
 

@@ -46,9 +46,9 @@ public interface SessionNodeConfig {
 
 
     /**
-     * @return text to use as a tooltip for the node.
+     * @return text to use as a nodeSpecificMessage for the node.
      */
-    String getTooltipText();
+    String getNodeSpecificMessage();
 
 
     /**

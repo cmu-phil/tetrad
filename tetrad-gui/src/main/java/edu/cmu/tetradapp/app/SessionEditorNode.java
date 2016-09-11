@@ -30,7 +30,6 @@ import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 
@@ -43,7 +42,6 @@ import java.awt.Point;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +99,6 @@ public final class SessionEditorNode extends DisplayNode {
                     "Simulation study must not be null.");
         }
         SessionDisplayComp displayComp = this.config.getSessionDisplayCompInstance();
-        String tooltip = this.config.getTooltipText();
 
         this.simulationStudy = simulationStudy;
         displayComp.setName(modelNode.getSessionName());
@@ -112,7 +109,6 @@ public final class SessionEditorNode extends DisplayNode {
             setLayout(new BorderLayout());
             add((JComponent) getSessionDisplayComp(), BorderLayout.CENTER);
             setSelected(false);
-            setToolTipText(tooltip);
             this.addMouseListener(new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
                     if (SwingUtilities.isRightMouseButton(e)) {
@@ -131,7 +127,6 @@ public final class SessionEditorNode extends DisplayNode {
             add((JComponent) getSessionDisplayComp(), BorderLayout.CENTER);
             setSelected(false);
             createParamObjects(this);
-            setToolTipText(tooltip);
             addListeners(this, modelNode);
         }
     }
@@ -232,7 +227,7 @@ public final class SessionEditorNode extends DisplayNode {
             Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
 
-                Object[] arguments = new Object[]{model};
+            Object[] arguments = new Object[]{model};
             JPanel editor = modelConfig.getEditorInstance(arguments);
             addEditorListener(editor);
 
@@ -276,7 +271,6 @@ public final class SessionEditorNode extends DisplayNode {
             e.printStackTrace();
 
         } catch (ClassCastException e) {
-            // Annoying Layout error that gives no information.
             e.printStackTrace();
         } catch (Exception e) {
             Throwable cause = e;
@@ -303,17 +297,15 @@ public final class SessionEditorNode extends DisplayNode {
      * @param selected the selection status of the node (true or false).
      */
     public void setSelected(boolean selected) {
-//        setBorder(null);
         super.setSelected(selected);
         getSessionDisplayComp().setSelected(selected);
-//        repaint();
     }
 
     //===========================PRIVATE METHODS===========================//
 
 
-    private static void addListeners(final SessionEditorNode sessionEditorNode,
-                                     SessionNodeWrapper modelNode) {
+    private void addListeners(final SessionEditorNode sessionEditorNode,
+                              final SessionNodeWrapper modelNode) {
         // Add a mouse listener for popups.
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -496,7 +488,6 @@ public final class SessionEditorNode extends DisplayNode {
         return popup;
     }
 
-
     /**
      * Creates the popup for the node.
      */
@@ -608,18 +599,7 @@ public final class SessionEditorNode extends DisplayNode {
                     if (ret != JOptionPane.YES_OPTION) {
                         return;
                     }
-
-                    ret = JOptionPane.showConfirmDialog(centeringComp,
-                            "Please confirm once more.",
-                            "Confirm",
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.WARNING_MESSAGE);
-
-                    if (ret != JOptionPane.YES_OPTION) {
-                        return;
-                    }
                 }
-
                 try {
                     createDescendantModels(true);
                 } catch (RuntimeException e1) {
@@ -670,55 +650,18 @@ public final class SessionEditorNode extends DisplayNode {
 
         deleteBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (getSessionNode().getModel() == null) {
-                    //
-//                    Component centeringComp = SessionEditorNode.this;
-//                    int ret = JOptionPane.showConfirmDialog(centeringComp,
-//                            "Are you sure you want to delete this box? It contains something.");
-//
-//                    if (ret != JOptionPane.YES_OPTION) {
-//                        return;
-//                    }
-                } else {
-                    Component centeringComp = SessionEditorNode.this;
-                    int ret = JOptionPane.showConfirmDialog(centeringComp,
-                            "Are you sure you want to delete this box? It contains some work.",
-                            null, JOptionPane.YES_NO_OPTION);
+                Component centeringComp = SessionEditorNode.this;
+                int ret = JOptionPane.showConfirmDialog(centeringComp,
+                        "Are you sure you want to delete this box? It contains some work.",
+                        null, JOptionPane.YES_NO_OPTION);
 
-                    if (ret != JOptionPane.YES_OPTION) {
-                        return;
-                    }
+                if (ret != JOptionPane.YES_OPTION) {
+                    return;
                 }
 
                 firePropertyChange("deleteNode", null, null);
             }
         });
-
-//        JMenuItem help = new JMenuItem("Help");
-//        deleteBox.setToolTipText("<html>Shows help for this box.</html>");
-//
-//        help.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                SessionNodeWrapper sessionNodeWrapper =
-//                        (SessionNodeWrapper) getModelNode();
-//                SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
-//                showInfoBoxForModel(sessionNode, sessionNode.getModelClasses());
-//            }
-//        });
-
-//        JMenuItem setRepetition =
-//                new JMenuItem("Set Repeat...");
-//        setRepetition.setToolTipText(
-//                "<html>Sets the number of times this node " +
-//                        "<br>will be repeated when executing," +
-//                        "<br>at each depth first traversal of the" +
-//                        "<br>node. Useful for simulation studies.</html>");
-
-//        setRepetition.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                editRepetition();
-//            }
-//        });
 
         JMenuItem editSimulationParameters =
                 new JMenuItem("Edit Parameters...");
@@ -757,7 +700,6 @@ public final class SessionEditorNode extends DisplayNode {
                         if (ret == JOptionPane.YES_OPTION) {
                             getSessionNode().destroyModel();
                             getSessionNode().createModel(modelClass, true);
-//                            doDoubleClickAction(getSessionWrapper());
                         }
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -765,13 +707,6 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             }
         });
-
-//        JMenuItem simulate = new JMenuItem(new RunSimulationAction(this));
-//        simulate.setToolTipText("<html>Runs a simulation study, visiting " +
-//                "<br>nodes downstream recursively in depth first" +
-//                "<br>order (with repetitions as noted), writing" +
-//                "<br>output to a log file.</html>");
-
 
         popup.add(createModel);
         popup.add(editModel);
@@ -788,14 +723,6 @@ public final class SessionEditorNode extends DisplayNode {
         addEditLoggerSettings(popup);
         popup.add(propagateDownstream);
 
-//        popup.addSeparator();
-
-//        popup.add(setRepetition);
-//        popup.add(simulate);
-//
-//        popup.addSeparator();
-//        popup.add(help);
-
         return popup;
     }
 
@@ -806,7 +733,6 @@ public final class SessionEditorNode extends DisplayNode {
     private void addEditLoggerSettings(JPopupMenu menu) {
         SessionNodeWrapper modelNode = (SessionNodeWrapper) getModelNode();
         SessionNode sessionNode = modelNode.getSessionNode();
-        SessionModel model = sessionNode.getModel();
         final TetradLoggerConfig config = sessionNode.getLoggerConfig();
         if (config != null) {
             JMenuItem item = new JMenuItem("Edit Logger Settings ...");
@@ -880,11 +806,6 @@ public final class SessionEditorNode extends DisplayNode {
                     workbench.getSimulationStudy().createDescendantModels(
                             getSessionNode(), overwrite);
                 }
-
-//                if (getSessionNode().getModel() != null) {
-//                    JOptionPane.showMessageDialog(SessionEditorNode.this,
-//                            "Downstream models overwritten.");
-//                }
             }
         };
     }
@@ -918,8 +839,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         if (selection == 0) {
             for (SessionNode child : getChildren()) {
-                boolean overwrite = true;
-                executeSessionNode(child, overwrite);
+                executeSessionNode(child, true);
             }
         } else if (selection == 1) {
             for (Edge edge : sessionWrapper.getEdges(getModelNode())) {
@@ -944,17 +864,6 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
-    private void editRepetition() {
-        SessionNodeWrapper wrapper = (SessionNodeWrapper) getModelNode();
-        RepetitionEditor repetitionEditor = new RepetitionEditor(this, wrapper);
-        Component centeringComp = SessionEditorNode.this;
-
-        JOptionPane.showOptionDialog(centeringComp, repetitionEditor,
-                "Repetition Editor", JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE, null,
-                new String[]{"OK", "Cancel"}, "OK");
-    }
-
     /**
      * Creates a model in the wrapped SessionNode, given the SessionNode's
      * parent models.
@@ -972,6 +881,8 @@ public final class SessionEditorNode extends DisplayNode {
         Class modelClass = determineTheModelClass(sessionNode);
 
         if (modelClass == null) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    config.getNodeSpecificMessage());
             return false;
         }
 
@@ -1008,22 +919,12 @@ public final class SessionEditorNode extends DisplayNode {
         // associated with, based on the node's type.
         loadModelClassesFromConfig(sessionNode);
 
-        // Must first ascertain the class to create.
-        /*
-      Keeps track of whether the last model class for this node should be
-      remembered. (But why??)
-     */
-        boolean rememberLastClass = false;
-        Class[] modelClasses = rememberLastClass ? new Class[]{
-                sessionNode.getLastModelClass()} :
-                sessionNode.getConsistentModelClasses();
+        Class[] modelClasses = sessionNode.getConsistentModelClasses();
 
         // If you can't even put a model into the object, throw an
         // exception.
         if ((modelClasses == null) || (modelClasses.length == 0)) {
-//            JOptionPane.showMessageDialog(this, missingParentsMessage());
             return null;
-//            throw new RuntimeException(missingParentsMessage());
         }
 
         // Choose a single model class either by asking the user or by just
@@ -1086,7 +987,6 @@ public final class SessionEditorNode extends DisplayNode {
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
         List<Class> reducedList = new LinkedList<>();
-        String buttonType;
 
         for (Class modelClass : modelClasses) {
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
@@ -1098,10 +998,6 @@ public final class SessionEditorNode extends DisplayNode {
             throw new RuntimeException("There is no model to choose.");
         }
 
-        // Show a model type choose to the user. This has an "Info" button in it.
-        SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
-        buttonType = nodeWrapper.getButtonType();
-
         ModelChooser chooser = this.config.getModelChooserInstance(sessionNode);
         Component centeringComp = SessionEditorNode.this;
 
@@ -1109,50 +1005,6 @@ public final class SessionEditorNode extends DisplayNode {
                 "Choose Model for Help...", JOptionPane.QUESTION_MESSAGE);
 
         return chooser.getSelectedModel();
-    }
-
-    private String missingParentsMessage() {
-        Set<SessionNode> parents = getParents();
-
-        for (Object parent3 : parents) {
-            SessionNode parent = (SessionNode) parent3;
-
-            if (parent.getModel() == null) {
-                return "Please fill in all the parent boxes first.";
-            }
-        }
-
-        if (parents.size() == 2) {
-            Iterator<SessionNode> i = parents.iterator();
-            Object parent1 = (i.next()).getModel();
-            Object parent2 = (i.next()).getModel();
-
-            if ((parent1 instanceof SemPmWrapper &&
-                    parent2 instanceof Simulation) || (
-                    parent2 instanceof SemPmWrapper &&
-                            parent1 instanceof Simulation) || (
-                    parent2 instanceof SemPmWrapper &&
-                            parent1 instanceof DirichletBayesDataWrapper)) {
-                return "Sem PM incompatible with discrete data.";
-            }
-
-            if ((parent1 instanceof BayesPmWrapper &&
-                    parent2 instanceof SemDataWrapper) || (
-                    parent2 instanceof BayesPmWrapper &&
-                            parent1 instanceof SemDataWrapper)) {
-                return "Bayes PM incompatible with continuous data.";
-            }
-
-        }
-
-        return "There are no consistent models for that set of parents.";
-    }
-
-    private Set<SessionNode> getParents() {
-        SessionNodeWrapper _sessionNodeWrapper =
-                (SessionNodeWrapper) getModelNode();
-        SessionNode _sessionNode = _sessionNodeWrapper.getSessionNode();
-        return _sessionNode.getParents();
     }
 
     public Set<SessionNode> getChildren() {
@@ -1196,7 +1048,7 @@ public final class SessionEditorNode extends DisplayNode {
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
      */
     public boolean editParameters(final Class modelClass, Parameters params,
-                                   Object[] parentModels) {
+                                  Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
         }
@@ -1220,7 +1072,7 @@ public final class SessionEditorNode extends DisplayNode {
             e.setup();
             return e.finalizeEdit();
         }
-        // wrap editor and deal with respose.
+        // wrap editor and deal with response.
         paramEditor.setup();
         JComponent editor = (JComponent) paramEditor;
         SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
@@ -1233,59 +1085,16 @@ public final class SessionEditorNode extends DisplayNode {
                 JOptionPane.PLAIN_MESSAGE, null,
                 null, null);
 
-        if (ret == JOptionPane.OK_OPTION) {
-            // if finalizing editor, then deal with specially.
-            if (paramEditor instanceof FinalizingParameterEditor) {
-                return ((FinalizingParameterEditor) paramEditor).finalizeEdit();
-            }
-            return true;
-        }
+        // if finalizing editor, then deal with specially.
+        return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor) ||
+                ((FinalizingParameterEditor) paramEditor).finalizeEdit());
 
-        // This doens't block properly.
-//        final EditorWindow window = new EditorWindow((JPanel) paramEditor,
-//                "All Paths", "Close", true, centeringComp);
-//        DesktopController.getInstance().addEditorWindow(window);
-//        window.setVisible(true);
-//
-//        window.addInternalFrameListener(new InternalFrameAdapter() {
-//            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
-//                try {
-//                    EditorWindow window = (EditorWindow) internalFrameEvent.getSource();
-//
-//                    if (window.isCanceled()) {
-//                        return;
-//                    }
-//
-//                    boolean successful = true;
-//
-//                    if (paramEditor instanceof FinalizingParameterEditor) {
-//                        successful = ((FinalizingParameterEditor) paramEditor).finalizeEdit();
-//                    }
-//
-//                    if (successful) {
-//                        getSessionNode().destroyModel();
-//                        getSessionNode().createModel(modelClass, true);
-//                        doDoubleClickAction(getSessionWrapper());
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        });
-
-        return false;
     }
 
     public SessionNode getSessionNode() {
         SessionNodeWrapper wrapper = (SessionNodeWrapper) super.getModelNode();
         return wrapper.getSessionNode();
     }
-
-//    private String getDescription(Class modelClass) {
-//        SessionNodeModelConfig config = this.config.getModelConfig(modelClass);
-//        return config.getNode();
-//    }
 
     private void setSpawnedEditor(EditorWindow editorWindow) {
         this.spawnedEditor = editorWindow;
@@ -1311,7 +1120,6 @@ public final class SessionEditorNode extends DisplayNode {
                 SessionNodeModelConfig modelConfig = this.config.getModelConfig(clazz);
                 if (modelConfig == null) {
                     continue;
-//                    throw new NullPointerException("No configuration found for model: " + clazz);
                 }
 
                 sessionNode.putParam(clazz, new Parameters(sessionNode.getParameters()));
@@ -1358,86 +1166,8 @@ public final class SessionEditorNode extends DisplayNode {
         return simulationStudy;
     }
 
-
-    private SessionWrapper getSessionWrapper() {
-        return sessionWrapper;
-    }
-
     private SessionDisplayComp getSessionDisplayComp() {
         return (SessionDisplayComp) getDisplayComp();
-    }
-
-    /**
-     * Allows the user to edit the number of times a given node is executed in a
-     * simulation study.
-     */
-    private static final class RepetitionEditor extends JComponent {
-        private final SessionEditorNode editorNode;
-        private final SessionNodeWrapper wrapper;
-
-        public RepetitionEditor(SessionEditorNode editorNode,
-                                SessionNodeWrapper wrapper) {
-            this.editorNode = editorNode;
-            this.wrapper = wrapper;
-
-            IntTextField repetitionField = new IntTextField(getRepetition(), 6);
-            repetitionField.setFilter(new IntTextField.Filter() {
-                public int filter(int value, int oldValue) {
-                    try {
-                        setRepetition(value);
-                        return value;
-                    } catch (Exception e) {
-                        return oldValue;
-                    }
-                }
-            });
-
-            setLayout(new BorderLayout());
-
-            Box b0 = Box.createVerticalBox();
-
-            Box b1 = Box.createHorizontalBox();
-            b1.add(new JLabel("Set the number of times this node should be"));
-            b1.add(Box.createHorizontalGlue());
-            b0.add(b1);
-
-            Box b2 = Box.createHorizontalBox();
-            b2.add(new JLabel("repeated each time it is encountered in a depth first"));
-            b2.add(Box.createHorizontalGlue());
-            b0.add(b2);
-
-            Box b3 = Box.createHorizontalBox();
-            b3.add(new JLabel("traversal of the nodes:"));
-            b3.add(Box.createHorizontalGlue());
-            b3.add(repetitionField);
-            b0.add(b3);
-
-            add(b0, BorderLayout.CENTER);
-        }
-
-        private void setRepetition(int value) {
-            simulationStudy().setRepetition(getSessionNode(), value);
-        }
-
-        private int getRepetition() {
-            return SimulationStudy.getRepetition(getSessionNode());
-        }
-
-        public SessionNodeWrapper getWrapper() {
-            return this.wrapper;
-        }
-
-        public SessionEditorNode getEditorNode() {
-            return editorNode;
-        }
-
-        public SessionNode getSessionNode() {
-            return wrapper.getSessionNode();
-        }
-
-        private SimulationStudy simulationStudy() {
-            return editorNode.getSimulationStudy();
-        }
     }
 }
 
