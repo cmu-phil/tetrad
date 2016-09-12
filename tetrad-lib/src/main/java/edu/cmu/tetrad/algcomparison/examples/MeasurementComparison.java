@@ -23,8 +23,12 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgsMeasurement;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStable;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
@@ -47,15 +51,17 @@ public class MeasurementComparison {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 5);
         parameters.set("numMeasures", 20);
         parameters.set("avgDegree", 2, 6);
         parameters.set("sampleSize", 100, 500, 1000, 5000);
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
+        parameters.set("alpha", 0.001);
         parameters.set("penaltyDiscount", 4);
-        parameters.set("measurementVariance", 0, .01, .1, .2, .3, .4, .5, 1, 2, 3, 4, 5);
+        parameters.set("standardize", true);
+        parameters.set("measurementVariance", 0, .01, .1, .2, .3, .4, .5);//, 1);
 
         Statistics statistics = new Statistics();
 
@@ -68,19 +74,21 @@ public class MeasurementComparison {
         statistics.add(new ArrowheadRecall());
 
         statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 1.0);
+        statistics.setWeight("AR", 0.5);
         statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 1.0);
+        statistics.setWeight("AHR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FgsMeasurement(new SemBicScore()));
+        algorithms.add(new PcStable(new FisherZ()));
+        algorithms.add(new Fgs(new SemBicScore()));
+//        algorithms.add(new FgsMeasurement(new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
-        comparison.setShowUtilities(false);
+        comparison.setShowUtilities(true);
         comparison.setSortByUtility(false);
         comparison.setTabDelimitedTables(true);
         comparison.setSaveGraphs(false);

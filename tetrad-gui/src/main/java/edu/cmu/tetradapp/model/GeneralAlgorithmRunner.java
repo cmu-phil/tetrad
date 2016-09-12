@@ -178,6 +178,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         this.parameters = parameters;
 
+        if (graphSource instanceof GeneralAlgorithmRunner) {
+            this.algorithm = ((GeneralAlgorithmRunner) graphSource).getAlgorithm();
+        }
+
         if (dataWrapper != null) {
             this.dataWrapper = dataWrapper;
 

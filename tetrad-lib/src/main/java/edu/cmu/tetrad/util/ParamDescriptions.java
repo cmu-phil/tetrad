@@ -28,7 +28,7 @@ public class ParamDescriptions {
         put("penaltyDiscount", new ParamDescription("Penalty discount", 4, 0.0, Double.MAX_VALUE));
         put("fgsDepth", new ParamDescription("Maximum number of new colliders", -1, 1, Integer.MAX_VALUE));
         put("standardize", new ParamDescription("Yes if the data should be standardized", false));
-        put("measurementVariance", new ParamDescription("Additive measurement noise variance", 1.0, 0, Double.MAX_VALUE));
+        put("measurementVariance", new ParamDescription("Additive measurement noise variance", 0.0, 0, Double.MAX_VALUE));
         put("depth", new ParamDescription("Maximum size of conditioning set", -1, 0, Integer.MAX_VALUE));
         put("coefLow", new ParamDescription("Low end of coefficient range", 0.5, 0.0, Double.MAX_VALUE));
         put("coefHigh", new ParamDescription("High end of coefficient range", 1.5, 0.0, Double.MAX_VALUE));
