@@ -21,13 +21,16 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * <p></p>This is experimental; you should use it. It will probably be
@@ -226,7 +229,7 @@ public class PcMax implements GraphSearch {
 
 //        independenceTest.setAlpha(0.6);
 
-        SepsetsMinScore sepsetProducer = new SepsetsMinScore(graph, independenceTest, null, getDepth());
+        SepsetProducer sepsetProducer = new SepsetsMinScore(graph, independenceTest, null, getDepth());
 
         addColliders(graph, sepsetProducer, knowledge);
 
@@ -288,9 +291,64 @@ public class PcMax implements GraphSearch {
 
         List<Node> nodes = graph.getNodes();
 
-        for (Node b : nodes) {
-            findColliders(sepsetProducer, graph, verbose, colliders, b);
+        class AlgorithmTask extends RecursiveTask<Boolean> {
+            public AlgorithmTask(SepsetProducer sepsetProducer, Graph graph, boolean verbose, Map<Triple, Double> colliders,
+                                 Node b) {
+                findColliders(sepsetProducer, graph, verbose, colliders, b);
+            }
+
+            @Override
+            protected Boolean compute() {
+                return true;
+            }
         }
+
+        List<AlgorithmTask> tasks = new ArrayList<>();
+
+        for (Node b : nodes) {
+            tasks.add(new AlgorithmTask(sepsetProducer, graph, verbose, colliders, b));
+//            findColliders(sepsetProducer, graph, verbose, colliders, b);
+        }
+
+        class Task extends RecursiveTask<Boolean> {
+            List<AlgorithmTask> tasks;
+
+            public Task(List<AlgorithmTask> tasks) {
+                this.tasks = tasks;
+            }
+
+            @Override
+            protected Boolean compute() {
+                Queue<AlgorithmTask> tasks = new ArrayDeque<>();
+
+                for (AlgorithmTask task : this.tasks) {
+                    tasks.add(task);
+                    task.fork();
+
+                    for (AlgorithmTask _task : new ArrayList<>(tasks)) {
+                        if (_task.isDone()) {
+                            _task.join();
+                            tasks.remove(_task);
+                        }
+                    }
+
+                    while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
+                        AlgorithmTask _task = tasks.poll();
+                        _task.join();
+                    }
+                }
+
+                for (AlgorithmTask task : tasks) {
+                    task.join();
+                }
+
+                return true;
+            }
+        }
+
+        Task task = new Task(tasks);
+
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
         TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
         return colliders;

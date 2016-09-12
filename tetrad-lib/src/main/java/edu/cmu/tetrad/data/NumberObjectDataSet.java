@@ -53,9 +53,9 @@ import java.util.*;
  * selection set is stored with the data set and may be manipulated using the
  * <code>select</code> and <code>deselect</code> methods.
  * <p>
- * A multiplicity m_i may be associated with each case c_i in the dataset, which
- * is interpreted to mean that that c_i occurs m_i times in the dataset.
- * <p>
+// * A multiplicity m_i may be associated with each case c_i in the dataset, which
+// * is interpreted to mean that that c_i occurs m_i times in the dataset.
+// * <p>
  * Knowledge may be associated with the data set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
  * the data set, but it may be retrieved by algorithm and used.
@@ -132,15 +132,15 @@ public final class NumberObjectDataSet
      */
     private final Map<Integer, String> caseIds = new HashMap<>();
 
-    /**
-     * A map from cases to case multipliers. If a case is not in the domain of
-     * this map, its case multiplier is by default 1. This is the number of
-     * repetitions of the case in the dataset. The sample size is obtained by
-     * summing over these multipliers.
-     *
-     * @serial
-     */
-    private Map<Integer, Integer> multipliers = new HashMap<>();
+//    /**
+//     * A map from cases to case multipliers. If a case is not in the domain of
+//     * this map, its case multiplier is by default 1. This is the number of
+//     * repetitions of the case in the dataset. The sample size is obtained by
+//     * summing over these multipliers.
+//     *
+//     * @serial
+//     */
+//    private Map<Integer, Integer> multipliers = new HashMap<>();
 
     /**
      * The knowledge associated with this data.
@@ -203,7 +203,7 @@ public final class NumberObjectDataSet
         }
 
         selection = new HashSet<>(dataSet.selection);
-        multipliers = new HashMap<>(dataSet.multipliers);
+//        multipliers = new HashMap<>(dataSet.multipliers);
         knowledge = dataSet.knowledge.copy();
     }
 
@@ -733,7 +733,7 @@ public final class NumberObjectDataSet
 //        _dataSet.name = name + "_copy";
         _dataSet.variables = vars;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+//        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -741,22 +741,22 @@ public final class NumberObjectDataSet
         return _dataSet;
     }
 
-    /**
-     * @return true if case multipliers are being used for this data set.
-     */
-    public final boolean isMulipliersCollapsed() {
-        return !getMultipliers().keySet().isEmpty();
-    }
+//    /**
+//     * @return true if case multipliers are being used for this data set.
+//     */
+//    public final boolean isMulipliersCollapsed() {
+//        return !getMultipliers().keySet().isEmpty();
+//    }
 
-    /**
-     * @return the case multiplise for the given case (i.e. row) in the data
-     * set. Is this is n > 1, the interpretation is that the data set
-     * effectively contains n copies of that case.
-     */
-    public final int getMultiplier(int caseNumber) {
-        Integer multiplierInt = getMultipliers().get(caseNumber);
-        return multiplierInt == null ? 1 : multiplierInt;
-    }
+//    /**
+//     * @return the case multiplise for the given case (i.e. row) in the data
+//     * set. Is this is n > 1, the interpretation is that the data set
+//     * effectively contains n copies of that case.
+//     */
+//    public final int getMultiplier(int caseNumber) {
+//        Integer multiplierInt = getMultipliers().get(caseNumber);
+//        return multiplierInt == null ? 1 : multiplierInt;
+//    }
 
     /**
      * Sets the case ID fo the given case numnber to the given value.
@@ -935,27 +935,27 @@ public final class NumberObjectDataSet
         }
     }
 
-    /**
-     * Sets the case multiplier for the given case to the given number (must be
-     * >= 1).
-     */
-    public final void setMultiplier(int caseNumber, int multiplier) {
-        if (caseNumber < 0) {
-            throw new IllegalArgumentException(
-                    "Case numbers must be >= 0: " + caseNumber);
-        }
-
-        if (multiplier < 0) {
-            throw new IllegalArgumentException(
-                    "Multipliers must be >= 0: " + multiplier);
-        }
-
-        if (multiplier == 1) {
-            getMultipliers().remove(caseNumber);
-        } else {
-            getMultipliers().put(caseNumber, multiplier);
-        }
-    }
+//    /**
+//     * Sets the case multiplier for the given case to the given number (must be
+//     * >= 1).
+//     */
+//    public final void setMultiplier(int caseNumber, int multiplier) {
+//        if (caseNumber < 0) {
+//            throw new IllegalArgumentException(
+//                    "Case numbers must be >= 0: " + caseNumber);
+//        }
+//
+//        if (multiplier < 0) {
+//            throw new IllegalArgumentException(
+//                    "Multipliers must be >= 0: " + multiplier);
+//        }
+//
+//        if (multiplier == 1) {
+//            getMultipliers().remove(caseNumber);
+//        } else {
+//            getMultipliers().put(caseNumber, multiplier);
+//        }
+//    }
 
     /**
      * @return a string, suitable for printing, of the dataset. Lines are
@@ -1042,14 +1042,14 @@ public final class NumberObjectDataSet
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
      * which they occur in the matrix, is given by getVariables().
-     * <p>
-     * If isMultipliersCollapsed() returns false, multipliers in the dataset are
-     * first expanded before returning the matrix, so the number of rows in the
-     * returned matrix may not be the same as the number of rows in this
-     * dataset.
+//     * <p>
+//     * If isMultipliersCollapsed() returns false, multipliers in the dataset are
+//     * first expanded before returning the matrix, so the number of rows in the
+//     * returned matrix may not be the same as the number of rows in this
+//     * dataset.
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
-     * @see #isMulipliersCollapsed()
+//     * @see #isMulipliersCollapsed()
      */
     public final TetradMatrix getDoubleData() {
         TetradMatrix copy = new TetradMatrix(data.length, data[0].length);
@@ -1090,7 +1090,7 @@ public final class NumberObjectDataSet
         _dataSet.name = name;
         _dataSet.variables = _variables;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+//        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -1177,7 +1177,7 @@ public final class NumberObjectDataSet
         data = viewSelection(rows, cols);
         variables = retainedVars;
         selection = new HashSet<>();
-        multipliers = new HashMap<>(multipliers);
+//        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1203,7 +1203,7 @@ public final class NumberObjectDataSet
 
         data = viewSelection(retainedRows, cols);
         selection = new HashSet<>();
-        multipliers = new HashMap<>(multipliers);
+//        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1348,12 +1348,12 @@ public final class NumberObjectDataSet
         data = _data;
     }
 
-    /**
-     * @return the set of case multipliers..
-     */
-    private Map<Integer, Integer> getMultipliers() {
-        return multipliers;
-    }
+//    /**
+//     * @return the set of case multipliers..
+//     */
+//    private Map<Integer, Integer> getMultipliers() {
+//        return multipliers;
+//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method

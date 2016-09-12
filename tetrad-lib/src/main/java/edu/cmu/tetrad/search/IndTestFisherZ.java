@@ -183,6 +183,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         int n = sampleSize();
         double r = partialCorrelation(x, y, z);
 
+
 //        double high = 0.999999;
 //
 //        if (r > high) r = high;

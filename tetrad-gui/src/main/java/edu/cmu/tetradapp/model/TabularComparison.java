@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -63,6 +64,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     //=============================CONSTRUCTORS==========================//
 
+    public TabularComparison(GeneralAlgorithmRunner model, Parameters params) {
+        this(model, model.getDataWrapper(), params);
+    }
+
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
@@ -84,7 +89,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             model1 = new DagWrapper(new Dag());
         }
 
-        if (!(model1 instanceof GraphSource) || !(model2 instanceof GraphSource)) {
+        if (!(model1 instanceof MultipleGraphSource) || !(model2 instanceof MultipleGraphSource)) {
             throw new IllegalArgumentException("Must be graph sources.");
         }
 
@@ -105,8 +110,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
         } else {
-            GraphSource model11 = (GraphSource) model1;
-            GraphSource model21 = (GraphSource) model2;
+            MultipleGraphSource model11 = (MultipleGraphSource) model1;
+            Object model21 = model2;
 
             if (referenceName.equals(model1.getName())) {
                 if (model11 instanceof MultipleGraphSource) {
@@ -118,11 +123,11 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 }
 
                 if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
                 }
 
                 if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(model21.getGraph());
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
                 }
             } else if (referenceName.equals(model2.getName())) {
                 if (model21 instanceof MultipleGraphSource) {
@@ -132,13 +137,13 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 if (model11 instanceof MultipleGraphSource) {
                     this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
                 }
-
+//
                 if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
                 }
 
                 if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(model11.getGraph());
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
                 }
             } else {
                 throw new IllegalArgumentException(
@@ -287,6 +292,14 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     @Override
     public Map<String, String> getAllParamSettings() {
         return allParamSettings;
+    }
+
+    public List<Graph> getReferenceGraphs() {
+        return referenceGraphs;
+    }
+
+    public List<Graph> getTargetGraphs() {
+        return targetGraphs;
     }
 }
 

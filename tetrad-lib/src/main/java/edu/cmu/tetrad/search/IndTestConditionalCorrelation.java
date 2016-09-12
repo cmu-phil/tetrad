@@ -130,6 +130,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
+//        System.out.println(Runtime.getRuntime().freeMemory());
+
         if (verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",

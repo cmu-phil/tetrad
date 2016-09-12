@@ -50,11 +50,10 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, GraphSource, MultipleGraphSource {
+        SimulationParamsSource, MultipleGraphSource, MultipleDataSource {
     static final long serialVersionUID = 23L;
 
-    private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation
-            = new BayesNetSimulation(new RandomForward());
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
     private Parameters parameters;
     private String name;
     private boolean fixedGraph = true;
@@ -66,115 +65,123 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public Simulation(Parameters parameters) {
-        this.simulation = null;
-        this.parameters = parameters;
-        this.fixedGraph = false;
-        this.fixedSimulation = false;
+        if (simulation == null) {
+            this.simulation = new BayesNetSimulation(new RandomForward());
+            this.parameters = parameters;
+            this.fixedGraph = false;
+            this.fixedSimulation = false;
+        }
     }
 
+//    public Simulation(Simulation simulation) {
+//        this.simulation = simulation.simulation;
+//        this.parameters = new Parameters(simulation.parameters);
+//        this.name = simulation.name + ".copy";
+//        this.fixedGraph = simulation.fixedGraph;
+//        this.fixedSimulation = simulation.fixedSimulation;
+//        createSimulation();
+//    }
+
     public Simulation(GraphSource graphSource, Parameters parameters) {
-        simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
-        this.fixedGraph = true;
-        this.parameters = parameters;
-        this.fixedSimulation = false;
+        if (graphSource instanceof Simulation) {
+            Simulation simulation = (Simulation) graphSource;
+            this.simulation = simulation.simulation;
+            this.parameters = new Parameters(simulation.parameters);
+            this.name = simulation.name + ".copy";
+            this.fixedGraph = simulation.fixedGraph;
+            this.fixedSimulation = simulation.fixedSimulation;
+            createSimulation();
+        } else {
+            simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
+            this.fixedGraph = true;
+            this.parameters = parameters;
+            this.fixedSimulation = false;
+            setSourceGraph(graphSource.getGraph());
+        }
     }
 
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(SemPmWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
         simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
         simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
         simulation = new GeneralSemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
         createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
     public edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation() {
@@ -226,6 +233,19 @@ public class Simulation extends DataWrapper implements SessionModel,
         return list;
     }
 
+    /**
+     * @return the list of models.
+     */
+    public List<DataModel> getDataModels() {
+        List<DataModel> list = new ArrayList<>();
+
+        for (int i = 0; i < simulation.getNumDataSets(); i++) {
+            list.add(simulation.getDataSet(i));
+        }
+
+        return list;
+    }
+
     public void setDataModelList(DataModelList dataModelList) {
         throw new UnsupportedOperationException();
     }
@@ -240,15 +260,9 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public void createSimulation() {
-        simulation.createData(parameters);
-    }
-
-    @Override
-    /**
-     * Returns the first graph in the simulation.
-     */
-    public Graph getGraph() {
-        return simulation.getTrueGraph(0);
+        if (simulation.getNumDataSets() == 0) {
+            simulation.createData(parameters);
+        }
     }
 
     @Override
@@ -287,6 +301,10 @@ public class Simulation extends DataWrapper implements SessionModel,
         } else {
             return new Knowledge2();
         }
+    }
+
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+        this.simulation = simulation;
     }
 }
 

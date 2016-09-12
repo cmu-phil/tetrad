@@ -72,6 +72,7 @@ public class PcLocal implements GraphSearch {
     private SemBicScore score;
     private ConcurrentMap<Node, Integer> hashIndices;
     private boolean verbose = false;
+    private Graph initialGraph;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -127,8 +128,14 @@ public class PcLocal implements GraphSearch {
     public Graph search() {
         long time1 = System.currentTimeMillis();
 
-        if (graph == null) {
+        if (initialGraph != null) {
+            graph = new EdgeListGraph(initialGraph);
+            graph.reorientAllWith(Endpoint.TAIL);
+        } else if (graph == null) {
             graph = new EdgeListGraph(getIndependenceTest().getVariables());
+        } else {
+            graph = new EdgeListGraph(graph);
+            graph.reorientAllWith(Endpoint.TAIL);
         }
 
         sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), null, -1);
@@ -463,6 +470,10 @@ public class PcLocal implements GraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }
 

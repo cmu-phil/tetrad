@@ -156,8 +156,8 @@ public class TetradApplicationConfig {
                     String value = getValue(child);
                     Class chooserClass = value == null ? null : loadClass(loader, value);
                     nodeConfig.setChooser(title, chooserClass);
-                } else if ("tooltip".equals(child.getQualifiedName())) {
-                    nodeConfig.setTooltipText(child.getValue());
+                } else if ("node-specific-message".equals(child.getQualifiedName())) {
+                    nodeConfig.setNodeSpecificMessage(child.getValue());
                 } else {
                     throw new IllegalStateException("Unknown element " + child.getQualifiedName());
                 }
@@ -306,7 +306,7 @@ public class TetradApplicationConfig {
      * removes newline and extra white space (Seems to be sensitive to this,
      * when its html)
      */
-    private static String pruneTooltipText(String text) {
+    private static String pruneNodeSpecificMessage(String text) {
         int size = text.length();
         int i = 0;
         StringBuilder builder = new StringBuilder(size);
@@ -359,7 +359,7 @@ public class TetradApplicationConfig {
         private List<SessionNodeModelConfig> models;
         private String image;
         private Class compClass;
-        private String tooltip;
+        private String nodeSpecificMessage;
         private String id;
         private String chooserTitle;
         private Class chooserClass;
@@ -385,8 +385,8 @@ public class TetradApplicationConfig {
             return modelClasses;
         }
 
-        public String getTooltipText() {
-            return this.tooltip;
+        public String getNodeSpecificMessage() {
+            return this.nodeSpecificMessage;
         }
 
         public ModelChooser getModelChooserInstance(SessionNode sessionNode) {
@@ -451,11 +451,11 @@ public class TetradApplicationConfig {
             this.chooserClass = chooserClass;
         }
 
-        private void setTooltipText(String text) {
+        private void setNodeSpecificMessage(String text) {
             if (text == null) {
-                throw new NullPointerException("The give toolip text must not be null");
+                throw new NullPointerException("The node specific message text must not be null");
             }
-            this.tooltip = pruneTooltipText(text);
+            this.nodeSpecificMessage = pruneNodeSpecificMessage(text);
         }
 
         private void setDisplayComp(String image, Class comp) {

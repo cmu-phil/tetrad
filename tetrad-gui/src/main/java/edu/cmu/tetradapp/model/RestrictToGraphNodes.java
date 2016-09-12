@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class RestrictToGraphNodes extends DataWrapper {
     public static DataWrapper serializableInstance() {
         DataWrapper wrapper =
                 new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new CorrMatrixConverter(wrapper);
+        return new CorrMatrixConverter(wrapper, new Parameters());
     }
 
     private DataModel restrictToGraphNodes(DataModel dataModel, Graph graph) {

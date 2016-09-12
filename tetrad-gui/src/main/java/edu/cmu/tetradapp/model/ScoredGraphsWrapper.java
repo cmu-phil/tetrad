@@ -25,7 +25,9 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.GraphScorer;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
@@ -43,7 +45,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable {
+public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
     /**
@@ -64,6 +66,11 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     private final transient GraphScorer graphScorer;
 
     //=============================CONSTRUCTORS==========================//
+
+    private ScoredGraphsWrapper() {
+        graphsToScores = null;
+        graphScorer = null;
+    }
 
     public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
         final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
@@ -91,27 +98,27 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         log();
     }
 
-    public ScoredGraphsWrapper(FgsRunner runner) {
+    public ScoredGraphsWrapper(FgsRunner runner, Parameters parameters) {
         this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
     }
 
-    public ScoredGraphsWrapper(DagWrapper wrapper) {
+    public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(GraphWrapper wrapper) {
+    public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(SemGraphWrapper wrapper) {
+    public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(PcRunner wrapper) {
+    public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(CpcRunner wrapper) {
+    public ScoredGraphsWrapper(CpcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
@@ -121,7 +128,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @see TetradSerializableUtils
      */
     public static ScoredGraphsWrapper serializableInstance() {
-        return new ScoredGraphsWrapper(PcRunner.serializableInstance());
+        return new ScoredGraphsWrapper(PcRunner.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS======================//

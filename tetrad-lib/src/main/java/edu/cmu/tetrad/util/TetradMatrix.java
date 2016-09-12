@@ -210,7 +210,7 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix inverse() {
-        if (!isSquare()) throw new IllegalArgumentException("Input is not a square matrix.");
+        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
 
         // Trying for a speedup by not having to construct the matrix factorization.
         if (rows() == 0) {

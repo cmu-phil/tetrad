@@ -25,7 +25,7 @@ measurement/structural models</a></font> (the others are the <font
  color="#000000"><a href="../../search/mimbuild.html">MIM Build algorithm</a></font>
 and the <font color="#000000"><a href="../../search/purify.html">Purify algorithm</a></font>).</p>
 <p>The goal of Build Pure Clusters is to build a pure measurement model
-using observed variables from a coltData set. Observed variables are
+using observed variables from a data set. Observed variables are
 clustered into disjoint groups,  each group representing
 indicators of a single hidden variable. Variables in one group are not
 indicators of the hidden variables associated with the other groupsl. Also, some variables given as input will not be
@@ -41,7 +41,7 @@ unknown population graph contains a pure subgraph where each latent has
 at least three indicators. This assumption is not testable is should be
 evaluated by the plausibility of the final model.</font></p>
 <p><font color="#000000">The current implementation of the algorithm
-accepts only continuous coltData sets as input. For general information
+accepts only continuous data sets as input. For general information
 about model building algorithms, consult the <font color="#000000"><a
  href="../../search/../search.html">Search Algorithms</a></font> page.</font></p>
 <p><font color="#000000"><a name="Introduction" id="Introduction"></a><br>
@@ -52,14 +52,14 @@ Entering Build Pure Clusters parameters</font></p>
   <p><font color="#000000"><img src="../../images/mimbuild1.png"
  width="769" height="470"></font></p>
 </blockquote>
-<p>If coltData is generated using this model and a search is constructed from the coltData, selecting BPC, the following parameters will be requested: </p>
+<p>If data is generated using this model and a search is constructed from the data, selecting BPC, the following parameters will be requested: </p>
 <ul>
   <li><em>alpha value</em>: Build Pure Clusters uses
 statistical hypothesis tests in order to generate models automatically.
 The alpha value parameter represents the level by which such tests are
 used to accept or reject constraints that compose the final output. The
 default value is 0.05, but the user may want to experiment with
-different alpha values in order to test the sensitivity of her coltData
+different alpha values in order to test the sensitivity of her data
 within this algorithm.</li>
   <li><em>number of iterations</em>: Build Pure Clusters uses a
 randomized procedure in order to generate a model, since in general
@@ -76,7 +76,7 @@ Wishart's Tetrad ssumes that the given variables follow a multivariate
 normal distribution. Bollen's Tetrad test not make this assumption.
 However, it needs to compute a matrix of fourth moments, which can be
 time consuming. It is also less robust against sampling variability
-when compared to Wishart's test if the coltData actually follows a
+when compared to Wishart's test if the data actually follows a
 multivariate normal distribution..</li>
 </ul>
 <p><font color="#000000"><a name="Interpretation" id="Interpretation"></a><br>

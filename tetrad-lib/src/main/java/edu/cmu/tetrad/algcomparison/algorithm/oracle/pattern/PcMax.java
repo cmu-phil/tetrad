@@ -45,11 +45,12 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
-        return search.search();
+        Graph search1 = search.search();
+        return search1;
     }
 
     @Override
@@ -71,7 +72,9 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 
     @Override

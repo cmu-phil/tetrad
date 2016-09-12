@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSource;
 import edu.cmu.tetradapp.model.Simulation;
 
@@ -38,7 +40,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GraphComparisonParamsEditor extends JPanel implements ParameterEditor {
+public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * The parameters object being edited.
@@ -73,7 +75,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
     }
 
     public boolean mustBeShown() {
-        return false; 
+        return false;
     }
 
     public void setup() {
@@ -85,12 +87,15 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
             }
         }
 
-        if (graphSources.size() != 2) {
-            return;
+        if (graphSources.size() == 1 && graphSources.get(0) instanceof GeneralAlgorithmRunner) {
+            model1 = (GeneralAlgorithmRunner) graphSources.get(0);
+            model2 = ((GeneralAlgorithmRunner) model1).getDataWrapper();
+        } else if (graphSources.size() == 2) {
+            model1 = (SessionModel) graphSources.get(0);
+            model2 = (SessionModel) graphSources.get(1);
+        } else {
+            throw new IllegalArgumentException("Expecting 2 graph source.");
         }
-
-        model1 = (SessionModel) graphSources.get(0);
-        model2 = (SessionModel) graphSources.get(1);
 
         setLayout(new BorderLayout());
 
@@ -115,8 +120,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         if (getParams().getBoolean("resetTableOnExecute", false)) {
             resetOnExecute.setSelected(true);
-        }
-        else {
+        } else {
             dontResetOnExecute.setSelected(true);
         }
 
@@ -135,8 +139,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         if (getParams().getBoolean("keepLatents", false)) {
             latents.setSelected(true);
-        }
-        else {
+        } else {
             noLatents.setSelected(true);
         }
 
@@ -150,7 +153,14 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         boolean alreadySet = false;
 
-        if (model1 instanceof Simulation) {
+        if (model1 instanceof GeneralAlgorithmRunner) {
+            graph1.setSelected(true);
+            getParams().set("referenceGraphName", model1.getName());
+            getParams().set("targetGraphName", model2.getName());
+            alreadySet = true;
+        }
+
+        if (model1 instanceof GeneralAlgorithmRunner) {
             graph1.setSelected(true);
             getParams().set("referenceGraphName", model1.getName());
             getParams().set("targetGraphName", model2.getName());

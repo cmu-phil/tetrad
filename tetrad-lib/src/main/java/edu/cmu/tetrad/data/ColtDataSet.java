@@ -52,9 +52,9 @@ import java.util.*;
  * A subset of variables in the tetradMatrix set may be designated as selected. This
  * selection set is stored with the tetradMatrix set and may be manipulated using the
  * <code>select</code> and <code>deselect</code> methods.
- * <p>
- * A multiplicity m_i may be associated with each case c_i in the dataset, which
- * is interpreted to mean that that c_i occurs m_i times in the dataset.
+// * <p>
+// * A multiplicity m_i may be associated with each case c_i in the dataset, which
+// * is interpreted to mean that that c_i occurs m_i times in the dataset.
  * <p>
  * Knowledge may be associated with the tetradMatrix set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
@@ -131,15 +131,15 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     private final Map<Integer, String> caseIds = new HashMap<>();
 
-    /**
-     * A map from cases to case multipliers. If a case is not in the domain of
-     * this map, its case multiplier is by default 1. This is the number of
-     * repetitions of the case in the dataset. The sample size is obtained by
-     * summing over these multipliers.
-     *
-     * @serial
-     */
-    private Map<Integer, Integer> multipliers = new HashMap<>();
+//    /**
+//     * A map from cases to case multipliers. If a case is not in the domain of
+//     * this map, its case multiplier is by default 1. This is the number of
+//     * repetitions of the case in the dataset. The sample size is obtained by
+//     * summing over these multipliers.
+//     *
+//     * @serial
+//     */
+//    private Map<Integer, Integer> multipliers = new HashMap<>();
 
     /**
      * The knowledge associated with this tetradMatrix.
@@ -180,10 +180,10 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        this.multipliers = new HashMap<>();
-        for (int i = 0; i < rows; i++) {
-            multipliers.put(i, 1);
-        }
+//        this.multipliers = new HashMap<>();
+//        for (int i = 0; i < rows; i++) {
+//            multipliers.put(i, 1);
+//        }
     }
 
     /**
@@ -199,10 +199,10 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        this.multipliers = new HashMap<>();
-        for (int i = 0; i < rows; i++) {
-            multipliers.put(i, 1);
-        }
+//        this.multipliers = new HashMap<>();
+//        for (int i = 0; i < rows; i++) {
+//            multipliers.put(i, 1);
+//        }
 
         if (data[0].length != variables.size() || data.length != rows) {
             throw new IllegalArgumentException("Wrong shape for data.");
@@ -219,7 +219,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         variables = new LinkedList<>(dataSet.variables);
         tetradMatrix = dataSet.tetradMatrix.copy();
         selection = new HashSet<>(dataSet.selection);
-        multipliers = new HashMap<>(dataSet.multipliers);
+//        multipliers = new HashMap<>(dataSet.multipliers);
         knowledge = dataSet.knowledge.copy();
         this.nf = dataSet.nf;
     }
@@ -861,7 +861,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 //        _dataSet.name = name + "_copy";
         _dataSet.variables = vars;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+//        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -869,31 +869,31 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return _dataSet;
     }
 
-    /**
-     * @return true if case multipliers are being used for this tetradMatrix set.
-     */
-    public final boolean isMulipliersCollapsed() {
-        for (int i : getMultipliers().keySet()) {
-            if (getMultipliers().get(i) != 1) {
-                return false;
-            }
-        }
-
-        return true;
-
+//    /**
+//     * @return true if case multipliers are being used for this tetradMatrix set.
+//     */
+//    public final boolean isMulipliersCollapsed() {
+//        for (int i : getMultipliers().keySet()) {
+//            if (getMultipliers().get(i) != 1) {
+//                return false;
+//            }
+//        }
 //
-//        return !getMultipliers().keySet().isEmpty();
-    }
+//        return true;
+//
+////
+////        return !getMultipliers().keySet().isEmpty();
+//    }
 
-    /**
-     * @return the case multiplise for the given case (i.e. row) in the tetradMatrix
-     * set. Is this is n > 1, the interpretation is that the tetradMatrix set
-     * effectively contains n copies of that case.
-     */
-    public final int getMultiplier(int caseNumber) {
-        Integer multiplierInt = getMultipliers().get(caseNumber);
-        return multiplierInt == null ? 1 : multiplierInt;
-    }
+//    /**
+//     * @return the case multiplise for the given case (i.e. row) in the tetradMatrix
+//     * set. Is this is n > 1, the interpretation is that the tetradMatrix set
+//     * effectively contains n copies of that case.
+//     */
+//    public final int getMultiplier(int caseNumber) {
+//        Integer multiplierInt = getMultipliers().get(caseNumber);
+//        return multiplierInt == null ? 1 : multiplierInt;
+//    }
 
     /**
      * Sets the case ID fo the given case numnber to the given value.
@@ -1048,27 +1048,27 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return tetradMatrix.get(row, column);
     }
 
-    /**
-     * Sets the case multiplier for the given case to the given number (must be
-     * >= 1).
-     */
-    public final void setMultiplier(int caseNumber, int multiplier) {
-        if (caseNumber < 0) {
-            throw new IllegalArgumentException(
-                    "Case numbers must be >= 0: " + caseNumber);
-        }
-
-        if (multiplier < 0) {
-            throw new IllegalArgumentException(
-                    "Multipliers must be >= 0: " + multiplier);
-        }
-
-        if (multiplier == 1) {
-            getMultipliers().remove(caseNumber);
-        } else {
-            getMultipliers().put(caseNumber, multiplier);
-        }
-    }
+//    /**
+//     * Sets the case multiplier for the given case to the given number (must be
+//     * >= 1).
+//     */
+//    public final void setMultiplier(int caseNumber, int multiplier) {
+//        if (caseNumber < 0) {
+//            throw new IllegalArgumentException(
+//                    "Case numbers must be >= 0: " + caseNumber);
+//        }
+//
+//        if (multiplier < 0) {
+//            throw new IllegalArgumentException(
+//                    "Multipliers must be >= 0: " + multiplier);
+//        }
+//
+//        if (multiplier == 1) {
+//            getMultipliers().remove(caseNumber);
+//        } else {
+//            getMultipliers().put(caseNumber, multiplier);
+//        }
+//    }
 
     /**
      * @return a string, suitable for printing, of the dataset. Lines are
@@ -1171,17 +1171,17 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * dataset.
      * @throws IllegalStateException if this is not a continuous tetradMatrix set.
      * @see #getVariables
-     * @see #isMulipliersCollapsed()
+//     * @see #isMulipliersCollapsed()
      */
     public final TetradMatrix getDoubleData() {
 //        return tetradMatrix.copy();
 
-        if (!isMulipliersCollapsed()) {
-            CaseExpander expander = new CaseExpander();
-            return ((ColtDataSet) expander.filter(this)).tetradMatrix;
-        } else {
-            return tetradMatrix;
-        }
+//        if (!isMulipliersCollapsed()) {
+//            CaseExpander expander = new CaseExpander();
+//            return ((ColtDataSet) expander.filter(this)).tetradMatrix;
+//        } else {
+        return tetradMatrix;
+//        }
     }
 
 //    public final TetradMatrix getDoubleDataNoCopy() {
@@ -1217,7 +1217,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         _dataSet.name = name;
         _dataSet.variables = _variables;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+//        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -1296,7 +1296,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         tetradMatrix = tetradMatrix.getSelection(rows, retainedCols).copy();
         variables = retainedVars;
         selection = new HashSet<>();
-        multipliers = new HashMap<>(multipliers);
+//        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1322,7 +1322,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 
         tetradMatrix = tetradMatrix.getSelection(retainedRows, cols).copy();
         selection = new HashSet<>();
-        multipliers = new HashMap<>(multipliers);
+//        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1495,12 +1495,12 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         tetradMatrix = _data;
     }
 
-    /**
-     * @return the set of case multipliers..
-     */
-    private Map<Integer, Integer> getMultipliers() {
-        return multipliers;
-    }
+//    /**
+//     * @return the set of case multipliers..
+//     */
+//    private Map<Integer, Integer> getMultipliers() {
+//        return multipliers;
+//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method

@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Ccd implements Algorithm, HasKnowledge {
+public class Ccd implements Algorithm {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
@@ -40,12 +40,12 @@ public class Ccd implements Algorithm, HasKnowledge {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }
@@ -67,16 +67,8 @@ public class Ccd implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
-    }
-
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        List<String> parameters = test.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 }

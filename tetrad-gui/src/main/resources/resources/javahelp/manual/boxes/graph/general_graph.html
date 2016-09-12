@@ -34,7 +34,7 @@ If you select &quot;Created manually&quot; and click &quot;OK,&quot; a blank gra
 <h3>Important Points</h3>
 <ol>
   <li>The "Unoriented" and "Half-Oriented"&nbsp; buttons are for creating theoretical graphical objects of various kinds. Do not use these buttons for ordinary modeling. Currently, none of the statistical procedures in the program work for graphs with such edges.&nbsp; </li>
-  <li>If you create a model with a latent variable, if you later use the model to generate coltData, values for the latent variables will not be shown. See <a href="../../graph/measured_vs_latent.html">Measured Vs. Latent Variables</a>.</li>
+  <li>If you create a model with a latent variable, if you later use the model to generate data, values for the latent variables will not be shown. See <a href="../../graph/measured_vs_latent.html">Measured Vs. Latent Variables</a>.</li>
   <li>If you have introduced any boxes that depend on a Graph box, changing the graph will alter the contents of all boxes downstream in the flowchart from the Graph box. Often it is easier to simply create a new Graph box in the same main workspace window--there is no limit to how many graph or other boxes you can have at the same time. See<a href="../../graph/advise_flowchart_dependencies.html"> Flowchart Dependencies</a>.</li>
 </ol>
 <p>&nbsp;</p>
@@ -52,7 +52,7 @@ If you select &quot;Created manually&quot; and click &quot;OK,&quot; a blank gra
   <li>All instantiated models.</li>
   <li>All updater models.</li>
 </ol>
-<p>In certain special cases, making a &quot;General Graph&quot; model a child of another model has a specialized behavior. If you make a &quot;General Graph&quot; model a child of a Data box model, the effect is to create a graph with all of the variables in the coltData set but no edges, as illustrated below.</p>
+<p>In certain special cases, making a &quot;General Graph&quot; model a child of another model has a specialized behavior. If you make a &quot;General Graph&quot; model a child of a Data box model, the effect is to create a graph with all of the variables in the data set but no edges, as illustrated below.</p>
 <p><img src="../../images/dag_from_data.gif" width="537" height="534"></p>
 <p>&nbsp;</p>
 </body>

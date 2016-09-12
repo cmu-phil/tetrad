@@ -77,7 +77,7 @@ public class RegressionEditor extends JPanel {
     /**
      * The gadget that does the regression.
      */
-    private RegressionRunner runner;
+    private final RegressionRunner runner;
 
     /**
      * Constructs a regression editor. A regression runner is required, since
@@ -146,6 +146,36 @@ public class RegressionEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
+
+        int numModels = runner.getNumModels();
+
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    runner.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box c = Box.createHorizontalBox();
+            c.add(new JLabel("Using model"));
+            c.add(comp);
+            c.add(new JLabel("from "));
+            c.add(new JLabel(runner.getModelSourceName()));
+            c.add(Box.createHorizontalGlue());
+
+            add(c, BorderLayout.NORTH);
+        }
 
         setName("Regression Result:");
     }

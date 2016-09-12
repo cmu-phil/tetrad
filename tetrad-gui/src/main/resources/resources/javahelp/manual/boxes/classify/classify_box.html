@@ -14,9 +14,9 @@
 <p>A Classify box in the main workspace looks like this:</p>
 <p><img src="../../images/classify_highlight.gif" width="312" height="69"> </p>
 <p>  The operations in the Classify box permit you to use an instantiated model to 
-  estimate values for a variable from a coltData set--the variable estimated<br>
-  must be in the Instantiated Model, but it need not be in the coltData set.&nbsp;
-  A Classify Box requires input from a Data box containing coltData and input from
+  estimate values for a variable from a data set--the variable estimated<br>
+  must be in the Instantiated Model, but it need not be in the data set.&nbsp;
+  A Classify Box requires input from a Data box containing data and input from
   an Instantiated Model in an IM box. (Remember that you can copy an estimated 
   model in an Estimate box into an IM box simply by putting a flowchart arrow 
   fromthe estimate box to a new IM box.)<br>
@@ -25,7 +25,7 @@ Here are some things to note: </p>
 <ul>
   <li>The Instantiated Model can contain variables that are not in the Data</li>
   <li>The Data can contain variables that are not in the Instantiated Model</li>
-  <li>The variable values must all be categorical--a coltData file with decimal numbers
+  <li>The variable values must all be categorical--a data file with decimal numbers
     will not be accepted by Classify</li>
   <li>The IM must be a Bayes net--either Maximum Likelihood or Dirichlet..</li>
   <li>If the target variable to be classified has multiple values, the Classifier 
@@ -41,7 +41,7 @@ classification.. <br>
  src="../../images/UntitledClsassifyWindow.jpg" alt="" width="481" height="546" style="width: 481px; height: 546px;"><br>
 <br>
 <br>
-The original coltData can be viewed by cliicking the "Test Data" tab.<br>
+The original data can be viewed by cliicking the "Test Data" tab.<br>
 <br>
 Tabs above the graph give choices for how the Classifer will work. You can choose:
 <ul>
@@ -60,11 +60,11 @@ box, the Classifier does its work and gives you some viewing choices.<br>
 <br>
 According to which tab you then click, you can see:
 <ul>
-  <li>The original coltData</li>
-  <li>The orginal coltData plus, in the first column, for each case the value of the
+  <li>The original data</li>
+  <li>The orginal data plus, in the first column, for each case the value of the
     target variable the classifier predicts.</li>
 </ul>
-<span style="font-style: italic;">If the target variable is included in the coltData</span>,
+<span style="font-style: italic;">If the target variable is included in the data</span>,
 the tabs at the top of the Classifier window after the classfication program has 
 run will also give you.
 <ul>

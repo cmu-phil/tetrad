@@ -29,6 +29,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntSpinner;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
+import javax.naming.directory.Attributes;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -70,6 +71,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      * A tabbed pane to store the editors in.
      */
     private JTabbedPane editorPane;
+
+    private Parameters parameters;
 
 
     /**
@@ -147,23 +150,24 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             }
         });
         // Add entries for previously selected variables.
-//        for (Node node : discretizeVars) {
-//            if (node instanceof ContinuousVariable) {
-//                ContinuousVariable continuousVariable = (ContinuousVariable) node;
-//                ContinuousDiscretizationEditor editor =
-//                        new ContinuousDiscretizationEditor(sourceDataSet, continuousVariable
-//                        );
-//                editor.setDiscretizationSpec(this.params.getSpecs().get(node));
-//                this.nodeEditors.put(node, editor);
-//            } else if (node instanceof DiscreteVariable) {
-//                DiscreteVariable variable = (DiscreteVariable) node;
-//                DiscreteDiscretizationEditor editor =
-//                        new DiscreteDiscretizationEditor(variable);
-//                editor.setDiscretizationSpec(this.params.getSpecs().get(node));
-//                this.nodeEditors.put(node, editor);
-//            }
-//
-//        }
+        for (Node node : discretizeVars) {
+            if (node instanceof ContinuousVariable) {
+                ContinuousVariable continuousVariable = (ContinuousVariable) node;
+                ContinuousDiscretizationEditor editor = new ContinuousDiscretizationEditor(
+                        sourceDataSet, continuousVariable);
+                DiscretizationSpec spec = getSpecs().get(node);
+                if (spec == null) continue;
+                editor.setDiscretizationSpec(spec);
+                this.nodeEditors.put(node, editor);
+            } else if (node instanceof DiscreteVariable) {
+                DiscreteVariable variable = (DiscreteVariable) node;
+                DiscreteDiscretizationEditor editor = new DiscreteDiscretizationEditor(variable);
+                DiscretizationSpec spec = getSpecs().get(node);
+                if (spec == null) continue;
+                editor.setDiscretizationSpec(spec);
+                this.nodeEditors.put(node, editor);
+            }
+        }
 
         // set up the tabbed pane
         this.editorPane = new JTabbedPane();
@@ -246,7 +250,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             DiscretizationEditor editor = this.nodeEditors.get(node);
             map.put(node, editor.getDiscretizationSpec());
         }
-//        this.params.setSpecs(map);
+        this.parameters.set("discretizationSpecs", map);
         return true;
     }
 
@@ -256,7 +260,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      * @param params
      */
     public void setParams(Parameters params) {
-//        this.params = (DiscretizationParams) params;
+        this.parameters = params;
+        this.parameters.set("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
     }
 
     /**
@@ -411,6 +416,10 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         }
 
         return -1;
+    }
+
+    public Map<Node, DiscretizationSpec> getSpecs() {
+        return (Map<Node, DiscretizationSpec>) parameters.get("discretizationSpecs");
     }
 
     //============================= Inner class ===============================//

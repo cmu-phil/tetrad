@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -36,7 +37,7 @@ public class CopySelectedDatasetWrapper extends DataWrapper {
 
 
 
-    public CopySelectedDatasetWrapper(DataWrapper data) {
+    public CopySelectedDatasetWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -54,7 +55,7 @@ public class CopySelectedDatasetWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static CopySelectedDatasetWrapper serializableInstance() {
-        return new CopySelectedDatasetWrapper(DataWrapper.serializableInstance());
+        return new CopySelectedDatasetWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
 

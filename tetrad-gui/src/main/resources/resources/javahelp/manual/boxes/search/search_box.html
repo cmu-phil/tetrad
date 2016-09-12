@@ -17,21 +17,21 @@
 </table>
 <p>The search box in the main workspace area looks like this:</p>
 <p><img src="../../images/search_from_data_highlight.gif" width="196" height="67"></p>
-<p>if the search is being conducted over a coltData set, or this:</p>
+<p>if the search is being conducted over a data set, or this:</p>
 <p><img src="../../images/search_from_graph_highlight.gif" width="197" height="67"></p>
 <p>if the search is being conducted directly over a graph (as a source of true conditional independence facts, to see how the algorithm behaves ideally).</p>
 <p><font color="#000000">Tetrad has a variety of search algorithms to assist in 
-searching for causal explanations of a body of coltData.</font></p>
+searching for causal explanations of a body of data.</font></p>
 <p>It should be noted that the Tetrad search procedures are exponential in the worst case (when all pairs of variables are dependent conditional on every other set of variables.) The search procedures may take a good bit of time, and there is no guarantee beforehand as to how long that will be.</p>
 <p><font color="#000000">&nbsp;These search algorithms are
 different from those conventionally used in statistics.</font></p>
 <ol>
   <li><font color="#000000">There are several search algorithms, differing in the assumptions they make.<br>
   </font></li>
-  <li><font color="#000000">Many of the search algorithms allow the user to specify background information that will be used in the search procedure. In many cases the search results will be uninformative unless such background assumptions are explicitly made. This design not only provides for more flexibility, it also encourages the user to be conscious of the additional assumptions imposed in deriving a model from coltData.<br>
+  <li><font color="#000000">Many of the search algorithms allow the user to specify background information that will be used in the search procedure. In many cases the search results will be uninformative unless such background assumptions are explicitly made. This design not only provides for more flexibility, it also encourages the user to be conscious of the additional assumptions imposed in deriving a model from data.<br>
     </font></li>
-  <li><font color="#000000">Even with background assumptions, coltData often do not determine a unique best or robust explanation. The search algorithms take in coltData and return information about a <span style="font-style: italic;">collection</span> of alternative causal graphs that can explain features of the coltData. They do not usually return a unique graph, although they sometimes will if sufficient prior knowledge is specified. In contrast</font><font
- color="#000000">, if one searches for a regression model of the influences of a set of variables on a selected variable, a regression model will certainly be found (provided there are sufficient coltData points), specifying which variables influence the target and which do not. <br>
+  <li><font color="#000000">Even with background assumptions, data often do not determine a unique best or robust explanation. The search algorithms take in data and return information about a <span style="font-style: italic;">collection</span> of alternative causal graphs that can explain features of the data. They do not usually return a unique graph, although they sometimes will if sufficient prior knowledge is specified. In contrast</font><font
+ color="#000000">, if one searches for a regression model of the influences of a set of variables on a selected variable, a regression model will certainly be found (provided there are sufficient data points), specifying which variables influence the target and which do not. <br>
   </font></li>
   <li><font color="#000000"> The algorithms are in some respects cautious. Search algorithms such as FCI and PC , described below, will often say, correctly, that it cannot be determined whether or not a particular variable influences another.<br>
   </font></li>
@@ -41,7 +41,7 @@ different from those conventionally used in statistics.</font></p>
   </font></li>
   <li><font color="#000000">Some of the search procedures are robust against common difficulties in sampling designs--they give correct, but reduced information in such cases. For example, the FCI algorithm allows that there may be unobserved latent common causes of measured variables--or not--and that the sample may have been formed by a process in which the values of measured variables invlucne whether or not a unit is included in the sample (<span style="font-style: italic;">sample selection bias</span>). The CCD algorithm allows that the correct causal structure may be "non-recursive"--essentially a cyclic graphical mode, a folded up time series.<br>
   </font></li>
-  <li><font color="#000000">The output of the algorithms is not an estiamted model with parameter values, but a discription of a class of causall graphs that can explain statistical features of the coltData considered by the search procedures. That information can be converted by hand into particular graphical models in the form of directed graphs, which can then be estimated by the program and tested.</font></li>
+  <li><font color="#000000">The output of the algorithms is not an estiamted model with parameter values, but a discription of a class of causall graphs that can explain statistical features of the data considered by the search procedures. That information can be converted by hand into particular graphical models in the form of directed graphs, which can then be estimated by the program and tested.</font></li>
 </ol>
 <p><font color="#000000">The search procedures available are named:</font></p>
 <ul>
@@ -49,7 +49,7 @@ different from those conventionally used in statistics.</font></p>
         models when it is assumed there is no latent (unrecorded) variable that
     contributes to the association of two or more measured variables.</font></li>
   <li><font color="#000000">CPC - Variant of PC that improves arrow orientation accuracy. </font></li>
-  <li>PCD - Variant of PC that can be applied to deterministic coltData. </li>
+  <li>PCD - Variant of PC that can be applied to deterministic data. </li>
   <li><font color="#000000"><a href="fci.html">FCI </a>--which performs a search similar to PC but allowing that there may be latent variables.</font></li>
   <li><font color="#000000"><a href="ccd.html">CCD</a>--for searching for non-recursive SEM models (models of feedback systems using cyclic graphs) without latent variables </font></li>
   <li><a href="ges.html">GES</a> -- <font color="#000000">Scoring search for  Bayes net or SEM models when it is assumed there is no latent (unrecorded) variable that contributes to the association of two or more measured variables.</font></li>
@@ -64,7 +64,7 @@ different from those conventionally used in statistics.</font></p>
 <h3>Inputs to the Search Box
 </h3>
 <p><font color="#000000">There are two possible inputs for a search
-algorithm: a coltData set or a graph. If a graph is input, the program
+algorithm: a data set or a graph. If a graph is input, the program
 allows searches the program computes implied independence and
 conditional independence relations and allows you to conduct any search
 that uses only such constraints--the PC, FCI and CCD algorithms.&nbsp; </font></p>
@@ -72,7 +72,7 @@ that uses only such constraints--the PC, FCI and CCD algorithms.&nbsp; </font></
 model you already know?&nbsp; For a very important reason: The Search
 procedures will find the graphical representation of alternative
 models&nbsp; to your model that imply the same constraints. </font></p>
-The more usual use of the search algorithms requires a coltData set as
+The more usual use of the search algorithms requires a data set as
 input. Here is an example.
 <ul>
   <li><font color="#000000">Select the Search button.</font>
@@ -101,13 +101,13 @@ possibility of hidden common causes:</font></p>
 <ul>
   <li><font color="#000000"><b><a href="pc.html">PC algorithm</a></b>: 
     this method assumes that there are no hidden common causes between observed
-    variables in the input (i.e., variables from the coltData set, or observed variables
+    variables in the input (i.e., variables from the data set, or observed variables
     in the input graph) and that the graphical structure sought has no cycles.</font></li>
 </ul>
 <ul>
   <li><font color="#000000"><b><a href="fci.html">FCI algorithm</a></b>: 
     this method does not assume that there are no hidden common causes between
-    observed variables in the input (i.e., variables from the coltData set, or observed
+    observed variables in the input (i.e., variables from the data set, or observed
     variables in the input graph); it does assume that the graphical strucutre 
     sought has no cycles.<br>
     </font></li>
@@ -120,19 +120,19 @@ possibility of hidden common causes:</font></p>
     by scoring a graph by its asymptotic posterior probability.</font></li>
 </ul>
 <p><font color="#000000">The second class concerns algorithms to search
-for&nbsp; latent variable structural equation models from coltData and
+for&nbsp; latent variable structural equation models from data and
 background knowledge.<br>
 </font></p>
 <ul>
   <li><font color="#000000"><b><a href="mimbuild.html">MIM Build algorithm</a></b>: 
     learns the causal relationships among latent variables, when the true (unknown) 
-    coltData generation process is believed to be a pure measurement/structural model.</font></li>
+    data generation process is believed to be a pure measurement/structural model.</font></li>
 </ul>
 <ul>
   <li><font color="#000000"><b><a href="bpc.html">Build Pure Clusters 
     algorithm</a></b>: a complement to MIM Build and Purify, this algorithm learns 
     the causal relationships from latent variables to observed variables, when 
-    the true (unknown) coltData generation process is believed to be contain a pure
+    the true (unknown) data generation process is believed to be contain a pure
     measurement/structural submodel--i.e. a model in which each <br>
     </font></li>
   <li><font color="#000000"><b><a href="purify.html">Purify algorithm</a></b>: 
@@ -166,7 +166,7 @@ output is making use of background knowledge provided by the user. To see how to
 </span>A search procedure is pointwise consistent if as the sample size
 increases without bound, the output of the algorithm converges with
 probability 1 to<br>
-true information about the coltData generating structure. For all of the
+true information about the data generating structure. For all of the
 Tetrad search algorithms, available proofs of pointwise consistency,
 assume at least the following:<br>
 <br>

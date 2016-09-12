@@ -30,10 +30,7 @@ import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.*;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -265,9 +262,9 @@ public final class TetradDesktop extends JPanel
 
             if (o instanceof SessionEditor) {
                 SessionEditor sessionEditor = (SessionEditor) o;
-                SessionEditorWorkbench workbench =
-                        sessionEditor.getSessionWorkbench();
+                SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
                 Graph graph = workbench.getGraph();
+
                 if (graph.getNumNodes() == 0) {
                     frame.dispose();
                 }
@@ -391,8 +388,7 @@ public final class TetradDesktop extends JPanel
     public boolean closeAllSessions() {
         while (existsSession()) {
             SessionEditor sessionEditor = getFrontmostSessionEditor();
-            SessionEditorWorkbench workbench =
-                    sessionEditor.getSessionWorkbench();
+            SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
             SessionWrapper wrapper = workbench.getSessionWrapper();
 
             if (!wrapper.isSessionChanged()) {
@@ -600,10 +596,8 @@ public final class TetradDesktop extends JPanel
             for (Object _o : framesMap.keySet()) {
                 if (_o instanceof SessionEditor) {
                     SessionEditor sessionEditor = (SessionEditor) _o;
-                    SessionEditorWorkbench workbench =
-                            sessionEditor.getSessionWorkbench();
-                    SessionWrapper sessionWrapper =
-                            workbench.getSessionWrapper();
+                    SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+                    SessionWrapper sessionWrapper = workbench.getSessionWrapper();
 
                     if (sessionWrapper.getName().equals(name)) {
                         continue loop;

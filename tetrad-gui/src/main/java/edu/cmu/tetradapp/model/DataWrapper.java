@@ -44,7 +44,7 @@ import java.util.*;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
-        DoNotAddOldModel, SimulationParamsSource {
+        DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -85,23 +85,30 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     //==============================CONSTRUCTORS===========================//
 
+    protected DataWrapper() {
+        setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        this.parameters = new Parameters();
+    }
+
     /**
      * Constructs a data wrapper using a new DataSet as data model.
      */
-    public DataWrapper() {
+    public DataWrapper(Parameters parameters) {
         setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        this.parameters = parameters;
     }
 
-    public DataWrapper(Simulation wrapper) {
+    public DataWrapper(Simulation wrapper, Parameters parameters) {
         this.name = wrapper.getName();
         this.dataModelList = wrapper.getDataModelList();
+        this.parameters = parameters;
     }
 
 
     /**
      * Copy constructor.
      */
-    public DataWrapper(DataWrapper wrapper) {
+    public DataWrapper(DataWrapper wrapper,Parameters parameters) {
         this.name = wrapper.name;
         DataModelList dataModelList = new DataModelList();
         int selected = -1;
@@ -120,14 +127,14 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         if (selected > -1) {
-            dataModelList.setSelectedModel(this.getDataModelList().get(selected));
+            dataModelList.setSelectedModel(dataModelList.get(selected));
         }
 
-        if(wrapper.sourceGraph != null){
+        if (wrapper.sourceGraph != null) {
             this.sourceGraph = new EdgeListGraph(wrapper.sourceGraph);
         }
 
-        if(wrapper.knownVariables != null){
+        if (wrapper.knownVariables != null) {
             this.knownVariables = new ArrayList<>(wrapper.knownVariables);
         }
 
@@ -144,7 +151,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         setDataModel(dataSet);
     }
 
-    public DataWrapper(Graph graph) {
+    public DataWrapper(Graph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -168,28 +175,28 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(DagWrapper dagWrapper) {
-        this(dagWrapper.getDag());
+    public DataWrapper(DagWrapper dagWrapper, Parameters parameters) {
+        this(dagWrapper.getDag(), parameters);
     }
 
-    public DataWrapper(SemGraphWrapper wrapper) {
-        this(wrapper.getGraph());
+    public DataWrapper(SemGraphWrapper wrapper, Parameters parameters) {
+        this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(GraphWrapper wrapper) {
-        this(wrapper.getGraph());
+    public DataWrapper(GraphWrapper wrapper, Parameters parameters) {
+        this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(RegressionRunner regression, DataWrapper wrapper) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
+    public DataWrapper(RegressionRunner regression, DataWrapper wrapper, Parameters parameters) {
+        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
-    public DataWrapper(RegressionRunner regression, Simulation wrapper) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
+    public DataWrapper(RegressionRunner regression, Simulation wrapper, Parameters parameters) {
+        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
     // Computes regression predictions.
-    public DataWrapper(RegressionResult result, DataSet data) {
+    public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
 //        if (!data.isContinuous()) {
 //            throw new IllegalArgumentException("Must provide a continuous data set.");
 //        }
@@ -226,7 +233,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(MimBuildRunner mimBuild) {
+    public DataWrapper(MimBuildRunner mimBuild, Parameters parameters) {
         ICovarianceMatrix cov = mimBuild.getCovMatrix();
 
         DataModelList dataModelList = new DataModelList();
@@ -254,8 +261,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
             if (i == 0) {
                 name = base;
-            }
-            else {
+            } else {
                 name = base + i;
             }
 
@@ -274,8 +280,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
@@ -287,12 +294,18 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * Stores a reference to the data model being wrapped.
      *
-     * @serial Cannot be null.
-     */ /**
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
         return this.dataModelList;
+    }
+
+    public List<DataModel> getDataModels() {
+        List<DataModel> dataModels = new ArrayList<>();
+        for (DataModel model : this.dataModelList) {
+            dataModels.add(model);
+        }
+        return dataModels;
     }
 
     public void setDataModelList(DataModelList dataModelList) {
@@ -422,6 +435,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * This method is overridden by classes that can identify parameters.
+     *
      * @return null
      */
     public Parameters getParams() {
@@ -433,13 +447,13 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
 
-	public List<String> getVariableNames() {
-		List<String> variableNames = new ArrayList<>();
-		for (Node n: getVariables()) {
-			variableNames.add(n.getName());
-		}
-		return variableNames;
-	}
+    public List<String> getVariableNames() {
+        List<String> variableNames = new ArrayList<>();
+        for (Node n : getVariables()) {
+            variableNames.add(n.getName());
+        }
+        return variableNames;
+    }
 
     @Override
     public Map<String, String> getParamSettings() {

@@ -80,10 +80,10 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void ensureRows(int rows);
 
-    /**
-     * @return the case multiplier for the given case.
-     */
-    int getMultiplier(int caseNumber);
+//    /**
+//     * @return the case multiplier for the given case.
+//     */
+//    int getMultiplier(int caseNumber);
 
     /**
      * @return the column index of the given variable.
@@ -176,10 +176,10 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     List<Node> getVariables();
 
-    /**
-     * @return true if case multipliers are being used in this data set.
-     */
-    boolean isMulipliersCollapsed();
+//    /**
+//     * @return true if case multipliers are being used in this data set.
+//     */
+//    boolean isMulipliersCollapsed();
 
     /**
      * @return true if this is a continuous data set--that is, if it contains at
@@ -224,11 +224,11 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void removeRows(int[] selectedRows);
 
-    /**
-     * Sets the case multiplier for the given case to the given number (must be
-     * >= 1).
-     */
-    void setMultiplier(int caseNumber, int multiplier);
+//    /**
+//     * Sets the case multiplier for the given case to the given number (must be
+//     * >= 1).
+//     */
+//    void setMultiplier(int caseNumber, int multiplier);
 
     /**
      * Sets the case ID fo the given case numnber to the given value.

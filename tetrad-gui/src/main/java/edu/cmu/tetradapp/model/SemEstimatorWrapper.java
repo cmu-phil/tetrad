@@ -72,6 +72,48 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      */
     public SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Parameters params) {
         this.params = params;
+        this.semPm = semPm;
+
+
+        DataModelList dataModel = new DataModelList();
+        dataModel.add(dataSet);
+
+        this.params = params;
+
+        for (DataModel model : dataModel) {
+            if (model instanceof DataSet) {
+                this.semPm = semPm;
+                SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
+                if (!degreesOfFreedomCheck(semPm));
+                estimator.estimate();
+
+                getMultipleResultList().add(estimator);
+            } else if (model instanceof ICovarianceMatrix) {
+                ICovarianceMatrix covMatrix = new CovarianceMatrix((ICovarianceMatrix) model);
+                this.semPm = semPm;
+                SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic));
+                if (!degreesOfFreedomCheck(semPm));
+                estimator.estimate();
+
+                getMultipleResultList().add(estimator);
+            } else {
+                throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
+            }
+        }
+
+
+        if (dataModel != null) {
+            multipleResults = true;
+
+            this.semEstimator = getMultipleResultList().get(0);
+        } else {
+            throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
+        }
+
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
     }
 
@@ -90,7 +132,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
         this.params = params;
 
-        if (dataModel instanceof DataModelList) {
+        if (dataModel != null) {
             multipleResults = true;
 
             if (setParams(semPmWrapper, (DataModelList) dataModel)) return;
@@ -143,6 +185,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         if (semImWrapper == null) {
             throw new NullPointerException();
         }
+
+        this.params = params;
 
         DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
@@ -407,7 +451,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
 
     private SemOptimizer getDefaultOptimization() {
-        if (semPm == null) throw new NullPointerException();
+        if (semPm == null) throw new NullPointerException(
+                "Sorry, I didn't see a SEM PM as parent to the estimator; perhaps the parents are wrong.");
 
         boolean containsLatent = false;
 

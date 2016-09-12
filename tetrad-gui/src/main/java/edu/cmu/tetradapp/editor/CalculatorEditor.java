@@ -38,7 +38,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Editor to use for the calculator.
@@ -223,7 +222,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
             }
         }
 
-        Preferences.userRoot().put("calculator_equations", buf.toString());
+        params.set("calculator_equations", buf.toString());
 
         if (params != null) {
             List<String> _equations = new ArrayList<>();
@@ -411,11 +410,12 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         String[] displayEquations;
 
         if (params != null) {
-            int size = ((List<String>) params.get("equations", null)).size();
-            displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);
+            List<String> equations = (List<String>) params.get("equations", new ArrayList<String>());
+            int size = equations.size();
+            displayEquations = equations.toArray(new String[size]);
         }
         else {
-            String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
+            String _displayEquations = (String) params.get("calculator_equations", "");
             displayEquations = _displayEquations.split("///");
         }
 

@@ -506,7 +506,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getResultGraph();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {

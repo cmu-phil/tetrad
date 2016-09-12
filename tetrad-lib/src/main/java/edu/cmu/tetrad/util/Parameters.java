@@ -40,8 +40,9 @@ public class Parameters implements TetradSerializable {
         StringBuilder builder = new StringBuilder();
 
         for (String param : usedParameters) {
-            ParamDescription paramDescription = ParamDescriptions.instance().get(param);
-            builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(parameters.get(param)[0]);
+//            ParamDescription paramDescription = ParamDescriptions.instance().get(param);
+//            builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(parameters.get(param)[0]);
+            builder.append("\n").append(param).append(" = ").append(parameters.get(param)[0]);
         }
 
         return builder.toString();

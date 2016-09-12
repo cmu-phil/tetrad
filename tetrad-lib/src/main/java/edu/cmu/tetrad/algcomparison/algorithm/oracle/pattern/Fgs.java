@@ -46,10 +46,11 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
+        search.setMaxIndegree(parameters.getInt("maxIndegree"));
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }
@@ -73,6 +74,7 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("faithfulnessAssumed");
+        parameters.add("maxIndegree");
         parameters.add("verbose");
         return parameters;
     }

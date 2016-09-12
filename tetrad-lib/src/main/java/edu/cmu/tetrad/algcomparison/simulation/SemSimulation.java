@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -9,6 +10,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,7 @@ public class SemSimulation implements Simulation {
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
+    private List<SemIm> ims = new ArrayList<>();
 
     public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -46,9 +49,11 @@ public class SemSimulation implements Simulation {
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
+        im = null;
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
+        ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
@@ -60,6 +65,23 @@ public class SemSimulation implements Simulation {
             graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getBoolean("standardize")) {
+                dataSet = DataUtils.standardizeData(dataSet);
+            }
+
+            double variance = parameters.getDouble("measurementVariance");
+
+            if (variance > 0) {
+                for (int k = 0; k < dataSet.getNumRows(); k++) {
+                    for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                        double d = dataSet.getDouble(k, j);
+                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        dataSet.setDouble(k, j, d + norm);
+                    }
+                }
+            }
+
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
@@ -96,6 +118,8 @@ public class SemSimulation implements Simulation {
             parameters.addAll(SemIm.getParameterNames());
         }
 
+        parameters.add("standardize");
+        parameters.add("measurementVariance");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
@@ -120,11 +144,22 @@ public class SemSimulation implements Simulation {
 
             if (pm == null) {
                 pm = new SemPm(graph);
+                im = new SemIm(pm, parameters);
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
+            } else {
+                im = new SemIm(pm, parameters);
+                this.im = im;
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
             }
-
-            im = new SemIm(pm, parameters);
+        } else {
+            ims.add(im);
+            return im.simulateData(parameters.getInt("sampleSize"), false);
         }
+    }
 
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+    public List<SemIm> getSemIms() {
+        return ims;
     }
 }

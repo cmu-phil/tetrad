@@ -53,7 +53,9 @@ public class FAS implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 
     @Override

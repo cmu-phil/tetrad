@@ -63,6 +63,11 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
 
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesPmWrapper bayesPmWrapper) {
+
+        if (dataWrapper instanceof Simulation) {
+
+        }
+
         if (dataWrapper == null) {
             throw new NullPointerException(
                     "BayesDataWrapper must not be null.");
@@ -127,7 +132,7 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
         return this.bayesIm;
     }
 
-    private void estimate(DataSet DataSet, BayesPm bayesPm) {
+    private void estimate(DataSet dataSet, BayesPm bayesPm) {
         Graph graph = bayesPm.getDag();
 
         for (Object o : graph.getNodes()) {
@@ -144,7 +149,7 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
 
         try {
             MlBayesEstimator estimator = new MlBayesEstimator();
-            this.bayesIm = estimator.estimate(bayesPm, DataSet);
+            this.bayesIm = estimator.estimate(bayesPm, dataSet);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();

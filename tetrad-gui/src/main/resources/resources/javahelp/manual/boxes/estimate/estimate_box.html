@@ -17,20 +17,20 @@
 <p><img
  src="../../images/Uestimsate.jpg" alt="" width="498" height="136" style="width: 498px; height: 136px;"><br>
   <br>
-  The Estimate program takes a parametrized model (in PM) and a coltData set
+  The Estimate program takes a parametrized model (in PM) and a data set
   for the variables in that model, and returns an Instantiated Model,
   an IM. It will also take
-  coltData and an (ML) IM as input.. Once a model is estimated, the contents
+  data and an (ML) IM as input.. Once a model is estimated, the contents
   of
   the Estimate box
   can be transferred to an empty IM box&nbsp; and then used to generate
-  coltData, to classify, or to update (in the
+  data, to classify, or to update (in the
   last two cases, only if the model is a Bayes net, not a SEM). <br>
   <br>
-  If a Maximum Likelihood Bayes Net and coltData are directly connected to
-  Estimate, the estimation procedures will ignore all cases in the coltData
-  set with missing values for any&nbsp; variables. Missing coltData values
-  can be interpolated by connecing the coltData to a Manipulate Data box, and
+  If a Maximum Likelihood Bayes Net and data are directly connected to
+  Estimate, the estimation procedures will ignore all cases in the data
+  set with missing values for any&nbsp; variables. Missing data values
+  can be interpolated by connecing the data to a Manipulate Data box, and
   connecting that box to the Estimator box.<br>
   <br>
   There are several&nbsp; varieties of estimation, depending on
@@ -57,7 +57,7 @@
   Instantiated Bayes Model,&nbsp; the Dirichlet Bayes estimator estimates
   a posterior Dirichlet Bayes
   instantiated model given a prior Dirichlet Bayes instantiated model and
-  a a discrete coltData set. The coltData set must contain all of the same
+  a a discrete data set. The data set must contain all of the same
   variables as the prior instantiated model.
   Latent variables are not allowed.<br>
   <br>
@@ -65,13 +65,13 @@
   posterior
   Dirichlet Bayes IM is created. Then, for each cell in the posterior,
   the value (a) from the corresponding cell in the prior is retrieved,
-  and the number of cases in the coltData satisfying the condition of that
+  and the number of cases in the data satisfying the condition of that
   cell (n) is counted. The value of the cell in the posterior is set to a
   + n. Estimated conditional probabilities total pseudocount in each row
   are calculated from these cell values. <br>
   <br>
   As a shortcut, it is possible in the interface to use a Bayes PM and a
-  discrete coltData set as parents to the Dirichlet Bayes Estimator. If you
+  discrete data set as parents to the Dirichlet Bayes Estimator. If you
   do this, a symmetric Dirichlet Bayes IM will be generated in the
   background and used as the prior for the Dirichlet estimation
   algorithm. The symmetric pseudocount that should be used here may be

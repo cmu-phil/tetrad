@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
@@ -28,6 +29,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -57,8 +59,12 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
 
     //===========================CONSTRUCTORS=============================//
 
+    public DirichletBayesImWrapper(Simulation simulation) {
+        throw new NullPointerException("Sorry, that was not a Dirichlet Bayes IM simulation.");
+    }
+
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            Parameters params) {
+                                   Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -71,8 +77,7 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
-        }
-        else if (params.getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
             this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
                     bayesPm, params.getDouble("symmetricAlpha", 1.0));
         }
@@ -82,7 +87,7 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     }
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            DataWrapper dataWrapper) {
+                                   DataWrapper dataWrapper) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException();
         }
@@ -168,21 +173,21 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
         this.name = name;
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
 
     private void log(DirichletBayesIm im) {

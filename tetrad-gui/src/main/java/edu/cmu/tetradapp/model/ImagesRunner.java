@@ -58,214 +58,25 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
     //============================CONSTRUCTORS============================//
 
-    public ImagesRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+    public ImagesRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+    public ImagesRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, Parameters params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+    public ImagesRunner(DataWrapper[] dataWrappers, GraphWrapper graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+    public ImagesRunner(DataWrapper[] dataWrappers, GraphWrapper graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         this.graph = graph.getGraph();
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2
-                ),
-                params, null);
-        type = computeType();
-
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     DataWrapper dataWrapper9,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     DataWrapper dataWrapper9,
-                     DataWrapper dataWrapper10,
-                     Parameters params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9,
-                        dataWrapper10
-                ),
-                params, null);
-
         type = computeType();
     }
 
@@ -284,9 +95,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
      *
      * @see TetradSerializableUtils
      */
-    public static ImagesRunner serializableInstance() {
-        return new ImagesRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//

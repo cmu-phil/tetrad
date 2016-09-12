@@ -74,26 +74,26 @@ final class IndTestChooser {
                 DataSet dataContinuous =
                         (DataSet) dataSource;
 
-                if (dataContinuous.isMulipliersCollapsed()) {
-                    dataContinuous = new CaseExpander().filter(dataSet);
-                }
+//                if (dataContinuous.isMulipliersCollapsed()) {
+//                    dataContinuous = new CaseExpander().filter(dataSet);
+//                }
 
                 return getContinuousTest(dataContinuous, params, testType);
             } else if (dataSet.isDiscrete()) {
                 DataSet dataDiscrete =
                         (DataSet) dataSource;
 
-                if (dataDiscrete.isMulipliersCollapsed()) {
-                    dataDiscrete = new CaseExpander().filter(dataSet);
-                }
+//                if (dataDiscrete.isMulipliersCollapsed()) {
+//                    dataDiscrete = new CaseExpander().filter(dataSet);
+//                }
 
                 return getDiscreteTest(dataDiscrete, params, testType);
             }
             if (dataSet.isMixed()) {
                 DataSet dataMixed = (DataSet) dataSource;
-                if (dataMixed.isMulipliersCollapsed()) {
-                    dataMixed = new CaseExpander().filter(dataSet);
-                }
+//                if (dataMixed.isMulipliersCollapsed()) {
+//                    dataMixed = new CaseExpander().filter(dataSet);
+//                }
 
                 return getMixedTest(dataMixed, params, testType);
             }

@@ -190,15 +190,15 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
         log(bayesIm);
     }
 
-	// brand new BayesIm
-    public BayesImWrapperObs() {
-        Dag graph = new Dag();
-        BayesPm pm = new BayesPm(graph);
-
-        this.bayesIm = new MlBayesImObs(pm);
-
-        log(bayesIm);
-    }
+//	// brand new BayesIm
+//    public BayesImWrapperObs() {
+//        Dag graph = new Dag();
+//        BayesPm pm = new BayesPm(graph);
+//
+//        this.bayesIm = new MlBayesImObs(pm);
+//
+//        log(bayesIm);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

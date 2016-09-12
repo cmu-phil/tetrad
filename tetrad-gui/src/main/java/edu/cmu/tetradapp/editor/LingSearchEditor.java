@@ -185,7 +185,7 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = getAlgorithmRunner().getResultGraph();
+        Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();

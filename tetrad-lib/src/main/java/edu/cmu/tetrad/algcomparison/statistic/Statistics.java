@@ -13,8 +13,6 @@ import java.util.Map;
 public class Statistics {
     private List<Statistic> statistics = new ArrayList<>();
     private Map<Statistic, Double> weights = new HashMap<>();
-    private boolean showUtilities = true;
-    private boolean sortByUtility = true;
 
     public Statistics() {
     }
@@ -84,33 +82,5 @@ public class Statistics {
         return statistics.size();
     }
 
-    /**
-     * @return True iff the output should be sorted by utility.
-     */
-    public boolean isSortByUtility() {
-        return sortByUtility;
-    }
 
-    /**
-     * @param sortByUtility true iff the output should be sorted by utility.
-     */
-    public void setSortByUtility(boolean sortByUtility) {
-        this.sortByUtility = sortByUtility;
-    }
-
-    /**
-     * @return True iff a column of utilities marked "W" should be shown
-     * in the output.
-     */
-    public boolean isShowUtilities() {
-        return showUtilities;
-    }
-
-    /**
-     * @param showUtilities True iff a column of utilities marked "W" should be
-     *                      shown in the output.
-     */
-    public void setShowUtilities(boolean showUtilities) {
-        this.showUtilities = showUtilities;
-    }
 }

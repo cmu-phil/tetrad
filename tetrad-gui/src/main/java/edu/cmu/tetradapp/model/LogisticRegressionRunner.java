@@ -49,11 +49,15 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     private Parameters params;
     private String targetName = null;
     private List<String> regressorNames = new ArrayList<>();
-    private DataSet dataSet;
+    private List<DataSet> dataSets;
     private String report;
     private Graph outGraph;
     private LogisticRegression.Result result;
     private double alpha = 0.001;
+
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     private List<String> variableNames;
 
@@ -65,7 +69,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * containing either a DataSet or a DataSet as its selected model.
      */
     public LogisticRegressionRunner(DataWrapper dataWrapper,
-                                     Parameters params) {
+                                    Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -74,17 +78,31 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             throw new NullPointerException();
         }
 
-        DataModel dataModel = dataWrapper.getSelectedDataModel();
+        if (dataWrapper instanceof Simulation) {
+            Simulation simulation = (Simulation) dataWrapper;
+            DataModelList dataModelList = dataWrapper.getDataModelList();
+            this.dataSets = new ArrayList<>();
 
-        if (!(dataModel instanceof DataSet)) {
-            throw new IllegalArgumentException("Data set must be tabular.");
+            for (DataModel dataModel : dataModelList) {
+                dataSets.add((DataSet) dataModel);
+            }
+
+            this.numModels = dataModelList.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            DataModel dataModel = dataWrapper.getSelectedDataModel();
+
+            if (!(dataModel instanceof DataSet)) {
+                throw new IllegalArgumentException("Data set must be tabular.");
+            }
+
+            setDataSet((DataSet) dataModel);
         }
-
-        this.dataSet = (DataSet) dataModel;
 
         this.params = params;
 
-        this.variableNames = dataModel.getVariableNames();
+        this.variableNames = getDataModel().getVariableNames();
         this.targetName = null;
         this.regressorNames = new ArrayList<>();
 
@@ -126,7 +144,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     //===========================PUBLIC METHODS============================//
 
     public DataModel getDataModel() {
-        return this.dataSet;
+        return dataSets.get(getModelIndex());
     }
 
     /**
@@ -176,7 +194,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             return;
         }
 
-        DataSet regressorsDataSet = dataSet.copy();
+        DataSet regressorsDataSet = dataSets.get(getModelIndex()).copy();
         Node target = regressorsDataSet.getVariable(targetName);
         regressorsDataSet.removeColumn(target);
 
@@ -186,7 +204,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         List<Node> regressorNodes = new ArrayList<>();
 
         for (String s : regressorNames) {
-            regressorNodes.add(dataSet.getVariable(s));
+            regressorNodes.add(dataSets.get(getModelIndex()).getVariable(s));
         }
 
         //If the user selected none, use them all
@@ -210,7 +228,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             }
         }
 
-        LogisticRegression logRegression = new LogisticRegression(dataSet);
+        LogisticRegression logRegression = new LogisticRegression(dataSets.get(getModelIndex()));
         logRegression.setAlpha(alpha);
 
         this.result = logRegression.regress((DiscreteVariable) target, regressorNodes);
@@ -247,7 +265,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
 
     @Override
     public List<String> getRegressorNames() {
-        return variableNames;
+        return new ArrayList<>();
     }
 
     @Override
@@ -325,6 +343,32 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
 
     @Override
     public Map<String, String> getAllParamSettings() {
+        return null;
+    }
+
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
+
+    public void setDataSet(DataSet dataSet) {
+        dataSets = new ArrayList<>();
+        dataSets.add(dataSet);
+    }
+
+    @Override
+    public List<Graph> getGraphs() {
         return null;
     }
 }

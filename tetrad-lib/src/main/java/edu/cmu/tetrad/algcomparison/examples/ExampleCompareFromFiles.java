@@ -52,6 +52,8 @@ public class ExampleCompareFromFiles {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("avgDegree"));
+        statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -68,9 +70,6 @@ public class ExampleCompareFromFiles {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
@@ -78,9 +77,14 @@ public class ExampleCompareFromFiles {
         algorithms.add(new PcStable(new FisherZ()));
         algorithms.add(new Cpcs(new FisherZ()));
 
-        new Comparison().compareAlgorithms("comparison/save1",
-                "comparison/Comparison.txt",
-                algorithms, statistics, parameters);
+        Comparison comparison = new Comparison();
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
+        comparison.setSortByUtility(true);
+        comparison.setShowUtilities(true);
+        comparison.setParallelized(true);
+
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 

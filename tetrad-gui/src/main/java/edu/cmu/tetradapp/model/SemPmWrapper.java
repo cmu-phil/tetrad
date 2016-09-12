@@ -21,19 +21,25 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,18 +49,16 @@ import java.util.List;
  */
 public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     /**
      * @serial Can be null.
      */
     private String name;
 
-    /**
-     * The wrapped SemPm.
-     *
-     * @serial Cannot be null.
-     */
-    private final SemPm semPm;
+    private List<SemPm> semPms;
 
     //==============================CONSTRUCTORS==========================//
 
@@ -63,15 +67,59 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.semPm = new SemPm(graph);
-        log(semPm);
+        this.semPms = new ArrayList<>();
+        this.semPms.add(new SemPm(graph));
+//        log(semPm);
     }
 
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(GraphWrapper graphWrapper) {
+    public SemPmWrapper(Simulation simulation, Parameters parameters) {
+        List<SemIm> semIms = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (_simulation instanceof LargeSemSimulation) {
+            throw new IllegalArgumentException("Large SEM simulations cannot be represented " +
+                    "using a SEM PM or IM box, sorry.");
+        }
+
+        if (!(_simulation instanceof SemSimulation)) {
+            throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation.");
+        }
+
+        semIms = ((SemSimulation) _simulation).getSemIms();
+
+        if (semIms == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        semPms = new ArrayList<>();
+
+        for (SemIm semIm : semIms) {
+            semPms.add(semIm.getSemPm());
+        }
+
+        this.numModels = simulation.getDataModelList().size();
+        this.modelIndex = 0;
+        this.modelSourceName = simulation.getName();
+    }
+
+    /**
+     * Creates a new SemPm from the given workbench and uses it to construct a
+     * new BayesPm.
+     */
+    public SemPmWrapper(GraphWrapper graphWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
@@ -79,7 +127,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(DagWrapper dagWrapper) {
+    public SemPmWrapper(DagWrapper dagWrapper, Parameters parameters) {
         this(new EdgeListGraph(dagWrapper.getDag()));
     }
 
@@ -87,7 +135,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(SemGraphWrapper semGraphWrapper) {
+    public SemPmWrapper(SemGraphWrapper semGraphWrapper, Parameters parameters) {
         this(semGraphWrapper.getSemGraph());
     }
 
@@ -95,40 +143,45 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(TimeLagGraphWrapper wrapper) {
+    public SemPmWrapper(TimeLagGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph());
     }
 
-    public SemPmWrapper(SemEstimatorWrapper wrapper) {
+    public SemPmWrapper(SemEstimatorWrapper wrapper, Parameters parameters) {
+        SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
+                .getSemPm();
+        setSemPm(oldSemPm);
+    }
+
+    private void setSemPm(SemPm oldSemPm) {
         try {
-            SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
-                    .getSemPm();
-            this.semPm = (SemPm) new MarshalledObject(oldSemPm).get();
+            SemPm pm = (SemPm) new MarshalledObject(oldSemPm).get();
+            setSemPm(pm);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
-        catch (Exception e) {
-            throw new RuntimeException("SemPm could not be deep cloned.", e);
-        }
-        log(semPm);
     }
 
     public SemPmWrapper(SemImWrapper wrapper) {
-        SemPm oldSemPm = wrapper.getSemIm().getSemPm();
-        this.semPm = new SemPm(oldSemPm);
-        log(semPm);
+        SemPm pm = wrapper.getSemIm().getSemPm();
+        setSemPm(pm);
+
     }
 
     public SemPmWrapper(MimBuildRunner wrapper) {
-        SemPm oldSemPm = wrapper.getSemPm();
-        this.semPm = new SemPm(oldSemPm);
-        log(semPm);
+        SemPm pm = wrapper.getSemPm();
+        setSemPm(pm);
+
     }
 
     public SemPmWrapper(BuildPureClustersRunner wrapper) {
         Graph graph = wrapper.getResultGraph();
         if (graph == null) throw new IllegalArgumentException("No graph to display.");
-        SemPm oldSemPm = new SemPm(graph);
-        this.semPm = new SemPm(oldSemPm);
-        log(semPm);
+        SemPm pm = new SemPm(graph);
+        setSemPm(pm);
+
     }
 
     public SemPmWrapper(Simulation simulation) {
@@ -138,12 +191,11 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
         }
 
-        this.semPm = new SemPm(graphs.get(0));
-        log(semPm);
+        setSemPm(new SemPm(graphs.get(0)));
     }
 
     public SemPmWrapper(AlgorithmRunner wrapper) {
-        this(new EdgeListGraph(wrapper.getResultGraph()));
+        this(new EdgeListGraph(wrapper.getGraph()));
     }
 
     public SemPmWrapper(DagInPatternWrapper wrapper) {
@@ -156,8 +208,8 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public SemPmWrapper(PValueImproverWrapper wrapper) {
         SemPm oldSemPm = wrapper.getNewSemIm().getSemPm();
-        this.semPm = new SemPm(oldSemPm);
-        log(semPm);
+        log(oldSemPm);
+
     }
 
     /**
@@ -172,7 +224,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     //============================PUBLIC METHODS=========================//
 
     public SemPm getSemPm() {
-        return this.semPm;
+        return this.semPms.get(getModelIndex());
     }
 
     /**
@@ -191,14 +243,10 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (semPm == null) {
-            throw new NullPointerException();
-        }
     }
 
     public Graph getGraph() {
-        return semPm.getGraph();
+        return semPms.get(modelIndex).getGraph();
     }
 
     public String getName() {
@@ -212,26 +260,51 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //======================= Private methods ====================//
 
-    private void log(SemPm pm){
+    private void log(SemPm pm) {
         TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
         TetradLogger.getInstance().log("pm", pm.toString());
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getResultGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
+
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    /**
+     * The wrapped SemPm.
+     *
+     * @serial Cannot be null.
+     */
+    public List<SemPm> getSemPms() {
+        return semPms;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
 }
 
 

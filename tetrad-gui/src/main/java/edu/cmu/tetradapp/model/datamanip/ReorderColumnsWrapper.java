@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -39,7 +40,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public ReorderColumnsWrapper(DataWrapper data) {
+    public ReorderColumnsWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
@@ -111,7 +112,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static ReorderColumnsWrapper serializableInstance() {
-        return new ReorderColumnsWrapper(DataWrapper.serializableInstance());
+        return new ReorderColumnsWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
 

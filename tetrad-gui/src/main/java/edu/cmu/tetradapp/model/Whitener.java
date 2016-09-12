@@ -33,6 +33,7 @@ import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -47,7 +48,7 @@ public class Whitener extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public Whitener(DataWrapper wrapper) {
+    public Whitener(DataWrapper wrapper, Parameters params) {
         DataSet dataSet;
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
             DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();
@@ -162,7 +163,7 @@ public class Whitener extends DataWrapper {
     public static DataWrapper serializableInstance() {
         DataWrapper wrapper =
                 new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new Whitener(wrapper);
+        return new Whitener(wrapper, new Parameters());
     }
 }
 
