@@ -69,7 +69,10 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
         this.semPms = new ArrayList<>();
         this.semPms.add(new SemPm(graph));
-//        log(semPm);
+
+        for (int i = 0; i < semPms.size(); i++) {
+            log(i, semPms.get(i));
+        }
     }
 
     /**
@@ -208,7 +211,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public SemPmWrapper(PValueImproverWrapper wrapper) {
         SemPm oldSemPm = wrapper.getNewSemIm().getSemPm();
-        log(oldSemPm);
+        log(0, oldSemPm);
 
     }
 
@@ -260,8 +263,9 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //======================= Private methods ====================//
 
-    private void log(SemPm pm) {
+    private void log(int i, SemPm pm) {
         TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
+        TetradLogger.getInstance().log("info", "PM # " + (i + 1));
         TetradLogger.getInstance().log("pm", pm.toString());
     }
 
