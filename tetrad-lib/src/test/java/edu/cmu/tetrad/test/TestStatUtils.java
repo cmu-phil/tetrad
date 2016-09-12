@@ -152,7 +152,7 @@ public class TestStatUtils {
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
     }
 
-    @Test
+//    @Test
     public void testNongaussianSums() {
         RandomUtil.getInstance().setSeed(3829483L);
         int numTrials = 10;

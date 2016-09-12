@@ -24,6 +24,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -31,10 +33,10 @@ import edu.cmu.tetrad.util.TetradLogger;
  *
  * @author Tyler Gibson
  */
-public class DagInPatternWrapper extends GraphWrapper{
+public class DagInPatternWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
-    public DagInPatternWrapper(GraphSource source){
+    public DagInPatternWrapper(GraphSource source, Parameters parameters){
         this(source.getGraph());
     }
 
@@ -42,10 +44,6 @@ public class DagInPatternWrapper extends GraphWrapper{
     public DagInPatternWrapper(final Graph graph){
         super(getGraph(graph), "Choose DAG in pattern.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
-    }
-
-    public DagInPatternWrapper(DagInPatternWrapper wrapper) {
-        super(getGraph(wrapper.getGraph()));
     }
 
     private static Graph getGraph(Graph graph) {

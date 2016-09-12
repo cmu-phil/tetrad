@@ -28,22 +28,22 @@ and the <font color="#000000"><b><a href="../../search/purify.html">Purify algor
 variables in a <font color="#000000"> when the measurement model is
 given in advance but the structural model is unknown.</font></p>
 <p>The MIM Build algorithm also assumes that the underlying (unknown)
-coltData generating process is a linear graph. If the user strongly
+data generating process is a linear graph. If the user strongly
 suspects that the latents or indicators may be non-linearly related<font
  color="#000000">, MIM Build should not be used. We are also assuming
 that latents here do not have other hidden common causes.</font></p>
 <p><font color="#000000">A</font><font color="#000000">ll observed
 variables are assumed to be continuous, and therefore the current
-implementation of the algorithm accepts only continuous coltData sets as
+implementation of the algorithm accepts only continuous data sets as
 input. For general information about model building algorithms, consult
 the <font color="#000000"><b><a href="../../search/../search.html">Search
 Algorithms</a></b></font> page.</font></p>
 <p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
 Entering MIM Build parameters</b></font></p>
-<p>Create a new <font color="#000000">Search object</font> as
+<p>Create a new <font color="#000000">Search nodes</font> as
 described in the <font color="#000000"><a href="search_box.html">Search
 Algorithms</a></font> page, but in order to follow this tutorial,
-use the following graph to generate a simulated continuous coltData set:</p>
+use the following graph to generate a simulated continuous data set:</p>
 <blockquote>
   <p><font color="#000000"><img src="../../images/mimbuild1.png"
  width="769" height="470"></font></p>
@@ -60,7 +60,7 @@ tests in order to generate models automatically. The alpha value
 parameter represents the level by which such tests are used to accept
 or reject constraints that compose the final output. The default value
 is 0.05, but the user may want to experiment with different alpha
-values in order to test the sensitivity of her coltData within this
+values in order to test the sensitivity of her data within this
 algorithm.</li>
   <li><strong>number of clusters</strong>: MIM Build needs a pure
 measurement model specified in advance. The measurement model is
@@ -70,7 +70,7 @@ the user specifies how many latents there are in the measurement model
 based in prior knowledge. In our example, let's use three clusters.</li>
   <li><strong>edit cluster assignments</strong>: once the number of
 latents is specified, the user should now determine which variables in
-the coltData set should be clustered together. When this button is clicked,
+the data set should be clustered together. When this button is clicked,
 the following dialog box appears:
     <p><font color="#000000"><img src="../../images/mimbuild3.png"
  width="1011" height="289"></font></p>

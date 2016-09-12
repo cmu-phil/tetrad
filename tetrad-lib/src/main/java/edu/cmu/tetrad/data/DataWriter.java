@@ -51,7 +51,7 @@ public final class DataWriter {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         StringBuilder buf = new StringBuilder();
 
-        boolean isCaseMultipliersCollapsed = dataSet.isMulipliersCollapsed();
+//        boolean isCaseMultipliersCollapsed = dataSet.isMulipliersCollapsed();
 
 //        if (false) {
 //            buf.append("MULT").append(separator);

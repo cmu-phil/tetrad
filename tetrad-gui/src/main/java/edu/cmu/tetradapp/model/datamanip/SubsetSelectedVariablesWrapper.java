@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -36,15 +37,15 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public SubsetSelectedVariablesWrapper(DataWrapper data) {
+    public SubsetSelectedVariablesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
 
         DataModel model = data.getSelectedDataModel();
 
-        if (model instanceof ColtDataSet) {
-            this.setDataModel(createRectangularModel(new ColtDataSet((ColtDataSet) model)));
+        if (model instanceof DataSet) {
+            this.setDataModel(createRectangularModel(((DataSet) model).copy()));
         } else if (model instanceof ICovarianceMatrix) {
             this.setDataModel(createCovarianceModel((ICovarianceMatrix) model));
         } else {
@@ -65,7 +66,8 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new SubsetSelectedVariablesWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()));
+        return new SubsetSelectedVariablesWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
+                new Parameters());
     }
 
     //=========================== Private Methods =================================//

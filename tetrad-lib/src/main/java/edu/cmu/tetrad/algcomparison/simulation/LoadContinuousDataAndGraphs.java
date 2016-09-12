@@ -20,7 +20,7 @@ import java.util.*;
 public class LoadContinuousDataAndGraphs implements Simulation {
     static final long serialVersionUID = 23L;
     private String path;
-    private Graph graph = new EdgeListGraph();
+    private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
 
@@ -35,14 +35,14 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         if (new File(path + "/data").exists()) {
             int numDataSets = new File(path + "/data").listFiles().length;
 
-            File file2 = new File(path + "/graph/graph.txt");
-            System.out.println("Loading graph from " + file2.getAbsolutePath());
-            this.graph = GraphUtils.loadGraphTxt(file2);
-
-            edu.cmu.tetrad.graph.GraphUtils.circleLayout(this.graph, 225, 200, 150);
-
             try {
                 for (int i = 0; i < numDataSets; i++) {
+                    File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
+                    System.out.println("Loading graph from " + file2.getAbsolutePath());
+                    this.graphs.add(GraphUtils.loadGraphTxt(file2));
+
+                    edu.cmu.tetrad.graph.GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
+
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
@@ -82,7 +82,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graph;
+        return graphs.get(index);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        return new ArrayList<>();
+        return usedParameters;
     }
 
     @Override

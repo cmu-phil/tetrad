@@ -192,21 +192,6 @@ class GeneralizedSemImListEditor extends JPanel {
     private GeneralizedSemIm semIm() {
         return this.semIm;
     }
-
-    private Graph graph() {
-        return semIm().getSemPm().getGraph();
-    }
-
-    private void setSavedTooltipDelay(int savedTooltipDelay) {
-        /*
-      This delay needs to be restored when the component is hidden.
-     */
-        int savedTooltipDelay1 = savedTooltipDelay;
-    }
-
-    //=======================PRIVATE INNER CLASSES==========================//
-
-
 }
 
 

@@ -2273,6 +2273,8 @@ public class PerformanceTests {
 //        }
 
         System.out.println("Finish");
+
+//        performanceTests.testFgsComparisonContinuous(1000, 2, 1000, 1);
     }
 }
 

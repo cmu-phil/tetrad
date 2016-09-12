@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.Parameters;
  * @author Joseph Ramsey
  */
 public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
-        TripleClassifier, SimulationParamsSource {
+        TripleClassifier, SimulationParamsSource, MultipleGraphSource {
     long serialVersionUID = 23L;
 
     /**
@@ -58,12 +58,6 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
      * graph is available. Otherwise, returns null.
      */
     Graph getSourceGraph();
-
-    /**
-     * @return the graph that results from executing the algorithm, if the
-     * algorithm has been successfully executed.
-     */
-    Graph getResultGraph();
 
     /**
      * Executes the algorithm.

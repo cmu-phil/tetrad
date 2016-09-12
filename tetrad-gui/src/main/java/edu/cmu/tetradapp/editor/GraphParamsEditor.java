@@ -52,6 +52,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         }
 
         this.params = params;
+        setup();
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -67,62 +68,62 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        JRadioButton manual = new JRadioButton(
-                "An empty graph (to be constructed manually).");
-        JRadioButton random = new JRadioButton("A random graph.");
-        ButtonGroup group = new ButtonGroup();
-        group.add(manual);
-        group.add(random);
+//        JRadioButton manual = new JRadioButton(
+//                "An empty graph (to be constructed manually).");
+//        JRadioButton random = new JRadioButton("A random graph.");
+//        ButtonGroup group = new ButtonGroup();
+//        group.add(manual);
+//        group.add(random);
 
-        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            manual.setSelected(true);
-            randomDagEditor.setEnabled(false);
-        }
-        else {
-            random.setSelected(true);
-            randomDagEditor.setEnabled(true);
-        }
+//        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+//            manual.setSelected(true);
+//            randomDagEditor.setEnabled(false);
+//        }
+//        else {
+//            random.setSelected(true);
+//            randomDagEditor.setEnabled(true);
+//        }
 
-        manual.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JRadioButton button = (JRadioButton) e.getSource();
-
-                if (button.isSelected()) {
-                    params.set("newGraphInitializationMode", "manual");
-                    randomDagEditor.setEnabled(false);
-                }
-            }
-        });
-
-        random.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JRadioButton button = (JRadioButton) e.getSource();
-
-                if (button.isSelected()) {
-                    params.set("newGraphInitializationMode", "random");
-                    randomDagEditor.setEnabled(true);
-                }
-            }
-        });
+//        manual.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JRadioButton button = (JRadioButton) e.getSource();
+//
+//                if (button.isSelected()) {
+//                    params.set("newGraphInitializationMode", "manual");
+//                    randomDagEditor.setEnabled(false);
+//                }
+//            }
+//        });
+//
+//        random.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JRadioButton button = (JRadioButton) e.getSource();
+//
+//                if (button.isSelected()) {
+//                    params.set("newGraphInitializationMode", "random");
+//                    randomDagEditor.setEnabled(true);
+//                }
+//            }
+//        });
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createVerticalBox();
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(new JLabel("Make new graph:"));
-        b3.add(Box.createHorizontalGlue());
-        b2.add(b3);
-        b1.add(Box.createVerticalStrut(5));
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(new JLabel("Make new graph:"));
+//        b3.add(Box.createHorizontalGlue());
+//        b2.add(b3);
+//        b1.add(Box.createVerticalStrut(5));
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(manual);
-        b4.add(Box.createHorizontalGlue());
-        b2.add(b4);
-
-        Box b5 = Box.createHorizontalBox();
-        b5.add(random);
-        b5.add(Box.createHorizontalGlue());
-        b2.add(b5);
+//        Box b4 = Box.createHorizontalBox();
+//        b4.add(manual);
+//        b4.add(Box.createHorizontalGlue());
+//        b2.add(b4);
+//
+//        Box b5 = Box.createHorizontalBox();
+//        b5.add(random);
+//        b5.add(Box.createHorizontalGlue());
+//        b2.add(b5);
 
         b2.setBorder(new TitledBorder(""));
         b1.add(b2);

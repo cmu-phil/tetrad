@@ -19,18 +19,46 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.myexamples;
+package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 
 /**
- * An example script to save out data files and graphs from a simulation.
+ * Picks a DAG from the given graph.
  *
- * @author jdramsey
+ * @author Tyler Gibson
  */
-public class RunConfig {
-    public static void main(String... args) {
-        new Comparison().configuration("comparison/Config.txt");
+public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
+    static final long serialVersionUID = 23L;
+
+    public MagInPagWrapper(GraphSource source, Parameters parameters) {
+        this(source.getGraph());
+    }
+
+
+    public MagInPagWrapper(final Graph graph) {
+        super(getGraph(graph), "Choose DAG in pattern.");
+        TetradLogger.getInstance().log("graph", getGraph() + "");
+    }
+
+    private static Graph getGraph(Graph graph) {
+        return SearchGraphUtils.pagToMag(graph);
+    }
+
+
+    public static MagInPagWrapper serializableInstance() {
+        return new MagInPagWrapper(EdgeListGraph.serializableInstance());
+    }
+
+    @Override
+    public boolean allowRandomGraph() {
+        return false;
     }
 }
 

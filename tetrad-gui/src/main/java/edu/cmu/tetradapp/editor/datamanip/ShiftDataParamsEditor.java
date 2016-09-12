@@ -239,6 +239,10 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     private void setUpA1(List<DataModel> dataSets, Box a1) {
         int[] shifts = (int[]) params.get("shifts", null);
 
+        if (dataSets.isEmpty()) {
+            throw new IllegalArgumentException("There are not datasets to shift.");
+        }
+
         if (shifts.length != ((DataSet)dataSets.get(0)).getNumColumns()) {
             shifts = new int[((DataSet)dataSets.get(0)).getNumColumns()];
             params.set("shifts", shifts);

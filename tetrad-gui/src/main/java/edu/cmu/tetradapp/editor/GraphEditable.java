@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-interface GraphEditable {
+public interface GraphEditable {
 
     /**
      * Sets the name of the editor.

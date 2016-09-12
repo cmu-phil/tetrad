@@ -42,11 +42,11 @@ public final class CaseExpander implements DataFilter {
         int rows = 0;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            int caseMultiplier = dataSet.getMultiplier(i);
+//            int caseMultiplier = dataSet.getMultiplier(i);
 
-            for (int k = 0; k < caseMultiplier; k++) {
-                ++rows;
-            }
+//            for (int k = 0; k < caseMultiplier; k++) {
+            ++rows;
+//            }
         }
 
         DataSet newDataSet =
@@ -55,23 +55,23 @@ public final class CaseExpander implements DataFilter {
         int index = -1;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            int caseMultiplier = dataSet.getMultiplier(i);
+//            int caseMultiplier = dataSet.getMultiplier(i);
 
-            for (int k = 0; k < caseMultiplier; k++) {
-                ++index;
+//            for (int k = 0; k < caseMultiplier; k++) {
+            ++index;
 
-                for (int j = 0; j < cols; j++) {
-                    if (dataSet.getVariable(j) instanceof ContinuousVariable) {
-                        newDataSet.setDouble(index, j, dataSet.getDouble(i, j));
-                    } else if (dataSet.getVariable(j) instanceof DiscreteVariable) {
-                        newDataSet.setInt(index, j, dataSet.getInt(i, j));
-                    } else {
-                        throw new IllegalStateException("Expecting either a " +
-                                "continuous or a discrete variable.");
-                    }
-
+            for (int j = 0; j < cols; j++) {
+                if (dataSet.getVariable(j) instanceof ContinuousVariable) {
+                    newDataSet.setDouble(index, j, dataSet.getDouble(i, j));
+                } else if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+                    newDataSet.setInt(index, j, dataSet.getInt(i, j));
+                } else {
+                    throw new IllegalStateException("Expecting either a " +
+                            "continuous or a discrete variable.");
                 }
+
             }
+//            }
         }
 
         return newDataSet;

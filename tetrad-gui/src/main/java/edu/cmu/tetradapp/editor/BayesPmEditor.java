@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.BayesPmWrapper;
@@ -29,6 +28,8 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -42,6 +43,8 @@ import java.beans.PropertyChangeListener;
 public class BayesPmEditor extends JPanel
         implements PropertyChangeListener, DelegatesEditing {
 
+    private final JPanel targetPanel;
+    private final BayesPmWrapper wrapper;
     /**
      * True iff the editing of measured variables is allowed.
      */
@@ -61,29 +64,62 @@ public class BayesPmEditor extends JPanel
      * Constructs a new editor for parameterized models (for now only for Bayes
      * net parameterized models).
      *
-     * @param bayesPmWrapper the wrapper for the Bayes PM being displayed.
      */
-    public BayesPmEditor(BayesPmWrapper bayesPmWrapper) {
-        this(bayesPmWrapper.getBayesPm());
+    public BayesPmEditor(final BayesPmWrapper wrapper) {
+        this.wrapper = wrapper;
+        setLayout(new BorderLayout());
+
+        targetPanel = new JPanel();
+        targetPanel.setLayout(new BorderLayout());
+
+        setEditorPanel();
+
+        add(targetPanel, BorderLayout.CENTER);
+        validate();
+
+        if (wrapper.getNumModels() > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < wrapper.getNumModels(); i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    setEditorPanel();
+                    validate();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(wrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
     }
 
-    /**
-     * Constructs a new editor for parameterized models (for now only for Bayes
-     * net parameterized models).
-     *
-     * @param bayesPm the BayesPm being displayed
-     */
-    public BayesPmEditor(BayesPm bayesPm) {
-        if (bayesPm.getDag().getNumNodes() == 0) {
+    private void setEditorPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        if (wrapper.getBayesPm().getDag().getNumNodes() == 0) {
             throw new IllegalArgumentException("There are no nodes in that Bayes PM.");
         }
 
         setLayout(new BorderLayout());
 
-        Graph graph = bayesPm.getDag();
+        Graph graph = wrapper.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
         BayesPmEditorWizard wizard =
-                new BayesPmEditorWizard(bayesPm, workbench);
+                new BayesPmEditorWizard(wrapper.getBayesPm(), workbench);
 
 
         JScrollPane workbenchScroll = new JScrollPane(workbench);
@@ -96,14 +132,14 @@ public class BayesPmEditor extends JPanel
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
-        add(splitPane, BorderLayout.CENTER);
+        panel.add(splitPane, BorderLayout.CENTER);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        add(menuBar, BorderLayout.NORTH);
+        panel.add(menuBar, BorderLayout.NORTH);
 
         setName("Bayes PM Editor");
         wizard.addPropertyChangeListener(this);
@@ -111,6 +147,8 @@ public class BayesPmEditor extends JPanel
         wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
         wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
         this.wizard = wizard;
+
+        targetPanel.add(panel, BorderLayout.CENTER);
     }
 
     /**                                      G
@@ -174,6 +212,7 @@ public class BayesPmEditor extends JPanel
         this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
         wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
     }
+
 }
 
 

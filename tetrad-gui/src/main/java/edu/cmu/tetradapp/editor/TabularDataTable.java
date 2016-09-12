@@ -100,15 +100,16 @@ class TabularDataTable extends AbstractTableModel {
         int columnIndex = col - getNumLeadingCols();
         int rowIndex = row - 2;
 
-        if (col == 1) {
-            if (row == 1) {
-                return "MULT";
-            }
-            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
-                return dataSet.getMultiplier(rowIndex);
-            }
-        }
-        else if (col >= getNumLeadingCols() &&
+//        if (col == 1) {
+//            if (row == 1) {
+//                return "MULT";
+//            }
+//            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
+//                return dataSet.getMultiplier(rowIndex);
+//            }
+//        }
+//        else
+        if (col >= getNumLeadingCols() &&
                 col < dataSet.getNumColumns() + getNumLeadingCols()) {
             Node variable = dataSet.getVariable(columnIndex);
 
@@ -164,18 +165,19 @@ class TabularDataTable extends AbstractTableModel {
         if (col == 0) {
             throw new IllegalArgumentException("Bad col index: " + col);
         }
-        if (col == 1) {
-            if (row >= 2) {
-                try {
-                    int multiplier = new Integer((String) value);
-                    dataSet.setMultiplier(row - 2, multiplier);
-                }
-                catch (Exception e) {
-                    dataSet.setMultiplier(row - 2, 1);
-                }
-            }
-        }
-        else if (col >= getNumLeadingCols() &&
+//        if (col == 1) {
+//            if (row >= 2) {
+//                try {
+//                    int multiplier = new Integer((String) value);
+//                    dataSet.setMultiplier(row - 2, multiplier);
+//                }
+//                catch (Exception e) {
+//                    dataSet.setMultiplier(row - 2, 1);
+//                }
+//            }
+//        }
+//        else
+        if (col >= getNumLeadingCols() &&
                 col < dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
                 setColumnName(col, value);
@@ -383,7 +385,7 @@ class TabularDataTable extends AbstractTableModel {
       The number of initial "special" columns not used to display the data
       set.
      */
-        int numLeadingCols = 2;
+        int numLeadingCols = 1;
         return numLeadingCols;
     }
 

@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -39,7 +40,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public CovMatrixDifferenceWrapper(DataWrapper wrapper1, DataWrapper wrapper2) {
+    public CovMatrixDifferenceWrapper(DataWrapper wrapper1, DataWrapper wrapper2, Parameters params) {
         if (wrapper1 == null || wrapper2 == null) {
             throw new NullPointerException("The data must not be null");
         }
@@ -47,11 +48,11 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
         DataModel model2 = wrapper2.getSelectedDataModel();
 
         if (!(model1 instanceof ICovarianceMatrix)) {
-            throw new IllegalArgumentException("Expecting corrariance matrices.");
+            throw new IllegalArgumentException("Expecting covariance matrices.");
         }
 
         if (!(model2 instanceof ICovarianceMatrix)) {
-            throw new IllegalArgumentException("Expecting corrariance matrices.");
+            throw new IllegalArgumentException("Expecting covariance matrices.");
         }
 
         TetradMatrix corr1 = ((ICovarianceMatrix) model1).getMatrix();
@@ -68,7 +69,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
 
     }
 
-    public CovMatrixDifferenceWrapper(SemEstimatorWrapper wrapper1, DataWrapper wrapper2) {
+    public CovMatrixDifferenceWrapper(SemEstimatorWrapper wrapper1, DataWrapper wrapper2, Parameters params) {
         if (wrapper1 == null || wrapper2 == null) {
             throw new NullPointerException("The data must not be null");
         }
@@ -93,7 +94,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
 
     }
 
-    public CovMatrixDifferenceWrapper(SemImWrapper wrapper1, DataWrapper wrapper2) {
+    public CovMatrixDifferenceWrapper(SemImWrapper wrapper1, DataWrapper wrapper2, Parameters params) {
         try {
             if (wrapper1 == null || wrapper2 == null) {
                 throw new NullPointerException("The data must not be null");
@@ -152,7 +153,8 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
      */
     public static DataWrapper serializableInstance() {
         return new CovMatrixDifferenceWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
-                new DataWrapper(DataUtils.continuousSerializableInstance()));
+                new DataWrapper(DataUtils.continuousSerializableInstance()),
+                new Parameters());
     }
 
 

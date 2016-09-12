@@ -32,11 +32,11 @@
                 <tocitem text="Data Set List" target="data_set_list"/>
             </tocitem>
             <tocitem text="Manipulated Data" target="manipulated_data_box">
-                <tocitem text="Manipulated Data" target="manipulated_data"/>
+                <!--<tocitem text="Manipulated Data" target="manipulated_data"/>-->
             </tocitem>
             <tocitem text="Estimate" target="estimate_box">
-                <tocitem text="ML Bayes Estimator" target="bayes_estimator"/>
-                <tocitem text="Dirichlet Bayes Estimator" target="dirichlet_bayes_estimator"/>
+                <tocitem text="ML Bayes Estimator" target="ml_bayes_estimator"/>
+                <tocitem text="Dirichlet Bayes Estimator" target="dirichlet_estimator"/>
                 <tocitem text="SEM Estimator" target="sem_estimator"/>
             </tocitem>
             <tocitem text="Update" target="update_box">
@@ -50,7 +50,7 @@
                 <tocitem text="CCD" target="ccd"/>
                 <tocitem text="CFCI" target="cfci"/>
                 <tocitem text="CPC" target="cpc"/>
-                <tocitem text="CPCSTABLE" target="cpcs"/>
+                <tocitem text="CPCS" target="cpcs"/>
                 <tocitem text="EB" target="eb"/>
                 <tocitem text="FAS" target="fas"/>
                 <tocitem text="FCI" target="fci"/>
@@ -59,30 +59,31 @@
                 <tocitem text="GCCD" target="gccd"/>
                 <tocitem text="GFCI" target="gfci"/>
                 <tocitem text="GLASSO" target="glasso"/>
-                <tocitem text="IMAGES" target="images"/>
-                <tocitem text="LINGAM" target="lingam"/>
+                <tocitem text="IMaGES" target="images"/>
+                <tocitem text="LiNGAM" target="lingam"/>
                 <tocitem text="MBFS" target="mbfs"/>
                 <tocitem text="MGM" target="mgm"/>
                 <tocitem text="MIMBUILD" target="mimbuild"/>
                 <tocitem text="PC" target="pc"/>
                 <tocitem text="PCD" target="pcd"/>
-                <tocitem text="PCLOCAL" target="pclocal"/>
-                <tocitem text="PCMAX" target="pcmax"/>
-                <tocitem text="PCMAXLOCAL" target="pcmaxlocal"/>
-                <tocitem text="PCSTABLE" target="pcstable"/>
-                <tocitem text="PURIFY" target="purify"/>
+                <tocitem text="PCLocal" target="pclocal"/>
+                <tocitem text="PCMax" target="pcmax"/>
+                <tocitem text="PCMaxLocal" target="pcmaxlocal"/>
+                <tocitem text="PCstable" target="pcstable"/>
+                <tocitem text="Purify" target="purify"/>
                 <tocitem text="R1" target="r1"/>
                 <tocitem text="R2" target="r2"/>
                 <tocitem text="R3" target="r3"/>
                 <tocitem text="R4" target="r4"/>
                 <tocitem text="RFCI" target="rfci"/>
-                <tocitem text="RSKEW" target="rskew"/>
-                <tocitem text="RSKEWE" target="rskewe"/>
-                <tocitem text="SKEW" target="skew"/>
-                <tocitem text="SKEWE" target="skewe"/>
-                <tocitem text="PCLOCAL" target="pclocal"/>
-                <tocitem text="TSFCI" target="tsfci"/>
-                <tocitem text="TSGFCI" target="tsgfci"/>
+                <tocitem text="RSkewW" target="rskew"/>
+                <tocitem text="RSkewE" target="rskewe"/>
+                <tocitem text="Skew" target="skew"/>
+                <tocitem text="SkewE" target="skewe"/>
+                <tocitem text="PC-Local" target="pclocal"/>
+                <tocitem text="tsFCI" target="tsfci"/>
+                <tocitem text="tsGFCI" target="tsgfci"/>
+                <tocitem text="tsIMAGES" target="tsimages"/>
                 <tocitem text="WFGS" target="wfgs"/>
 
                 <tocitem text="BDeu Score" target="bdeu"/>
@@ -98,10 +99,11 @@
                 <tocitem text="D-Separation" target="d_separation"/>
             </tocitem>
             <tocitem text="Regression" target="regression_box">
-                <tocitem text="Multiple Linear Regression" target="linear_regression"/>
+                <tocitem text="Multiple Linear Regression" target="multiple_linear_regression"/>
+                <tocitem text="Logistic Regression" target="logistic_regression"/>
             </tocitem>
             <tocitem text="Classify" target="classify_box">
-                <tocitem text="Classify" target="classify"/>
+                <tocitem text="Classify" target="classify_box"/>
             </tocitem>
             <tocitem text="Compare" target="compare_box">
                 <tocitem text="Compare" target="compare"/>
@@ -124,8 +126,8 @@
             <tocitem text="Saving Sessions" target="saving_sessions"/>
             <tocitem text="Selecting Groups of Nodes" target="selecting_groups_of_nodes"/>
             <tocitem text="Using Popup Menus" target="using_popup_menus"/>
-            <tocitem text="Using Templates" target="using_templates"/>
-        </tocitem>
+            <!--<tocitem text="Using Templates" target="using_templates"/>-->
+        </tocitem>w
         <tocitem text="Some Definitions" image="toplevelfolder" target="definitions">
             <tocitem text="Measure-Structural Graph" target="measurement_structural_graph"/>
             <tocitem text="Measured and Latent Variables" target="measured_latent_variables"/>

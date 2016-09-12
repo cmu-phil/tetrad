@@ -22,16 +22,33 @@ import java.util.List;
 public class PcLocal implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcLocal(IndependenceWrapper test) {
         this.test = test;
     }
 
+    public PcLocal(IndependenceWrapper test, Algorithm initialGraph) {
+        this.test = test;
+        this.initialGraph = initialGraph;
+    }
+
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
+        Graph initial = null;
+
+        if (initialGraph != null) {
+            initial = initialGraph.search(dataSet, parameters);
+        }
+
         edu.cmu.tetrad.search.PcLocal search = new edu.cmu.tetrad.search.PcLocal(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+
+        if (initial != null) {
+            search.setInitialGraph(initial);
+        }
+
         return search.search();
     }
 
@@ -52,7 +69,9 @@ public class PcLocal implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 
     @Override

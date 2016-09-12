@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import java.util.List;
 
 /**
- * Indicates a class that is capable of producing a graph on demand.
+ * Indicates a class that can returns multiple graphs.
  *
  * @author Joseph Ramsey
  */

@@ -10,6 +10,7 @@
     <mapID target="why_doesnt_tetrad" url="manual/why_doesnt_tetrad.html"/>
     <mapID target="references" url="manual/references.html"/>
     <mapID target="for_further_help" url="manual/for_further_help.html"/>
+    <mapID target="under_construction" url="manual/under_construction.html"/>
 
     <!-- Main Workspace  -->
 
@@ -24,7 +25,7 @@
     <mapID target="graph_box" url="manual/boxes/graph/graph_box.html"/>
     <mapID target="pm_box" url="manual/boxes/pm/pm_box.html"/>
     <mapID target="im_box" url="manual/boxes/im/im_box.html"/>
-    <mapID target="data_box" url="manual/boxes/coltData/data_box.html"/>
+    <mapID target="data_box" url="manual/boxes/data/data_box.html"/>
     <mapID target="manipulated_data_box" url="manual/boxes/manipulated_data/manipulated_data_box.html"/>
     <mapID target="estimate_box" url="manual/boxes/estimate/estimate_box.html"/>
     <mapID target="update_box" url="manual/boxes/update/update_box.html"/>
@@ -57,7 +58,7 @@
     <mapID target="sem_im" url="manual/boxes/im/sem_im.html"/>
     <mapID target="glass_im" url="manual/boxes/im/glass_im.html"/>
 
-    <mapID target="data_set_list" url="manual/boxes/coltData/data_set_list.html"/>
+    <mapID target="data_set_list" url="manual/boxes/data/data_set_list.html"/>
 
     <mapID target="mode_interpolator" url="manual/index.html"/>
     <mapID target="extra_category_interpolator" url="manual/index.html"/>
@@ -65,14 +66,17 @@
     <mapID target="correlation_matrix_converter" url="manual/index.html"/>
     <mapID target="bootstrap_sampler" url="manual/index.html"/>
 
-    <mapID target="bayes_estimator" url="manual/Estimate.html"/>
-    <mapID target="sem_estimator" url="manual/Estimate.html"/>
-    <mapID target="dirichlet_estimator" url="manual/Estimate.html"/>
-    <mapID target="em_bayes_estimator" url="manual/Estimate.html"/>
+    <mapID target="ml_bayes_estimator" url="manual/boxes/estimate/ml_bayes_estimator.html"/>
+    <mapID target="sem_estimator" url="manual/boxes/estimate/sem_estimator.html"/>
+    <mapID target="dirichlet_estimator" url="manual/boxes/estimate/dirichlet_estimator.html"/>
+    <mapID target="em_bayes_estimator" url="manual/boxes/estimate/dirichlet_estimator.html"/>
 
-    <mapID target="approximate_updater" url="manual/Update.html"/>
-    <mapID target="row_summing_updater" url="manual/Update.html"/>
-    <mapID target="cpt_updater" url="manual/Update.html"/>
+    <mapID target="approximate_updater" url="manual/boxes/update/approximate_updater.html"/>
+    <mapID target="row_summing_updater" url="manual/boxes/update/row_summing_updater.html"/>
+    <mapID target="cpt_updater" url="manual/boxes/update/cpt_invariant_updater.html"/>
+
+    <mapID target="multiple_linear_regression" url="manual/boxes/regression/multiple_linear_regression.html"/>
+    <mapID target="logistic_regression" url="manual/boxes/regression/logistic_regression.html"/>
 
     <mapID target="types_of_algorithms" url="manual/boxes/search/types_of_algorithms.html"/>
 
@@ -114,6 +118,7 @@
     <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
     <mapID target="tsfci" url="manual/boxes/search/tsfci.html"/>
     <mapID target="tsgfci" url="manual/boxes/search/tsgfci.html"/>
+    <mapID target="tsimages" url="manual/boxes/search/tsimages.html"/>
     <mapID target="wfgs" url="manual/boxes/search/wfgs.html"/>
 
 

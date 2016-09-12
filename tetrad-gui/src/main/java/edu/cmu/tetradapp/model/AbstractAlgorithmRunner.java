@@ -419,7 +419,7 @@ public abstract class AbstractAlgorithmRunner
         this.name = name;
     }
 
-    List<Graph> getGraphs() {
+    public List<Graph> getGraphs() {
         return graphs;
     }
 

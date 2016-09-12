@@ -19,32 +19,19 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.myexamples;
+package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.data.DataModel;
+
+import java.util.List;
 
 /**
- * An example script to save out data files and graphs from a simulation.
+ * Indicates a class that can returns multiple models.
  *
- * @author jdramsey
+ * @author Joseph Ramsey
  */
-public class ExampleSave {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
-
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4);
-        parameters.set("sampleSize", 100, 500, 1000);
-
-        Simulation simulation = new SemSimulation(new RandomForward());
-        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
-                parameters);
-    }
+interface MultipleDataSource {
+    List<DataModel> getDataModels();
 }
 
 

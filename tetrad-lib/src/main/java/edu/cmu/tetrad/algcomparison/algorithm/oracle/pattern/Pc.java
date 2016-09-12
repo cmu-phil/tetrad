@@ -46,9 +46,9 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
+//        if (initial != null) {
+//            search.setInitialGraph(initial);
+//        }
 
         return search.search();
     }
@@ -73,6 +73,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
+        parameters.add("depth");
         parameters.add("verbose");
         return parameters;
     }

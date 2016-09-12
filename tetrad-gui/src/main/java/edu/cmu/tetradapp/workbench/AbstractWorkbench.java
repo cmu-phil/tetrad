@@ -1838,6 +1838,8 @@ public abstract class AbstractWorkbench extends JComponent
                     Preferences.userRoot().putBoolean("experimental", true);
                 }
             }
+
+            deselectAll();
         }
     }
 

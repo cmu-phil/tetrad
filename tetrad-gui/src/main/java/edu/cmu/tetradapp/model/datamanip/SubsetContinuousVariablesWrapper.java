@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -38,7 +39,7 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public SubsetContinuousVariablesWrapper(DataWrapper data) {
+    public SubsetContinuousVariablesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
@@ -60,7 +61,8 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new SubsetContinuousVariablesWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()));
+        return new SubsetContinuousVariablesWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
+                new Parameters());
     }
 
     //=========================== Private Methods =================================//

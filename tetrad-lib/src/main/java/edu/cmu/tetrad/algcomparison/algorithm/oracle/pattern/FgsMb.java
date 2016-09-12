@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -26,6 +27,7 @@ public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+    private String targetName;
 
     public FgsMb(ScoreWrapper score) {
         this.score = score;
@@ -53,14 +55,16 @@ public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
             search.setInitialGraph(initial);
         }
 
-        Node target = dataSet.getVariable(parameters.getString("targetName"));
+        this.targetName = parameters.getString("targetName");
+        Node target = dataSet.getVariable(targetName);
 
         return search.search(Collections.singletonList(target));
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        Node target = graph.getNode(targetName);
+        return GraphUtils.markovBlanketDag(target, graph);
     }
 
     @Override

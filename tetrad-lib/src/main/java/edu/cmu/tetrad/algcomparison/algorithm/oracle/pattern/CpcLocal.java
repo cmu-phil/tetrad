@@ -52,7 +52,9 @@ public class CpcLocal implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        List<String> parameters = test.getParameters();
+        parameters.add("depth");
+        return parameters;
     }
 
     @Override

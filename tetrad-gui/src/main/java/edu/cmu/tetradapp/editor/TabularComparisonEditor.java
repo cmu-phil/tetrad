@@ -1,7 +1,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
 
 import javax.swing.*;
@@ -16,18 +18,35 @@ public class TabularComparisonEditor extends JPanel {
 
     public TabularComparisonEditor(TabularComparison comparison) {
         this.comparison = comparison;
-        buildGui();
+        setup();
     }
 
-    private void buildGui() {
+    private void setup() {
+        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
+        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+
+        pane.addTab("Comparison", getTableDisplay());
+
+        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+
+        for (int i = 0; i < referenceGraphs.size(); i++) {
+            JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+            pane3.add("Target", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            pane3.add("Reference", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            pane2.add("" + (i + 1), pane3);
+        }
+
+        pane.addTab("Graphs", pane2);
+
+        add(pane);
+    }
+
+
+    private Box getTableDisplay() {
 
         DataSet dataSet = comparison.getDataSet();
 
         TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
-
-//        TextTable table1 = getTextTable(dataSet, new int[]{0, 1, 2, 3, 4, 5}, new DecimalFormat("0"));
-//        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9, 10}, new DecimalFormat("0.00"));
-//        TextTable table3 = getTextTable(dataSet, new int[]{10}, new DecimalFormat("0.00"));
 
         StringBuilder builder = new StringBuilder();
         Map<String, String> allParamsSettings = comparison.getAllParamSettings();
@@ -61,7 +80,7 @@ public class TabularComparisonEditor extends JPanel {
 
 //        setPreferredSize(new Dimension(700,400));
 
-        add(b);
+        return b;
     }
 
     private TextTable getTextTable(DataSet dataSet, NumberFormat nf) {

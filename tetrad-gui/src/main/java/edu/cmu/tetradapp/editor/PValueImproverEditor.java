@@ -34,6 +34,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.PValueImproverWrapper;
+import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -334,8 +335,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         this.newSemIm = getWrapper().getNewSemIm();
 
         if (getNewSemIm() != null) {
-            SemImEditor newEditor = new SemImEditor(getNewSemIm(), "Graphical Editor",
-                    "Tabular Editor", SemImEditor.TabbedPaneDefault.STATS);
+            SemImEditor newEditor = new SemImEditor(new SemImWrapper(getNewSemIm()));
             final GraphWorkbench workbench = newEditor.getWorkbench();
 
             workbench.addPropertyChangeListener(new PropertyChangeListener() {
@@ -364,8 +364,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         }
 
         if (getOriginalSemIm() != null) {
-            SemImEditor originalEditor = new SemImEditor(getOriginalSemIm(), "Graphical Editor",
-                    "Tabular Editor", SemImEditor.TabbedPaneDefault.STATS);
+            SemImEditor originalEditor = new SemImEditor(new SemImWrapper(getOriginalSemIm()));
             tabbedPane.addTab("Original Model", originalEditor);
         }
 

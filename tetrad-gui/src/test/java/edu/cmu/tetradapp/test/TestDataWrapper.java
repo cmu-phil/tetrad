@@ -26,12 +26,14 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import org.junit.Test;
 
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import static org.junit.Assert.*;
 
@@ -47,7 +49,7 @@ public class TestDataWrapper {
     @Test
     public void testConstruction() {
 
-        this.dataWrapper = new DataWrapper();
+        this.dataWrapper = new DataWrapper(new Parameters());
 
         assertNotNull(dataWrapper);
     }

@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.Clusters;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -102,7 +99,14 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
         this.setClusters((Clusters) params.get("clusters", null));
-        this.data = (DataSet) dataWrapper.getSelectedDataModel();
+
+        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
+
+        if (!(selectedDataModel instanceof  DataSet)) {
+            throw new IllegalArgumentException("That data box did not contain a dataset.");
+        }
+
+        this.data = (DataSet) selectedDataModel;
         this.params = params;
     }
 

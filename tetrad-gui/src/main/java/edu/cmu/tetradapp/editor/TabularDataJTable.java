@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -123,7 +122,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 		FontMetrics metrics = getFontMetrics(getFont());
 
 		getColumnModel().getColumn(0).setMaxWidth(9 * max);
-		getColumnModel().getColumn(1).setMaxWidth(9 * 4);
+//		getColumnModel().getColumn(1).setMaxWidth(9 * 4);
 		setRowHeight(metrics.getHeight() + 3);
 
 		setRowSelectionAllowed(true);
@@ -235,9 +234,11 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 		}
 		if (row == 1) {
 			return new VariableNameEditor();
-		} else if (column == 1 && row >= 2) {
-			return new MultiplierEditor();
-		} else if (row > 1) {
+		}
+//		else if (column == 1 && row >= 2) {
+//			return new MultiplierEditor();
+//		}
+		else if (row > 1) {
 			return new DataCellEditor();
 		}
 
@@ -247,9 +248,11 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 	public TableCellRenderer getCellRenderer(int row, int column) {
 		if (column == 0) {
 			return new RowNumberRenderer();
-		} else if (column == 1 && row >= 1) {
-			return new MultiplierRenderer();
-		} else {
+		}
+//		else if (column == 1 && row >= 1) {
+//			return new MultiplierRenderer();
+//		}
+		else {
 			if (row == 0 || row == 1) {
 				return new VariableNameRenderer();
 			}
@@ -437,7 +440,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 		/*
 	  The number of initial "special" columns not used to display the data set.
 	 */
-		int numLeadingCols = 2;
+		int numLeadingCols = 1;
 		return numLeadingCols;
 	}
 
@@ -494,64 +497,64 @@ class RowNumberRenderer extends DefaultTableCellRenderer {
 	}
 }
 
-class MultiplierRenderer extends DefaultTableCellRenderer {
-	public Component getTableCellRendererComponent(JTable table, Object value,
-			boolean isSelected, boolean hasFocus, int row, int column) {
-		JLabel label = (JLabel) super.getTableCellRendererComponent(table,
-				value, isSelected, hasFocus, row, column);
+//class MultiplierRenderer extends DefaultTableCellRenderer {
+//	public Component getTableCellRendererComponent(JTable table, Object value,
+//			boolean isSelected, boolean hasFocus, int row, int column) {
+//		JLabel label = (JLabel) super.getTableCellRendererComponent(table,
+//				value, isSelected, hasFocus, row, column);
+//
+//		if (value == null) {
+//			setText("");
+//		} else {
+//			setText(value.toString());
+//		}
+//
+//		label.setHorizontalAlignment(JLabel.CENTER);
+//		label.setFont(new Font("SansSerif", Font.BOLD, 10));
+//		label.setForeground(Color.DARK_GRAY);
+//
+//		return label;
+//	}
+//}
 
-		if (value == null) {
-			setText("");
-		} else {
-			setText(value.toString());
-		}
-
-		label.setHorizontalAlignment(JLabel.CENTER);
-		label.setFont(new Font("SansSerif", Font.BOLD, 10));
-		label.setForeground(Color.DARK_GRAY);
-
-		return label;
-	}
-}
-
-class MultiplierEditor extends DefaultCellEditor {
-	private final JTextField textField;
-
-	/**
-	 * Constructs a new number cell editor.
-	 */
-	public MultiplierEditor() {
-		super(new JTextField());
-
-		textField = (JTextField) editorComponent;
-		textField.setHorizontalAlignment(JTextField.CENTER);
-		textField.setFont(new Font("SansSerif", Font.BOLD, 10));
-		textField.setForeground(Color.DARK_GRAY);
-		textField.setBorder(new LineBorder(Color.black));
-
-		delegate = new EditorDelegate() {
-			public void setValue(Object value) {
-				if (value instanceof Integer) {
-					textField.setText(value.toString());
-				}
-
-				textField.selectAll();
-			}
-
-			/**
-			 * Overrides delegate; gets the text value from the cell to send
-			 * back to the model.
-			 * 
-			 * @return this text value.
-			 */
-			public Object getCellEditorValue() {
-				return textField.getText();
-			}
-		};
-
-		textField.addActionListener(delegate);
-	}
-}
+//class MultiplierEditor extends DefaultCellEditor {
+//	private final JTextField textField;
+//
+//	/**
+//	 * Constructs a new number cell editor.
+//	 */
+//	public MultiplierEditor() {
+//		super(new JTextField());
+//
+//		textField = (JTextField) editorComponent;
+//		textField.setHorizontalAlignment(JTextField.CENTER);
+//		textField.setFont(new Font("SansSerif", Font.BOLD, 10));
+//		textField.setForeground(Color.DARK_GRAY);
+//		textField.setBorder(new LineBorder(Color.black));
+//
+//		delegate = new EditorDelegate() {
+//			public void setValue(Object value) {
+//				if (value instanceof Integer) {
+//					textField.setText(value.toString());
+//				}
+//
+//				textField.selectAll();
+//			}
+//
+//			/**
+//			 * Overrides delegate; gets the text value from the cell to send
+//			 * back to the model.
+//			 *
+//			 * @return this text value.
+//			 */
+//			public Object getCellEditorValue() {
+//				return textField.getText();
+//			}
+//		};
+//
+//		textField.addActionListener(delegate);
+//	}
+//}
 
 class VariableNameRenderer extends DefaultTableCellRenderer {
 	public void setValue(Object value) {

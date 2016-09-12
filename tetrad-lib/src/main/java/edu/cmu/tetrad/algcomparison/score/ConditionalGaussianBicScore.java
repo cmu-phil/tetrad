@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
+public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
     static final long serialVersionUID = 23L;
 
     @Override

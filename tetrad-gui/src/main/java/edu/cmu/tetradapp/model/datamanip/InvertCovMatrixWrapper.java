@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -66,7 +67,7 @@ public class InvertCovMatrixWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new CovMatrixWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()));
+        return new CovMatrixWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()), new Parameters());
     }
 
 

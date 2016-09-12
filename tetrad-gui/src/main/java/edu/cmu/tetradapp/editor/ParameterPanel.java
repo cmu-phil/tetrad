@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -29,6 +28,7 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,15 +44,17 @@ class ParameterPanel extends JPanel {
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
-        a.add(b);
-//        a.add(Box.createHorizontalGlue());
 
-        Box d = Box.createHorizontalBox();
-        JLabel label = new JLabel("EDIT PARAMETERS:");
-        label.setFont(new Font("Dialog", Font.BOLD, 12));
-        d.add(label);
-        d.add(Box.createHorizontalGlue());
-        b.add(d);
+        a.add(b);
+
+//        Box d = Box.createHorizontalBox();
+//        JLabel label = new JLabel("Please choose values for the following parameters:");
+//        label.setFont(new Font("Dialog", Font.BOLD, 13));
+//        d.add(label);
+//        d.add(Box.createHorizontalGlue());
+//        b.add(d);
+
+//        b.add(Box.createVerticalStrut(10));
 
         for (String parameter : parametersToEdit) {
             Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
@@ -78,7 +80,9 @@ class ParameterPanel extends JPanel {
             }
 
             Box c = Box.createHorizontalBox();
-            c.add(new JLabel(ParamDescriptions.instance().get(parameter).getDescription()));
+            JLabel _label = new JLabel(ParamDescriptions.instance().get(parameter).getDescription());
+            _label.setFont(new Font("Dialog", Font.BOLD, 13));
+            c.add(_label);
             c.add(Box.createHorizontalGlue());
             c.add(p);
             b.add(c);
@@ -87,6 +91,7 @@ class ParameterPanel extends JPanel {
         b.add(Box.createVerticalGlue());
         setLayout(new BorderLayout());
         add(a, BorderLayout.CENTER);
+
     }
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,

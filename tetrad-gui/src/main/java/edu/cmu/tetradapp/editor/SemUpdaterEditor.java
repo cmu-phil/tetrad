@@ -26,6 +26,7 @@ import edu.cmu.tetrad.sem.SemEvidence;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemUpdater;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.model.SemUpdaterWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -74,8 +75,7 @@ public class SemUpdaterEditor extends JPanel {
 
         Box b1 = Box.createHorizontalBox();
 
-        semImEditor = new SemImEditor(semUpdater.getSemIm(), "Graphical View",
-                "Tabular View");
+        semImEditor = new SemImEditor(new SemImWrapper(semUpdater.getSemIm()));
         semImEditor.add(getUpdatePanel(), BorderLayout.WEST);
         semImEditor.setEditable(false);
         b1.add(semImEditor);
@@ -130,7 +130,7 @@ public class SemUpdaterEditor extends JPanel {
 
                         evidence.getProposition().setValue(nodeIndex, value);
                         SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                        semImEditor.setSemIm(updatedSem,
+                        semImEditor.displaySemIm(updatedSem,
                                 semImEditor.getTabSelectionIndex(),
                                 semImEditor.getMatrixSelection());
                         return value;
@@ -178,7 +178,7 @@ public class SemUpdaterEditor extends JPanel {
 
                     semUpdater.getEvidence().setManipulated(o, selected);
                     SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                    semImEditor.setSemIm(updatedSem,
+                    semImEditor.displaySemIm(updatedSem,
                             semImEditor.getTabSelectionIndex(),
                             semImEditor.getMatrixSelection());
                 }
@@ -199,7 +199,7 @@ public class SemUpdaterEditor extends JPanel {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                semImEditor.setSemIm(updatedSem,
+                semImEditor.displaySemIm(updatedSem,
                         semImEditor.getTabSelectionIndex(),
                         semImEditor.getMatrixSelection());
             }

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -24,6 +25,7 @@ public class MBFS implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
+    private String targetName;
 
     public MBFS(IndependenceWrapper test) {
         this.test = test;
@@ -35,15 +37,18 @@ public class MBFS implements Algorithm, HasKnowledge {
                 test.getTest(dataSet, parameters),
                 parameters.getInt("depth")
         );
+
         search.setKnowledge(knowledge);
 
-        Node target = dataSet.getVariable(parameters.getString("targetName"));
+        this.targetName = parameters.getString("targetName");
+        Node target = dataSet.getVariable(targetName);
         return search.search(target);
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        Node target = graph.getNode(targetName);
+        return GraphUtils.markovBlanketDag(target, graph);
     }
 
     @Override

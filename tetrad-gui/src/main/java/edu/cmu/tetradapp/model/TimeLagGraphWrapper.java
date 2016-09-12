@@ -59,12 +59,18 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
     //=============================CONSTRUCTORS==========================//
 
-    public TimeLagGraphWrapper(TimeLagGraph graph) {
+    public TimeLagGraphWrapper(Parameters parameters) {
+        this.graph = new TimeLagGraph();
+        this.parameters = parameters;
+        log();
+    }
+
+    public TimeLagGraphWrapper(TimeLagGraph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
         this.graph = graph;
-        this.parameters = new Parameters();
+        this.parameters = parameters;
         log();
     }
 
@@ -147,7 +153,8 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * @see TetradSerializableUtils
      */
     public static TimeLagGraphWrapper serializableInstance() {
-        return new TimeLagGraphWrapper(new TimeLagGraph());
+        return new TimeLagGraphWrapper(new TimeLagGraph(),
+                new Parameters());
     }
 
     //============================PRIVATE METHODS========================//

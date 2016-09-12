@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -36,7 +37,7 @@ public class SimulateFromCovWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public SimulateFromCovWrapper(DataWrapper wrapper) {
+    public SimulateFromCovWrapper(DataWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -64,7 +65,8 @@ public class SimulateFromCovWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new SimulateFromCovWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()));
+        return new SimulateFromCovWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
+                new Parameters());
     }
 
 

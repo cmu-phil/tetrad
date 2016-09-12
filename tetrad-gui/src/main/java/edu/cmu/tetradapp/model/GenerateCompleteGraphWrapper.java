@@ -24,6 +24,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -31,12 +33,12 @@ import edu.cmu.tetrad.util.TetradLogger;
  *
  * @author Tyler Gibson
  */
-public class GenerateCompleteGraphWrapper extends GraphWrapper{
+public class GenerateCompleteGraphWrapper extends GraphWrapper  implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
 
 
-    public GenerateCompleteGraphWrapper(GraphSource source){
+    public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters){
         this(source.getGraph());
     }
 

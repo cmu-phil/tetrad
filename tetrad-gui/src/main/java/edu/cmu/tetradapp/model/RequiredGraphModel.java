@@ -137,7 +137,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      */
     public RequiredGraphModel(Parameters params, KnowledgeBoxInput input) {
-        super(params, input);
+        super(new KnowledgeBoxInput[]{input}, params);
 
         if (params == null) {
             throw new NullPointerException();
@@ -182,6 +182,10 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
                 getVarNames().add(varName);
                 knowledge.addVariable(varName);
             }
+        }
+
+        if (resultGraph == null) {
+            throw new NullPointerException("I couldn't find a parent graph.");
         }
 
         List<Node> nodes = resultGraph.getNodes();
