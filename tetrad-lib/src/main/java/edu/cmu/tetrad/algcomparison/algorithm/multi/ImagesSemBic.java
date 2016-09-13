@@ -37,10 +37,16 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             dataModels.add(dataSet);
         }
 
-        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(new SemBicScoreImages(dataModels));
+        Collections.shuffle(dataModels);
+        List<DataModel> subset = new ArrayList<>();
+
+        for (int i = 0; i < Math.min(parameters.getInt("randomSelection"), dataModels.size()); i++) {
+            subset.add(dataSets.get(i));
+        }
+
+        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(new SemBicScoreImages(subset));
         search.setFaithfulnessAssumed(true);
         search.setKnowledge(knowledge);
-
         return search.search();
     }
 

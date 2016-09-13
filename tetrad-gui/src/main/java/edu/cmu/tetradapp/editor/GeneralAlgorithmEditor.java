@@ -354,6 +354,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 doSearch(runner);
             }
         });
+
+        setAlgorithm();
     }
 
     private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
