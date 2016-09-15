@@ -40,7 +40,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class IndTestConditionalGaussianLrt implements IndependenceTest {
+public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private DataSet data;
     private Map<Node, Integer> nodesHash;
     private double alpha = 0.001;
@@ -48,7 +48,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
 
-    public IndTestConditionalGaussianLrt(DataSet data, double alpha) {
+    public IndTestConditionalGaussianLRT(DataSet data, double alpha) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
 

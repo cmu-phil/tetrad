@@ -170,6 +170,7 @@ public class TestPcMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
+        Score score = new GraphScore(graph);
         PcMax pc = new PcMax(independence);
 
         // Set up search.

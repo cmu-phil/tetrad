@@ -259,6 +259,11 @@ public interface Graph extends TetradSerializable {
     int getIndegree(Node node);
 
     /**
+     * @return the number of arrow endpoints adjacent to a node.
+     */
+    int getDegree(Node node);
+
+    /**
      * @return the node with the given string name.  In case of accidental
      * duplicates, the first node encountered with the given name is returned.
      * In case no node exists with the given name, null is returned.

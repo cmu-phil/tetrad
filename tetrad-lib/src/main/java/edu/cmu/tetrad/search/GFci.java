@@ -110,7 +110,7 @@ public final class GFci implements GraphSearch {
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
-        fgs.setMaxIndegree(maxIndegree);
+        fgs.setMaxDegree(maxIndegree);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 

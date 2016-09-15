@@ -107,10 +107,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
         discreteTests.add(TestType.GSquare);
+        discreteTests.add(TestType.Discrete_BIC_Test);
         discreteTests.add(TestType.Conditional_Gaussian_LRT);
 
         List<TestType> continuousTests = new ArrayList<>();
         continuousTests.add(TestType.Fisher_Z);
+        continuousTests.add(TestType.Correlation_T);
         continuousTests.add(TestType.SEM_BIC);
         continuousTests.add(TestType.Conditional_Correlation);
         continuousTests.add(TestType.Conditional_Gaussian_LRT);
@@ -578,17 +580,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new PcLocal(independenceWrapper);
                 break;
             case PcMax:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new PcMax(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new PcMax(independenceWrapper);
-                }
+                algorithm = new PcMax(independenceWrapper);
                 break;
             case PcMaxLocal:
                 algorithm = new PcMaxLocal(independenceWrapper);
                 break;
             case JCPC:
-                algorithm = new Jcpc(independenceWrapper);
+                algorithm = new Jcpc(independenceWrapper, scoreWrapper);
                 break;
             case Wfgs:
                 algorithm = new Wfgs();
@@ -691,6 +689,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case Fisher_Z:
                 independenceWrapper = new FisherZ();
+                break;
+            case Correlation_T:
+                independenceWrapper = new CorrelationT();
                 break;
             case GSquare:
                 independenceWrapper = new GSquare();
@@ -1044,7 +1045,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION
+        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
     }
 
     public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}

@@ -87,7 +87,8 @@ public class ParamDescriptions {
         put("pixelDigitalization", new ParamDescription("Pixel digitalization", 0.025, 0.0, Double.MAX_VALUE));
         put("includeDishAndChipColumns", new ParamDescription("Yes if Dish and Chip columns should be included in output", true));
 
-        put("randomSelection", new ParamDescription("The number of datasets that should be taken at a time", 5));
+        put("numRandomSelections", new ParamDescription("The number random selections of data sets that should be taken", 5));
+        put("randomSelectionSize", new ParamDescription("The number of datasets that should be taken in each random sample", 5));
 
         put("maxit", new ParamDescription("MAXIT parameter (GLASSO)", 10000, 1, Integer.MAX_VALUE));
         put("ia", new ParamDescription("IA parameter (GLASSO)", false));
@@ -98,7 +99,7 @@ public class ParamDescriptions {
 
         put("targetName", new ParamDescription("Target name", ""));
         put("verbose", new ParamDescription("Yes if verbose output should be printed to standard out", false));
-        put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
+        put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", false));
         put("maxIndegree", new ParamDescription("The maximum indegree of the output graph", 5));
     }
 

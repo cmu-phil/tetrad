@@ -740,6 +740,11 @@ public final class SemGraph implements Graph, TetradSerializable {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }

@@ -89,7 +89,7 @@ public class IndTestScore implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
         this.bump = v;
-        return v < 0;
+        return v < 0.5 * Math.log(10);
     }
 
     private int[] varIndices(List<Node> z) {

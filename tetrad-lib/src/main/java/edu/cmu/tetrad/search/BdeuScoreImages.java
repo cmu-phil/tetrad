@@ -278,7 +278,7 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     @Override
-    public int getMaxIndegree() {
+    public int getMaxDegree() {
         return 1000;
     }
 }

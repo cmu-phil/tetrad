@@ -552,6 +552,11 @@ public class EdgeListGraph implements Graph {
         return getParents(node).size();
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return edgeLists.get(node).size();
+    }
+
     /**
      * @return the number of edges out of the given node.
      */

@@ -929,6 +929,11 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public int getDegree(Node node) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @return the number of null endpoints adjacent to an edge.
      */

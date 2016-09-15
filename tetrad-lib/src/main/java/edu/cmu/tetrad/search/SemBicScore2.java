@@ -343,7 +343,7 @@ public class SemBicScore2 implements Score {
     }
 
     @Override
-    public int getMaxIndegree() {
+    public int getMaxDegree() {
         return (int) Math.ceil(Math.log(sampleSize));
     }
 }

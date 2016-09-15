@@ -211,6 +211,11 @@ public class LagGraph implements Graph {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public Node getNode(String name) {
         return getGraph().getNode(name);
     }

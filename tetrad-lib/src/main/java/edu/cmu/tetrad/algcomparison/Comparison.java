@@ -867,9 +867,9 @@ public class Comparison {
                 Collections.shuffle(indices);
 
                 List<DataSet> dataSets = new ArrayList<>();
-                int randomSelection = algorithmWrapper.getAlgorithmSpecificParameters().getInt(
-                        "randomSelection");
-                for (int i = 0; i < Math.min(numDataSets, randomSelection); i++) {
+                int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt(
+                        "randomSelectionSize");
+                for (int i = 0; i < Math.min(numDataSets, randomSelectionSize); i++) {
                     dataSets.add(simulationWrapper.getSimulation().getDataSet(indices.get(i)));
                 }
 

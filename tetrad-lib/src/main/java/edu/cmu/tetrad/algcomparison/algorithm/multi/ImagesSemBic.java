@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Wraps the IMaGES algorithm for continuous variables.
  * </p>
- * Requires that the parameter 'randomSelection' be set to indicate how many
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
  * @author jdramsey
@@ -37,16 +37,10 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             dataModels.add(dataSet);
         }
 
-        Collections.shuffle(dataModels);
-        List<DataModel> subset = new ArrayList<>();
-
-        for (int i = 0; i < Math.min(parameters.getInt("randomSelection"), dataModels.size()); i++) {
-            subset.add(dataSets.get(i));
-        }
-
-        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(new SemBicScoreImages(subset));
+        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(new SemBicScoreImages(dataModels));
         search.setFaithfulnessAssumed(true);
         search.setKnowledge(knowledge);
+
         return search.search();
     }
 
@@ -73,7 +67,8 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Fgs(new SemBicScore()).getParameters();
-        parameters.add("randomSelection");
+        parameters.add("numRandomSelections");
+        parameters.add("randomSelectionSize");
         return parameters;
     }
 

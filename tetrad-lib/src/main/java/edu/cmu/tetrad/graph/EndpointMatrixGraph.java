@@ -536,6 +536,11 @@ public class EndpointMatrixGraph implements Graph {
         return getParents(node).size();
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return 0;
+    }
+
     /**
      * @return the number of edges out of the given node.
      */

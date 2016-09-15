@@ -367,6 +367,11 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
