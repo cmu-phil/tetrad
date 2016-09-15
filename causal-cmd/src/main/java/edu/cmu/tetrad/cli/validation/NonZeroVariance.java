@@ -47,6 +47,10 @@ public class NonZeroVariance implements DataValidation {
 
     private final Path outputFile;
 
+    public NonZeroVariance(DataSet dataSet, int numOfThreads) {
+        this(dataSet, numOfThreads, null);
+    }
+
     /**
      * Constructor.
      *

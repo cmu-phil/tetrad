@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class    GraphFactory {
+public class GraphFactory {
 
     private GraphFactory() {
     }

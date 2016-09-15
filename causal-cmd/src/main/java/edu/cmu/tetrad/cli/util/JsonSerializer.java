@@ -24,16 +24,19 @@ import edu.cmu.tetrad.cli.json.JsonEdge;
 import edu.cmu.tetrad.cli.json.JsonEdgeSet;
 import edu.cmu.tetrad.cli.json.JsonGraph;
 import edu.cmu.tetrad.cli.json.JsonNode;
-import edu.cmu.tetrad.graph.*;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 /**
  *
@@ -92,10 +95,8 @@ public class JsonSerializer {
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-
         return gson.toJson(jsonGraph);
     }
-
 
     public static void writeToStream(String json, PrintStream writer) throws IllegalArgumentException, TransformerException, TransformerFactoryConfigurationError {
         writer.print(json);

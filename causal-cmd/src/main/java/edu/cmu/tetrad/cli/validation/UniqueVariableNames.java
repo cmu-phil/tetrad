@@ -46,6 +46,10 @@ public class UniqueVariableNames implements DataValidation {
 
     private final Path outputFile;
 
+    public UniqueVariableNames(DataSet dataSet) {
+        this(dataSet, null);
+    }
+
     /**
      * Constructor.
      *

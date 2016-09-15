@@ -57,7 +57,7 @@ public class Args {
         double doubleValue = getDouble(value);
         if (minValue > doubleValue) {
             throw new IllegalArgumentException(
-                    String.format("Value (%f) must be greater than or equal to %f.", doubleValue, minValue));
+                    String.format("Parameter value (%f) must be greater than or equal to %f.", doubleValue, minValue));
         }
 
         return doubleValue;
@@ -75,7 +75,7 @@ public class Args {
         int intValue = getInteger(value);
         if (minValue > intValue) {
             throw new IllegalArgumentException(
-                    String.format("Value (%d) must be greater than or equal to %d.", intValue, minValue));
+                    String.format("Parameter value (%d) must be greater than or equal to %d.", intValue, minValue));
         }
 
         return intValue;
@@ -87,7 +87,7 @@ public class Args {
             return intValue;
         } else {
             throw new IllegalArgumentException(
-                    String.format("Value (%d) must be between %d and %d.", intValue, minValue, maxValue));
+                    String.format("Parameter value (%d) must be between %d and %d.", intValue, minValue, maxValue));
         }
     }
 
@@ -155,10 +155,8 @@ public class Args {
             if (!Files.isDirectory(path)) {
                 throw new FileNotFoundException(String.format("'%s' is not a directory.\n", dir));
             }
-        } else {
-            if (required) {
-                throw new FileNotFoundException(String.format("Directory '%s' does not exist.\n", dir));
-            }
+        } else if (required) {
+            throw new FileNotFoundException(String.format("Directory '%s' does not exist.\n", dir));
         }
 
         return path;

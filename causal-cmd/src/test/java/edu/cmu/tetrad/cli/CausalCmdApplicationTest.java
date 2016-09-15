@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.search;
+package edu.cmu.tetrad.cli;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,22 +26,21 @@ import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
  *
- * Mar 2, 2016 12:26:54 PM
+ * Sep 12, 2016 1:52:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsCliTest {
+public class CausalCmdApplicationTest {
 
     @ClassRule
     public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-    public FgsCliTest() {
+    public CausalCmdApplicationTest() {
     }
 
     @AfterClass
@@ -50,63 +49,36 @@ public class FgsCliTest {
     }
 
     /**
-     * Test of main method, of class FgsCli.
+     * Test of main method, of class CausalCmdApplication.
      *
      * @throws IOException
      */
-    @Ignore
     @Test
     public void testMain() throws IOException {
-        System.out.println("main");
+        Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");
 
-        Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.txt");
-
+        String algorithm = "gfcic";
         String data = dataFile.toAbsolutePath().toString();
-        String delimiter = "\t";
-        String dirOut = tmpDir.newFolder("fgs").toString();
-        String outputPrefix = "fgs";
+        String delimiter = ",";
+        String dirOut = tmpDir.newFolder(algorithm).toString();
+        String outputPrefix = algorithm;
         String[] args = {
+            "--algorithm", algorithm,
             "--data", data,
             "--delimiter", delimiter,
             "--out", dirOut,
             "--verbose",
-            "--graphml",
+            "--json",
             "--output-prefix", outputPrefix
         };
-        FgsCli.main(args);
+        CausalCmdApplication.main(args);
 
         Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
         String errMsg = outFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
 
-        Path graphmlOutFile = Paths.get(dirOut, outputPrefix + "_graph.txt");
-        errMsg = graphmlOutFile.getFileName().toString() + " does not exist.";
-        Assert.assertTrue(errMsg, Files.exists(graphmlOutFile, LinkOption.NOFOLLOW_LINKS));
-    }
-
-    @Ignore
-    @Test
-    public void testMainExcludeVariables() throws IOException {
-        System.out.println("main");
-
-        Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");
-        Path variableFile = Paths.get("test", "data", "variables.txt");
-
-        String delimiter = ",";
-        String dirOut = tmpDir.newFolder("fgs_exclude_variables").toString();
-        String outputPrefix = "fgs";
-        String[] args = {
-            "--data", dataFile.toAbsolutePath().toString(),
-            "--delimiter", delimiter,
-            "--exclude-variables", variableFile.toAbsolutePath().toString(),
-            "--out", dirOut,
-            "--verbose",
-            "--output-prefix", outputPrefix
-        };
-        FgsCli.main(args);
-
-        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
-        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        outFile = Paths.get(dirOut, outputPrefix + "_graph.json");
+        errMsg = outFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
