@@ -217,7 +217,7 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public int getMaxIndegree() {
+    public int getMaxDegree() {
         return 1000;
     }
 }

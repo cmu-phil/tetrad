@@ -91,7 +91,7 @@ public class HsimAutoRun {
             Graph estGraph = fgs.search();
             //if (verbose) System.out.println(estGraph);
 
-            Pattern estPattern = new Pattern(estGraph);
+            Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
             PatternToDag patternToDag = new PatternToDag(estPattern);
             Graph estGraphDAG = patternToDag.patternToDagMeek();
             Dag estDAG = new Dag(estGraphDAG);

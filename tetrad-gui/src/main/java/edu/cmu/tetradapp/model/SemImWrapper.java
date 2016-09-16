@@ -150,6 +150,10 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void setSemIm(SemIm updatedSemIm) {
         semIms = new ArrayList<>();
         semIms.add(new SemIm(updatedSemIm));
+
+        for (int i = 0; i < semIms.size(); i++) {
+            log(i, semIms.get(i));
+        }
     }
 
     public SemImWrapper(SemImWrapper semImWrapper) {
@@ -197,9 +201,10 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //======================== Private methods =======================//
 
-    private void log(SemIm im) {
+    private void log(int i, SemIm pm) {
         TetradLogger.getInstance().log("info", "Linear SEM IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().log("info", "IM # " + (i + 1));
+        TetradLogger.getInstance().log("im", pm.toString());
     }
 
     /**

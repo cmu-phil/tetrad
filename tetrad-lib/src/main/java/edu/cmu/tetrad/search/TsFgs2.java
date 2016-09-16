@@ -507,7 +507,7 @@ public final class TsFgs2 implements GraphSearch, GraphScorer {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxIndegree = score.getMaxIndegree();
+        this.maxIndegree = score.getMaxDegree();
     }
 
     final int[] count = new int[1];

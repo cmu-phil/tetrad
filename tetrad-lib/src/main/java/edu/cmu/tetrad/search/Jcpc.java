@@ -39,6 +39,7 @@ import java.util.Set;
  * @author Joseph Ramsey (this version).
  */
 public class Jcpc implements GraphSearch {
+    private Score score;
     private int numAdded;
     private int numRemoved;
     private MeekRules meekRules;
@@ -111,12 +112,17 @@ public class Jcpc implements GraphSearch {
     /**
      * Constructs a JPC search with the given independence oracle.
      */
-    public Jcpc(IndependenceTest independenceTest) {
+    public Jcpc(IndependenceTest independenceTest, Score score) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
 
+        if (score == null) {
+            throw new NullPointerException();
+        }
+
         this.independenceTest = independenceTest;
+        this.score = score;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -132,6 +138,10 @@ public class Jcpc implements GraphSearch {
 
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public Score getScore() {
+        return score;
     }
 
     public IKnowledge getKnowledge() {
@@ -192,6 +202,7 @@ public class Jcpc implements GraphSearch {
 
         List<Graph> graphs = new ArrayList<Graph>();
         IndependenceTest test = getIndependenceTest();
+        Score score = getScore();
 
         PcMax search = new PcMax(test);
         search.setKnowledge(getKnowledge());

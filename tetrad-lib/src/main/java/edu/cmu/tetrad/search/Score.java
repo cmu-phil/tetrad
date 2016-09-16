@@ -51,6 +51,6 @@ public interface Score {
 
     Node getVariable(String targetName);
 
-    int getMaxIndegree();
+    int getMaxDegree();
 }
 

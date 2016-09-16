@@ -185,73 +185,11 @@ public final class IndTestCorrelationT implements IndependenceTest {
         double r;
         int n = sampleSize();
 
-        if (z.isEmpty()) {
-            Integer xi = indexMap.get(x);
-            Integer yi = indexMap.get(y);
+        TetradMatrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
+        r = StatUtils.partialCorrelation(submatrix);
 
-            if (xi == null || yi == null) {
-                xi = indexMap.get(nameMap.get(x.getName()));
-                yi = indexMap.get(nameMap.get(y.getName()));
-
-                if (xi == null || yi == null) {
-                    throw new IllegalArgumentException("Node not in map");
-                }
-            }
-
-            double a = _covMatrix.get(xi, xi);
-            double b = _covMatrix.get(xi, yi);
-            double d = _covMatrix.get(yi, yi);
-
-            r = -b / sqrt(a * d);
-        } else {
-            TetradMatrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
-            r = StatUtils.partialCorrelation(submatrix);
-        }
-
-        // Either dividing by a zero standard deviation (in which case it's dependent) or doing a regression
-//        // (effectively) with a multicolliarity.. or missing values in the data!
-//        if (Double.isNaN(r)) {
-//
-//            // Maybe it's missing values. Try calculating r using just the rows in the data set
-//            // (if it exists) with defined values for all compared variables.
-//            if (dataSet != null) {
-//                int[] vars = new int[2 + z.size()];
-//
-//                vars[0] = variables.indexOf(x);
-//                vars[1] = variables.indexOf(y);
-//
-//                for (int k = 0; k < z.size(); k++) {
-//                    vars[2 + k] = variables.indexOf(z.get(k));
-//                }
-//
-//                int[] _n = new int[1];
-//
-//                TetradMatrix submatrix = DataUtils.covMatrixForDefinedRows(dataSet, vars, _n);
-//
-//                r = StatUtils.partialCorrelation(submatrix);
-//            }
-//
-//            if (Double.isNaN(r)) {
-//                return false;
-//            }
-//        }
-
-
-        if (r > 1.) r = 1.;
-        if (r < -1.) r = -1.;
-
-//        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-//
-//        if (Double.isInfinite(fisherZ)) {
-//            pValue = 0;
-//        }
-//        else {
-//            pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
-//        }
-
-        double tr = sqrt(n - 2 - z.size()) * sqrt((r * r) / (1 - r * r));
-        double t = gettDistribution().cumulativeProbability(tr);
-        pValue = 2.0 * (1.0 - abs(t));
+        double t = Math.sqrt(n - 2) * (r / Math.sqrt(1. - r * r));
+        pValue = 2.0 * (1.0 - gettDistribution().cumulativeProbability(abs(t)));
 
         boolean independent = pValue > alpha;
 

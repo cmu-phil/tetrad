@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -135,25 +136,28 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 //        b0.add(Box.createHorizontalGlue());
 //        b.add(b0);
 
+//        Box b1 = Box.createHorizontalBox();
+//
+//        editorPanel.setMaximumSize(editorPanel.getMinimumSize());
+//
+//        Box b2 = Box.createVerticalBox();
+//        b2.add(editorPanel);
+//
+//        b1.add(b2);
+//        b1.add(forWorkbenchScrolls);
+//        b.add(b1);
 
-        Box b1 = Box.createHorizontalBox();
-
-        editorPanel.setMaximumSize(editorPanel.getMinimumSize());
-
-        Box b2 = Box.createVerticalBox();
-        b2.add(editorPanel);
-
-        b1.add(b2);
-        b1.add(forWorkbenchScrolls);
-        b.add(b1);
+        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, editorPanel, forWorkbenchScrolls);
+        b.add(pane);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
 //        buttonPanel.add(selectInGraph);
         buttonPanel.add(executeButton);
-        b.add(buttonPanel, BorderLayout.SOUTH);
+//        b.add(buttonPanel, BorderLayout.SOUTH);
 
-        add(b, BorderLayout.CENTER);
+        add(pane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         editorPanel.reset();
 
@@ -638,6 +642,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             b5.add(nField);
 
             b3.add(b5);
+            b3.add(Box.createVerticalStrut(10));
 
             this.add(Box.createVerticalGlue());
             this.add(b3);

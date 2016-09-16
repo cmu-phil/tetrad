@@ -167,12 +167,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Mode mode = Mode.heuristicSpeedup;
 
     /**
-     * True if one-edge faithfulness is assumed. Speeds the algorithm up.
+     * True if one-edge faithfulness is assumed. Speedse the algorithm up.
      */
     private boolean faithfulnessAssumed = true;
 
-    // Bounds the indegree of the graph.
-    private int maxIndegree = -1;
+    // Bounds the degree of the graph.
+    private int maxDegree = -1;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
@@ -476,17 +476,17 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * The maximum of parents any nodes can have in output pattern.
      * @return -1 for unlimited.
      */
-    public int getMaxIndegree() {
-        return maxIndegree;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
     /**
      * The maximum of parents any nodes can have in output pattern.
-     * @param maxIndegree -1 for unlimited.
+     * @param maxDegree -1 for unlimited.
      */
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) throw new IllegalArgumentException();
-        this.maxIndegree = maxIndegree;
+    public void setMaxDegree(int maxDegree) {
+        if (maxDegree < -1) throw new IllegalArgumentException();
+        this.maxDegree = maxDegree;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -505,7 +505,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxIndegree = score.getMaxIndegree();
+        this.maxDegree = score.getMaxDegree();
     }
 
     final int[] count = new int[1];
@@ -843,6 +843,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
+        int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
+
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
@@ -865,6 +867,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
             if (!validInsert(x, y, arrow.getHOrT(), getNaYX(x, y))) {
                 continue;
             }
+
+            if (graph.getDegree(x) > maxDegree - 1) continue;
+            if (graph.getDegree(y) > maxDegree - 1) continue;
 
             Set<Node> T = arrow.getHOrT();
             double bump = arrow.getBump();
@@ -1115,16 +1120,13 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (!isClique(naYX)) return;
 
         List<Node> TNeighbors = getTNeighbors(a, b);
-        int _maxIndegree = maxIndegree == -1 ? 1000 : maxIndegree;
-
-        final int _max = Math.min(TNeighbors.size(), _maxIndegree - graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<Node>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:
-        for (int i = 0; i <= _max; i++) {
+        for (int i = 0; i <= TNeighbors.size(); i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
 
