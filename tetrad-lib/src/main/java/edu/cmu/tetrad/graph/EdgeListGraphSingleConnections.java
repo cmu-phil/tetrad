@@ -68,21 +68,6 @@ public class EdgeListGraphSingleConnections implements Graph {
     private Map<Node, List<Edge>> edgeLists;
 
     /**
-     * These are the graph constraints currently used.
-     *
-     * @serial
-     */
-    private List<GraphConstraint> graphConstraints;
-
-    /**
-     * True iff graph constraints will be checked for future graph
-     * modifications.
-     *
-     * @serial
-     */
-    private boolean graphConstraintsChecked = true;
-
-    /**
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
@@ -127,7 +112,6 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraphSingleConnections() {
-        this.graphConstraints = new LinkedList<>();
         this.edgeLists = new ConcurrentHashMap<>();
         this.nodes = new ArrayList<>();
         this.edgesSet = new HashSet<>();
@@ -152,8 +136,6 @@ public class EdgeListGraphSingleConnections implements Graph {
             edgesSet = new HashSet<>(_graph.edgesSet);
             edgeLists = new ConcurrentHashMap<>();
             for (Node node : nodes) this.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
-            graphConstraints = new ArrayList<>(_graph.graphConstraints);
-            graphConstraintsChecked = _graph.graphConstraintsChecked;
             ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
             underLineTriples = new HashSet<>(_graph.underLineTriples);
             dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
@@ -212,27 +194,12 @@ public class EdgeListGraphSingleConnections implements Graph {
         graph.edgesSet = new HashSet<>(_graph.edgesSet);
         graph.edgeLists = new ConcurrentHashMap<>(_graph.edgeLists);
         for (Node node : graph.nodes) graph.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
-        graph.graphConstraints = new ArrayList<>(_graph.graphConstraints);
-        graph.graphConstraintsChecked = _graph.graphConstraintsChecked;
         graph.ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
         graph.underLineTriples = new HashSet<>(_graph.underLineTriples);
         graph.dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
         graph.stuffRemovedSinceLastTripleAccess = _graph.stuffRemovedSinceLastTripleAccess;
         graph.highlightedEdges = new HashSet<>(_graph.highlightedEdges);
         graph.namesHash = new HashMap<>(_graph.namesHash);
-
-//        _graph.nodes = new ArrayList(graph.nodes);
-//        _graph.edgesSet = new HashSet<Edge>(graph.edgesSet);
-//        _graph.edgeLists = new ConcurrentHashMap<Node, List<Edge>>(graph.edgeLists);
-//        for (Node node : graph.nodes) _graph.edgeLists.put(node, new ArrayList(graph.edgeLists.get(node)));
-//        _graph.graphConstraints = new ArrayList<GraphConstraint>(graph.graphConstraints);
-//        _graph.graphConstraintsChecked = graph.graphConstraintsChecked;
-//        _graph.ambiguousTriples = new HashSet<Triple>(graph.ambiguousTriples);
-//        _graph.underLineTriples = new HashSet<Triple>(graph.underLineTriples);
-//        _graph.dottedUnderLineTriples = new HashSet<Triple>(graph.dottedUnderLineTriples);
-//        _graph.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
-//        _graph.highlightedEdges = new HashSet<Edge>(graph.highlightedEdges);
-//        _graph.namesHash = new HashMap(graph.namesHash);
         return _graph;
     }
 
@@ -244,21 +211,6 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     //===============================PUBLIC METHODS========================//
-
-    /**
-     * Adds a graph constraint.
-     *
-     * @param gc the graph constraint.
-     * @return true if the constraint was added, false if not.
-     */
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        if (!this.graphConstraints.contains(gc)) {
-            this.graphConstraints.add(gc);
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     /**
      * Adds a directed edge to the graph from node A to node B.
@@ -1327,29 +1279,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         return (list == null) ? 0 : list.size();
     }
 
-    /**
-     * @return the list of graph constraints for this graph.
-     */
-    public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<>(graphConstraints);
-    }
-
-    /**
-     * @return true iff graph constraints will be checked for future graph
-     * modifications.
-     */
-    public boolean isGraphConstraintsChecked() {
-        return this.graphConstraintsChecked;
-    }
-
-    /**
-     * Set whether graph constraints will be checked for future graph
-     * modifications.
-     */
-    public void setGraphConstraintsChecked(boolean checked) {
-        this.graphConstraintsChecked = checked;
-    }
-
     public List<Node> getNodes() {
         return new ArrayList<>(nodes);
     }
@@ -1819,86 +1748,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
     }
 
-//    /**
-//     * Checks to see whether all of the graph basicConstraints will be satisfied
-//     * on adding a particular node.
-//     *
-//     * @param node the node to check.
-//     * @return true if adding the node is permitted by all of the graph
-//     * constraints, false if not.
-//     */
-//    private boolean checkAddNode(Node node) {
-//        for (GraphConstraint graphConstraint : graphConstraints) {
-//            GraphConstraint gc = (graphConstraint);
-//
-//            if (!gc.isNodeAddable(node, this)) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
-//    /**
-//     * Checks to see whether all of the graph constraints will be satisfied on
-//     * adding a particular edge.
-//     *
-//     * @param edge the edge to check.
-//     * @return true if the condition is met.
-//     */
-//    private boolean checkAddEdge(Edge edge) {
-//        for (GraphConstraint graphConstraint : graphConstraints) {
-//            GraphConstraint gc = (graphConstraint);
-//
-//            if (!gc.isEdgeAddable(edge, this)) {
-//                System.out.println("Edge " + edge + " failed " + gc);
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
-//    /**
-//     * Checks to see whether all of the graph constraints will be satisfied on
-//     * removing a particular node.
-//     *
-//     * @param node the node to check.
-//     * @return true if removing the node is permitted by all of the graph
-//     * constraints, false if not.
-//     */
-//    private boolean checkRemoveNode(Node node) {
-//        for (GraphConstraint graphConstraint : graphConstraints) {
-//            GraphConstraint gc = (graphConstraint);
-//
-//            if (!gc.isNodeRemovable(node, this)) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
-//    /**
-//     * Checks to see whether all of the graph constraints will be satisfied on
-//     * removing a particular edge.
-//     *
-//     * @param edge the edge to check.
-//     * @return true if removing the edge is permitted by all of the graph
-//     * constraints, false if not.
-//     */
-//    private boolean checkRemoveEdge(Edge edge) {
-//        for (GraphConstraint graphConstraint : graphConstraints) {
-//            GraphConstraint gc = (graphConstraint);
-//
-//            if (!gc.isEdgeRemovable(edge, this)) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
     /**
      * @return this object.
      */
@@ -2049,10 +1898,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         if (edgeLists == null) {
-            throw new NullPointerException();
-        }
-
-        if (graphConstraints == null) {
             throw new NullPointerException();
         }
 

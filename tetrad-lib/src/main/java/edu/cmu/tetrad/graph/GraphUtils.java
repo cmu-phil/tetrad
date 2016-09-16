@@ -399,7 +399,10 @@ public final class GraphUtils {
                 continue;
             }
 
-            dag.addDirectedEdge(n1, n2);
+            if (!dag.isAdjacentTo(n1, n2)) {
+                dag.addDirectedEdge(n1, n2);
+            }
+
             added = true;
         }
 
@@ -2856,8 +2859,9 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
+        System.out.println(graph);
+
         List<Node> found = new LinkedList<>();
-        Collections.shuffle(found);
         List<Node> notFound = new ArrayList<>(graph.getNodes());
 
         for (Iterator<Node> i = notFound.iterator(); i.hasNext();) {
@@ -2866,11 +2870,16 @@ public final class GraphUtils {
             }
         }
 
+        List<Node> allNodes = new ArrayList<>(notFound);
+
         while (!notFound.isEmpty()) {
             for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
                 Node node = it.next();
 
-                if (found.containsAll(graph.getParents(node))) {
+                List<Node> parents = graph.getParents(node);
+                parents.retainAll(allNodes);
+
+                if (found.containsAll(parents)) {
                     found.add(node);
                     it.remove();
                 }

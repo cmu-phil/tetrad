@@ -67,21 +67,6 @@ public class EdgeListGraph implements Graph {
     private Map<Node, List<Edge>> edgeLists;
 
     /**
-     * These are the graph constraints currently used.
-     *
-     * @serial
-     */
-    private List<GraphConstraint> graphConstraints;
-
-    /**
-     * True iff graph constraints will be checked for future graph
-     * modifications.
-     *
-     * @serial
-     */
-    private boolean graphConstraintsChecked = true;
-
-    /**
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
@@ -125,7 +110,6 @@ public class EdgeListGraph implements Graph {
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraph() {
-        this.graphConstraints = new LinkedList<>();
         this.edgeLists = new HashMap<>();
         this.nodes = new ArrayList<>();
         this.edgesSet = new HashSet<>();
@@ -214,8 +198,6 @@ public class EdgeListGraph implements Graph {
         _graph.edgesSet = new HashSet<>(graph.edgesSet);
         _graph.edgeLists = new HashMap<>(graph.edgeLists);
         for (Node node : graph.nodes) _graph.edgeLists.put(node, new ArrayList<>(graph.edgeLists.get(node)));
-        _graph.graphConstraints = new ArrayList<>(graph.graphConstraints);
-        _graph.graphConstraintsChecked = graph.graphConstraintsChecked;
         _graph.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
         _graph.underLineTriples = new HashSet<>(graph.underLineTriples);
         _graph.dottedUnderLineTriples = new HashSet<>(graph.dottedUnderLineTriples);
@@ -233,21 +215,6 @@ public class EdgeListGraph implements Graph {
     }
 
     //===============================PUBLIC METHODS========================//
-
-    /**
-     * Adds a graph constraint.
-     *
-     * @param gc the graph constraint.
-     * @return true if the constraint was added, false if not.
-     */
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        if (!this.graphConstraints.contains(gc)) {
-            this.graphConstraints.add(gc);
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     /**
      * Adds a directed edge to the graph from node A to node B.
@@ -1148,11 +1115,6 @@ public class EdgeListGraph implements Graph {
     public boolean addEdge(Edge edge) {
         if (edge == null) throw new NullPointerException();
 
-//        if (isGraphConstraintsChecked() && !checkAddEdge(edge)) {
-//            throw new IllegalArgumentException(
-//                    "Violates graph constraints: " + edge);
-//        }
-
         List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
         List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
 
@@ -1192,8 +1154,6 @@ public class EdgeListGraph implements Graph {
         edgeLists.put(edge.getNode2(), edgeList2);
 
         edgesSet.add(edge);
-
-
 
         if (Edges.isDirectedEdge(edge)) {
             Node node = Edges.getDirectedEdgeTail(edge);
@@ -1244,15 +1204,6 @@ public class EdgeListGraph implements Graph {
         }
 
         if (edgeLists.containsKey(node)) {
-            return false;
-        }
-
-        // If edgeLists contains node as a key, then nodes contains node. No need to look it up.n
-//        if (nodes.contains(node)) {
-//            return false;
-//        }
-
-        if (isGraphConstraintsChecked() && !checkAddNode(node)) {
             return false;
         }
 
@@ -1402,29 +1353,6 @@ public class EdgeListGraph implements Graph {
         return (list == null) ? 0 : list.size();
     }
 
-    /**
-     * @return the list of graph constraints for this graph.
-     */
-    public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<>(graphConstraints);
-    }
-
-    /**
-     * @return true iff graph constraints will be checked for future graph
-     * modifications.
-     */
-    public boolean isGraphConstraintsChecked() {
-        return this.graphConstraintsChecked;
-    }
-
-    /**
-     * Set whether graph constraints will be checked for future graph
-     * modifications.
-     */
-    public void setGraphConstraintsChecked(boolean checked) {
-        this.graphConstraintsChecked = checked;
-    }
-
     public List<Node> getNodes() {
         return new ArrayList<>(nodes);
     }
@@ -1465,7 +1393,7 @@ public class EdgeListGraph implements Graph {
      * @return true if the edge was removed, false if not.
      */
     public synchronized boolean removeEdge(Edge edge) {
-        if (edgesSet.contains(edge) && !checkRemoveEdge(edge)) {
+        if (!edgesSet.contains(edge)) {
             return false;
         }
 
@@ -1522,7 +1450,7 @@ public class EdgeListGraph implements Graph {
      * Removes a node from the graph.
      */
     public boolean removeNode(Node node) {
-        if (nodes.contains(node) && !checkRemoveNode(node)) {
+        if (!nodes.contains(node)) {
             return false;
         }
 
@@ -1843,66 +1771,6 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * Checks to see whether all of the graph basicConstraints will be satisfied
-     * on adding a particular node.
-     *
-     * @param node the node to check.
-     * @return true if adding the node is permitted by all of the graph
-     * constraints, false if not.
-     */
-    private boolean checkAddNode(Node node) {
-        for (GraphConstraint graphConstraint : graphConstraints) {
-            GraphConstraint gc = (graphConstraint);
-
-            if (!gc.isNodeAddable(node, this)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks to see whether all of the graph constraints will be satisfied on
-     * removing a particular node.
-     *
-     * @param node the node to check.
-     * @return true if removing the node is permitted by all of the graph
-     * constraints, false if not.
-     */
-    private boolean checkRemoveNode(Node node) {
-        for (GraphConstraint graphConstraint : graphConstraints) {
-            GraphConstraint gc = (graphConstraint);
-
-            if (!gc.isNodeRemovable(node, this)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks to see whether all of the graph constraints will be satisfied on
-     * removing a particular edge.
-     *
-     * @param edge the edge to check.
-     * @return true if removing the edge is permitted by all of the graph
-     * constraints, false if not.
-     */
-    private boolean checkRemoveEdge(Edge edge) {
-        for (GraphConstraint graphConstraint : graphConstraints) {
-            GraphConstraint gc = (graphConstraint);
-
-            if (!gc.isEdgeRemovable(edge, this)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {
@@ -2052,10 +1920,6 @@ public class EdgeListGraph implements Graph {
         }
 
         if (edgeLists == null) {
-            throw new NullPointerException();
-        }
-
-        if (graphConstraints == null) {
             throw new NullPointerException();
         }
 

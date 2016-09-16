@@ -388,10 +388,6 @@ public class TimeLagGraph implements Graph {
         return getGraph().toString() + "\n" + lag0Nodes;
     }
 
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        return getGraph().addGraphConstraint(gc);
-    }
-
     public boolean addDirectedEdge(Node node1, Node node2) {
         return graph.addDirectedEdge(node1, node2);
     }
@@ -732,18 +728,6 @@ public class TimeLagGraph implements Graph {
 
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
-    }
-
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
     }
 
     public Graph subgraph(List<Node> nodes) {

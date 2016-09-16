@@ -103,10 +103,6 @@ public class LagGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        throw new UnsupportedOperationException();
-    }
-
     public void addPropertyChangeListener(PropertyChangeListener e) {
         getGraph().addPropertyChangeListener(e);
     }
@@ -201,10 +197,6 @@ public class LagGraph implements Graph {
 
     public Endpoint[][] getEndpointMatrix() {
         return getGraph().getEndpointMatrix();
-    }
-
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
     }
 
     public int getIndegree(Node node) {
@@ -354,14 +346,6 @@ public class LagGraph implements Graph {
 
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
         return getGraph().setEndpoint(from, to, endPoint);
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
     }
 
     public Graph subgraph(List<Node> nodes) {

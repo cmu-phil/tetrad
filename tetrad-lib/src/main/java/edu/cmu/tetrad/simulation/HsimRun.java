@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Pattern;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 
@@ -62,7 +59,7 @@ public class HsimRun {
             Graph estGraph = fgs.search();
             System.out.println(estGraph);
 
-            Pattern estPattern = new Pattern(estGraph);
+            Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
             PatternToDag patternToDag = new PatternToDag(estPattern);
             Graph estGraphDAG = patternToDag.patternToDagMeek();
             Dag estDAG = new Dag(estGraphDAG);

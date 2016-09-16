@@ -60,8 +60,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * Constructs a new directed acyclic graph (DAG).
      */
     public KnowledgeGraph(IKnowledge knowledge) {
-        setGraphConstraintsChecked(false);
-
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -367,18 +365,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getNumEdges(node);
     }
 
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
-    }
-
     public boolean removeEdge(Edge edge) {
         KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
         KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
@@ -554,10 +540,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public String toString() {
         return getGraph().toString();
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        return getGraph().addGraphConstraint(gc);
     }
 
     public IKnowledge getKnowledge() {

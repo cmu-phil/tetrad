@@ -189,6 +189,9 @@ public class TestGFci {
 //            GFci gfci = new GFci(new IndTestDSep(dag));
             gfci.setFaithfulnessAssumed(faithfulnessAssumed);
             Graph pag1 = gfci.search();
+
+
+
             DagToPag dagToPag = new DagToPag(dag);
             dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
             Graph pag2 = dagToPag.convert();

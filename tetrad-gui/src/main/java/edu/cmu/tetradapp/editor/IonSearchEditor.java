@@ -504,7 +504,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
+                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
                 Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);

@@ -843,6 +843,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
+        int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
+
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);

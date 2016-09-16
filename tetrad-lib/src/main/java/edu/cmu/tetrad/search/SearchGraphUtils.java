@@ -1160,7 +1160,7 @@ public final class SearchGraphUtils {
                 Node node1 = nextUndirected.getNode1();
                 Node node2 = nextUndirected.getNode2();
 
-                graph.removeEdge(nextUndirected);
+                graph.removeEdge(node1, node2);
                 graph.addUndirectedEdge(node1, node2);
             }
         }

@@ -454,29 +454,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * @return the list of graph constraints for this graph.
-     */
-    public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<>();
-    }
-
-    /**
-     * @return true iff graph constraints will be checked for future graph
-     * modifications.
-     */
-    public boolean isGraphConstraintsChecked() {
-        return false;
-    }
-
-    /**
-     * Set whether graph constraints will be checked for future graph
-     * modifications.
-     */
-    public void setGraphConstraintsChecked(boolean checked) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Removes an edge from the workbench.
      */
     public boolean removeEdge(Edge edge) {
@@ -715,10 +692,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     public boolean existsInducingPath(Node node1, Node node2) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
         throw new UnsupportedOperationException();
     }
 
