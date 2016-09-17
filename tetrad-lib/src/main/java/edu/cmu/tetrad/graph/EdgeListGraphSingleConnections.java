@@ -212,33 +212,6 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
     }
 
     /**
-     * Determines whether a trek exists between two nodes in the graph.  A trek
-     * exists if there is a directed path between the two nodes or else, for
-     * some third node in the graph, there is a path to each of the two nodes in
-     * question.
-     */
-    public boolean existsTrek(Node node1, Node node2) {
-        for (Node node : getNodes()) {
-            if (isAncestorOf((node), node1) && isAncestorOf((node), node2)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public List<Node> getDescendants(List<Node> nodes) {
-        Set<Node> descendants = new HashSet<>();
-
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
-            collectDescendantsVisit(node, descendants);
-        }
-
-        return new LinkedList<>(descendants);
-    }
-
-    /**
      * @return the edge connecting node1 and node2, provided a unique such edge
      * exists.
      */
@@ -257,70 +230,11 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
     }
 
     /**
-     * @return the list of parents for a node.
-     */
-    public List<Node> getParents(Node node) {
-        List<Node> parents = new ArrayList<>();
-        List<Edge> edges = edgeLists.get(node);
-
-        for (Edge edge : new ArrayList<>(edges)) {
-//            if (edge == null) continue;
-
-            Endpoint endpoint1 = edge.getDistalEndpoint(node);
-            Endpoint endpoint2 = edge.getProximalEndpoint(node);
-
-            if (endpoint1 == Endpoint.TAIL && endpoint2 == Endpoint.ARROW) {
-                parents.add(edge.getDistalNode(node));
-            }
-        }
-
-        return parents;
-    }
-
-    /**
      * Determines whether one node is a descendent of another.
      */
     public boolean isDescendentOf(Node node1, Node node2) {
         return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
 //        return (node1 == node2) || isProperDescendentOf(node1, node2);
-    }
-
-    /**
-     * Determines whether one node is a parent of another.
-     *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @return true if node1 is a parent of node2, false if not.
-     * @see #isChildOf
-     * @see #getParents
-     * @see #getChildren
-     */
-    public boolean isParentOf(Node node1, Node node2) {
-        for (Edge edge : getEdges(node1)) {
-            Node sub = Edges.traverseDirected(node1, (edge));
-
-            if (sub == node2) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Determines whether one node is a proper ancestor of another.
-     */
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return node1 != node2 && isAncestorOf(node1, node2);
-//        return existsDirectedPathFromTo(node1, node2);
-    }
-
-    /**
-     * Determines whether one node is a proper decendent of another
-     */
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return node1 != node2 && isDescendentOf(node1, node2);
-//        return existsDirectedPathFromTo(node2, node1);
     }
 
     /**
@@ -509,21 +423,6 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
             edgeList1.remove(edge);
         }
 
-//        for (Iterator<Edge> i = edgeList1.iterator(); i.hasNext(); ) {
-//            Edge edge = (i.next());
-//            Node node2 = edge.getDistalNode(node);
-//
-//            if (node2 != node) {
-//                List<Edge> edgeList2 = edgeLists.get(node2);
-//                edgeList2.remove(edge);
-//                edgesSet.remove(edge);
-//                changed = true;
-//            }
-//
-//            i.remove();
-////            getPcs().firePropertyChange("edgeRemoved", edge, null);
-//        }
-
         edgeLists.remove(node);
         nodes.remove(node);
         namesHash.remove(node.getName());
@@ -534,63 +433,6 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
     }
 
     //===============================PRIVATE METHODS======================//
-
-    /**
-     * @return true iff there is a directed path from node1 to node2.
-     */
-    protected boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
-        path.add(node1);
-
-        for (Edge edge : getEdges(node1)) {
-            Node child = Edges.traverse(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (child == node2) {
-                return true;
-            }
-
-            if (path.contains(child)) {
-                continue;
-            }
-
-            if (existsUndirectedPathVisit(child, node2, path)) {
-                return true;
-            }
-        }
-
-        path.remove(node1);
-        return false;
-    }
-
-    protected boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
-        path.add(node1);
-
-        for (Edge edge : getEdges(node1)) {
-            Node child = Edges.traverseDirected(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (child == node2) {
-                return true;
-            }
-
-            if (path.contains(child)) {
-                continue;
-            }
-
-            if (existsDirectedPathVisit(child, node2, path)) {
-                return true;
-            }
-        }
-
-        path.remove(node1);
-        return false;
-    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method
@@ -633,13 +475,6 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
         if (dottedUnderLineTriples == null) {
             dottedUnderLineTriples = new HashSet<>();
         }
-    }
-
-    public void changeName(String name, String newName) {
-        Node node = namesHash.get(name);
-        namesHash.remove(name);
-        node.setName(newName);
-        namesHash.put(newName, node);
     }
 }
 
