@@ -39,8 +39,8 @@ import java.awt.event.ActionEvent;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
-    private final GraphWorkbench workbench;
-    private final Graph graph;
+    private GraphWorkbench workbench;
+    private Graph graph;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
@@ -150,6 +150,10 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     }
 
 
+    public void setGraph(Graph graph, GraphWorkbench workbench) {
+        this.graph = graph;
+        this.workbench = workbench;
+    }
 }
 
 

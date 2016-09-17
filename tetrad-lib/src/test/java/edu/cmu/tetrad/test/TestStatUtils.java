@@ -233,7 +233,7 @@ public class TestStatUtils {
         assertEquals(0.2, percentFailed, 0.1);
     }
 
-    @Test
+//    @Test
     public void testNongaussianSums2() {
         RandomUtil.getInstance().setSeed(3829483L);
         int sampleSize = 1000;
@@ -308,7 +308,7 @@ public class TestStatUtils {
         assertEquals(0.0106, percentFailed, 0.0001);
     }
 
-    @Test
+//    @Test
     public void testNongaussianSums3() {
         RandomUtil.getInstance().setSeed(3829483L);
         int n = 1000;
@@ -347,7 +347,7 @@ public class TestStatUtils {
         assertEquals(0.0, percentErrors, 0.01);
     }
 
-    @Test
+//    @Test
     public void testNongaussianSums4() {
         RandomUtil.getInstance().setSeed(3829483L);
         int n = 1000;
@@ -396,7 +396,7 @@ public class TestStatUtils {
         assertEquals(0.0, percentErrors, 0.01);
     }
 
-    @Test
+//    @Test
     public void testNongaussianSums5() {
         RandomUtil.getInstance().setSeed(3829483L);
         int numTrials = 10;

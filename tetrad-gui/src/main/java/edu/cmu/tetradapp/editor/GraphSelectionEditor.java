@@ -35,12 +35,12 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -59,9 +59,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private final GraphSelectionEditorPanel editorPanel;
     private final JPanel forWorkbenchScrolls;
     private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo;
-//    private final JButton selectInGraph;
-
-    private JTabbedPane pane;
 
     /**
      * Holds the graphs.
@@ -163,6 +160,17 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         editorPanel.reset();
 
         setName("Graph Selection Result:");
+
+//        tabbedPane.addlMouseListener(new MouseAdapter() {
+//
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                JTabbedPane pane = tabbedPane;
+//                int selectedIndex = pane.getSelectedIndex();
+//                selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
+//                graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
+//            }
+//        });
     }
 
     private void setEditorPanelFields(GraphSelectionWrapper.Type type) {
@@ -351,8 +359,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
-        graphAction = new GraphPropertiesAction(wrapper.getGraphs()
-                .get(tabbedPane.getSelectedIndex()), getWorkbench());
+        graphAction = new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench());
         graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
@@ -445,7 +452,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
     @Override
     public Graph getGraph() {
-        int selectedIndex = pane.getSelectedIndex();
+        int selectedIndex = tabbedPane.getSelectedIndex();
         if (selectedIndex == -1) selectedIndex = 0;
         return wrapper.getSelectionGraph(selectedIndex);
     }
