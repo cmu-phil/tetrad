@@ -69,6 +69,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private GraphSelectionWrapper wrapper;
     private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
     private List<GraphWorkbench> workbenches;
+    private GraphPropertiesAction graphAction;
 
     /**
      * Constructs a graph selection editor.
@@ -350,7 +351,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graphAction = new GraphPropertiesAction(wrapper.getGraphs()
+                .get(tabbedPane.getSelectedIndex()), getWorkbench());
+        graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
 //        graph.add(new TreksAction(getWorkbench()));

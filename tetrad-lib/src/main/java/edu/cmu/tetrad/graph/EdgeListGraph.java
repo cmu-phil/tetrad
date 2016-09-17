@@ -50,59 +50,59 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-    private List<Node> nodes;
+    protected List<Node> nodes;
 
     /**
      * The edges in the graph.
      *
      * @serial
      */
-    private Set<Edge> edgesSet;
+    protected Set<Edge> edgesSet;
 
     /**
      * Map from each node to the List of edges connected to that node.
      *
      * @serial
      */
-    private Map<Node, List<Edge>> edgeLists;
+    protected Map<Node, List<Edge>> edgeLists;
 
     /**
      * Fires property change events.
      */
-    private transient PropertyChangeSupport pcs;
+    protected transient PropertyChangeSupport pcs;
 
     /**
      * Set of ambiguous triples. Note the name can't be changed due to
      * serialization.
      */
-    private Set<Triple> ambiguousTriples = new HashSet<>();
+    protected Set<Triple> ambiguousTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> underLineTriples = new HashSet<>();
+    protected Set<Triple> underLineTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    protected Set<Triple> dottedUnderLineTriples = new HashSet<>();
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
      * triples. If there are triples in the lists involving removed nodes, these need to be removed from the lists
      * first, so as not to cause confusion.
      */
-    private boolean stuffRemovedSinceLastTripleAccess = false;
+    protected boolean stuffRemovedSinceLastTripleAccess = false;
 
     /**
      * The set of highlighted edges.
      */
-    private Set<Edge> highlightedEdges = new HashSet<>();
+    protected Set<Edge> highlightedEdges = new HashSet<>();
 
     /**
      * A hash from node names to nodes;
      */
-    private Map<String, Node> namesHash = new HashMap<>();
+    protected Map<String, Node> namesHash = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 
@@ -377,11 +377,11 @@ public class EdgeListGraph implements Graph {
      * a
      */
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        return existsDirectedPathVisit(node1, node2, new LinkedList<Node>());
+        return existsDirectedPathVisit(node1, node2, new HashSet<Node>());
     }
 
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return existsUndirectedPathVisit(node1, node2, new LinkedList<Node>());
+        return existsUndirectedPathVisit(node1, node2, new HashSet<Node>());
     }
 
     public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
@@ -396,14 +396,10 @@ public class EdgeListGraph implements Graph {
      * question.
      */
     public boolean existsTrek(Node node1, Node node2) {
-
-        for (Node node3 : getNodes()) {
-            Node node = (node3);
-
-            if (isAncestorOf(node, node1) && isAncestorOf(node, node2)) {
+        for (Node node : getNodes()) {
+            if (isAncestorOf((node), node1) && isAncestorOf((node), node2)) {
                 return true;
             }
-
         }
 
         return false;
@@ -443,7 +439,7 @@ public class EdgeListGraph implements Graph {
     }
 
     public List<Node> getDescendants(List<Node> nodes) {
-        HashSet<Node> descendants = new HashSet<>();
+        Set<Node> descendants = new HashSet<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
@@ -458,11 +454,11 @@ public class EdgeListGraph implements Graph {
      * exists.
      */
     public synchronized Edge getEdge(Node node1, Node node2) {
-        List<Edge> edges1 = edgeLists.get(node1);
+        List<Edge> edges = edgeLists.get(node1);
 
-        if (edges1 == null) return null;
+        if (edges == null) return null;
 
-        for (Edge edge : edges1) {
+        for (Edge edge : edges) {
             if (edge.getNode1() == node1 && edge.getNode2() == node2) {
                 return edge;
             } else if (edge.getNode1() == node2 && edge.getNode2() == node1) {
@@ -498,8 +494,8 @@ public class EdgeListGraph implements Graph {
         List<Node> parents = new ArrayList<>();
         List<Edge> edges = edgeLists.get(node);
 
-        for (Edge edge : edges) {
-            if (edge == null) continue;
+        for (Edge edge : new ArrayList<>(edges)) {
+//            if (edge == null) continue;
 
             Endpoint endpoint1 = edge.getDistalEndpoint(node);
             Endpoint endpoint2 = edge.getProximalEndpoint(node);
@@ -559,7 +555,7 @@ public class EdgeListGraph implements Graph {
 //        return b;
 //    }
 
-    private Map<Node, Set<Node>> ancestors = null;
+    protected Map<Node, Set<Node>> ancestors = null;
 
     /**
      * Determines whether one node is an ancestor of another.
@@ -588,7 +584,7 @@ public class EdgeListGraph implements Graph {
      * @return true iff node1 is a possible ancestor of at least one member of
      * nodes2
      */
-    private boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
+    protected boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
         for (Object aNodes2 : nodes2) {
             if (possibleAncestor(node1, (Node) aNodes2)) {
                 return true;
@@ -644,7 +640,7 @@ public class EdgeListGraph implements Graph {
         return GraphUtils.isDConnectedTo(x, y, z, this);
     }
 
-    private boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
+    protected boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
         Set<Node> zAncestors = zAncestors(z);
 
         Queue<Pair> Q = new ArrayDeque<>();
@@ -688,7 +684,7 @@ public class EdgeListGraph implements Graph {
         return GraphUtils.getSepset(x, y, this);
     }
 
-    private Set<Node> zAncestors(List<Node> z) {
+    protected Set<Node> zAncestors(List<Node> z) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
 
@@ -714,7 +710,7 @@ public class EdgeListGraph implements Graph {
         return !isDConnectedTo(x, y, z);
     }
 
-    private static class Pair {
+    protected static class Pair {
         private Node x;
         private Node y;
 
@@ -865,7 +861,7 @@ public class EdgeListGraph implements Graph {
      * @return true if an inducing path exists, false if not.
      */
     public boolean existsInducingPath(Node node1, Node node2) {
-        return GraphUtils.existsInducingPath(node1, node2, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
     }
 
     /**
@@ -879,9 +875,8 @@ public class EdgeListGraph implements Graph {
      * @see #getChildren
      */
     public boolean isParentOf(Node node1, Node node2) {
-        for (Edge edge1 : getEdges(node1)) {
-            Edge edge = (edge1);
-            Node sub = Edges.traverseDirected(node1, edge);
+        for (Edge edge : getEdges(node1)) {
+            Node sub = Edges.traverseDirected(node1, (edge));
 
             if (sub == node2) {
                 return true;
@@ -895,14 +890,14 @@ public class EdgeListGraph implements Graph {
      * Determines whether one node is a proper ancestor of another.
      */
     public boolean isProperAncestorOf(Node node1, Node node2) {
-        return existsDirectedPathFromTo(node1, node2);
+        return node1 != node2 && isAncestorOf(node1, node2);
     }
 
     /**
      * Determines whether one node is a proper decendent of another
      */
     public boolean isProperDescendentOf(Node node1, Node node2) {
-        return existsDirectedPathFromTo(node2, node1);
+        return node1 != node2 && isDescendentOf(node1, node2);
     }
 
     /**
@@ -1195,12 +1190,6 @@ public class EdgeListGraph implements Graph {
             if (nodes.contains(node)) {
                 namesHash.put(node.getName(), node);
             }
-
-//            return false;
-
-            // This is problematic for the sem updater. jdramsey 7/23/2005
-//            throw new IllegalArgumentException("A node by name " +
-//                    node.getNode() + " has already been added to the graph.");
         }
 
         if (edgeLists.containsKey(node)) {
@@ -1244,7 +1233,7 @@ public class EdgeListGraph implements Graph {
      * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
-    public List<Edge> getEdges(Node node) {
+    public synchronized List<Edge> getEdges(Node node) {
         List<Edge> list = edgeLists.get(node);
         return new ArrayList<>(list);
     }
@@ -1286,8 +1275,8 @@ public class EdgeListGraph implements Graph {
             return (nodesEqual && edgesEqual);
         } else {
             Graph graph = (Graph) o;
-
-            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
+            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) &&
+                    new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
 
         }
     }
@@ -1705,7 +1694,7 @@ public class EdgeListGraph implements Graph {
     }
 
 
-    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+    protected void collectAncestorsVisit(Node node, Set<Node> ancestors) {
         if (ancestors.contains(node)) return;
 
         ancestors.add(node);
@@ -1718,7 +1707,7 @@ public class EdgeListGraph implements Graph {
         }
     }
 
-    private void collectDescendantsVisit(Node node, Set<Node> descendants) {
+    protected void collectDescendantsVisit(Node node, Set<Node> descendants) {
         descendants.add(node);
         List<Node> children = getChildren(node);
 
@@ -1733,7 +1722,7 @@ public class EdgeListGraph implements Graph {
     /**
      * closure under the child relation
      */
-    private void doChildClosureVisit(Node node, Set<Node> closure) {
+    protected void doChildClosureVisit(Node node, Set<Node> closure) {
         if (!closure.contains(node)) {
             closure.add(node);
 
@@ -1758,7 +1747,7 @@ public class EdgeListGraph implements Graph {
      * @param closure the closure of the conditioning set uner the parent
      *                relation (to be calculated recursively).
      */
-    private void doParentClosureVisit(Node node, Set<Node> closure) {
+    protected void doParentClosureVisit(Node node, Set<Node> closure) {
         if (closure.contains(node)) return;
         closure.add(node);
 
@@ -1773,7 +1762,7 @@ public class EdgeListGraph implements Graph {
     /**
      * @return this object.
      */
-    private PropertyChangeSupport getPcs() {
+    protected PropertyChangeSupport getPcs() {
         if (pcs == null) {
             pcs = new PropertyChangeSupport(this);
         }
@@ -1783,9 +1772,8 @@ public class EdgeListGraph implements Graph {
     /**
      * @return true iff there is a directed path from node1 to node2.
      */
-    private boolean existsUndirectedPathVisit(Node node1, Node node2,
-                                              LinkedList<Node> path) {
-        path.addLast(node1);
+    protected boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+        path.add(node1);
 
         for (Edge edge : getEdges(node1)) {
             Node child = Edges.traverse(node1, edge);
@@ -1807,13 +1795,12 @@ public class EdgeListGraph implements Graph {
             }
         }
 
-        path.removeLast();
+        path.remove(node1);
         return false;
     }
 
-    private boolean existsDirectedPathVisit(Node node1, Node node2,
-                                            LinkedList<Node> path) {
-        path.addLast(node1);
+    protected boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+        path.add(node1);
 
         for (Edge edge : getEdges(node1)) {
             Node child = Edges.traverseDirected(node1, edge);
@@ -1835,14 +1822,14 @@ public class EdgeListGraph implements Graph {
             }
         }
 
-        path.removeLast();
+        path.remove(node1);
         return false;
     }
 
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */
-    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
+    protected boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
                                                 LinkedList<Node> path) {
         path.addLast(node1);
 

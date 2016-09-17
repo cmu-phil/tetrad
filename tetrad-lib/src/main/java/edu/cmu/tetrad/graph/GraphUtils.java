@@ -2683,7 +2683,6 @@ public final class GraphUtils {
 
         while (!Q.isEmpty()) {
             Node t = Q.remove();
-//            if (t == to) return true;
 
             for (Node u : G.getAdjacentNodes(t)) {
                 Edge edge = G.getEdge(t, u);
