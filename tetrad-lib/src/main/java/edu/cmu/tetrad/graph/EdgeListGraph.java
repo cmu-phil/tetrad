@@ -50,59 +50,59 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-    private List<Node> nodes;
+    protected List<Node> nodes;
 
     /**
      * The edges in the graph.
      *
      * @serial
      */
-    private Set<Edge> edgesSet;
+    protected Set<Edge> edgesSet;
 
     /**
      * Map from each node to the List of edges connected to that node.
      *
      * @serial
      */
-    private Map<Node, List<Edge>> edgeLists;
+    protected Map<Node, List<Edge>> edgeLists;
 
     /**
      * Fires property change events.
      */
-    private transient PropertyChangeSupport pcs;
+    protected transient PropertyChangeSupport pcs;
 
     /**
      * Set of ambiguous triples. Note the name can't be changed due to
      * serialization.
      */
-    private Set<Triple> ambiguousTriples = new HashSet<>();
+    protected Set<Triple> ambiguousTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> underLineTriples = new HashSet<>();
+    protected Set<Triple> underLineTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    protected Set<Triple> dottedUnderLineTriples = new HashSet<>();
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
      * triples. If there are triples in the lists involving removed nodes, these need to be removed from the lists
      * first, so as not to cause confusion.
      */
-    private boolean stuffRemovedSinceLastTripleAccess = false;
+    protected boolean stuffRemovedSinceLastTripleAccess = false;
 
     /**
      * The set of highlighted edges.
      */
-    private Set<Edge> highlightedEdges = new HashSet<>();
+    protected Set<Edge> highlightedEdges = new HashSet<>();
 
     /**
      * A hash from node names to nodes;
      */
-    private Map<String, Node> namesHash = new HashMap<>();
+    protected Map<String, Node> namesHash = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 
@@ -1286,8 +1286,8 @@ public class EdgeListGraph implements Graph {
             return (nodesEqual && edgesEqual);
         } else {
             Graph graph = (Graph) o;
-
-            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
+            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) &&
+                    new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
 
         }
     }

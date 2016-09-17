@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.BigDataSetUtility;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DMSearch;
@@ -32,8 +33,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -49,12 +52,14 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = GraphUtils.emptyGraph(4);
+        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X3"));
+        Graph graph = emptyGraph(4);
+
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -77,19 +82,19 @@ public class TestDM {
 
         Graph trueGraph = new EdgeListGraph();
 
-        trueGraph.addNode(new GraphNode("X0"));
-        trueGraph.addNode(new GraphNode("X1"));
-        trueGraph.addNode(new GraphNode("X2"));
-        trueGraph.addNode(new GraphNode("X3"));
-        trueGraph.addNode(new GraphNode("L0"));
+        trueGraph.addNode(new ContinuousVariable("X0"));
+        trueGraph.addNode(new ContinuousVariable("X1"));
+        trueGraph.addNode(new ContinuousVariable("X2"));
+        trueGraph.addNode(new ContinuousVariable("X3"));
+        trueGraph.addNode(new ContinuousVariable("L0"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L0"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X2"));
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X3"));
 
-        assertTrue(trueGraph.equals(foundGraph));
+        assertEquals(trueGraph, foundGraph);
     }
 
     @Test
@@ -97,22 +102,22 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = GraphUtils.emptyGraph(8);
+        Graph graph = emptyGraph(8);
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X7"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X7"));
 
-        graph.addDirectedEdge(new GraphNode("X4"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X4"), new GraphNode("X7"));
-        graph.addDirectedEdge(new GraphNode("X5"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X5"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X7"));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -134,35 +139,35 @@ public class TestDM {
 
         Graph trueGraph = new EdgeListGraph();
 
-        trueGraph.addNode(new GraphNode("X0"));
-        trueGraph.addNode(new GraphNode("X1"));
-        trueGraph.addNode(new GraphNode("X2"));
-        trueGraph.addNode(new GraphNode("X3"));
-        trueGraph.addNode(new GraphNode("X4"));
-        trueGraph.addNode(new GraphNode("X5"));
-        trueGraph.addNode(new GraphNode("X6"));
-        trueGraph.addNode(new GraphNode("X7"));
+        trueGraph.addNode(new ContinuousVariable("X0"));
+        trueGraph.addNode(new ContinuousVariable("X1"));
+        trueGraph.addNode(new ContinuousVariable("X2"));
+        trueGraph.addNode(new ContinuousVariable("X3"));
+        trueGraph.addNode(new ContinuousVariable("X4"));
+        trueGraph.addNode(new ContinuousVariable("X5"));
+        trueGraph.addNode(new ContinuousVariable("X6"));
+        trueGraph.addNode(new ContinuousVariable("X7"));
 
-        trueGraph.addNode(new GraphNode("L0"));
-        trueGraph.addNode(new GraphNode("L1"));
+        trueGraph.addNode(new ContinuousVariable("L0"));
+        trueGraph.addNode(new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L0"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X2"));
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X3"));
 
-//        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X1"));
+//        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X1"));
 
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L1"));
-        trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X6"));
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X7"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X6"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X7"));
 
         assertTrue(foundGraph.equals(trueGraph));
     }
@@ -172,39 +177,39 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = GraphUtils.emptyGraph(12);
+        Graph graph = emptyGraph(12);
 
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X7"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X7"));
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X10"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X11"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X10"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X11"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X10"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X11"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X10"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X11"));
 
-        graph.addDirectedEdge(new GraphNode("X4"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X4"), new GraphNode("X7"));
-        graph.addDirectedEdge(new GraphNode("X5"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X5"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X7"));
 
-        graph.addDirectedEdge(new GraphNode("X4"), new GraphNode("X10"));
-        graph.addDirectedEdge(new GraphNode("X4"), new GraphNode("X11"));
-        graph.addDirectedEdge(new GraphNode("X5"), new GraphNode("X10"));
-        graph.addDirectedEdge(new GraphNode("X5"), new GraphNode("X11"));
+        graph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("X10"));
+        graph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("X11"));
+        graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X10"));
+        graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X11"));
 
 
-        graph.addDirectedEdge(new GraphNode("X8"), new GraphNode("X10"));
-        graph.addDirectedEdge(new GraphNode("X8"), new GraphNode("X11"));
-        graph.addDirectedEdge(new GraphNode("X9"), new GraphNode("X10"));
-        graph.addDirectedEdge(new GraphNode("X9"), new GraphNode("X11"));
+        graph.addDirectedEdge(new ContinuousVariable("X8"), new ContinuousVariable("X10"));
+        graph.addDirectedEdge(new ContinuousVariable("X8"), new ContinuousVariable("X11"));
+        graph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("X10"));
+        graph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("X11"));
 
 
         SemPm pm = new SemPm(graph);
@@ -226,49 +231,49 @@ public class TestDM {
 
         Graph trueGraph = new EdgeListGraph();
 
-        trueGraph.addNode(new GraphNode("X0"));
-        trueGraph.addNode(new GraphNode("X1"));
-        trueGraph.addNode(new GraphNode("X2"));
-        trueGraph.addNode(new GraphNode("X3"));
-        trueGraph.addNode(new GraphNode("X4"));
-        trueGraph.addNode(new GraphNode("X5"));
-        trueGraph.addNode(new GraphNode("X6"));
-        trueGraph.addNode(new GraphNode("X7"));
-        trueGraph.addNode(new GraphNode("X8"));
-        trueGraph.addNode(new GraphNode("X9"));
-        trueGraph.addNode(new GraphNode("X10"));
-        trueGraph.addNode(new GraphNode("X11"));
+        trueGraph.addNode(new ContinuousVariable("X0"));
+        trueGraph.addNode(new ContinuousVariable("X1"));
+        trueGraph.addNode(new ContinuousVariable("X2"));
+        trueGraph.addNode(new ContinuousVariable("X3"));
+        trueGraph.addNode(new ContinuousVariable("X4"));
+        trueGraph.addNode(new ContinuousVariable("X5"));
+        trueGraph.addNode(new ContinuousVariable("X6"));
+        trueGraph.addNode(new ContinuousVariable("X7"));
+        trueGraph.addNode(new ContinuousVariable("X8"));
+        trueGraph.addNode(new ContinuousVariable("X9"));
+        trueGraph.addNode(new ContinuousVariable("X10"));
+        trueGraph.addNode(new ContinuousVariable("X11"));
 
-        trueGraph.addNode(new GraphNode("L0"));
-        trueGraph.addNode(new GraphNode("L1"));
-        trueGraph.addNode(new GraphNode("L2"));
+        trueGraph.addNode(new ContinuousVariable("L0"));
+        trueGraph.addNode(new ContinuousVariable("L1"));
+        trueGraph.addNode(new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X2"));
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X3"));
-
-
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L2"));
-
-        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X6"));
-        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X7"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X3"));
 
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X8"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X9"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X6"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X7"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X10"));
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X11"));
+
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X4"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("L0"));
+
+        trueGraph.addDirectedEdge(new ContinuousVariable("X8"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("L0"));
+
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X10"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X11"));
 
 
         assertTrue(foundGraph.equals(trueGraph));
@@ -281,13 +286,13 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = GraphUtils.emptyGraph(6);
+        Graph graph = emptyGraph(6);
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X4"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X5"));
-        graph.addDirectedEdge(new GraphNode("X2"), new GraphNode("X5"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X4"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X5"));
+        graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X5"));
 
 
         SemPm pm = new SemPm(graph);
@@ -308,29 +313,29 @@ public class TestDM {
 
         Graph trueGraph = new EdgeListGraph();
 
-        trueGraph.addNode(new GraphNode("X0"));
-        trueGraph.addNode(new GraphNode("X1"));
-        trueGraph.addNode(new GraphNode("X2"));
-        trueGraph.addNode(new GraphNode("X3"));
-        trueGraph.addNode(new GraphNode("X4"));
-        trueGraph.addNode(new GraphNode("X5"));
-        trueGraph.addNode(new GraphNode("L0"));
-        trueGraph.addNode(new GraphNode("L1"));
-        trueGraph.addNode(new GraphNode("L2"));
+        trueGraph.addNode(new ContinuousVariable("X0"));
+        trueGraph.addNode(new ContinuousVariable("X1"));
+        trueGraph.addNode(new ContinuousVariable("X2"));
+        trueGraph.addNode(new ContinuousVariable("X3"));
+        trueGraph.addNode(new ContinuousVariable("X4"));
+        trueGraph.addNode(new ContinuousVariable("X5"));
+        trueGraph.addNode(new ContinuousVariable("L0"));
+        trueGraph.addNode(new ContinuousVariable("L1"));
+        trueGraph.addNode(new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L0"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X3"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X4"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X4"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X5"));
 
         assertTrue(foundGraph.equals(trueGraph));
 
@@ -342,13 +347,13 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = GraphUtils.emptyGraph(6);
+        Graph graph = emptyGraph(6);
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X4"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X4"));
-        graph.addDirectedEdge(new GraphNode("X2"), new GraphNode("X4"));
-        graph.addDirectedEdge(new GraphNode("X2"), new GraphNode("X5"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X4"));
+        graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X4"));
+        graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X5"));
 
 
         SemPm pm = new SemPm(graph);
@@ -369,27 +374,27 @@ public class TestDM {
 
         Graph trueGraph = new EdgeListGraph();
 
-        trueGraph.addNode(new GraphNode("X0"));
-        trueGraph.addNode(new GraphNode("X1"));
-        trueGraph.addNode(new GraphNode("X2"));
-        trueGraph.addNode(new GraphNode("X3"));
-        trueGraph.addNode(new GraphNode("X4"));
-        trueGraph.addNode(new GraphNode("X5"));
-        trueGraph.addNode(new GraphNode("L0"));
-        trueGraph.addNode(new GraphNode("L1"));
-        trueGraph.addNode(new GraphNode("L2"));
+        trueGraph.addNode(new ContinuousVariable("X0"));
+        trueGraph.addNode(new ContinuousVariable("X1"));
+        trueGraph.addNode(new ContinuousVariable("X2"));
+        trueGraph.addNode(new ContinuousVariable("X3"));
+        trueGraph.addNode(new ContinuousVariable("X4"));
+        trueGraph.addNode(new ContinuousVariable("X5"));
+        trueGraph.addNode(new ContinuousVariable("L0"));
+        trueGraph.addNode(new ContinuousVariable("L1"));
+        trueGraph.addNode(new ContinuousVariable("L2"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X3"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
-        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X4"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X4"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X5"));
 
         assertTrue(foundGraph.equals(trueGraph));
     }
@@ -400,21 +405,21 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = GraphUtils.emptyGraph(8);
+        Graph graph = emptyGraph(8);
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X4"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X5"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X5"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X7"));
 
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X5"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X5"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X7"));
 
-        graph.addDirectedEdge(new GraphNode("X2"), new GraphNode("X6"));
-        graph.addDirectedEdge(new GraphNode("X2"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X6"));
+        graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X7"));
 
-        graph.addDirectedEdge(new GraphNode("X3"), new GraphNode("X7"));
+        graph.addDirectedEdge(new ContinuousVariable("X3"), new ContinuousVariable("X7"));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -435,39 +440,39 @@ public class TestDM {
 
         Graph trueGraph = new EdgeListGraph();
 
-        trueGraph.addNode(new GraphNode("X0"));
-        trueGraph.addNode(new GraphNode("X1"));
-        trueGraph.addNode(new GraphNode("X2"));
-        trueGraph.addNode(new GraphNode("X3"));
-        trueGraph.addNode(new GraphNode("X4"));
-        trueGraph.addNode(new GraphNode("X5"));
-        trueGraph.addNode(new GraphNode("X6"));
-        trueGraph.addNode(new GraphNode("X7"));
-        trueGraph.addNode(new GraphNode("L0"));
-        trueGraph.addNode(new GraphNode("L1"));
-        trueGraph.addNode(new GraphNode("L2"));
-        trueGraph.addNode(new GraphNode("L3"));
+        trueGraph.addNode(new ContinuousVariable("X0"));
+        trueGraph.addNode(new ContinuousVariable("X1"));
+        trueGraph.addNode(new ContinuousVariable("X2"));
+        trueGraph.addNode(new ContinuousVariable("X3"));
+        trueGraph.addNode(new ContinuousVariable("X4"));
+        trueGraph.addNode(new ContinuousVariable("X5"));
+        trueGraph.addNode(new ContinuousVariable("X6"));
+        trueGraph.addNode(new ContinuousVariable("X7"));
+        trueGraph.addNode(new ContinuousVariable("L0"));
+        trueGraph.addNode(new ContinuousVariable("L1"));
+        trueGraph.addNode(new ContinuousVariable("L2"));
+        trueGraph.addNode(new ContinuousVariable("L3"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X4"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L0"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L0"), new ContinuousVariable("X4"));
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
-
-
-        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X5"));
-
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
-        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X6"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L1"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L1"));
 
 
-        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L3"));
-        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L3"));
-        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L3"));
-        trueGraph.addDirectedEdge(new GraphNode("X3"), new GraphNode("L3"));
-        trueGraph.addDirectedEdge(new GraphNode("L3"), new GraphNode("X7"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L1"), new ContinuousVariable("X5"));
+
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("L2"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L2"), new ContinuousVariable("X6"));
+
+
+        trueGraph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("L3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("L3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("L3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("X3"), new ContinuousVariable("L3"));
+        trueGraph.addDirectedEdge(new ContinuousVariable("L3"), new ContinuousVariable("X7"));
 
 
         assertTrue(foundGraph.equals(trueGraph));
@@ -630,12 +635,12 @@ public class TestDM {
         RandomUtil.getInstance().setSeed(29483818483L);
 
 
-        Graph graph = GraphUtils.emptyGraph(5);
+        Graph graph = emptyGraph(5);
 
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X2"));
-        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X3"));
-        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X4"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
+        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
+        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X4"));
 
 
         SemPm pm = new SemPm(graph);
@@ -718,7 +723,7 @@ public class TestDM {
         RandomUtil.getInstance().setSeed(29483818483L);
 
 
-        Graph graph = GraphUtils.emptyGraph(4);
+        Graph graph = emptyGraph(4);
 
         Node X0 = graph.getNode("X0");
         Node X1 = graph.getNode("X1");
@@ -754,7 +759,7 @@ public class TestDM {
         RandomUtil.getInstance().setSeed(29483818483L);
 
 
-        Graph graph = GraphUtils.emptyGraph(9);
+        Graph graph = emptyGraph(9);
 
         Node X0 = graph.getNode("X0");
         Node X1 = graph.getNode("X1");
@@ -828,7 +833,7 @@ public class TestDM {
         RandomUtil.getInstance().setSeed(29483818483L);
 
 
-        Graph graph = GraphUtils.emptyGraph(12);
+        Graph graph = emptyGraph(12);
 
         Node X0 = graph.getNode("X0");
         Node X1 = graph.getNode("X1");
@@ -1037,12 +1042,12 @@ public class TestDM {
 //        RandomUtil.getInstance().setSeed(29483818483L);
 //
 //
-//        Graph graph = GraphUtils.emptyGraph(5);
+//        Graph graph = emptyGraph(5);
 //
-//        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X2"));
-//        graph.addDirectedEdge(new GraphNode("X0"), new GraphNode("X3"));
-//        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X3"));
-//        graph.addDirectedEdge(new GraphNode("X1"), new GraphNode("X4"));
+//        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
+//        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
+//        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
+//        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X4"));
 //
 //
 //        SemPm pm = new SemPm(graph);
@@ -1100,7 +1105,7 @@ public class TestDM {
                     nVar = varNames.length;
 
                     for (String nodeName : varNames) {
-                        graph.addNode(new GraphNode(nodeName));
+                        graph.addNode(new ContinuousVariable(nodeName));
 
                     }
                 } else {
@@ -1218,6 +1223,16 @@ public class TestDM {
 
         return (search);
 
+    }
+
+    public static Graph emptyGraph(int numNodes) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new ContinuousVariable("X" + i));
+        }
+
+        return new EdgeListGraph(nodes);
     }
 
     public static void main(String... args) {

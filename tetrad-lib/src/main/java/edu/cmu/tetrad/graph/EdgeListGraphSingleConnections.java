@@ -28,8 +28,6 @@ import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static edu.cmu.tetrad.graph.Edges.directedEdge;
-
 /**
  * <p>Stores a graph a list of lists of edges adjacent to each node in the
  * graph, with an additional list storing all of the edges in the graph. The
@@ -43,67 +41,8 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  * @author Erin Korber additions summer 2004
  * @see Endpoint
  */
-public class EdgeListGraphSingleConnections implements Graph {
+public class EdgeListGraphSingleConnections extends EdgeListGraph {
     static final long serialVersionUID = 23L;
-
-    /**
-     * A list of the nodes in the graph, in the order in which they were added.
-     *
-     * @serial
-     */
-    private List<Node> nodes;
-
-    /**
-     * The edges in the graph.
-     *
-     * @serial
-     */
-    private Set<Edge> edgesSet;
-
-    /**
-     * Map from each node to the List of edges connected to that node.
-     *
-     * @serial
-     */
-    private Map<Node, List<Edge>> edgeLists;
-
-    /**
-     * Fires property change events.
-     */
-    private transient PropertyChangeSupport pcs;
-
-    /**
-     * Set of ambiguous triples. Note the name can't be changed due to
-     * serialization.
-     */
-    private Set<Triple> ambiguousTriples = new HashSet<>();
-
-    /**
-     * @serial
-     */
-    private Set<Triple> underLineTriples = new HashSet<>();
-
-    /**
-     * @serial
-     */
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
-
-    /**
-     * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
-     * triples. If there are triples in the lists involving removed nodes, these need to be removed from the lists
-     * first, so as not to cause confusion.
-     */
-    private boolean stuffRemovedSinceLastTripleAccess = false;
-
-    /**
-     * The set of highlighted edges.
-     */
-    private Set<Edge> highlightedEdges = new HashSet<>();
-
-    /**
-     * A hash from node names to nodes;
-     */
-    private Map<String, Node> namesHash = new HashMap<>();
 
 
     //==============================CONSTUCTORS===========================//
@@ -112,9 +51,9 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraphSingleConnections() {
-        this.edgeLists = new ConcurrentHashMap<>();
-        this.nodes = new ArrayList<>();
-        this.edgesSet = new HashSet<>();
+        edgeLists = new ConcurrentHashMap<>();
+        nodes = new ArrayList<>();
+        edgesSet = new HashSet<>();
     }
 
     /**
@@ -200,6 +139,19 @@ public class EdgeListGraphSingleConnections implements Graph {
         graph.stuffRemovedSinceLastTripleAccess = _graph.stuffRemovedSinceLastTripleAccess;
         graph.highlightedEdges = new HashSet<>(_graph.highlightedEdges);
         graph.namesHash = new HashMap<>(_graph.namesHash);
+
+//        _graph.nodes = new ArrayList(graph.nodes);
+//        _graph.edgesSet = new HashSet<Edge>(graph.edgesSet);
+//        _graph.edgeLists = new ConcurrentHashMap<Node, List<Edge>>(graph.edgeLists);
+//        for (Node node : graph.nodes) _graph.edgeLists.put(node, new ArrayList(graph.edgeLists.get(node)));
+//        _graph.graphConstraints = new ArrayList<GraphConstraint>(graph.graphConstraints);
+//        _graph.graphConstraintsChecked = graph.graphConstraintsChecked;
+//        _graph.ambiguousTriples = new HashSet<Triple>(graph.ambiguousTriples);
+//        _graph.underLineTriples = new HashSet<Triple>(graph.underLineTriples);
+//        _graph.dottedUnderLineTriples = new HashSet<Triple>(graph.dottedUnderLineTriples);
+//        _graph.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
+//        _graph.highlightedEdges = new HashSet<Edge>(graph.highlightedEdges);
+//        _graph.namesHash = new HashMap(graph.namesHash);
         return _graph;
     }
 
@@ -210,70 +162,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         return new EdgeListGraphSingleConnections();
     }
 
-    //===============================PUBLIC METHODS========================//
-
-    /**
-     * Adds a directed edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
-     */
-    public boolean addDirectedEdge(Node node1, Node node2) {
-        return addEdge(directedEdge(node1, node2));
-    }
-
-    /**
-     * Adds an undirected edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
-     */
-    public boolean addUndirectedEdge(Node node1, Node node2) {
-        return addEdge(Edges.undirectedEdge(node1, node2));
-    }
-
-    /**
-     * Adds a nondirected edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
-     */
-    public boolean addNondirectedEdge(Node node1, Node node2) {
-        return addEdge(Edges.nondirectedEdge(node1, node2));
-    }
-
-    /**
-     * Adds a partially oriented edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
-     */
-    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
-        return addEdge(Edges.partiallyOrientedEdge(node1, node2));
-    }
-
-    /**
-     * Adds a bidirected edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
-     */
-    public boolean addBidirectedEdge(Node node1, Node node2) {
-        return addEdge(Edges.bidirectedEdge(node1, node2));
-    }
-
-    public boolean existsDirectedCycle() {
-        for (Node node : getNodes()) {
-            if (GraphUtils.existsDirectedPathFromToBreathFirst(node, node, this)) {
-                return true;
-            }
-
-//            if (existsDirectedPathFromTo(node, node)) {
-//                return true;
-//            }
-        }
-        return false;
-    }
 
     public boolean isDirectedFromTo(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
@@ -283,35 +171,6 @@ public class EdgeListGraphSingleConnections implements Graph {
     public boolean isUndirectedFromTo(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
-    }
-
-    /**
-     * added by ekorber, 2004/06/11
-     *
-     * @return true if the given edge is definitely visible (Jiji, pg 25)
-     * @throws IllegalArgumentException if the given edge is not a directed edge
-     *                                  in the graph
-     */
-    public boolean defVisible(Edge edge) {
-        if (containsEdge(edge)) {
-
-            Node A = Edges.getDirectedEdgeTail(edge);
-            Node B = Edges.getDirectedEdgeHead(edge);
-            List<Node> adjToA = getAdjacentNodes(A);
-
-            while (!adjToA.isEmpty()) {
-                Node Curr = adjToA.remove(0);
-                if (!((getAdjacentNodes(Curr)).contains(B)) &&
-                        ((getEdge(Curr, A)).getProximalEndpoint(A) == Endpoint
-                                .ARROW)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            throw new IllegalArgumentException(
-                    "Given edge is not in the graph.");
-        }
     }
 
     /**
@@ -374,11 +233,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         return existsUndirectedPathVisit(node1, node2, new HashSet<Node>());
     }
 
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return existsSemiDirectedPathVisit(node1, nodes,
-                new LinkedList<Node>());
-    }
-
     /**
      * Determines whether a trek exists between two nodes in the graph.  A trek
      * exists if there is a directed path between the two nodes or else, for
@@ -393,38 +247,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         return false;
-    }
-
-    /**
-     * @return the list of children for a node.
-     */
-    public List<Node> getChildren(Node node) {
-        List<Node> children = new ArrayList<>();
-
-        for (Edge edge : getEdges(node)) {
-            Node sub = Edges.traverseDirected(node, edge);
-
-            if (sub != null) {
-                children.add(sub);
-            }
-        }
-
-        return children;
-    }
-
-    public int getConnectivity() {
-        int connectivity = 0;
-
-        List<Node> nodes = getNodes();
-
-        for (Node node : nodes) {
-            int n = getNumEdges(node);
-            if (n > connectivity) {
-                connectivity = n;
-            }
-        }
-
-        return connectivity;
     }
 
     public List<Node> getDescendants(List<Node> nodes) {
@@ -456,24 +278,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         return null;
     }
 
-    public Edge getDirectedEdge(Node node1, Node node2) {
-        List<Edge> edges = getEdges(node1, node2);
-
-        if (edges == null) return null;
-
-        if (edges.size() == 0) {
-            return null;
-        }
-
-        for (Edge edge : edges) {
-            if (Edges.isDirectedEdge(edge) && edge.getProximalEndpoint(node2) == Endpoint.ARROW) {
-                return edge;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * @return the list of parents for a node.
      */
@@ -493,102 +297,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         return parents;
-    }
-
-    /**
-     * @return the number of edges into the given node.
-     */
-    public int getIndegree(Node node) {
-        return getParents(node).size();
-    }
-
-    @Override
-    public int getDegree(Node node) {
-        return edgeLists.get(node).size();
-    }
-
-    /**
-     * @return the number of edges out of the given node.
-     */
-    public int getOutdegree(Node node) {
-        return getChildren(node).size();
-    }
-
-    /**
-     * Determines whether some edge or other exists between two nodes.
-     */
-    public boolean isAdjacentTo(Node node1, Node node2) {
-        return getEdge(node1, node2) != null;
-    }
-
-    /**
-     * Determines whether one node is an ancestor of another.
-     */
-//    public boolean isAncestorOf(Node node1, Node node2) {
-//        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
-//    }
-
-    private Map<Node, Set<Node>> ancestors = null;
-
-    /**
-     * Determines whether one node is an ancestor of another.
-     */
-    public boolean isAncestorOf(Node node1, Node node2) {
-        if (ancestors == null) {
-            ancestors = new HashMap<>();
-        }
-
-        if (ancestors.get(node2) != null) {
-            return ancestors.get(node2).contains(node1);
-        }
-
-        ancestors.put(node2, new HashSet<>(getAncestors(Collections.singletonList(node2))));
-
-        return ancestors.get(node2).contains(node1);
-    }
-
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return existsSemiDirectedPathFromTo(node1,
-                Collections.singleton(node2));
-    }
-
-    /**
-     * @return true iff node1 is a possible ancestor of at least one member of
-     * nodes2
-     */
-    private boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
-        for (Object aNodes2 : nodes2) {
-            if (possibleAncestor(node1, (Node) aNodes2)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<Node> getAncestors(List<Node> nodes) {
-        Set<Node> ancestors = new HashSet<>();
-
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
-            collectAncestorsVisit(node, ancestors);
-        }
-
-        return new ArrayList<>(ancestors);
-    }
-
-    /**
-     * Determines whether one node is a child of another.
-     */
-    public boolean isChildOf(Node node1, Node node2) {
-        for (Object o : getEdges(node2)) {
-            Edge edge = (Edge) (o);
-            Node sub = Edges.traverseDirected(node2, edge);
-
-            if (sub == node1) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -612,217 +320,9 @@ public class EdgeListGraphSingleConnections implements Graph {
         return GraphUtils.isDConnectedTo(x, y, z, this);
     }
 
-    public boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
-        Set<Node> zAncestors = zAncestors(z);
-
-        Queue<Pair> Q = new ArrayDeque<>();
-        Set<Pair> V = new HashSet<>();
-
-        for (Node _x : x) {
-            for (Node node : getAdjacentNodes(_x)) {
-                if (y.contains(node)) return true;
-                Pair edge = new Pair(_x, node);
-                Q.offer(edge);
-                V.add(edge);
-            }
-        }
-
-        while (!Q.isEmpty()) {
-            Pair t = Q.poll();
-
-            Node b = t.getY();
-            Node a = t.getX();
-
-            for (Node c : getAdjacentNodes(b)) {
-                if (c == a) continue;
-
-                boolean collider = isDefCollider(a, b, c);
-                if (!((collider && zAncestors.contains(b)) || (!collider && !z.contains(b)))) continue;
-
-                if (y.contains(c)) return true;
-
-                Pair u = new Pair(b, c);
-                if (V.contains(u)) continue;
-
-                V.add(u);
-                Q.offer(u);
-            }
-        }
-
-        return false;
-    }
-
-    public List<Node> getSepset(Node x, Node y) {
-        return GraphUtils.getSepset(x, y, this);
-    }
-
-    private Set<Node> zAncestors(List<Node> z) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
-        }
-
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-
-            for (Node c : getParents(t)) {
-                if (V.contains(c)) continue;
-                V.add(c);
-                Q.offer(c);
-            }
-        }
-
-        return V;
-    }
-
     public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
         return !GraphUtils.isDConnectedTo(x, y, z, this);
     }
-
-    private static class Pair {
-        private Node x;
-        private Node y;
-
-        public Pair(Node x, Node y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public Node getX() {
-            return x;
-        }
-
-        public Node getY() {
-            return y;
-        }
-
-        public int hashCode() {
-            return x.hashCode() + 17 * y.hashCode();
-        }
-
-        public boolean equals(Object o) {
-            if (o == this) return true;
-            if (!(o instanceof Pair)) return false;
-            Pair pair = (Pair) o;
-            return x == pair.getX() && y == pair.getY();
-        }
-
-        public String toString() {
-            return "(" + x.toString() + ", " + y.toString() + ")";
-        }
-
-    }
-
-    /**
-     * Determines whether one n ode is d-separated from another. According to
-     * Spirtes, Richardson & Meek, two nodes are d- connected given some
-     * conditioning set Z if there is an acyclic undirected path U between them,
-     * such that every collider on U is an ancestor of some element in Z and
-     * every non-collider on U is not in Z.  Two elements are d-separated just
-     * in case they are not d-connected.  A collider is a node which two edges
-     * hold in common for which the endpoints leading into the node are both
-     * arrow endpoints.
-     *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @param z     the conditioning set.
-     * @return true if node1 is d-separated from node2 given set t, false if
-     * not.
-     * @see #isDConnectedTo
-     */
-
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return !isDConnectedTo(node1, node2, z);
-    }
-
-    //added by ekorber, June 2004
-    public boolean possDConnectedTo(Node node1, Node node2,
-                                    List<Node> condNodes) {
-        LinkedList<Node> allNodes = new LinkedList<>(getNodes());
-        int sz = allNodes.size();
-        int[][] edgeStage = new int[sz][sz];
-        int stage = 1;
-
-        int n1x = allNodes.indexOf(node1);
-        int n2x = allNodes.indexOf(node2);
-
-        edgeStage[n1x][n1x] = 1;
-        edgeStage[n2x][n2x] = 1;
-
-        List<int[]> currEdges;
-        List<int[]> nextEdges = new LinkedList<>();
-
-        int[] temp1 = new int[2];
-        temp1[0] = n1x;
-        temp1[1] = n1x;
-        nextEdges.add(temp1);
-
-        int[] temp2 = new int[2];
-        temp2[0] = n2x;
-        temp2[1] = n2x;
-        nextEdges.add(temp2);
-
-        while (true) {
-            currEdges = nextEdges;
-            nextEdges = new LinkedList<>();
-            for (int[] edge : currEdges) {
-                Node center = allNodes.get(edge[1]);
-                List<Node> adj = new LinkedList<>(getAdjacentNodes(center));
-
-                for (Node anAdj : adj) {
-                    // check if we've hit this edge before
-                    int testIndex = allNodes.indexOf(anAdj);
-                    if (edgeStage[edge[1]][testIndex] != 0) {
-                        continue;
-                    }
-
-                    // if the edge pair violates possible d-connection,
-                    // then go to the next adjacent node.
-
-                    Node X = allNodes.get(edge[0]);
-                    Node Y = allNodes.get(edge[1]);
-                    Node Z = allNodes.get(testIndex);
-
-                    if (!((isDefNoncollider(X, Y, Z) &&
-                            !(condNodes.contains(Y))) || (
-                            isDefCollider(X, Y, Z) &&
-                                    possibleAncestorSet(Y, condNodes)))) {
-                        continue;
-                    }
-
-                    // if it gets here, then it's legal, so:
-                    // (i) if this is the one we want, we're done
-                    if (anAdj.equals(node2)) {
-                        return true;
-                    }
-
-                    // (ii) if we need to keep going,
-                    // add the edge to the nextEdges list
-                    int[] nextEdge = new int[2];
-                    nextEdge[0] = edge[1];
-                    nextEdge[1] = testIndex;
-                    nextEdges.add(nextEdge);
-
-                    // (iii) set the edgeStage array
-                    edgeStage[edge[1]][testIndex] = stage;
-                    edgeStage[testIndex][edge[1]] = stage;
-                }
-            }
-
-            // find out if there's any reason to move to the next stage
-            if (nextEdges.size() == 0) {
-                break;
-            }
-
-            stage++;
-        }
-
-        return false;
-    }
-
 
     /**
      * Determines whether an inducing path exists between node1 and node2, given
@@ -925,32 +425,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         return adj;
-
-//        List<Node> adj = new ArrayList<Node>();
-//
-//        for (Edge edge : edgesSet) {
-//            Node _node = edge.getDistalNode(node);
-//            if (_node != null) {
-//                adj.add(_node);
-//            }
-//        }
-//
-//        return adj;
-    }
-
-    /**
-     * Removes the edge connecting the two given nodes.
-     */
-    public boolean removeEdge(Node node1, Node node2) {
-        List<Edge> edges = getEdges(node1, node2);
-
-        if (edges.size() > 1) {
-            throw new IllegalStateException(
-                    "There is more than one edge between " + node1 + " and " +
-                            node2);
-        }
-
-        return removeEdges(edges);
     }
 
     /**
@@ -975,7 +449,6 @@ public class EdgeListGraphSingleConnections implements Graph {
      */
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
-        ancestors = null;
         Edge edge = getEdge(from, to);
 
         if (endPoint == null) {
@@ -991,62 +464,6 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Nodes adjacent to the given node with the given proximal endpoint.
-     */
-    public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
-        List<Edge> edges = getEdges(node);
-
-        for (Edge edge : edges) {
-            if (edge.getProximalEndpoint(node) == endpoint) {
-                nodes.add(edge.getDistalNode(node));
-            }
-        }
-
-        return nodes;
-    }
-
-    /**
-     * Nodes adjacent to the given node with the given distal endpoint.
-     */
-    public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>();
-        List<Edge> edges = getEdges(node);
-
-        for (Edge edge : edges) {
-            if (edge.getDistalEndpoint(node) == endpoint) {
-                nodes.add(edge.getDistalNode(node));
-            }
-        }
-
-        return nodes;
-    }
-
-    /**
-     * @return a matrix of endpoints for the nodes in this graph, with nodes in
-     * the same order as getNodes().
-     */
-    public Endpoint[][] getEndpointMatrix() {
-        int size = nodes.size();
-        Endpoint[][] endpoints = new Endpoint[size][size];
-
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                Node nodei = nodes.get(i);
-                Node nodej = nodes.get(j);
-
-                endpoints[i][j] = getEndpoint(nodei, nodej);
-            }
-        }
-
-        return endpoints;
-    }
-
-    /**
      * Adds an edge to the graph if the grpah constraints permit it.
      *
      * @param edge the edge to be added
@@ -1058,10 +475,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         if (isAdjacentTo(edge.getNode1(), edge.getNode2())) {
             throw new IllegalArgumentException("Already adjacent.");
         }
-
-//        if (edgesSet.contains(edge)) {  // Not quite right but faster.
-//            return false;
-//        }
 
         List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
         List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
@@ -1082,7 +495,6 @@ public class EdgeListGraphSingleConnections implements Graph {
 
         edgesSet.add(edge);
 
-        ancestors = null;
         return true;
     }
 
@@ -1111,11 +523,6 @@ public class EdgeListGraphSingleConnections implements Graph {
             return false;
         }
 
-        // If edgeLists contains node as a key, then nodes contains node. No need to look it up.n
-//        if (nodes.contains(node)) {
-//            return false;
-//        }
-
         edgeLists.put(node, new ArrayList<Edge>());
         nodes.add(node);
         namesHash.put(node.getName(), node);
@@ -1124,76 +531,11 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * @return the list of edges in the graph.  No particular ordering of the
-     * edges in the list is guaranteed.
-     */
-    public Set<Edge> getEdges() {
-        return new HashSet<>(this.edgesSet);
-    }
-
-    /**
-     * Determines if the graph contains a particular edge.
-     */
-    public boolean containsEdge(Edge edge) {
-        return edgesSet.contains(edge);
-    }
-
-    /**
-     * Determines whether the graph contains a particular node.
-     */
-    public boolean containsNode(Node node) {
-        return nodes.contains(node);
-    }
-
-    /**
      * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
     public synchronized List<Edge> getEdges(Node node) {
         return edgeLists.get(node);
-    }
-
-    public int hashCode() {
-        int hashCode = 0;
-        int sum = 0;
-
-        for (Node node : getNodes()) {
-            sum += node.hashCode();
-        }
-
-        hashCode += 23 * sum;
-        sum = 0;
-
-        for (Edge edge : getEdges()) {
-            sum += edge.hashCode();
-        }
-
-        hashCode += 41 * sum;
-
-        return hashCode;
-    }
-
-    /**
-     * @return true iff the given object is a graph that is equal to this graph,
-     * in the sense that it contains the same nodes and the edges are
-     * isomorphic.
-     */
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-
-        if (o instanceof EdgeListGraphSingleConnections) {
-            EdgeListGraphSingleConnections _o = (EdgeListGraphSingleConnections) o;
-            boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(this.nodes));
-            boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(this.edgesSet));
-            return (nodesEqual && edgesEqual);
-        } else {
-            Graph graph = (Graph) o;
-
-            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
-
-        }
     }
 
     /**
@@ -1245,66 +587,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         return node;
-
-//        for (Node node : nodes) {
-//            if (node.getNode().equals(name)) {
-//                return node;
-//            }
-//        }
-//
-//        return namesHash.get(name);
-
-//        return null;
-    }
-
-    /**
-     * @return the number of nodes in the graph.
-     */
-    public int getNumNodes() {
-        return nodes.size();
-    }
-
-    /**
-     * @return the number of edges in the (entire) graph.
-     */
-    public int getNumEdges() {
-        return edgesSet.size();
-    }
-
-    /**
-     * @return the number of edges connected to a particular node in the graph.
-     */
-    public int getNumEdges(Node node) {
-        List<Edge> list = edgeLists.get(node);
-        return (list == null) ? 0 : list.size();
-    }
-
-    public List<Node> getNodes() {
-        return new ArrayList<>(nodes);
-    }
-
-    /**
-     * Removes all nodes (and therefore all edges) from the graph.
-     */
-    public void clear() {
-        Iterator<Edge> it = getEdges().iterator();
-
-        while (it.hasNext()) {
-            Edge edge = it.next();
-            it.remove();
-            getPcs().firePropertyChange("edgeRemoved", edge, null);
-        }
-
-        Iterator<Node> it2 = this.nodes.iterator();
-
-        while (it2.hasNext()) {
-            Node node = it2.next();
-            it2.remove();
-            namesHash.remove(node.getName());
-            getPcs().firePropertyChange("nodeRemoved", node, null);
-        }
-
-        edgeLists.clear();
     }
 
     /**
@@ -1319,10 +601,6 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return true if the edge was removed, false if not.
      */
     public synchronized boolean removeEdge(Edge edge) {
-//        if (edgesSet.contains(edge) && !checkRemoveEdge(edge)) {
-//            return false;
-//        }
-
         List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
         List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
 
@@ -1338,38 +616,10 @@ public class EdgeListGraphSingleConnections implements Graph {
         edgeLists.put(edge.getNode1(), edgeList1);
         edgeLists.put(edge.getNode2(), edgeList2);
 
-        ancestors = null;
         getPcs().firePropertyChange("edgeRemoved", edge, null);
         return true;
     }
 
-    /**
-     * Removes any relevant edge objects found in this collection. G
-     *
-     * @param edges the collection of edges to remove.
-     * @return true if any edges in the collection were removed, false if not.
-     */
-    public boolean removeEdges(Collection<Edge> edges) {
-        boolean change = false;
-
-        for (Edge edge : edges) {
-            boolean _change = removeEdge(edge);
-            change = change || _change;
-        }
-
-        return change;
-    }
-
-    /**
-     * Removes all edges connecting node A to node B.
-     *
-     * @param node1 the first node.,
-     * @param node2 the second node.
-     * @return true if edges were removed between A and B, false if not.
-     */
-    public boolean removeEdges(Node node1, Node node2) {
-        return removeEdges(getEdges(node1, node2));
-    }
 
     /**
      * Removes a node from the graph.
@@ -1419,176 +669,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         return changed;
     }
 
-    /**
-     * Removes any relevant node objects found in this collection.
-     *
-     * @param newNodes the collection of nodes to remove.
-     * @return true if nodes from the collection were removed, false if not.
-     */
-    public boolean removeNodes(List<Node> newNodes) {
-        boolean changed = false;
-
-        for (Object newNode : newNodes) {
-            boolean _changed = removeNode((Node) newNode);
-            changed = changed || _changed;
-        }
-
-        return changed;
-    }
-
-    /**
-     * @return a string representation of the graph.
-     */
-    public String toString() {
-        return GraphUtils.graphToText(this);
-    }
-
-    public Graph subgraph(List<Node> nodes) {
-        Graph graph = new EdgeListGraphSingleConnections(nodes);
-        Set<Edge> edges = getEdges();
-
-        for (Edge edge : edges) {
-            if (nodes.contains(edge.getNode1()) &&
-                    nodes.contains(edge.getNode2())) {
-                graph.addEdge(edge);
-            }
-        }
-
-        return graph;
-    }
-
-    /**
-     * @return the edges connecting node1 and node2.
-     */
-    public List<Edge> getEdges(Node node1, Node node2) {
-        Edge edge = getEdge(node1, node2);
-        if (edge == null) return new ArrayList<>();
-        else return Collections.singletonList(edge);
-    }
-
-    public Set<Triple> getAmbiguousTriples() {
-        return ambiguousTriples;
-    }
-
-    public Set<Triple> getUnderLines() {
-        return new HashSet<>(underLineTriples);
-    }
-
-    public Set<Triple> getDottedUnderlines() {
-//        removeTriplesNotInGraph();
-        return dottedUnderLineTriples;
-    }
-
-
-    /**
-     * States whether r-s-r is an underline triple or not.
-     */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-//        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
-//        }
-//        removeTriplesNotInGraph();
-        return ambiguousTriples.contains(new Triple(x, y, z));
-    }
-
-    /**
-     * States whether r-s-r is an underline triple or not.
-     */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-//        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + r + ", " + s + ", " + t + "> is not along a path.");
-//        }
-//        removeTriplesNotInGraph();
-        return underLineTriples.contains(new Triple(x, y, z));
-    }
-
-    /**
-     * States whether r-s-r is an underline triple or not.
-     */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-//        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
-//        }
-//        removeTriplesNotInGraph();
-        return dottedUnderLineTriples.contains(new Triple(x, y, z));
-    }
-
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        ambiguousTriples.add(new Triple(x, y, z));
-    }
-
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
-
-        if (!triple.alongPathIn(this)) {
-            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
-        }
-
-        underLineTriples.add(new Triple(x, y, z));
-    }
-
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
-
-        if (!triple.alongPathIn(this)) {
-            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
-        }
-
-        dottedUnderLineTriples.add(triple);
-    }
-
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        ambiguousTriples.remove(new Triple(x, y, z));
-    }
-
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        underLineTriples.remove(new Triple(x, y, z));
-    }
-
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        dottedUnderLineTriples.remove(new Triple(x, y, z));
-    }
-
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        ambiguousTriples.clear();
-
-        for (Triple triple : triples) {
-            addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-        }
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
-        underLineTriples.clear();
-
-        for (Triple triple : triples) {
-            addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
-        }
-    }
-
-
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        dottedUnderLineTriples.clear();
-
-        for (Triple triple : triples) {
-            addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
-        }
-    }
-
-    public List<String> getNodeNames() {
-        List<String> names = new ArrayList<>();
-
-        for (Node node : getNodes()) {
-            names.add(node.getName());
-        }
-
-        return names;
-    }
-
-
     //===============================PRIVATE METHODS======================//
 
     public void removeTriplesNotInGraph() {
@@ -1630,19 +710,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         stuffRemovedSinceLastTripleAccess = false;
     }
 
-
-    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
-        ancestors.add(node);
-        List<Node> parents = getParents(node);
-
-        if (!parents.isEmpty()) {
-            for (Object parent1 : parents) {
-                Node parent = (Node) parent1;
-                doParentClosureVisit(parent, ancestors);
-            }
-        }
-    }
-
     private void collectDescendantsVisit(Node node, Set<Node> descendants) {
         descendants.add(node);
         List<Node> children = getChildren(node);
@@ -1671,80 +738,6 @@ public class EdgeListGraphSingleConnections implements Graph {
 
                 doChildClosureVisit(sub, closure);
             }
-        }
-    }
-
-    /**
-     * This is a simple auxiliary visit method for the isDConnectedTo() method
-     * used to find the closure of a conditioning set of nodes under the parent
-     * relation.
-     *
-     * @param node    the node in question
-     * @param closure the closure of the conditioning set uner the parent
-     *                relation (to be calculated recursively).
-     */
-    private void doParentClosureVisit(Node node, Set<Node> closure) {
-        if (closure.contains(node)) return;
-        closure.add(node);
-
-        for (Edge edge : getEdges(node)) {
-            Node sub = Edges.traverseReverseDirected(node, edge);
-            if (sub != null) {
-                doParentClosureVisit(sub, closure);
-            }
-        }
-    }
-
-
-    /**
-     * This is the main visit method for the existsInducingPath() method.
-     *
-     * @param node1 the getModel node in the recursion.
-     * @param node2 the target node.
-     * @param inEnd the endpoint type of the incoming edge.
-     * @return true if an inducing path is found along this path (here or down
-     * some sub-branch), false if not.
-     * @see Graph#existsInducingPath
-     */
-    private boolean existsInducingPathVisit(Node node1, Node node2,
-                                            Endpoint inEnd, Set<Node> pathNodes, Set<Node> observedNodes,
-                                            Set<Node> conditioningNodes, Set<Node> sClosure) {
-        if (node1 == node2) {
-            return true;
-        } else if (pathNodes.contains(node1)) {
-            return false;
-        } else {
-            pathNodes.add(node1);
-
-            for (Edge edge1 : getEdges(node1)) {
-                Endpoint outEnd = edge1.getProximalEndpoint(node1);
-
-                // apply the definition of inducing path to determine whether
-                // we can pass through on a path from this incoming edge to
-                // this outgoing edge through this node.  it all depends
-                // on whether this path through the node is a collider or
-                // not--that is, whether the incoming endpoint and the outgoing
-                // endpoint are both arrows.
-                boolean isCollider =
-                        (inEnd == Endpoint.ARROW) && (outEnd == Endpoint.ARROW);
-                boolean passAsCollider = isCollider && sClosure.contains(node1);
-                boolean passAsNonCollider = !isCollider &&
-                        !observedNodes.contains(node1) &&
-                        !conditioningNodes.contains(node1);
-
-                if (passAsCollider || passAsNonCollider) {
-                    Node sub = Edges.traverse(node1, edge1);
-                    Endpoint newIn = edge1.getProximalEndpoint(sub);
-
-                    if (existsInducingPathVisit(sub, node2, newIn, pathNodes,
-                            observedNodes, conditioningNodes, sClosure)) {
-                        return true;
-                    }
-                }
-            }
-
-            pathNodes.remove(node1);
-            return false;
         }
     }
 
@@ -1815,39 +808,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         return false;
     }
 
-    /**
-     * @return true iff there is a semi-directed path from node1 to node2
-     */
-    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
-                                                LinkedList<Node> path) {
-        path.addLast(node1);
-
-        if (path.size() > 5) return false;
-
-        for (Edge edge : getEdges(node1)) {
-            Node child = Edges.traverseSemiDirected(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (nodes2.contains(child)) {
-                return true;
-            }
-
-            if (path.contains(child)) {
-                continue;
-            }
-
-            if (existsSemiDirectedPathVisit(child, nodes2, path)) {
-                return true;
-            }
-        }
-
-        path.removeLast();
-        return false;
-    }
-
     public List<Node> getCausalOrdering() {
         return GraphUtils.getCausalOrdering(this);
     }
@@ -1881,9 +841,6 @@ public class EdgeListGraphSingleConnections implements Graph {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -448,11 +448,14 @@ public class TestFgs {
 
         Graph trueGraph = null;
 
+
         try {
             trueGraph = GraphUtils.readerToGraphTxt(trueString);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        pattern = GraphUtils.replaceNodes(pattern, trueGraph.getNodes());
 
         assertEquals(pattern, trueGraph);
     }

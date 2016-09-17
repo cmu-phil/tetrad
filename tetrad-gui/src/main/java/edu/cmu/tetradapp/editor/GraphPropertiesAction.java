@@ -40,6 +40,7 @@ import java.awt.event.ActionEvent;
  */
 class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
+    private final Graph graph;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
@@ -47,6 +48,13 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
      */
     public GraphPropertiesAction(GraphWorkbench workbench) {
         super("Graph Properties");
+        this.graph = workbench.getGraph();
+        this.workbench = workbench;
+    }
+
+    public GraphPropertiesAction(Graph graph, GraphWorkbench workbench) {
+        super("Graph Properties");
+        this.graph = graph;
         this.workbench = workbench;
     }
 
@@ -56,7 +64,6 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
      */
     public void actionPerformed(ActionEvent e) {
         Box b = Box.createVerticalBox();
-        Graph graph = workbench.getGraph();
 
         int numLatents = 0;
         for (Node node : graph.getNodes()) {
