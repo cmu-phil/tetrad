@@ -435,29 +435,6 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
     }
 
     /**
-     * @return true iff the given object is a graph that is equal to this graph,
-     * in the sense that it contains the same nodes and the edges are
-     * isomorphic.
-     */
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-
-        if (o instanceof EdgeListGraphSingleConnections) {
-            EdgeListGraphSingleConnections _o = (EdgeListGraphSingleConnections) o;
-            boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(this.nodes));
-            boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(this.edgesSet));
-            return (nodesEqual && edgesEqual);
-        } else {
-            Graph graph = (Graph) o;
-
-            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
-
-        }
-    }
-
-    /**
      * @return the node with the given name, or null if no such node exists.
      */
     public Node getNode(String name) {
@@ -561,7 +538,7 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
     /**
      * @return true iff there is a directed path from node1 to node2.
      */
-    private boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+    protected boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
         path.add(node1);
 
         for (Edge edge : getEdges(node1)) {
@@ -588,7 +565,7 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
         return false;
     }
 
-    private boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+    protected boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
         path.add(node1);
 
         for (Edge edge : getEdges(node1)) {
