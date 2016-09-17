@@ -34,7 +34,6 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
@@ -128,7 +127,10 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
-        this(getStrongestInfluenceGraph(wrapper.getSemIm()));
+        this(getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
+        if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
     }
 
     /**

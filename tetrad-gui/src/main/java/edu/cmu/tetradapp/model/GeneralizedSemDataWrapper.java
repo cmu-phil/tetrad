@@ -50,8 +50,12 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     private GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
         GeneralizedSemIm semIm = null;
 
+        if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
+
         try {
-            semIm = new MarshalledObject<>(wrapper.getSemIm()).get();
+            semIm = new MarshalledObject<>(wrapper.getSemIms().get(0)).get();
         } catch (Exception e) {
             throw new RuntimeException("Could not clone the SEM IM.");
         }

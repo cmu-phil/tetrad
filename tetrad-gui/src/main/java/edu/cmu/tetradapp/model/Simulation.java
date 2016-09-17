@@ -179,7 +179,11 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
-        simulation = new GeneralSemSimulation(wrapper.getSemIm());
+        if (wrapper.getSemIms().size() != 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
+
+        simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
         this.parameters = parameters;
         createSimulation();
     }
