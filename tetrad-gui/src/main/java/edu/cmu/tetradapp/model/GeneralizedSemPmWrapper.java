@@ -84,13 +84,13 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
             throw new IllegalArgumentException("That was not a Generalized SEM simulation.");
         }
 
-        GeneralizedSemIm im = ((GeneralSemSimulation) _simulation).getIm();
+        List<GeneralizedSemIm> ims = ((GeneralSemSimulation) _simulation).getIms();
 
-        if (im == null) {
+        if (ims == null || ims.size() == 0) {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        semPm = im.getGeneralizedSemPm();
+        semPm = ims.get(0).getGeneralizedSemPm();
 
         this.semPm = semPm;
     }

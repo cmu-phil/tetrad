@@ -82,6 +82,12 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
     public Class getSelectedModel() {
         TreePath path = this.tree.getSelectionPath();
+
+        if (path == null) {
+            throw new NullPointerException("I had a problem figuring out the models for this box given the parents. Maybe\n" +
+                    "the parents are wrong, or maybe this isn't the box you were intending to use.");
+        }
+
         Object selected = path.getLastPathComponent();
         if (selected instanceof ModelWrapper) {
             return ((ModelWrapper) selected).model;

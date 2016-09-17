@@ -92,7 +92,7 @@ public final class ExploreAutisticsNeurotypicals {
                 SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
                 score.setPenaltyDiscount(penaltyDiscount);
                 Fgs search = new Fgs(score);
-                search.setVerbose(true);
+                search.setVerbose(false);
                 Graph graph = search.search();
                 GraphUtils.saveGraph(graph, file, false);
                 graphs.add(GraphUtils.undirectedGraph(GraphUtils.loadGraphTxt(file)));

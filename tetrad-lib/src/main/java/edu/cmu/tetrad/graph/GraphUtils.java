@@ -341,9 +341,9 @@ public final class GraphUtils {
 
         for (int i = dag.getNumEdges() - 1; i < numEdges - 1; i++) {
 
-            if ((i + 1) % 1000 == 0) {
-                System.out.println("# edges = " + (i + 1));
-            }
+//            if ((i + 1) % 1000 == 0) {
+//                System.out.println("# edges = " + (i + 1));
+//            }
 
             int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
             int c2 = RandomUtil.getInstance().nextInt(nodes2.size());

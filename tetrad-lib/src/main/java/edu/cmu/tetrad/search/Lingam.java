@@ -80,7 +80,7 @@ public class Lingam {
 
     private EstimateResult estimate(TetradMatrix X) {
         FastIca fastIca = new FastIca(X, 20);
-        fastIca.setVerbose(true);
+        fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
         fastIca.setTolerance(1e-20);

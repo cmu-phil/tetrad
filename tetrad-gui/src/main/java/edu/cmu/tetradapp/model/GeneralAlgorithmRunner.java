@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -41,6 +42,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -236,26 +238,50 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         "the editors for those boxes and loading or simulating them.");
             }
         } else {
-            for (DataModel data : getDataModelList()) {
-                System.out.println("Analyzing data set # " + (++i));
-                DataSet dataSet = (DataSet) data;
-                Algorithm algorithm = getAlgorithm();
+            if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
+                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++)  {
+                    List<DataSet> dataSets = new ArrayList<>();
 
-                if (algorithm instanceof HasKnowledge) {
-                    ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                    for (DataModel dataModel : getDataModelList()) {
+                        dataSets.add((DataSet) dataModel);
+                    }
+
+                    if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
+                        throw new IllegalArgumentException("The random selection size is greater than the number of data sets.");
+                    }
+
+                    Collections.shuffle(dataSets);
+
+                    List<DataSet> sub = new ArrayList<>();
+
+                    for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
+                        sub.add(dataSets.get(j));
+                    }
+
+                    graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
                 }
+            } else {
+                for (DataModel data : getDataModelList()) {
+                    System.out.println("Analyzing data set # " + (++i));
+                    DataSet dataSet = (DataSet) data;
+                    Algorithm algorithm = getAlgorithm();
 
-                DataType algDataType = algorithm.getDataType();
+                    if (algorithm instanceof HasKnowledge) {
+                        ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                    }
 
-                if (dataSet.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                    graphList.add(algorithm.search(dataSet, parameters));
-                } else if (dataSet.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed) && dataSet.isDiscrete()) {
-                    graphList.add(algorithm.search(dataSet, parameters));
-                } else if (((DataSet) data).isMixed() && algDataType == DataType.Mixed) {
-                    graphList.add(algorithm.search(dataSet, parameters));
-                } else {
-                    throw new IllegalArgumentException("The type of data changed; try opening up the search editor and " +
-                            "running the algorithm there.");
+                    DataType algDataType = algorithm.getDataType();
+
+                    if (dataSet.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+                        graphList.add(algorithm.search(dataSet, parameters));
+                    } else if (dataSet.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed) && dataSet.isDiscrete()) {
+                        graphList.add(algorithm.search(dataSet, parameters));
+                    } else if (((DataSet) data).isMixed() && algDataType == DataType.Mixed) {
+                        graphList.add(algorithm.search(dataSet, parameters));
+                    } else {
+                        throw new IllegalArgumentException("The type of data changed; try opening up the search editor and " +
+                                "running the algorithm there.");
+                    }
                 }
             }
         }

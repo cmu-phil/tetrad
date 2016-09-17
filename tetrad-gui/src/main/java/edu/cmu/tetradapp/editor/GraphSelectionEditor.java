@@ -96,7 +96,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
 //        bar.add(createEditMenu());
 
-        bar.add(createGraphMenu());
+        JMenu graphMenu = createGraphMenu();
+        bar.add(graphMenu);
 
 //        JMenu select = new JMenu("Select");
 
@@ -160,6 +161,19 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         editorPanel.reset();
 
         setName("Graph Selection Result:");
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (e.getSource() instanceof JTabbedPane) {
+                    JTabbedPane pane = (JTabbedPane) e.getSource();
+                    int selectedIndex = pane.getSelectedIndex();
+                    selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
+                    graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
+                }
+            }
+        });
 
 //        tabbedPane.addlMouseListener(new MouseAdapter() {
 //

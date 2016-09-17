@@ -24,7 +24,8 @@ public class GeneralSemSimulation implements Simulation {
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private GeneralizedSemPm pm;
-    private GeneralizedSemIm im;
+    private List<GeneralizedSemIm> ims;
+    private GeneralizedSemIm im = null;
 
     public GeneralSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -42,13 +43,15 @@ public class GeneralSemSimulation implements Simulation {
         graph.setShowErrorTerms(false);
         this.randomGraph = new SingleGraph(graph);
         this.im = im;
+        this.ims = new ArrayList<>();
+        ims.add(im);
         this.pm = im.getGeneralizedSemPm();
     }
 
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
-        im = null;
+        ims = new ArrayList<>();
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
@@ -69,20 +72,21 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        GeneralizedSemIm im = this.im;
-
         if (im == null) {
-            GeneralizedSemPm pm = this.pm;
-
             if (pm == null) {
-                pm = getPm(graph, parameters);
+                pm = new GeneralizedSemPm(graph);
+                im = new GeneralizedSemIm(pm);
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
+            } else {
+                im = new GeneralizedSemIm(pm);
+                ims.add(im);
+                return im.simulateData(parameters.getInt("sampleSize"), false);
             }
-
-            im = new GeneralizedSemIm(pm);
-            this.im = im;
+        } else {
+            ims.add(im);
+            return im.simulateData(parameters.getInt("sampleSize"), false);
         }
-
-        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
     @Override
@@ -162,7 +166,7 @@ public class GeneralSemSimulation implements Simulation {
         return pm;
     }
 
-    public GeneralizedSemIm getIm() {
-        return im;
+    public List<GeneralizedSemIm> getIms() {
+        return ims;
     }
 }

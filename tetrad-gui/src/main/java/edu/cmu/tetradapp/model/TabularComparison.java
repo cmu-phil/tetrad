@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
@@ -50,7 +51,8 @@ import java.util.*;
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class TabularComparison implements SessionModel, SimulationParamsSource {
+public final class TabularComparison implements SessionModel, SimulationParamsSource,
+        DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
 
@@ -152,6 +154,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             }
         }
 
+        if (referenceGraphs.size() != targetGraphs.size()) {
+            throw new IllegalArgumentException("I was expecting the same number of graph in each parent.");
+        }
         if (algorithm != null) {
             for (int i = 0; i < referenceGraphs.size(); i++) {
                 referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
