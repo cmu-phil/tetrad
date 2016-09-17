@@ -356,22 +356,27 @@ public final class SessionEditorNode extends DisplayNode {
 
             public void modelUnclear(SessionEvent sessionEvent) {
                 try {
-                    boolean created = sessionEditorNode.createModel(simulationStudy != null);
+                    if (simulationStudy == null){
+                        boolean created = sessionEditorNode.createModel(false);
 
-                    if (!created) {
-                        return;
+                        if (!created) {
+                            return;
+                        }
+
+                        sessionEditorNode.adjustToModel();
                     }
-
-                    sessionEditorNode.adjustToModel();
                 } catch (Exception e) {
                     String message = e.getMessage();
 
-                    if (message == null || message.length() == 0) {
-                        message = "Could not make a model for this box.";
-                    }
+                    message = "I could not make a model for this box, sorry. Maybe the \n" +
+                            "parents aren't right or have not been constructed yet.";
+
+                    e.printStackTrace();
+
+//                    throw new IllegalArgumentException("I could not make a model for this box, sorry. Maybe the \n" +
+//                            "parents aren't right or have not been constructed yet.");
 
                     JOptionPane.showMessageDialog(sessionEditorNode, message);
-                    e.printStackTrace();
                 }
             }
         });
@@ -663,50 +668,50 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem editSimulationParameters =
-                new JMenuItem("Edit Parameters...");
-        editSimulationParameters.setToolTipText("<html>");
+//        JMenuItem editSimulationParameters =
+//                new JMenuItem("Edit Parameters...");
+//        editSimulationParameters.setToolTipText("<html>");
 
-        editSimulationParameters.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SessionModel model = getSessionNode().getModel();
-                Class modelClass;
-
-                if (model == null) {
-                    modelClass = determineTheModelClass(getSessionNode());
-                } else {
-                    modelClass = model.getClass();
-                }
-
-                if (!getSessionNode().existsParameterizedConstructor(
-                        modelClass)) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "There is no parameterization for this model.");
-                    return;
-                }
-
-                Parameters param = getSessionNode().getParam(modelClass);
-                Object[] arguments =
-                        getSessionNode().getModelConstructorArguments(
-                                modelClass);
-
-                if (param != null) {
-                    try {
-                        editParameters(modelClass, param, arguments);
-                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                "Should I overwrite the contents of this box and all delete the contents\n" +
-                                        "of all boxes downstream?",
-                                "Double check...", JOptionPane.YES_NO_OPTION);
-                        if (ret == JOptionPane.YES_OPTION) {
-                            getSessionNode().destroyModel();
-                            getSessionNode().createModel(modelClass, true);
-                        }
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
+//        editSimulationParameters.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                SessionModel model = getSessionNode().getModel();
+//                Class modelClass;
+//
+//                if (model == null) {
+//                    modelClass = determineTheModelClass(getSessionNode());
+//                } else {
+//                    modelClass = model.getClass();
+//                }
+//
+//                if (!getSessionNode().existsParameterizedConstructor(
+//                        modelClass)) {
+//                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+//                            "There is no parameterization for this model.");
+//                    return;
+//                }
+//
+//                Parameters param = getSessionNode().getParam(modelClass);
+//                Object[] arguments =
+//                        getSessionNode().getModelConstructorArguments(
+//                                modelClass);
+//
+//                if (param != null) {
+//                    try {
+//                        editParameters(modelClass, param, arguments);
+//                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+//                                "Should I overwrite the contents of this box and all delete the contents\n" +
+//                                        "of all boxes downstream?",
+//                                "Double check...", JOptionPane.YES_NO_OPTION);
+//                        if (ret == JOptionPane.YES_OPTION) {
+//                            getSessionNode().destroyModel();
+//                            getSessionNode().createModel(modelClass, true);
+//                        }
+//                    } catch (Exception e1) {
+//                        e1.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
 
         popup.add(createModel);
         popup.add(editModel);
@@ -719,7 +724,7 @@ public final class SessionEditorNode extends DisplayNode {
         popup.add(deleteBox);
 
         popup.addSeparator();
-        popup.add(editSimulationParameters);
+//        popup.add(editSimulationParameters);
         addEditLoggerSettings(popup);
         popup.add(propagateDownstream);
 

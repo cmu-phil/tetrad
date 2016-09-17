@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
 
@@ -38,7 +39,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class Misclassifications implements SessionModel {
+public final class Misclassifications implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private boolean useVcpcOutputs = false;
@@ -266,6 +267,10 @@ public final class Misclassifications implements SessionModel {
             for (int i = 0; i < referenceGraphs.size(); i++) {
                 referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
             }
+        }
+
+        if (referenceGraphs.size() != targetGraphs.size()) {
+            throw new IllegalArgumentException("I was expecting the same number of graphs in each parent.");
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
