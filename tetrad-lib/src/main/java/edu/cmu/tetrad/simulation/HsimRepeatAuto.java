@@ -15,7 +15,7 @@ public class HsimRepeatAuto {
         int repeat = 100;
 
         HsimRepeatAutoRun study = new HsimRepeatAutoRun(readfilename,delimiter);
-        study.setVerbose(true);
+        study.setVerbose(false);
         study.setWrite(true);
         study.setFilenameOut(filenameOut);
         study.setDelimiter(delimiter);

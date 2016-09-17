@@ -91,7 +91,7 @@ public class HsimRepeatAutoRun {
                 study.setDelimiter(delimiter);
             }
             //pass verbose on to the lower level as well
-            if (verbose) study.setVerbose(true);
+            if (verbose) study.setVerbose(false);
 
             //run the study! yay!
             evalIncrement = study.run(i);

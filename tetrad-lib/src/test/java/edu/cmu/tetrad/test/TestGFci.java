@@ -180,7 +180,7 @@ public class TestGFci {
         boolean faithfulnessAssumed = true;
 
         for (int i = 0; i < numIterations; i++) {
-            System.out.println("Iteration " + (i + 1));
+//            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
@@ -245,8 +245,8 @@ public class TestGFci {
         System.out.println("Elapsed " + (stop - start) + " ms");
 
         DagToPag dagToPag = new DagToPag(g);
-        dagToPag.setVerbose(true);
-        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag.convert()));
+        dagToPag.setVerbose(false);
+//        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag.convert()));
 
     }
 }

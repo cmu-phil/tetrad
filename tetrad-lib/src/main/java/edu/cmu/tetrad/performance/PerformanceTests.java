@@ -110,7 +110,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc pc = new Pc(test);
-        pc.setVerbose(true);
+        pc.setVerbose(false);
         pc.setDepth(depth);
 //        pcStable.setOut(out);
 
@@ -228,7 +228,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc pcStable = new Pc(test);
-//        pcStable.setVerbose(true);
+//        pcStable.setVerbose(false);
         pcStable.setDepth(depth);
 //        pcStable.setOut(out);
 
@@ -326,7 +326,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Cpc cpc = new Cpc(test);
-        cpc.setVerbose(true);
+        cpc.setVerbose(false);
         cpc.setDepth(depth);
 //        pcStable.setOut(out);
 
@@ -407,7 +407,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         CpcStable cpcStable = new CpcStable(test);
-        cpcStable.setVerbose(true);
+        cpcStable.setVerbose(false);
         cpcStable.setDepth(depth);
         cpcStable.setOut(out);
 
@@ -498,7 +498,7 @@ public class PerformanceTests {
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
 
         Fci fci = new Fci(independenceTest);
-        fci.setVerbose(true);
+        fci.setVerbose(false);
         fci.setDepth(depth);
         fci.setMaxPathLength(2);
 //        fci.setTrueDag(truePag);
@@ -699,7 +699,7 @@ public class PerformanceTests {
 
             if (continuous) {
                 LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
-                simulator.setVerbose(true);
+                simulator.setVerbose(false);
                 simulator.setOut(out);
 
                 DataSet data = simulator.simulateDataAcyclic(numCases);
@@ -732,7 +732,7 @@ public class PerformanceTests {
                 long timea = System.currentTimeMillis();
 
                 Fgs fgs = new Fgs(score);
-//                fgs.setVerbose(true);
+//                fgs.setVerbose(false);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
@@ -775,7 +775,7 @@ public class PerformanceTests {
                 long timea = System.currentTimeMillis();
 
                 Fgs fgs = new Fgs(score);
-//                fgs.setVerbose(true);
+//                fgs.setVerbose(false);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
@@ -942,7 +942,7 @@ public class PerformanceTests {
             vars = dag.getNodes();
 
             LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
-            simulator.setVerbose(true);
+            simulator.setVerbose(false);
             simulator.setOut(out);
 
             DataSet data = simulator.simulateDataAcyclic(numCases);
@@ -973,7 +973,7 @@ public class PerformanceTests {
             System.out.println("\nStarting FGS-MB");
 
             fgs = new FgsMb2(score);
-            fgs.setVerbose(true);
+            fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
 //            fgs.setHeuristicSpeedup(faithfulness);
@@ -1018,7 +1018,7 @@ public class PerformanceTests {
             long time4 = System.currentTimeMillis();
 
             fgs = new FgsMb2(score);
-            fgs.setVerbose(true);
+            fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
 //            fgs.setHeuristicSpeedup(faithfulness);

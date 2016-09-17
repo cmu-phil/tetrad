@@ -189,7 +189,7 @@ public class TestPcLocal {
 
         // Set up search.
         pc.setKnowledge(knowledge);
-//        pc.setVerbose(true);
+//        pc.setVerbose(false);
 
         // Run search
         Graph resultGraph = pc.search();
