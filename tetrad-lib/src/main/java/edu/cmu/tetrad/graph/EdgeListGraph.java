@@ -1718,7 +1718,7 @@ public class EdgeListGraph implements Graph {
         }
     }
 
-    private void collectDescendantsVisit(Node node, Set<Node> descendants) {
+    protected void collectDescendantsVisit(Node node, Set<Node> descendants) {
         descendants.add(node);
         List<Node> children = getChildren(node);
 
@@ -1773,7 +1773,7 @@ public class EdgeListGraph implements Graph {
     /**
      * @return this object.
      */
-    private PropertyChangeSupport getPcs() {
+    protected PropertyChangeSupport getPcs() {
         if (pcs == null) {
             pcs = new PropertyChangeSupport(this);
         }
