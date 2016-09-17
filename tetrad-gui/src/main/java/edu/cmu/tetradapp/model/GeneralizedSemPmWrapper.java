@@ -227,7 +227,11 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(GraphWrapper graphWrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper) {
+        this(new EdgeListGraph(graphWrapper.getGraph()));
+    }
+
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
@@ -235,23 +239,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(DagWrapper dagWrapper) {
-        this(new EdgeListGraph(dagWrapper.getDag()));
-    }
-
-    /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public GeneralizedSemPmWrapper(SemGraphWrapper semGraphWrapper) {
-        this(semGraphWrapper.getSemGraph());
-    }
-
-    /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public GeneralizedSemPmWrapper(GraphWrapper graphWrapper, GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
     }
 
