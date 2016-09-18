@@ -26,10 +26,10 @@ public class ParamDescriptions {
         put("differentGraphs", new ParamDescription("Yes if a different graph should be used for each run", false));
         put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.01, 0.0, 1.0));
         put("penaltyDiscount", new ParamDescription("Penalty discount", 4, 0.0, Double.MAX_VALUE));
-        put("fgsDepth", new ParamDescription("Maximum number of new colliders", -1, 1, Integer.MAX_VALUE));
+        put("fgsDepth", new ParamDescription("Maximum number of new colliders", 1, 1, Integer.MAX_VALUE));
         put("standardize", new ParamDescription("Yes if the data should be standardized", false));
         put("measurementVariance", new ParamDescription("Additive measurement noise variance", 0.0, 0, Double.MAX_VALUE));
-        put("depth", new ParamDescription("Maximum size of conditioning set", -1, 0, Integer.MAX_VALUE));
+        put("depth", new ParamDescription("Maximum size of conditioning set", -1, -1, Integer.MAX_VALUE));
         put("coefLow", new ParamDescription("Low end of coefficient range", 0.5, 0.0, Double.MAX_VALUE));
         put("coefHigh", new ParamDescription("High end of coefficient range", 1.5, 0.0, Double.MAX_VALUE));
         put("covLow", new ParamDescription("Low end of covariance range", 0.5, 0.0, Double.MAX_VALUE));

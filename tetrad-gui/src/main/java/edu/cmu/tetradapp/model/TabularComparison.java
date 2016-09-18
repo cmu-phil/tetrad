@@ -63,6 +63,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     private Map<String, String> allParamSettings;
     private DataSet dataSet;
     private ArrayList<Statistic> statistics;
+    private String targetName;
+    private String referenceName;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -131,6 +133,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 if (targetGraphs == null) {
                     this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
                 }
+
+                this.targetName = ((SessionModel) model21).getName();
+                this.referenceName = ((SessionModel) model11).getName();
             } else if (referenceName.equals(model2.getName())) {
                 if (model21 instanceof MultipleGraphSource) {
                     this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
@@ -147,6 +152,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
                 if (targetGraphs == null) {
                     this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
                 }
+
+                this.targetName = ((SessionModel) model11).getName();
+                this.referenceName = ((SessionModel) model21).getName();
             } else {
                 throw new IllegalArgumentException(
                         "Neither of the supplied session models is named '" +
@@ -305,6 +313,22 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     public List<Graph> getTargetGraphs() {
         return targetGraphs;
+    }
+
+    public String getTargetName() {
+        return targetName;
+    }
+
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
+    }
+
+    public String getReferenceName() {
+        return referenceName;
+    }
+
+    public void setReferenceName(String referenceName) {
+        this.referenceName = referenceName;
     }
 }
 

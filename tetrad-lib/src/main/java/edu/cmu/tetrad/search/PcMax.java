@@ -21,31 +21,29 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 
 /**
- * <p></p>This is experimental; you should use it. It will probably be
- * removed from the repository.</p>
- * <p></p>This is experimental; you should use it. It will probably be
- * removed from the repository.</p>
- * <p>
- * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
- * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
- * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
+ * Implements a modification of the the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of
+ * Spirtes, Glymour, and Scheines, Causation, Prediction, and Search, 2nd edition, using the rule set
+ * in step D due to Chris Meek. For the modified rule set, see Chris Meek (1995), "Causal inference and
+ * causal explanation with background knowledge." The modification is to replace the collider orientation
+ * step by a scoring step.
  *
  * @author Joseph Ramsey.
  */
 public class PcMax implements GraphSearch {
 
     /**
-     * The independence test used for the PC search.
+     * The independence test used for the PC search. This can  be a test based on a score.
      */
     private IndependenceTest independenceTest;
 
@@ -55,7 +53,7 @@ public class PcMax implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
 
     /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     * The maximum number of nodes conditioned on in the search. The default unlimited (1000).
      */
     private int depth = -1;
 
@@ -70,12 +68,6 @@ public class PcMax implements GraphSearch {
     private long elapsedTime;
 
     /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-    private boolean aggressivelyPreventCycles = false;
-
-    /**
      * The logger for this class. The config needs to be set.
      */
     private TetradLogger logger = TetradLogger.getInstance();
@@ -85,6 +77,9 @@ public class PcMax implements GraphSearch {
      */
     private Graph initialGraph = null;
 
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose = false;
 
     //=============================CONSTRUCTORS==========================//
@@ -104,20 +99,6 @@ public class PcMax implements GraphSearch {
     }
 
     //==============================PUBLIC METHODS========================//
-
-    /**
-     * @return true iff edges will not be added if they would create cycles.
-     */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
-    }
-
-    /**
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
-     */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
-    }
 
     /**
      * @return the independence test being used in the search.
@@ -173,24 +154,14 @@ public class PcMax implements GraphSearch {
     }
 
     /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph will be a pattern if the
-     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
-     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
-     * of latent common causes, or due to statistical errors in conditional independence judgments.
+     * Runs PC search, returning the output pattern.
      */
     public Graph search() {
         return search(independenceTest.getVariables());
     }
 
     /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a pattern if the independence information
-     * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
-     * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
-     * or due to statistical errors in conditional independence judgments.
-     * <p>
-     * All of the given nodes must be in the domain of the given conditional independence test.
+     * Runs PC search, returning the output pattern, over the given nodes.
      */
     public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
@@ -209,10 +180,11 @@ public class PcMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        IFas fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
+        FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(false);
+        fas.setRecordSepsets(false);
         graph = fas.search();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
@@ -232,93 +204,6 @@ public class PcMax implements GraphSearch {
         this.logger.flush();
 
         return graph;
-    }
-
-    private void addColliders(Graph graph) {
-        final Map<Triple, Double> scores = new HashMap<>();
-
-        for (Node b : graph.getNodes()) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                List<Node> adja = graph.getAdjacentNodes(a);
-                double score = Double.POSITIVE_INFINITY;
-                List<Node> S = null;
-
-                DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
-                int[] comb2;
-
-                while ((comb2 = cg2.next()) != null) {
-                    List<Node> s = GraphUtils.asList(comb2, adja);
-                    independenceTest.isIndependent(a, c, s);
-                    double _score = independenceTest.getScore();
-
-                    if (_score < score) {
-                        score = _score;
-                        S = s;
-                    }
-                }
-
-                List<Node> adjc = graph.getAdjacentNodes(c);
-
-                DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
-                int[] comb3;
-
-                while ((comb3 = cg3.next()) != null) {
-                    List<Node> s = GraphUtils.asList(comb3, adjc);
-                    independenceTest.isIndependent(c, a, s);
-                    double _score = independenceTest.getScore();
-
-                    if (_score < score) {
-                        score = _score;
-                        S = s;
-                    }
-                }
-
-                System.out.println("S = " + S + " a = " + a + " b = " + b + " c = " + c);
-
-                if (S != null && !S.contains(b)) {
-                    scores.put(new Triple(a, b, c), score);
-
-                }
-            }
-        }
-
-        List<Triple> tripleList = new ArrayList<>(scores.keySet());
-
-        Collections.sort(tripleList, new Comparator<Triple>() {
-
-            @Override
-            public int compare(Triple o1, Triple o2) {
-                return -Double.compare(scores.get(o1), scores.get(o1));
-            }
-        });
-
-        for (Triple triple : tripleList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-            }
-        }
     }
 
     /**
@@ -344,8 +229,6 @@ public class PcMax implements GraphSearch {
         return new HashSet<>(nonAdjacencies);
     }
 
-    //===============================PRIVATE METHODS=======================//
-
     public List<Node> getNodes() {
         return graph.getNodes();
     }
@@ -360,6 +243,134 @@ public class PcMax implements GraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    private void addColliders(Graph graph) {
+        final Map<Triple, Double> scores = new HashMap<>();
+
+        List<Node> nodes = graph.getNodes();
+
+        class Task extends RecursiveTask<Boolean> {
+            int from;
+            int to;
+            int chunk = 20;
+            List<Node> nodes;
+            Graph graph;
+
+            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
+                this.nodes = nodes;
+                this.graph = graph;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        doNode(graph, scores, nodes.get(i));
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to + from) / 2;
+
+                    Task left = new Task(nodes, graph, scores, from, mid);
+                    Task right = new Task(nodes, graph, scores, mid, to);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+
+                    return true;
+                }
+            }
+        }
+
+        Task task = new Task(nodes, graph, scores, 0, nodes.size());
+
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+
+        List<Triple> tripleList = new ArrayList<>(scores.keySet());
+
+        Collections.sort(tripleList, new Comparator<Triple>() {
+
+            @Override
+            public int compare(Triple o1, Triple o2) {
+                return -Double.compare(scores.get(o1), scores.get(o1));
+            }
+        });
+
+        for (Triple triple : tripleList) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
+
+            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+            }
+        }
+    }
+
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
+        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+        if (adjacentNodes.size() < 2) {
+            return;
+        }
+
+        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+        int[] combination;
+
+        while ((combination = cg.next()) != null) {
+            Node a = adjacentNodes.get(combination[0]);
+            Node c = adjacentNodes.get(combination[1]);
+
+            // Skip triples that are shielded.
+            if (graph.isAdjacentTo(a, c)) {
+                continue;
+            }
+
+            List<Node> adja = graph.getAdjacentNodes(a);
+            double score = Double.POSITIVE_INFINITY;
+            List<Node> S = null;
+
+            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+            int[] comb2;
+
+            while ((comb2 = cg2.next()) != null) {
+                List<Node> s = GraphUtils.asList(comb2, adja);
+                independenceTest.isIndependent(a, c, s);
+                double _score = independenceTest.getScore();
+
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
+            }
+
+            List<Node> adjc = graph.getAdjacentNodes(c);
+
+            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+            int[] comb3;
+
+            while ((comb3 = cg3.next()) != null) {
+                List<Node> s = GraphUtils.asList(comb3, adjc);
+                independenceTest.isIndependent(c, a, s);
+                double _score = independenceTest.getScore();
+
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
+            }
+
+            // S actually has to be non-null here, but the compiler doesn't know that.
+            if (S != null && !S.contains(b)) {
+                scores.put(new Triple(a, b, c), score);
+            }
+        }
     }
 }
 

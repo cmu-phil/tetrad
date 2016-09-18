@@ -139,7 +139,6 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
 //        PC pc = new PC(getIndependenceTest());
         PcMax pc = new PcMax(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
         pc.setInitialGraph(initialGraph);
         Graph graph = pc.search();
