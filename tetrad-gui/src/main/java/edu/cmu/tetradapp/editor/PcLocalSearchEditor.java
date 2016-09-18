@@ -249,7 +249,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
+            Graph pattern = new EdgeListGraphSingleConnections(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
             Graph dag = ptd.patternToDagMeek();
 
@@ -490,7 +490,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
+                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
                 Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);

@@ -31,15 +31,16 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -58,9 +59,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private final GraphSelectionEditorPanel editorPanel;
     private final JPanel forWorkbenchScrolls;
     private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo;
-//    private final JButton selectInGraph;
-
-    private JTabbedPane pane;
 
     /**
      * Holds the graphs.
@@ -68,6 +66,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private GraphSelectionWrapper wrapper;
     private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
     private List<GraphWorkbench> workbenches;
+    private GraphPropertiesAction graphAction;
 
     /**
      * Constructs a graph selection editor.
@@ -97,7 +96,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
 //        bar.add(createEditMenu());
 
-        bar.add(createGraphMenu());
+        JMenu graphMenu = createGraphMenu();
+        bar.add(graphMenu);
 
 //        JMenu select = new JMenu("Select");
 
@@ -135,29 +135,56 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 //        b0.add(Box.createHorizontalGlue());
 //        b.add(b0);
 
+//        Box b1 = Box.createHorizontalBox();
+//
+//        editorPanel.setMaximumSize(editorPanel.getMinimumSize());
+//
+//        Box b2 = Box.createVerticalBox();
+//        b2.add(editorPanel);
+//
+//        b1.add(b2);
+//        b1.add(forWorkbenchScrolls);
+//        b.add(b1);
 
-        Box b1 = Box.createHorizontalBox();
-
-        editorPanel.setMaximumSize(editorPanel.getMinimumSize());
-
-        Box b2 = Box.createVerticalBox();
-        b2.add(editorPanel);
-
-        b1.add(b2);
-        b1.add(forWorkbenchScrolls);
-        b.add(b1);
+        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, editorPanel, forWorkbenchScrolls);
+        b.add(pane);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
 //        buttonPanel.add(selectInGraph);
         buttonPanel.add(executeButton);
-        b.add(buttonPanel, BorderLayout.SOUTH);
+//        b.add(buttonPanel, BorderLayout.SOUTH);
 
-        add(b, BorderLayout.CENTER);
+        add(pane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         editorPanel.reset();
 
         setName("Graph Selection Result:");
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (e.getSource() instanceof JTabbedPane) {
+                    JTabbedPane pane = (JTabbedPane) e.getSource();
+                    int selectedIndex = pane.getSelectedIndex();
+                    selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
+                    graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
+                }
+            }
+        });
+
+//        tabbedPane.addlMouseListener(new MouseAdapter() {
+//
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                JTabbedPane pane = tabbedPane;
+//                int selectedIndex = pane.getSelectedIndex();
+//                selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
+//                graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
+//            }
+//        });
     }
 
     private void setEditorPanelFields(GraphSelectionWrapper.Type type) {
@@ -346,7 +373,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graphAction = new GraphPropertiesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
 //        graph.add(new TreksAction(getWorkbench()));
@@ -438,7 +466,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
     @Override
     public Graph getGraph() {
-        int selectedIndex = pane.getSelectedIndex();
+        int selectedIndex = tabbedPane.getSelectedIndex();
         if (selectedIndex == -1) selectedIndex = 0;
         return wrapper.getSelectionGraph(selectedIndex);
     }
@@ -638,6 +666,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             b5.add(nField);
 
             b3.add(b5);
+            b3.add(Box.createVerticalStrut(10));
 
             this.add(Box.createVerticalGlue());
             this.add(b3);

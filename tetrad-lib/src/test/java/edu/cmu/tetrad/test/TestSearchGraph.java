@@ -184,7 +184,7 @@ public final class TestSearchGraph {
         Fas fas = new Fas(test);
         start = System.currentTimeMillis();
         fci.setDepth(depth);
-        fci.setVerbose(true);
+        fci.setVerbose(false);
         fci.search(fas, fas.getNodes());
         stop = System.currentTimeMillis();
 

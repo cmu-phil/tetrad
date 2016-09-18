@@ -49,16 +49,11 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-            "Load/Simulate Data",
-            "Search",
-            "Estimate",
-            "Update",
-            "Compare",
-            "Simulate Data with Fixed Graph",
-            "Simulate Data with Fixed PM",
-            "Simulate Data with Fixed IM",
-            "Estimate from Simulated Data",
-            "Update from Simulated Data",
+            "Load data and search",
+            "Search then estimate",
+            "Search, estimate, then update",
+            "Simulate, search, then compare",
+            "Simulate from a given graph, then search",
     };
 
     /**
@@ -113,25 +108,15 @@ final class ConstructTemplateAction extends AbstractAction {
         int leftX = getLeftX();
 
         if (this.templateName.equals(getTemplateNames()[0])) {
-            loadOrSimulateData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[1])) {
             searchFromLoadedOrSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[2])) {
-            estimateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[3])) {
-            estimateThenUpdateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[4])) {
-            searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[5])) {
-            simulateDataFixedGraph(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[6])) {
-            simulateDataFixedPM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[7])) {
-            simulateDataFixedIM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[8])) {
+        } else if (this.templateName.equals(getTemplateNames()[1])) {
             estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[9])) {
-            estimateThenUpdateFromSimulatedData(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[2])) {
+            estimateThenUpdateUsingSearchResult(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[3])) {
+            searchFromSimulatedDataWithCompare(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[4])) {
+            simulateDataFixedIM(leftX);
         } else {
             throw new IllegalStateException(
                     "Unrecognized template name: " + this.templateName);
@@ -177,55 +162,6 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void loadOrSimulateData(int leftX) {
-        getSessionWorkbench().deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String data = nextName("Data");
-
-        nodes.add(addNode("Data", data, leftX, 100));
-
-        selectSubgraph(nodes);
-    }
-
-    private void simulateDataFixedGraph(int leftX) {
-        getSessionWorkbench().deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String graph = nextName("Graph");
-        String data = nextName("Data");
-
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("Data", data, leftX, 200));
-
-        addEdge(graph, data);
-
-        selectSubgraph(nodes);
-    }
-
-
-    private void simulateDataFixedPM(int leftX) {
-        getSessionWorkbench().deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String data = nextName("Data");
-
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("Data", data, leftX, 300));
-
-        addEdge(graph, pm);
-        addEdge(pm, data);
-
-        selectSubgraph(nodes);
-    }
-
-
     private void simulateDataFixedIM(int leftX) {
         getSessionWorkbench().deselectAll();
 
@@ -235,15 +171,18 @@ final class ConstructTemplateAction extends AbstractAction {
         String pm = nextName("PM");
         String im = nextName("IM");
         String data = nextName("Data");
+        String search = nextName("Search");
 
         nodes.add(addNode("Graph", graph, leftX, 100));
         nodes.add(addNode("PM", pm, leftX, 200));
         nodes.add(addNode("IM", im, leftX, 300));
         nodes.add(addNode("Data", data, leftX, 400));
+        nodes.add(addNode("Search", search, 125 + leftX, 400));
 
         addEdge(graph, pm);
         addEdge(pm, im);
         addEdge(im, data);
+        addEdge(data, search);
 
         selectSubgraph(nodes);
     }
@@ -264,7 +203,7 @@ final class ConstructTemplateAction extends AbstractAction {
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
+        nodes.add(addNode("Comparison", compare, 80 + leftX, 200));
 
         addEdge(data, search);
         addEdge(data, compare);
@@ -284,50 +223,21 @@ final class ConstructTemplateAction extends AbstractAction {
         List<Node> nodes = new LinkedList<>();
 
         String data = nextName("Data");
-        String pm = nextName("PM");
+        String search = nextName("Search");
         String estimator = nextName("Estimator");
 
         nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("PM", pm, 150 + leftX, 100));
+        nodes.add(addNode("Search", search, 150 + leftX, 100));
         nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
 
-        addEdge(data, pm);
+        addEdge(data, search);
         addEdge(data, estimator);
-        addEdge(pm, estimator);
+        addEdge(search, estimator);
 
         selectSubgraph(nodes);
     }
 
-    private void estimateThenUpdateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef =
-                DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench =
-                sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String data = nextName("Data");
-        String pm = nextName("PM");
-        String estimator = nextName("Estimator");
-        String updater = nextName("Updater");
-
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("PM", pm, 150 + leftX, 100));
-        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
-        nodes.add(addNode("Updater", updater, 80 + leftX, 300));
-
-        addEdge(data, pm);
-        addEdge(data, estimator);
-        addEdge(pm, estimator);
-        addEdge(estimator, updater);
-
-        selectSubgraph(nodes);
-    }
-
-
-    private void estimateUsingSearchResult(int leftX) {
+    private void updateFromSimulatedData(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -339,25 +249,18 @@ final class ConstructTemplateAction extends AbstractAction {
 
         String data = nextName("Data");
         String search = nextName("Search");
+        String estimator = nextName("Estimator");
+        String updater = nextName("Updater");
 
         nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, leftX + 150, 100));
-
-        String graph = nextName("Graph");
-        nodes.add(addNode("Graph", graph, leftX + 150, 200));
-
-        String pm = nextName("PM");
-        nodes.add(addNode("PM", pm, leftX + 150, 300));
-
-        String estimator = nextName("Estimator");
-        nodes.add(addNode("Estimator", estimator, leftX, 300));
+        nodes.add(addNode("Search", search, 150 + leftX, 100));
+        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
+        nodes.add(addNode("Updater", updater, 80 + leftX, 300));
 
         addEdge(data, search);
-        addEdge(search, graph);
-        addEdge(graph, pm);
         addEdge(data, estimator);
-        addEdge(data, pm);
-        addEdge(pm, estimator);
+        addEdge(search, estimator);
+        addEdge(estimator, updater);
 
         selectSubgraph(nodes);
     }

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -43,7 +44,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class EdgewiseComparisonModel implements SessionModel {
+public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
 
@@ -150,6 +151,10 @@ public final class EdgewiseComparisonModel implements SessionModel {
             for (int i = 0; i < referenceGraphs.size(); i++) {
                 referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
             }
+        }
+
+        if (referenceGraphs.size() != targetGraphs.size()) {
+            throw new IllegalArgumentException("I was expecting the same number of graphs in each parent.");
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");

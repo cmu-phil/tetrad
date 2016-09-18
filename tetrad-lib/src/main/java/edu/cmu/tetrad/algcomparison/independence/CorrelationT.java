@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.IndTestConditionalGaussianLRT;
+import edu.cmu.tetrad.search.IndTestCorrelationT;
+import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.Experimental;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,22 +15,23 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
+public class CorrelationT implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestConditionalGaussianLRT(dataSet, parameters.getDouble("alpha"));
+        double alpha = parameters.getDouble("alpha");
+        return new IndTestCorrelationT(dataSet, alpha);
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Gaussian Likelihood Ratio Test";
+        return "Fisher Z test";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     @Override
@@ -39,5 +40,4 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
         params.add("alpha");
         return params;
     }
-
 }

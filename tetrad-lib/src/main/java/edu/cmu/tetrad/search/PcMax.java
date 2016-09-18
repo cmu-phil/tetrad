@@ -21,16 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * <p></p>This is experimental; you should use it. It will probably be
@@ -88,11 +86,6 @@ public class PcMax implements GraphSearch {
     private Graph initialGraph = null;
 
     private boolean verbose = false;
-
-    private boolean fdr = false;
-
-    private Graph trueDag = null;
-    private IndTestDSep dsep = null;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -203,10 +196,6 @@ public class PcMax implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        if (trueDag != null) {
-            this.dsep = new IndTestDSep(trueDag);
-        }
-
         long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
@@ -214,6 +203,7 @@ public class PcMax implements GraphSearch {
         }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
+
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
@@ -227,11 +217,7 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-//        independenceTest.setAlpha(0.6);
-
-        SepsetProducer sepsetProducer = new SepsetsMinScore(graph, independenceTest, null, getDepth());
-
-        addColliders(graph, sepsetProducer, knowledge);
+        addColliders(graph);
 
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
@@ -248,147 +234,92 @@ public class PcMax implements GraphSearch {
         return graph;
     }
 
+    private void addColliders(Graph graph) {
+        final Map<Triple, Double> scores = new HashMap<>();
 
-    private void addColliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
-        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose);
+        for (Node b : graph.getNodes()) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
-        List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
-
-//        Collections.shuffle(colliders);
-
-        Collections.sort(colliders, new Comparator<Triple>() {
-            public int compare(Triple o1, Triple o2) {
-                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
-            }
-        });
-
-        for (Triple collider : colliders) {
-//            if (collidersPs.get(collider) < 0.2) continue;
-
-            Node a = collider.getX();
-            Node b = collider.getY();
-            Node c = collider.getZ();
-
-            if (!(isArrowpointAllowed(a, b, knowledge) && isArrowpointAllowed(c, b, knowledge))) {
+            if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            if (!graph.isAncestorOf(b, a) && !graph.isAncestorOf(b, c)) {
-//            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                // Skip triples that are shielded.
+                if (graph.isAdjacentTo(a, c)) {
+                    continue;
+                }
+
+                List<Node> adja = graph.getAdjacentNodes(a);
+                double score = Double.POSITIVE_INFINITY;
+                List<Node> S = null;
+
+                DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+                int[] comb2;
+
+                while ((comb2 = cg2.next()) != null) {
+                    List<Node> s = GraphUtils.asList(comb2, adja);
+                    independenceTest.isIndependent(a, c, s);
+                    double _score = independenceTest.getScore();
+
+                    if (_score < score) {
+                        score = _score;
+                        S = s;
+                    }
+                }
+
+                List<Node> adjc = graph.getAdjacentNodes(c);
+
+                DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+                int[] comb3;
+
+                while ((comb3 = cg3.next()) != null) {
+                    List<Node> s = GraphUtils.asList(comb3, adjc);
+                    independenceTest.isIndependent(c, a, s);
+                    double _score = independenceTest.getScore();
+
+                    if (_score < score) {
+                        score = _score;
+                        S = s;
+                    }
+                }
+
+                System.out.println("S = " + S + " a = " + a + " b = " + b + " c = " + c);
+
+                if (S != null && !S.contains(b)) {
+                    scores.put(new Triple(a, b, c), score);
+
+                }
+            }
+        }
+
+        List<Triple> tripleList = new ArrayList<>(scores.keySet());
+
+        Collections.sort(tripleList, new Comparator<Triple>() {
+
+            @Override
+            public int compare(Triple o1, Triple o2) {
+                return -Double.compare(scores.get(o1), scores.get(o1));
+            }
+        });
+
+        for (Triple triple : tripleList) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
+
+            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
                 graph.setEndpoint(a, b, Endpoint.ARROW);
                 graph.setEndpoint(c, b, Endpoint.ARROW);
             }
         }
     }
-
-    /**
-     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
-     * case y is in Sepset({x, z}).
-     */
-    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
-        Map<Triple, Double> colliders = new HashMap<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        class AlgorithmTask extends RecursiveTask<Boolean> {
-            public AlgorithmTask(SepsetProducer sepsetProducer, Graph graph, boolean verbose, Map<Triple, Double> colliders,
-                                 Node b) {
-                findColliders(sepsetProducer, graph, verbose, colliders, b);
-            }
-
-            @Override
-            protected Boolean compute() {
-                return true;
-            }
-        }
-
-        List<AlgorithmTask> tasks = new ArrayList<>();
-
-        for (Node b : nodes) {
-            tasks.add(new AlgorithmTask(sepsetProducer, graph, verbose, colliders, b));
-//            findColliders(sepsetProducer, graph, verbose, colliders, b);
-        }
-
-        class Task extends RecursiveTask<Boolean> {
-            List<AlgorithmTask> tasks;
-
-            public Task(List<AlgorithmTask> tasks) {
-                this.tasks = tasks;
-            }
-
-            @Override
-            protected Boolean compute() {
-                Queue<AlgorithmTask> tasks = new ArrayDeque<>();
-
-                for (AlgorithmTask task : this.tasks) {
-                    tasks.add(task);
-                    task.fork();
-
-                    for (AlgorithmTask _task : new ArrayList<>(tasks)) {
-                        if (_task.isDone()) {
-                            _task.join();
-                            tasks.remove(_task);
-                        }
-                    }
-
-                    while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
-                        AlgorithmTask _task = tasks.poll();
-                        _task.join();
-                    }
-                }
-
-                for (AlgorithmTask task : tasks) {
-                    task.join();
-                }
-
-                return true;
-            }
-        }
-
-        Task task = new Task(tasks);
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-
-        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
-        return colliders;
-    }
-
-    private void findColliders(SepsetProducer sepsetProducer, Graph graph, boolean verbose, Map<Triple, Double> colliders, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            List<Node> sepset = sepsetProducer.getSepset(a, c);
-
-            if (sepset == null) continue;
-
-            if (!sepset.contains(b)) {
-                if (verbose) {
-                    System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                }
-
-                colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
-
-                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
-            }
-        }
-    }
-
 
     /**
      * @return the elapsed time of the search, in milliseconds.
@@ -415,32 +346,8 @@ public class PcMax implements GraphSearch {
 
     //===============================PRIVATE METHODS=======================//
 
-//    public int getNumIndependenceTests() {
-//        return numIndependenceTests;
-//    }
-
     public List<Node> getNodes() {
         return graph.getNodes();
-    }
-
-    public List<Triple> getColliders(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getNoncolliders(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getUnderlineTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getDottedUnderlineTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void setInitialGraph(Graph initialGraph) {
@@ -453,80 +360,6 @@ public class PcMax implements GraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * True iff the algorithm should be run with False Discovery Rate tests.
-     */
-    public boolean isFdr() {
-        return fdr;
-    }
-
-    public void setFdr(boolean fdr) {
-        this.fdr = fdr;
-    }
-
-    private boolean missingColliders(Graph graph) {
-        List<Triple> colliders = getUnshieldedCollidersFromGraph(graph);
-        Graph copy = new EdgeListGraphSingleConnections(graph);
-        new MeekRules().orientImplied(copy);
-        if (copy.existsDirectedCycle()) return true;
-        List<Triple> newColliders = getUnshieldedCollidersFromGraph(copy);
-        newColliders.removeAll(colliders);
-        if (!newColliders.isEmpty()) {
-            return true;
-        }
-        return false;
-    }
-
-    public List<Triple> getUnshieldedCollidersFromGraph(Graph graph) {
-        List<Triple> colliders = new ArrayList<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                if (graph.isDefCollider(a, b, c)) {
-                    colliders.add(new Triple(a, b, c));
-                }
-            }
-        }
-
-        return colliders;
-    }
-
-    public static boolean isArrowpointAllowed(Object from, Object to,
-                                              IKnowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
-    public Graph getTrueDag() {
-        return trueDag;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
     }
 }
 

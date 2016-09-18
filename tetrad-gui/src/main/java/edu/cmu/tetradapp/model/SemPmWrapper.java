@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.GraphScore;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
@@ -69,7 +70,10 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
         this.semPms = new ArrayList<>();
         this.semPms.add(new SemPm(graph));
-//        log(semPm);
+
+        for (int i = 0; i < semPms.size(); i++) {
+            log(i, semPms.get(i));
+        }
     }
 
     /**
@@ -119,32 +123,12 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(GraphWrapper graphWrapper, Parameters parameters) {
+    public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    /**
-     * Creates a new SemPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public SemPmWrapper(DagWrapper dagWrapper, Parameters parameters) {
-        this(new EdgeListGraph(dagWrapper.getDag()));
-    }
-
-    /**
-     * Creates a new SemPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public SemPmWrapper(SemGraphWrapper semGraphWrapper, Parameters parameters) {
-        this(semGraphWrapper.getSemGraph());
-    }
-
-    /**
-     * Creates a new SemPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public SemPmWrapper(TimeLagGraphWrapper wrapper, Parameters parameters) {
-        this(wrapper.getGraph());
+    public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {
+        this(new EdgeListGraph(graphSource.getGraph()));
     }
 
     public SemPmWrapper(SemEstimatorWrapper wrapper, Parameters parameters) {
@@ -208,7 +192,7 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public SemPmWrapper(PValueImproverWrapper wrapper) {
         SemPm oldSemPm = wrapper.getNewSemIm().getSemPm();
-        log(oldSemPm);
+        log(0, oldSemPm);
 
     }
 
@@ -260,8 +244,9 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //======================= Private methods ====================//
 
-    private void log(SemPm pm) {
+    private void log(int i, SemPm pm) {
         TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
+        TetradLogger.getInstance().log("info", "PM # " + (i + 1));
         TetradLogger.getInstance().log("pm", pm.toString());
     }
 

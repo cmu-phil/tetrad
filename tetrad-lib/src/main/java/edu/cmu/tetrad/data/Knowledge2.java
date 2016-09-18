@@ -850,6 +850,10 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     public boolean isViolatedBy(Graph graph) {
+        if (graph == null) {
+            throw new NullPointerException("Sorry, a graph hasn't been provided.");
+        }
+
         for (Edge edge : graph.getEdges()) {
             if (!edge.isDirected()) {
                 continue;

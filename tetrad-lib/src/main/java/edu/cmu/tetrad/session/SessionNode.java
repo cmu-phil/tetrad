@@ -1359,12 +1359,14 @@ public class SessionNode implements TetradSerializable {
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
 
-            if (model == null) {
-                throw new RuntimeException(
-                        "One of the parents has an empty model.");
-            }
+//            if (model == null) {
+//                throw new RuntimeException(
+//                        "One of the parents has an empty model.");
+//            }
 
-            models.add(model);
+            if (model != null) {
+                models.add(model);
+            }
         }
 
         return models;

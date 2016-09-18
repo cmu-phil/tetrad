@@ -148,7 +148,7 @@ public class DagInPatternIterator {
         } while (decoratedGraphs.getLast().getEdge() == null && !allowNewColliders &&
                 !GraphUtils.listColliderTriples(decoratedGraphs.getLast().getGraph()).equals(colliders));
 
-        return new EdgeListGraph(decoratedGraphs.getLast().getGraph());
+        return new EdgeListGraphSingleConnections(decoratedGraphs.getLast().getGraph());
     }
 
     /**
@@ -233,17 +233,14 @@ public class DagInPatternIterator {
                 return null;
             }
 
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            if (!triedLeft && !graph.isAncestorOf(node1, node2) &&
-                    !getKnowledge().isForbidden(node2.getName(), node1.getName())) {
+            if (!triedLeft && !graph.isAncestorOf(edge.getNode1(), edge.getNode2()) &&
+                    !getKnowledge().isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
-                Graph graph = new EdgeListGraph(this.graph);
-                graph.removeEdge(edge.getNode1(), edge.getNode2());
-                graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
+                Graph graph = new EdgeListGraphSingleConnections(this.graph);
+                graph.removeEdges(edge.getNode1(), edge.getNode2());
 
+                graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
 
                 edges.add(graph.getEdge(edge.getNode2(), edge.getNode1()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
@@ -268,14 +265,12 @@ public class DagInPatternIterator {
                         isAllowArbitraryOrientation());
             }
 
-
-            if (!triedRight && !graph.isAncestorOf(node2, node1) &&
-                    !getKnowledge().isForbidden(node1.getName(), node2.getName())) {
+            if (!triedRight && !graph.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
+                    !getKnowledge().isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
-
-                Graph graph = new EdgeListGraph(this.graph);
-                graph.removeEdge(edge.getNode1(), edge.getNode2());
+                Graph graph = new EdgeListGraphSingleConnections(this.graph);
+                graph.removeEdges(edge.getNode1(), edge.getNode2());
                 graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
 
                 edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));

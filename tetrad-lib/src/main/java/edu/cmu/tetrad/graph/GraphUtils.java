@@ -341,9 +341,9 @@ public final class GraphUtils {
 
         for (int i = dag.getNumEdges() - 1; i < numEdges - 1; i++) {
 
-            if ((i + 1) % 1000 == 0) {
-                System.out.println("# edges = " + (i + 1));
-            }
+//            if ((i + 1) % 1000 == 0) {
+//                System.out.println("# edges = " + (i + 1));
+//            }
 
             int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
             int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
@@ -399,7 +399,10 @@ public final class GraphUtils {
                 continue;
             }
 
-            dag.addDirectedEdge(n1, n2);
+            if (!dag.isAdjacentTo(n1, n2)) {
+                dag.addDirectedEdge(n1, n2);
+            }
+
             added = true;
         }
 
@@ -2680,7 +2683,6 @@ public final class GraphUtils {
 
         while (!Q.isEmpty()) {
             Node t = Q.remove();
-//            if (t == to) return true;
 
             for (Node u : G.getAdjacentNodes(t)) {
                 Edge edge = G.getEdge(t, u);
@@ -2856,8 +2858,9 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
+        System.out.println(graph);
+
         List<Node> found = new LinkedList<>();
-        Collections.shuffle(found);
         List<Node> notFound = new ArrayList<>(graph.getNodes());
 
         for (Iterator<Node> i = notFound.iterator(); i.hasNext();) {
@@ -2866,11 +2869,16 @@ public final class GraphUtils {
             }
         }
 
+        List<Node> allNodes = new ArrayList<>(notFound);
+
         while (!notFound.isEmpty()) {
             for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
                 Node node = it.next();
 
-                if (found.containsAll(graph.getParents(node))) {
+                List<Node> parents = graph.getParents(node);
+                parents.retainAll(allNodes);
+
+                if (found.containsAll(parents)) {
                     found.add(node);
                     it.remove();
                 }

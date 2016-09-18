@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Wraps the tsIMaGES algorithm for continuous variables.
  * </p>
- * Requires that the parameter 'randomSelection' be set to indicate how many
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
  * @author jdramsey
@@ -68,7 +68,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Fgs(new SemBicScore()).getParameters();
-        parameters.add("randomSelection");
+        parameters.add("randomSelectionSize");
         return parameters;
     }
 

@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -51,10 +52,8 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
 
     /**
      * The wrapped SemPm.
-     *
-     * @serial Cannot be null.
      */
-    private GeneralizedSemIm semIm = null;
+    private List<GeneralizedSemIm> semIms = new ArrayList<>();
 
     /**
      * True just in case errors should be shown in the interface.
@@ -64,7 +63,7 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
     //==============================CONSTRUCTORS==========================//
 
     public GeneralizedSemImWrapper(Simulation simulation) {
-        GeneralizedSemIm semIm = null;
+        List<GeneralizedSemIm> semIms = new ArrayList<>();
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
@@ -80,13 +79,17 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
             throw new IllegalArgumentException("That was not Generalized SEM simulation. Sorry.");
         }
 
-        semIm = ((GeneralSemSimulation) _simulation).getIm();
+        semIms = ((GeneralSemSimulation) _simulation).getIms();
 
-        if (semIm == null) {
+        if (semIms.isEmpty()) {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        this.semIm = semIm;
+        this.semIms = semIms;
+
+        if (semIms.size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
     }
 
 
@@ -95,7 +98,7 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
             throw new NullPointerException("SEM PM must not be null.");
         }
 
-        semIm = new GeneralizedSemIm(semPm);
+        semIms.add(new GeneralizedSemIm(semPm));
     }
 
     /**
@@ -107,7 +110,7 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
     }
 
     public GeneralizedSemImWrapper(GeneralizedSemPmWrapper genSemPm, SemImWrapper imWrapper) {
-        semIm = new GeneralizedSemIm(genSemPm.getSemPm(), imWrapper.getSemIm());
+        semIms.add(new GeneralizedSemIm(genSemPm.getSemPm(), imWrapper.getSemIm()));
     }
 
     /**
@@ -121,8 +124,8 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
 
     //============================PUBLIC METHODS=========================//
 
-    public GeneralizedSemIm getSemIm() {
-        return this.semIm;
+    public List<GeneralizedSemIm> getSemIms() {
+        return this.semIms;
     }
 
     /**
@@ -142,13 +145,13 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (semIm == null) {
+        if (semIms == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return semIm.getSemPm().getGraph();
+        return semIms.get(0).getSemPm().getGraph();
     }
 
     public String getName() {

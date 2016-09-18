@@ -36,7 +36,7 @@ public class GdistanceRandomApply {
 
             simRandGdistances.setNumEdges1(300);
             simRandGdistances.setNumEdges2(300);
-            simRandGdistances.setVerbose(true);
+            simRandGdistances.setVerbose(false);
 
             System.out.println("Edge parameters set, starting simulations");
             List<List<Double>> GdistanceLists = simRandGdistances.randomSimulation(2);

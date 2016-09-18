@@ -454,29 +454,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * @return the list of graph constraints for this graph.
-     */
-    public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<>();
-    }
-
-    /**
-     * @return true iff graph constraints will be checked for future graph
-     * modifications.
-     */
-    public boolean isGraphConstraintsChecked() {
-        return false;
-    }
-
-    /**
-     * Set whether graph constraints will be checked for future graph
-     * modifications.
-     */
-    public void setGraphConstraintsChecked(boolean checked) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Removes an edge from the workbench.
      */
     public boolean removeEdge(Edge edge) {
@@ -718,10 +695,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        throw new UnsupportedOperationException();
-    }
-
     public Graph subgraph(List nodes) {
         throw new UnsupportedOperationException();
     }
@@ -926,6 +899,11 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * @return the number of arrow endpoint adjacent to an edge.
      */
     public int getIndegree(Node node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getDegree(Node node) {
         throw new UnsupportedOperationException();
     }
 

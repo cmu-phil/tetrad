@@ -230,7 +230,10 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     }
 
     public GeneralizedSemImEditor(final GeneralizedSemImWrapper wrapper) {
-        GeneralizedSemIm semIm = wrapper.getSemIm();
+        if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
+        GeneralizedSemIm semIm = wrapper.getSemIms().get(0);
 
         if (semIm == null) {
             throw new NullPointerException("Generalized SEM IM must not be null.");

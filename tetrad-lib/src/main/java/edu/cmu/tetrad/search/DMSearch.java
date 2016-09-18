@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -310,7 +307,7 @@ public class DMSearch {
 
             if (sameSetParents.size() > 0) {
                 //Creates a new latent with a size 1 less than actually present.
-                GraphNode tempLatent = new GraphNode("L" + nLatents);
+                ContinuousVariable tempLatent = new ContinuousVariable("L" + nLatents);
 
                 if (!setContained(structure, structure.inputs.keySet(), sameSetParents) || structure.inputs.isEmpty()) {
                     structure.latents.add(tempLatent);
@@ -565,7 +562,7 @@ public class DMSearch {
                 return (currentSet);
             }
         }
-        GraphNode end = new GraphNode("alreadySeenEverything");
+        ContinuousVariable end = new ContinuousVariable("alreadySeenEverything");
 
         TreeSet seenEverything = new TreeSet();
         seenEverything.add(end);

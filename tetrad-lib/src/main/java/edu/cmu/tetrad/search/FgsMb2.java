@@ -719,7 +719,7 @@ public final class FgsMb2 {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxIndegree = fgsScore.getMaxIndegree();
+        this.maxIndegree = fgsScore.getMaxDegree();
     }
 
     final int[] count = new int[1];

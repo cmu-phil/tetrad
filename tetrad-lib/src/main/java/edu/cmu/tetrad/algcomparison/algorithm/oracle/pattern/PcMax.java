@@ -29,28 +29,12 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.test = test;
     }
 
-    public PcMax(IndependenceWrapper test, Algorithm initialGraph) {
-        this.test = test;
-        this.initialGraph = initialGraph;
-    }
-
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
-
-        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
+                test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
-
-        Graph search1 = search.search();
-        return search1;
+        return search.search();
     }
 
     @Override

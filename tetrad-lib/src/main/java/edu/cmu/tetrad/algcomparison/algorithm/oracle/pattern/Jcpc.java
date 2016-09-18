@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
@@ -22,11 +23,13 @@ import java.util.List;
 public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Jcpc(IndependenceWrapper type) {
+    public Jcpc(IndependenceWrapper type, ScoreWrapper score) {
         this.test = type;
+        this.score = score;
     }
 
     public Jcpc(IndependenceWrapper type, Algorithm initialGraph) {
@@ -42,7 +45,8 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(test.getTest(dataSet, parameters),
+                score.getScore(dataSet, parameters));
         search.setKnowledge(knowledge);
 
 //        if (initial != null) {
