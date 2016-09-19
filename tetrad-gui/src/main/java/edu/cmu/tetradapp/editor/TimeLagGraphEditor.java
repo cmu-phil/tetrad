@@ -545,7 +545,7 @@ public final class TimeLagGraphEditor extends JPanel
 
         randomIndicatorModel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomMimParamsEditor editor = new RandomMimParamsEditor();
+                RandomMimParamsEditor editor = new RandomMimParamsEditor(parameters);
 
                 int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(), editor,
