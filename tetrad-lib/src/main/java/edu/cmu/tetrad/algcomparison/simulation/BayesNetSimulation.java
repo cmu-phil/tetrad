@@ -46,7 +46,6 @@ public class BayesNetSimulation implements Simulation {
     @Override
     public void createData(Parameters parameters) {
         Graph graph = randomGraph.createGraph(parameters);
-        im = null;
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
@@ -119,28 +118,35 @@ public class BayesNetSimulation implements Simulation {
     }
 
 
+
     private DataSet simulate(Graph graph, Parameters parameters) {
-        BayesIm im = this.im;
+        try {
+            BayesIm im = this.im;
 
-        if (im == null) {
-            BayesPm pm = this.pm;
+            if (im == null) {
+                BayesPm pm = this.pm;
 
-            if (pm == null) {
-                int minCategories = parameters.getInt("minCategories");
-                int maxCategories = parameters.getInt("maxCategories");
-                pm = new BayesPm(graph, minCategories, maxCategories);
-                im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-                ims.add(im);
-                return im.simulateData(parameters.getInt("sampleSize"), false);
+                if (pm == null) {
+                    int minCategories = parameters.getInt("minCategories");
+                    int maxCategories = parameters.getInt("maxCategories");
+                    pm = new BayesPm(graph, minCategories, maxCategories);
+                    im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                    ims.add(im);
+                    return im.simulateData(parameters.getInt("sampleSize"), false);
+                } else {
+                    im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                    this.im = im;
+                    ims.add(im);
+                    return im.simulateData(parameters.getInt("sampleSize"), false);
+                }
             } else {
-                im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-                this.im = im;
+                ims = new ArrayList<>();
                 ims.add(im);
                 return im.simulateData(parameters.getInt("sampleSize"), false);
             }
-        } else {
-            ims.add(im);
-            return im.simulateData(parameters.getInt("sampleSize"), false);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n" +
+                    "the parameters have been specified.");
         }
     }
 
