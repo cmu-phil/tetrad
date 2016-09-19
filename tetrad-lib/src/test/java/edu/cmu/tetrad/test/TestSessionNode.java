@@ -212,15 +212,15 @@ public class TestSessionNode {
         // a type 3 in it, and that would be great. At that point we
         // could construct the model.
         parents.add(node4);
-        assertTrue(node1.isConsistentModelClass(Type1.class, parents));
+        assertTrue(node1.isConsistentModelClass(Type1.class, parents, false));
         parents.add(node6);
-        assertTrue(node1.isConsistentModelClass(Type1.class, parents));
+        assertTrue(node1.isConsistentModelClass(Type1.class, parents, false));
 
         // If we remove node6 now and add node7, which doesn't contain
         // a 3, it should fail.
         parents.remove(node6);
         parents.add(node7);
-        assertTrue(!node1.isConsistentModelClass(Type1.class, parents));
+        assertTrue(!node1.isConsistentModelClass(Type1.class, parents, false));
     }
 
     /**
@@ -303,7 +303,7 @@ public class TestSessionNode {
         assertTrue(node1.addParent(node3));
         assertTrue(node3.addParent(node2));
 
-        Class[] classes = node1.getConsistentModelClasses();
+        Class[] classes = node1.getConsistentModelClasses(false);
 
         assertNull(classes);
 
@@ -315,7 +315,7 @@ public class TestSessionNode {
             fail("Model not created.");
         }
 
-        classes = node1.getConsistentModelClasses();
+        classes = node1.getConsistentModelClasses(false);
 
         assertNotNull(classes);
         assertEquals(classes[0], Type1.class);

@@ -406,7 +406,7 @@ public class TetradApplicationConfig {
                 }
             }
 
-            Class[] consistentClasses = sessionNode.getConsistentModelClasses();
+            Class[] consistentClasses = sessionNode.getConsistentModelClasses(false);
 
             List<SessionNodeModelConfig> filteredModels = new ArrayList<>();
 

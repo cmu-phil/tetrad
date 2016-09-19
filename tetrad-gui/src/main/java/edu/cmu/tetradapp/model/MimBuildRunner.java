@@ -62,7 +62,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     }
 
     public MimBuildRunner(DataWrapper dataWrapper,
-                          FofcRunner mmWrapper,
+                          PurifyRunner mmWrapper,
                           Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
@@ -70,35 +70,44 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildRunner(DataWrapper dataWrapper,
-                          MeasurementModelWrapper mmWrapper,
-                          Parameters params,
-                          KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, mmWrapper.getClusters(), params);
-        this.dataSet = (DataSet) getData();
-        setClusters(mmWrapper.getClusters());
-        params.set("clusters", mmWrapper.getClusters());
-        params.set("knowledge", knowledgeBoxModel.getKnowledge());
-    }
+//    public MimBuildRunner(DataWrapper dataWrapper,
+//                          FofcRunner mmWrapper,
+//                          Parameters params) {
+//        super(dataWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters(mmWrapper.getClusters());
+//        params.set("clusters", mmWrapper.getClusters());
+//    }
 
-    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
-                          DataWrapper dataWrapper,
-                          Parameters params) {
-        super(mmWrapper, mmWrapper.getClusters(), params);
-        this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
-        setClusters(mmWrapper.getClusters());
-        params.set("clusters", mmWrapper.getClusters());
-    }
+//    public MimBuildRunner(DataWrapper dataWrapper,
+//                          MeasurementModelWrapper mmWrapper,
+//                          Parameters params,
+//                          KnowledgeBoxModel knowledgeBoxModel) {
+//        super(dataWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters(mmWrapper.getClusters());
+//        params.set("clusters", mmWrapper.getClusters());
+//        params.set("knowledge", knowledgeBoxModel.getKnowledge());
+//    }
 
-    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
-                          Parameters params,
-                          KnowledgeBoxModel knowledgeBoxModel) {
-        super(mmWrapper, mmWrapper.getClusters(), params);
-        this.dataSet = (DataSet) getData();
-        setClusters(mmWrapper.getClusters());
-        getParams().set("clusters", mmWrapper.getClusters());
-        params.set("knowledge", knowledgeBoxModel.getKnowledge());
-    }
+//    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
+//                          DataWrapper dataWrapper,
+//                          Parameters params) {
+//        super(dataWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
+//        setClusters(mmWrapper.getClusters());
+//        params.set("clusters", mmWrapper.getClusters());
+//    }
+
+//    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
+//                          Parameters params,
+//                          KnowledgeBoxModel knowledgeBoxModel) {
+//        super(mmWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters(mmWrapper.getClusters());
+//        getParams().set("clusters", mmWrapper.getClusters());
+//        params.set("knowledge", knowledgeBoxModel.getKnowledge());
+//    }
 
 //    public MimBuildRunner(DataWrapper dataWrapper, Parameters params) {
 //        super(dataWrapper, params.getClusters(), params);
@@ -106,74 +115,74 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 //        setClusters(params.getClusters());
 //    }
 
-    public MimBuildRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBox) {
-        super(dataWrapper, (Clusters) params.get("clusters", null), params);
-        this.dataSet = (DataSet) getData();
-        setClusters((Clusters) params.get("clusters", null));
-        params.set("knowledge", knowledgeBox.getKnowledge());
-    }
+//    public MimBuildRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBox) {
+//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
 
-    public MimBuildRunner(BuildPureClustersRunner pureClustersRunner,
-                          Parameters params) {
-        super(pureClustersRunner, params);
-
-        if (getData() instanceof CovarianceMatrix) {
-            CovarianceMatrix cov = (CovarianceMatrix) getData();
-            this.dataSet = DataUtils.choleskySimulation(cov);
-        }
-        else {
-            this.dataSet = (DataSet) getData();
-        }
-
-        setClusters((Clusters) params.get("clusters", null));
-    }
-
-    public MimBuildRunner(BuildPureClustersRunner bpcRunner, KnowledgeBoxModel knowledgeBox, Parameters params) {
-        super(bpcRunner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters((Clusters) params.get("clusters", null));
-        params.set("knowledge", knowledgeBox.getKnowledge());
-    }
-
-    public MimBuildRunner(PurifyRunner runner, Parameters params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters((Clusters) params.get("clusters", null));
-    }
-
-    public MimBuildRunner(PurifyRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters((Clusters) params.get("clusters", null));
-        params.set("knowledge", knowledgeBox.getKnowledge());
-    }
-
-    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, Parameters params) {
-        super(runner, params);
-        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        setClusters((Clusters) params.get("clusters", null));
-    }
-
-    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBox, Parameters params) {
-        super(runner, params);
-        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        setClusters((Clusters) params.get("clusters", null));
-        params.set("knowledge", knowledgeBox.getKnowledge());
-    }
-
-
-    public MimBuildRunner(MimBuildRunner runner, Parameters params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters((Clusters) params.get("clusters", null));
-    }
-
-    public MimBuildRunner(MimBuildRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters((Clusters) params.get("clusters", null));
-        params.set("knowledge", knowledgeBox.getKnowledge());
-    }
+//    public MimBuildRunner(BuildPureClustersRunner pureClustersRunner,
+//                          Parameters params) {
+//        super(pureClustersRunner, params);
+//
+//        if (getData() instanceof CovarianceMatrix) {
+//            CovarianceMatrix cov = (CovarianceMatrix) getData();
+//            this.dataSet = DataUtils.choleskySimulation(cov);
+//        }
+//        else {
+//            this.dataSet = (DataSet) getData();
+//        }
+//
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(BuildPureClustersRunner bpcRunner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(bpcRunner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
+//
+//
+//    public MimBuildRunner(MimBuildRunner runner, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(MimBuildRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
 
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
@@ -184,12 +193,8 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
      *
      * @see TetradSerializableUtils
      */
-    public static MimBuildRunner serializableInstance() {
-        DataSet dataSet = DataUtils.discreteSerializableInstance();
-        DataWrapper dataWrapper = new DataWrapper(dataSet);
-        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Parameters());
-        return new MimBuildRunner(mmWrapper, DataWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

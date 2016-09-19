@@ -21,17 +21,29 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.PcStable;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
-import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 import org.junit.Test;
@@ -343,6 +355,108 @@ public class TestFgs {
 
             out.println();
         }
+    }
+
+    @Test
+    public void test17() {
+        RandomGraph randomGraph = new RandomForward();
+
+        Simulation simulation = new LargeSemSimulation(randomGraph);
+
+        Parameters parameters = new Parameters();
+
+        parameters.set("numMeasures", 1000);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 2);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("numRuns", 1);
+        parameters.set("differentGraphs", false);
+        parameters.set("sampleSize", 1000);
+
+        parameters.set("faithfulnessAssumed", false);
+        parameters.set("maxDegree", -1);
+        parameters.set("verbose", false);
+
+        parameters.set("alpha", 0.01);
+
+        simulation.createData(parameters);
+
+        DataSet dataSet = simulation.getDataSet(0);
+        Graph trueGraph = simulation.getTrueGraph(0);
+
+        edu.cmu.tetrad.algcomparison.score.ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+
+        edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs fgs
+                = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs(score);
+
+        Graph graph = fgs.search(dataSet, parameters);
+
+        IndependenceWrapper test = new FisherZ();
+        IndependenceWrapper dsep = new DSeparationTest(new SingleGraph(trueGraph));
+
+        List<Node> nodes = graph.getNodes();
+
+        test17ForAlpha(0.05, parameters, dataSet, trueGraph, test, dsep, nodes);
+        test17ForAlpha(0.01, parameters, dataSet, trueGraph, test, dsep, nodes);
+
+    }
+
+    private void test17ForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
+                                IndependenceWrapper test, IndependenceWrapper dsep, List<Node> nodes) {
+        parameters.set("alpha", alpha);
+
+        IndependenceTest _test = test.getTest(dataSet, parameters);
+        IndependenceTest _dsep = dsep.getTest(null, parameters);
+
+        System.out.println(parameters);
+
+        int numSamples = 1000;
+
+        System.out.println("\nNumber of random pairs of variables selected = " + numSamples);
+
+        int count11 = 0;
+        int count12 = 0;
+        int count21 = 0;
+        int count22 = 0;
+
+        for (int i = 0; i < numSamples; i++) {
+            Collections.shuffle(nodes);
+            Node x = nodes.get(0);
+            Node y = nodes.get(1);
+
+            boolean isInd = _test.isIndependent(x, y);
+            boolean isDsep = _dsep.isIndependent(x, y);
+
+            if (isDsep && !isInd) {
+                count11++;
+            } else if (!isDsep && isInd) {
+                count12++;
+            }
+
+            if (!trueGraph.isAdjacentTo(x, y) && !isInd) {
+                count21++;
+            } else if (trueGraph.isAdjacentTo(x, y) && isInd) {
+                count22++;
+            }
+        }
+
+        double fp1 = count11 / (double) 100;
+        double fn1 = count12 / (double) 100;
+
+        double fp2 = count21 / (double) 100;
+        double fn2 = count22 / (double) 100;
+
+//        System.out.println("\nAt alpha = " + alpha);
+
+        System.out.println("\nProportion d-separated in the true graph but not judged independent");
+        System.out.println("fn 1 = " + fn1 + " fp 1 = " + fp1);
+
+        System.out.println("\nProportion not adjacent in the true graph but not judged independent");
+        System.out.println("fn 2 = " + fn2 + " fp 2 = " + fp2);
     }
 
     /**

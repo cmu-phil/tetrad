@@ -2858,8 +2858,6 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
-        System.out.println(graph);
-
         List<Node> found = new LinkedList<>();
         List<Node> notFound = new ArrayList<>(graph.getNodes());
 

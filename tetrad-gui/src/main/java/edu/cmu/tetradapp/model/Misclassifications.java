@@ -345,55 +345,63 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     public String getComparisonString(int i) {
 
         if (this.useVcpcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsOne() +
                     "\nEdge Misclassifications:\n" +
-                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i)));
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useCpcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsTwo() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
         if (this.usePcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsThree() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useSvcpcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsFour() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
         if (this.useScpcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsFive() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useSFcpcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsSix() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useFcpcOutputs) {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsSeven() +
                     "\n\nEndpoint Misclassification:\n" + "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         } else {
-            return ("Comparing " + params.get("targetGraphName", null) + " to " + params.get("referenceGraphName", null)) +
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
                     "\n\nEdge Misclassification:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i)) +
-                    "\n\nEndpoint Misclassification:\n\n" +
+                    "\nEndpoint Misclassification:\n" +
                     MisclassificationUtils.endpointMisclassification(targetGraphs.get(i), referenceGraphs.get(i));
         }
     }

@@ -86,8 +86,8 @@ public class EdgewiseComparisonEditor extends JPanel {
 
             pane2.add("Comparison", scroll);
 
-            pane2.add("Target", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane2.add("Reference", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            pane2.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            pane2.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
 
             pane.add("" + (i + 1), pane2);
 
