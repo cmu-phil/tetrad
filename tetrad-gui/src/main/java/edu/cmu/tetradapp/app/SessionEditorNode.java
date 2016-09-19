@@ -924,7 +924,7 @@ public final class SessionEditorNode extends DisplayNode {
         // associated with, based on the node's type.
         loadModelClassesFromConfig(sessionNode);
 
-        Class[] modelClasses = sessionNode.getConsistentModelClasses();
+        Class[] modelClasses = sessionNode.getConsistentModelClasses(true);
 
         // If you can't even put a model into the object, throw an
         // exception.

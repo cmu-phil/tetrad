@@ -292,7 +292,7 @@ public class SessionNode implements TetradSerializable {
                 numModels[j] = parentClasses[j].length;
             }
 
-            if (isConsistentModelClass(modelClass, parentClasses)) {
+            if (isConsistentModelClass(modelClass, parentClasses, false)) {
                 if (this.getModel() == null) {
                     this.parents.add(parent);
                     parent.addChild(this);
@@ -348,7 +348,7 @@ public class SessionNode implements TetradSerializable {
                 numModels[j] = parentClasses[j].length;
             }
 
-            if (isConsistentModelClass(modelClass, parentClasses)) {
+            if (isConsistentModelClass(modelClass, parentClasses, false)) {
                 if (this.getModel() == null) {
                     this.parents.add(parent);
                     parent.addChild(this);
@@ -655,8 +655,9 @@ public class SessionNode implements TetradSerializable {
      * assuming that the models of the parent session nodes are non-null, it is
      * possible to construct a model in one of the legal classes for this node
      * using the parent models as arguments to some constructor in that class.
+     * @param exact
      */
-    public Class[] getConsistentModelClasses() {
+    public Class[] getConsistentModelClasses(boolean exact) {
         List<Class> classes = new ArrayList<>();
         List<SessionNode> parents = new ArrayList<>(this.parents);
         Class[][] parentModelClasses = new Class[parents.size()][1];
@@ -681,7 +682,7 @@ public class SessionNode implements TetradSerializable {
 
             // If this model class is consistent, add it to the list.
             if (isConsistentModelClass(this.modelClasses[i],
-                    parentModelClasses)) {
+                    parentModelClasses, exact)) {
                 classes.add(modelClasses[i]);
             }
         }
@@ -1075,7 +1076,7 @@ public class SessionNode implements TetradSerializable {
      * contained in the given List of nodes, in the sense that the model class
      * has a constructor that can take the models of the nodes as arguments.
      */
-    public boolean isConsistentModelClass(Class<Type1> modelClass, List nodes) {
+    public boolean isConsistentModelClass(Class<Type1> modelClass, List nodes, boolean exact) {
 
         // Put all of the model classes of the nodes into a single
         // two-dimensional array. At the same time, construct an int[]
@@ -1089,7 +1090,7 @@ public class SessionNode implements TetradSerializable {
             nodeClasses[i] = node.getModelClasses();
         }
 
-        return isConsistentModelClass(modelClass, nodeClasses);
+        return isConsistentModelClass(modelClass, nodeClasses, exact);
     }
 
     /**
@@ -1214,7 +1215,7 @@ public class SessionNode implements TetradSerializable {
         }
     }
 
-    public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes)
+    public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes, boolean exact)
             throws RuntimeException {
         for (Class parameterType1 : constructorTypes) {
             if (parameterType1 == null) {
@@ -1223,8 +1224,14 @@ public class SessionNode implements TetradSerializable {
             }
         }
 
-        if (modelTypes.length > constructorTypes.length) {
-            return false;
+        if (exact) {
+            if (modelTypes.length != constructorTypes.length) {
+                return false;
+            }
+        } else {
+            if (modelTypes.length > constructorTypes.length) {
+                return false;
+            }
         }
 
         if (numWithoutParams(modelTypes) == 0 && numWithoutParams(constructorTypes) > 0) {
@@ -1487,7 +1494,7 @@ public class SessionNode implements TetradSerializable {
     /**
      * New version 2015901.
      */
-    private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses) {
+    private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses, boolean exact) {
         Constructor[] constructors = modelClass.getConstructors();
 
         // If the constructor takes the special form of an array followed by Parameters,
@@ -1572,7 +1579,7 @@ public class SessionNode implements TetradSerializable {
 
                     modelTypes[comb.length] = Parameters.class;
 
-                    if (assignClasses(constructorTypes, modelTypes)) {
+                    if (assignClasses(constructorTypes, modelTypes, exact)) {
                         return true;
                     }
                 } else {
@@ -1584,7 +1591,7 @@ public class SessionNode implements TetradSerializable {
                         modelTypes[i] = summary.get(i).get(comb[i]);
                     }
 
-                    if (assignClasses(constructorTypes, modelTypes)) {
+                    if (assignClasses(constructorTypes, modelTypes, exact)) {
                         return true;
                     }
                 }
