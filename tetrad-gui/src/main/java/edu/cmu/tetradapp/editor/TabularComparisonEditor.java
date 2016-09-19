@@ -31,8 +31,8 @@ public class TabularComparisonEditor extends JPanel {
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
             JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
-            pane3.add("Target", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
-            pane3.add("Reference", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            pane3.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            pane3.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
             pane2.add("" + (i + 1), pane3);
         }
 
@@ -48,17 +48,22 @@ public class TabularComparisonEditor extends JPanel {
 
         TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder b0 = new StringBuilder();
+        String trueGraphAndTarget = "Target graphs from " + comparison.getTargetName()
+                + "\nTrue graphs from " + comparison.getReferenceName();
+        b0.append(trueGraphAndTarget + "\n\n");
+        b0.append(table.toString());
+
         Map<String, String> allParamsSettings = comparison.getAllParamSettings();
 
         if (allParamsSettings != null) {
             for (String key : allParamsSettings.keySet()) {
-                builder.append(key).append(" = ").append(allParamsSettings.get(key)).append("\n");
+                b0.append(key).append(" = ").append(allParamsSettings.get(key)).append("\n");
             }
         }
 
         JTextArea area = new JTextArea(
-                "\n" + table.toString()
+                b0.toString()
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));

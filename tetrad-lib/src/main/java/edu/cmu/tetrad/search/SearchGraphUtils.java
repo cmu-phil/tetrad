@@ -2987,7 +2987,7 @@ public final class SearchGraphUtils {
         StringBuilder builder = new StringBuilder();
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
 
-        String trueGraphAndTarget = "Comparing " + name1 + " to " + name2;
+        String trueGraphAndTarget = "Target graph from " + name1 + "\nTrue graph from " + name2;
         builder.append(trueGraphAndTarget + "\n");
 
         GraphUtils.GraphComparison comparison = getGraphComparison(graph1, graph2);

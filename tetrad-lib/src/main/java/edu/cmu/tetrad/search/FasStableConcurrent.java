@@ -102,6 +102,7 @@ public class FasStableConcurrent implements IFas {
 
     int chunk = 50;
 
+    private boolean recordSepsets = true;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -306,7 +307,7 @@ public class FasStableConcurrent implements IFas {
                                     knowledge.noEdgeRequired(x.getName(), y.getName());
 
                             if (independent && noEdgeRequired) {
-                                if (!sepsets.isReturnEmptyIfNotSet()) {
+                                if (recordSepsets && !sepsets.isReturnEmptyIfNotSet()) {
                                     getSepsets().set(x, y, empty);
                                 }
 
@@ -467,7 +468,9 @@ public class FasStableConcurrent implements IFas {
                                         adjacencies.get(x).remove(y);
                                         adjacencies.get(y).remove(x);
 
-                                        getSepsets().set(x, y, condSet);
+                                        if (recordSepsets) {
+                                            getSepsets().set(x, y, condSet);
+                                        }
 
                                         // This creates a bottleneck for the parallel search.
 //                                        if (verbose) {
@@ -593,6 +596,17 @@ public class FasStableConcurrent implements IFas {
 
     public PrintStream getOut() {
         return out;
+    }
+
+    /**
+     * True if sepsets should be recorded. This is not necessary for all algorithms.
+     */
+    public boolean isRecordSepsets() {
+        return recordSepsets;
+    }
+
+    public void setRecordSepsets(boolean recordSepsets) {
+        this.recordSepsets = recordSepsets;
     }
 }
 

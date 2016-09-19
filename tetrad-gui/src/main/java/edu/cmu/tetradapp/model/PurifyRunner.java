@@ -53,33 +53,33 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public PurifyRunner(DataWrapper dataWrapper, Parameters params) {
-        super(dataWrapper, (Clusters) params.get("clusters", null), params);
-    }
-
-    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
-        super(dataWrapper, (Clusters) params.get("clusters", null), params);
-
-        Graph mim = graphWrapper.getGraph();
-        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
-
-        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariables());
-        Clusters clusters = ClusterUtils.partitionToClusters(partition);
-        setClusters(clusters);
-        params.set("clusters", clusters);
-    }
-
-    public PurifyRunner(BuildPureClustersRunner bpc, Parameters params) {
-        super(bpc, params);
-    }
+//    public PurifyRunner(DataWrapper dataWrapper, Parameters params) {
+//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
+//    }
+//
+//    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
+//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
+//
+//        Graph mim = graphWrapper.getGraph();
+//        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
+//
+//        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariables());
+//        Clusters clusters = ClusterUtils.partitionToClusters(partition);
+//        setClusters(clusters);
+//        params.set("clusters", clusters);
+//    }
+//
+//    public PurifyRunner(BuildPureClustersRunner bpc, Parameters params) {
+//        super(bpc, params);
+//    }
     
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
-    public static PurifyRunner serializableInstance() {
-        return new PurifyRunner(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

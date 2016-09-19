@@ -206,7 +206,6 @@ public class Jcpc implements GraphSearch {
 
         PcMax search = new PcMax(test);
         search.setKnowledge(getKnowledge());
-        search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         Graph graph = search.search();
 
         // This is the list of all changed nodes from the last iteration

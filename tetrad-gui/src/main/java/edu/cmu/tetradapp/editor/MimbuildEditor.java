@@ -209,19 +209,19 @@ public class MimbuildEditor extends JPanel {
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
+//
+//        Box b3 = Box.createHorizontalBox();
+//        JLabel label = new JLabel("<html>" + "*Please note that some" +
+//                "<br>searches may take a" + "<br>long time to complete." +
+//                "</html>");
+//        label.setHorizontalAlignment(SwingConstants.CENTER);
+//        label.setVerticalAlignment(SwingConstants.CENTER);
+//        label.setBorder(new TitledBorder(""));
+//        b3.add(label);
 
-        Box b3 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
-                "<br>searches may take a" + "<br>long time to complete." +
-                "</html>");
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setVerticalAlignment(SwingConstants.CENTER);
-        label.setBorder(new TitledBorder(""));
-        b3.add(label);
 
-
-        b1.add(Box.createVerticalStrut(10));
-        b1.add(b3);
+//        b1.add(Box.createVerticalStrut(10));
+//        b1.add(b3);
 
         b1.add(Box.createVerticalStrut(20));
 
@@ -446,14 +446,17 @@ public class MimbuildEditor extends JPanel {
                 tabbedPane.add("Structure Model",
                         new JScrollPane(structureWorkbench));
             }
+        } else {
+            tabbedPane.add("Structure Model",
+                    new JScrollPane(new GraphWorkbench()));
         }
 
-        if (getMimRunner().getClusters() != null) {
-            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
-                    getMimRunner().getData().getVariableNames());
-            ClusterEditor clusterEditor = editor;
-            tabbedPane.add("Measurement Model", editor);
-        }
+//        if (getMimRunner().getClusters() != null) {
+//            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
+//                    getMimRunner().getData().getVariableNames());
+//            ClusterEditor clusterEditor = editor;
+//            tabbedPane.add("Measurement Model", editor);
+//        }
 
         if (getMimRunner().getFullGraph() != null) {
             Graph fullGraph = getMimRunner().getFullGraph();
@@ -462,6 +465,8 @@ public class MimbuildEditor extends JPanel {
 
             GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
             tabbedPane.add("Full Graph", new JScrollPane(fullGraphBench));
+        } else {
+            tabbedPane.add("Full Graph", new JScrollPane(new GraphWorkbench()));
         }
 
         displayPanel.add(tabbedPane, BorderLayout.CENTER);

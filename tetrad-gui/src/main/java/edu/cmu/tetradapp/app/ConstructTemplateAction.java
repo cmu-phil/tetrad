@@ -224,15 +224,25 @@ final class ConstructTemplateAction extends AbstractAction {
 
         String data = nextName("Data");
         String search = nextName("Search");
-        String estimator = nextName("Estimator");
 
         nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
+        nodes.add(addNode("Search", search, leftX + 150, 100));
+
+        String graph = nextName("Graph");
+        nodes.add(addNode("Graph", graph, leftX + 150, 200));
+
+        String pm = nextName("PM");
+        nodes.add(addNode("PM", pm, leftX + 150, 300));
+
+        String estimator = nextName("Estimator");
+        nodes.add(addNode("Estimator", estimator, leftX, 300));
 
         addEdge(data, search);
+        addEdge(search, graph);
+        addEdge(graph, pm);
         addEdge(data, estimator);
-        addEdge(search, estimator);
+        addEdge(data, pm);
+        addEdge(pm, estimator);
 
         selectSubgraph(nodes);
     }

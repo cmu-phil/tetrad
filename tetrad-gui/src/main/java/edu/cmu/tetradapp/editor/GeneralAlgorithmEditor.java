@@ -22,6 +22,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.cluster.Bpc;
+import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
+import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
@@ -173,6 +176,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.PAG, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Undirected_Graph, OracleType.None));
 
+        descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.Cluster, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Fofc, AlgType.Cluster, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Ftfc, AlgType.Cluster, OracleType.None));
+
         descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.Pairwise, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.Pairwise, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.R2, AlgType.Pairwise, OracleType.None));
@@ -246,7 +253,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             throw new IllegalArgumentException("You need either some data sets or a graph as input.");
         }
 
-        if ((dataModelList == null || dataModelList.isEmpty() && runner.getGraphs() != null)) {
+        if (dataModelList.isEmpty() && runner.getGraphs() != null) {
             scores = dsepScores;
         } else if (!(dataModelList.isEmpty())) {
             DataSet dataSet = (DataSet) dataModelList.get(0);
@@ -605,6 +612,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case GLASSO:
                 algorithm = new Glasso();
+                break;
+            case Bpc:
+                algorithm = new Bpc();
+                break;
+            case Fofc:
+                algorithm = new Fofc();
+                break;
+            case Ftfc:
+                algorithm = new Ftfc();
                 break;
 
             // LOFS algorithms.
@@ -1035,13 +1051,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC,
+        Bpc, Fofc, Ftfc,
         GLASSO,
         EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn
     }
 
     private enum OracleType {None, Test, Score, Both}
 
-    private enum AlgType {Pattern, PAG, /*DAG, */Markov_Blanket, Undirected_Graph, Pairwise}
+    private enum AlgType {
+        Pattern, PAG, /*DAG, */Markov_Blanket, Undirected_Graph, Pairwise,
+        Cluster
+    }
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,

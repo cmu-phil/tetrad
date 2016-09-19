@@ -62,7 +62,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
         boolean cyclicAllowed = params.getBoolean("cyclicAllowed", false);
         final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, params);
-        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor();
+        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(params);
         final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
 
         // construct the workbench.

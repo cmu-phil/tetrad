@@ -52,7 +52,8 @@ import java.util.Map;
  * @author jdramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
-        MultipleGraphSource, Unmarshallable, SessionModel, IndTestProducer  {
+        MultipleGraphSource, Unmarshallable, SessionModel, IndTestProducer,
+        KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
 
@@ -336,6 +337,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
+    public Graph getResultGraph() {
+        return getGraph();
+    }
+
+    @Override
     public final DataModel getDataModel() {
         if (dataWrapper != null) {
             DataModelList dataModelList = dataWrapper.getDataModelList();
@@ -473,6 +479,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public void setIndependenceTests(List<IndependenceTest> independenceTests) {
         this.independenceTests = independenceTests;
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return null;
+    }
+
+    @Override
+    public List<String> getVariableNames() {
+        return null;
     }
 }
 
