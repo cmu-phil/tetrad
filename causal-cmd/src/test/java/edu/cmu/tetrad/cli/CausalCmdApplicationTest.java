@@ -26,7 +26,6 @@ import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -58,7 +57,6 @@ public class CausalCmdApplicationTest {
         String dirOut = tmpDir.newFolder(simulation).toString();
         String outputPrefix = simulation;
         String[] args = {
-            "--connected",
             "--simulate-data", simulation,
             "--var", numOfVariables,
             "--case", numOfCases,
@@ -82,7 +80,6 @@ public class CausalCmdApplicationTest {
      *
      * @throws IOException
      */
-    @Ignore
     @Test
     public void testGfci() throws IOException {
         Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");

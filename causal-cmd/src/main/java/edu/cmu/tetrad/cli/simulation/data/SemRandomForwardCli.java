@@ -21,8 +21,10 @@ package edu.cmu.tetrad.cli.simulation.data;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.cli.ParamAttributes;
 import edu.cmu.tetrad.cli.SimulationType;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Collections;
 import java.util.Formatter;
@@ -67,13 +69,15 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public List<Option> getOptionalOptions() {
+        ParamDescriptions param = ParamDescriptions.instance();
+
         List<Option> options = new LinkedList<>();
-        options.add(new Option(null, "latent", true, "Number of latent confounders."));
-        options.add(new Option(null, "avg-degree", true, "Average degree."));
-        options.add(new Option(null, "max-degree", true, "Maximum degree."));
-        options.add(new Option(null, "max-indegree", true, "Maximum indegree."));
-        options.add(new Option(null, "max-outdegree", true, "Maximum outdegree."));
-        options.add(new Option(null, "connected", false, "Connected."));
+        options.add(new Option(null, "latent", true, createDescription(param.get(ParamAttributes.NUM_LATENTS))));
+        options.add(new Option(null, "avg-degree", true, createDescription(param.get(ParamAttributes.AVG_DEGREE))));
+        options.add(new Option(null, "max-degree", true, createDescription(param.get(ParamAttributes.MAX_DEGREE))));
+        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttributes.MAX_INDEGREE))));
+        options.add(new Option(null, "max-outdegree", true, createDescription(param.get(ParamAttributes.MAX_OUTDEGREE))));
+        options.add(new Option(null, "connected", false, createDescription(param.get(ParamAttributes.CONNECTED))));
 
         return options;
     }
@@ -84,11 +88,13 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
-        numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", "0"), 0);
-        avgDegree = Args.getDoubleMin(cmd.getOptionValue("avg-degree", "1.0"), 0);
-        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", "30"), 0);
-        maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", "15"), 0);
-        maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", "15"), 0);
+        ParamDescriptions param = ParamDescriptions.instance();
+
+        numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", String.valueOf(param.get(ParamAttributes.NUM_LATENTS).getDefaultValue())), 0);
+        avgDegree = Args.getDoubleMin(cmd.getOptionValue("avg-degree", String.valueOf(param.get(ParamAttributes.AVG_DEGREE).getDefaultValue())), 0);
+        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(param.get(ParamAttributes.MAX_DEGREE).getDefaultValue())), 0);
+        maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttributes.MAX_INDEGREE).getDefaultValue())), 0);
+        maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", String.valueOf(param.get(ParamAttributes.MAX_OUTDEGREE).getDefaultValue())), 0);
         connected = cmd.hasOption("connected");
     }
 

@@ -23,8 +23,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.cli.AlgorithmType;
+import edu.cmu.tetrad.cli.ParamAttributes;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Formatter;
 import java.util.List;
@@ -72,13 +74,17 @@ public class GfcicCli extends FgscCli {
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
         super.parseOptionalOptions(cmd);
-        alpha = Args.getDouble(cmd.getOptionValue("alpha", "0.01"));
+
+        ParamDescriptions param = ParamDescriptions.instance();
+        alpha = Args.getDouble(cmd.getOptionValue("alpha", String.valueOf(param.get(ParamAttributes.ALPHA).getDefaultValue())));
     }
 
     @Override
     public List<Option> getOptionalOptions() {
+        ParamDescriptions param = ParamDescriptions.instance();
+
         List<Option> options = super.getOptionalOptions();
-        options.add(new Option(null, "alpha", true, "Alpha for FisherZ test. Default is 0.01"));
+        options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttributes.PENALTY_DISCOUNT))));
 
         return options;
     }

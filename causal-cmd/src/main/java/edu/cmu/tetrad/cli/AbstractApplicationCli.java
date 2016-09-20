@@ -20,6 +20,7 @@ package edu.cmu.tetrad.cli;
 
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
@@ -61,6 +62,10 @@ public abstract class AbstractApplicationCli {
     public abstract void parseOptionalOptions(CommandLine cmd) throws Exception;
 
     public abstract Parameters getParameters();
+
+    protected String createDescription(ParamDescription paramDescription) {
+        return String.format("%s. Default %s.", paramDescription.getDescription(), paramDescription.getDefaultValue());
+    }
 
     protected void setRequiredOptions() {
         List<Option> options = getRequiredOptions();
