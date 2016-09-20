@@ -52,12 +52,13 @@ public class CausalCmdApplicationTest {
     @Test
     public void testSimulateData() throws IOException {
         String simulation = "sem-rand-fwd";
-        String numOfVariables = "5";
+        String numOfVariables = "8";
         String numOfCases = "10";
-        String delimiter = ",";
+        String delimiter = "tab";
         String dirOut = tmpDir.newFolder(simulation).toString();
         String outputPrefix = simulation;
         String[] args = {
+            "--connected",
             "--simulate-data", simulation,
             "--var", numOfVariables,
             "--case", numOfCases,
@@ -68,9 +69,12 @@ public class CausalCmdApplicationTest {
         CausalCmdApplication.main(args);
 
         Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
-        if (Files.exists(outFile, LinkOption.NOFOLLOW_LINKS)) {
-            FilePrint.printFile(outFile);
-        }
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+
+        outFile = Paths.get(dirOut, outputPrefix + ".graph");
+        errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
     /**

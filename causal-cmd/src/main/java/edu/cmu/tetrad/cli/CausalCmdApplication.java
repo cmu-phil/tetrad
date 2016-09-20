@@ -21,7 +21,7 @@ package edu.cmu.tetrad.cli;
 import edu.cmu.tetrad.cli.search.FgscCli;
 import edu.cmu.tetrad.cli.search.FgsdCli;
 import edu.cmu.tetrad.cli.search.GfcicCli;
-import edu.cmu.tetrad.cli.simulation.SemRandomForwardCli;
+import edu.cmu.tetrad.cli.simulation.data.SemRandomForwardCli;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
 import java.util.HashMap;

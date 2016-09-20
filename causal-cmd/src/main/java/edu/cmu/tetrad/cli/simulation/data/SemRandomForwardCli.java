@@ -16,16 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.simulation;
+package edu.cmu.tetrad.cli.simulation.data;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.cli.AbstractDataSimulationCli;
 import edu.cmu.tetrad.cli.SimulationType;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
@@ -39,7 +39,7 @@ import org.apache.commons.cli.Option;
  */
 public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
-    protected int numOfLatentConfounders;
+    protected int numOfLatentCofounders;
     protected int avgDegree;
     protected int maxDegree;
     protected int maxIndegree;
@@ -48,6 +48,16 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     public SemRandomForwardCli(String[] args) {
         super(args);
+    }
+
+    @Override
+    public void printSimulationParameters(Formatter fmt) {
+        fmt.format("Number of Latent Cofounders: %d%n", numOfLatentCofounders);
+        fmt.format("Average Degree: %d%n", avgDegree);
+        fmt.format("Maximum Degree: %d%n", maxDegree);
+        fmt.format("Maximum Indegree: %d%n", maxIndegree);
+        fmt.format("Maximum Outdegree: %d%n", maxOutdegree);
+        fmt.format("Connected: %s%n", connected);
     }
 
     @Override
@@ -74,7 +84,7 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
-        numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", "0"), 0);
+        numOfLatentCofounders = Args.getIntegerMin(cmd.getOptionValue("latent", "0"), 0);
         maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", "-1"), -1);
         maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", "-1"), -1);
         maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", "-1"), -1);
@@ -92,7 +102,7 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
         // RandomForward parameters
         parameters.set("numMeasures", numOfVariables);
-        parameters.set("numLatents", numOfLatentConfounders);
+        parameters.set("numLatents", numOfLatentCofounders);
         parameters.set("avgDegree", avgDegree);
         parameters.set("maxDegree", maxDegree);
         parameters.set("maxIndegree", maxIndegree);
