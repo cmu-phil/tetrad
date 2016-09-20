@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -48,13 +49,38 @@ public class CausalCmdApplicationTest {
         tmpDir.delete();
     }
 
+    @Test
+    public void testSimulateData() throws IOException {
+        String simulation = "sem-rand-fwd";
+        String numOfVariables = "5";
+        String numOfCases = "10";
+        String delimiter = ",";
+        String dirOut = tmpDir.newFolder(simulation).toString();
+        String outputPrefix = simulation;
+        String[] args = {
+            "--simulate-data", simulation,
+            "--var", numOfVariables,
+            "--case", numOfCases,
+            "--delimiter", delimiter,
+            "--out", dirOut,
+            "--output-prefix", outputPrefix
+        };
+        CausalCmdApplication.main(args);
+
+        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
+        if (Files.exists(outFile, LinkOption.NOFOLLOW_LINKS)) {
+            FilePrint.printFile(outFile);
+        }
+    }
+
     /**
      * Test of main method, of class CausalCmdApplication.
      *
      * @throws IOException
      */
+    @Ignore
     @Test
-    public void testMain() throws IOException {
+    public void testGfci() throws IOException {
         Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");
 
         String algorithm = "gfcic";
