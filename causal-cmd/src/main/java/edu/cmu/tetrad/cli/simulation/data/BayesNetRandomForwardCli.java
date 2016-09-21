@@ -21,7 +21,6 @@ package edu.cmu.tetrad.cli.simulation.data;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.cli.ParamAttributes;
 import edu.cmu.tetrad.cli.SimulationType;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.util.ParamDescription;
@@ -33,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -78,14 +78,14 @@ public class BayesNetRandomForwardCli extends AbstractDataSimulationCli {
         ParamDescriptions param = ParamDescriptions.instance();
 
         List<Option> options = new LinkedList<>();
-        options.add(new Option(null, "latent", true, createDescription(param.get(ParamAttributes.NUM_LATENTS))));
-        options.add(new Option(null, "avg-degree", true, createDescription(param.get(ParamAttributes.AVG_DEGREE))));
-        options.add(new Option(null, "max-degree", true, createDescription(param.get(ParamAttributes.MAX_DEGREE))));
-        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttributes.MAX_INDEGREE))));
-        options.add(new Option(null, "max-outdegree", true, createDescription(param.get(ParamAttributes.MAX_OUTDEGREE))));
-        options.add(new Option(null, "connected", false, createDescription(param.get(ParamAttributes.CONNECTED))));
-        options.add(new Option(null, "min-categories", false, createDescription(param.get(ParamAttributes.MIN_CATEGORIES))));
-        options.add(new Option(null, "max-categories", false, createDescription(param.get(ParamAttributes.MAX_CATEGORIES))));
+        options.add(new Option(null, "latent", true, createDescription(param.get(ParamAttrs.NUM_LATENTS))));
+        options.add(new Option(null, "avg-degree", true, createDescription(param.get(ParamAttrs.AVG_DEGREE))));
+        options.add(new Option(null, "max-degree", true, createDescription(param.get(ParamAttrs.MAX_DEGREE))));
+        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
+        options.add(new Option(null, "max-outdegree", true, createDescription(param.get(ParamAttrs.MAX_OUTDEGREE))));
+        options.add(new Option(null, "connected", false, createDescription(param.get(ParamAttrs.CONNECTED))));
+        options.add(new Option(null, "min-categories", true, createDescription(param.get(ParamAttrs.MIN_CATEGORIES))));
+        options.add(new Option(null, "max-categories", true, createDescription(param.get(ParamAttrs.MAX_CATEGORIES))));
 
         return options;
     }
@@ -99,27 +99,27 @@ public class BayesNetRandomForwardCli extends AbstractDataSimulationCli {
         ParamDescriptions param = ParamDescriptions.instance();
         ParamDescription pd;
 
-        pd = param.get(ParamAttributes.NUM_LATENTS);
+        pd = param.get(ParamAttrs.NUM_LATENTS);
         numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
 
-        pd = param.get(ParamAttributes.AVG_DEGREE);
+        pd = param.get(ParamAttrs.AVG_DEGREE);
         avgDegree = Args.getDoubleMin(cmd.getOptionValue("avg-degree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundDouble());
 
-        pd = param.get(ParamAttributes.MAX_DEGREE);
+        pd = param.get(ParamAttrs.MAX_DEGREE);
         maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
 
-        pd = param.get(ParamAttributes.MAX_INDEGREE);
+        pd = param.get(ParamAttrs.MAX_INDEGREE);
         maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
 
-        pd = param.get(ParamAttributes.MAX_OUTDEGREE);
+        pd = param.get(ParamAttrs.MAX_OUTDEGREE);
         maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
 
         connected = cmd.hasOption("connected");
 
-        pd = param.get(ParamAttributes.MIN_CATEGORIES);
+        pd = param.get(ParamAttrs.MIN_CATEGORIES);
         minCategories = Args.getIntegerMin(cmd.getOptionValue("min-categories", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
 
-        pd = param.get(ParamAttributes.MAX_CATEGORIES);
+        pd = param.get(ParamAttrs.MAX_CATEGORIES);
         maxCategories = Args.getIntegerMin(cmd.getOptionValue("max-categories", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
     }
 
@@ -133,22 +133,22 @@ public class BayesNetRandomForwardCli extends AbstractDataSimulationCli {
         Parameters parameters = new Parameters();
 
         // RandomForward
-        parameters.set("numMeasures", numOfVariables);
-        parameters.set("numLatents", numOfLatentConfounders);
-        parameters.set("avgDegree", avgDegree);
-        parameters.set("maxDegree", maxDegree);
-        parameters.set("maxIndegree", maxIndegree);
-        parameters.set("maxOutdegree", maxOutdegree);
-        parameters.set("connected", connected);
+        parameters.set(ParamAttrs.NUM_MEASURES, numOfVariables);
+        parameters.set(ParamAttrs.NUM_LATENTS, numOfLatentConfounders);
+        parameters.set(ParamAttrs.AVG_DEGREE, avgDegree);
+        parameters.set(ParamAttrs.MAX_DEGREE, maxDegree);
+        parameters.set(ParamAttrs.MAX_INDEGREE, maxIndegree);
+        parameters.set(ParamAttrs.MAX_OUTDEGREE, maxOutdegree);
+        parameters.set(ParamAttrs.CONNECTED, connected);
 
         // BayesPm
-        parameters.set("minCategories", minCategories);
-        parameters.set("maxCategories", maxCategories);
+        parameters.set(ParamAttrs.MIN_CATEGORIES, minCategories);
+        parameters.set(ParamAttrs.MAX_CATEGORIES, maxCategories);
 
         // BayesNetSimulation
-        parameters.set("numRuns", 1);
-        parameters.set("differentGraphs", Boolean.FALSE);
-        parameters.set("sampleSize", numOfCases);
+        parameters.set(ParamAttrs.NUM_RUNS, 1);
+        parameters.set(ParamAttrs.DIFFERENT_GRAPHS, Boolean.FALSE);
+        parameters.set(ParamAttrs.SAMPLE_SIZE, numOfCases);
 
         return parameters;
     }

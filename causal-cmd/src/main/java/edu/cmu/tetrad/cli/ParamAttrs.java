@@ -24,7 +24,7 @@ package edu.cmu.tetrad.cli;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface ParamAttributes {
+public interface ParamAttrs {
 
     public static final String SAMPLE_PRIOR = "samplePrior";
     public static final String STRUCTURE_PRIOR = "structurePrior";
@@ -48,5 +48,9 @@ public interface ParamAttributes {
 
     public static final String MIN_CATEGORIES = "minCategories";
     public static final String MAX_CATEGORIES = "maxCategories";
+
+    public static final String DIFFERENT_GRAPHS = "differentGraphs";
+    public static final String MEASUREMENT_VARIANCE = "measurementVariance";
+    public static final String VERBOSE = "verbose";
 
 }
