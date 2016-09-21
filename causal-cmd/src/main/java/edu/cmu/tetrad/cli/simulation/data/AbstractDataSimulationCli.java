@@ -73,6 +73,8 @@ public abstract class AbstractDataSimulationCli extends AbstractApplicationCli i
         SimulationType simulationType = getSimulationType();
         if (needsToShowHelp()) {
             showHelp(simulationType.getCmd());
+
+            return;
         }
 
         parseOptions();

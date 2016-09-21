@@ -19,11 +19,12 @@
 package edu.cmu.tetrad.cli.simulation.data;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.cli.ParamAttributes;
 import edu.cmu.tetrad.cli.SimulationType;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Collections;
@@ -35,11 +36,11 @@ import org.apache.commons.cli.Option;
 
 /**
  *
- * Sep 19, 2016 5:10:21 PM
+ * Sep 21, 2016 12:46:59 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class SemRandomForwardCli extends AbstractDataSimulationCli {
+public class BayesNetRandomForwardCli extends AbstractDataSimulationCli {
 
     protected int numOfLatentConfounders;
     protected double avgDegree;
@@ -48,7 +49,10 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
     protected int maxOutdegree;
     protected boolean connected;
 
-    public SemRandomForwardCli(String[] args) {
+    protected int minCategories;
+    protected int maxCategories;
+
+    public BayesNetRandomForwardCli(String[] args) {
         super(args);
     }
 
@@ -60,6 +64,8 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
         fmt.format("Maximum Indegree: %d%n", maxIndegree);
         fmt.format("Maximum Outdegree: %d%n", maxOutdegree);
         fmt.format("Connected: %s%n", connected);
+        fmt.format("Minimum Categories: %d%n", minCategories);
+        fmt.format("Maximum Categories: %d%n", maxCategories);
     }
 
     @Override
@@ -78,6 +84,8 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
         options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttributes.MAX_INDEGREE))));
         options.add(new Option(null, "max-outdegree", true, createDescription(param.get(ParamAttributes.MAX_OUTDEGREE))));
         options.add(new Option(null, "connected", false, createDescription(param.get(ParamAttributes.CONNECTED))));
+        options.add(new Option(null, "min-categories", false, createDescription(param.get(ParamAttributes.MIN_CATEGORIES))));
+        options.add(new Option(null, "max-categories", false, createDescription(param.get(ParamAttributes.MAX_CATEGORIES))));
 
         return options;
     }
@@ -89,25 +97,42 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
         ParamDescriptions param = ParamDescriptions.instance();
+        ParamDescription pd;
 
-        numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", String.valueOf(param.get(ParamAttributes.NUM_LATENTS).getDefaultValue())), 0);
-        avgDegree = Args.getDoubleMin(cmd.getOptionValue("avg-degree", String.valueOf(param.get(ParamAttributes.AVG_DEGREE).getDefaultValue())), 0);
-        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(param.get(ParamAttributes.MAX_DEGREE).getDefaultValue())), 0);
-        maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttributes.MAX_INDEGREE).getDefaultValue())), 0);
-        maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", String.valueOf(param.get(ParamAttributes.MAX_OUTDEGREE).getDefaultValue())), 0);
+        pd = param.get(ParamAttributes.NUM_LATENTS);
+        numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
+
+        pd = param.get(ParamAttributes.AVG_DEGREE);
+        avgDegree = Args.getDoubleMin(cmd.getOptionValue("avg-degree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundDouble());
+
+        pd = param.get(ParamAttributes.MAX_DEGREE);
+        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
+
+        pd = param.get(ParamAttributes.MAX_INDEGREE);
+        maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
+
+        pd = param.get(ParamAttributes.MAX_OUTDEGREE);
+        maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
+
         connected = cmd.hasOption("connected");
+
+        pd = param.get(ParamAttributes.MIN_CATEGORIES);
+        minCategories = Args.getIntegerMin(cmd.getOptionValue("min-categories", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
+
+        pd = param.get(ParamAttributes.MAX_CATEGORIES);
+        maxCategories = Args.getIntegerMin(cmd.getOptionValue("max-categories", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
     }
 
     @Override
     public Simulation getSimulation() {
-        return new SemSimulation(new RandomForward());
+        return new BayesNetSimulation(new RandomForward());
     }
 
     @Override
     public Parameters getParameters() {
         Parameters parameters = new Parameters();
 
-        // RandomForward parameters
+        // RandomForward
         parameters.set("numMeasures", numOfVariables);
         parameters.set("numLatents", numOfLatentConfounders);
         parameters.set("avgDegree", avgDegree);
@@ -116,9 +141,11 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
         parameters.set("maxOutdegree", maxOutdegree);
         parameters.set("connected", connected);
 
-        // SemSimulation parameters
-        parameters.set("standardize", Boolean.TRUE);
-        parameters.set("measurementVariance", 0);
+        // BayesPm
+        parameters.set("minCategories", minCategories);
+        parameters.set("maxCategories", maxCategories);
+
+        // BayesNetSimulation
         parameters.set("numRuns", 1);
         parameters.set("differentGraphs", Boolean.FALSE);
         parameters.set("sampleSize", numOfCases);
@@ -128,7 +155,7 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public SimulationType getSimulationType() {
-        return SimulationType.SEM_RAND_FWD;
+        return SimulationType.BAYES_NET_RAND_FWD;
     }
 
 }

@@ -46,4 +46,7 @@ public interface ParamAttributes {
 
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
 
+    public static final String MIN_CATEGORIES = "minCategories";
+    public static final String MAX_CATEGORIES = "maxCategories";
+
 }

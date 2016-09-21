@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli;
 import edu.cmu.tetrad.cli.search.FgscCli;
 import edu.cmu.tetrad.cli.search.FgsdCli;
 import edu.cmu.tetrad.cli.search.GfcicCli;
+import edu.cmu.tetrad.cli.simulation.data.BayesNetRandomForwardCli;
 import edu.cmu.tetrad.cli.simulation.data.SemRandomForwardCli;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
@@ -141,6 +142,8 @@ public class CausalCmdApplication {
         switch (simulationType) {
             case SEM_RAND_FWD:
                 return new SemRandomForwardCli(args);
+            case BAYES_NET_RAND_FWD:
+                return new BayesNetRandomForwardCli(args);
             default:
                 return null;
         }

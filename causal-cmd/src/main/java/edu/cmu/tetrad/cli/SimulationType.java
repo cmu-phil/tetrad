@@ -26,7 +26,8 @@ package edu.cmu.tetrad.cli;
  */
 public enum SimulationType {
 
-    SEM_RAND_FWD("Sem Random Foward", "sem-rand-fwd");
+    SEM_RAND_FWD("Sem - Random Foward", "sem-rand-fwd"),
+    BAYES_NET_RAND_FWD("Bayes Net - Random Foward", "bayes-net-rand-fwd");
 
     private final String title;
 
