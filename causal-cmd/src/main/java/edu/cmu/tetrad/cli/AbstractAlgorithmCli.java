@@ -19,6 +19,8 @@
 package edu.cmu.tetrad.cli;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.latest.LatestClient;
+import edu.cmu.tetrad.latest.SoftwareVersion;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.validation.DataValidation;
@@ -28,18 +30,22 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.io.DataReader;
 import edu.cmu.tetrad.util.Parameters;
+import org.apache.commons.cli.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -63,12 +69,13 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
     protected Path dirOut;
     protected static String outputPrefix;
     protected boolean validationOutput;
+    protected boolean skipLatest;
 
     protected final String[] args;
 
     public AbstractAlgorithmCli(String[] args) {
         this.args = args;
-        intit();
+        init();
     }
 
     public abstract void printValidationInfos(Formatter formatter);
@@ -112,6 +119,12 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
             System.exit(-127);
         }
 
+        if (!skipLatest) {
+            LatestClient latestClient = LatestClient.getInstance();
+            latestClient.checkLatest("causal-cmd", AppTool.jarVersion());
+            System.out.println(latestClient.getLatestResult());
+        }
+
         String heading = creteHeading(algorithmType);
         String argInfo = createArgsInfo();
         System.out.printf(heading);
@@ -136,6 +149,7 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
             writeOutJson(outputPrefix, graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
         }
     }
+
 
     private String createArgsInfo() {
         Formatter fmt = new Formatter();
@@ -221,7 +235,7 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         return readInVariables(excludedVariableFile);
     }
 
-    private void intit() {
+    private void init() {
         setCommonOptions();
         setOptions();
     }
@@ -268,6 +282,7 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name for output files.");
         MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
         MAIN_OPTIONS.addOption(null, "help", false, "Show help.");
+        MAIN_OPTIONS.addOption(null, "skip-latest", false, "Skip checking for latest software version");
     }
 
     private void setCommonOptions() {
@@ -290,6 +305,7 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
         outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
         validationOutput = !cmd.hasOption("no-validation-output");
+        skipLatest = cmd.hasOption("skip-latest");
     }
 
     private void parseCommonOptions(CommandLine cmd) throws Exception {
