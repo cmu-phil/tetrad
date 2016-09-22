@@ -19,8 +19,9 @@
 package edu.cmu.tetrad.cli.simulation.data;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.SimulationType;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -31,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -100,7 +100,7 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public Simulation getSimulation() {
-        return new SemSimulation(new RandomForward());
+        return new LargeSemSimulation(new RandomForward());
     }
 
     @Override
@@ -108,7 +108,6 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
         Parameters parameters = new Parameters();
 
         // RandomForward parameters
-        parameters.set(ParamAttrs.NUM_MEASURES, numOfVariables);
         parameters.set(ParamAttrs.NUM_LATENTS, numOfLatentConfounders);
         parameters.set(ParamAttrs.AVG_DEGREE, avgDegree);
         parameters.set(ParamAttrs.MAX_DEGREE, maxDegree);
@@ -117,8 +116,7 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
         parameters.set(ParamAttrs.CONNECTED, connected);
 
         // SemSimulation parameters
-        parameters.set(ParamAttrs.STANDARDIZE, Boolean.TRUE);
-        parameters.set(ParamAttrs.MEASUREMENT_VARIANCE, 0);
+        parameters.set(ParamAttrs.NUM_MEASURES, numOfVariables);
         parameters.set(ParamAttrs.NUM_RUNS, 1);
         parameters.set(ParamAttrs.DIFFERENT_GRAPHS, Boolean.FALSE);
         parameters.set(ParamAttrs.SAMPLE_SIZE, numOfCases);
