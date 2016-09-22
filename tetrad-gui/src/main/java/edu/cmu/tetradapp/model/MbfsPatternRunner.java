@@ -103,7 +103,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
 
     @Override
     public String getAlgorithmName() {
-        return "MBFS-Pattern";
+        return "MBFS-forbid_latent_common_causes";
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

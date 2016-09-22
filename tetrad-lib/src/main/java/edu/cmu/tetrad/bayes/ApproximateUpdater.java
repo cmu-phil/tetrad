@@ -233,13 +233,11 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         // Get a tier ordering and convert it to an int array.
         Graph graph = getManipulatedGraph();
-        Dag dag = (Dag) graph;
-        List<Node> tierOrdering = dag.getCausalOrdering();
+        List<Node> tierOrdering = graph.getCausalOrdering();
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
-            tiers[i] =
-                    getManipulatedBayesIm().getNodeIndex(tierOrdering.get(i));
+            tiers[i] = getManipulatedBayesIm().getNodeIndex(tierOrdering.get(i));
         }
 
         int numCounted = 0;

@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 
 import javax.swing.*;
@@ -249,7 +250,7 @@ public abstract class AbstractWorkbench extends JComponent
         setGraph(graph);
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
-        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         setBackground(new Color(254, 254, 255));
         setFocusable(true);
 
@@ -670,17 +671,31 @@ public abstract class AbstractWorkbench extends JComponent
                 this.workbenchMode = workbenchMode;
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 deselectAll();
+            } else {
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
         } else if (workbenchMode == ADD_NODE) {
             if (this.workbenchMode != ADD_NODE) {
                 this.workbenchMode = workbenchMode;
-                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+
+//                Toolkit toolkit = Toolkit.getDefaultToolkit();
+//                Image image = ImageUtils.getImage(this, "cursorImage.png");
+//                Cursor c = toolkit.createCustomCursor(image, new Point(0, 0), "img");
+//                setCursor(c);
+
+//                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 deselectAll();
             }
         } else if (workbenchMode == ADD_EDGE) {
             if (this.workbenchMode != ADD_EDGE) {
                 this.workbenchMode = workbenchMode;
-                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+//                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+
+//                Toolkit toolkit = Toolkit.getDefaultToolkit();
+//                Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
+//                Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+//                setCursor(c);
+
                 deselectAll();
             }
         } else {

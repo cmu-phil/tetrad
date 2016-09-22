@@ -73,10 +73,8 @@ public class DataStandardizer extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new DataStandardizer(wrapper, new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 }

@@ -369,7 +369,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         }
 
         if (graphWorkbench != null) {
-            tabbedPane.addTab("Pattern", graphWorkbench);
+            tabbedPane.addTab("forbid_latent_common_causes", graphWorkbench);
         }
 
         panel.removeAll();

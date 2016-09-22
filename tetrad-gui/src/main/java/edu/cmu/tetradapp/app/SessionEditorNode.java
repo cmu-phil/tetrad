@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.*;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
@@ -30,6 +31,7 @@ import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 
@@ -42,6 +44,7 @@ import java.awt.Point;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -81,6 +84,7 @@ public final class SessionEditorNode extends DisplayNode {
      * The configuration for this editor node.
      */
     private final SessionNodeConfig config;
+    private SessionEditorWorkbench sessionWorkbench;
 
     //===========================CONSTRUCTORS==============================//
 
@@ -221,9 +225,10 @@ public final class SessionEditorNode extends DisplayNode {
                 return;
             }
 
-            boolean cloned = getSessionNode().useClonedModel();
+            final SessionNode sessionNode = getSessionNode();
+            boolean cloned = sessionNode.useClonedModel();
 
-            SessionModel model = getSessionNode().getModel();
+            SessionModel model = sessionNode.getModel();
             Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
 
@@ -231,7 +236,7 @@ public final class SessionEditorNode extends DisplayNode {
             JPanel editor = modelConfig.getEditorInstance(arguments);
             addEditorListener(editor);
 
-            ModificationRegistery.registerEditor(getSessionNode(), editor);
+            ModificationRegistery.registerEditor(sessionNode, editor);
 
             String descrip = modelConfig.getName();
             editor.setName(getName() + " (" + descrip + ")");
@@ -245,15 +250,15 @@ public final class SessionEditorNode extends DisplayNode {
                     }
 
                     ModificationRegistery.unregisterSessionNode(
-                            getSessionNode());
+                            sessionNode);
                     setSpawnedEditor(null);
 
                     EditorWindow window = (EditorWindow) e.getSource();
                     if (window.isCanceled()) {
-                        getSessionNode().restoreOriginalModel();
+                        sessionNode.restoreOriginalModel();
                     }
 
-                    getSessionNode().forgetSavedModel();
+                    sessionNode.forgetSavedModel();
                 }
             });
 
@@ -265,14 +270,57 @@ public final class SessionEditorNode extends DisplayNode {
             if (sessionWrapper != null) {
                 sessionWrapper.setSessionChanged(true);
             }
-        } catch (CouldNotCreateModelException e) {
+
+//            for (SessionNode child : getChildren()) {
+//
+//                // only break edges to children.
+//                if (edge.getNode2() == getModelNode()) {
+//                    SessionNodeWrapper otherWrapper =
+//                            (SessionNodeWrapper) edge.getNode1();
+//                    SessionNode other = otherWrapper.getSessionNode();
+//                    if (getChildren().contains(other)) {
+//                        sessionWrapper.removeEdge(edge);
+//                    }
+//                } else {
+//                    SessionNodeWrapper otherWrapper =
+//                            (SessionNodeWrapper) edge.getNode2();
+//                    SessionNode other = otherWrapper.getSessionNode();
+//                    if (getChildren().contains(other)) {
+//                        sessionWrapper.removeEdge(edge);
+//                    }
+//                }
+//            }
+
+//                Class[] consistentModelClasses = child.getConsistentModelClasses(false);
+//                if (consistentModelClasses.length == 0) {
+//                    child.removeParent(sessionNode);
+//                    SessionEditorWorkbench sessionWorkbench = getSessionWorkbench();
+//                    SessionWrapper sessionWrapper = sessionWorkbench.getSessionWrapper();
+//                    Node node1 = sessionWrapper.getNode(sessionNode.getDisplayName());
+//                    Node node2 = sessionWrapper.getNode(child.getDisplayName());
+//                    Edge edge = sessionWrapper.getEdge(node1, node2);
+//                    sessionWrapper.removeEdge(edge);
+//                }
+        } catch (
+                CouldNotCreateModelException e
+                )
+
+        {
             SessionUtils.showPermissibleParentsDialog(e.getModelClass(),
                     SessionEditorNode.this, true, true);
             e.printStackTrace();
 
-        } catch (ClassCastException e) {
+        } catch (
+                ClassCastException e
+                )
+
+        {
             e.printStackTrace();
-        } catch (Exception e) {
+        } catch (
+                Exception e
+                )
+
+        {
             Throwable cause = e;
 
             while (cause.getCause() != null) {
@@ -289,6 +337,7 @@ public final class SessionEditorNode extends DisplayNode {
 
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -301,7 +350,25 @@ public final class SessionEditorNode extends DisplayNode {
         getSessionDisplayComp().setSelected(selected);
     }
 
-    //===========================PRIVATE METHODS===========================//
+//===========================PRIVATE METHODS===========================//
+
+    private SessionEditorWorkbench getSessionWorkbench() {
+        if (sessionWorkbench == null) {
+            SessionEditorIndirectRef sessionEditorRef =
+                    DesktopController.getInstance().getFrontmostSessionEditor();
+            SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+
+            if (sessionEditor == null) {
+                DesktopController.getInstance().newSessionEditor();
+                sessionEditorRef =
+                        DesktopController.getInstance().getFrontmostSessionEditor();
+                sessionEditor = (SessionEditor) sessionEditorRef;
+            }
+
+            this.sessionWorkbench = sessionEditor.getSessionWorkbench();
+        }
+        return sessionWorkbench;
+    }
 
 
     private void addListeners(final SessionEditorNode sessionEditorNode,
@@ -356,7 +423,7 @@ public final class SessionEditorNode extends DisplayNode {
 
             public void modelUnclear(SessionEvent sessionEvent) {
                 try {
-                    if (simulationStudy == null){
+                    if (simulationStudy == null) {
                         boolean created = sessionEditorNode.createModel(false);
 
                         if (!created) {
@@ -724,11 +791,85 @@ public final class SessionEditorNode extends DisplayNode {
         popup.add(deleteBox);
 
         popup.addSeparator();
-//        popup.add(editSimulationParameters);
+
+//        final SessionNode thisNode = getSessionNode();
+//
+//        popup.add(getConsistentParentMenuItems(getConsistentParentBoxTypes(thisNode)));
+//        popup.add(getConsistentChildBoxMenus(getConsistentChildBoxTypes(thisNode, null)));
+
+//        popup.addSeparator();
+
         addEditLoggerSettings(popup);
         popup.add(propagateDownstream);
 
         return popup;
+    }
+
+    private JMenu getConsistentChildBoxMenus(List<String> consistentChildBoxes) {
+        JMenu newChildren = new JMenu("New Child Box");
+
+        for (String _type : consistentChildBoxes) {
+            final JMenuItem menuItem = new JMenuItem(_type);
+
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new ConstructTemplateAction("Test").addChild(SessionEditorNode.this, menuItem.getText());
+                }
+            });
+
+            newChildren.add(menuItem);
+        }
+        return newChildren;
+    }
+
+    private JMenu getConsistentParentMenuItems(List<String> consistentParentBoxes) {
+        final JMenu newParents = new JMenu("New Parent Box");
+
+        for (String _type : consistentParentBoxes) {
+            final JMenuItem menuItem = new JMenuItem(_type);
+
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new ConstructTemplateAction("Test").addParent(SessionEditorNode.this, menuItem.getText());
+                }
+            });
+
+            newParents.add(menuItem);
+        }
+        return newParents;
+    }
+
+    private List<String> getConsistentChildBoxTypes(SessionNode thisNode, SessionModel model) {
+        List<String> consistentChildBoxes = new ArrayList<>();
+
+        for (String type : TetradApplicationConfig.getInstance().getConfigs().keySet()) {
+            SessionNodeConfig config = TetradApplicationConfig.getInstance().getSessionNodeConfig(type);
+            Class[] modelClasses = config.getModels();
+
+            SessionNode newNode = new SessionNode(modelClasses);
+
+            if (thisNode.isConsistentParent(newNode)) {
+                consistentChildBoxes.add(type);
+            }
+        }
+        return consistentChildBoxes;
+    }
+
+    private List<String> getConsistentParentBoxTypes(SessionNode thisNode) {
+        List<String> consistentParentBoxes = new ArrayList<>();
+
+        for (String type : TetradApplicationConfig.getInstance().getConfigs().keySet()) {
+            SessionNodeConfig config = TetradApplicationConfig.getInstance().getSessionNodeConfig(type);
+            Class[] modelClasses = config.getModels();
+            SessionNode newNode = new SessionNode(modelClasses);
+
+            if (thisNode.isConsistentParent(newNode)) {
+                consistentParentBoxes.add(type);
+            }
+        }
+        return consistentParentBoxes;
     }
 
 

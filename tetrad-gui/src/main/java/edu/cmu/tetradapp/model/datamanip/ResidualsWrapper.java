@@ -30,10 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.regression.RegressionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.model.DagWrapper;
-import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.SemGraphWrapper;
+import edu.cmu.tetradapp.model.*;
 
 /**
  * @author Tyler
@@ -112,9 +109,8 @@ public class ResidualsWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ResidualsWrapper(DataWrapper.serializableInstance(),
-                DagWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

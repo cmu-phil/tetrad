@@ -85,9 +85,8 @@ public class HitonRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static HitonRunner serializableInstance() {
-        return new HitonRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//

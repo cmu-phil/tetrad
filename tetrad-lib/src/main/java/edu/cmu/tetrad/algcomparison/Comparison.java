@@ -415,6 +415,8 @@ public class Comparison {
      */
     public void configuration(String path) {
         try {
+            new File(path).mkdirs();
+
             PrintStream out = new PrintStream(new FileOutputStream(new File(path, "Configuration.txt")));
 
             Parameters allParams = new Parameters();

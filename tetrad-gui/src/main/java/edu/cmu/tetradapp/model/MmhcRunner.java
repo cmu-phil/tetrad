@@ -58,9 +58,9 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      *
      * @see TetradSerializableUtils
      */
-    public static MmhcRunner serializableInstance() {
-        return new MmhcRunner(DataWrapper.serializableInstance(), new Parameters());
-    }                                                     
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
 
     //============================PUBLIC METHODS==========================//
 

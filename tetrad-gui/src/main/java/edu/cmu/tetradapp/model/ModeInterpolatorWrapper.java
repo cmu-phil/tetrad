@@ -53,8 +53,8 @@ public class ModeInterpolatorWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ModeInterpolatorWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

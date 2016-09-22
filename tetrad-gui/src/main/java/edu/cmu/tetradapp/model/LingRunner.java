@@ -78,8 +78,8 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
      *
      * @see TetradSerializableUtils
      */
-    public static LingRunner serializableInstance() {
-        return new LingRunner(DataWrapper.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//

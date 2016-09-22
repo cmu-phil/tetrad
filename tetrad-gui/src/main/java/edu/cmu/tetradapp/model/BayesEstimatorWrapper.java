@@ -92,36 +92,35 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
         log(bayesIm);
     }
 
-    public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesImWrapper bayesImWrapper) {
-        if (dataWrapper == null) {
-            throw new NullPointerException(
-                    "BayesDataWrapper must not be null.");
-        }
-
-        if (bayesImWrapper == null) {
-            throw new NullPointerException("BayesPmWrapper must not be null");
-        }
-
-        DataSet dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
-
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
+//    public BayesEstimatorWrapper(DataWrapper dataWrapper,
+//                                 BayesImWrapper bayesImWrapper) {
+//        if (dataWrapper == null) {
+//            throw new NullPointerException(
+//                    "BayesDataWrapper must not be null.");
 //        }
-
-        estimate(dataSet, bayesPm);
-        log(bayesIm);
-    }
+//
+//        if (bayesImWrapper == null) {
+//            throw new NullPointerException("BayesPmWrapper must not be null");
+//        }
+//
+//        DataSet dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+//        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
+//
+////        if (DataUtils.containsMissingValue(dataSet)) {
+////            throw new IllegalArgumentException("Please remove or impute missing values.");
+////        }
+//
+//        estimate(dataSet, bayesPm);
+//        log(bayesIm);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
-    public static BayesEstimatorWrapper serializableInstance() {
-        return new BayesEstimatorWrapper(DataWrapper.serializableInstance(),
-                BayesPmWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS========================//

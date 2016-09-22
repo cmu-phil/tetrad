@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * @author Tyler
@@ -129,8 +130,8 @@ public class BoxCoxWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new BoxCoxWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

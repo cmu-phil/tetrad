@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
 
     /**

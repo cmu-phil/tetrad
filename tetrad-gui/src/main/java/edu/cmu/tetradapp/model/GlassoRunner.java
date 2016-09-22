@@ -63,8 +63,8 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 //     * @see edu.cmu.TestSerialization
 //     * @see TetradSerializableUtils
      */
-    public static GlassoRunner serializableInstance() {
-        return new GlassoRunner(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     public ImpliedOrientation getMeekRules() {

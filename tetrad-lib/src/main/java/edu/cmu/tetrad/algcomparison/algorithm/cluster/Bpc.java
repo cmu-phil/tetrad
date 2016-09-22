@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.cluster.ClusteringAlgorithm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BuildPureClusters;
@@ -18,7 +19,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();

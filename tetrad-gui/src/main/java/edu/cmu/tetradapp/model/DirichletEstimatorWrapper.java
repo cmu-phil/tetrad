@@ -85,36 +85,36 @@ public class DirichletEstimatorWrapper implements SessionModel, GraphSource {
         log(dirichletBayesIm);
     }
 
-    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-            DirichletEstimatorWrapper dirichletPriorWrapper) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        if (dirichletPriorWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        DataSet dataSet =
-                (DataSet) dataWrapper.getSelectedDataModel();
-
-        if (DataUtils.containsMissingValue(dataSet)) {
-            throw new IllegalArgumentException("Please remove or impute missing values.");
-        }
-
-        DirichletBayesIm dirichletBayesIm =
-                dirichletPriorWrapper.getEstimatedBayesIm();
-
-        try {
-            this.dirichletBayesIm =
-                    DirichletEstimator.estimate(dirichletBayesIm, dataSet);
-        }
-        catch (IllegalArgumentException e) {
-            throw new RuntimeException(
-                    "Please fully specify the Dirichlet prior first.");
-        }
-        log(dirichletBayesIm);
-    }
+//    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
+//            DirichletEstimatorWrapper dirichletPriorWrapper) {
+//        if (dataWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (dirichletPriorWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        DataSet dataSet =
+//                (DataSet) dataWrapper.getSelectedDataModel();
+//
+//        if (DataUtils.containsMissingValue(dataSet)) {
+//            throw new IllegalArgumentException("Please remove or impute missing values.");
+//        }
+//
+//        DirichletBayesIm dirichletBayesIm =
+//                dirichletPriorWrapper.getEstimatedBayesIm();
+//
+//        try {
+//            this.dirichletBayesIm =
+//                    DirichletEstimator.estimate(dirichletBayesIm, dataSet);
+//        }
+//        catch (IllegalArgumentException e) {
+//            throw new RuntimeException(
+//                    "Please fully specify the Dirichlet prior first.");
+//        }
+//        log(dirichletBayesIm);
+//    }
 
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
             BayesPmWrapper bayesPmWrapper, Parameters params) {
@@ -163,9 +163,8 @@ public class DirichletEstimatorWrapper implements SessionModel, GraphSource {
      *
      * @see TetradSerializableUtils
      */
-    public static DirichletEstimatorWrapper serializableInstance() {
-        return new DirichletEstimatorWrapper(DataWrapper.serializableInstance(),
-                DirichletBayesImWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===============================PUBLIC METHODS=======================//

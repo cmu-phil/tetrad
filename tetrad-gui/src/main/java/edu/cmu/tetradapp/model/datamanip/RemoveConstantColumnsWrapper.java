@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * Tyler was lazy and didn't document this....
@@ -63,8 +64,8 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static RemoveConstantColumnsWrapper serializableInstance() {
-        return new RemoveConstantColumnsWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

@@ -100,6 +100,19 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     public DataWrapper(Simulation wrapper, Parameters parameters) {
         this.name = wrapper.getName();
+        this.dataModelList = new DataModelList();
+
+        for (DataModel model : wrapper.getDataModels()) {
+            if (model instanceof DataSet) {
+                dataModelList.add(((DataSet) model).copy());
+            } else if (model instanceof ICovarianceMatrix) {
+                dataModelList.add(new CovarianceMatrix((CovarianceMatrix) model));
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+
         this.dataModelList = wrapper.getDataModelList();
         this.parameters = parameters;
     }
@@ -285,8 +298,8 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new DataWrapper(DataUtils.discreteSerializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS========================//

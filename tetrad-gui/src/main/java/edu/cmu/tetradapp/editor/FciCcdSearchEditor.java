@@ -60,39 +60,39 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given PcRunner.
      */
     public FciCcdSearchEditor(PcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given FciRunner.
      */
     public FciCcdSearchEditor(FciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public FciCcdSearchEditor(CfciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public FciCcdSearchEditor(GFciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public FciCcdSearchEditor(TsFciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public FciCcdSearchEditor(TsGFciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */
     public FciCcdSearchEditor(CcdRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
     public FciCcdSearchEditor(CcdRunner2 runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public Graph getGraph() {
@@ -182,9 +182,9 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");

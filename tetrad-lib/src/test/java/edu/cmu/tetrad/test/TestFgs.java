@@ -21,12 +21,12 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -358,7 +358,7 @@ public class TestFgs {
     }
 
     @Test
-    public void test17() {
+    public void clarkTest() {
         RandomGraph randomGraph = new RandomForward();
 
         Simulation simulation = new LargeSemSimulation(randomGraph);
@@ -388,29 +388,27 @@ public class TestFgs {
         DataSet dataSet = simulation.getDataSet(0);
         Graph trueGraph = simulation.getTrueGraph(0);
 
-        edu.cmu.tetrad.algcomparison.score.ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+//        trueGraph = SearchGraphUtils.patternForDag(trueGraph);
 
-        edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs fgs
-                = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs(score);
-
-        Graph graph = fgs.search(dataSet, parameters);
-
+        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test = new FisherZ();
-        IndependenceWrapper dsep = new DSeparationTest(new SingleGraph(trueGraph));
 
-        List<Node> nodes = graph.getNodes();
+        Algorithm fgs  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs(score);
 
-        test17ForAlpha(0.05, parameters, dataSet, trueGraph, test, dsep, nodes);
-        test17ForAlpha(0.01, parameters, dataSet, trueGraph, test, dsep, nodes);
+        Graph fgsGraph = fgs.search(dataSet, parameters);
+
+        List<Node> nodes = trueGraph.getNodes();
+
+        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgsGraph, nodes, test);
+        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgsGraph, nodes, test);
 
     }
 
-    private void test17ForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
-                                IndependenceWrapper test, IndependenceWrapper dsep, List<Node> nodes) {
+    private void clarkTestForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
+                                   Graph pattern, List<Node> nodes, IndependenceWrapper test) {
         parameters.set("alpha", alpha);
 
         IndependenceTest _test = test.getTest(dataSet, parameters);
-        IndependenceTest _dsep = dsep.getTest(null, parameters);
 
         System.out.println(parameters);
 
@@ -418,45 +416,66 @@ public class TestFgs {
 
         System.out.println("\nNumber of random pairs of variables selected = " + numSamples);
 
-        int count11 = 0;
-        int count12 = 0;
-        int count21 = 0;
-        int count22 = 0;
+        int tp1 = 0;
+        int fp1 = 0;
+        int fn1 = 0;
+
+        int tp2 = 0;
+        int fp2 = 0;
+        int fn2 = 0;
 
         for (int i = 0; i < numSamples; i++) {
             Collections.shuffle(nodes);
             Node x = nodes.get(0);
             Node y = nodes.get(1);
 
-            boolean isInd = _test.isIndependent(x, y);
-            boolean isDsep = _dsep.isIndependent(x, y);
+            boolean trueAncestral = ancestral(x, y, trueGraph);
+            boolean estAncestral = ancestral(x, y, pattern);
 
-            if (isDsep && !isInd) {
-                count11++;
-            } else if (!isDsep && isInd) {
-                count12++;
+            if (trueAncestral && estAncestral) {
+                tp1++;
             }
 
-            if (!trueGraph.isAdjacentTo(x, y) && !isInd) {
-                count21++;
-            } else if (trueGraph.isAdjacentTo(x, y) && isInd) {
-                count22++;
+            if (!trueAncestral && estAncestral) {
+                fn1++;
+            }
+
+            if (trueAncestral && !estAncestral) {
+                fp1++;
+            }
+
+            boolean dependent = !_test.isIndependent(x, y);
+
+            if (trueAncestral && dependent) {
+                tp2++;
+            }
+
+            if (!trueAncestral && dependent) {
+                fn2++;
+            }
+
+            if (trueAncestral && !dependent) {
+                fp2++;
             }
         }
 
-        double fp1 = count11 / (double) 100;
-        double fn1 = count12 / (double) 100;
+        double prec1 = tp1 / (double) (tp1 + fp1);
+        double rec1 = tp1 / (double) (tp1 + fn1);
 
-        double fp2 = count21 / (double) 100;
-        double fn2 = count22 / (double) 100;
+        double prec2 = tp2 / (double) (tp2 + fp2);
+        double rec2 = tp2 / (double) (tp2 + fn2);
 
-//        System.out.println("\nAt alpha = " + alpha);
+        System.out.println("Experiment 1: Comparing ancestral connection in true DAG versus estimated pattern");
 
-        System.out.println("\nProportion d-separated in the true graph but not judged independent");
-        System.out.println("fn 1 = " + fn1 + " fp 1 = " + fp1);
+        System.out.println("Precision = " + prec1 + " recall = " + rec1);
 
-        System.out.println("\nProportion not adjacent in the true graph but not judged independent");
-        System.out.println("fn 2 = " + fn2 + " fp 2 = " + fp2);
+        System.out.println("Experiment 1: Comparing ancestral connection in true DAG to judgement of independence by Fisher Z");
+
+        System.out.println("Precision = " + prec2 + " recall = " + rec2);
+    }
+
+    private boolean ancestral(Node x, Node y, Graph graph) {
+        return graph.isAncestorOf(x, y) || graph.isAncestorOf(y, x);
     }
 
     /**
@@ -756,7 +775,7 @@ public class TestFgs {
         return newGraph;
     }
 
-//    @Test
+    //    @Test
     public void testAjData() {
         double penalty = 4;
 
@@ -877,7 +896,7 @@ public class TestFgs {
         return MixedUtils.makeMixedData(ds, nd);
     }
 
-//    @Test
+    //    @Test
     public void testBestAlgorithms() {
         String[] algorithms = {"SemFGS", "BDeuFGS", "MixedFGS", "PC", "PCS", "CPC", "MGMFgs", "MGMPcs"};
         String[] statLabels = {"AP", "AR", "OP", "OR", "SUM", "McAdj", "McOr", "F1Adj", "F1Or", "E"};
@@ -1108,9 +1127,9 @@ public class TestFgs {
                 }
 
                 double sum = adjPrecision + adjRecall + arrowPrecision + arrowRecall;
-                double mcAdj = (adjTp  * adjTn - adjFp * adjFn) /
+                double mcAdj = (adjTp * adjTn - adjFp * adjFn) /
                         Math.sqrt((adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn));
-                double mcOr = (arrowsTp  * arrowsTn - arrowsFp * arrowsFn) /
+                double mcOr = (arrowsTp * arrowsTn - arrowsFp * arrowsFn) /
                         Math.sqrt((arrowsTp + arrowsFp) * (arrowsTp + arrowsFn) *
                                 (arrowsTn + arrowsFp) * (arrowsTn + arrowsFn));
                 double f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
@@ -1348,7 +1367,7 @@ public class TestFgs {
 
     }
 
-    public static void main(String...args) {
+    public static void main(String... args) {
         new TestFgs().testBestAlgorithms();
     }
 }

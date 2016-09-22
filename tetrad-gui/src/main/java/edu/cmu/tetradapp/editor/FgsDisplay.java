@@ -95,7 +95,7 @@ public class FgsDisplay extends JPanel implements GraphEditable {
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel(" Score = " ));
         b1.add(scoreLabel);
-        b1.add(new JLabel(" Pattern "));
+        b1.add(new JLabel(" forbid_latent_common_causes "));
         b1.add(spinner);
         b1.add(totalLabel);
 

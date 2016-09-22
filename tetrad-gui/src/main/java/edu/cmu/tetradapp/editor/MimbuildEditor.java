@@ -451,12 +451,11 @@ public class MimbuildEditor extends JPanel {
                     new JScrollPane(new GraphWorkbench()));
         }
 
-//        if (getMimRunner().getClusters() != null) {
-//            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
-//                    getMimRunner().getData().getVariableNames());
-//            ClusterEditor clusterEditor = editor;
-//            tabbedPane.add("Measurement Model", editor);
-//        }
+        if (getMimRunner().getClusters() != null) {
+            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
+                    getMimRunner().getData().getVariableNames());
+            tabbedPane.add("Measurement Model", editor);
+        }
 
         if (getMimRunner().getFullGraph() != null) {
             Graph fullGraph = getMimRunner().getFullGraph();

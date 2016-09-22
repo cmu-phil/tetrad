@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * Add description
@@ -61,8 +62,8 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static RemoveMissingValueCasesWrapper serializableInstance() {
-        return new RemoveMissingValueCasesWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

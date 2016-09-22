@@ -87,9 +87,8 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new GeneralizedSemDataWrapper(GeneralizedSemImWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     /**

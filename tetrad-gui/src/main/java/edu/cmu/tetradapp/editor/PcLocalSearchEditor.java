@@ -67,15 +67,15 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
     //=========================CONSTRUCTORS============================//
 
     public PcLocalSearchEditor(PcLocalRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcLocalSearchEditor(CpcLocalRunner runner) {
-        super(runner, "Result E-Pattern");
+        super(runner, "Result E-forbid_latent_common_causes");
     }
 
     public PcLocalSearchEditor(PcMaxLocalRunner runner) {
-        super(runner, "Result E-Pattern");
+        super(runner, "Result E-forbid_latent_common_causes");
     }
 
     //=============================== Public Methods ==================================//
@@ -120,7 +120,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
         //JTabbedPane tabbedPane = new JTabbedPane();
         modelStatsText = new JTextArea();
         tabbedPane = new JTabbedPane();
-        tabbedPane.add("Pattern", workbenchScroll(resultLabel));
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
@@ -385,9 +385,9 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");

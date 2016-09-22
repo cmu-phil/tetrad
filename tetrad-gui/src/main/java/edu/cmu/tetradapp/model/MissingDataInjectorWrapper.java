@@ -74,10 +74,8 @@ public class MissingDataInjectorWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new MissingDataInjectorWrapper(
-                DataWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==========================PUBLIC METHODS============================//

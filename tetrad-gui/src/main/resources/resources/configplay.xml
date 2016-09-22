@@ -1018,7 +1018,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GeneralAlgorithmEditor
                 </editor-class>
             </model>
-            <!--<model name="PC" acronym="PC" help="pc" category="Pattern Searches">-->
+            <!--<model name="PC" acronym="PC" help="pc" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1033,7 +1033,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="PC-Stable" acronym="PCStable" help="pcstable" category="Pattern Searches">-->
+            <!--<model name="PC-Stable" acronym="PCStable" help="pcstable" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1049,7 +1049,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="PCPattern" acronym="PCPattern" help="pcpattern"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1066,7 +1066,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="PCD" acronym="PCD" help="pcD"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1081,7 +1081,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="PC-Max" acronym="PC-Max" help="pcmax" category="Pattern Searches">-->
+            <!--<model name="PC-Max" acronym="PC-Max" help="pcmax" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1097,7 +1097,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="CPC" acronym="CPC" help="cpc"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1113,7 +1113,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="VCPC" acronym="VCPC" help="vcpc"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1132,7 +1132,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="sampleVCPC" acronym="sVCPC" help="samplevcpc"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1151,7 +1151,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="VCPCFast" acronym="fVCPC" help="fvcpc"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1170,7 +1170,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="sampleVCPCFast" acronym="sfVCPC" help="samplevcpcFast"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1189,7 +1189,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="VCPCalt" acronym="VCPCalt" help="vcpcalt"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1207,7 +1207,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="PClocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">-->
+            <!--<model name="PClocal" acronym="PCLocal" help="pclocal" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
@@ -1224,7 +1224,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="Pattern Searches">-->
+            <!--<model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
@@ -1241,7 +1241,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="Pattern Searches">-->
+            <!--<model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
@@ -1294,7 +1294,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.LofsSearchEditorNew-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="FCI" acronym="FCI" help="fci" category="PAG searches">-->
+            <!--<model name="FCI" acronym="FCI" help="fci" category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1309,7 +1309,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="CFCI" acronym="CFCI" help="cfci"-->
-            <!--category="PAG searches">-->
+            <!--category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1324,7 +1324,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="GFCI" acronym="GFCI" help="gfci"-->
-            <!--category="PAG searches">-->
+            <!--category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1339,7 +1339,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="tsFCI" acronym="tsFCI" help="tsFCI"-->
-            <!--category="PAG searches">-->
+            <!--category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1354,7 +1354,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="tsGFCI" acronym="tsGFCI" help="tsGFCI"-->
-            <!--category="PAG searches">-->
+            <!--category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1368,7 +1368,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="ION" acronym="ION" help="ion" category="PAG searches">-->
+            <!--<model name="ION" acronym="ION" help="ion" category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1382,7 +1382,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.IonSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="CCD" acronym="CCD" help="ccd" category="PAG searches">-->
+            <!--<model name="CCD" acronym="CCD" help="ccd" category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1398,7 +1398,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="CCD2" acronym="CCD2" help="ccd2" category="PAG searches">-->
+            <!--<model name="CCD2" acronym="CCD2" help="ccd2" category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1415,7 +1415,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="FGS" acronym="FGS" help="fgs"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
@@ -1431,7 +1431,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="TsFGS" acronym="TsFGS" help="fgs"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
@@ -1446,7 +1446,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="WFGS" acronym="WFGS" help="wfgs" category="Pattern Searches">-->
+            <!--<model name="WFGS" acronym="WFGS" help="wfgs" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1462,7 +1462,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="IMaGES" acronym="IMaGES" help="fgs"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
@@ -1478,7 +1478,7 @@
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="TsIMaGES" acronym="TsIMaGES" help="fgs"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
@@ -1495,7 +1495,7 @@
             <!--</model>-->
             <!--Heuristic Best Significant Model Search-->
             <!--<model name="BFF" acronym="BFF" help="bff"-->
-            <!--category="Pattern Searches">-->
+            <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="details" description="Misc Fine Details" default="on"/>-->
@@ -1528,7 +1528,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="Cluster Search" acronym="Cluster" help="cluster"-->
+            <!--<model name="search_for_structure_over_latents Search" acronym="search_for_structure_over_latents" help="cluster"-->
             <!--category="Multiple Indicator Model searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->

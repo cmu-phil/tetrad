@@ -188,7 +188,12 @@ class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private void setWorkbenchMode(int mode) {
         workbench.setWorkbenchMode(mode);
-        setCursor(workbench.getCursor());
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Image image = ImageUtils.getImage(this, "cursorImage.png");
+        Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+        setCursor(c);
+
+//                    setCursor(workbench.getCursor());
     }
 
     /**

@@ -50,10 +50,8 @@ public class DirichletBayesDataWrapper extends DataWrapper
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new DirichletBayesDataWrapper(
-                DirichletBayesImWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

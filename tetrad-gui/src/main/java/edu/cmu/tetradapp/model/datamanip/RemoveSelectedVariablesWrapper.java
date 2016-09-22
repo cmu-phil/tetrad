@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * Add description
@@ -65,9 +66,8 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new RemoveSelectedVariablesWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=========================== Private Methods =================================//

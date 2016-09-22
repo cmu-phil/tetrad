@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();

@@ -110,8 +110,8 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         this.params = params;
     }
 
-    public static MeasurementModelWrapper serializableInstance() {
-        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     public void setName(String name) {

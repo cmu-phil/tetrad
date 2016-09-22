@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -65,9 +66,9 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new Cpcs(new FisherZ()));
+        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
+        algorithms.add(new PcStable(new FisherZ()));
+        algorithms.add(new Cpcs(new FisherZ()));
 
         Simulations simulations = new Simulations();
 

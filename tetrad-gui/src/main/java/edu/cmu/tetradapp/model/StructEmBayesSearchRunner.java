@@ -162,9 +162,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
      *
      * @see TetradSerializableUtils
      */
-    public static StructEmBayesSearchRunner serializableInstance() {
-        return new StructEmBayesSearchRunner(DataWrapper.serializableInstance(),
-                BayesPmWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //================================PUBLIC METHODS========================//

@@ -46,7 +46,7 @@ import java.util.List;
 // @author Joseph Ramsey
 ///////////////////////////////////////////////////////////
 
-public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, KnowledgeBoxInput {
+public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -70,30 +70,30 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
 	// the old BayesIm, stored in a JPD
 	//
 
-    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, 
-							 BayesImWrapperObs oldBayesImwrapper, 
-							 Parameters params) {
-        if (bayesPmWrapper == null) {
-            throw new NullPointerException("BayesPmWrapper must not be null.");
-        }
-
-        if (params == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-
-        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
-
-        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
-        }
-		
-        log(bayesIm);
-    }
+//    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper,
+//							 BayesImWrapperObs oldBayesImwrapper,
+//							 Parameters params) {
+//        if (bayesPmWrapper == null) {
+//            throw new NullPointerException("BayesPmWrapper must not be null.");
+//        }
+//
+//        if (params == null) {
+//            throw new NullPointerException("Parameters must not be null.");
+//        }
+//
+//        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+//        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
+//
+//        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
+//            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
+//        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
+//            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
+//        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
+//            this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
+//        }
+//
+//        log(bayesIm);
+//    }
 
 	/*
     public BayesImWrapperObs(BayesEstimatorWrapper wrapper) {
@@ -167,28 +167,28 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
         log(bayesIm);
     }
 	
-	// from regular allowUnfaithfulness BayesIm
-	// marginalize the probability values from the old BayesIm
-    public BayesImWrapperObs(BayesImWrapper bayesImWrapper) {
-        if (bayesImWrapper == null) {
-            throw new NullPointerException();
-        }
-		
-        this.bayesIm = new MlBayesImObs(bayesImWrapper.getBayesIm());
-		        
-		log(bayesIm);
-    }
+//	// from regular allowUnfaithfulness BayesIm
+//	// marginalize the probability values from the old BayesIm
+//    public BayesImWrapperObs(BayesImWrapper bayesImWrapper) {
+//        if (bayesImWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.bayesIm = new MlBayesImObs(bayesImWrapper.getBayesIm());
+//
+//		log(bayesIm);
+//    }
 
-	// from BayesIm with only observed variables
-    public BayesImWrapperObs(BayesImWrapperObs bayesImWrapperObs) {
-        if (bayesImWrapperObs == null) {
-            throw new NullPointerException();
-        }
-
-        this.bayesIm = new MlBayesImObs(bayesImWrapperObs.getBayesIm());
-
-        log(bayesIm);
-    }
+//	// from BayesIm with only observed variables
+//    public BayesImWrapperObs(BayesImWrapperObs bayesImWrapperObs) {
+//        if (bayesImWrapperObs == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.bayesIm = new MlBayesImObs(bayesImWrapperObs.getBayesIm());
+//
+//        log(bayesIm);
+//    }
 
 //	// brand new BayesIm
 //    public BayesImWrapperObs() {
@@ -205,8 +205,8 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
      *
      * @see TetradSerializableUtils
      */
-	 public static BayesImWrapperObs serializableInstance() {
-        return new BayesImWrapperObs(BayesImWrapper.serializableInstance());
+	 public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================PUBLIC METHODS=========================//

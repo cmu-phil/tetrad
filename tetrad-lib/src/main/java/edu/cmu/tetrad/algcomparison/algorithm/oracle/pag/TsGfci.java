@@ -57,7 +57,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(graph).convert(); }
 
     public String getDescription() {
-        return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription() +
+        return "tsIMaGES (Time Series IMaGES) using " + test.getDescription() +
                 (initialGraph != null ? " with initial graph from " +
                         initialGraph.getDescription() : "");
     }

@@ -50,7 +50,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class BayesPmWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex = 0;

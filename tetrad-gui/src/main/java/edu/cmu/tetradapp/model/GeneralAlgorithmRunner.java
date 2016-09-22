@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -240,7 +241,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
-                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++)  {
+                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++) {
                     List<DataSet> dataSets = new ArrayList<>();
 
                     for (DataModel dataModel : getDataModelList()) {
@@ -260,6 +261,18 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
+                }
+            } else if (getAlgorithm() instanceof ClusterAlgorithm) {
+                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++) {
+                    List<DataSet> dataSets = new ArrayList<>();
+
+                    for (DataModel dataModel : getDataModelList()) {
+                        DataSet dataSet = (DataSet) dataModel;
+
+                        if (!dataSet.isContinuous()) {
+                            throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
+                        }
+                    }
                 }
             } else {
                 for (DataModel data : getDataModelList()) {

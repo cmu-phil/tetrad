@@ -202,8 +202,8 @@ public class Simulation extends DataWrapper implements SessionModel,
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new Simulation();
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     public String getName() {

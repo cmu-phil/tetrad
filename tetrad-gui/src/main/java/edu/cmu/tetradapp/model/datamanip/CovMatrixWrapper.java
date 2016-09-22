@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 import edu.cmu.tetradapp.model.SemImWrapper;
 
 import java.util.List;
@@ -117,9 +118,8 @@ public class CovMatrixWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new CovMatrixWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

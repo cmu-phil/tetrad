@@ -75,8 +75,8 @@ public class ImpliedCovarianceDataWrapper extends DataWrapper implements Session
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ImpliedCovarianceDataWrapper(SemEstimatorWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 
