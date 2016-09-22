@@ -21,11 +21,14 @@ package edu.cmu.tetrad.cli;
 import edu.cmu.tetrad.cli.search.FgscCli;
 import edu.cmu.tetrad.cli.search.FgsdCli;
 import edu.cmu.tetrad.cli.search.GfcicCli;
+import edu.cmu.tetrad.cli.simulation.data.BayesNetRandomForwardCli;
+import edu.cmu.tetrad.cli.simulation.data.SemRandomForwardCli;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 
 /**
@@ -38,48 +41,120 @@ public class CausalCmdApplication {
 
     private static final Options MAIN_OPTIONS = new Options();
 
+    private static final String ALGO_OPT = "algorithm";
+    private static final String SIM_DATA_OPT = "simulate-data";
+    private static final String VERSION_OPT = "version";
+
     private static final Map<String, AlgorithmType> ALGO_TYPES = new HashMap<>();
+    private static final Map<String, SimulationType> SIM_TYPES = new HashMap<>();
 
     static {
-        AlgorithmType[] algorithmTypes = AlgorithmType.values();
-        StringBuilder algoOpt = new StringBuilder();
-        int lastIndex = algorithmTypes.length - 1;
-        for (int i = 0; i < lastIndex; i++) {
-            algoOpt.append(algorithmTypes[i].getCmd());
-            algoOpt.append(", ");
+        populateMainOptions();
+        populateCmdTypes();
+    }
+
+    private static void populateCmdTypes() {
+        for (AlgorithmType type : AlgorithmType.values()) {
+            ALGO_TYPES.put(type.getCmd(), type);
         }
-        algoOpt.append(algorithmTypes[lastIndex].getCmd());
-        algoOpt.append(".");
-
-        Option requiredOption = new Option(null, "algorithm", true, algoOpt.toString());
-        requiredOption.setRequired(true);
-        MAIN_OPTIONS.addOption(requiredOption);
-
-        MAIN_OPTIONS.addOption(null, "version", false, "Version.");
-
-        for (AlgorithmType algorithmType : AlgorithmType.values()) {
-            ALGO_TYPES.put(algorithmType.getCmd(), algorithmType);
+        for (SimulationType type : SimulationType.values()) {
+            SIM_TYPES.put(type.getCmd(), type);
         }
     }
 
+    private static void populateMainOptions() {
+        OptionGroup optGrp = new OptionGroup();
+        optGrp.addOption(new Option(null, ALGO_OPT, true, algorithmCmd()));
+        optGrp.addOption(new Option(null, SIM_DATA_OPT, true, simulationCmd()));
+        optGrp.setRequired(true);
+        MAIN_OPTIONS.addOptionGroup(optGrp);
+
+        MAIN_OPTIONS.addOption(null, VERSION_OPT, false, "Version.");
+    }
+
+    private static String algorithmCmd() {
+        StringBuilder algoOpt = new StringBuilder();
+        AlgorithmType[] types = AlgorithmType.values();
+        int lastIndex = types.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            algoOpt.append(types[i].getCmd());
+            algoOpt.append(", ");
+        }
+        algoOpt.append(types[lastIndex].getCmd());
+
+        return algoOpt.toString();
+    }
+
+    private static String simulationCmd() {
+        StringBuilder algoOpt = new StringBuilder();
+        SimulationType[] types = SimulationType.values();
+        int lastIndex = types.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            algoOpt.append(types[i].getCmd());
+            algoOpt.append(", ");
+        }
+        algoOpt.append(types[lastIndex].getCmd());
+
+        return algoOpt.toString();
+    }
+
     private static AlgorithmCli getAlgorithmCli(String[] args) {
-        String algoSwitch = "algorithm";
-        String algorithm = Args.getOptionValue(args, algoSwitch);
+        String algorithm = Args.getOptionValue(args, ALGO_OPT);
         AlgorithmType algorithmType = ALGO_TYPES.get(algorithm);
         if (algorithmType == null) {
             return null;
+        }
+
+        args = Args.removeOption(args, ALGO_OPT);
+        switch (algorithmType) {
+            case FGSC:
+                return new FgscCli(args);
+            case FGSD:
+                return new FgsdCli(args);
+            case GFCIC:
+                return new GfcicCli(args);
+            default:
+                return null;
+        }
+    }
+
+    private static void showHelp() {
+        AppTool.showHelp(MAIN_OPTIONS);
+    }
+
+    private static void runAlgorithm(String[] args) {
+        AlgorithmCli algorithmCli = getAlgorithmCli(args);
+        if (algorithmCli == null) {
+            showHelp();
         } else {
-            args = Args.removeOption(args, algoSwitch);
-            switch (algorithmType) {
-                case FGSC:
-                    return new FgscCli(args);
-                case FGSD:
-                    return new FgsdCli(args);
-                case GFCIC:
-                    return new GfcicCli(args);
-                default:
-                    return null;
-            }
+            algorithmCli.run();
+        }
+    }
+
+    private static SimulationCli getSimulationCli(String[] args) {
+        String simulation = Args.getOptionValue(args, SIM_DATA_OPT);
+        SimulationType simulationType = SIM_TYPES.get(simulation);
+        if (simulationType == null) {
+            return null;
+        }
+
+        args = Args.removeOption(args, SIM_DATA_OPT);
+        switch (simulationType) {
+            case SEM_RAND_FWD:
+                return new SemRandomForwardCli(args);
+            case BAYES_NET_RAND_FWD:
+                return new BayesNetRandomForwardCli(args);
+            default:
+                return null;
+        }
+    }
+
+    private static void runSimulation(String[] args) {
+        SimulationCli simulationCli = getSimulationCli(args);
+        if (simulationCli == null) {
+            showHelp();
+        } else {
+            simulationCli.simulate();
         }
     }
 
@@ -87,16 +162,19 @@ public class CausalCmdApplication {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        if (args == null || args.length == 0) {
-            AppTool.showHelp(MAIN_OPTIONS);
-        } else if (Args.hasLongOption(args, "version")) {
+        if (Args.hasLongOption(args, VERSION_OPT)) {
             System.out.println(AppTool.jarVersion());
         } else {
-            AlgorithmCli algorithmCli = getAlgorithmCli(args);
-            if (algorithmCli == null) {
-                AppTool.showHelp(MAIN_OPTIONS);
+            boolean algoOpt = Args.hasLongOption(args, ALGO_OPT);
+            boolean simDataOpt = Args.hasLongOption(args, SIM_DATA_OPT);
+            if (algoOpt ^ simDataOpt) {
+                if (algoOpt) {
+                    runAlgorithm(args);
+                } else {
+                    runSimulation(args);
+                }
             } else {
-                algorithmCli.run();
+                showHelp();
             }
         }
     }

@@ -48,13 +48,40 @@ public class CausalCmdApplicationTest {
         tmpDir.delete();
     }
 
+    @Test
+    public void testSimulateData() throws IOException {
+        String simulation = "sem-rand-fwd";
+        String numOfVariables = "8";
+        String numOfCases = "10";
+        String delimiter = "tab";
+        String dirOut = tmpDir.newFolder(simulation).toString();
+        String outputPrefix = simulation;
+        String[] args = {
+            "--simulate-data", simulation,
+            "--var", numOfVariables,
+            "--case", numOfCases,
+            "--delimiter", delimiter,
+            "--out", dirOut,
+            "--output-prefix", outputPrefix
+        };
+        CausalCmdApplication.main(args);
+
+        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+
+        outFile = Paths.get(dirOut, outputPrefix + ".graph");
+        errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+    }
+
     /**
      * Test of main method, of class CausalCmdApplication.
      *
      * @throws IOException
      */
     @Test
-    public void testMain() throws IOException {
+    public void testGfci() throws IOException {
         Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");
 
         String algorithm = "gfcic";

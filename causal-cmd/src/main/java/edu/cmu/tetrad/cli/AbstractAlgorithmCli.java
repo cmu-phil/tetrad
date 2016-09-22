@@ -19,6 +19,10 @@
 package edu.cmu.tetrad.cli;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.cli.util.AlgorithmCommonTask;
+import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.search;
+import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutJson;
+import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutResult;
 import edu.cmu.tetrad.latest.LatestClient;
 import edu.cmu.tetrad.latest.SoftwareVersion;
 import edu.cmu.tetrad.cli.util.AppTool;
@@ -30,22 +34,15 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.io.DataReader;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.cli.*;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Formatter;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -53,11 +50,9 @@ import java.util.Set;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public abstract class AbstractAlgorithmCli extends CommonTask implements AlgorithmCli {
+public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implements AlgorithmCli {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAlgorithmCli.class);
-
-    protected final Options MAIN_OPTIONS = new Options();
 
     protected Path dataFile;
     protected Path knowledgeFile;
@@ -71,59 +66,37 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
     protected boolean validationOutput;
     protected boolean skipLatest;
 
-    protected final String[] args;
-
     public AbstractAlgorithmCli(String[] args) {
-        this.args = args;
-        init();
+        super(args);
+        intit();
     }
 
-    public abstract void printValidationInfos(Formatter formatter);
+    public abstract AlgorithmType getAlgorithmType();
 
     public abstract void printParameterInfos(Formatter fmt);
 
-    public abstract Parameters getParameters();
-
-    public abstract Algorithm getAlgorithm(IKnowledge knowledge);
-
-    public abstract DataReader getDataReader(Path dataFile, char delimiter);
+    public abstract void printValidationInfos(Formatter formatter);
 
     public abstract List<DataValidation> getDataValidations(DataSet dataSet, Path dirOut, String filePrefix);
 
-    public abstract void parseRequiredOptions(CommandLine cmd) throws Exception;
+    public abstract DataReader getDataReader(Path dataFile, char delimiter);
 
-    public abstract void parseOptionalOptions(CommandLine cmd) throws Exception;
+    public abstract Algorithm getAlgorithm(IKnowledge knowledge);
 
-    public abstract List<Option> getRequiredOptions();
-
-    public abstract List<Option> getOptionalOptions();
-
-    public abstract AlgorithmType getAlgorithmType();
+    private void intit() {
+        setOptions();
+    }
 
     @Override
     public void run() {
         AlgorithmType algorithmType = getAlgorithmType();
         if (needsToShowHelp()) {
-            showHelp(algorithmType);
+            showHelp(algorithmType.getCmd());
 
             return;
         }
 
-        try {
-            CommandLineParser cmdParser = new DefaultParser();
-            CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
-            parseCommonOptions(cmd);
-            parseOptions(cmd);
-        } catch (Exception exception) {
-            System.err.println(exception.getLocalizedMessage());
-            System.exit(-127);
-        }
-
-        if (!skipLatest) {
-            LatestClient latestClient = LatestClient.getInstance();
-            latestClient.checkLatest("causal-cmd", AppTool.jarVersion());
-            System.out.println(latestClient.getLatestResult());
-        }
+        parseOptions();
 
         String heading = creteHeading(algorithmType);
         String argInfo = createArgsInfo();
@@ -135,10 +108,10 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         Set<String> excludedVariables = getExcludedVariables();
         runPreDataValidations(excludedVariables);
 
-        DataSet dataSet = readInDataSet(excludedVariables, dataFile, getDataReader(dataFile, delimiter));
+        DataSet dataSet = AlgorithmCommonTask.readInDataSet(excludedVariables, dataFile, getDataReader(dataFile, delimiter));
         runDataValidations(dataSet);
 
-        Algorithm algorithm = getAlgorithm(readInPriorKnowledge(knowledgeFile));
+        Algorithm algorithm = getAlgorithm(AlgorithmCommonTask.readInPriorKnowledge(knowledgeFile));
         Parameters parameters = getParameters();
         Graph graph = search(dataSet, algorithm, parameters);
 
@@ -148,32 +121,6 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         if (isSerializeJson) {
             writeOutJson(outputPrefix, graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
         }
-    }
-
-
-    private String createArgsInfo() {
-        Formatter fmt = new Formatter();
-        if (dataFile != null) {
-            fmt.format("data = %s%n", dataFile.getFileName());
-        }
-        if (excludedVariableFile != null) {
-            fmt.format("exclude-variables = %s%n", excludedVariableFile.getFileName());
-        }
-        if (knowledgeFile != null) {
-            fmt.format("knowledge = %s%n", knowledgeFile.getFileName());
-        }
-        fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
-        fmt.format("verbose = %s%n", verbose);
-        fmt.format("thread = %s%n", numOfThreads);
-        printParameterInfos(fmt);
-
-        printValidationInfos(fmt);
-
-        fmt.format("out = %s%n", dirOut.getFileName().toString());
-        fmt.format("output-prefix = %s%n", outputPrefix);
-        fmt.format("no-validation-output = %s%n", !validationOutput);
-
-        return fmt.toString();
     }
 
     private String createRunInfo(Set<String> excludedVariables, DataSet dataSet) {
@@ -232,46 +179,52 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
     }
 
     protected Set<String> getExcludedVariables() {
-        return readInVariables(excludedVariableFile);
+        return AlgorithmCommonTask.readInVariables(excludedVariableFile);
     }
 
-    private void init() {
-        setCommonOptions();
-        setOptions();
-    }
-
-    protected void setOptionalOptions() {
-        List<Option> options = getOptionalOptions();
-        if (options != null) {
-            for (Option option : options) {
-                MAIN_OPTIONS.addOption(option);
-            }
+    private String createArgsInfo() {
+        Formatter fmt = new Formatter();
+        if (dataFile != null) {
+            fmt.format("data = %s%n", dataFile.getFileName());
         }
-    }
-
-    protected void setRequiredOptions() {
-        List<Option> options = getRequiredOptions();
-        if (options != null) {
-            for (Option option : options) {
-                MAIN_OPTIONS.addOption(option);
-            }
+        if (excludedVariableFile != null) {
+            fmt.format("exclude-variables = %s%n", excludedVariableFile.getFileName());
         }
+        if (knowledgeFile != null) {
+            fmt.format("knowledge = %s%n", knowledgeFile.getFileName());
+        }
+        fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
+        fmt.format("verbose = %s%n", verbose);
+        fmt.format("thread = %s%n", numOfThreads);
+        printParameterInfos(fmt);
+
+        printValidationInfos(fmt);
+
+        fmt.format("out = %s%n", dirOut.getFileName().toString());
+        fmt.format("output-prefix = %s%n", outputPrefix);
+        fmt.format("no-validation-output = %s%n", !validationOutput);
+
+        return fmt.toString();
     }
 
-    private void setOptions() {
-        setRequiredOptions();
-        setOptionalOptions();
+    private String creteHeading(AlgorithmType algorithmType) {
+        Formatter fmt = new Formatter();
+        fmt.format("================================================================================%n");
+        fmt.format("%s (%s)%n", algorithmType.getTitle(), AppTool.fmtDateNow());
+        fmt.format("================================================================================%n");
+
+        return fmt.toString();
     }
 
-    protected void setCommonRequiredOptions() {
-        // added required inputs
+    @Override
+    public void setCommonRequiredOptions() {
         Option requiredOption = new Option("f", "data", true, "Data file.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
     }
 
-    protected void setCommonOptionalOptions() {
-        // additional file inputs
+    @Override
+    public void setCommonOptionalOptions() {
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
         MAIN_OPTIONS.addOption(null, "exclude-variables", true, "A file containing variables to exclude.");
         MAIN_OPTIONS.addOption("d", "delimiter", true, "Data delimiter either comma, semicolon, space, colon, or tab. Default: comma for *.csv, else tab.");
@@ -285,16 +238,13 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         MAIN_OPTIONS.addOption(null, "skip-latest", false, "Skip checking for latest software version");
     }
 
-    private void setCommonOptions() {
-        setCommonRequiredOptions();
-        setCommonOptionalOptions();
-    }
-
-    protected void parseCommonRequiredOptions(CommandLine cmd) throws Exception {
+    @Override
+    public void parseCommonRequiredOptions(CommandLine cmd) throws Exception {
         dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
     }
 
-    protected void parseCommonOptionalOptions(CommandLine cmd) throws Exception {
+    @Override
+    public void parseCommonOptionalOptions(CommandLine cmd) throws Exception {
         knowledgeFile = Args.getPathFile(cmd.getOptionValue("knowledge", null), false);
         excludedVariableFile = Args.getPathFile(cmd.getOptionValue("exclude-variables", null), false);
         delimiter = Args.getDelimiterForName(cmd.getOptionValue("delimiter", dataFile.getFileName().toString().endsWith(".csv") ? "comma" : "tab"));
@@ -306,33 +256,6 @@ public abstract class AbstractAlgorithmCli extends CommonTask implements Algorit
         outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
         validationOutput = !cmd.hasOption("no-validation-output");
         skipLatest = cmd.hasOption("skip-latest");
-    }
-
-    private void parseCommonOptions(CommandLine cmd) throws Exception {
-        parseCommonRequiredOptions(cmd);
-        parseCommonOptionalOptions(cmd);
-    }
-
-    private void parseOptions(CommandLine cmd) throws Exception {
-        parseRequiredOptions(cmd);
-        parseOptionalOptions(cmd);
-    }
-
-    private String creteHeading(AlgorithmType algorithmType) {
-        Formatter fmt = new Formatter();
-        fmt.format("================================================================================%n");
-        fmt.format("%s (%s)%n", algorithmType.getTitle(), AppTool.fmtDateNow());
-        fmt.format("================================================================================%n");
-
-        return fmt.toString();
-    }
-
-    protected boolean needsToShowHelp() {
-        return args == null || args.length == 0 || Args.hasLongOption(args, "help");
-    }
-
-    protected void showHelp(AlgorithmType algorithmType) {
-        AppTool.showHelp(algorithmType.getCmd(), MAIN_OPTIONS);
     }
 
 }

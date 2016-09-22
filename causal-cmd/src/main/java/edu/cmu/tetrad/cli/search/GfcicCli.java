@@ -25,11 +25,13 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.cli.AlgorithmType;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Formatter;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -54,7 +56,7 @@ public class GfcicCli extends FgscCli {
     @Override
     public Parameters getParameters() {
         Parameters parameters = super.getParameters();
-        parameters.set("alpha", alpha);
+        parameters.set(ParamAttrs.ALPHA, alpha);
 
         return parameters;
     }
@@ -72,13 +74,17 @@ public class GfcicCli extends FgscCli {
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
         super.parseOptionalOptions(cmd);
-        alpha = Args.getDouble(cmd.getOptionValue("alpha", "0.01"));
+
+        ParamDescriptions param = ParamDescriptions.instance();
+        alpha = Args.getDouble(cmd.getOptionValue("alpha", String.valueOf(param.get(ParamAttrs.ALPHA).getDefaultValue())));
     }
 
     @Override
     public List<Option> getOptionalOptions() {
+        ParamDescriptions param = ParamDescriptions.instance();
+
         List<Option> options = super.getOptionalOptions();
-        options.add(new Option(null, "alpha", true, "Alpha for FisherZ test. Default is 0.01"));
+        options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
 
         return options;
     }
