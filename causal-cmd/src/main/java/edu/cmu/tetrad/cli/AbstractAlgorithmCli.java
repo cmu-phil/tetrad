@@ -24,7 +24,6 @@ import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.search;
 import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutJson;
 import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutResult;
 import edu.cmu.tetrad.latest.LatestClient;
-import edu.cmu.tetrad.latest.SoftwareVersion;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.validation.DataValidation;
@@ -97,8 +96,6 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
         }
 
         parseOptions();
-
-
 
         String heading = creteHeading(algorithmType);
         String argInfo = createArgsInfo();
@@ -261,7 +258,7 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
         isSerializeJson = cmd.hasOption("json");
 
         dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
-        outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
+        outputPrefix = cmd.getOptionValue("output-prefix", String.format("%s_%s_%d", getAlgorithmType().getCmd(), dataFile.getFileName(), System.currentTimeMillis()));
         validationOutput = !cmd.hasOption("no-validation-output");
         skipLatest = cmd.hasOption("skip-latest");
     }
