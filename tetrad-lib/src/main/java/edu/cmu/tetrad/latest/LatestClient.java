@@ -48,7 +48,7 @@ public class LatestClient {
                BASE_URL = applicationProperties.getProperty("latest.version.url");
            } catch (Exception e) {
                LOGGER.error("Could not read tetrad-lib.properties file", e);
-               latestResult = "Could not read tetrad-lib.properties file";
+               latestResult = String.format("Running version %s but unable to contact version server.", version);
                // return without checking for latest version
                return false;
            }
@@ -65,10 +65,10 @@ public class LatestClient {
                SoftwareVersion softwareVersion = gson.fromJson(json, SoftwareVersion.class);
 
                if (softwareVersion.getSoftwareVersion().equalsIgnoreCase(version)) {
-                   latestResult = String.format("Running version %s which is the latest version", version);
+                   latestResult = String.format("Running version %s which is the latest version.", version);
                    return true;
                } else {
-                   latestResult = String.format("You are currently running version %s but the latest version is %s.\nVisit www.ccd.pitt.edu to obtain the latest version", version, softwareVersion.getSoftwareVersion());
+                   latestResult = String.format("Running version %s but the latest version is %s available.", version, softwareVersion.getSoftwareVersion());
                    return false;
                }
 
@@ -76,7 +76,7 @@ public class LatestClient {
            } catch (Exception ex) {
 
                LOGGER.error("Could not contact server for latest version", ex);
-               latestResult = "Could not contact server for latest version";
+               latestResult = String.format("Running version %s but unable to contact version server.", version);
                return false;
 
            }

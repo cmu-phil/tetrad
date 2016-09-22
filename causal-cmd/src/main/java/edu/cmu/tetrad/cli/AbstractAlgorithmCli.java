@@ -98,12 +98,20 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
 
         parseOptions();
 
+
+
         String heading = creteHeading(algorithmType);
         String argInfo = createArgsInfo();
         System.out.printf(heading);
         System.out.println(argInfo);
         LOGGER.info(String.format("=== Starting %s: %s", algorithmType.getTitle(), Args.toString(args, ' ')));
         LOGGER.info(argInfo.trim().replaceAll("\n", ",").replaceAll(" = ", "="));
+
+        if (!skipLatest) {
+            LatestClient latestClient = LatestClient.getInstance();
+            latestClient.checkLatest("causal-cmd", AppTool.jarVersion());
+            System.out.println(latestClient.getLatestResult());
+        }
 
         Set<String> excludedVariables = getExcludedVariables();
         runPreDataValidations(excludedVariables);
