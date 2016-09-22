@@ -89,10 +89,8 @@ public class ConvertToPositiveSkew extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new ConvertToPositiveSkew(wrapper);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 }

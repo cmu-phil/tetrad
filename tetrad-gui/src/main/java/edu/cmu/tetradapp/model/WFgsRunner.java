@@ -67,8 +67,8 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return DataWrapper.serializableInstance();
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//

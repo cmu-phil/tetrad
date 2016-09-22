@@ -102,9 +102,10 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      *
      * @see TetradSerializableUtils
      */
-    public static IdentifiabilityWrapper serializableInstance() {
-        return new IdentifiabilityWrapper(
-                BayesImWrapperObs.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new IdentifiabilityWrapper(
+//                BayesImWrapperObs.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.search.MimUtils;
 import edu.cmu.tetrad.search.Mimbuild2;
@@ -68,6 +69,14 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
+    }
+
+    public MimBuildRunner(DataWrapper dataWrapper,
+                          GraphSource graphSource,
+                          Parameters params) {
+        super(dataWrapper, ClusterUtils.mimClusters(graphSource.getGraph()), params);
+        this.dataSet = (DataSet) getData();
+        params.set("clusters", getClusters());
     }
 
 //    public MimBuildRunner(DataWrapper dataWrapper,

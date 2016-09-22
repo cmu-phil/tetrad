@@ -83,6 +83,7 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(loadSession);
         fileMenu.add(closeSession);
 //        fileMenu.addSeparator();
+//        fileMenu.add(templateMenu);
 //
 //        //=======================EXAMPLES MENU=========================//
 //        // Build a LoadTemplateAction for each file name in

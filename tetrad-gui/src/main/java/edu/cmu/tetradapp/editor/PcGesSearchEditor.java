@@ -71,58 +71,58 @@ public class PcGesSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given PcRunner.
      */
     public PcGesSearchEditor(PcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PcMaxRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PcStableRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PcPatternRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(CpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(VcpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(SampleVcpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(VcpcFastRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(SampleVcpcFastRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(VcpcAltRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(MbfsPatternRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
     public PcGesSearchEditor(PcdRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(KpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PValueImproverWrapper runner) {
@@ -140,7 +140,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public PcGesSearchEditor(MmhcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(LingamPatternRunner runner) {
@@ -212,7 +212,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         //JTabbedPane tabbedPane = new JTabbedPane();
         modelStatsText = new JTextArea();
         tabbedPane = new JTabbedPane();
-        tabbedPane.add("Pattern", workbenchScroll(resultLabel));
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
@@ -547,9 +547,9 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -654,7 +654,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
                 Graph dag = SearchGraphUtils.dagFromPattern(graph);
 
-//                PatternToDag search = new PatternToDag(new Pattern(graph));
+//                PatternToDag search = new PatternToDag(new forbid_latent_common_causes(graph));
 //                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);

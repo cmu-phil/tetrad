@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * Tyler was lazy and didn't document this....
@@ -65,8 +66,8 @@ public class CopyAllDatasetsWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static CopyAllDatasetsWrapper serializableInstance() {
-        return new CopyAllDatasetsWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

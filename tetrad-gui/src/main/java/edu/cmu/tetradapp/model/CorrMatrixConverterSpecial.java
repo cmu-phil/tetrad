@@ -71,10 +71,8 @@ public class CorrMatrixConverterSpecial extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new CorrMatrixConverterSpecial(wrapper);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

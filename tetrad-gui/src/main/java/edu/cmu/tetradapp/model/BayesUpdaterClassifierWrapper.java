@@ -89,10 +89,8 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static BayesUpdaterClassifierWrapper serializableInstance() {
-        return new BayesUpdaterClassifierWrapper(
-                BayesImWrapper.serializableInstance(),
-                DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS=======================//

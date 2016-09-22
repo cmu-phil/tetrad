@@ -128,10 +128,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      *
      * @see TetradSerializableUtils
      */
-    public static FgsMbRunner serializableInstance() {
-        return new FgsMbRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel
-                .serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     // =================PUBLIC METHODS OVERRIDING ABSTRACT=================//

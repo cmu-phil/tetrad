@@ -313,6 +313,48 @@ public class SessionNode implements TetradSerializable {
         return false;
     }
 
+    public boolean isConsistentParent(SessionNode parent) {
+        if (this.parents.contains(parent)) {
+            return false;
+        }
+
+        if (parent == this) {
+            return false;
+        }
+
+        // Construct a list of the parents of this node
+        // (SessionNode's) together with the new putative parent.
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
+        newParents.add(parent);
+
+        Class[] thisClass = new Class[1];
+
+        if (getModel() != null) {
+             thisClass[0] = getModel().getClass();
+        }
+
+        for (Class modelClass : getModel() != null ? thisClass : this.modelClasses) {
+            // Put all of the model classes of the nodes into a
+            // single two-dimensional array. At the same time,
+            // construct an int[] array containing the number of
+            // model classes for each node. Use this int[] array
+            // to construct a generator for all the combinations
+            // of model nodes.
+            Class[][] parentClasses = new Class[newParents.size()][];
+
+            for (int j = 0; j < newParents.size(); j++) {
+                SessionNode node = newParents.get(j);
+                parentClasses[j] = node.getModelClasses();
+            }
+
+            if (isConsistentModelClass(modelClass, parentClasses, false)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Same as addParent except tests if this has already been created. If so
      * the user is asked whether to add parent and update parent's desendents or

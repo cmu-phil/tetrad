@@ -199,9 +199,8 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      *
      * @see TetradSerializableUtils
      */
-    public static LingamStructureRunner serializableInstance() {
-        return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     // ============================PUBLIC METHODS==========================//

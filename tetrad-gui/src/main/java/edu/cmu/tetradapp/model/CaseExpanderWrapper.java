@@ -51,8 +51,8 @@ public class CaseExpanderWrapper extends DataWrapper implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new CaseExpanderWrapper(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

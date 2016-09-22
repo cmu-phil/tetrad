@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class BayesImWrapper implements SessionModel, Memorable, GraphSource, KnowledgeBoxInput {
+public class BayesImWrapper implements SessionModel, Memorable, GraphSource {
     static final long serialVersionUID = 23L;
 
     private int numModels = 1;

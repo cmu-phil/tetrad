@@ -68,8 +68,9 @@ public class SemUpdaterWrapper implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static SemUpdaterWrapper serializableInstance() {
-        return new SemUpdaterWrapper(SemImWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new SemUpdaterWrapper(SemImWrapper.serializableInstance());
     }
 
     //==============================PUBLIC METHODS========================//

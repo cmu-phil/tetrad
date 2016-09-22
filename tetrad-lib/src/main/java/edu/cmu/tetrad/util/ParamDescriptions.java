@@ -104,6 +104,14 @@ public class ParamDescriptions {
 
         put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
         put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));
+
+        // Multiple indicator random graphs
+        put("numStructuralNodes", new ParamDescription("Number of structural nodes", 3));
+        put("numStructuralEdges", new ParamDescription("Number of structural edges", 3));
+        put("measurementModelDegree", new ParamDescription("Number of measurements per Latent", 5));
+        put("latentMeasuredImpureParents", new ParamDescription("Number of Latent --> Measured impure edges", 0));
+        put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0));
+        put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0));
     }
 
     public static ParamDescriptions instance() {
