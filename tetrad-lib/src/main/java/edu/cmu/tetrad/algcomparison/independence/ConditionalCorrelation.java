@@ -24,7 +24,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z test";
+        return "Conditional correlation test";
     }
 
     @Override

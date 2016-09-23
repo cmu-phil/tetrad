@@ -110,9 +110,8 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static MbfsRunner serializableInstance() {
-        return new MbfsRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//

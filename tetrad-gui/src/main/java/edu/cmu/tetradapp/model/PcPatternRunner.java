@@ -115,7 +115,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
 
     @Override
     public String getAlgorithmName() {
-        return "PC-Pattern";
+        return "PC-forbid_latent_common_causes";
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

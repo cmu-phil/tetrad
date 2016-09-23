@@ -193,7 +193,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         JScrollPane jScrollPane = new JScrollPane(workbench);
         jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
-        graphPanel.setBorder(new TitledBorder("Maximum Scoring DAGs in Pattern"));
+        graphPanel.setBorder(new TitledBorder("Maximum Scoring DAGs in forbid_latent_common_causes"));
         b2.add(graphPanel);
         b.add(b2);
 

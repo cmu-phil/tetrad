@@ -399,9 +399,9 @@ public class IonSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");

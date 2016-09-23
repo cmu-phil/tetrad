@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -95,8 +96,8 @@ public class DiscretizationWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DiscretizationWrapper serializableInstance() {
-        return new DiscretizationWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================== Private Methods =========================//

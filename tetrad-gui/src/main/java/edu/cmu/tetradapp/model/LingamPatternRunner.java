@@ -132,12 +132,9 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
      *
      * @see TetradSerializableUtils
      */
-    public static LingamStructureRunner serializableInstance() {
-        return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel
-                        .serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
-
     // ============================PUBLIC METHODS==========================//
 
     /**
@@ -276,7 +273,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     @Override
     public String getAlgorithmName() {
-        return "LiNGAM-Pattern";
+        return "LiNGAM-forbid_latent_common_causes";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

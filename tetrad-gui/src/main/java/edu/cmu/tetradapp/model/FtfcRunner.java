@@ -80,8 +80,8 @@ public class FtfcRunner extends AbstractMimRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static FtfcRunner serializableInstance() {
-        return new FtfcRunner(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

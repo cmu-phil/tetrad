@@ -50,9 +50,6 @@ public class TetradApplicationConfig {
      */
     private final static TetradApplicationConfig instance = new TetradApplicationConfig();
 
-    /**
-     * A map from ids to node configs.
-     */
     private Map<String, SessionNodeConfig> configs;
 
 
@@ -342,6 +339,13 @@ public class TetradApplicationConfig {
         }
 
         return true;
+    }
+
+    /**
+     * A map from ids to node configs.
+     */
+    public Map<String, SessionNodeConfig> getConfigs() {
+        return configs;
     }
 
     //============================== Inner classes =======================================//

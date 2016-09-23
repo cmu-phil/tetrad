@@ -219,8 +219,9 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new SemDataWrapper(SemImWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new SemDataWrapper(SemImWrapper.serializableInstance(), new Parameters());
     }
 
     public void setParameters(Parameters params) {

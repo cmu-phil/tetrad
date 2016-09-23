@@ -99,8 +99,8 @@ public class CalculatorWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static CalculatorWrapper serializableInstance() {
-        return new CalculatorWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================== Private Methods =========================//

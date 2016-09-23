@@ -53,9 +53,8 @@ public class ExtraCategoryInterpolatorWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ExtraCategoryInterpolatorWrapper(
-                DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

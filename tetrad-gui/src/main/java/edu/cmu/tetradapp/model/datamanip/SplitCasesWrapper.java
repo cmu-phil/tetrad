@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,13 +64,8 @@ public class SplitCasesWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        Parameters params = new Parameters();
-        params.set("numSplits", 1);
-        SplitCasesSpec spec = new SplitCasesSpec(1, new int[1], Collections.singletonList("1"));
-        params.set("splitCasesSpec", spec);
-        return new SplitCasesWrapper(DataWrapper.serializableInstance(),
-                params);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //========================= Private Methods ===================================//

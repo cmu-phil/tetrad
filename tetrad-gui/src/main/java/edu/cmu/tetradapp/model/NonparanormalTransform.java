@@ -59,10 +59,8 @@ public class NonparanormalTransform extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new NonparanormalTransform(wrapper, new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

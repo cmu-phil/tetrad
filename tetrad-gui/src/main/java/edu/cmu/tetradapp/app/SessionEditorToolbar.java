@@ -166,7 +166,7 @@ final class SessionEditorToolbar extends JPanel {
 
                 if (_button.getModel().isSelected()) {
                     setWorkbenchMode(_button);
-                    setCursor(workbench.getCursor());
+//                    setCursor(workbench.getCursor());
                 }
             }
         };
@@ -340,14 +340,36 @@ final class SessionEditorToolbar extends JPanel {
         if (selectType.equals(nodeType)) {
             workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             workbench.setNextButtonType(null);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            workbench.setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else if (edgeType.equals(nodeType)) {
             workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             workbench.setNextButtonType(null);
-            setCursor(workbench.getCursor());
+//            setCursor(workbench.getCursor());
+
+//            Toolkit toolkit = Toolkit.getDefaultToolkit();
+//            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
+//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+//            setCursor(c);
+//            workbench.setCursor(c);
+
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         } else {
             workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
             workbench.setNextButtonType(nodeType);
-            setCursor(workbench.getCursor());
+
+//            Toolkit toolkit = Toolkit.getDefaultToolkit();
+//            Image image = ImageUtils.getImage(this, "cursorImage.png");
+//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+//            setCursor(c);
+//            workbench.setCursor(c);
+
+//            setCursor(workbench.getCursor());
+
+            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+
         }
     }
 

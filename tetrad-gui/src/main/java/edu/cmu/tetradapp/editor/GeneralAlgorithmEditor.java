@@ -78,13 +78,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JButton searchButton1 = new JButton("Search");
     private final JButton searchButton2 = new JButton("Search");
     private final JTabbedPane pane;
-    private final JComboBox<AlgType> algTypesDropdown = new JComboBox<>();
+    private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
+    private final Dimension searchButton1Size;
     private Box knowledgePanel;
     private JLabel whatYouChose;
 
@@ -106,6 +107,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             System.out.println("HelpSet " + helpHS + " not found");
             throw new IllegalArgumentException();
         }
+
+        algTypesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
+        algNamesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
+        testDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
+        scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
+
+        Dimension dim = searchButton1.getPreferredSize();
+        searchButton1Size = new Dimension(dim.width + 5, dim.height + 5);
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -143,53 +152,54 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
-        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.Pattern, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.Pattern, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.Pattern, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.PAG, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.Pattern, OracleType.Score));
-//        descriptions.add(new AlgorithmDescription(AlgName.FgsMeasurement, AlgType.Pattern, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.PAG, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.PAG, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
+        //        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.forbid_latent_common_causes, OracleType.Score));
 
-        descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.Markov_Blanket, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.Markov_Blanket, OracleType.Score));
-//        descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.Pattern, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.Undirected_Graph, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
+        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.FgsMeasurement, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
+
+        descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.search_for_Markov_blankets, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.search_for_Markov_blankets, OracleType.Score));
+//        descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.produce_undirected_graphs, OracleType.Test));
 
 //        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.Undirected_Graph, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.Pattern, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.Pattern, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.PAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.PAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.PAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.Undirected_Graph, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.produce_undirected_graphs, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.produce_undirected_graphs, OracleType.None));
 
-        descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.Cluster, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Fofc, AlgType.Cluster, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Ftfc, AlgType.Cluster, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.search_for_structure_over_latents, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Fofc, AlgType.search_for_structure_over_latents, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Ftfc, AlgType.search_for_structure_over_latents, OracleType.None));
 
-        descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R2, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R3, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R4, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.RSkew, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.RSkewE, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Skew, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.Pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.Pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R2, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R3, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.R4, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.RSkew, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.RSkewE, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Skew, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.orient_pairwise, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
 
         mappedDescriptions = new HashMap<>();
 
@@ -276,16 +286,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         for (AlgType item : AlgType.values()) {
-            algTypesDropdown.addItem(item);
+            algTypesDropdown.addItem(item.toString().replace("_", " "));
         }
 
         for (AlgorithmDescription description : descriptions) {
-            if (description.getAlgType() == getAlgType()) {
+            if (description.getAlgType() == getAlgType() || getAlgType() == AlgType.ALL) {
                 algNamesDropdown.addItem(description.getAlgName());
             }
         }
 
-        algTypesDropdown.setSelectedItem(getAlgType());
+        algTypesDropdown.setSelectedItem(getAlgType().toString().replace("_", " "));
         algNamesDropdown.setSelectedItem(getAlgName());
 
         if (tests.contains(getTestType())) {
@@ -305,7 +315,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algNamesDropdown.removeAllItems();
 
                 for (AlgorithmDescription description : descriptions) {
-                    if (description.getAlgType() == algTypesDropdown.getSelectedItem()) {
+                    AlgType selectedItem = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
+                    if (description.getAlgType() == selectedItem
+                            || selectedItem == AlgType.ALL) {
                         algNamesDropdown.addItem(description.getAlgName());
                     }
                 }
@@ -774,7 +786,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setAlgName(name);
         setTestType(test);
         setScoreType(score);
-        setAlgType((AlgType) algTypesDropdown.getSelectedItem());
+        setAlgType(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
 
         if (whatYouChose != null) {
             whatYouChose.setText("You chose: " + algorithm.getDescription());
@@ -798,7 +810,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
         final JScrollPane scroll = new JScrollPane(comp);
         scroll.setPreferredSize(new Dimension(800, 300));
-        Box c = Box.createVerticalBox();
 
         JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
         JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
@@ -809,25 +820,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
         explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
         explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-
-//        scroll.setBorder(new EmptyBorder(0, 0, 0, 0));
-//        Box c = Box.createVerticalBox();
-//
-////        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-////        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-////        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-////        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//
-//        JButton explain1 = new JButton("Explain");
-//        JButton explain2 = new JButton("Explain");
-//        JButton explain3 = new JButton("Explain");
-//        JButton explain4 = new JButton("Explain");
-//
-////        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
-////        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
-////        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
-////        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         explain1.addActionListener(new ActionListener() {
             @Override
@@ -879,95 +871,65 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-//        Box d8 = Box.createHorizontalBox();
-//        JLabel label8 = new JLabel("You have a lot of options.");
-//        label8.setFont(new Font("Dialog", Font.BOLD, 13));
-//        d8.add(label8);
-//        d8.add(Box.createHorizontalGlue());
-//        c.add(d8);
-//        c.add(Box.createVerticalStrut(10));
+
+        searchButton1.setPreferredSize(searchButton1Size);
+        searchButton1.setMaximumSize(searchButton1Size);
+
+        searchButton1.setFont(new Font("Dialog", Font.BOLD, 16));
 
         Box d3 = Box.createHorizontalBox();
-        JLabel label3 = new JLabel("First, choose a type of algorithm:");
+        JLabel label3 = new JLabel("List Algorithms that ");
         label3.setFont(new Font("Dialog", Font.BOLD, 13));
         d3.add(label3);
-        d3.add(Box.createHorizontalGlue());
         algTypesDropdown.setMaximumSize(algTypesDropdown.getPreferredSize());
         d3.add(algTypesDropdown);
-        d3.add(explain1);
-        c.add(d3);
-        c.add(Box.createVerticalStrut(10));
-
-        Box d4 = Box.createHorizontalBox();
-        JLabel label4 = new JLabel("Next, choose an algorithm of that type; only algorithms compatible with your data " +
-                "will be shown:");
+        JLabel label4 = new JLabel(" : ");
         label4.setFont(new Font("Dialog", Font.BOLD, 13));
-        d4.add(label4);
-        d4.add(Box.createHorizontalGlue());
+        d3.add(label4);
         algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
-        d4.add(algNamesDropdown);
-        d4.add(explain2);
-        c.add(d4);
-        c.add(Box.createVerticalStrut(10));
-
-        Box d7 = Box.createHorizontalBox();
-        JLabel label7 = new JLabel("Next, choose a score or a test, or both. If they're not needed, they will be grayed out.");
-        label7.setFont(new Font("Dialog", Font.BOLD, 13));
-        d7.add(label7);
-        d7.add(Box.createHorizontalGlue());
-        c.add(d7);
-        c.add(Box.createVerticalStrut(10));
+        d3.add(algNamesDropdown);
+        d3.add(explain2);
+        d3.add(new JLabel("    "));
+        d3.add(searchButton1);
+        d3.add(Box.createHorizontalGlue());
 
         Box d1 = Box.createHorizontalBox();
-        JLabel label1 = new JLabel("Test type:");
+        JLabel label1 = new JLabel("Test if needed:");
         label1.setFont(new Font("Dialog", Font.BOLD, 13));
         d1.add(label1);
+        testDropdown.setMaximumSize(testDropdown.getPreferredSize());
         d1.add(testDropdown);
         d1.add(explain3);
+        d1.add(Box.createHorizontalGlue());
 
-        JLabel label2 = new JLabel("Score type:");
+        Box d2 = Box.createHorizontalBox();
+        JLabel label2 = new JLabel("Score if needed:");
         label2.setFont(new Font("Dialog", Font.BOLD, 13));
-        d1.add(Box.createHorizontalStrut(20));
-        d1.add(label2);
-        d1.add(scoreDropdown);
-        d1.add(explain4);
-        c.add(d1);
-        c.add(Box.createVerticalStrut(10));
-
-        Box d5 = Box.createHorizontalBox();
-
-        Algorithm algorithm = getAlgorithmFromInterface();
-        whatYouChose = new JLabel("You chose: " + algorithm.getDescription() + ".");
-        whatYouChose.setFont(new Font("Dialog", Font.BOLD, 13));
-
-        d5.add(whatYouChose);
-        d5.add(Box.createHorizontalGlue());
-        c.add(d5);
-        c.add(Box.createVerticalStrut(15));
+        d2.add(label2);
+        scoreDropdown.setMaximumSize(scoreDropdown.getPreferredSize());
+        d2.add(scoreDropdown);
+        d2.add(explain4);
+        d2.add(Box.createHorizontalGlue());
 
         Box d0 = Box.createHorizontalBox();
-        JLabel label0 = new JLabel("Parameters for your algorithm are listed below. Please adjust the parameter values.");
+        JLabel label0 = new JLabel("Parameters:");
         label0.setFont(new Font("Dialog", Font.BOLD, 13));
         d0.add(label0);
         d0.add(Box.createHorizontalGlue());
+
+        Box c = Box.createVerticalBox();
+        c.add(d3);
+        c.add(d1);
+        c.add(d2);
+//        c.add(Box.createVerticalGlue());
         c.add(d0);
         c.add(Box.createVerticalStrut(10));
-
         c.add(scroll);
 
-        Box d6 = Box.createHorizontalBox();
-        d6.add(Box.createHorizontalGlue());
-        d6.add(searchButton1);
-        d6.add(Box.createHorizontalGlue());
-        c.add(d6);
+        panel.add(c, BorderLayout.CENTER);
 
-        Box b = Box.createHorizontalBox();
-        b.add(c);
-        b.add(Box.createVerticalGlue());
-
+        Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
-
-        panel.add(b, BorderLayout.CENTER);
 
         return panel;
     }
@@ -977,11 +939,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private AlgType getAlgType() {
-        return AlgType.valueOf(parameters.getString("algType", "Pattern"));
+        return AlgType.valueOf(parameters.getString("algType", "ALL").replace(" ", "_"));
     }
 
-    private void setAlgType(AlgType algType) {
-        parameters.set("algType", algType.toString());
+    private void setAlgType(String algType) {
+        parameters.set("algType", algType.replace(" ", "_"));
     }
 
     private AlgName getAlgName() {
@@ -1059,8 +1021,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private enum OracleType {None, Test, Score, Both}
 
     private enum AlgType {
-        Pattern, PAG, /*DAG, */Markov_Blanket, Undirected_Graph, Pairwise,
-        Cluster
+        ALL, forbid_latent_common_causes, allow_latent_common_causes, /*DAG, */
+        search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise,
+        search_for_structure_over_latents
     }
 
     private enum TestType {

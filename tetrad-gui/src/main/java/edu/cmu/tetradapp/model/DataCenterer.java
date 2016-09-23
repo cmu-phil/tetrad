@@ -79,10 +79,8 @@ public class DataCenterer extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new DataCenterer(wrapper, new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 }

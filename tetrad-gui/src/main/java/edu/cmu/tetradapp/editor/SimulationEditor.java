@@ -110,7 +110,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final String[] graphItems = new String[]{
                 "Random Foward",
                 "Cyclic",
-                "Scale Free"
+                "Scale Free",
+                "Random One Factor MIM",
+                "Random Two Factor MIM"
         };
 
         for (String item : graphItems) {
@@ -326,6 +328,13 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     return;
                 }
 
+                if (file.listFiles().length != 0) {
+                    JOptionPane.showMessageDialog((SimulationEditor.this),
+                            "That wasn't a a new or empty directory; try typing a name for the directory\n" +
+                                    "or creating an empty directory.");
+                    return;
+                }
+
                 new Comparison().saveToFiles(file.getAbsolutePath(), simulation.getSimulation(),
                         simulation.getParams());
             }
@@ -376,6 +385,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 randomGraph = new Cyclic();
             } else if (graphItem.equals(graphItems[2])) {
                 randomGraph = new ScaleFree();
+            } else if (graphItem.equals(graphItems[3])) {
+                randomGraph = new RandomSingleFactorMim();
+            } else if (graphItem.equals(graphItems[4])) {
+                randomGraph = new RandomTwoFactorMim();
             } else {
                 throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
             }

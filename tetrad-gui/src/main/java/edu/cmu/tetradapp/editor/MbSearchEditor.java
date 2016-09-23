@@ -59,14 +59,14 @@ public class MbSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given PcxRunner.
      */
     public MbSearchEditor(MbfsRunner runner) {
-        super(runner, "Result MB Pattern");
+        super(runner, "Result MB forbid_latent_common_causes");
     }
     public MbSearchEditor(FgsMbRunner runner) {
-        super(runner, "Result MB Pattern");
+        super(runner, "Result MB forbid_latent_common_causes");
     }
 
     public MbSearchEditor(MbFanSearchRunner runner) {
-        super(runner, "Result MB Pattern");
+        super(runner, "Result MB forbid_latent_common_causes");
     }
 
     /**
@@ -180,7 +180,7 @@ public class MbSearchEditor extends AbstractSearchEditor
 
         if (getAlgorithmRunner() instanceof MbfsRunner) {
             JMenu graph = new JMenu("Graph");
-            JMenuItem showDags = new JMenuItem("Show DAG's Consistent with Pattern");
+            JMenuItem showDags = new JMenuItem("Show DAG's Consistent with forbid_latent_common_causes");
             JMenuItem meekOrient = new JMenuItem("Meek Orientation");
             JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
             JMenuItem nextGraph = new JMenuItem("Next Graph");
@@ -226,7 +226,7 @@ public class MbSearchEditor extends AbstractSearchEditor
                     MbPatternDisplay display = new MbPatternDisplay(search);
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            display, "MB DAG's Consistent with Pattern",
+                            display, "MB DAG's Consistent with forbid_latent_common_causes",
                             JOptionPane.PLAIN_MESSAGE);
                 }
             });

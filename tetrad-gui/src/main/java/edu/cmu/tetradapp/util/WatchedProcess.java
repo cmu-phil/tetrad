@@ -197,8 +197,7 @@ public abstract class WatchedProcess {
 
                     if (getErrorMessage() != null) {
                         JOptionPane.showMessageDialog(
-                                centeringComp,
-                                "Stopped with error:\n" + getErrorMessage());
+                                centeringComp, getErrorMessage());
                         return;
                     }
 

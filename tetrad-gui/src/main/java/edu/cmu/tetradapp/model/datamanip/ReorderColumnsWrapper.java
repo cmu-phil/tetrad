@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,8 +112,8 @@ public class ReorderColumnsWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static ReorderColumnsWrapper serializableInstance() {
-        return new ReorderColumnsWrapper(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

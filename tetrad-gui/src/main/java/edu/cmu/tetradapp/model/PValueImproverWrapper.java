@@ -176,10 +176,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      *
      * @see TetradSerializableUtils
      */
-    public static PValueImproverWrapper serializableInstance() {
-        return new PValueImproverWrapper(GraphWrapper.serializableInstance(),
-                DataWrapper.serializableInstance(),
-                new Parameters(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//

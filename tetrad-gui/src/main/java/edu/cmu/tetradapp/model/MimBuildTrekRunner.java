@@ -112,12 +112,8 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
      *
      * @see TetradSerializableUtils
      */
-    public static MimBuildTrekRunner serializableInstance() {
-        DataSet dataSet = DataUtils.discreteSerializableInstance();
-        DataWrapper dataWrapper = new DataWrapper(dataSet);
-        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Parameters());
-        return new MimBuildTrekRunner(mmWrapper, DataWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

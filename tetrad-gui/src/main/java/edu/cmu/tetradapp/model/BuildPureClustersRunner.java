@@ -45,7 +45,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
-        implements GraphSource, KnowledgeBoxInput, Unmarshallable {
+        implements GraphSource, Unmarshallable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -84,9 +84,8 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      *
      * @see TetradSerializableUtils
      */
-    public static BuildPureClustersRunner serializableInstance() {
-        return new BuildPureClustersRunner(DataWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

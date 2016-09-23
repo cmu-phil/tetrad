@@ -210,8 +210,11 @@ public final class GCcd implements GraphSearch {
             }
 
             if (count >= 3) {
-                psi.setEndpoint(y, x, Endpoint.ARROW);
-                psi.setEndpoint(x, y, Endpoint.TAIL);
+                psi.removeEdge(x, y);
+                psi.addDirectedEdge(y, x);
+
+//                psi.setEndpoint(y, x, Endpoint.ARROW);
+//                psi.setEndpoint(x, y, Endpoint.TAIL);
             }
         }
     }
