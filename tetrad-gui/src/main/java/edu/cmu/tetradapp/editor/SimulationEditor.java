@@ -316,7 +316,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 JFileChooser chooser = new JFileChooser();
                 String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
                 chooser.setCurrentDirectory(new File(sessionSaveLocation));
-                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int ret1 = chooser.showSaveDialog(JOptionUtils.centeringComp());
                 if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
                     return;
@@ -328,12 +328,12 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     return;
                 }
 
-                if (file.listFiles().length != 0) {
-                    JOptionPane.showMessageDialog((SimulationEditor.this),
-                            "That wasn't a a new or empty directory; try typing a name for the directory\n" +
-                                    "or creating an empty directory.");
-                    return;
-                }
+//                if (file.listFiles().length != 0) {
+//                    JOptionPane.showMessageDialog((SimulationEditor.this),
+//                            "That wasn't a a new or empty directory; try typing a name for the directory\n" +
+//                                    "or creating an empty directory.");
+//                    return;
+//                }
 
                 new Comparison().saveToFiles(file.getAbsolutePath(), simulation.getSimulation(),
                         simulation.getParams());
