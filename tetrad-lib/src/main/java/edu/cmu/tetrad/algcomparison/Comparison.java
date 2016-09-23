@@ -44,6 +44,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
 
+import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
@@ -344,10 +345,20 @@ public class Comparison {
         List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
         File dir0 = new File(path);
+        File dir;
+        int i = 0;
 
-        deleteFilesThenDirectory(dir0);
+        do {
+            dir = new File(dir0, "Simulation" + (++i));
+        } while (dir.exists());
 
-        File dir = new File(dir0, "save");
+//        if (dir.exists()) {
+//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+//                    "A file already exists named 'Simulation' in directory '" + dir0.getPath() + "'; \n" +
+//                            "please remove it first or move it out of the way.");
+//        }
+
+        deleteFilesThenDirectory(dir);
 
         try {
             int index = 0;
@@ -368,13 +379,13 @@ public class Comparison {
                 dir1.mkdirs();
                 dir2.mkdirs();
 
-                for (int i = 0; i < simulationWrapper.getNumDataSets(); i++) {
-                    File file2 = new File(dir1, "graph." + (i + 1) + ".txt");
-                    GraphUtils.saveGraph(simulationWrapper.getTrueGraph(i), file2, false);
+                for (int j = 0; j < simulationWrapper.getNumDataSets(); j++) {
+                    File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
+                    GraphUtils.saveGraph(simulationWrapper.getTrueGraph(j), file2, false);
 
-                    File file = new File(dir2, "data." + (i + 1) + ".txt");
+                    File file = new File(dir2, "data." + (j + 1) + ".txt");
                     Writer out = new FileWriter(file);
-                    DataSet dataSet = simulationWrapper.getDataSet(i);
+                    DataSet dataSet = simulationWrapper.getDataSet(j);
                     DataWriter.writeRectangularData(dataSet, out, '\t');
                     out.close();
                 }
