@@ -328,6 +328,13 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     return;
                 }
 
+                if (file.listFiles().length != 0) {
+                    JOptionPane.showMessageDialog((SimulationEditor.this),
+                            "That wasn't a a new or empty directory; try typing a name for the directory\n" +
+                                    "or creating an empty directory.");
+                    return;
+                }
+
                 new Comparison().saveToFiles(file.getAbsolutePath(), simulation.getSimulation(),
                         simulation.getParams());
             }

@@ -117,7 +117,7 @@ final class ConstructTemplateAction extends AbstractAction {
             estimateFromSimulatedData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[4])) {
             estimateThenUpdateUsingSearchResult(leftX);
-            } else {
+        } else {
             throw new IllegalStateException(
                     "Unrecognized template name: " + this.templateName);
         }
