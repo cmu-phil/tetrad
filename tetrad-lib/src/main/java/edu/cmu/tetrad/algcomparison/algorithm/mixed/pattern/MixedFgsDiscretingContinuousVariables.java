@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Discretizer;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -27,8 +24,8 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
         this.score = score;
     }
 
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        Discretizer discretizer = new Discretizer(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        Discretizer discretizer = new Discretizer(DataUtils.getContinuousDataSet(dataSet));
         List<Node> nodes = dataSet.getVariables();
 
         for (Node node : nodes) {
@@ -38,10 +35,10 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
         }
 
         dataSet = discretizer.discretize();
-
-        Fgs fgs = new Fgs(score.getScore(dataSet, parameters));
+        DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
+        Fgs fgs = new Fgs(score.getScore(_dataSet, parameters));
         Graph p = fgs.search();
-        return convertBack(dataSet, p);
+        return convertBack(_dataSet, p);
     }
 
 

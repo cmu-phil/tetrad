@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -23,7 +24,7 @@ public interface Algorithm extends HasParameters, TetradSerializable {
      * @param parameters The paramters of the search.
      * @return The result graph.
      */
-    Graph search(DataSet dataSet, Parameters parameters);
+    Graph search(DataModel dataSet, Parameters parameters);
 
     /**
      * Returns that graph that the result should be compared to.

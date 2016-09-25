@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -23,7 +24,7 @@ public interface IndependenceWrapper extends HasParameters, TetradSerializable {
      * @param parameters The paramters of the test.
      * @return True iff independence holds.
      */
-    edu.cmu.tetrad.search.IndependenceTest getTest(DataSet dataSet, Parameters parameters);
+    edu.cmu.tetrad.search.IndependenceTest getTest(DataModel dataSet, Parameters parameters);
 
     /**
      * Returns a short of this independence test.

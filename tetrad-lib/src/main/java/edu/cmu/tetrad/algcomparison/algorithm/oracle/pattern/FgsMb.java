@@ -4,14 +4,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.Collections;
@@ -39,15 +36,16 @@ public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         Graph initial = null;
 
         if (initialGraph != null) {
             initial = initialGraph.search(dataSet, parameters);
         }
 
+        Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
         edu.cmu.tetrad.search.FgsMb2 search
-                = new edu.cmu.tetrad.search.FgsMb2(score.getScore(dataSet, parameters));
+                = new edu.cmu.tetrad.search.FgsMb2(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
 
@@ -56,7 +54,7 @@ public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         this.targetName = parameters.getString("targetName");
-        Node target = dataSet.getVariable(targetName);
+        Node target = score.getVariable(targetName);
 
         return search.search(Collections.singletonList(target));
     }

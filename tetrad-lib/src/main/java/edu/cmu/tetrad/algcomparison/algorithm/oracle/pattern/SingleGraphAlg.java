@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -27,7 +27,7 @@ public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledg
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         return graph;
     }
 

@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -18,9 +19,9 @@ public class FisherZ implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         double alpha = parameters.getDouble("alpha");
-        return new IndTestFisherZ(dataSet, alpha);
+        return new IndTestFisherZ(DataUtils.getContinuousDataSet(dataSet), alpha);
     }
 
     @Override

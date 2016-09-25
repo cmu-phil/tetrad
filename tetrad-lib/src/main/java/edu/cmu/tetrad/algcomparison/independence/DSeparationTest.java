@@ -2,12 +2,9 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -27,7 +24,7 @@ public class DSeparationTest implements IndependenceWrapper {
     }
 
     @Override
-    public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
             return new IndTestDSep(randomGraph.createGraph(parameters));
         } else {

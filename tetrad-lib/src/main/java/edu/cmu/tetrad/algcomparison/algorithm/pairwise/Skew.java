@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
@@ -25,7 +27,7 @@ public class Skew implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         Graph initial = initialGraph.search(dataSet, parameters);
 
         if (initial != null) {
@@ -36,7 +38,7 @@ public class Skew implements Algorithm, TakesInitialGraph {
         }
 
         List<DataSet> dataSets = new ArrayList<>();
-        dataSets.add(dataSet);
+        dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
         Lofs2 lofs = new Lofs2(initial, dataSets);
         lofs.setRule(Lofs2.Rule.Skew);

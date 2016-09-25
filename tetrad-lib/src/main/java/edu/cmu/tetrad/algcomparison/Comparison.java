@@ -44,7 +44,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
 
-import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
@@ -1317,7 +1316,7 @@ public class Comparison {
         }
 
         @Override
-        public Graph search(DataSet dataSet, Parameters parameters) {
+        public Graph search(DataModel dataSet, Parameters parameters) {
             return algorithm.search(dataSet, this.parameters);
         }
 
@@ -1382,7 +1381,7 @@ public class Comparison {
         }
 
         @Override
-        public Graph search(DataSet dataSet, Parameters parameters) {
+        public Graph search(DataModel dataSet, Parameters parameters) {
             return algorithmWrapper.getAlgorithm().search(dataSet, parameters);
         }
 

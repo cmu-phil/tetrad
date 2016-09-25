@@ -4,11 +4,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
@@ -31,8 +28,9 @@ public class Gfci implements Algorithm, HasKnowledge {
         this.score = score;
     }
 
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        GFci search = new GFci(test.getTest(dataSet, parameters),
+                score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters));
         search.setMaxIndegree(parameters.getInt("maxIndegree"));
         search.setKnowledge(knowledge);
         search.setFaithfulnessAssumed(true);

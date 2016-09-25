@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
+import com.sun.nio.sctp.IllegalReceiveException;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -1767,6 +1768,44 @@ public final class DataUtils {
         for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
 
         return dataSet.subsetColumns(newCols);
+    }
+
+    public static ICovarianceMatrix getCovMatrix(DataModel dataModel) {
+        if (dataModel == null) {
+            throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
+        }
+
+        if (dataModel instanceof ICovarianceMatrix) {
+            return (ICovarianceMatrix) dataModel;
+        } else if (dataModel instanceof DataSet) {
+            return new CovarianceMatrixOnTheFly((DataSet) dataModel);
+        } else {
+            throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
+        }
+    }
+
+    public static DataSet getDiscreteDataSet(DataModel dataSet) {
+        if (dataSet == null || !(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
+            throw new IllegalArgumentException("Expecting a discrete data set.");
+        }
+
+        return (DataSet) dataSet;
+    }
+
+    public static DataSet getContinuousDataSet(DataModel dataSet) {
+        if (dataSet == null || !(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
+            throw new IllegalArgumentException("Expecting a continuous data set.");
+        }
+
+        return (DataSet) dataSet;
+    }
+
+    public static DataSet getMixedDataSet(DataModel dataSet) {
+        if (dataSet == null || !(dataSet instanceof DataSet)) {
+            throw new IllegalArgumentException("Expecting a mixed data set.");
+        }
+
+        return (DataSet) dataSet;
     }
 }
 
