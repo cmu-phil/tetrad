@@ -738,6 +738,16 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         return this.propertyChangeSupport;
     }
 
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
+
     /**
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the
      * API.

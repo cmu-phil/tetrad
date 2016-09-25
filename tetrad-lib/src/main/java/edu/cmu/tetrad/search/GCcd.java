@@ -74,16 +74,18 @@ public final class GCcd implements GraphSearch {
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(true);
+        fgs.setFaithfulnessAssumed(false);
         Graph graph = fgs.search();
 
         SepsetProducer sepsets0 = new SepsetsGreedy(graph, independenceTest, null, -1);
 //        sepsets.setDepth(5);
 
         Fas fas = new Fas(graph, independenceTest);
+        fas.setSepsetsReturnEmptyIfNotFixed(false);
         graph = fas.search();
 
-        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), independenceTest);
+        SepsetProducer sepsets = new SepsetsTest1(new SepsetsSet(fas.getSepsets(), independenceTest),
+                graph, independenceTest, null, -1);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -307,18 +309,19 @@ public final class GCcd implements GraphSearch {
                 if (!graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (sepset != null && !sepset.contains(b) /*&& !independenceTest.isIndependent(a, c, b)*/) {
-                        graph.removeEdge(a, b);
-                        graph.removeEdge(c, b);
-                        graph.addDirectedEdge(a, b);
-                        graph.addDirectedEdge(c, b);
+                    if (sepset != null) {
+                        if (!sepset.contains(b)) {
+                            graph.removeEdge(a, b);
+                            graph.removeEdge(c, b);
+                            graph.addDirectedEdge(a, b);
+                            graph.addDirectedEdge(c, b);
+                        }
                     } else {
                         graph.addUnderlineTriple(a, b, c);
                     }
                 }
             }
         }
-
     }
 
     private void stepC(Graph psi, SepsetProducer sepsets, SepsetMap sepsetsFromFas) {

@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.TripleClassifier;
+
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -40,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Erin Korber additions summer 2004
  * @see Endpoint
  */
-public class EdgeListGraphSingleConnections extends EdgeListGraph {
+public class EdgeListGraphSingleConnections extends EdgeListGraph implements TripleClassifier {
     static final long serialVersionUID = 23L;
 
 
@@ -476,6 +478,28 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph {
             dottedUnderLineTriples = new HashSet<>();
         }
     }
+
+    /**
+     * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
+     */
+    public List<String> getTriplesClassificationTypes() {
+        List<String> names = new ArrayList<>();
+        names.add("Underlines");
+        names.add("Dotted Underlines");
+        return names;
+    }
+
+    /**
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
+     * node.
+     */
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, this));
+        triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, this));
+        return triplesList;
+    }
+
 }
 
 

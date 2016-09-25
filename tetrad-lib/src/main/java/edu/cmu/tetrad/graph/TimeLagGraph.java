@@ -366,6 +366,16 @@ public class TimeLagGraph implements Graph {
         return numInitialLags;
     }
 
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
+
     public static class NodeId {
         private String name;
         private int lag;

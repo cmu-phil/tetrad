@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.TripleClassifier;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
@@ -54,7 +55,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class GraphSelectionEditor extends JPanel implements GraphEditable {
+public class GraphSelectionEditor extends JPanel implements GraphEditable, TripleClassifier {
 
     private final GraphSelectionEditorPanel editorPanel;
     private final JPanel forWorkbenchScrolls;
@@ -67,6 +68,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
     private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
     private List<GraphWorkbench> workbenches;
     private GraphPropertiesAction graphAction;
+    private TriplesAction triplesAction;
 
     /**
      * Constructs a graph selection editor.
@@ -171,6 +173,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
                     int selectedIndex = pane.getSelectedIndex();
                     selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
                     graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
+                    triplesAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
                 }
             }
         });
@@ -380,6 +383,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
+        triplesAction = new TriplesAction(wrapper.getGraphs().get(0), getWorkbench());
+        graph.add(triplesAction);
+
 
         return graph;
     }
@@ -1190,6 +1196,28 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
          */
         public void lostOwnership(Clipboard clipboard, Transferable contents) {
         }
+    }
+
+    /**
+     * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
+     */
+    public List<String> getTriplesClassificationTypes() {
+        List<String> names = new ArrayList<>();
+        names.add("Underlines");
+        names.add("Dotted Underlines");
+        return names;
+    }
+
+    /**
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
+     * node.
+     */
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        Graph graph = getGraph();
+        triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
+        triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
+        return triplesList;
     }
 
 }
