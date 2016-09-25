@@ -40,7 +40,6 @@ import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -156,7 +155,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -595,9 +594,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);
                 break;
-            case PcLocal:
-                algorithm = new PcLocal(independenceWrapper);
-                break;
+//            case PcLocal:
+//                algorithm = new PcLocal(independenceWrapper);
+//                break;
             case PcMax:
                 algorithm = new PcMax(independenceWrapper);
                 break;
@@ -1004,7 +1003,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGS, PcLocal, PcMax, PcMaxLocal, FAS,
+        PC, PCStable, CPC, CPCStable, FGS, /*PcLocal,*/ PcMax, PcMaxLocal, FAS,
         FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         LiNGAM, MGM,

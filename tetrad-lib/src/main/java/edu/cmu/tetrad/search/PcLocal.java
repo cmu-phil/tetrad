@@ -376,7 +376,8 @@ public class PcLocal implements GraphSearch {
                 if (graph.isAdjacentTo(z, w)) continue;
                 List<Node> cond = sepset(z, w);
 
-                if (cond != null && !cond.contains(y)) {
+                if (cond != null && !cond.contains(y) && !knowledge.isForbidden(z.getName(), y.getName())
+                        && !knowledge.isForbidden(w.getName(), y.getName())) {
                     graph.setEndpoint(z, y, Endpoint.ARROW);
                     graph.setEndpoint(w, y, Endpoint.ARROW);
                 }

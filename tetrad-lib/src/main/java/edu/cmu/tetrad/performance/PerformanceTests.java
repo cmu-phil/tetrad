@@ -227,12 +227,12 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        Pc pcStable = new Pc(test);
+        PcStable pcStable = new PcStable(test);
 //        pcStable.setVerbose(false);
-        pcStable.setDepth(depth);
+//        pcStable.setDepth(depth);
 //        pcStable.setOut(out);
 
-        Graph estPattern = pcStable.search(new FasStableConcurrent(test), test.getVariables());
+        Graph estPattern = pcStable.search();
 
 //        out.println(estPattern);
 
@@ -2274,7 +2274,7 @@ public class PerformanceTests {
 
         System.out.println("Finish");
 
-//        performanceTests.testFgsComparisonContinuous(1000, 2, 1000, 1);
+        performanceTests.testPcStable(20000, 1, 1000, .00001);
     }
 }
 
