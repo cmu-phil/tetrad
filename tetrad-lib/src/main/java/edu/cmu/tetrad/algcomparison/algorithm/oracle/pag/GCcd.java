@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -25,9 +26,11 @@ public class GCcd implements Algorithm {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(
-                score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters));
-//        search.setApplyR1(true);
+        edu.cmu.tetrad.search.GCcd search
+                = new edu.cmu.tetrad.search.GCcd(score.getScore(
+                DataUtils.getContinuousDataSet(dataSet), parameters));
+        search.setUseRuleC(parameters.getBoolean("useRuleC"));
+        search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
 
         return search.search();
@@ -52,6 +55,8 @@ public class GCcd implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("depth");
+        parameters.add("useRuleC");
+        parameters.add("applyR1");
         return parameters;
     }
 }
