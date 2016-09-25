@@ -1780,13 +1780,13 @@ public final class DataUtils {
         } else if (dataModel instanceof DataSet) {
             return new CovarianceMatrixOnTheFly((DataSet) dataModel);
         } else {
-            throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
+            throw new IllegalArgumentException("Sorry, I was expecting either a tabular dataset or a covariance matrix.");
         }
     }
 
     public static DataSet getDiscreteDataSet(DataModel dataSet) {
         if (dataSet == null || !(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
-            throw new IllegalArgumentException("Expecting a discrete data set.");
+            throw new IllegalArgumentException("Sorry, I was expecting a discrete data set.");
         }
 
         return (DataSet) dataSet;
@@ -1794,7 +1794,7 @@ public final class DataUtils {
 
     public static DataSet getContinuousDataSet(DataModel dataSet) {
         if (dataSet == null || !(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
-            throw new IllegalArgumentException("Expecting a continuous data set.");
+            throw new IllegalArgumentException("Sorry, I was expecting a (tabular) continuous data set.");
         }
 
         return (DataSet) dataSet;
@@ -1802,7 +1802,7 @@ public final class DataUtils {
 
     public static DataSet getMixedDataSet(DataModel dataSet) {
         if (dataSet == null || !(dataSet instanceof DataSet)) {
-            throw new IllegalArgumentException("Expecting a mixed data set.");
+            throw new IllegalArgumentException("Sorry, I was expecting a (tabular) mixed data set.");
         }
 
         return (DataSet) dataSet;

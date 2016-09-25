@@ -277,7 +277,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             } else {
                 for (DataModel data : getDataModelList()) {
                     System.out.println("Analyzing data set # " + (++i));
-                    DataSet dataSet = (DataSet) data;
+                    DataModel dataSet = data; //(DataSet) data;
                     Algorithm algorithm = getAlgorithm();
 
                     if (algorithm instanceof HasKnowledge) {

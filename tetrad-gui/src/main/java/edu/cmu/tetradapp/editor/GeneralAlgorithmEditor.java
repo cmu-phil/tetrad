@@ -224,7 +224,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
             tests = dsepTests;
         } else if (!(dataModelList.isEmpty())) {
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 tests = continuousTests;
@@ -248,7 +248,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
             tests = dsepTests;
         } else if (!dataModelList.isEmpty()) {
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 tests = continuousTests;
@@ -266,7 +266,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (dataModelList.isEmpty() && runner.getGraphs() != null) {
             scores = dsepScores;
         } else if (!(dataModelList.isEmpty())) {
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 scores = continuousScores;
@@ -737,11 +737,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<IndependenceTest> tests = new ArrayList<>();
 
         for (DataModel dataModel : runner.getDataModelList()) {
-            if (!(dataModel instanceof DataSet)) {
-                throw new IllegalArgumentException("I was expecting a data set to save out indepenedence tests, sorry.");
-            }
-
-            IndependenceTest _test = independenceWrapper.getTest((DataSet) dataModel, parameters);
+            IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
             tests.add(_test);
         }
 
