@@ -22,8 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.TripleClassifier;
-import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -32,7 +31,6 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.*;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;

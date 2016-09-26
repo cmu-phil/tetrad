@@ -21,9 +21,8 @@
 
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.TripleClassifier;
+import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import java.awt.*;

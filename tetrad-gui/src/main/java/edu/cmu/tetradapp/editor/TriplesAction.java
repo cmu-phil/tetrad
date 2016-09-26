@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.TripleClassifier;
+import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;

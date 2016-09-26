@@ -49,7 +49,6 @@ public final class GCcd implements GraphSearch {
     private List<Node> nodes;
     private boolean verbose = false;
     private boolean applyR1 = true;
-    private boolean useRuleC;
 
     public GCcd(Score score) {
         if (score == null) throw new NullPointerException();
@@ -77,36 +76,29 @@ public final class GCcd implements GraphSearch {
         fgs.setFaithfulnessAssumed(false);
         Graph graph = fgs.search();
 
-        SepsetProducer sepsets0 = new SepsetsGreedy(graph, independenceTest, null, -1);
-//        sepsets.setDepth(5);
-
         Fas fas = new Fas(graph, independenceTest);
-        fas.setSepsetsReturnEmptyIfNotFixed(false);
         graph = fas.search();
-
-        SepsetProducer sepsets = new SepsetsTest1(new SepsetsSet(fas.getSepsets(), independenceTest),
-                graph, independenceTest, null, -1);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
+        SepsetProducer sepsets = new SepsetsGfci(graph, independenceTest, -1);
+
 //        addColliders(graph);
         modifiedR0(graph, sepsets);
-
-        if (isUseRuleC()) {
-            stepC(graph, sepsets0, null);
-        }
-
+        stepC(graph, sepsets, null);
         stepD(graph, sepsets, supSepsets, null);
         if (stepE(supSepsets, graph)) return graph;
         stepF(graph, sepsets, supSepsets);
-//
-//        // Applies R1 recursively so long as it doesn't create new
-//        // colliders.
-//        if (isApplyR1()) {
-//            for (Node node : nodes) {
-//                orientR1(node, graph, new LinkedList<Node>());
-//            }
-//        }
+
+        orientCircleTails(graph);
+
+        // Applies R1 recursively so long as it doesn't create new
+        // colliders.
+        if (isApplyR1()) {
+            for (Node node : nodes) {
+                orientR1(node, graph, new LinkedList<Node>());
+            }
+        }
 
         return graph;
     }
@@ -315,9 +307,9 @@ public final class GCcd implements GraphSearch {
                             graph.removeEdge(c, b);
                             graph.addDirectedEdge(a, b);
                             graph.addDirectedEdge(c, b);
+                        } else {
+                            graph.addUnderlineTriple(a, b, c);
                         }
-                    } else {
-                        graph.addUnderlineTriple(a, b, c);
                     }
                 }
             }
@@ -357,21 +349,17 @@ public final class GCcd implements GraphSearch {
 
                 //...X is not in sepset<A, Y>...
                 List<Node> sepset = sepsets.getSepset(a, y);
-                if (sepset == null && sepsetsFromFas != null) sepset = sepsetsFromFas.get(a, y);
-
-                if (sepset.contains(x)) continue;
 
                 if (!sepsets.isIndependent(a, x, sepset)) {
-                    count++;
+                    if (count >= 1) {
+                        break;
+                    }
                 }
             }
 
-            if (count >= 3) {
+            if (count >= 1) {
                 psi.removeEdge(x, y);
                 psi.addDirectedEdge(y, x);
-
-//                psi.setEndpoint(y, x, Endpoint.ARROW);
-//                psi.setEndpoint(x, y, Endpoint.TAIL);
             }
         }
     }
@@ -448,7 +436,6 @@ public final class GCcd implements GraphSearch {
 
                         setT.add(b);
                         List<Node> sepset = sepsets.getSepset(a, c);
-                        if (sepset == null && fasSepsets != null) sepset = fasSepsets.get(a, c);
                         setT.addAll(sepset);
 
                         List<Node> listT = new ArrayList<>(setT);
@@ -515,8 +502,7 @@ public final class GCcd implements GraphSearch {
                     continue;
                 }
 
-                Set<Node> localMinusSep = countLocalMinusSep(sep, loc,
-                        a, b, c);
+                Set<Node> localMinusSep = countLocalMinusSep(sep, loc, a, b, c);
                 int count = localMinusSep.size();
 
                 if (count > maxCount) {
@@ -569,6 +555,8 @@ public final class GCcd implements GraphSearch {
 
                     // Orient B*-oD as B*-D
                     psi.setEndpoint(b, d, Endpoint.TAIL);
+//                    psi.setEndpoint(b, d, Endpoint.TAIL);
+//                    psi.setEndpoint(d, b, Endpoint.ARROW);
                 } else {
                     if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
                         continue;
@@ -755,20 +743,22 @@ public final class GCcd implements GraphSearch {
         return false;
     }
 
+    private void orientCircleTails(Graph psi) {
+        for (Edge edge : psi.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.TAIL) {
+                edge.setEndpoint1(Endpoint.TAIL);
+            }
+            else if (edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.CIRCLE) {
+                edge.setEndpoint2(Endpoint.TAIL);
+            }
+        }
+    }
+
     public boolean isApplyR1() {
         return applyR1;
     }
-
     public void setApplyR1(boolean applyR1) {
         this.applyR1 = applyR1;
-    }
-
-    public void setUseRuleC(boolean useRuleC) {
-        this.useRuleC = useRuleC;
-    }
-
-    public boolean isUseRuleC() {
-        return useRuleC;
     }
 }
 

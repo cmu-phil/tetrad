@@ -29,7 +29,6 @@ public class GCcd implements Algorithm {
         edu.cmu.tetrad.search.GCcd search
                 = new edu.cmu.tetrad.search.GCcd(score.getScore(
                 DataUtils.getContinuousDataSet(dataSet), parameters));
-        search.setUseRuleC(parameters.getBoolean("useRuleC"));
         search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
 
@@ -55,7 +54,6 @@ public class GCcd implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("depth");
-        parameters.add("useRuleC");
         parameters.add("applyR1");
         return parameters;
     }

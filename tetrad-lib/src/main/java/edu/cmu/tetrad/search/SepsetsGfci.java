@@ -29,22 +29,23 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.List;
 
 /**
- * Created by josephramsey on 3/24/15.
+ * The problem for GFCI sepsets is as follows. We start by estimating the adjacencies using
+ * FGS followed by FAS. But if X is not adjacent to Z in the resulting graph, and you ask for
+ * a sepset, one must be given. So we return a conditioning set that minimizes a score (is as
+ * close to independence as possible, or independent).
+ *
+ * @author jdramsey
  */
-public class SepsetsTest1 implements SepsetProducer {
+public class SepsetsGfci implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
-    private final SepsetMap extraSepsets;
-    private final SepsetsSet existingSepsets;
     private int depth = 3;
     private double p = Double.NaN;
     private boolean verbose = false;
 
-    public SepsetsTest1(SepsetsSet existingSepsets, Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
-        this.existingSepsets = existingSepsets;
+    public SepsetsGfci(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
-        this.extraSepsets = extraSepsets;
         this.depth = depth;
     }
 
@@ -74,19 +75,6 @@ public class SepsetsTest1 implements SepsetProducer {
 
         double _p = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
-
-        if (extraSepsets != null) {
-            final List<Node> possibleDsep = extraSepsets.get(i, k);
-            if (possibleDsep != null) {
-                independenceTest.isIndependent(i, k, possibleDsep);
-                double p = independenceTest.getPValue();
-
-                if (p < _p) {
-                    _p = p;
-                    _v = possibleDsep;
-                }
-            }
-        }
 
         List<Node> adji = graph.getAdjacentNodes(i);
         List<Node> adjk = graph.getAdjacentNodes(k);
@@ -129,12 +117,8 @@ public class SepsetsTest1 implements SepsetProducer {
             }
         }
 
-        if (p < 0) {
-            this.p = _p;
-            return _v;
-        } else {
-            return null;
-        }
+        this.p = _p;
+        return _v;
     }
 
 

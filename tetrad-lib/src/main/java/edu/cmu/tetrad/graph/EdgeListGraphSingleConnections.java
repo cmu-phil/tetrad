@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.TripleClassifier;
-
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;

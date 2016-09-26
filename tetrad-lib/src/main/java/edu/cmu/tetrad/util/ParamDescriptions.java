@@ -113,7 +113,7 @@ public class ParamDescriptions {
         put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0));
         put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0));
 
-        put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
+//        put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
         put("applyR1", new ParamDescription("Yes if the orient away from collider rule for CCD should be applied", false));
     }
 
