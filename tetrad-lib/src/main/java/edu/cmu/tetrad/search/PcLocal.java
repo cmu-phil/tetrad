@@ -68,7 +68,7 @@ public class PcLocal implements GraphSearch {
     private MeekRules meekRules;
     private boolean recordSepsets = true;
     private SepsetMap sepsetMap = new SepsetMap();
-    private SepsetsMinScore sepsetProducer;
+    private SepsetProducer sepsetProducer;
     private SemBicScore score;
     private ConcurrentMap<Node, Integer> hashIndices;
     private boolean verbose = false;
@@ -138,7 +138,7 @@ public class PcLocal implements GraphSearch {
             graph.reorientAllWith(Endpoint.TAIL);
         }
 
-        sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), null, -1);
+        sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), -1);
 
         meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());

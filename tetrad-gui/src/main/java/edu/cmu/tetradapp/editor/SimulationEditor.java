@@ -102,10 +102,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(),
                 simulation.getParams()));
-        JScrollPane graphScroll = new JScrollPane(graphEditor);
-        tabbedPane.addTab("True Graph", graphScroll);
+        tabbedPane.addTab("True Graph", graphEditor);
         tabbedPane.addTab("Data", dataEditor);
-        tabbedPane.setPreferredSize(new Dimension(800, 600));
+        tabbedPane.setPreferredSize(new Dimension(900, 600));
 
         final String[] graphItems = new String[]{
                 "Random Foward",

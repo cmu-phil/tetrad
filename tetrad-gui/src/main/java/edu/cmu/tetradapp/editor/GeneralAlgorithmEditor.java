@@ -163,7 +163,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         //        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
 //        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.forbid_latent_common_causes, OracleType.Test));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -578,9 +578,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Ccd(independenceWrapper);
                 break;
             case GCCD:
-                algorithm = new GCcd(scoreWrapper);
+                algorithm = new GCcd(independenceWrapper);
                 break;
-
             case FAS:
                 algorithm = new FAS(independenceWrapper);
                 break;

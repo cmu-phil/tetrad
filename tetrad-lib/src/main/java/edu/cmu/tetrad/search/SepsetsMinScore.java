@@ -29,105 +29,96 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.List;
 
 /**
- * Selects the maximum score value sepset
- * <score>
- * Created by josephramsey on 3/24/15.
+ * One is often faced with the following problem. We start by estimating the adjacencies using
+ * FGS followed by FAS. But if X is not adjacent to Z in the resulting graph, and you ask for
+ * a sepset, one must be given. So we return a conditioning set that minimizes a score (is as
+ * close to independence as possible, or independent).
+ *
+ * @author jdramsey
  */
 public class SepsetsMinScore implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
-    private final SepsetMap extraSepsets;
     private int depth = 3;
-    private double score = Double.NaN;
-    private boolean verbose = false;
     private double p = Double.NaN;
+    private boolean verbose = false;
 
-    public SepsetsMinScore(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsMinScore(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
-        this.extraSepsets = extraSepsets;
         this.depth = depth;
     }
 
     /**
-     * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
+     * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public List<Node> getSepset(Node i, Node k) {
-        return getMinScoreSet(i, k);
+        return getMaxSepset(i, k);
     }
 
+    /**
+     * Assumes i--j--k is an unshielded triple.
+     */
     public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> set = getMinScoreSet(i, k);
-        return set != null && !set.contains(j);
+        return !getMaxSepset(i, k).contains(j);
     }
 
+    /**
+     * Assumes i--j--k is an unshielded triple.
+     */
     public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> set = getMinScoreSet(i, k);
-        return set != null && set.contains(j);
+        return getMaxSepset(i, k).contains(j);
     }
 
-    private List<Node> getMinScoreSet(Node i, Node k) {
-        double score = Double.POSITIVE_INFINITY;
+    private List<Node> getMaxSepset(Node i, Node k) {
+        double _p = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
-
-        if (extraSepsets != null) {
-            final List<Node> v = extraSepsets.get(i, k);
-            if (v != null) {
-                independenceTest.isIndependent(i, k, v);
-                double _score = independenceTest.getScore();
-
-                if (/*_score < 0 && */_score < score) {
-                    score = _score;
-                    this.p = independenceTest.getScore();
-                    _v = v;
-                }
-            }
-        }
 
         List<Node> adji = graph.getAdjacentNodes(i);
         List<Node> adjk = graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adji.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
-            int[] choice;
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adji.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                int[] choice;
 
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adji);
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adji);
 
-                getIndependenceTest().isIndependent(i, k, v);
-                double _score = getIndependenceTest().getScore();
+                    getIndependenceTest().isIndependent(i, k, v);
+                    double p = getIndependenceTest().getPValue();
 
-                if (/*_score < 0 && */_score < score) {
-                    score = _score;
-                    this.p = independenceTest.getScore();
-                    _v = v;
+                    if (p < _p) {
+                        _p = p;
+                        _v = v;
+                    }
+                }
+            }
+
+            if (d <= adjk.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adjk);
+
+                    getIndependenceTest().isIndependent(i, k, v);
+                    double p = getIndependenceTest().getPValue();
+
+                    if (p < _p) {
+                        _p = p;
+                        _v = v;
+                    }
                 }
             }
         }
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adjk.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adjk);
-
-                getIndependenceTest().isIndependent(i, k, v);
-                double _score = getIndependenceTest().getScore();
-
-                if (/*_score < 0 &&*/ _score < score) {
-                    score = _score;
-                    this.p = independenceTest.getPValue();
-                    _v = v;
-                }
-            }
-        }
-
-        this.score = score;
+        this.p = _p;
         return _v;
     }
+
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
@@ -141,7 +132,7 @@ public class SepsetsMinScore implements SepsetProducer {
 
     @Override
     public double getScore() {
-        return score;
+        return -(p - independenceTest.getAlpha());
     }
 
     @Override
@@ -161,6 +152,5 @@ public class SepsetsMinScore implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
 }
 

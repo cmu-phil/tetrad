@@ -322,7 +322,6 @@ public final class GFci implements GraphSearch {
             Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
             Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
-
             if (from == null || to == null) {
                 continue;
             }

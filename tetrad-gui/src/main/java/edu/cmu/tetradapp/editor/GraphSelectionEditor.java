@@ -293,7 +293,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             });
 
             JScrollPane workbenchScroll = new JScrollPane(workbench);
-            workbenchScroll.setPreferredSize(new Dimension(450, 300));
+            workbenchScroll.setPreferredSize(new Dimension(450, 450));
 
             workbenchScrolls.add(workbenchScroll);
         }
@@ -815,7 +815,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             JList<Node> list = new JList<>(new VariableListModel());
             list.setFont(getFONT());
             list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-            list.setVisibleRowCount(10);
+            list.setVisibleRowCount(8);
             return list;
         }
 

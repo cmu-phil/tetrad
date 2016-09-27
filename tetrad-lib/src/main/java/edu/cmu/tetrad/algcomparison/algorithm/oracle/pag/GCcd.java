@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -17,18 +19,18 @@ import java.util.List;
  */
 public class GCcd implements Algorithm {
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
+    private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GCcd(ScoreWrapper score) {
-        this.score = score;
+    public GCcd(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.GCcd search
-                = new edu.cmu.tetrad.search.GCcd(score.getScore(
-                DataUtils.getContinuousDataSet(dataSet), parameters));
+        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
+        IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
+        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(test);
         search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
 
@@ -42,17 +44,17 @@ public class GCcd implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "GCCD (Greedy Cyclic Discovery Search) using " + score.getDescription();
+        return "GCCD (Greedy Cyclic Discovery Search) using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
+        List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("applyR1");
         return parameters;
