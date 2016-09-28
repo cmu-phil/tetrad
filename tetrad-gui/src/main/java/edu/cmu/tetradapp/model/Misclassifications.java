@@ -21,32 +21,27 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
- * Compares a target workbench with a reference workbench by counting errors of
- * omission and commission.  (for edge presence only, not orientation).
+ * Compares a target workbench with a reference workbench using an edge type
+ * misclassification matrix and an endpoint misclassification matrix.
  *
  * @author Joseph Ramsey
- * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class Misclassifications implements SessionModel {
+public final class Misclassifications implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
-    private Graph dag;
+    private Algorithm algorithm;
     private boolean useVcpcOutputs = false;
     private boolean useCpcOutputs = false;
     private boolean usePcOutputs = false;
@@ -55,84 +50,56 @@ public final class Misclassifications implements SessionModel {
     private boolean useSFcpcOutputs = false;
     private boolean useFcpcOutputs = false;
 
+    private Set<Edge> vcpcAdjacent;
+    private Set<Edge> vcpcApparent;
+    private Set<Edge> vcpcDefinite;
+    private List<Node> vcpcNodes;
 
-    //     private VcpcRunner vcpc = null;
-//     private PcRunner pc = null;
-    private GesRunner ges = null;
-//     private CpcRunner cpc = null;
+    private Set<Edge> fvcpcAdjacent;
+    private Set<Edge> fvcpcApparent;
+    private Set<Edge> fvcpcDefinite;
+    private List<Node> fvcpcNodes;
 
-    Set<Edge> vcpcAdjacent;
-    Set<Edge> vcpcApparent;
-    Set<Edge> vcpcDefinite;
-    List<Node> vcpcNodes;
+    private Set<Edge> sfVcpcAdjacent;
+    private Set<Edge> sfVcpcApparent;
+    private Set<Edge> sfVcpcDefinite;
+    private List<Node> sfVcpcNodes;
 
-    Set<Edge> fvcpcAdjacent;
-    Set<Edge> fvcpcApparent;
-    Set<Edge> fvcpcDefinite;
-    List<Node> fvcpcNodes;
+    private Set<Edge> sVcpcAdjacent;
+    private Set<Edge> sVcpcApparent;
+    private Set<Edge> sVcpcDefinite;
+    private List<Node> sVcpcNodes;
 
-    Set<Edge> sfVcpcAdjacent;
-    Set<Edge> sfVcpcApparent;
-    Set<Edge> sfVcpcDefinite;
-    List<Node> sfVcpcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
-    Set<Edge> sVcpcAdjacent;
-    Set<Edge> sVcpcApparent;
-    Set<Edge> sVcpcDefinite;
-    List<Node> sVcpcNodes;
+    private Set<Edge> cpcAdjacent;
+    private Set<Edge> cpcNonadjacent;
+    private List<Node> cpcNodes;
 
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
-
-    Set<Edge> cpcAdjacent;
-    Set<Edge> cpcNonadjacent;
-    List<Node> cpcNodes;
-
-
-    /**
-     * @serial Can be null.
-     */
     private String name;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private GraphComparisonParams params;
-
-    /**
-     * The target workbench.
-     *
-     * @serial Cannot be null.
-     */
-    private Graph targetGraph;
-
-    /**
-     * The workbench to which the target workbench is being compared.
-     *
-     * @serial Cannot be null.
-     */
-    private Graph referenceGraph;
-
-    /**
-     * The true DAG, if available. (May be null.)
-     */
-    private Graph trueGraph;
+    private Parameters params;
+    private List<Graph> targetGraphs = new ArrayList<>();
+    private List<Graph> referenceGraphs = new ArrayList<>();
 
     private NumberFormat nf;
-    private List<Node> nodes;
 
     //=============================CONSTRUCTORS==========================//
 
+    public Misclassifications(GeneralAlgorithmRunner model, Parameters params) {
+        this(model, model.getDataWrapper(), params);
+    }
+
     /**
-     * Compares the results of a Pc to a reference workbench by counting errors
+     * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public Misclassifications(SessionModel model1, SessionModel model2,
-                              GraphComparisonParams params) {
+                              Parameters params) {
         if (params == null) {
-            throw new NullPointerException("Params must not be null");
+            throw new NullPointerException("Parameters must not be null");
         }
 
         if (model1 instanceof VcpcRunner && model2 instanceof PcRunner) {
@@ -216,14 +183,6 @@ public final class Misclassifications implements SessionModel {
             setVcpcFastFields((VcpcFastRunner) model2);
         }
 
-        if ((model2 instanceof CpcRunner && model1 instanceof VcpcFastRunner)) {
-            this.useFcpcOutputs = true;
-            setVcpcFields((VcpcRunner) model2);
-            setVcpcFastFields((VcpcFastRunner) model1);
-
-        }
-
-
         // Need to be able to construct this object even if the models are
         // null. Otherwise the interface is annoying.
         if (model2 == null) {
@@ -234,38 +193,92 @@ public final class Misclassifications implements SessionModel {
             model1 = new DagWrapper(new Dag());
         }
 
-        if (!(model1 instanceof GraphSource) ||
-                !(model2 instanceof GraphSource)) {
+        if (!(model1 instanceof MultipleGraphSource) ||
+                !(model2 instanceof MultipleGraphSource)) {
             throw new IllegalArgumentException("Must be graph sources.");
         }
 
         this.params = params;
 
-        String referenceName = this.params.getReferenceGraphName();
+        String referenceName = params.getString("referenceGraphName", null);
 
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
-        } else if (referenceName.equals(model1.getName())) {
-            this.referenceGraph = ((GraphSource) model1).getGraph();
-            this.targetGraph = ((GraphSource) model2).getGraph();
-        } else if (referenceName.equals(model2.getName())) {
-            this.referenceGraph = ((GraphSource) model2).getGraph();
-            this.targetGraph = ((GraphSource) model1).getGraph();
         } else {
-            throw new IllegalArgumentException(
-                    "Neither of the supplied session " + "models is named '" +
-                            referenceName + "'.");
+            Object model11 = model1;
+            Object model21 = model2;
+
+            if (referenceName.equals(model1.getName())) {
+                if (model11 instanceof MultipleGraphSource) {
+                    this.referenceGraphs = ((MultipleGraphSource) model11).getGraphs();
+                }
+
+                if (model21 instanceof MultipleGraphSource) {
+                    this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
+                }
+
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
+                }
+            } else if (referenceName.equals(model2.getName())) {
+                if (model21 instanceof MultipleGraphSource) {
+                    this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
+                }
+
+                if (model11 instanceof MultipleGraphSource) {
+                    this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
+                }
+
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
+                }
+            } else {
+                throw new IllegalArgumentException(
+                        "Neither of the supplied session models is named '" +
+                                referenceName + "'.");
+            }
         }
 
-        this.targetGraph = GraphUtils.replaceNodes(targetGraph, this.referenceGraph.getNodes());
+        for (int i = 0; i < targetGraphs.size(); i++) {
+            targetGraphs.set(i,GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
+        }
 
-        Set<Node> _nodes = new HashSet<Node>(this.referenceGraph.getNodes());
-        _nodes.addAll(this.targetGraph.getNodes());
-        this.nodes = new ArrayList<Node>(_nodes);
+//        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
+//            throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
+//        }
+//
+//        if (model1 instanceof GeneralAlgorithmRunner) {
+//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
+//            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+//        } else if (model2 instanceof GeneralAlgorithmRunner) {
+//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
+//            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+//        }
 
+        if (algorithm != null) {
+            for (int i = 0; i < referenceGraphs.size(); i++) {
+                referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
+            }
+        }
+
+        if (referenceGraphs.size() != targetGraphs.size()) {
+            throw new IllegalArgumentException("I was expecting the same number of graphs in each parent.");
+        }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
-        TetradLogger.getInstance().log("comparison", getComparisonString());
+
+        for (int i = 0; i < referenceGraphs.size(); i++) {
+            TetradLogger.getInstance().log("comparison", "\nModel " + (i + 1));
+            TetradLogger.getInstance().log("comparison", getComparisonString(i));
+        }
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
     }
@@ -315,7 +328,7 @@ public final class Misclassifications implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static Node serializableInstance() { // TODO
+    public static Node serializableInstance() {
         return new GraphNode("X");
     }
 
@@ -329,150 +342,69 @@ public final class Misclassifications implements SessionModel {
         this.name = name;
     }
 
-    public String getComparisonString() {
+    public String getComparisonString(int i) {
 
         if (this.useVcpcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsOne());
-//            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsOne() +
+                    "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useCpcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsTwo());
-//            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsTwo() +
+                    "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
         if (this.usePcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsThree());
-//            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsThree() +
+                    "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useSvcpcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsFour());
-//            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsFour() +
+                    "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
         if (this.useScpcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsFive());
-//            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsFive() +
+                    "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useSFcpcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsSix());
-//            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsSix() +
+                    "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useFcpcOutputs) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\n\nAdjacency Misclassification:\n");
-            builder.append(adjacencyMisclassificationsSeven());
-            builder.append("\n\nEndpoint Misclassification:\n");
-//            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
-            builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsSeven() +
+                    "\n\nEndpoint Misclassification:\n" + "\nEdge Misclassifications:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         } else {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
-            builder.append("\nEdge Misclassification:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
-            builder.append("\n\nEndpoint Misclassification:\n");
-            builder.append(MisclassificationUtils.endpointMisclassification(targetGraph, referenceGraph));
-            return builder.toString();
+            return (params.get("targetGraphName", null) + " down the left; " +
+                    params.get("referenceGraphName", null) + " across the top.") +
+                    "\n\nEdge Misclassification:\n" +
+                    MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i)) +
+                    "\nEndpoint Misclassification:\n" +
+                    MisclassificationUtils.endpointMisclassification(targetGraphs.get(i), referenceGraphs.get(i));
         }
     }
-
-//    public static String endpointMisclassification(List<Node> _nodes, Graph estGraph, Graph refGraph) {
-//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//
-//        int[][] counts = new int[4][4];
-//
-//        for (int i = 0; i < _nodes.size(); i++) {
-//            for (int j = 0; j < _nodes.size(); j++) {
-//                if (i == j) continue;
-//
-//                Endpoint endpfoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
-//                Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
-//
-//                int index1 = getIndex(endpoint1);
-//                int index2 = getIndex(endpoint2);
-//
-//                counts[index1][index2]++;
-//            }
-//        }
-//
-//        TextTable table2 = new TextTable(5, 5);
-//
-//        table2.setToken(0, 1, "-o");
-//        table2.setToken(0, 2, "->");
-//        table2.setToken(0, 3, "--");
-//        table2.setToken(0, 4, "NULL");
-//        table2.setToken(1, 0, "-o");
-//        table2.setToken(2, 0, "->");
-//        table2.setToken(3, 0, "--");
-//        table2.setToken(4, 0, "NULL");
-//
-//        int sum = 0;
-//        for (int i = 0; i < 4; i++) {
-//            for (int j = 0; j < 4; j++) {
-//                if (i == 3 && j == 3) continue;
-//                else sum += counts[i][j];
-//            }
-//        }
-//
-//        for (int i = 0; i < 4; i++) {
-//            for (int j = 0; j < 4; j++) {
-//                if (i == 3 && j == 3) table2.setToken(i + 1, j + 1, "*");
-//                else table2.setToken(i + 1, j + 1, nf.format(counts[i][j] / (double) sum));
-//            }
-//        }
-//
-//        return table2.toString();
-//
-//        //        println("\n" + name);
-//        //        println(table2.toString());
-//        //        println("");
-//    }
 
     private String adjacencyMisclassificationsFour() {
 
@@ -485,16 +417,16 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        Set<Edge> adjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> adjDefNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjDefNonAdj = new HashSet<Edge>();
+        Set<Edge> adjAppNonAdj = new HashSet<>();
+        Set<Edge> adjDefNonAdj = new HashSet<>();
+        Set<Edge> nonAdjAppNonAdj = new HashSet<>();
+        Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
         Set<Edge> sVcpcAdj = MisclassificationUtils.convertNodes(sVcpcAdjacent, vcpcNodes);
         Set<Edge> sVcpcAppNonadj = MisclassificationUtils.convertNodes(sVcpcApparent, vcpcNodes);
         Set<Edge> sVcpcDefNonadj = MisclassificationUtils.convertNodes(sVcpcDefinite, vcpcNodes);
 
-        Set<Edge> vcpcAdj = new HashSet<Edge>(vcpcAdjacent);
+        Set<Edge> vcpcAdj = new HashSet<>(vcpcAdjacent);
 
 
         for (Edge edge : sVcpcAdj) {
@@ -551,9 +483,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(4, 4);
 
 
@@ -571,7 +500,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         return builder.toString();
     }
 
@@ -586,26 +515,16 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
-        Set<Edge> adjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> adjDefNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjDefNonAdj = new HashSet<Edge>();
+        Set<Edge> adjAppNonAdj = new HashSet<>();
+        Set<Edge> adjDefNonAdj = new HashSet<>();
+        Set<Edge> nonAdjAppNonAdj = new HashSet<>();
+        Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
         Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(cpcAdjacent, sVcpcNodes);
         Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(cpcNonadjacent, sVcpcNodes);
 
-        Set<Edge> svcpcAdj = new HashSet<Edge>(sVcpcAdjacent);
+        Set<Edge> svcpcAdj = new HashSet<>(sVcpcAdjacent);
 
         for (Edge edge : cpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -669,9 +588,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(5, 4);
 
         table9.setToken(1, 0, "Adjacent");
@@ -689,7 +605,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         System.out.println("Sample CM: " + table9);
         return builder.toString();
     }
@@ -706,26 +622,16 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
-        Set<Edge> adjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> adjDefNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjDefNonAdj = new HashSet<Edge>();
+        Set<Edge> adjAppNonAdj = new HashSet<>();
+        Set<Edge> adjDefNonAdj = new HashSet<>();
+        Set<Edge> nonAdjAppNonAdj = new HashSet<>();
+        Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
         Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(cpcAdjacent, sfVcpcNodes);
         Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(cpcNonadjacent, sfVcpcNodes);
 
-        Set<Edge> sfvcpcAdj = new HashSet<Edge>(sfVcpcAdjacent);
+        Set<Edge> sfvcpcAdj = new HashSet<>(sfVcpcAdjacent);
 
         for (Edge edge : cpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -789,9 +695,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(5, 4);
 
         table9.setToken(1, 0, "Adjacent");
@@ -809,7 +712,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         System.out.println("Sample Fast CM: " + table9);
         return builder.toString();
     }
@@ -825,26 +728,16 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
-        Set<Edge> adjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> adjDefNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjDefNonAdj = new HashSet<Edge>();
+        Set<Edge> adjAppNonAdj = new HashSet<>();
+        Set<Edge> adjDefNonAdj = new HashSet<>();
+        Set<Edge> nonAdjAppNonAdj = new HashSet<>();
+        Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
         Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(cpcAdjacent, fvcpcNodes);
         Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(cpcNonadjacent, fvcpcNodes);
 
-        Set<Edge> fvcpcAdj = new HashSet<Edge>(fvcpcAdjacent);
+        Set<Edge> fvcpcAdj = new HashSet<>(fvcpcAdjacent);
 
         for (Edge edge : cpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -908,9 +801,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(5, 4);
 
         table9.setToken(1, 0, "Adjacent");
@@ -928,7 +818,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         System.out.println("Sample CM: " + table9);
         return builder.toString();
     }
@@ -945,26 +835,16 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
-        Set<Edge> adjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> adjDefNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjDefNonAdj = new HashSet<Edge>();
+        Set<Edge> adjAppNonAdj = new HashSet<>();
+        Set<Edge> adjDefNonAdj = new HashSet<>();
+        Set<Edge> nonAdjAppNonAdj = new HashSet<>();
+        Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
         Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(cpcAdjacent, vcpcNodes);
         Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(cpcNonadjacent, vcpcNodes);
 
-        Set<Edge> vcpcAdj = new HashSet<Edge>(vcpcAdjacent);
+        Set<Edge> vcpcAdj = new HashSet<>(vcpcAdjacent);
 
         for (Edge edge : cpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -1028,9 +908,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(5, 4);
 
         table9.setToken(1, 0, "Adjacent");
@@ -1049,7 +926,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         System.out.println("VCPC CM: " + table9);
         return builder.toString();
     }
@@ -1065,20 +942,11 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph pcGraph = pc.getGraph();
-//        List<Node> pcNodes = pc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, pcGraph.getNodes());
-//
-//        Set<Edge> pcAdjacent = pc.getAdj();
-//        Set<Edge> pcNonadjacent = pc.getNonAdj();
-
-
         Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(cpcAdjacent, pcNodes);
         Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(cpcNonadjacent, pcNodes);
 
 
-        Set<Edge> pcAdj = new HashSet<Edge>(pcAdjacent);
+        Set<Edge> pcAdj = new HashSet<>(pcAdjacent);
 
         for (Edge edge : cpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -1123,9 +991,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(4, 4);
 
         table9.setToken(1, 0, "Adjacent");
@@ -1142,7 +1007,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         System.out.println("PC CM: " + table9);
         return builder.toString();
     }
@@ -1158,26 +1023,17 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph pcGraph = pc.getGraph();
-//        pcGraph = DataGraphUtils.replaceNodes(pcGraph, vcpcNodes);
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-        Set<Edge> adjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> adjDefNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
-        Set<Edge> nonAdjDefNonAdj = new HashSet<Edge>();
+        Set<Edge> adjAppNonAdj = new HashSet<>();
+        Set<Edge> adjDefNonAdj = new HashSet<>();
+        Set<Edge> nonAdjAppNonAdj = new HashSet<>();
+        Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
         Set<Edge> pcAdj = MisclassificationUtils.convertNodes(pcAdjacent, vcpcNodes);
         Set<Edge> pcNonadj = MisclassificationUtils.convertNodes(pcNonadjacent, vcpcNodes);
 
 
-        Set<Edge> vcpcAdj = new HashSet<Edge>(vcpcAdjacent);
+        Set<Edge> vcpcAdj = new HashSet<>(vcpcAdjacent);
 
         for (Edge edge : pcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -1241,9 +1097,6 @@ public final class Misclassifications implements SessionModel {
 
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
         TextTable table9 = new TextTable(5, 4);
 
         table9.setToken(1, 0, "Adjacent");
@@ -1261,7 +1114,7 @@ public final class Misclassifications implements SessionModel {
 
             }
         }
-        builder.append("\n" + table9.toString());
+        builder.append("\n").append(table9.toString());
         return builder.toString();
     }
 
@@ -1284,35 +1137,18 @@ public final class Misclassifications implements SessionModel {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        if (targetGraph == null) {
-            throw new NullPointerException();
-        }
-
-        if (referenceGraph == null) {
-            throw new NullPointerException();
-        }
     }
 
-    public Graph getTrueGraph() {
-        return trueGraph;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    public GraphComparisonParams getParams() {
+    public Parameters getParams() {
         return params;
     }
 
+    public List<Graph> getReferenceGraphs() {
+        return referenceGraphs;
+    }
 
-    public List<Node> getNodes() {
-        return nodes;
+    public List<Graph> getTargetGraphs() {
+        return targetGraphs;
     }
 }
 

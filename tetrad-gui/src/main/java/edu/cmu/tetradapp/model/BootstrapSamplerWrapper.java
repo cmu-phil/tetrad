@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
     //=============================CONSTRUCTORS===========================//
 
     public BootstrapSamplerWrapper(DataWrapper wrapper,
-            BootstrapSamplerParams params) {
+                                    Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -59,7 +60,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         for (DataModel dataModel : oldDataSets) {
             DataSet dataSet = (DataSet) dataModel;
             BootstrapSampler sampler = new BootstrapSampler();
-            DataSet bootstrap = sampler.sample(dataSet, params.getSampleSize());
+            DataSet bootstrap = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
             bootstraps.add(bootstrap);
             if (oldDataSets.getSelectedModel() == dataModel) {
                 bootstraps.setSelectedModel(bootstrap);
@@ -72,7 +73,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         DataModel dataModel = wrapper.getSelectedDataModel();
         DataSet dataSet = (DataSet) dataModel;
         BootstrapSampler sampler = new BootstrapSampler();
-        this.outputDataSet = sampler.sample(dataSet, params.getSampleSize());
+        this.outputDataSet = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
 
         LogDataUtils.logDataModelList("Bootstrap sample of data in the parent node.", getDataModelList());
 
@@ -81,12 +82,10 @@ public class BootstrapSamplerWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new BootstrapSamplerWrapper(DataWrapper.serializableInstance(),
-                BootstrapSamplerParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================PUBLIC METHODS=========================//

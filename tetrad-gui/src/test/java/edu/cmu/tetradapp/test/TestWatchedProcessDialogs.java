@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetradapp.util.WatchedProcess;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -30,18 +30,15 @@ import java.lang.reflect.Modifier;
 /**
  * Tests to make sure the field <code>showDialog</code> in WatchProcess is set
  * to <code>true</code>. This must be the case in order for the little progress
- * dialogs to be displayed while algorithms are running, etc. It is convenient
+ * dialogs to be displayed while algorithm are running, etc. It is convenient
  * to set this to false while debugging, but Tetrad must not be posted with this
  * set to false.
  *
  * @author Joseph Ramsey
-// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
-public class TestWatchedProcessDialogs extends TestCase {
-    public TestWatchedProcessDialogs(String name) {
-        super(name);
-    }
+public class TestWatchedProcessDialogs {
 
+    @Test
     public void testWatchedProcessDialogs() {
         try {
             Field field = WatchedProcess.class.getDeclaredField("SHOW_DIALOG");

@@ -81,7 +81,6 @@ public class KnowledgeModelEdge extends Edge
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static Edge serializableInstance() {

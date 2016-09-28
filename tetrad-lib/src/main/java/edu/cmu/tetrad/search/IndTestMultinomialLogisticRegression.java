@@ -53,9 +53,10 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     private DataSet internalData;
     private double alpha;
     private double lastP;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
+    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private LogisticRegression logisticRegression;
     private RegressionDataset regression;
+    private boolean verbose = false;
 
     public IndTestMultinomialLogisticRegression(DataSet data, double alpha) {
         this.searchVariables = data.getVariables();
@@ -110,9 +111,9 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             throw new IllegalArgumentException();
         }
 
-        List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
         varCats.remove(0);
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         for (String cat : varCats) {
 
@@ -158,7 +159,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
 
         int[] _rows = getNonMissingRows(x, y, z);
         logisticRegression.setRows(_rows);
@@ -166,7 +167,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         for (Node _x : variablesPerNode.get(x)) {
 
             // Without y
-            List<Node> regressors0 = new ArrayList<Node>();
+            List<Node> regressors0 = new ArrayList<>();
 
             for (Node _z : z) {
                 regressors0.addAll(variablesPerNode.get(_z));
@@ -175,7 +176,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
 
             // With y.
-            List<Node> regressors1 = new ArrayList<Node>();
+            List<Node> regressors1 = new ArrayList<>();
             regressors1.addAll(variablesPerNode.get(y));
 
             for (Node _z : z) {
@@ -206,10 +207,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         this.lastP = p;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (verbose) {
+            if (indep) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+            }
         }
 
         return indep;
@@ -288,7 +291,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
         regressors.add(internalData.getVariable(y.getName()));
 
         for (Node _z : z) {
@@ -311,10 +314,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         boolean indep = p > alpha;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (verbose) {
+            if (indep) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+            }
         }
 
         return indep;
@@ -361,7 +366,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -425,12 +430,25 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return 0;
+    }
+
     /**
      * @return a string representation of this test.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

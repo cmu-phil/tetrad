@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 /**
- * A translation from Tibshirani's 2008 Fortran implementation of glasso.
+ * Returns edges whose entries in the precision matrix exceed a certain threshold.
  *
  * @author Joseph Ramsey
  */

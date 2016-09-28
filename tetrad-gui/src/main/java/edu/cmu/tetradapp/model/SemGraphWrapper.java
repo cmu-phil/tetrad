@@ -23,24 +23,30 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.List;
-import java.util.prefs.Preferences;
+import java.util.*;
 
 /**
  * Holds a tetrad dag with all of the constructors necessary for it to serve as
  * a model for the tetrad application.
- * 
+ *
  * @author Joseph Ramsey
  */
 public class SemGraphWrapper implements SessionModel, GraphSource,
-        KnowledgeBoxInput {
+		KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel {
 	static final long serialVersionUID = 23L;
+	private int numModels = 1;
+	private int modelIndex = 0;
+	private String modelSourceName = null;
 
 	/**
 	 * @serial Can be null.
@@ -50,71 +56,102 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	/**
 	 * @serial Cannot be null.
 	 */
-	private SemGraph semGraph;
+	private List<SemGraph> graphs;
+	private Map<String, String> allParamSettings;
+	private Parameters parameters = new Parameters();
 
 	// =============================CONSTRUCTORS==========================//
+
+	public SemGraphWrapper(GraphSource graphSource, Parameters parameters) {
+		if (graphSource instanceof  Simulation) {
+			Simulation simulation = (Simulation) graphSource;
+			List<Graph> graphs = simulation.getGraphs();
+			this.graphs = new ArrayList<>();
+			for (Graph graph : graphs) {
+				this.graphs.add(new SemGraph(graph));
+			}
+
+			this.numModels = this.graphs.size();
+			this.modelIndex = 0;
+			this.modelSourceName = simulation.getName();
+		} else {
+			setGraph(new SemGraph(graphSource.getGraph()));
+		}
+
+		log();
+	}
 
 	public SemGraphWrapper(SemGraph graph) {
 		if (graph == null) {
 			throw new NullPointerException("MAG must not be null.");
 		}
-		this.semGraph = graph;
-		this.semGraph.setShowErrorTerms(false);
+		setSemGraph(graph);
+		getSemGraph().setShowErrorTerms(false);
+		this.parameters = new Parameters();
 		log();
 	}
 
-    // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-	public SemGraphWrapper(GraphParams params) {
-		if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.MANUAL) {
-			semGraph = new SemGraph();
+	// Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
+	public SemGraphWrapper(Parameters params) {
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+			SemGraph semGraph = new SemGraph();
 			semGraph.setShowErrorTerms(false);
-		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+			setSemGraph(semGraph);
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
+			setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+		} else {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
+			setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+		}
+
+		this.parameters = params;
+		log();
+	}
+
+	public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
+		this.parameters = params;
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+			try {
+				SemGraph semGraph = new SemGraph(graphWrapper.getSemGraph());
+				semGraph.setShowErrorTerms(false);
+				setSemGraph(semGraph);
+			} catch (Exception e) {
+				e.printStackTrace();
+				SemGraph semGraph = new SemGraph();
+				semGraph.setShowErrorTerms(false);
+				setSemGraph(semGraph);
+			}
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
+			setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
 		}
 		log();
 	}
 
-	public SemGraphWrapper(SemGraphWrapper graphWrapper, GraphParams params) {
-		if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.MANUAL) {
-            try {
-                this.semGraph = new SemGraph(graphWrapper.getSemGraph());
-                this.semGraph.setShowErrorTerms(false);
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.semGraph = new SemGraph();
-                this.semGraph.setShowErrorTerms(false);
-            }
-        } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+	public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
+		this.parameters = params;
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+			SemGraph semGraph = new SemGraph(graphWrapper.getDag());
+			semGraph.setShowErrorTerms(false);
+			setSemGraph(semGraph);
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
+			setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
 		}
 		log();
 	}
 
-	public SemGraphWrapper(DagWrapper graphWrapper, GraphParams params) {
-		if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.MANUAL) {
-			this.semGraph = new SemGraph(graphWrapper.getDag());
-			this.semGraph.setShowErrorTerms(false);
-		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+	public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+			SemGraph semGraph = new SemGraph(graphWrapper.getGraph());
+			semGraph.setShowErrorTerms(false);
+			setSemGraph(semGraph);
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
+			setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
 		}
-		log();
-	}
-
-	public SemGraphWrapper(GraphWrapper graphWrapper, GraphParams params) {
-		if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.MANUAL) {
-			this.semGraph = new SemGraph(graphWrapper.getGraph());
-			this.semGraph.setShowErrorTerms(false);
-		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
-				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
-		}
+		this.parameters = params;
 		log();
 	}
 
@@ -123,8 +160,24 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
 	public SemGraphWrapper(DataWrapper wrapper) {
-		this(new SemGraph(new EdgeListGraph(wrapper.getVariables())));
-		GraphUtils.circleLayout(semGraph, 200, 200, 150);
+		if (wrapper instanceof  Simulation) {
+			Simulation simulation = (Simulation) wrapper;
+			this.graphs = new ArrayList<>();
+
+			for (Graph graph : simulation.getGraphs()) {
+				SemGraph semGraph = new SemGraph(graph);
+				semGraph.setShowErrorTerms(false);
+				this.graphs.add(semGraph);
+			}
+
+			this.numModels = graphs.size();
+			this.modelIndex = 0;
+			this.modelSourceName = simulation.getName();
+		} else {
+			setGraph(new EdgeListGraph(wrapper.getVariables()));
+		}
+
+		GraphUtils.circleLayout(getGraph(), 200, 200, 150);
 	}
 
 	public SemGraphWrapper(BayesPmWrapper wrapper) {
@@ -170,8 +223,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 
 	/**
 	 * Generates a simple exemplar of this class to test serialization.
-	 * 
-	 * @see edu.cmu.TestSerialization
+	 *
 	 * @see TetradSerializableUtils
 	 */
 	public static SemGraphWrapper serializableInstance() {
@@ -181,80 +233,21 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	// ================================PUBLIC METHODS=======================//
 
 	public SemGraph getSemGraph() {
-		return semGraph;
+		return (SemGraph) getGraph();
 	}
 
 	public void setSemGraph(SemGraph graph) {
-		this.semGraph = graph;
-		this.semGraph.setShowErrorTerms(false);
-        log();
+		this.graphs = new ArrayList<>();
+		graph.setShowErrorTerms(false);
+		this.graphs.add(graph);
+		log();
 	}
 
 	// ============================PRIVATE METHODS========================//
 
 	private void log() {
-        TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
-        TetradLogger.getInstance().log("graph", "" + semGraph);
-	}
-
-	private void createRandomDag() {
-		Graph graph = null;
-
-		while (graph == null) {
-			Graph dag;
-
-			boolean uniformlySelected = Preferences.userRoot().getBoolean(
-					"graphUniformlySelected", true);
-			int numMeasuredNodes = Preferences.userRoot().getInt(
-					"newGraphNumMeasuredNodes", 5);
-			int numLatents = Preferences.userRoot().getInt(
-					"newGraphNumLatents", 0);
-			int newGraphNumEdges = Preferences.userRoot().getInt(
-					"newGraphNumEdges", 3);
-			boolean connected = Preferences.userRoot().getBoolean(
-					"randomGraphConnected", false);
-
-			if (uniformlySelected) {
-				int maxDegree = Preferences.userRoot().getInt(
-						"randomGraphMaxDegree", 6);
-				int maxIndegree = Preferences.userRoot().getInt(
-						"randomGraphMaxIndegree", 3);
-				int maxOutdegree = Preferences.userRoot().getInt(
-						"randomGraphMaxOutdegree", 3);
-
-				dag = GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-						numLatents, newGraphNumEdges, maxDegree, maxIndegree,
-						maxOutdegree, connected);
-			} else {
-				do {
-					dag = GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-							numLatents, newGraphNumEdges, 30, 15, 15,
-							connected);
-				} while (dag.getNumEdges() < newGraphNumEdges);
-			}
-
-			boolean addCycles = Preferences.userRoot().getBoolean(
-					"randomGraphAddCycles", false);
-
-			if (addCycles) {
-				int minCycleLength = Preferences.userRoot().getInt(
-						"randomGraphMinCycleLength", 2);
-
-//				graph = DataGraphUtils
-//						.addCycles2(dag, minNumCycles, minCycleLength);
-//
-                graph = GraphUtils.cyclicGraph4(numMeasuredNodes + numLatents, newGraphNumEdges);
-			} else {
-				graph = new EdgeListGraph(dag);
-			}
-
-            int minNumCycles = Preferences.userRoot().getInt(
-                    "randomGraphMinNumCycles", 0);
-            GraphUtils.addTwoCycles(graph, minNumCycles);
-        }
-
-		semGraph = new SemGraph(graph);
-		semGraph.setShowErrorTerms(false);
+		TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
+		TetradLogger.getInstance().log("graph", "" + getGraph());
 	}
 
 	/**
@@ -266,21 +259,17 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	 * class, even if Tetrad sessions were previously saved out using a version
 	 * of the class that didn't include it. (That's what the
 	 * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-	 * 
+	 *
 	 * @throws java.io.IOException
 	 * @throws ClassNotFoundException
 	 */
 	private void readObject(ObjectInputStream s) throws IOException,
 			ClassNotFoundException {
 		s.defaultReadObject();
-
-		if (semGraph == null) {
-			throw new NullPointerException();
-		}
 	}
 
 	public Graph getGraph() {
-		return semGraph;
+		return graphs.get(getModelIndex());
 	}
 
 	public String getName() {
@@ -295,16 +284,71 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		return getGraph();
 	}
 
-    public Graph getResultGraph() {
-        return getGraph();
-    }
+	public Graph getResultGraph() {
+		return getGraph();
+	}
 
-    public List<String> getVariableNames() {
+	public List<String> getVariableNames() {
 		return getGraph().getNodeNames();
 	}
 
 	public List<Node> getVariables() {
 		return getGraph().getNodes();
+	}
+
+	@Override
+	public Map<String, String> getParamSettings() {
+		Map<String, String> paramSettings = new HashMap<>();
+		if (!paramSettings.containsKey("# Vars")) {
+			paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
+		}
+		paramSettings.put("# Edges", Integer.toString(getSemGraph().getNumEdges()));
+		if (getSemGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
+		return paramSettings;
+	}
+
+	@Override
+	public void setAllParamSettings(Map<String, String> paramSettings) {
+		this.allParamSettings = paramSettings;
+	}
+
+	@Override
+	public Map<String, String> getAllParamSettings() {
+		return allParamSettings;
+	}
+
+	public Parameters getParameters() {
+		return parameters;
+	}
+
+	public int getNumModels() {
+		return numModels;
+	}
+
+	public void setNumModels(int numModels) {
+		this.numModels = numModels;
+	}
+
+	public int getModelIndex() {
+		return modelIndex;
+	}
+
+	public void setModelIndex(int modelIndex) {
+		this.modelIndex = modelIndex;
+	}
+
+	public String getModelSourceName() {
+		return modelSourceName;
+	}
+
+	public void setModelSourceName(String modelSourceName) {
+		this.modelSourceName = modelSourceName;
+	}
+
+	public void setGraph(Graph graph) {
+		graphs = new ArrayList<>();
+		graphs.add(new SemGraph(graph));
+		log();
 	}
 }
 

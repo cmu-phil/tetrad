@@ -33,7 +33,7 @@ import java.beans.PropertyChangeListener;
  * @see NodeType
  */
 public interface Node extends TetradSerializable, Comparable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the name of the node.

@@ -56,7 +56,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
     /**
      * The panel that the buttons are in.
      */
-    private Box buttonsPanel = Box.createVerticalBox();
+    private final Box buttonsPanel = Box.createVerticalBox();
 
     // The buttons in the toolbar.
     private JToggleButton move, addObserved, addLatent, addDirectedEdge, addBidirectedEdge;
@@ -161,7 +161,26 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private void setWorkbenchMode(int mode) {
         workbench.setWorkbenchMode(mode);
-        setCursor(workbench.getCursor());
+
+        if (mode == GraphWorkbench.ADD_NODE) {
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Image image = ImageUtils.getImage(this, "cursorImage.png");
+            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+            setCursor(c);
+        } else if (mode == GraphWorkbench.ADD_EDGE) {
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
+            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+            setCursor(c);
+        } else {
+//            Toolkit toolkit = Toolkit.getDefaultToolkit();
+//            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
+//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
+//            setCursor(c);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+//            setCursor(workbench.getCursor());
+        }
     }
 
     /**

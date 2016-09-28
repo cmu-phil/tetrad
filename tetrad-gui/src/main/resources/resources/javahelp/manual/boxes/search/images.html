@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: iMAGES</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Search Algorithms: iMAGES</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>iMAGES (Model Averaging GES) is the GES algorithm, using a model
+averaging BIC score that lets the algorithm search over multiple data
+sets simultaneously. For a description of the GES algoritihm, see <a
+href="ges.html">GES</a>.</p>
+
+<p>iMAGES takes as input a list of continuous data sets D1 through Dn,
+all of which contain the same varibles, in the same order, and all of
+which contain the same number of cases. (The discrete case has not
+been tested.</p>
+
+<p>The BIC score of iMAGES, for a given structural hypothesis in the
+form of a DAG G, is the average of the BIC scores for G with respect
+to each data sets Di, i = 1,...,10. The search proceeds in the order
+of GES--that is, calculating the score of the empty graph, then
+finding the edge that most increases the average BIC score and adding
+that, and so on.</p>
+
+<p>A "discount penalty" may be applied, which multiplies the penalty
+part of the BIC score by the given number (or, equivalently, divides
+the likelihood part by the given number--a simpler interpretation when
+nonlinear functions are involved in generating the data).</p>
+
+<p>Figure 1 shows the current dialog for this search, which includes
+an untested discrete sections.</p>
+
+<div align="center"><img src="../../images/images.png" alt="iMAGES
+dialog"></div> <div align="center">Figure 1</div>
+
+</body>
+</html>

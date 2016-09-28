@@ -49,7 +49,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     /**
      * Font size for parameter values in the graph.
      */
-    private static Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
+    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
 
     /**
      * Background color of the edit panel when you click on the parameters.
@@ -59,7 +59,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     /**
      * The SemIM being edited.
      */
-    private StandardizedSemIm semIm;
+    private final StandardizedSemIm semIm;
 
     /**
      * Workbench for the graphical editor.
@@ -75,12 +75,6 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
      * This delay needs to be restored when the component is hidden.
      */
     private int savedTooltipDelay = 0;
-
-    /**
-     * The editor that sits inside the SemImEditor that allows the user to edit
-     * the SemIm graphically.
-     */
-    private StandardizedSemImEditor editor = null;
 
     /**
      * True iff this graphical display is editable.
@@ -105,34 +99,38 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     /**
      * The label for the minimum range value.
      */
-    private JLabel minRangeLabel;
+    private final JLabel minRangeLabel;
 
     /**
      * The label for the maximum range value.
      */
-    private JLabel maxRangeLabel;
+    private final JLabel maxRangeLabel;
 
     /**
      * The label that displayed the getModel edge being edited.
      */
-    private JLabel edgeLabel;
+    private final JLabel edgeLabel;
 
     /**
      * The textfield that displays the getModel value of the parameter being edited.
      */
-    private DoubleTextField valueField;
+    private final DoubleTextField valueField;
 
     /**
      * The slider that lets the user select a value within range for the getModel parameter being edited.
      */
-    private JSlider slider;
+    private final JSlider slider;
 
     /**
      * Constructs a SemIm graphical editor for the given SemIm.
      */
     public StandardizedSemImGraphicalEditor(final StandardizedSemIm semIm, StandardizedSemImEditor editor) {
         this.semIm = semIm;
-        this.editor = editor;
+        /*
+      The editor that sits inside the SemImEditor that allows the user to edit
+      the SemIm graphically.
+     */
+        StandardizedSemImEditor editor1 = editor;
 
         setLayout(new BorderLayout());
         JScrollPane scroll = new JScrollPane(workbench());
@@ -539,8 +537,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     final static class EdgeMouseListener extends MouseAdapter {
-        private Edge edge;
-        private StandardizedSemImGraphicalEditor editor;
+        private final Edge edge;
+        private final StandardizedSemImGraphicalEditor editor;
 
         public EdgeMouseListener(Edge edge, StandardizedSemImGraphicalEditor editor) {
             this.edge = edge;
@@ -561,8 +559,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     final static class NodeMouseListener extends MouseAdapter {
-        private Node node;
-        private StandardizedSemImGraphicalEditor editor;
+        private final Node node;
+        private final StandardizedSemImGraphicalEditor editor;
 
         public NodeMouseListener(Node node, StandardizedSemImGraphicalEditor editor) {
             this.node = node;
@@ -583,8 +581,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     final static class EdgeActionListener implements ActionListener {
-        private StandardizedSemImGraphicalEditor editor;
-        private Edge edge;
+        private final StandardizedSemImGraphicalEditor editor;
+        private final Edge edge;
 
         public EdgeActionListener(StandardizedSemImGraphicalEditor editor, Edge edge) {
             this.editor = editor;
@@ -607,8 +605,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     final static class NodeActionListener implements ActionListener {
-        private StandardizedSemImGraphicalEditor editor;
-        private Node node;
+        private final StandardizedSemImGraphicalEditor editor;
+        private final Node node;
 
         public NodeActionListener(StandardizedSemImGraphicalEditor editor, Node node) {
             this.editor = editor;

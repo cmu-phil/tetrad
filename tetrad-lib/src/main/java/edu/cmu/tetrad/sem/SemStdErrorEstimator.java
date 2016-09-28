@@ -21,12 +21,8 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.TetradMatrix;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -173,8 +169,8 @@ public class SemStdErrorEstimator {
         //same as in the array of free parameter values stored in paramsOriginal.
         try {
 
-            TetradMatrix hessInv = hess.inverse();
-//            TetradMatrix hessInv = hess.ginverse();
+//            TetradMatrix hessInv = hess.inverse();
+            TetradMatrix hessInv = hess.ginverse();
 
 //            System.out.println("Inverse: " + hessInv);
 
@@ -214,27 +210,6 @@ public class SemStdErrorEstimator {
         estSem.setParameterBoundsEnforced(true);
     }
 
-    private List<Node> unmeasuredLatents(SemPm semPm) {
-        SemGraph graph = semPm.getGraph();
-
-        List<Node> unmeasuredLatents = new LinkedList<Node>();
-
-        NODES:
-        for (Node node : graph.getNodes()) {
-            if (node.getNodeType() == NodeType.LATENT) {
-                for (Node child : graph.getChildren(node)) {
-                    if (child.getNodeType() == NodeType.MEASURED) {
-                        continue NODES;
-                    }
-                }
-
-                unmeasuredLatents.add(node);
-            }
-        }
-
-        return unmeasuredLatents;
-    }
-
     /**
      * @return the array of standard errors for the free paramaeters of the
      * SEM.
@@ -248,8 +223,8 @@ public class SemStdErrorEstimator {
      * numerical estimates of the second order partial derivatives.  See for
      * example Section 5.7 of Numerical Recipes in C.
      */
-    public double secondPartialDerivative(FittingFunction f, int i, int j,
-                                          double[] p, double delt) {
+    private double secondPartialDerivative(FittingFunction f, int i, int j,
+                                           double[] p, double delt) {
         double[] arg = new double[p.length];
         System.arraycopy(p, 0, arg, 0, p.length);
 
@@ -298,8 +273,8 @@ public class SemStdErrorEstimator {
      * experience to date with SEM fitting functions, the above method seems to
      * be adequately accurate and faster that this one.
      */
-    public double secondPartialDerivativeRidr(FittingFunction f, int i, int j,
-                                              double[] args, double delt) {
+    private double secondPartialDerivativeRidr(FittingFunction f, int i, int j,
+                                               double[] args, double delt) {
 
         double[] arg = new double[args.length];
         double[][] a = new double[NTAB][NTAB];
@@ -409,7 +384,7 @@ public class SemStdErrorEstimator {
      *
      * @author Joseph Ramsey
      */
-    static interface FittingFunction {
+    interface FittingFunction {
 
         /**
          * @return the value of the function for the given array of parameter

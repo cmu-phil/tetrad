@@ -27,25 +27,17 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the BayesIm.
- *
  * @author Joseph Ramsey
  */
-public final class TestDataSetCellProbs extends TestCase {
+public final class TestDataSetCellProbs {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDataSetCellProbs(String name) {
-        super(name);
-    }
-
-    public static void testCreateUsingBayesIm() {
+    @Test
+    public void testCreateUsingBayesIm() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
@@ -69,17 +61,6 @@ public final class TestDataSetCellProbs extends TestCase {
 
             assertEquals(count1, count2, .05);
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the tes t runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDataSetCellProbs.class);
     }
 }
 

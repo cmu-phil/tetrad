@@ -21,9 +21,8 @@
 
 package edu.cmu.tetradapp.editor.datamanip;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.ParameterEditor;
-import edu.cmu.tetradapp.model.datamanip.TimeSeriesParams;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -39,7 +38,7 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private TimeSeriesParams params;
+    private Parameters params;
 
 
     /**
@@ -52,9 +51,10 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (TimeSeriesParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     /**
@@ -68,7 +68,7 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        SpinnerNumberModel model = new SpinnerNumberModel(this.params.getNumOfTimeLags(),
+        SpinnerNumberModel model = new SpinnerNumberModel(this.params.getInt("numTimeLags", 1),
                 0, Integer.MAX_VALUE, 1);
         JSpinner jSpinner = new JSpinner(model);
         jSpinner.setPreferredSize(jSpinner.getPreferredSize());
@@ -76,7 +76,7 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                params.setNumOfTimeLags(model.getNumber().intValue());
+                params.set("numTimeLags", model.getNumber().intValue());
             }
         });
 
@@ -89,11 +89,6 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
         add(b1, BorderLayout.CENTER);
     }
 
-    /**
-     * @return true.
-     *
-     * @return true
-     */
     public boolean mustBeShown() {
         return true;
     }

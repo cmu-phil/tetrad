@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BayesPmParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -40,7 +39,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     /**
      * The parameters object being edited.
      */
-    private BayesPmParams params = null;
+    private Parameters params = null;
 
     /**
      * Lets the user edit the number of nodes.
@@ -59,12 +58,12 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     public BayesPmParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (BayesPmParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -72,11 +71,11 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        lowerBoundField = new IntTextField(getParams().getLowerBoundNumVals(), 4);
+        lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
         lowerBoundField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setLowerBoundNumVals(value);
+                    getParams().set("lowerBoundNumVals", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -85,11 +84,11 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             }
         });
 
-        upperBoundField = new IntTextField(getParams().getUpperBoundNumVals(), 4);
+        upperBoundField = new IntTextField(getParams().getInt("upperBoundNumVals", 2), 4);
         upperBoundField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setUpperBoundNumVals(value);
+                    getParams().set("upperBoundNumVals", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -167,7 +166,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
-        if (getParams().getInitializationMode() == BayesPmParams.MANUAL) {
+        if (getParams().getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
             setUpManually.setSelected(true);
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
@@ -180,7 +179,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         setUpManually.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesPmParams.MANUAL);
+                getParams().set("bayesPmInitializationMode", "manual");
                 lowerBoundField.setEnabled(false);
                 upperBoundField.setEnabled(false);
             }
@@ -188,7 +187,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         automaticallyAssigned.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesPmParams.AUTOMATIC);
+                getParams().set("bayesPmInitializationMode", "automatic");
                 lowerBoundField.setEnabled(true);
                 upperBoundField.setEnabled(true);
             }
@@ -200,12 +199,12 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be
+     * Returns the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      *
      * @return the stored simulation parameters model.
      */
-    private synchronized BayesPmParams getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

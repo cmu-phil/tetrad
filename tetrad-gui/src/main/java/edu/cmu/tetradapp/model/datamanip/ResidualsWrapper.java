@@ -28,11 +28,9 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.regression.RegressionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.model.DagWrapper;
-import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.SemGraphWrapper;
+import edu.cmu.tetradapp.model.*;
 
 /**
  * @author Tyler
@@ -45,7 +43,7 @@ public class ResidualsWrapper extends DataWrapper {
      *
      * @param data   - Previous data (from the parent node)
      */
-    public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper) {
+    public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList newList = new DataModelList();
 
@@ -54,7 +52,7 @@ public class ResidualsWrapper extends DataWrapper {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            Dag dag = dagWrapper.getDag();
+            Graph dag = dagWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, dag);
             newList.add(dataSet);
         }
@@ -66,7 +64,7 @@ public class ResidualsWrapper extends DataWrapper {
 
     }
 
-    public ResidualsWrapper(DataWrapper data, GraphWrapper graphWrapper) {
+    public ResidualsWrapper(DataWrapper data, GraphWrapper graphWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList newList = new DataModelList();
 
@@ -86,7 +84,7 @@ public class ResidualsWrapper extends DataWrapper {
         LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
     }
 
-    public ResidualsWrapper(DataWrapper data, SemGraphWrapper wrapper) {
+    public ResidualsWrapper(DataWrapper data, SemGraphWrapper wrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList newList = new DataModelList();
 
@@ -109,12 +107,10 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ResidualsWrapper(DataWrapper.serializableInstance(),
-                DagWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

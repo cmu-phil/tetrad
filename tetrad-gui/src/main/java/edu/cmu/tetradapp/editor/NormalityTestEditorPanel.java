@@ -39,39 +39,34 @@ import java.util.LinkedList;
  *
  * @author Michael Freenor
  */
-public class NormalityTestEditorPanel extends JPanel {
+class NormalityTestEditorPanel extends JPanel {
 
 
     /**
      * Combo box of all the variables.
      */
-    private JComboBox variableBox;
+    private final JComboBox variableBox;
 
     /**
      * The dataset being viewed.
      */
-    private DataSet dataSet;
-
-    private QQPlot qqPlot;
+    private final DataSet dataSet;
 
 
     /**
      * The discrete variables of the data set (may be empty).
      */
-    private LinkedList<DiscreteVariable> variables = new LinkedList<DiscreteVariable>();
+    private LinkedList<DiscreteVariable> variables = new LinkedList<>();
 
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
-     *
-     * @param qqPlot
-     * @param dataSet
      */
     public NormalityTestEditorPanel(QQPlot qqPlot, DataSet dataSet) {
         //   construct components
         this.setLayout(new BorderLayout());
         // first build histogram and components used in the editor.
-        this.qqPlot = qqPlot;
+        QQPlot qqPlot1 = qqPlot;
         Node selected = qqPlot.getSelectedVariable();
         this.dataSet = dataSet;
         this.variableBox = new JComboBox();
@@ -92,7 +87,7 @@ public class NormalityTestEditorPanel extends JPanel {
                     QQPlot newValue = new QQPlot(NormalityTestEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
                  //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
-                    //System.out.println(node.getName());
+                    //System.out.println(node.getNode());
                     changeNormalityTest(NormalityTests.runNormalityTests(NormalityTestEditorPanel.this.dataSet, (ContinuousVariable)node));
                 }
             }

@@ -111,7 +111,7 @@ public final class IndTestGSquare implements IndependenceTest {
         this.dataSet = dataSet;
         this.alpha = alpha;
 
-        this.variables = new ArrayList<Node>(dataSet.getVariables());
+        this.variables = new ArrayList<>(dataSet.getVariables());
 
         int[] numVals = new int[this.variables.size()];
 
@@ -279,7 +279,7 @@ public final class IndTestGSquare implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -391,6 +391,12 @@ public final class IndTestGSquare implements IndependenceTest {
     public List<TetradMatrix> getCovMatrices() {
         return null;
     }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
 }
 
 

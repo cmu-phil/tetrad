@@ -24,37 +24,43 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the Knowledge class.
  *
  * @author Joseph Ramsey
  */
-public final class TestHistogram extends TestCase {
+public final class TestHistogram{
     private IKnowledge knowledge;
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestHistogram(String name) {
-        super(name);
-    }
-
+    @Test
     public void testHistogram() {
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        RandomUtil.getInstance().setSeed(4829384L);
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5, 30, 15, 15, false));
         int sampleSize = 1000;
 
         // Continuous
@@ -64,30 +70,22 @@ public final class TestHistogram extends TestCase {
 
         Histogram histogram = new Histogram(data);
         histogram.setTarget("X1");
-//        histogram.setNumBins(10);
-        System.out.println("A " + Arrays.toString(histogram.getFrequencies()));
-
         histogram.setNumBins(20);
 
-        System.out.println("A2 " + Arrays.toString(histogram.getFrequencies()));
-
-        System.out.println("Max = " + histogram.getMax());
-        System.out.println( "Min = " + histogram.getMin());
-        System.out.println("N = " + histogram.getN());
+        assertEquals(3.76, histogram.getMax(), 0.01);
+        assertEquals(-3.83, histogram.getMin(), 0.01);
+        assertEquals(1000, histogram.getN());
 
         histogram.setTarget("X1");
         histogram.setNumBins(10);
         histogram.addConditioningVariable("X3", 0, 1);
         histogram.addConditioningVariable("X4", 0, 1);
 
-        System.out.println("B " + Arrays.toString(histogram.getFrequencies()));
-
         histogram.removeConditioningVariable("X3");
-        System.out.println("C " + Arrays.toString(histogram.getFrequencies()));
 
-        System.out.println("Max = " + histogram.getMax());
-        System.out.println("Min = " + histogram.getMin());
-        System.out.println("N = " + histogram.getN());
+        assertEquals(3.76, histogram.getMax(), 0.01);
+        assertEquals(-3.83, histogram.getMin(), 0.01);
+        assertEquals(188, histogram.getN());
 
         double[] arr = histogram.getContinuousData("X2");
         histogram.addConditioningVariable("X2", StatUtils.min(arr), StatUtils.mean(arr));
@@ -97,25 +95,22 @@ public final class TestHistogram extends TestCase {
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
         DataSet data2 = bayesIm.simulateData(sampleSize, false);
 
+        // For some reason these are giving different
+        // values when all of the unit tests are run are
+        // once. TODO They produce stable values when
+        // this particular test is run repeatedly.
         Histogram histogram2 = new Histogram(data2);
         histogram2.setTarget("X1");
-        System.out.println("D " + Arrays.toString(histogram2.getFrequencies()));
+        int[] frequencies1 = histogram2.getFrequencies();
+//        assertEquals(928, frequencies1[0]);
+//        assertEquals(72, frequencies1[1]);
 
         histogram2.setTarget("X1");
         histogram2.addConditioningVariable("X2", 0);
         histogram2.addConditioningVariable("X3", 1);
-        System.out.println("E " + Arrays.toString(histogram2.getFrequencies()));
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestHistogram.class);
+        int[] frequencies = histogram2.getFrequencies();
+//        assertEquals(377, frequencies[0]);
+//        assertEquals(28, frequencies[1]);
     }
 }
 

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -29,48 +30,46 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaTetradTest;
 import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MatrixUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Tests the BooleanFunction class.
+ * TODO: Some of these tests give answers different from Bollen now. Why?
  *
  * @author Joseph Ramsey
  */
-public class TestDeltaTetradTest extends TestCase {
+public class TestDeltaTetradTest {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDeltaTetradTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void test4aIteratedPositives() {
-        int numTrials = 1;
+        RandomUtil.getInstance().setSeed(482834823L);
+
+        int numTrials = 10;
         double alpha = 0.2;
         SemIm sem = getFigure4aSem();
 
-        System.out.println();
-        System.out.println("1: t1234");
-        System.out.println("2: t1342");
-        System.out.println("3: t1423");
-        System.out.println("4: t1234 & t1342");
-        System.out.println("5: t1234 & t1423");
-        System.out.println("6: t1342 & t1423");
-        System.out.println("7: t1234 & t1342 & t1423");
+        int[] sampleSizes = new int[]{100, 500, 1000, 5000};
 
-        for (int sampleSize : new int[]{100, 500, 1000, 5000}) {//, 10000, 50000, 100000}) {
-            int[] count = new int[7];
+        double[][] answers = {{.1, .5, .2, .1, .1, .1},
+                {0.1, 0.6, 0.0, 0.0, 0.0, 0.0},
+                {0.1, 0.7, 0.2, 0.2, 0.2, 0.2},
+                {0.3, 0.7, 0.2, 0.1, 0.1, 0.1}};
 
-            for (int i = 0; i < numTrials; i++) {
+        for (int i = 0; i < 4; i++) {
+            System.out.println("i = " + i);
+            int sampleSize = sampleSizes[i];
+            int[] count = new int[6];
+
+            for (int k = 0; k < numTrials; k++) {
                 DataSet data = sem.simulateData(sampleSize, false);
                 Node x1 = data.getVariable("x1");
                 Node x2 = data.getVariable("x2");
@@ -81,8 +80,6 @@ public class TestDeltaTetradTest extends TestCase {
                 Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
                 Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
 
-//                DeltaTetradTest test = new DeltaTetradTest(data);
-//                DeltaTetradTest test = new DeltaTetradTest(new CovarianceMatrix(data));
                 DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(data));
 
                 double p1 = test.getPValue(t1234);
@@ -91,7 +88,6 @@ public class TestDeltaTetradTest extends TestCase {
                 double p4 = test.getPValue(t1234, t1342);
                 double p5 = test.getPValue(t1234, t1423);
                 double p6 = test.getPValue(t1342, t1423);
-//                double p7 = test.getPValue(t1234, t1342, t1423);
 
                 if (p1 < alpha) count[0]++;
                 if (p2 < alpha) count[1]++;
@@ -99,26 +95,27 @@ public class TestDeltaTetradTest extends TestCase {
                 if (p4 < alpha) count[3]++;
                 if (p5 < alpha) count[4]++;
                 if (p6 < alpha) count[5]++;
-//                if (p7 < alpha) count[6]++;
             }
 
-            System.out.println();
-            System.out.println("Figure 4a N = " + sampleSize);
-            System.out.println();
+            double[] _answer = new double[6];
 
             for (int j = 0; j < 6; j++) {
-                System.out.println((j + 1) + ": FP rate = " + count[j] / (double) numTrials);
+                double v = count[j] / (double) numTrials;
+                _answer[j] = v;
             }
+
+//            System.out.println(MatrixUtils.toString(_answer));
+//            System.out.println(MatrixUtils.toString(answers[i]));
+
+//            assertTrue(Arrays.equals(_answer, answers[i]));
         }
     }
 
     // Bollen and Ting, Confirmatory Tetrad Analysis, p. 164 Sympathy and Anger.
 
+    @Test
     public void testBollenExample1() {
         CovarianceMatrix cov = getBollenExample1Data();
-
-        System.out.println(cov);
-
         List<Node> variables = cov.getVariables();
 
         Node v1 = variables.get(0);
@@ -141,20 +138,20 @@ public class TestDeltaTetradTest extends TestCase {
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
 
         double chiSq = test.calcChiSquare(t1, t2, t3, t4, t5, t6, t7, t8);
-
-        System.out.println("Chi Square = " + chiSq);
-        System.out.println("P value = " + test.getPValue());
+        double pValue = test.getPValue();
 
         // They get chi square = 6.71 p = .57 8 df but using the raw data which they don't provide here.
         // Just using the covariance matrix provided, I get chi square = 8.46, p = 0.39, df = 8.
+
+        assertEquals(11.42, chiSq, 0.01);
+        assertEquals(0.18, pValue, 0.01);
     }
 
     // Bollen and Ting p. 167 (Confirmatory Tetrad Analysis). Union Sentiment.
 
+    @Test
     public void testBollenExample2() {
         CovarianceMatrix cov = getBollenExample2Data();
-        System.out.println(cov);
-
         List<Node> variables = cov.getVariables();
 
         Node y1 = variables.get(0);
@@ -168,21 +165,19 @@ public class TestDeltaTetradTest extends TestCase {
         DeltaTetradTest test = new DeltaTetradTest(cov);
 
         double chiSq = test.calcChiSquare(t1);
+        double pValue = test.getPValue();
 
-        System.out.println("Chi Square = " + chiSq);
-        System.out.println("P value = " + test.getPValue());
+        assertEquals(.68, chiSq, 0.01);
+        assertEquals(0.40, pValue, 0.01);
 
         // They get chi square = .73  p = .39  df = 1
-        // So do I.
     }
 
     // Bollen 2000 A Tetrad Test for Causal Indicators, p. 13.
 
+    @Test
     public void testBollenSimulationExample() {
         CovarianceMatrix cov = getBollenSimulationExampleData();
-
-
-        System.out.println(cov);
 
         List<Node> variables = cov.getVariables();
 
@@ -208,57 +203,41 @@ public class TestDeltaTetradTest extends TestCase {
         Tetrad t14 = new Tetrad(y2, y3, y5, y4);
         Tetrad t15 = new Tetrad(y2, y4, y5, y3);
 
-        Tetrad[] tetrads = new Tetrad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15};
+        Tetrad[] tetrads = new Tetrad[]{t1, t2, t3, t4};
 
         DeltaTetradTest test = new DeltaTetradTest(cov);
 
-        for (int i = 0; i < 15; i++) {
-            System.out.println("INDEX " + (i + 1));
-            System.out.println("Tetrad = " + tetrads[i]);
-            double chiSq = test.calcChiSquare(tetrads[i]);
-            System.out.println("Chi Square = " + chiSq);
-            System.out.println("P value = " + test.getPValue());
-        }
+        double chiSq = test.calcChiSquare(tetrads[0]);
+        double pValue = test.getPValue();
 
-        System.out.println();
+        assertEquals(58.1, chiSq, 0.1);
+        assertEquals(2.46E-14, pValue, .1E-14);
 
         Tetrad[] independentTetrads = new Tetrad[]{t1, t2, t4, t6, t10};
 
-        for (int i = 0; i < 5; i++) {
-            System.out.println("INDEX " + (i + 1));
-            System.out.println("Tetrad = " + independentTetrads[i]);
-            double chiSq = test.calcChiSquare(independentTetrads[i]);
-            System.out.println("Chi Square = " + chiSq);
-            System.out.println("P value = " + test.getPValue());
-        }
+        chiSq = test.calcChiSquare(independentTetrads[0]);
+        pValue = test.getPValue();
 
-        System.out.println();
+        assertEquals(58.1, chiSq, 0.1);
+        assertEquals(2.46E-14, pValue, 0.1E-14);
 
         {
-            double chiSq = test.calcChiSquare(independentTetrads);
-            System.out.println("Chi Square = " + chiSq);
-            System.out.println("P value = " + test.getPValue());
+            chiSq = test.calcChiSquare(independentTetrads);
+            pValue = test.getPValue();
+
+            assertEquals(89.34, chiSq, 0.01);
+            assertEquals(0.0, pValue, 0.01);
         }
 
         // They get chsq = 64.13 and so do I.
-
-//        System.out.println();
-//
-//        {
-//            Tetrad[] tetradList2 = new Tetrad[]{t5, t6, t7, t15};
-//            double chiSq = test.calcChiSquare(tetradList2);
-//            System.out.println("Chi Square = " + chiSq);
-//            System.out.println("P value = " + test.getPValue());
-//        }
     }
 
+    @Test
     public void test3() {
         SemPm pm = makePm();
         DataSet data = new SemIm(pm).simulateData(1000, false);
 
         CovarianceMatrix cov = new CovarianceMatrix(data);
-
-        System.out.println(cov);
 
         List<Node> variables = data.getVariables();
         Node x1 = variables.get(0);
@@ -276,22 +255,14 @@ public class TestDeltaTetradTest extends TestCase {
 
         double chiSq1 = test1.calcChiSquare(t1234, t1342);
 
-        System.out.println("Chi Square = " + chiSq1);
-        System.out.println("P value = " + test1.getPValue());
-
-        System.out.println();
-
         DeltaTetradTest test2 = new DeltaTetradTest(cov);
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
 
         double chiSq2 = test2.calcChiSquare(t1234, t1342);
-
-        System.out.println("Chi Square = " + chiSq2);
-        System.out.println("P value = " + test2.getPValue());
     }
 
     private SemPm makePm() {
-        List<Node> variableNodes = new ArrayList<Node>();
+        List<Node> variableNodes = new ArrayList<>();
         ContinuousVariable x1 = new ContinuousVariable("X1");
         ContinuousVariable x2 = new ContinuousVariable("X2");
         ContinuousVariable x3 = new ContinuousVariable("X3");
@@ -312,17 +283,6 @@ public class TestDeltaTetradTest extends TestCase {
         graph.addDirectedEdge(x5, x4);
 
         return new SemPm(graph);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDeltaTetradTest.class);
     }
 
     private SemIm getFigure4aSem() {
@@ -347,11 +307,10 @@ public class TestDeltaTetradTest extends TestCase {
 
         SemPm pm = new SemPm(graph);
 
-        SemImInitializationParams params = new SemImInitializationParams();
+        Parameters params = new Parameters();
 //        params.setCoefRange(0.3, 0.8);
 
-        SemIm im = new SemIm(pm, params);
-        return im;
+        return new SemIm(pm, params);
     }
 
     private SemIm getFigure4bSem() {
@@ -378,8 +337,7 @@ public class TestDeltaTetradTest extends TestCase {
         graph.addDirectedEdge(xi1, xi2);
 
         SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        return im;
+        return new SemIm(pm);
     }
 
     private CovarianceMatrix getBollenExample1Data() {
@@ -402,7 +360,7 @@ public class TestDeltaTetradTest extends TestCase {
         Node v5 = new ContinuousVariable("v5");
         Node v6 = new ContinuousVariable("v6");
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(v1);
         nodes.add(v2);
         nodes.add(v3);
@@ -419,12 +377,13 @@ public class TestDeltaTetradTest extends TestCase {
             }
         }
 
-        CovarianceMatrix dataSet = new CovarianceMatrix(nodes, matrix, 138);
-
-        return dataSet;
+        return new CovarianceMatrix(nodes, matrix, 138);
     }
 
     private CovarianceMatrix getBollenExample2Data() {
+
+        // Union sentiment.
+
         double[][] d = new double[][]{
                 {14.610},
                 {-5.250, 11.017},
@@ -439,7 +398,7 @@ public class TestDeltaTetradTest extends TestCase {
         Node x1 = new ContinuousVariable("x1");
         Node x2 = new ContinuousVariable("x2");
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(y1);
         nodes.add(y2);
         nodes.add(y3);
@@ -455,14 +414,10 @@ public class TestDeltaTetradTest extends TestCase {
             }
         }
 
-        CovarianceMatrix dataSet = new CovarianceMatrix(nodes, matrix, 173);
-
-        return dataSet;
+        return new CovarianceMatrix(nodes, matrix, 173);
     }
 
     private CovarianceMatrix getBollenSimulationExampleData() {
-
-        // Sympathy and anger, p. 164.
 
         double[][] d = new double[][]{
                 {2.034},
@@ -478,7 +433,7 @@ public class TestDeltaTetradTest extends TestCase {
         Node y4 = new ContinuousVariable("y4");
         Node y5 = new ContinuousVariable("y5");
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(y1);
         nodes.add(y2);
         nodes.add(y3);
@@ -494,9 +449,7 @@ public class TestDeltaTetradTest extends TestCase {
             }
         }
 
-        CovarianceMatrix dataSet = new CovarianceMatrix(nodes, matrix, 1000);
-
-        return dataSet;
+        return new CovarianceMatrix(nodes, matrix, 1000);
     }
 }
 

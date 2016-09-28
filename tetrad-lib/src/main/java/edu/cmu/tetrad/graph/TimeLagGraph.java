@@ -21,13 +21,13 @@
 
 package edu.cmu.tetrad.graph;
 
+//import edu.cmu.tetrad.data.IKnowledge;
+//import edu.cmu.tetrad.data.Knowledge2;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a time series graph--that is, a graph with a fixed number S of lags, with edges into initial lags
@@ -47,7 +47,7 @@ public class TimeLagGraph implements Graph {
     private EdgeListGraph graph = new EdgeListGraph();
     private int maxLag = 1;
     private int numInitialLags = 1;
-    private List<Node> lag0Nodes = new ArrayList<Node>();
+    private List<Node> lag0Nodes = new ArrayList<>();
 
     public TimeLagGraph() {
     }
@@ -72,7 +72,6 @@ public class TimeLagGraph implements Graph {
         return new TimeLagGraph();
     }
 
-
     /**
      * Nodes may be added into the getModel time step only. That is, node.getLag() must be 0.
      */
@@ -82,7 +81,6 @@ public class TimeLagGraph implements Graph {
 
         if (id.getLag() != 0) {
             node = node.like(id.getName());
-//            throw new IllegalArgumentException("Nodes may be added into the getModel time step only.");
         }
 
         boolean added = getGraph().addNode(node);
@@ -130,11 +128,7 @@ public class TimeLagGraph implements Graph {
 
         getPcs().firePropertyChange("editingFinished", null, null);
 
-        if (getGraph().containsNode(node)) {
-            return getGraph().removeNode(node);
-        } else {
-            return false;
-        }
+        return getGraph().containsNode(node) && getGraph().removeNode(node);
     }
 
     public boolean addEdge(Edge edge) {
@@ -237,8 +231,6 @@ public class TimeLagGraph implements Graph {
 
                     if (getNodeId(tail).getLag() > maxLag) {
                         getGraph().removeEdge(edge);
-//                        throw new IllegalArgumentException("This edge has lag greater than the new maxLag: " + edge +
-//                                " Please remove first.");
                     }
                 }
             }
@@ -265,7 +257,7 @@ public class TimeLagGraph implements Graph {
         for (Node node : lag0Nodes) {
             List<Edge> edges = getGraph().getEdges(node);
 
-            for (Edge edge : new ArrayList<Edge>(edges)) {
+            for (Edge edge : new ArrayList<>(edges)) {
                 Node tail = Edges.getDirectedEdgeTail(edge);
 
                 if (getNodeId(tail).getLag() > maxLag) {
@@ -362,7 +354,7 @@ public class TimeLagGraph implements Graph {
         return new ArrayList<>(lag0Nodes);
     }
 
-    public EdgeListGraph getGraph() {
+    private EdgeListGraph getGraph() {
         return graph;
     }
 
@@ -394,10 +386,6 @@ public class TimeLagGraph implements Graph {
 
     public String toString() {
         return getGraph().toString() + "\n" + lag0Nodes;
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        return getGraph().addGraphConstraint(gc);
     }
 
     public boolean addDirectedEdge(Node node1, Node node2) {
@@ -486,6 +474,11 @@ public class TimeLagGraph implements Graph {
 
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
+    }
+
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
     }
 
     public int getOutdegree(Node node) {
@@ -710,7 +703,7 @@ public class TimeLagGraph implements Graph {
     }
 
     public boolean equals(Object o) {
-        return getGraph().equals(o);
+        return (o instanceof TimeLagGraph) && getGraph().equals(o);
     }
 
     public void fullyConnect(Endpoint endpoint) {
@@ -735,18 +728,6 @@ public class TimeLagGraph implements Graph {
 
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
-    }
-
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
     }
 
     public Graph subgraph(List<Node> nodes) {

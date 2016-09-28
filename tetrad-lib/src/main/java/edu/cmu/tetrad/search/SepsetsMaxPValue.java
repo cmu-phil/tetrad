@@ -29,9 +29,8 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.List;
 
 /**
- * Selects the maximum p value sepset
- * <p>
- * Created by josephramsey on 3/24/15.
+ * Returns the sepset from among the adjacents of i or the adjacents of k or the 'extra' sepsets with
+ * the highest p value as judged by the given independence test.
  */
 public class SepsetsMaxPValue implements SepsetProducer {
     private final Graph graph;
@@ -39,7 +38,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private double p = Double.NaN;
-//    private IndependenceTest dsep = null;
+    private boolean verbose = false;
 
     public SepsetsMaxPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -48,41 +47,37 @@ public class SepsetsMaxPValue implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public List<Node> getSepset(Node i, Node k) {
-        return getMaxPValueSet(i, k);
+        return getMaxSepset(i, k);
     }
 
     public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> set = getMaxPValueSet(i, k);
-        return set != null && !set.contains(j);
+        List<Node> _v = getMaxSepset(i, k);
+        return _v != null && !_v.contains(j);
     }
 
     public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> set = getMaxPValueSet(i, k);
-        return set != null && set.contains(j);
+        List<Node> _v = getMaxSepset(i, k);
+        return _v != null && _v.contains(j);
     }
 
-    double cutoff = .2;
-
-    private List<Node> getMaxPValueSet(Node i, Node k) {
+    private List<Node> getMaxSepset(Node i, Node k) {
         double _p = 0.0;
         List<Node> _v = null;
 
         if (extraSepsets != null) {
-            final List<Node> v = extraSepsets.get(i, k);
-            if (v != null) {
-                independenceTest.isIndependent(i, k, v);
-                double p = independenceTest.getPValue();
+            final List<Node> sepset = extraSepsets.get(i, k);
 
-//                printDsepP(i, k, v, p);
+            if (sepset != null) {
+                independenceTest.isIndependent(i, k, sepset);
+                double p = independenceTest.getPValue();
 
                 if (p > _p) {
                     _p = p;
-                    _v = v;
+                    _v = sepset;
                 }
             }
         }
@@ -92,31 +87,25 @@ public class SepsetsMaxPValue implements SepsetProducer {
         adji.remove(k);
         adjk.remove(i);
 
-        D1:
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adji.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
-            int[] choice;
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adji.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                int[] choice;
 
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adji);
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adji);
 
-                getIndependenceTest().isIndependent(i, k, v);
-                double p = getIndependenceTest().getPValue();
+                    getIndependenceTest().isIndependent(i, k, v);
+                    double p = getIndependenceTest().getPValue();
 
-//                printDsepP(i, k, v, p);
-
-                if (p > _p) {
-                    _p = p;
-                    _v = v;
+                    if (p > _p) {
+                        _p = p;
+                        _v = v;
+                    }
                 }
-
-                if (_p > cutoff) break D1;
             }
-        }
 
-        if (_p < cutoff) {
-            D2:
-            for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adjk.size()); d++) {
+            if (d <= adjk.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
@@ -126,14 +115,10 @@ public class SepsetsMaxPValue implements SepsetProducer {
                     getIndependenceTest().isIndependent(i, k, v);
                     double p = getIndependenceTest().getPValue();
 
-//                    printDsepP(i, k, v, p);
-
                     if (p > _p) {
                         _p = p;
                         _v = v;
                     }
-
-                    if (_p > cutoff) break D2;
                 }
             }
         }
@@ -141,16 +126,6 @@ public class SepsetsMaxPValue implements SepsetProducer {
         this.p = _p;
         return _v;
     }
-
-//    private void  printDsepP(Node i, Node k, List<Node> v, double p) {
-//        if (dsep != null) {
-////                        System.out.println("RRR " + p + " dsep = " + dsep.isIndependent(i, k, v));
-//
-//            if (dsep.isIndependent(i, k, v)) {
-//                System.out.println("HHH " + p);
-//            }
-//        }
-//    }
 
 
     @Override
@@ -160,7 +135,12 @@ public class SepsetsMaxPValue implements SepsetProducer {
 
     @Override
     public double getPValue() {
-        return p;
+        return independenceTest.getPValue();
+    }
+
+    @Override
+    public double getScore() {
+        return -(independenceTest.getPValue() - independenceTest.getAlpha());
     }
 
     @Override
@@ -172,12 +152,15 @@ public class SepsetsMaxPValue implements SepsetProducer {
         return independenceTest;
     }
 
-//    public IndependenceTest getDsep() {
-//        return dsep;
-//    }
-//
-//    public void setDsep(IndependenceTest dsep) {
-//        this.dsep = dsep;
-//    }
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+
 }
 

@@ -32,10 +32,10 @@ import java.util.Vector;
 
 /**
  * Useful references: "Factor Analysis of Data Matrices" - Paul Horst (1965) This work has good specifications and
- * explanations of factor analysis algorithms and methods of communality estimation.
+ * explanations of factor analysis algorithm and methods of communality estimation.
  * <p>
  * "Applied Factor Analysis" - R.J. Rummel (1970) This book is a good companion to the book listed above.  While it
- * doesn't specify any actual algorithms, it has a great introduction to the subject that gives the reader a good
+ * doesn't specify any actual algorithm, it has a great introduction to the subject that gives the reader a good
  * appreciation of the philosophy and the mathematics behind factor analysis.
  *
  * @author Mike Freenor
@@ -65,36 +65,35 @@ public class FactorAnalysis {
     /*
      *  A GENERAL NOTE ABOUT COMMUNALITY ESTIMATES
      *
-     * As of 8/3/09, none of these are used in any implemented algorithms.
+     * As of 8/3/09, none of these are used in any implemented algorithm.
      * This is because the successive residual method implemented doesn't require
      * communality estimates.
      */
 
 
-    /*
-     * Unity method.
-     *
-     * Takes the residual correlation matrix and sets the diagonals to unity.
-     * This, in effect, estimates the communality as 1.
-     *
-     * This method is better when there are more variables, but should still be
-     * avoided in the cases where the off-diagonal correlations are quite small.
-     *
-     * One nice property of this method is that the total amount of variance
-     * accounted for is guaranteed to be less than or equal to the original
-     * variance.  This prevents resultant factor loading matrices from accounting
-     * for more variance than the original, which is strange.
-     */
+//    /**
+//     * Unity method.
+//     *
+//     * Takes the residual correlation matrix and sets the diagonals to unity.
+//     * This, in effect, estimates the communality as 1.
+//     *
+//     * This method is better when there are more variables, but should still be
+//     * avoided in the cases where the off-diagonal correlations are quite small.
+//     *
+//     * One nice property of this method is that the total amount of variance
+//     * accounted for is guaranteed to be less than or equal to the original
+//     * variance.  This prevents resultant factor loading matrices from accounting
+//     * for more variance than the original, which is strange.
+//     */
+//    public void unity(CorrelationMatrix r) {
+//        TetradMatrix residual = r.getMatrix();
+//
+//        for (int i = 0; i < residual.columns(); i++) {
+//            residual.set(i, i, 1);
+//        }
+//    }
 
-    public void unity(CorrelationMatrix r) {
-        TetradMatrix residual = r.getMatrix();
-
-        for (int i = 0; i < residual.columns(); i++) {
-            residual.set(i, i, 1);
-        }
-    }
-
-    /*
+    /**
      * Largest nondiagonal magnitude method.
      *
      * Estimates the communality (diagonal of the residual correlation
@@ -227,7 +226,7 @@ public class FactorAnalysis {
     }
     */
 
-    /*
+    /**
      * Successive method with residual matrix.
      *
      * This algorithm makes use of a helper algorithm.  Together they solve for an unrotated
@@ -267,9 +266,9 @@ public class FactorAnalysis {
      */
 
     public TetradMatrix successiveResidual() {
-        this.factorLoadingVectors = new Vector<TetradMatrix>();
-        this.residualMatrices = new Vector<TetradMatrix>();
-        this.dValues = new Vector<Double>();
+        this.factorLoadingVectors = new Vector<>();
+        this.residualMatrices = new Vector<>();
+        this.dValues = new Vector<>();
 
         this.residualMatrices.add(correlationMatrix.getMatrix());
 
@@ -382,7 +381,7 @@ public class FactorAnalysis {
 
     //================= MATRIX FUNCTIONS =================//
 
-    /*
+    /**
      * @return a vector that runs along the diagonal of the supplied 2D matrix.
      * If the matrix is not a square matrix, then it compiles what WOULD be the
      * diagonal if it were, starting from the upper-left corner.
@@ -413,7 +412,7 @@ public class FactorAnalysis {
         return diag(corMatrix.getMatrix());
     }
 
-    /*
+    /**
      * Subtracts b from a.
      */
 
@@ -429,7 +428,7 @@ public class FactorAnalysis {
         return result;
     }
 
-    /*
+    /**
      * Calculates (a * b)
      */
 
@@ -530,7 +529,7 @@ public class FactorAnalysis {
     //as usual, vectors are treated as matrices to simplify operations elsewhere
 
     public static TetradMatrix normalizeRows(TetradMatrix matrix) {
-        Vector<TetradMatrix> normalizedRows = new Vector<TetradMatrix>();
+        Vector<TetradMatrix> normalizedRows = new Vector<>();
         for (int i = 0; i < matrix.rows(); i++) {
             TetradVector vector = matrix.getRow(i);
             TetradMatrix colVector = new TetradMatrix(matrix.columns(), 1);
@@ -572,9 +571,9 @@ public class FactorAnalysis {
         if (factorLoadingMatrix.columns() == 1)
             return factorLoadingMatrix;
 
-        Vector<TetradMatrix> residuals = new Vector<TetradMatrix>();
-        Vector<TetradMatrix> rotatedFactorVectors = new Vector<TetradMatrix>();
-        Vector<TetradMatrix> vVectors = new Vector<TetradMatrix>();
+        Vector<TetradMatrix> residuals = new Vector<>();
+        Vector<TetradMatrix> rotatedFactorVectors = new Vector<>();
+        Vector<TetradMatrix> vVectors = new Vector<>();
 
         TetradMatrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
@@ -618,9 +617,9 @@ public class FactorAnalysis {
                 }
             }
 
-            Vector<TetradMatrix> hVectors = new Vector<TetradMatrix>();
-            Vector<TetradMatrix> bVectors = new Vector<TetradMatrix>();
-            Vector<Double> alphas = new Vector<Double>();
+            Vector<TetradMatrix> hVectors = new Vector<>();
+            Vector<TetradMatrix> bVectors = new Vector<>();
+            Vector<Double> alphas = new Vector<>();
 
             hVectors.add(new TetradMatrix(residuals.lastElement().columns(), 1));
             TetradVector rowFromFactorLoading = residuals.lastElement().getRow(lIndex);

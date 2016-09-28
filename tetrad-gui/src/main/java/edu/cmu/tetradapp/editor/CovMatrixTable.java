@@ -43,7 +43,7 @@ class CovMatrixTable extends AbstractTableModel {
     /**
      * The wrapped CovarianceMatrix.
      */
-    private ICovarianceMatrix covMatrix;
+    private final ICovarianceMatrix covMatrix;
 
     /**
      * The matrix being edited. Since covariance matrices must be positive
@@ -60,7 +60,7 @@ class CovMatrixTable extends AbstractTableModel {
     /**
      * Fires property change events.
      */
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Constructs a new DisplayTableModel to wrap the given covMatrix.
@@ -75,17 +75,17 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * @return the number of rows in the wrapper table model. Guarantees that
+     * Returns the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
      *
      * @return the row count of the wrapped model or 100, whichever is larger.
      */
     public int getRowCount() {
-        return (getNumVariables() < 100) ? 100 : getNumVariables();
+        return (getNumVariables() < 100) ? 100 : getNumVariables() + 4;
     }
 
     /**
-     * @return the number of columns in the wrapper table model. Guarantees that
+     * Returns the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
      *
      * @return the column count of the wrapped model or 30, whichever is

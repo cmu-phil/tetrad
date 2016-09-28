@@ -24,30 +24,24 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.Function;
 import edu.cmu.tetrad.util.Integrator;
 import edu.cmu.tetrad.util.PartialCorrelationPdf;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-public class TestPartialCorrelationPdf extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+public class TestPartialCorrelationPdf {
     private Function function;
-
-    public TestPartialCorrelationPdf(String name) {
-        super(name);
-    }
 
     public void setUp() {
         function = new PartialCorrelationPdf(1000, 5);
     }
 
+    @Test
     public void testIntegralSumToOne() {
+        setUp();
         String message = "Integrator does not properly integrate a p.d.f.";
         double area = Integrator.getArea(function, -1.0, 1.0, 10000);
         double tolerance = 0.000001;
         assertEquals(message, 1.0, area, tolerance);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestPartialCorrelationPdf.class);
     }
 }
 

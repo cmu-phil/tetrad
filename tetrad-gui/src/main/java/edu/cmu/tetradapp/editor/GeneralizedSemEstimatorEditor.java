@@ -62,31 +62,16 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     private GeneralizedSemImGraphicalEditor graphicalEditor;
 
     /**
-     * The graphical editor for the SemIm.
-     */
-    private GeneralizedSemImListEditor listEditor;
-
-    /**
      * A reference to the error terms menu item so it can be reset.
      */
-    private JMenuItem errorTerms;
-
-    /**
-     * Edits the initial distributions of the parameters.
-     */
-    private GeneralizedSemImParamsEditor paramsEditor;
-
-    /**
-     *
-     */
-    private JTextArea report;
+    private final JMenuItem errorTerms;
 
     /**
      * A common map of nodes to launched editors so that they can all be closed when this editor
      * is closed.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
-    private GeneralizedSemEstimatorWrapper wrapper;
+    private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+    private final GeneralizedSemEstimatorWrapper wrapper;
 
     //========================CONSTRUCTORS===========================//
 
@@ -292,20 +277,29 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     }
 
     private GeneralizedSemImListEditor listEditor() {
-        this.listEditor = new GeneralizedSemImListEditor(getEstIm(), launchedEditors);
-        return this.listEditor;
+        /*
+      The graphical editor for the SemIm.
+     */
+        GeneralizedSemImListEditor listEditor = new GeneralizedSemImListEditor(getEstIm(), launchedEditors);
+        return listEditor;
     }
 
     private GeneralizedSemImParamsEditor parametersEditor() {
-        this.paramsEditor = new GeneralizedSemImParamsEditor(getEstIm(), launchedEditors);
-        return this.paramsEditor;
+        /*
+      Edits the initial distributions of the parameters.
+     */
+        GeneralizedSemImParamsEditor paramsEditor = new GeneralizedSemImParamsEditor(getEstIm(), launchedEditors);
+        return paramsEditor;
     }
 
     private JPanel estimationReport() {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
 
-        this.report = new JTextArea(wrapper.getReport());
+        /*
+
+     */
+        JTextArea report = new JTextArea(wrapper.getReport());
         p.add(report, BorderLayout.CENTER);
 
         return p;
@@ -314,11 +308,11 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     /**
      * The SemPm being edited.
      */
-    public GeneralizedSemPm getSemPm() {
+    private GeneralizedSemPm getSemPm() {
         return wrapper.getSemPm();
     }
 
-    public GeneralizedSemIm getEstIm() {
+    private GeneralizedSemIm getEstIm() {
         return wrapper.getSemIm();
     }
 }

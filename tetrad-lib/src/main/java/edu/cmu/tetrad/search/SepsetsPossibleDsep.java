@@ -39,6 +39,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     private int maxPathLength = 5;
     private IKnowledge knowledge = new Knowledge2();
     private int depth = -1;
+    private boolean verbose = false;
 
     public SepsetsPossibleDsep(Graph graph, IndependenceTest independenceTest, IKnowledge knowledge,
                                int depth, int maxPathLength) {
@@ -49,7 +50,6 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -80,7 +80,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
     private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
         final Set<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<Node>(possibleDsepSet);
+        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
         List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
@@ -107,8 +107,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     private Set<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
         Set<Node> dsep = GraphUtils.possibleDsep(x, y, graph, maxPathLength);
 //        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
-        System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
+
+        if (verbose) {
+            System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
+        }
+
         return dsep;
+
     }
 
     /**
@@ -116,7 +121,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
      */
     private List<Node> possibleParents(Node x, List<Node> nodes,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : nodes) {
@@ -140,8 +145,22 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     @Override
+    public double getScore() {
+        return -(independenceTest.getPValue() - independenceTest.getAlpha());
+    }
+
+    @Override
     public List<Node> getVariables() {
         return independenceTest.getVariables();
     }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
 }
 

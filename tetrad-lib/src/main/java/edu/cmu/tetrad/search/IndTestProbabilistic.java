@@ -101,13 +101,13 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         nodes = dataSet.getVariables();
 
-        indices = new HashMap<Node, Integer>();
+        indices = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             indices.put(nodes.get(i), i);
         }
 
-        this.H = new HashMap<IndependenceFact, Double>();
+        this.H = new HashMap<>();
     }
 
     @Override
@@ -210,7 +210,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public List<String> getVariableNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Node node : nodes) {
             names.add(node.getName());
@@ -258,8 +258,13 @@ public class IndTestProbabilistic implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public Map<IndependenceFact, Double> getH() {
-        return new HashMap<IndependenceFact, Double>(H);
+        return new HashMap<>(H);
     }
 
     private double probOp(BCInference.OP type, double pInd) {

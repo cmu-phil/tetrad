@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.ModeInterpolator;
 import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
@@ -36,7 +37,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class ModeInterpolatorWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ModeInterpolatorWrapper(DataWrapper wrapper) {
+    public ModeInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
         DataFilter interpolator = new ModeInterpolator();
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
@@ -50,11 +51,10 @@ public class ModeInterpolatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ModeInterpolatorWrapper(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

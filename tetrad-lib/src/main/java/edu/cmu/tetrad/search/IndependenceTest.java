@@ -124,6 +124,12 @@ public interface IndependenceTest {
     int getSampleSize();
 
     List<TetradMatrix> getCovMatrices();
+
+    /**
+     * A score that is higher with more likely models.
+     */
+    double getScore();
+
 }
 
 

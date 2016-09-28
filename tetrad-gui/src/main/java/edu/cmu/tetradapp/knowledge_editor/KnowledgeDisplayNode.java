@@ -70,7 +70,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
     /**
      * @return the shape of the component.
      */
-    public Shape getShape() {
+    private Shape getShape() {
         return new Rectangle2D.Double(0, 0,
                     getPreferredSize().width - 1,
                     getPreferredSize().height - 1);
@@ -137,7 +137,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
         boolean changed = false;
 
         if (super.getModelNode() != null /*&&
-                !newName.equals(super.getModelNode().getName())*/) {
+                !newName.equals(super.getModelNode().getNode())*/) {
             super.getModelNode().setName(newName);
             changed = true;
         }

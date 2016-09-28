@@ -82,10 +82,10 @@ public final class BdeMetricCache {
     public double scoreLnGam(Node node, Set<Node> parents, BayesPm bayesPmMod,
                              BayesIm bayesIm) {
         //        System.out.println("In Cache scoreLnGam ");
-        //        System.out.print("Processing node " + node.getName() + " with parents ");
+        //        System.out.print("Processing node " + node.getNode() + " with parents ");
 
         //        for (Iterator itp = parents.iterator(); itp.hasNext();) {
-        //            System.out.print(((Node) itp.next()).getName() + " ");
+        //            System.out.print(((Node) itp.next()).getNode() + " ");
         //        }
         //        System.out.println();
 
@@ -119,7 +119,7 @@ public final class BdeMetricCache {
             /*
             int numRows = 1;
             for (int i = 0; i < parentArray.length; i++) {
-                String name = parentArray[i].getName();
+                String name = parentArray[i].getNode();
 
                 int index = getVarIndex(name);
                 //int numCats = ((DiscreteVariable) variables.get(index)).getNumSplits();
@@ -251,7 +251,7 @@ public final class BdeMetricCache {
         Double scoreDouble = score;
         scores.put(nodeAndParents, scoreDouble);
 
-        //System.out.println("For node " + node.getName() + " with parents " + parents);
+        //System.out.println("For node " + node.getNode() + " with parents " + parents);
         //System.out.println("Score = " + score);
         return score;
     }
@@ -404,7 +404,7 @@ public final class BdeMetricCache {
 //                        continue;
 //                    }
 //                    existsEvidence = true;
-//                    String otherVarName = otherVar.getName();
+//                    String otherVarName = otherVar.getNode();
 //                    //Node otherNode = graph1.getNode(otherVarName);
 //                    Node otherNode = graph.getNode(otherVarName);
 //                    int otherIndex = bayesIm.getNodeIndex(otherNode);
@@ -487,7 +487,7 @@ public final class BdeMetricCache {
 //
 //        /*if (graph2.equals(graph1)) {
 //
-//            //System.out.println("For node " + node.getName());
+//            //System.out.println("For node " + node.getNode());
 //            //System.out.println("in computeObservedCountsMD num rows = " + numRows);
 //
 //            for (int i = 0; i < numRows; i++)  {
@@ -502,7 +502,7 @@ public final class BdeMetricCache {
 //
 //            Evidence evidence = new Evidence(bayesIm);
 //
-//            int nodeIndex = evidence.getNodeIndex(node.getName());
+//            int nodeIndex = evidence.getNodeIndex(node.getNode());
 //
 //            for (int val = 0; val < numCols; val++) {
 //                evidence.getProposition().setCategory(nodeIndex, val);
@@ -565,7 +565,7 @@ public final class BdeMetricCache {
 //
 //        if (graph2.equals(graph1)) {
 //
-//            //System.out.println("For node " + node.getName());
+//            //System.out.println("For node " + node.getNode());
 //            //System.out.println("in computeObservedCountsMD num rows = " + numRows);
 //
 //            for (int i = 0; i < numRows; i++) {

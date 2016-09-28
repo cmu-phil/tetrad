@@ -33,12 +33,12 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Implements the "fast adjacency search" used in several causal algorithms in this package. In the fast adjacency
+ * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
  * search, at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S, where S is a subset
  * of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency search performs this
  * procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
- * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
+ * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  *
  * @author Joseph Ramsey.
@@ -98,7 +98,7 @@ public class Vcfas {
      */
     //  private SepsetMap sepset = new SepsetMap();
 
-    private Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<Edge, List<Node>>();
+    private Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<>();
 
     /**
      * True if this is being run by FCI--need to skip the knowledge forbid step.
@@ -158,7 +158,7 @@ public class Vcfas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -222,7 +222,7 @@ public class Vcfas {
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -279,7 +279,7 @@ public class Vcfas {
 
             Node x = nodes.get(i);
 
-//            if (missingCol(test.getData(), x)) {
+//            if (missingCol(test.getContinuousData(), x)) {
 //                continue;
 //            }
 
@@ -287,7 +287,7 @@ public class Vcfas {
 
                 Node y = nodes.get(j);
 
-//                if (missingCol(test.getData(), y)) {
+//                if (missingCol(test.getContinuousData(), y)) {
 //                    continue;
 //                }
 
@@ -319,11 +319,11 @@ public class Vcfas {
                     getApparentlyNonadjacencies().put(Edges.undirectedEdge(x, y), empty);
 
 //                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                            nf.format(test.getPValue()));
+//                            nf.format(test.getScore()));
 
                     if (verbose) {
 //                        System.out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                nf.format(test.getPValue()));
+//                                nf.format(test.getScore()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -331,11 +331,11 @@ public class Vcfas {
                     adjacencies.get(y).add(x);
 
 //                    TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                            nf.format(test.getPValue()));
+//                            nf.format(test.getScore()));
 
 //                    if (verbose) {
 //                        System.out.println(SearchLogUtils.dependenceFactMsg(x, y, empty) + " p = " +
-//                                nf.format(test.getPValue()));
+//                                nf.format(test.getScore()));
 //                    }
                 }
             }
@@ -350,11 +350,11 @@ public class Vcfas {
 
     // Returns true just in case there are no defined values in the column.
     private boolean missingCol(DataModel data, Node x) {
-        return false; // TODO revert.
+        return false;
 
 //        if (data instanceof DataSet) {
 //            DataSet dataSet = (DataSet) data;
-//            int j = dataSet.getColumn(dataSet.getVariable(x.getName()));
+//            int j = dataSet.getColumn(dataSet.getVariable(x.getNode()));
 //
 //            for (int i = 0; i < dataSet.getNumRows(); i++) {
 //                if (!Double.isNaN(dataSet.getDouble(i, j))) {
@@ -375,7 +375,7 @@ public class Vcfas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -409,11 +409,11 @@ public class Vcfas {
         for (Node x : nodes) {
             if (++count % 100 == 0) System.out.println("count " + count + " of " + nodes.size());
 
-            List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, knowledge);
 //                final Node _x = x;
@@ -422,9 +422,9 @@ public class Vcfas {
 //                    @Override
 //                    public int compare(Node node1, Node node2) {
 //                        test.isIndependent(_x, node1);
-//                        double p1 = test.getPValue();
+//                        double p1 = test.getScore();
 //                        test.isIndependent(_x, node2);
-//                        double p2 = test.getPValue();
+//                        double p2 = test.getScore();
 //                        return Double.compare(p2, p1);
 //                    }
 //                });
@@ -462,7 +462,7 @@ public class Vcfas {
                         }
 //                        else {
 //                            if (verbose) {
-//                                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getPValue()));
+//                                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getScore()));
 //                            }
 //
 //                        }
@@ -479,7 +479,7 @@ public class Vcfas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {

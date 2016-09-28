@@ -40,6 +40,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -53,14 +54,12 @@ public class FactorAnalysisAction extends AbstractAction {
     /**
      * The data edtitor that action is attached to.                        
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**
      * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public FactorAnalysisAction(DataEditor editor) {
         super("Factor Analysis...");
@@ -92,7 +91,7 @@ public class FactorAnalysisAction extends AbstractAction {
         */
     }
 
-    public JPanel createDialog(FactorAnalysis analysis)
+    private JPanel createDialog(FactorAnalysis analysis)
     {
         double threshold = .2;
 
@@ -130,7 +129,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
         SemGraph graph = new SemGraph();
 
-        Vector<Node> observedVariables = new Vector<Node>();
+        Vector<Node> observedVariables = new Vector<>();
 
         for(Node a : dataSet.getVariables())
         {
@@ -138,7 +137,7 @@ public class FactorAnalysisAction extends AbstractAction {
             observedVariables.add(a);
         }
 
-        Vector<Node> factors = new Vector<Node>();
+        Vector<Node> factors = new Vector<>();
 
         for(int i = 0; i < rotatedSolution.columns(); i++)
         {
@@ -221,7 +220,14 @@ public class FactorAnalysisAction extends AbstractAction {
     }
 
     public static void main(String[] args) {
-        Graph graph = new Dag(GraphUtils.randomGraph(9, 0, 9, 30, 15, 15, false));
+        java.util.List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 9; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 9,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(500, false);

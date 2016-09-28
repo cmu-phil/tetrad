@@ -38,7 +38,7 @@ public class DataGraphUtils {
                                                 int numMeasuredMeasuredImpureParents,
                                                 int numMeasuredMeasuredImpureAssociations) {
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numStructuralNodes; i++) {
             vars.add(new ContinuousVariable("X" + (i + 1)));
@@ -48,7 +48,8 @@ public class DataGraphUtils {
 
         do {
 //            dag = DataGraphUtils.randomGraphUniform(numStructuralNodes, numStructuralNodes, numStructuralEdges, 4, 3, 3, false);
-            dag = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges);
+            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
+                    30, 15, 15, false, true);
         } while (dag.getNumEdges() != numStructuralEdges);
 
         Graph graph = new EdgeListGraph(dag);
@@ -68,8 +69,7 @@ public class DataGraphUtils {
 
         List<Node> latents = graph1.getNodes();
 
-        for (int i = 0; i < latents.size(); i++) {
-            Node latent = latents.get(i);
+        for (Node latent : latents) {
             latent.setNodeType(NodeType.LATENT);
 
             if (!(latent.getNodeType() == NodeType.LATENT)) {
@@ -244,8 +244,8 @@ public class DataGraphUtils {
                 numMeasurementsPerLatent, numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations);
 
-        List<Node> latents = new ArrayList<Node>();
-        List<Node> latents2 = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
+        List<Node> latents2 = new ArrayList<>();
 
         for (Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
@@ -286,7 +286,10 @@ public class DataGraphUtils {
 //            }
 //        }
 
+        GraphUtils.fruchtermanReingoldLayout(mim);
+
         return mim;
     }
+
 }
 

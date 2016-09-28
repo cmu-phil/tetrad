@@ -24,13 +24,15 @@ package edu.cmu.tetradapp.model;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +53,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GlassoRunner(DataWrapper dataWrapper, GlassoSearchParams params) {
+    private GlassoRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -61,23 +63,27 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 //     * @see edu.cmu.TestSerialization
 //     * @see TetradSerializableUtils
      */
-    public static GlassoRunner serializableInstance() {
-        return new GlassoRunner(DataWrapper.serializableInstance(),
-                GlassoSearchParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "GLASSO";
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
         Object dataModel = getDataModel();
-        GlassoSearchParams params = (GlassoSearchParams) getParams();
+        Parameters params = getParams();
 
         if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
@@ -85,12 +91,12 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             DoubleMatrix2D cov = new DenseDoubleMatrix2D(dataSet.getCovarianceMatrix().toArray());
 
             Glasso glasso = new Glasso(cov);
-            glasso.setMaxit(params.getMaxit());
-            glasso.setIa(params.isIa());
-            glasso.setIs(params.isIs());
-            glasso.setItr(params.isItr());
-            glasso.setIpen(params.isIpen());
-            glasso.setThr(params.getThr());
+            glasso.setMaxit((int) params.get("maxit", 10000));
+            glasso.setIa(params.getBoolean("ia", false));
+            glasso.setIs(params.getBoolean("is", false));
+            glasso.setItr(params.getBoolean("itr", false));
+            glasso.setIpen(params.getBoolean("ipen", false));
+            glasso.setThr(params.getDouble("thr", 1e-4));
             glasso.setRhoAllEqual(1.0);
 
             Glasso.Result result = glasso.search();
@@ -118,7 +124,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -130,7 +136,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -141,7 +147,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -155,9 +161,9 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-           return ((MeekSearchParams)params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if(params instanceof Parameters){
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

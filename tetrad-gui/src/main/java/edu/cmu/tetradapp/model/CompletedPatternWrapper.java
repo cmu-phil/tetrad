@@ -54,7 +54,7 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
 
     //=============================CONSTRUCTORS==========================//
 
-    public CompletedPatternWrapper(Graph graph) {
+    private CompletedPatternWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -81,7 +81,6 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      * @return the serializable instance.
      */

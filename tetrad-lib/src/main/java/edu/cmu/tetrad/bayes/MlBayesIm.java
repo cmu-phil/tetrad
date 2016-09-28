@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
@@ -35,7 +34,8 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm
@@ -73,7 +73,7 @@ import static java.lang.Math.*;
  */
 public final class MlBayesIm implements BayesIm {
     static final long serialVersionUID = 23L;
-    private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
+    private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
 
     /**
      * Inidicates that new rows in this BayesIm should be initialized as
@@ -234,6 +234,10 @@ public final class MlBayesIm implements BayesIm {
         return new MlBayesIm(BayesPm.serializableInstance());
     }
 
+    public static List<String> getParameterNames() {
+        return new ArrayList<>();
+    }
+
     //===============================PUBLIC METHODS========================//
 
     /**
@@ -246,7 +250,7 @@ public final class MlBayesIm implements BayesIm {
     /**
      * @return the DAG.
      */
-    public Dag getDag() {
+    public Graph getDag() {
         return bayesPm.getDag();
     }
 
@@ -258,7 +262,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this node.
      */
     public Node getNode(int nodeIndex) {
@@ -318,7 +321,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      * @see #getNumRows
      */
@@ -327,7 +329,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      * @see #getRowIndex
      * @see #getNumColumns
@@ -424,8 +425,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
-     * @param values
      * @return the row in the table for the given node and combination of parent
      * values.
      * @see #getParentValues
@@ -553,7 +552,7 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);
-        probs[nodeIndex][rowIndex] = getRandomWeights(size);
+        probs[nodeIndex][rowIndex] = getRandomWeights3(size);
     }
 
     private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
@@ -569,7 +568,27 @@ public final class MlBayesIm implements BayesIm {
 
         for (int i = 0; i < size; i++) {
 //            row[i] = RandomUtil.getInstance().nextDouble() + biases[i];
-            row[i] = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            double v = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            row[i] = v > 0.5 ? 2 * v : v;
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
+
+    private static double[] getRandomWeights3(int size) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        for (int i = 0; i < size; i++) {
+            double v = RandomUtil.getInstance().nextUniform(0, 1);
+            row[i] = v > 0.5 ? 3 * v : v;
             sum += row[i];
         }
 
@@ -601,106 +620,106 @@ public final class MlBayesIm implements BayesIm {
      * @param nodeIndex the node for the table to be randomized.
      */
     public void randomizeTable(int nodeIndex) {
-//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//            randomizeRow(nodeIndex, rowIndex);
-//        }
-        randomizeTable4(nodeIndex);
-    }
-
-    private void randomizeTable2(int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            if (isIncomplete(nodeIndex, rowIndex)) {
-                break;
-            }
-        }
-
-        // Trying for some more power ..jdramsey 5/7/10
-        List<Integer> rowIndices = new ArrayList<>();
-
-        for (int i = 0; i < getNumRows(nodeIndex); i++) {
-            rowIndices.add(i);
-        }
-
-        Collections.shuffle(rowIndices);
-
-        randomizeRow(nodeIndex, rowIndices.get(0));
-        double[][] values = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-
-        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-            double bestNorm = 0.0;
-
-            for (int trial = 0; trial < 100; trial++) {
-                randomizeRow(nodeIndex, rowIndices.get(row));
-                double totalNorm = 0.0;
-
-                for (int _row = row - 1; _row < row; _row++) {
-                    double norm = norm(nodeIndex, rowIndices.get(row),
-                            rowIndices.get(_row));
-                    totalNorm += norm;
-                }
-
-                if (totalNorm > bestNorm) {
-                    bestNorm = totalNorm;
-
-                    for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
-                        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                            values[_row][col] = getProbability(nodeIndex, _row, col);
-                        }
-                    }
-                }
-            }
-
-            for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
-                for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                    setProbability(nodeIndex, _row, col, values[_row][col]);
-                }
-            }
-        }
-    }
-
-    private void randomizeTable3(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             randomizeRow(nodeIndex, rowIndex);
         }
-
-        double[][] saved = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-
-        double[][] stored = probs[nodeIndex];
-
-        copy(stored, saved);
-
-        double maxSumSpread = 0.0;
-
-        for (int i = 0; i < 100; i++) {
-            for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-                randomizeRow(nodeIndex, rowIndex);
-            }
-
-            double sumSpread = 0.0;
-
-            for (int c = 0; c < getNumColumns(nodeIndex); c++) {
-                double min = 1.0, max = 0.0;
-
-                for (int r = 0; r < getNumRows(nodeIndex); r++) {
-                    double p = getProbability(nodeIndex, r, c);
-
-                    if (p <= min) min = p;
-                    if (p >= max) max = p;
-                }
-
-                sumSpread += abs(max - min);
-            }
-
-            if (sumSpread > maxSumSpread) {
-                copy(stored, saved);
-                maxSumSpread = sumSpread;
-            }
-        }
-
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            copy(saved, stored);
-        }
+//        randomizeTable4(nodeIndex);
     }
+
+//    private void randomizeTable2(int nodeIndex) {
+//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//            if (isIncomplete(nodeIndex, rowIndex)) {
+//                break;
+//            }
+//        }
+//
+//        // Trying for some more power ..jdramsey 5/7/10
+//        List<Integer> rowIndices = new ArrayList<>();
+//
+//        for (int i = 0; i < getNumRows(nodeIndex); i++) {
+//            rowIndices.add(i);
+//        }
+//
+//        Collections.shuffle(rowIndices);
+//
+//        randomizeRow(nodeIndex, rowIndices.get(0));
+//        double[][] values = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
+//
+//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
+//            double bestNorm = 0.0;
+//
+//            for (int trial = 0; trial < 100; trial++) {
+//                randomizeRow(nodeIndex, rowIndices.get(row));
+//                double totalNorm = 0.0;
+//
+//                for (int _row = row - 1; _row < row; _row++) {
+//                    double norm = norm(nodeIndex, rowIndices.get(row),
+//                            rowIndices.get(_row));
+//                    totalNorm += norm;
+//                }
+//
+//                if (totalNorm > bestNorm) {
+//                    bestNorm = totalNorm;
+//
+//                    for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
+//                        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                            values[_row][col] = getProbability(nodeIndex, _row, col);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
+//                for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                    setProbability(nodeIndex, _row, col, values[_row][col]);
+//                }
+//            }
+//        }
+//    }
+
+//    private void randomizeTable3(int nodeIndex) {
+//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//            randomizeRow(nodeIndex, rowIndex);
+//        }
+//
+//        double[][] saved = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
+//
+//        double[][] stored = probs[nodeIndex];
+//
+//        copy(stored, saved);
+//
+//        double maxSumSpread = 0.0;
+//
+//        for (int i = 0; i < 100; i++) {
+//            for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//                randomizeRow(nodeIndex, rowIndex);
+//            }
+//
+//            double sumSpread = 0.0;
+//
+//            for (int c = 0; c < getNumColumns(nodeIndex); c++) {
+//                double min = 1.0, max = 0.0;
+//
+//                for (int r = 0; r < getNumRows(nodeIndex); r++) {
+//                    double p = getProbability(nodeIndex, r, c);
+//
+//                    if (p <= min) min = p;
+//                    if (p >= max) max = p;
+//                }
+//
+//                sumSpread += abs(max - min);
+//            }
+//
+//            if (sumSpread > maxSumSpread) {
+//                copy(stored, saved);
+//                maxSumSpread = sumSpread;
+//            }
+//        }
+//
+//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//            copy(saved, stored);
+//        }
+//    }
 
     private void randomizeTable4(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -711,22 +730,22 @@ public final class MlBayesIm implements BayesIm {
 
         double max = Double.NEGATIVE_INFINITY;
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
 //                randomizeRow(nodeIndex, rowIndex);
                 randomizeRow2(nodeIndex, rowIndex, probs[nodeIndex][rowIndex]);
             }
 
-            double score = score(nodeIndex);
+            int score = score(nodeIndex);
 
             if (score > max) {
                 max = score;
                 copy(probs[nodeIndex], saved);
             }
 
-//            if (score == getNumParents(nodeIndex)) {
-//                break;
-//            }
+            if (score == getNumParents(nodeIndex)) {
+                break;
+            }
         }
 
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -734,10 +753,9 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    private double score(int nodeIndex) {
+    private int score(int nodeIndex) {
         double[][] p = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
         copy(probs[nodeIndex], p);
-        double score = 0.0;
         int num = 0;
 
         int numRows = getNumRows(nodeIndex);
@@ -792,7 +810,6 @@ public final class MlBayesIm implements BayesIm {
             double prob = 1 - distribution.cumulativeProbability(chisq);
 
             num += prob < 0.0001 ? 1 : 0;
-            score += log(prob);
         }
 
 //        return num == parents.length ? -score : 0;
@@ -825,52 +842,52 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    private double totalNorm(int nodeIndex, int parent, int cat1, int cat2) {
-        double[] sumProbs1 = new double[getNumColumns(nodeIndex)];
-        double[] sumProbs2 = new double[getNumColumns(nodeIndex)];
+//    private double totalNorm(int nodeIndex, int parent, int cat1, int cat2) {
+//        double[] sumProbs1 = new double[getNumColumns(nodeIndex)];
+//        double[] sumProbs2 = new double[getNumColumns(nodeIndex)];
+//
+//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
+//            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                if (getParentValues(nodeIndex, row)[parent] == cat1) {
+//                    sumProbs1[col] += getProbability(nodeIndex, row, col);
+//                }
+//            }
+//        }
+//
+//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
+//            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                if (getParentValues(nodeIndex, row)[parent] == cat2) {
+//                    sumProbs2[col] += getProbability(nodeIndex, row, col);
+//                }
+//            }
+//        }
+//
+//        double norm = 0.0;
+//
+//        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//            double value1 = sumProbs1[col];
+//            double value2 = sumProbs2[col];
+//            double diff = value1 - value2;
+//            double absNorm = abs(diff);
+//            norm += absNorm;
+//        }
+//
+//        return norm;
+//    }
 
-        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                if (getParentValues(nodeIndex, row)[parent] == cat1) {
-                    sumProbs1[col] += getProbability(nodeIndex, row, col);
-                }
-            }
-        }
-
-        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                if (getParentValues(nodeIndex, row)[parent] == cat2) {
-                    sumProbs2[col] += getProbability(nodeIndex, row, col);
-                }
-            }
-        }
-
-        double norm = 0.0;
-
-        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-            double value1 = sumProbs1[col];
-            double value2 = sumProbs2[col];
-            double diff = value1 - value2;
-            double absNorm = abs(diff);
-            norm += absNorm;
-        }
-
-        return norm;
-    }
-
-    private double norm(int nodeIndex, int row1, int row2) {
-        double norm = 0.0;
-
-        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-            double value1 = getProbability(nodeIndex, row1, col);
-            double value2 = getProbability(nodeIndex, row2, col);
-            double diff = value1 - value2;
-            double absNorm = abs(diff);
-//            norm += diff * diff;
-            norm += absNorm;
-        }
-        return norm;
-    }
+//    private double norm(int nodeIndex, int row1, int row2) {
+//        double norm = 0.0;
+//
+//        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//            double value1 = getProbability(nodeIndex, row1, col);
+//            double value2 = getProbability(nodeIndex, row2, col);
+//            double diff = value1 - value2;
+//            double absNorm = abs(diff);
+////            norm += diff * diff;
+//            norm += absNorm;
+//        }
+//        return norm;
+//    }
 
     /**
      * Randomizes every row in the table for the given node index.
@@ -915,20 +932,54 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
-     * @param latentDataSaved
+     * @param sampleSize the sample size.
      * @return the simulated sample as a DataSet.
      */
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved, int[] tiers) {
+        if (getBayesPm().getDag().isTimeLagModel()) {
+            return simulateTimeSeries(sampleSize);
+        }
+
+        return simulateDataHelper(sampleSize, latentDataSaved, tiers);
+    }
+
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (getBayesPm().getDag().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
         }
 
-        return simulateDataHelper(sampleSize, latentDataSaved);
+        // Get a tier ordering and convert it to an int array.
+        Graph graph = getBayesPm().getDag();
+
+        if (graph.existsDirectedCycle()) {
+            throw new IllegalArgumentException("Graph must be acyclic to simulate from discrete Bayes net.");
+        }
+
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            tiers[i] = getNodeIndex(tierOrdering.get(i));
+        }
+
+        return simulateDataHelper(sampleSize, latentDataSaved, tiers);
+    }
+
+    public DataSet simulateData(DataSet dataSet, boolean latentDataSaved, int[] tiers) {
+        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
-        return simulateDataHelper(dataSet, latentDataSaved);
+        // Get a tier ordering and convert it to an int array.
+        Graph graph = getBayesPm().getDag();
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            tiers[i] = getNodeIndex(tierOrdering.get(i));
+        }
+
+        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     private DataSet simulateTimeSeries(int sampleSize) {
@@ -997,31 +1048,43 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
-     * @param seed            the random number generator seed allows you
-     *                        recreate the simulated data by passing in the same
-     *                        seed (so you don't have to store the sample data
-     * @param latentDataSaved
+     * @param sampleSize the sample size.
+     * @param seed       the random number generator seed allows you
+     *                   recreate the simulated data by passing in the same
+     *                   seed (so you don't have to store the sample data
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil.getInstance().setSeed(seed);
-        return simulateDataHelper(sampleSize, latentDataSaved);
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
+        random.setSeed(seed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.revertSeed(_seed);
+        return dataSet;
     }
 
     public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
         RandomUtil.getInstance().setSeed(seed);
-        return simulateDataHelper(dataSet, latentDataSaved);
+
+        // Get a tier ordering and convert it to an int array.
+        Graph graph = getBayesPm().getDag();
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            tiers[i] = getNodeIndex(tierOrdering.get(i));
+        }
+
+        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
-     * @param latentDataSaved
+     * @param sampleSize the sample size.
      * @return the simulated sample as a DataSet.
      */
-    private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved) {
+    private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved, int[] tiers) {
         int numMeasured = 0;
         int[] map = new int[nodes.length];
         List<Node> variables = new LinkedList<>();
@@ -1046,8 +1109,9 @@ public final class MlBayesIm implements BayesIm {
             map[index] = j;
         }
 
+
         DataSet dataSet = new BoxDataSet(new VerticalIntDataBox(sampleSize, variables.size()), variables);
-        constructSample(sampleSize, dataSet, map);
+        constructSample(sampleSize, dataSet, map, tiers);
 
         if (!latentDataSaved) {
             dataSet = DataUtils.restrictToMeasured(dataSet);
@@ -1060,7 +1124,7 @@ public final class MlBayesIm implements BayesIm {
      * Constructs a random sample using the given already allocated data set, to
      * avoid allocating more memory.
      */
-    private DataSet simulateDataHelper(DataSet dataSet, boolean latentDataSaved) {
+    private DataSet simulateDataHelper(DataSet dataSet, boolean latentDataSaved, int[] tiers) {
         if (dataSet.getNumColumns() != nodes.length) {
             throw new IllegalArgumentException("When rewriting the old data set, " +
                     "number of variables in data set must equal number of variables " +
@@ -1099,7 +1163,7 @@ public final class MlBayesIm implements BayesIm {
             dataSet.changeVariable(node, _node);
         }
 
-        constructSample(sampleSize, dataSet, map);
+        constructSample(sampleSize, dataSet, map, tiers);
 
         if (latentDataSaved) {
             return dataSet;
@@ -1108,19 +1172,80 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    private void constructSample(int sampleSize, DataSet dataSet, int[] map) {
+    final long[] seed = new long[]{new Date().getTime()};
 
-        // Get a tier ordering and convert it to an int array.
-        Graph graph = getBayesPm().getDag();
-        Dag dag = (Dag) graph;
-        List<Node> tierOrdering = dag.getCausalOrdering();
-        int[] tiers = new int[tierOrdering.size()];
+    private void constructSample(int sampleSize, DataSet dataSet, int[] map, int[] tiers) {
 
-        for (int i = 0; i < tierOrdering.size(); i++) {
-            tiers[i] = getNodeIndex(tierOrdering.get(i));
-        }
+//        //Do the simulation.
+//        class SimulationTask extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//            private int[] tiers;
+//            private DataSet dataSet;
+//            private int[] map;
+//
+//            public SimulationTask(int chunk, int from, int to, int[] tiers, DataSet dataSet, int[] map) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//                this.tiers = tiers;
+//                this.dataSet = dataSet;
+//                this.map = map;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    RandomGenerator randomGenerator = new Well1024a(++seed[0]);
+//
+//                    for (int row = from; row < to; row++) {
+//                        for (int t : tiers) {
+//                            int[] parentValues = new int[parents[t].length];
+//
+//                            for (int k = 0; k < parentValues.length; k++) {
+//                                parentValues[k] = dataSet.getInt(row, parents[t][k]);
+//                            }
+//
+//                            int rowIndex = getRowIndex(t, parentValues);
+//                            double sum = 0.0;
+//                            double r;
+//
+//                            r = randomGenerator.nextDouble();
+//
+//                            for (int k = 0; k < getNumColumns(t); k++) {
+//                                double probability = getProbability(t, rowIndex, k);
+//                                sum += probability;
+//
+//                                if (sum >= r) {
+//                                    dataSet.setInt(row, map[t], k);
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int mid = (to + from) / 2;
+//                    SimulationTask left = new SimulationTask(chunk, from, mid, tiers, dataSet, map);
+//                    SimulationTask right = new SimulationTask(chunk, mid, to, tiers, dataSet, map);
+//
+//                    left.fork();
+//                    right.compute();
+//                    left.join();
+//
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        int chunk = 25;
+//
+//        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+//        SimulationTask task = new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map);
+//        pool.invoke(task);
 
-        long t1 = System.currentTimeMillis();
 
         // Construct the sample.
         for (int i = 0; i < sampleSize; i++) {
@@ -1148,9 +1273,7 @@ public final class MlBayesIm implements BayesIm {
             }
         }
 
-        long t2 = System.currentTimeMillis();
-        System.out.println("Elapsed Sim = " + (t2 - t1) + "ms");
-
+//        System.out.println(dataSet);
     }
 
     public boolean equals(Object o) {
@@ -1378,64 +1501,64 @@ public final class MlBayesIm implements BayesIm {
         return row;
     }
 
-    private static double[] getRandomWeights2(int size) {
-        assert size >= 0;
+//    private static double[] getRandomWeights2(int size) {
+//        assert size >= 0;
+//
+//        double[] row = new double[size];
+//        double sum = 0.0;
+//
+//        // Renders rows more deterministic.
+//        double bias = 2;
+//        int index = -1;
+//        double max = 0.0;
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] = RandomUtil.getInstance().nextDouble();
+//
+//            if (row[i] > max) {
+//                max = row[i];
+//                index = i;
+//            }
+//        }
+//
+//        row[index] += bias;
+//
+//        for (int i = 0; i < size; i++) {
+//            sum += row[i];
+//        }
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] /= sum;
+//        }
+//
+//        return row;
+//    }
 
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        // Renders rows more deterministic.
-        double bias = 2;
-        int index = -1;
-        double max = 0.0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextDouble();
-
-            if (row[i] > max) {
-                max = row[i];
-                index = i;
-            }
-        }
-
-        row[index] += bias;
-
-        for (int i = 0; i < size; i++) {
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
-
-    private static double[] getRandomWeights3(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        // Renders rows more deterministic.
-        double bias = 0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextBeta(2, 5);
-
-            if (row[i] > 0.5) {
-                row[i] += bias;
-            }
-
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
+//    private static double[] getRandomWeights3(int size) {
+//        assert size >= 0;
+//
+//        double[] row = new double[size];
+//        double sum = 0.0;
+//
+//        // Renders rows more deterministic.
+//        double bias = 0;
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] = RandomUtil.getInstance().nextBeta(2, 5);
+//
+//            if (row[i] > 0.5) {
+//                row[i] += bias;
+//            }
+//
+//            sum += row[i];
+//        }
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] /= sum;
+//        }
+//
+//        return row;
+//    }
 
     private void initializeRowAsUnknowns(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);

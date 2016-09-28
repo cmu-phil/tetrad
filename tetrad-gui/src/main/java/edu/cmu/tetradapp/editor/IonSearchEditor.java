@@ -24,12 +24,14 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -54,7 +56,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -91,7 +93,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -161,7 +163,7 @@ public class IonSearchEditor extends AbstractSearchEditor
         IonRunner runner = (IonRunner) getAlgorithmRunner();
 
         List<Graph> storedGraphs = runner.getStoredGraphs();
-        if (storedGraphs == null) storedGraphs = new ArrayList<Graph>();
+        if (storedGraphs == null) storedGraphs = new ArrayList<>();
 
         for (Graph storedGraph : storedGraphs) {
             GraphUtils.circleLayout(storedGraph, 200, 200, 150);
@@ -171,7 +173,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = getAlgorithmRunner().getResultGraph();
+        Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();
@@ -194,10 +196,10 @@ public class IonSearchEditor extends AbstractSearchEditor
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    SearchParams searchParams = getAlgorithmRunner().getParams();
+                    Parameters searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
-                        IKnowledge knowledge = searchParams.getKnowledge();
+                        IKnowledge knowledge = (IKnowledge) searchParams.get("knowledge", new Knowledge2());
                         if (!knowledge.isEmpty()) {
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
@@ -298,25 +300,25 @@ public class IonSearchEditor extends AbstractSearchEditor
 
         Box b1 = Box.createVerticalBox();
 
-        final IonParams params = (IonParams) getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
 
         JCheckBox pruneByAdjacenciesBox = new JCheckBox("Prune by Adjacencies");
-        pruneByAdjacenciesBox.setSelected(params.isPruneByAdjacencies());
+        pruneByAdjacenciesBox.setSelected(params.getBoolean("pruneByAdjacencies", true));
 
         JCheckBox pruneByPathLengthBox = new JCheckBox("Prune by Path Length");
-        pruneByPathLengthBox.setSelected(params.isPruneByPathLength());
+        pruneByPathLengthBox.setSelected(params.getBoolean("pruneByPathLength", true));
 
         pruneByAdjacenciesBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.setPruneByAdjacencies(checkBox.isSelected());
+                params.set("pruneByAdjacencies", checkBox.isSelected());
             }
         });
 
         pruneByPathLengthBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.setPruneByPathLength(checkBox.isSelected());
+                params.set("pruneByPathLength", checkBox.isSelected());
             }
         });
 
@@ -348,7 +350,7 @@ public class IonSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
             Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
@@ -397,9 +399,9 @@ public class IonSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -442,7 +444,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getResultGraph();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -483,7 +485,7 @@ public class IonSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -502,8 +504,8 @@ public class IonSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeekRules();
+                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
+                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -561,8 +563,8 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setTestType(IndTestType testType) {
@@ -574,21 +576,21 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        SearchParams searchParams = getAlgorithmRunner().getParams();
+        Parameters searchParams = getAlgorithmRunner().getParams();
 
         if (searchParams != null) {
-            searchParams.setKnowledge(knowledge);
+            searchParams.set("knowledge", knowledge);
         }
     }
 
     public IKnowledge getKnowledge() {
-        SearchParams searchParams = getAlgorithmRunner().getParams();
+        Parameters searchParams = getAlgorithmRunner().getParams();
 
         if (searchParams == null) {
             return null;
         }
 
-        return searchParams.getKnowledge();
+        return (IKnowledge) searchParams.get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//

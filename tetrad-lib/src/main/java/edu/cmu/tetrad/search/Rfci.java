@@ -32,11 +32,11 @@ import java.util.*;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
@@ -65,7 +65,7 @@ public final class Rfci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     private IndependenceTest independenceTest;
 
@@ -137,7 +137,7 @@ public final class Rfci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<Node>();
+        Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -269,7 +269,7 @@ public final class Rfci implements GraphSearch {
     // Orient colliders
     ////////////////////////////////////////////
     private void ruleR0_RFCI(List<Node[]> rTuples) {
-        List<Node[]> lTuples = new ArrayList<Node[]>();
+        List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = graph.getNodes();
 
@@ -286,7 +286,7 @@ public final class Rfci implements GraphSearch {
 
             if (nodes1 == null) continue;
 
-            List<Node> sepSet = new ArrayList<Node>(nodes1);
+            List<Node> sepSet = new ArrayList<>(nodes1);
             sepSet.remove(j);
 
             boolean independent1 = false;
@@ -420,7 +420,7 @@ public final class Rfci implements GraphSearch {
     // collect in rTupleList all unshielded tuples
     ////////////////////////////////////////////////
     private List<Node[]> getRTuples() {
-        List<Node[]> rTuples = new ArrayList<Node[]>();
+        List<Node[]> rTuples = new ArrayList<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node j : nodes) {
@@ -458,7 +458,7 @@ public final class Rfci implements GraphSearch {
         // (for example, setting independent1 and independent2 in ruleR0_RFCI)
         /*
         // background knowledge requires this edge
-		if (knowledge.noEdgeRequired(x.getName(), y.getName()))
+		if (knowledge.noEdgeRequired(x.getNode(), y.getNode()))
 		{
 			return;
 		}

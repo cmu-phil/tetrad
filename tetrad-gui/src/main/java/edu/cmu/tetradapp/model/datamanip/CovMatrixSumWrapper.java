@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
 
@@ -144,12 +145,10 @@ public class CovMatrixSumWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new CovMatrixSumWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()),
-                new DataWrapper(DataUtils.continuousSerializableInstance()));
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

@@ -42,7 +42,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     /**
      * @serial Cannot be null.
      */
-    private DataSet outputDataSet;
+    private final DataSet outputDataSet;
 
     //============================CONSTRUCTORS=============================//
 
@@ -61,12 +61,10 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ReplaceMissingWithRandomWrapper(
-                DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==========================PUBLIC METHODS============================//

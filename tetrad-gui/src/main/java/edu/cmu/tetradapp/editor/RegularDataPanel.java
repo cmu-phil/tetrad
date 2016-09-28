@@ -22,14 +22,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -37,7 +35,8 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.File;
+import java.io.PrintStream;
 import java.util.prefs.Preferences;
 
 /**
@@ -47,7 +46,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class RegularDataPanel extends JPanel {
-    private DataModel[] dataModels;
+    private transient DataModel[] dataModels;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -82,7 +81,7 @@ final class RegularDataPanel extends JPanel {
     private JLabel maxIntegralLabel1;
     private JLabel maxIntegralLabel2;
 
-    private int fileIndex = 0;
+    private final int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
 
@@ -659,7 +658,7 @@ final class RegularDataPanel extends JPanel {
         }
     }
 
-    public String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
+    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
         return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
     }
 
@@ -846,7 +845,6 @@ final class RegularDataPanel extends JPanel {
             tabbedPane.setSelectedIndex(1);
 
             DataReader reader = new DataReader();
-            reader.setLogEmptyTokens(logEmptyTokens.isSelected());
 
             reader.setCommentMarker(getCommentString());
             reader.setDelimiter(getDelimiterType());
@@ -868,7 +866,7 @@ final class RegularDataPanel extends JPanel {
                 dataModel = reader.parseCovariance(files[fileIndex]);
             }
 
-//            addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+//            addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
 
             anomaliesTextArea.setCaretPosition(
                     anomaliesTextArea.getText().length());

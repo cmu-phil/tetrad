@@ -30,31 +30,32 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Tests Sem.
- *
  * @author Joseph Ramsey
  */
-public class TestStandardizedSem extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestStandardizedSem(String name) {
-        super(name);
-    }
+public class TestStandardizedSem {
 
     // Test the code that standardizes a data set.
+    @Test
     public void test1() {
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false)));
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false)));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -64,28 +65,28 @@ public class TestStandardizedSem extends TestCase {
         _dataSet = DataUtils.standardizeData(_dataSet);
         DataSet dataSetStandardized = ColtDataSet.makeData(dataSet.getVariables(), _dataSet);
 
-        System.out.println(DataUtils.cov(_dataSet));
-        System.out.println(DataUtils.mean(_dataSet));
+        DataUtils.cov(_dataSet);
+        DataUtils.mean(_dataSet);
 
         SemEstimator estimator = new SemEstimator(dataSetStandardized, pm);
         SemIm imStandardized = estimator.estimate();
 
-        System.out.println("Edge coef: " + imStandardized.getEdgeCoef());
-        System.out.println("Error cover: " + imStandardized.getErrCovar());
-        System.out.println("Variable means: " + new TetradVector(imStandardized.getMeans()));
+        imStandardized.getEdgeCoef();
+        imStandardized.getErrCovar();
+        new TetradVector(imStandardized.getMeans());
 
-        System.out.println("Original edge coefficients: " + imStandardized.getEdgeCoef());
-        System.out.println("Original error covariances: " + imStandardized.getErrCovar());
+        imStandardized.getEdgeCoef();
+        imStandardized.getErrCovar();
 
         StandardizedSemIm sem = new StandardizedSemIm(im);
 
-        System.out.println("Edge coefficients after construction: " + imStandardized.getEdgeCoef());
-        System.out.println("Error covariances after construction: " + imStandardized.getErrCovar());
-
+        imStandardized.getEdgeCoef();
+        imStandardized.getErrCovar();
 
         assertTrue(isStandardized(sem));
     }
 
+    @Test
     public void test2() {
         RandomUtil.getInstance().setSeed(5729384723L);
 
@@ -114,18 +115,14 @@ public class TestStandardizedSem extends TestCase {
         graph.addDirectedEdge(x1, x4);
         graph.addDirectedEdge(x5, x4);
 
-
-        System.out.println(graph);
-
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         StandardizedSemIm sem = new StandardizedSemIm(im);
 
-        System.out.println(sem);
-
         assertTrue(isStandardized(sem));
     }
 
+    @Test
     public void test3() {
         RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -147,38 +144,35 @@ public class TestStandardizedSem extends TestCase {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        System.out.println(im);
-
         StandardizedSemIm sem = new StandardizedSemIm(im);
 
-        System.out.println(sem);
-
         DataSet data = sem.simulateData(5000, false);
-
-        System.out.println(sem.getVariableNodes());
-        System.out.println(DataUtils.cov(data.getDoubleData()));
-
-        System.out.println(sem.getCoefficientRange(x1, x2));
 
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.2));
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.5));
         assertTrue(sem.setEdgeCoefficient(x1, x2, .5));
         assertTrue(sem.setEdgeCoefficient(x1, x3, -.1));
 
-        System.out.println(sem);
-
         assertTrue(isStandardized(sem));
     }
 
     // This tests what the user is going to try to do in the GUI.
+    @Test
     public void test4() {
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false)));
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i1 = 0; i1 < 10; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+                30, 15, 15, false)));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         StandardizedSemIm sem = new StandardizedSemIm(im);
 
         for (int i = 0; i < 20; i++) {
-            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
             RandomUtil random = RandomUtil.getInstance();
             int index = random.nextInt(edges.size());
             Edge edge = edges.get(index);
@@ -201,6 +195,7 @@ public class TestStandardizedSem extends TestCase {
         }
     }
 
+    @Test
     public void test5() {
         RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -228,8 +223,6 @@ public class TestStandardizedSem extends TestCase {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-//        System.out.println(im);
-
         DataSet dataSet = im.simulateDataRecursive(1000, false);
         TetradMatrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
@@ -239,14 +232,12 @@ public class TestStandardizedSem extends TestCase {
         SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
         SemIm imStandardized = estimator.estimate();
 
-//        System.out.println(imStandardized);
-
         StandardizedSemIm sem = new StandardizedSemIm(im);
 //        sem.setErrorCovariance(ex1, ex2, -.24);
-        System.out.println(sem);
         assertTrue(isStandardized(sem));
     }
 
+    @Test
     public void test6() {
 //        RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -281,9 +272,6 @@ public class TestStandardizedSem extends TestCase {
         SemIm im = new SemIm(pm);
 
         DataSet dataSet = im.simulateDataRecursive(1000, false);
-        System.out.println("im " + im.getErrCovar(x1, x2));
-
-//        System.out.println("adjusted " + im.getErrCovar(x1, x2) * Math.sqrt(im.getVariance(x1) * im.getVariance(x2)));
 
         TetradMatrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
@@ -292,26 +280,25 @@ public class TestStandardizedSem extends TestCase {
         SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
         SemIm imStandardized = estimator.estimate();
 
-        System.out.println(imStandardized);
-
-        System.out.println("im st " + imStandardized.getErrCovar(x1, x2));
         StandardizedSemIm sem = new StandardizedSemIm(im);
-
-//        sem.setErrorCovariance(x1, x2, -.17);
-
-        System.out.println("sem " + sem.getErrorCovariance(x1, x2));
-
-        System.out.println(sem);
 
         assertTrue(isStandardized(sem));
     }
 
     // This tests what the user is going to try to do in the GUI.
+    @Test
     public void test7() {
         RandomUtil random = RandomUtil.getInstance();
         random.setSeed(9394929393L);
 
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false)));
+        List<Node> nodes1 = new ArrayList<>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+                30, 15, 15, false)));
 
         List<Node> nodes = graph.getNodes();
         int n1 = RandomUtil.getInstance().nextInt(nodes.size());
@@ -324,7 +311,6 @@ public class TestStandardizedSem extends TestCase {
         Node node1 = nodes.get(n1);
         Node node2 = nodes.get(n2);
         Edge _edge = Edges.bidirectedEdge(node1, node2);
-        System.out.println(_edge);
         graph.addEdge(_edge);
 
         SemPm pm = new SemPm(graph);
@@ -332,7 +318,6 @@ public class TestStandardizedSem extends TestCase {
         StandardizedSemIm sem = new StandardizedSemIm(im);
 
         DataSet data3 = sem.simulateDataReducedForm(1000, false);
-        System.out.println(new CovarianceMatrix(data3));
 
         graph.setShowErrorTerms(false);
 
@@ -344,7 +329,7 @@ public class TestStandardizedSem extends TestCase {
                 if (Edges.isDirectedEdge(edge)) {
                     double initial = sem.getEdgeCoefficient(a, b);
                     StandardizedSemIm.ParameterRange range = sem.getCoefficientRange(a, b);
-                    assertEquals(initial, sem.getEdgeCoefficient(a, b));
+                    assertEquals(initial, sem.getEdgeCoefficient(a, b), 0.1);
 
                     double low = range.getLow();
                     double high = range.getHigh();
@@ -362,13 +347,11 @@ public class TestStandardizedSem extends TestCase {
                     coef = low - random.nextDouble() * (high - low);
                     assertFalse(sem.setEdgeCoefficient(a, b, coef));
                 } else if (Edges.isBidirectedEdge(edge)) {
-                    System.out.println("covariance = " + sem.getErrorCovariance(a, b));
                     sem.setErrorCovariance(node1, node2, .15);
 
                     assertTrue(isStandardized(sem));
 
                     StandardizedSemIm.ParameterRange range2 = sem.getCovarianceRange(a, b);
-                    System.out.println(range2);
 
                     double low = range2.getLow();
                     double high = range2.getHigh();
@@ -379,7 +362,6 @@ public class TestStandardizedSem extends TestCase {
                     double _coef = sem.getErrorCovariance(a, b);
 
                     double coef = low + random.nextDouble() * (high - low);
-                    System.out.println("Picked " + coef);
                     assertTrue(sem.setErrorCovariance(a, b, coef));
 
                     sem.setErrorCovariance(a, b, _coef);
@@ -419,31 +401,7 @@ public class TestStandardizedSem extends TestCase {
 
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
-
-//        semIm.setEdgeCoef(x, z, .4971);
-//        semIm.setEdgeCoef(y, z, .3774);
-//        semIm.setEdgeCoef(x, y, -.2502);
-//
-//        semIm.setErrCovar(x, y, .2654);
-////        System.out.println("*** " + semIm.getErrCovar(graph.getExogenous(x), graph.getExogenous(y)));
-//
-//        semIm.setErrCovar(x, 1);
-//        semIm.setErrCovar(y, 1.06);
-//        semIm.setErrCovar(z, .6051);
-
-//        DataSet dataSet = semIm.simulateDataReducedForm(1000, false);
-//        dataSet = ColtDataSet.makeContinuousData(dataSet.getVariables(), DataUtils.standardizeData(dataSet.getDoubleData()));
-//        semIm = new SemEstimator(dataSet, semPm).estimate();
-
-        System.out.println(semIm);
-
-//        System.out.println(semIm.getImplCovar());
-
         StandardizedSemIm sem = new StandardizedSemIm(semIm, StandardizedSemIm.Initialization.CALCULATE_FROM_SEM);
-
-//        sem.setErrorCovariance(x, y, 0.8);
-
-        System.out.println(sem);
 
         DataSet data = semIm.simulateDataCholesky(1000, false);
         data = ColtDataSet.makeContinuousData(data.getVariables(), DataUtils.standardizeData(data.getDoubleData()));
@@ -451,13 +409,10 @@ public class TestStandardizedSem extends TestCase {
         semIm = estimator.estimate();
 
         DataSet data2 = semIm.simulateDataReducedForm(1000, false);
-        System.out.println(new CovarianceMatrix(data2));
 
         DataSet data3 = sem.simulateDataReducedForm(1000, false);
-        System.out.println(new CovarianceMatrix(data3));
 
         StandardizedSemIm.ParameterRange range2 = sem.getCovarianceRange(x, y);
-        System.out.println(range2);
 
         double high = range2.getHigh();
         double low = range2.getLow();
@@ -466,13 +421,9 @@ public class TestStandardizedSem extends TestCase {
         if (low == Double.NEGATIVE_INFINITY) low = -1000;
 
         double coef = low + RandomUtil.getInstance().nextDouble() * (high - low);
-        System.out.println("Picked " + coef);
         assertTrue(sem.setErrorCovariance(x, y, coef));
 
-//        assertTrue(sem.setErrorCovariance(x, y, 1));
-        System.out.println(new CovarianceMatrix(data3));
-
-        assert (isStandardized(sem));
+        assertTrue(isStandardized(sem));
     }
 
     private boolean isStandardized(StandardizedSemIm sem) {
@@ -483,18 +434,12 @@ public class TestStandardizedSem extends TestCase {
         TetradMatrix cov = DataUtils.cov(_dataSet);
         TetradVector means = DataUtils.mean(_dataSet);
 
-//        System.out.println(sem.edgeCoef());
-//        System.out.println(cov);
-
         for (int i = 0; i < cov.rows(); i++) {
             if (!(Math.abs(cov.get(i, i) - 1) < .1)) {
-                System.out.println("Variable " + sem.getErrorNodes().get(i) + " variance not equal to 1: " +
-                        cov.get(i, i));
                 return false;
             }
 
             if (!(Math.abs(means.get(i)) < .1)) {
-                System.out.println("Mean not equal to 0:" + means.get(i));
                 return false;
             }
         }
@@ -504,6 +449,7 @@ public class TestStandardizedSem extends TestCase {
     }
 
 
+    @Test
     public void testSliderValues() {
         int n = 100;
 
@@ -542,7 +488,6 @@ public class TestStandardizedSem extends TestCase {
         }
         else if (max != Double.POSITIVE_INFINITY) {
             f = max + Math.tan(-(((double) n - slider) / n) * (Math.PI / 2));
-//            System.out.println("slider = " + slider + " min = " + min + " max = " + max + "  f = " + f);
         }
         else {
             f = Math.tan(-Math.PI / 2 + ((double) slider / n) * Math.PI);
@@ -560,7 +505,6 @@ public class TestStandardizedSem extends TestCase {
         }
         else if (max != Double.POSITIVE_INFINITY) {
             x = n + (2. * n) / Math.PI * Math.atan(value - max);
-//            System.out.println("value = " + value + " x = " + x);
         }
         else {
             x = (n / Math.PI) * (Math.atan(value) + Math.PI / 2);
@@ -570,17 +514,6 @@ public class TestStandardizedSem extends TestCase {
         if (slider > 100) slider = 100;
         if (slider < 0) slider = 0;
         return slider;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestStandardizedSem.class);
     }
 }
 

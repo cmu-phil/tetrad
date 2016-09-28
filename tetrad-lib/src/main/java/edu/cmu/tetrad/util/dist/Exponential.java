@@ -24,11 +24,6 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:06:02 PM
- * To change this template use File | Settings | File Templates.
- */
-
-/**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
  *

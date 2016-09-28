@@ -22,8 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.MissingDataInjectorParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -40,7 +39,7 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
     /**
      * The parameters object being edited.
      */
-    private MissingDataInjectorParams params = null;
+    private Parameters params = null;
 
     //========================= Public Methods =======================================//
 
@@ -48,8 +47,8 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
         buildGui();
     }
 
-    public void setParams(Params params) {
-        this.params = (MissingDataInjectorParams)params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -71,11 +70,11 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
         setLayout(new BorderLayout());
 
         final DoubleTextField probField =
-                new DoubleTextField(params.getProb(), 6, NumberFormatUtil.getInstance().getNumberFormat());
+                new DoubleTextField(params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
         probField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setProb(value);
+                    params.set("prob", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

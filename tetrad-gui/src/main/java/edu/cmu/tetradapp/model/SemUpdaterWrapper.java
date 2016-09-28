@@ -48,6 +48,14 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //=============================CONSTRUCTORS============================//
 
+    public SemUpdaterWrapper(SemEstimatorWrapper wrapper) {
+        if (wrapper == null) {
+            throw new NullPointerException();
+        }
+        this.semUpdater = new SemUpdater(wrapper.getEstimatedSemIm());
+
+    }
+
     public SemUpdaterWrapper(SemImWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -58,11 +66,11 @@ public class SemUpdaterWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static SemUpdaterWrapper serializableInstance() {
-        return new SemUpdaterWrapper(SemImWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new SemUpdaterWrapper(SemImWrapper.serializableInstance());
     }
 
     //==============================PUBLIC METHODS========================//

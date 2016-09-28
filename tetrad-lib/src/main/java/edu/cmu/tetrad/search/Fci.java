@@ -37,11 +37,11 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
@@ -70,7 +70,7 @@ public final class Fci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     private IndependenceTest independenceTest;
 
@@ -144,7 +144,7 @@ public final class Fci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<Node>();
+        Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -179,12 +179,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        return search(getIndependenceTest().getVariables());
-    }
-
-    public Graph search(List<Node> nodes) {
-        return search(new FasStableConcurrent(getIndependenceTest()));
-//        return search(new Fas(getIndependenceTest()));
+        return search(new Fas(initialGraph, getIndependenceTest()));
     }
 
     public void setInitialGraph(Graph initialGraph) {
@@ -198,13 +193,13 @@ public final class Fci implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
         fas.setVerbose(verbose);
-        fas.setInitialGraph(initialGraph);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         SepsetProducer sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
+        sp.setVerbose(verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
@@ -221,7 +216,10 @@ public final class Fci implements GraphSearch {
                 if (sepset != null) {
                     graph.removeEdge(x, y);
                     sepsets.set(x, y, sepset);
-                    System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+
+                    if (verbose) {
+                        System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+                    }
                 }
             }
 
@@ -234,7 +232,7 @@ public final class Fci implements GraphSearch {
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setDepth(getPossibleDsepDepth());
+//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());
@@ -356,7 +354,7 @@ public final class Fci implements GraphSearch {
     //===========================PRIVATE METHODS=========================//
 
     private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<Node, Integer>();
+        this.hashIndices = new ConcurrentHashMap<>();
         for (Node node : nodes) {
             this.hashIndices.put(node, variables.indexOf(node));
         }

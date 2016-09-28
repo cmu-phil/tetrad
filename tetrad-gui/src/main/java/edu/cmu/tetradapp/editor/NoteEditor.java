@@ -40,13 +40,11 @@ public class NoteEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private NoteModel noteModel;
+    private final NoteModel noteModel;
 
 
     /**
      * Constructs the editor given the model
-     *
-     * @param noteModel
      */
     public NoteEditor(NoteModel noteModel) {
         this.noteModel = noteModel;
@@ -103,7 +101,7 @@ public class NoteEditor extends JPanel {
     private class FieldListener extends FocusAdapter  {
 
         private String current;
-        private JTextField field;
+        private final JTextField field;
 
         public FieldListener(JTextField field) {
             this.field = field;

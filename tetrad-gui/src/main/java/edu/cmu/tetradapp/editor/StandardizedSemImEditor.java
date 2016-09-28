@@ -68,7 +68,6 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      */
     private JMenuItem errorTerms;
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
-    private int matrixSelection = 0;
 
 
     //========================CONSTRUCTORS===========================//
@@ -257,8 +256,9 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel() {
         if (this.impliedMatricesPanel == null) {
+            int matrixSelection = 0;
             this.impliedMatricesPanel =
-                    new StandardizedSemImImpliedMatricesPanel(getSemIm(), this.matrixSelection);
+                    new StandardizedSemImImpliedMatricesPanel(getSemIm(), matrixSelection);
         }
         return this.impliedMatricesPanel;
     }
@@ -270,7 +270,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
  * Dispays the implied covariance and correlation matrices for the given SemIm.
  */
 class StandardizedSemImImpliedMatricesPanel extends JPanel {
-    private StandardizedSemIm semIm;
+    private final StandardizedSemIm semIm;
     private JTable impliedJTable;
     private int matrixSelection = 0;
     private JComboBox selector;
@@ -336,7 +336,7 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
         return selector;
     }
 
-    public void setMatrixSelection(int index) {
+    private void setMatrixSelection(int index) {
         selector().setSelectedIndex(index);
         switchView(index);
     }
@@ -379,7 +379,7 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
     }
 
     private static java.util.List<String> getImpliedSelections() {
-        java.util.List<String> list = new ArrayList<String>();
+        java.util.List<String> list = new ArrayList<>();
         list.add("Implied covariance matrix (all variables)");
         list.add("Implied covariance matrix (measured variables only)");
         list.add("Implied correlation matrix (all variables)");

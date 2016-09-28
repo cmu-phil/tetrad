@@ -53,7 +53,7 @@ import java.util.List;
 public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
     private boolean showHighestScoreOnly;
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private Map<Graph, Double> dagsToScores;
     private List<Graph> dags;
     private JLabel scoreLabel;
@@ -97,7 +97,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
             if (dagsToScores.get(dag) > max) max = dagsToScores.get(dag);
         }
 
-        final List<Graph> dags = new ArrayList<Graph>();
+        final List<Graph> dags = new ArrayList<>();
 
         if (max != Double.NEGATIVE_INFINITY && showHighestScoreOnly) {
             for (Graph dag : dagsToScores.keySet()) {
@@ -163,7 +163,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
 
         final JSpinner spinner = new JSpinner();
         spinner.setModel(model);
-        final JLabel totalLabel = new JLabel(" of " + dags.size());
+        final JLabel totalLabel = new JLabel(" of " + dags.size() + " ");
 
         scoreLabel = new JLabel();
         setScore(dags.size() - 1);
@@ -179,7 +179,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         b1.add(spinner);
         b1.add(totalLabel);
         b1.add(Box.createHorizontalGlue());
-        b1.add(new JLabel("Score = "));
+        b1.add(new JLabel("Score =  "));
         b1.add(scoreLabel);
         b1.add(Box.createHorizontalStrut(10));
         b1.add(Box.createHorizontalGlue());
@@ -193,7 +193,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         JScrollPane jScrollPane = new JScrollPane(workbench);
         jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
-        graphPanel.setBorder(new TitledBorder("Maximum Scoring DAGs in Pattern"));
+        graphPanel.setBorder(new TitledBorder("Maximum Scoring DAGs in forbid_latent_common_causes"));
         b2.add(graphPanel);
         b.add(b2);
 
@@ -219,7 +219,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {

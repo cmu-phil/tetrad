@@ -21,13 +21,11 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.MeanInterpolator;
-import edu.cmu.tetrad.data.DataFilter;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * Add description
@@ -39,7 +37,7 @@ public class MeanInterpolatorWrapper extends DataWrapper {
 
 
 
-    public MeanInterpolatorWrapper(DataWrapper data) {
+    public MeanInterpolatorWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
@@ -58,11 +56,10 @@ public class MeanInterpolatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static MeanInterpolatorWrapper serializableInstance() {
-        return new MeanInterpolatorWrapper(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

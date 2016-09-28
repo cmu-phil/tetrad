@@ -40,7 +40,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public ConvertToPositiveSkew(DataWrapper wrapper) {
+    private ConvertToPositiveSkew(DataWrapper wrapper) {
         DataModelList inList1 = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
 
@@ -67,7 +67,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
             }
 
             List<Node> list = dataSet.getVariables();
-            List<Node> list2 = new ArrayList<Node>();
+            List<Node> list2 = new ArrayList<>();
 
             for (Node node: list) {
                 list2.add(node);
@@ -87,13 +87,10 @@ public class ConvertToPositiveSkew extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new ConvertToPositiveSkew(wrapper);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 }

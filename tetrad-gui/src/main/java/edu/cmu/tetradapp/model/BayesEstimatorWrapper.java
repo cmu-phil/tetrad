@@ -63,6 +63,11 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
 
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesPmWrapper bayesPmWrapper) {
+
+        if (dataWrapper instanceof Simulation) {
+
+        }
+
         if (dataWrapper == null) {
             throw new NullPointerException(
                     "BayesDataWrapper must not be null.");
@@ -87,37 +92,35 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
         log(bayesIm);
     }
 
-    public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesImWrapper bayesImWrapper) {
-        if (dataWrapper == null) {
-            throw new NullPointerException(
-                    "BayesDataWrapper must not be null.");
-        }
-
-        if (bayesImWrapper == null) {
-            throw new NullPointerException("BayesPmWrapper must not be null");
-        }
-
-        DataSet dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
-
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
+//    public BayesEstimatorWrapper(DataWrapper dataWrapper,
+//                                 BayesImWrapper bayesImWrapper) {
+//        if (dataWrapper == null) {
+//            throw new NullPointerException(
+//                    "BayesDataWrapper must not be null.");
 //        }
-
-        estimate(dataSet, bayesPm);
-        log(bayesIm);
-    }
+//
+//        if (bayesImWrapper == null) {
+//            throw new NullPointerException("BayesPmWrapper must not be null");
+//        }
+//
+//        DataSet dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+//        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
+//
+////        if (DataUtils.containsMissingValue(dataSet)) {
+////            throw new IllegalArgumentException("Please remove or impute missing values.");
+////        }
+//
+//        estimate(dataSet, bayesPm);
+//        log(bayesIm);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static BayesEstimatorWrapper serializableInstance() {
-        return new BayesEstimatorWrapper(DataWrapper.serializableInstance(),
-                BayesPmWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS========================//
@@ -128,7 +131,7 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
         return this.bayesIm;
     }
 
-    private void estimate(DataSet DataSet, BayesPm bayesPm) {
+    private void estimate(DataSet dataSet, BayesPm bayesPm) {
         Graph graph = bayesPm.getDag();
 
         for (Object o : graph.getNodes()) {
@@ -145,7 +148,7 @@ public class BayesEstimatorWrapper implements SessionModel, GraphSource {
 
         try {
             MlBayesEstimator estimator = new MlBayesEstimator();
-            this.bayesIm = estimator.estimate(bayesPm, DataSet);
+            this.bayesIm = estimator.estimate(bayesPm, dataSet);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();

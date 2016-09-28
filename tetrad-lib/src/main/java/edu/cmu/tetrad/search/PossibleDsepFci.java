@@ -39,7 +39,7 @@ import java.util.Set;
  * Specifically, the methods in this class perform step D. of the algorithm. </p> The algorithm implemented by this
  * class is a bit broader, however, because it allows for the possibility that some pairs of variables have already been
  * compared by a different algorithm. Specifically, if the <code>prevCheck</code> variable is provided in the
- * constructor, then the algorithm pairwise checks every variable in the graph with every variable in V \
+ * constructor, then the algorithm pairwise checks every variable in the graph with every variable in v \
  * <code>prevCheck</code> (that is, the unchecked variables). This feature is used by the CIVI algorithm of Danks's
  * "Efficient Inclusion of Novel Variables."
  *
@@ -94,7 +94,7 @@ public class PossibleDsepFci {
      */
     public SepsetMap search() {
 
-        for (Edge edge : new ArrayList<Edge>(graph.getEdges())) {
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -129,7 +129,7 @@ public class PossibleDsepFci {
 
     private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
         final Set<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<Node>(possibleDsepSet);
+        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
         List<Node> possParents = possibleParents(node1, possibleDsep, getKnowledge());
@@ -158,7 +158,7 @@ public class PossibleDsepFci {
      */
     private List<Node> possibleParents(Node x, List<Node> nodes,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : nodes) {
@@ -177,10 +177,10 @@ public class PossibleDsepFci {
     }
 
     /**
-     * A variable V is in Possible-D-Sep(A,B) iff
+     * A variable v is in Possible-D-Sep(A,B) iff
      * <pre>
-     * 	(i) V != A & V != B
-     * 	(ii) there is an undirected path U between A and V such that for every
+     * 	(i) v != A & v != B
+     * 	(ii) there is an undirected path U between A and v such that for every
      * 		 subpath <X,Y,Z> of U either:
      * 		(a) Y is a collider on the subpath, or
      * 		(b) X is adjacent to Z.

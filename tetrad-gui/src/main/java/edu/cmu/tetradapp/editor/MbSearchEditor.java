@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.ImpliedOrientation;
@@ -30,6 +31,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.Mbfs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -44,7 +46,7 @@ import java.util.Map;
 
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -57,11 +59,14 @@ public class MbSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given PcxRunner.
      */
     public MbSearchEditor(MbfsRunner runner) {
-        super(runner, "Result MB Pattern");
+        super(runner, "Result MB forbid_latent_common_causes");
+    }
+    public MbSearchEditor(FgsMbRunner runner) {
+        super(runner, "Result MB forbid_latent_common_causes");
     }
 
     public MbSearchEditor(MbFanSearchRunner runner) {
-        super(runner, "Result MB Pattern");
+        super(runner, "Result MB forbid_latent_common_causes");
     }
 
     /**
@@ -72,7 +77,7 @@ public class MbSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     @Override
@@ -85,12 +90,12 @@ public class MbSearchEditor extends AbstractSearchEditor
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     public java.util.List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (java.util.List<String>) params.get("varNames", null);
     }
 
     public Graph getSourceGraph() {
@@ -109,7 +114,7 @@ public class MbSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -175,7 +180,7 @@ public class MbSearchEditor extends AbstractSearchEditor
 
         if (getAlgorithmRunner() instanceof MbfsRunner) {
             JMenu graph = new JMenu("Graph");
-            JMenuItem showDags = new JMenuItem("Show DAG's Consistent with Pattern");
+            JMenuItem showDags = new JMenuItem("Show DAG's Consistent with forbid_latent_common_causes");
             JMenuItem meekOrient = new JMenuItem("Meek Orientation");
             JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
             JMenuItem nextGraph = new JMenuItem("Next Graph");
@@ -221,7 +226,7 @@ public class MbSearchEditor extends AbstractSearchEditor
                     MbPatternDisplay display = new MbPatternDisplay(search);
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            display, "MB DAG's Consistent with Pattern",
+                            display, "MB DAG's Consistent with forbid_latent_common_causes",
                             JOptionPane.PLAIN_MESSAGE);
                 }
             });
@@ -229,7 +234,7 @@ public class MbSearchEditor extends AbstractSearchEditor
             meekOrient.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                    rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                    rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                     rules.orientImplied(getGraph());
                     getWorkbench().setGraph(getGraph());
                 }
@@ -267,13 +272,13 @@ public class MbSearchEditor extends AbstractSearchEditor
     }
 
     private Box getSearchParamBox() {
-        if (!(getAlgorithmRunner().getParams() instanceof MbSearchParams)) {
+        if (!(getAlgorithmRunner().getParams() instanceof Parameters)) {
             throw new IllegalStateException();
         }
 
         Box b = Box.createHorizontalBox();
-        MbSearchParams params =
-                (MbSearchParams) getAlgorithmRunner().getParams();
+        Parameters params =
+                getAlgorithmRunner().getParams();
         MbSearchParamEditor comp = new MbSearchParamEditor();
         comp.setParams(params);
 

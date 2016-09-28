@@ -91,7 +91,7 @@ public class VariableExpression implements Expression {
     }
 
     public String toString() {
-        return variable.toString();
+        return variable;
     }
 
     @Override

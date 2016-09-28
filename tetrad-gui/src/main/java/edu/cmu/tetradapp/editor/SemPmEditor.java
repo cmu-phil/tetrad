@@ -39,6 +39,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
@@ -56,10 +57,7 @@ import java.util.Map;
 public final class SemPmEditor extends JPanel implements DelegatesEditing,
         LayoutEditable {
 
-    /**
-     * The SemPm being edited.
-     */
-    private SemPm semPm;
+    private final SemPmWrapper semPmWrapper;
 
     /**
      * The graphical editor for the SemPm.
@@ -76,12 +74,8 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
     /**
      * Constructs an editor for the given SemIm.
      */
-    public SemPmEditor(final SemPm semPm) {
-        if (semPm == null) {
-            throw new NullPointerException("SemPm must not be null.");
-        }
-
-        this.semPm = semPm;
+    public SemPmEditor(SemPmWrapper wrapper) {
+        this.semPmWrapper = wrapper;
         setLayout(new BorderLayout());
         add(graphicalEditor(), BorderLayout.CENTER);
 
@@ -129,19 +123,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
-                    Graph graph = semPm.getGraph();
-
-                    semPm.fixOneLoadingPerLatent();
-
-//                    for (Node x : nodes) {
-//                        if (x.getNodeType() == NodeType.LATENT) {
-//                            Parameter p = semPm.getParameter(x, x);
-//                            p.setFixed(true);
-//                            p.setInitializedRandomly(false);
-//                            p.setStartingValue(1.0);
-//                        }
-//                    }
-
+                    getSemPm().fixOneLoadingPerLatent();
                     graphicalEditor.resetLabels();
                 }
             }
@@ -156,57 +138,12 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
-                    semPm.fixLatentErrorVariances();
+                    getSemPm().fixLatentErrorVariances();
 
                     graphicalEditor.resetLabels();
                 }
             }
         });
-
-//        JMenuItem fixErrorVariances = new JMenuItem("Fix Error Variances");
-//
-//        fixErrorVariances.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-//                        "This will fix each error variance to 1.0. Proceed?", "Confirm",
-//                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-//
-//                if (ret == JOptionPane.YES_OPTION) {
-//                    Graph graph = semPm.getGraph();
-//                    List<Node> nodes = graph.getNodes();
-//
-//                    for (Node x : nodes) {
-//                        Parameter p = semPm.getParameter(x, x);
-//                        p.setFixed(true);
-//                        p.setInitializedRandomly(false);
-//                        p.setStartingValue(1.0);
-//                    }
-//
-//                    graphicalEditor.resetLabels();
-//                }
-//            }
-//        });
-
-//        JMenuItem unfixAll = new JMenuItem("Unfix All");
-//
-//        unfixAll.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-//                        "This will unfix all parameters. Proceed?", "Confirm",
-//                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-//
-//                if (ret == JOptionPane.YES_OPTION) {
-//                    for (Parameter p : semPm.getParameters()) {
-//                        p.setFixed(false);
-//                        p.setInitializedRandomly(true);
-//
-//                        graphicalEditor.resetLabels();
-//                    }
-//                }
-//            }
-//        }
-//
-//        );
 
         JMenuItem startFactorLoadingsAtOne = new JMenuItem("Start All Factor Loadings At 1.0");
 
@@ -218,7 +155,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
-                    Graph graph = semPm.getGraph();
+                    Graph graph = getSemPm().getGraph();
 
                     for (Edge edge : graph.getEdges()) {
                         Node x = edge.getNode1();
@@ -232,14 +169,14 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
                                 continue;
                             }
 
-                            p = semPm.getParameter(y, x);
+                            p = getSemPm().getParameter(y, x);
                         } else {
                             if (!(y.getNodeType() == NodeType.MEASURED
                                     && x.getNodeType() == NodeType.LATENT)) {
                                 continue;
                             }
 
-                            p = semPm.getParameter(x, y);
+                            p = getSemPm().getParameter(x, y);
                         }
 
                         p.setInitializedRandomly(false);
@@ -271,14 +208,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
     }
 
     private SemGraph getSemGraph() {
-        return semPm.getGraph();
-    }
-
-    /**
-     * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
-     */
-    public SemPmEditor(SemPmWrapper semImWrapper) {
-        this(semImWrapper.getSemPm());
+        return getSemPm().getGraph();
     }
 
     public JComponent getEditDelegate() {
@@ -326,12 +256,12 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
     //========================PRIVATE METHODS===========================//
 
     private SemPm getSemPm() {
-        return semPm;
+        return semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex());
     }
 
     private SemPmGraphicalEditor graphicalEditor() {
         if (this.graphicalEditor == null) {
-            this.graphicalEditor = new SemPmGraphicalEditor(getSemPm());
+            this.graphicalEditor = new SemPmGraphicalEditor(semPmWrapper);
             this.graphicalEditor.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     firePropertyChange(evt.getPropertyName(), null, null);
@@ -351,12 +281,9 @@ class SemPmGraphicalEditor extends JPanel {
     /**
      * Font size for parameter values in the graph.
      */
-    private static Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
-
-    /**
-     * The SemPm being edited.
-     */
-    private SemPm semPm;
+    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
+    private final SemPmWrapper semPmWrapper;
+    private final JPanel targetPanel;
 
     /**
      * Workbench for the graphical editor.
@@ -371,15 +298,53 @@ class SemPmGraphicalEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public SemPmGraphicalEditor(SemPm semPm) {
-        this.semPm = semPm;
+    public SemPmGraphicalEditor(final SemPmWrapper wrapper) {
+        this.semPmWrapper = wrapper;
         setLayout(new BorderLayout());
+
+        if (wrapper.getNumModels() > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < wrapper.getNumModels(); i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    wrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    workbench = new GraphWorkbench(graph());
+                    workbench.setAllowDoubleClickActions(false);
+                    resetLabels();
+                    setSemPm();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(wrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
+
+        targetPanel = new JPanel();
+        targetPanel.setLayout(new BorderLayout());
+        add(targetPanel, BorderLayout.CENTER);
+
+        setSemPm();
+    }
+
+    private void setSemPm() {
         JScrollPane scroll = new JScrollPane(workbench());
         scroll.setPreferredSize(new Dimension(450, 450));
 
-        add(scroll, BorderLayout.CENTER);
-        setBorder(new TitledBorder(
-                "Double click parameter names to edit parameters"));
+        targetPanel.add(scroll, BorderLayout.CENTER);
+        scroll.setBorder(new TitledBorder( "Double click parameter names to edit parameters"));
 
         addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent e) {
@@ -394,6 +359,8 @@ class SemPmGraphicalEditor extends JPanel {
                 toolTipManager.setInitialDelay(getSavedTooltipDelay());
             }
         });
+
+        targetPanel.validate();
     }
 
     //========================PRIVATE PROTECTED METHODS======================//
@@ -455,7 +422,7 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private SemPm semPm() {
-        return this.semPm;
+        return semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex());
     }
 
     private Graph graph() {
@@ -463,7 +430,7 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private GraphWorkbench workbench() {
-        if (this.getWorkbench() == null) {
+        if (this.workbench == null) {
             this.workbench = new GraphWorkbench(graph());
             this.getWorkbench().setAllowDoubleClickActions(false);
             resetLabels();
@@ -560,7 +527,7 @@ class SemPmGraphicalEditor extends JPanel {
      * @throws IllegalArgumentException if the edge is neither directed nor
      *                                  bidirected.
      */
-    public Parameter getEdgeParameter(Edge edge) {
+    private Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
             return semPm().getCoefficientParameter(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
@@ -626,8 +593,8 @@ class SemPmGraphicalEditor extends JPanel {
     //=======================PRIVATE INNER CLASSES==========================//
 
     private final static class EdgeMouseListener extends MouseAdapter {
-        private Edge edge;
-        private SemPmGraphicalEditor editor;
+        private final Edge edge;
+        private final SemPmGraphicalEditor editor;
 
         public EdgeMouseListener(Edge edge, SemPmGraphicalEditor editor) {
             this.edge = edge;
@@ -650,8 +617,8 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private final static class NodeMouseListener extends MouseAdapter {
-        private Node node;
-        private SemPmGraphicalEditor editor;
+        private final Node node;
+        private final SemPmGraphicalEditor editor;
 
         public NodeMouseListener(Node node, SemPmGraphicalEditor editor) {
             this.node = node;
@@ -672,92 +639,6 @@ class SemPmGraphicalEditor extends JPanel {
             }
         }
     }
-
-    /**
-     * Edits the properties of a parameter.
-     */
-//    private static final class NodeEqnEditor extends JPanel {
-//        private Parameter parameter;
-//        private double mean;
-//        private double rangeFrom;
-//        private double rangeTo;
-//
-//        public NodeEqnEditor(Parameter parameter) {
-//            if (parameter == null) {
-//                throw new NullPointerException();
-//            }
-//
-//            this.parameter = parameter;
-//            setupEditor();
-//        }
-//
-//        private void setupEditor() {
-//            int length = 8;
-//
-//            final DoubleTextField meanField =
-//                    new DoubleTextField(0, length, NumberFormatUtil.getInstance().getNumberFormat());
-//
-//            meanField.setEditable(true);
-//
-//            final DoubleTextField rangeFromField =
-//                    new DoubleTextField(0, length, NumberFormatUtil.getInstance().getNumberFormat());
-//
-//            rangeFromField.setEditable(true);
-//
-//            final DoubleTextField rangeToField =
-//                    new DoubleTextField(0, length, NumberFormatUtil.getInstance().getNumberFormat());
-//
-//            rangeToField.setEditable(true);
-//
-//
-//            Box b1 = Box.createHorizontalBox();
-//            b1.add(new JLabel("Mean: "));
-//            b1.add(Box.createHorizontalGlue());
-//            b1.add(meanField);
-//
-//            Box b2 = Box.createHorizontalBox();
-//            b2.add(new JLabel("Range: "));
-//            b2.add(Box.createHorizontalGlue());
-//            b2.add(rangeFromField);
-//            b2.add(new JLabel(" to "));
-//            b2.add(rangeToField);
-//
-//            Box p = Box.createVerticalBox();
-//
-//            p.add(b1);
-//            p.add(b2);
-//
-//            add(p);
-//        }
-//
-//        public double getMean() {
-//            return mean;
-//        }
-//
-//        public void setMean(double mean) {
-//            this.mean = mean;
-//        }
-//
-//        public double getRangeFrom() {
-//            return rangeFrom;
-//        }
-//
-//        public void setRangeFrom(double rangeFrom) {
-//            this.rangeFrom = rangeFrom;
-//        }
-//
-//        public double getRangeTo() {
-//            return rangeTo;
-//        }
-//
-//        public void setRangeTo(double rangeTo) {
-//            this.rangeTo = rangeTo;
-//        }
-//
-//        public Parameter getParameter() {
-//            return parameter;
-//        }
-//    }
 
     /**
      * Edits the properties of a parameter.

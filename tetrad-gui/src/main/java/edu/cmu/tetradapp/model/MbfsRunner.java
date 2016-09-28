@@ -21,15 +21,16 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Mbfs;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * contain a DataSet that is either a DataSet or a DataSet or a DataList
 	 * containing either a DataSet or a DataSet as its selected model.
 	 */
-	public MbfsRunner(DataWrapper dataWrapper, MbSearchParams params,
+	public MbfsRunner(DataWrapper dataWrapper, Parameters params,
 			KnowledgeBoxModel knowledgeBoxModel) {
 		super(dataWrapper, params, knowledgeBoxModel);
 	}
@@ -70,58 +71,58 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * contain a DataSet that is either a DataSet or a DataSet or a DataList
 	 * containing either a DataSet or a DataSet as its selected model.
 	 */
-	public MbfsRunner(DataWrapper dataWrapper, MbSearchParams params) {
+	public MbfsRunner(DataWrapper dataWrapper, Parameters params) {
 		super(dataWrapper, params, null);
 	}
 
 	/**
 	 * Constucts a wrapper for the given EdgeListGraph.
 	 */
-	public MbfsRunner(Graph graph, MbSearchParams params) {
+	public MbfsRunner(Graph graph, Parameters params) {
 		super(graph, params);
 	}
 
 	/**
 	 * Constucts a wrapper for the given EdgeListGraph.
 	 */
-	public MbfsRunner(GraphWrapper dagWrapper, MbSearchParams params) {
+	public MbfsRunner(GraphWrapper dagWrapper, Parameters params) {
 		super(dagWrapper.getGraph(), params);
 	}
 
 	/**
 	 * Constucts a wrapper for the given EdgeListGraph.
 	 */
-	public MbfsRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, MbSearchParams params) {
+	public MbfsRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
 		super(dagWrapper.getGraph(), params, knowledgeBoxModel);
 	}
 
 	/**
 	 * Constucts a wrapper for the given EdgeListGraph.
 	 */
-	public MbfsRunner(DagWrapper dagWrapper, MbSearchParams params) {
+	public MbfsRunner(DagWrapper dagWrapper, Parameters params) {
 		super(dagWrapper.getDag(), params);
 	}
 
 	/**
 	 * Constructs a wrapper for the given EdgeListGraph.
 	 */
-	public MbfsRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, MbSearchParams params) {
+	public MbfsRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
 		super(dagWrapper.getDag(), params, knowledgeBoxModel);
 	}
 
-	public MbfsRunner(SemGraphWrapper dagWrapper, MbSearchParams params) {
+	public MbfsRunner(SemGraphWrapper dagWrapper, Parameters params) {
 		super(dagWrapper.getGraph(), params);
 	}
 
-	public MbfsRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, MbSearchParams params) {
+	public MbfsRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
 		super(dagWrapper.getGraph(), params, knowledgeBoxModel);
 	}
 
-    public MbfsRunner(IndependenceFactsModel model, MbSearchParams params) {
+    public MbfsRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public MbfsRunner(IndependenceFactsModel model, MbSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public MbfsRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -129,13 +130,10 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	/**
 	 * Generates a simple exemplar of this class to test serialization.
 	 * 
-	 * @see edu.cmu.TestSerialization
 	 * @see TetradSerializableUtils
 	 */
-	public static MbfsRunner serializableInstance() {
-		return new MbfsRunner(DataWrapper.serializableInstance(),
-				MbSearchParams.serializableInstance(), KnowledgeBoxModel
-						.serializableInstance());
+	public static PcRunner serializableInstance() {
+		return PcRunner.serializableInstance();
 	}
 
 	// =================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -145,18 +143,26 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * implemented in the extending class.
 	 */
 	public void execute() {
-		int pcDepth = ((MbSearchParams) getParams()).getDepth();
-		Mbfs mbfs = new Mbfs(getIndependenceTest(), pcDepth);
-		SearchParams params = getParams();
-		if (params instanceof MeekSearchParams) {
-			mbfs.setAggressivelyPreventCycles(((MeekSearchParams) params)
-					.isAggressivelyPreventCycles());
-		}
-		IKnowledge knowledge = getParams().getKnowledge();
-		mbfs.setKnowledge(knowledge);
-		String targetName = ((MbSearchParams) getParams()).getTargetName();
-		Graph searchGraph = mbfs.search(targetName);
-		setResultGraph(searchGraph);
+//		int pcDepth = ((Parameters) getParameters()).getMaxIndegree();
+//		Mbfs mbfs = new Mbfs(getIndependenceTest(), pcDepth);
+//		Parameters params = getParameters();
+//		if (params instanceof Parameters) {
+//			mbfs.setAggressivelyPreventCycles(((Parameters) params)
+//					.isAggressivelyPreventCycles());
+//		}
+		IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+//		mbfs.setKnowledge(knowledge);
+		String targetName = getParams().getString("targetName", null);
+//		Graph searchGraph = mbfs.search(targetName);
+//		setResultGraph(searchGraph);
+
+		DataSet dataSet = (DataSet) getDataModelList().get(0);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+		score.setPenaltyDiscount(getParams().getDouble("alpha", 0.001));
+		FgsMb search = new FgsMb(score);
+        search.setFaithfulnessAssumed(true);
+		Graph searchGraph = search.search(dataSet.getVariable(targetName));
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(searchGraph, getSourceGraph());
@@ -168,7 +174,9 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
             GraphUtils.circleLayout(searchGraph, 200, 200, 150);
         }
 
-		this.mbfs = mbfs;
+//		this.mbfs = mbfs;
+
+        setResultGraph(searchGraph);
 	}
 
 	public IndependenceTest getIndependenceTest() {
@@ -178,8 +186,8 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 			dataModel = getSourceGraph();
 		}
 
-		MbSearchParams params = (MbSearchParams) getParams();
-		IndTestType testType = params.getIndTestType();
+		Parameters params = getParams();
+		IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
 		return new IndTestChooser().getTest(dataModel, params, testType);
 	}
 
@@ -217,7 +225,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * @return the names of the triple classifications. Coordinates with
 	 */
 	public List<String> getTriplesClassificationTypes() {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		names.add("Colliders");
 		names.add("Noncolliders");
 		names.add("Ambiguous Triples");
@@ -227,10 +235,9 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	/**
 	 * @return the list of triples corresponding to
 	 *         <code>getTripleClassificationNames</code>.
-	 * @param node
 	 */
 	public List<List<Triple>> getTriplesLists(Node node) {
-		List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+		List<List<Triple>> triplesList = new ArrayList<>();
 		Graph graph = getGraph();
 		triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
 		triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
@@ -240,6 +247,11 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 
 	public boolean supportsKnowledge() {
 		return true;
+	}
+
+	@Override
+	public String getAlgorithmName() {
+		return "MBFS";
 	}
 }
 

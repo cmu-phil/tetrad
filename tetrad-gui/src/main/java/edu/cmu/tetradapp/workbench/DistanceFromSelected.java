@@ -38,7 +38,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class DistanceFromSelected {
+final class DistanceFromSelected {
 
     /**
      * The graph being laid out.
@@ -53,14 +53,14 @@ public final class DistanceFromSelected {
     /**
      * Has information about nodes on screen.
      */
-    private LayoutEditable layoutEditable;
+    private final LayoutEditable layoutEditable;
 
     //==============================CONSTRUCTORS===========================//
 
     public DistanceFromSelected(LayoutEditable layoutEditable) {
         this.graph = layoutEditable.getGraph();
 
-        List<Node> selected = new ArrayList<Node>();
+        List<Node> selected = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
             Map modelToDisplay = layoutEditable.getModelNodesToDisplay();
@@ -73,7 +73,7 @@ public final class DistanceFromSelected {
         if (selected.isEmpty()) {
             String names = JOptionPane.showInputDialog("Selected nodes (space delimited):");
 
-            List<Node> nodes = new ArrayList<Node>();
+            List<Node> nodes = new ArrayList<>();
             String[] _names = names.split(" ");
 
             for (String name : _names) {
@@ -141,11 +141,11 @@ public final class DistanceFromSelected {
         // We know selected is not empty.
         List<Node> nodes = graph.getNodes();
 
-        List<List<Node>> tiers = new ArrayList<List<Node>>();
+        List<List<Node>> tiers = new ArrayList<>();
 
         tiers.add(selected);
 
-        Set<Node> all = new HashSet<Node>();
+        Set<Node> all = new HashSet<>();
         all.addAll(selected);
 
 //        Set<Node> augmented = new HashSet<Node>();
@@ -188,7 +188,7 @@ public final class DistanceFromSelected {
 
         while (true) {
             List<Node> tier1 = tiers.get(tiers.size() - 1);
-            List<Node> tier2 = new ArrayList<Node>();
+            List<Node> tier2 = new ArrayList<>();
 
             for (Node node : tier1) {
                 List<Node> adj = graph.getAdjacentNodes(node);
@@ -202,10 +202,10 @@ public final class DistanceFromSelected {
             tiers.add(tier2);
         }
 
-        List<Node> remainder = new ArrayList<Node>(nodes);
+        List<Node> remainder = new ArrayList<>(nodes);
         remainder.removeAll(all);
 
-        tiers.add(new ArrayList<Node>(remainder));
+        tiers.add(new ArrayList<>(remainder));
 
         return tiers;
     }

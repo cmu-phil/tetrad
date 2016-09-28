@@ -48,12 +48,11 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class ScatterPlotView extends JPanel {
-    private final DataSet dataSet;
     private ScatterPlot scatterPlot;
     private ScatterPlotChart scatterPlotChart;
     private String x;
     private String y;
-    private static String[] tiles = new String[]{"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
+    private static final String[] tiles = new String[]{"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
     public ScatterPlotView(DataSet dataSet) {
@@ -62,13 +61,13 @@ public class ScatterPlotView extends JPanel {
 //        if (!dataSet.isContinuous()) throw new IllegalArgumentException("Data set not continuous.");
         if (!(dataSet.getNumColumns() >= 2)) throw new IllegalArgumentException("Need at least two columns.");
 
-        this.dataSet = dataSet;
+        DataSet dataSet1 = dataSet;
 
         this.x = dataSet.getVariable(0).getName();
         this.y = dataSet.getVariable(1).getName();
 
         setLayout(new BorderLayout());
-        ScatterPlot ScatterPlot = new ScatterPlot(this.dataSet, false, x, y);
+        ScatterPlot ScatterPlot = new ScatterPlot(dataSet1, false, x, y);
         ScatterPlotChart ScatterPlotChart = new ScatterPlotChart(ScatterPlot);
         this.scatterPlot = ScatterPlot;
         this.scatterPlotChart = ScatterPlotChart;
@@ -79,7 +78,7 @@ public class ScatterPlotView extends JPanel {
         setPreferredSize(new Dimension(750, 450));
     }
 
-    public void setX(String x) {
+    private void setX(String x) {
         this.x = x;
     }
 
@@ -87,22 +86,22 @@ public class ScatterPlotView extends JPanel {
         this.y = y;
     }
 
-    public ScatterPlot getScatterPlot() {
+    private ScatterPlot getScatterPlot() {
         return scatterPlot;
     }
 
     public static class ScatterPlotController extends JPanel {
-        private ScatterPlot scatterPlot;
-        private JComboBox xSelector;
-        private JComboBox ySelector;
-        private JComboBox newConditioningVariableSelector;
-        private JButton newConditioningVariableButton;
-        private JButton removeConditioningVariableButton;
-        private java.util.List<ConditioningPanel> conditioningPanels = new ArrayList<ConditioningPanel>();
-        private JCheckBox includeLineCheckbox;
+        private final ScatterPlot scatterPlot;
+        private final JComboBox xSelector;
+        private final JComboBox ySelector;
+        private final JComboBox newConditioningVariableSelector;
+        private final JButton newConditioningVariableButton;
+        private final JButton removeConditioningVariableButton;
+        private final java.util.List<ConditioningPanel> conditioningPanels = new ArrayList<>();
+        private final JCheckBox includeLineCheckbox;
 
         // To provide some memory of previous settings for the inquiry dialogs.
-        private Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<Node, ConditioningPanel>();
+        private final Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<>();
 
         /**
          * Constructs the editor panel given the initial ScatterPlot and the dataset.
@@ -222,11 +221,11 @@ public class ScatterPlotView extends JPanel {
 
             this.removeConditioningVariableButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    for (ConditioningPanel panel : new ArrayList<ConditioningPanel>(conditioningPanels)) {
+                    for (ConditioningPanel panel : new ArrayList<>(conditioningPanels)) {
                         if (panel.isSelected()) {
                             panel.setSelected(false);
                             conditioningPanels.remove(panel);
-                            scatterPlot.removeConditioningVariable(panel.getVariable().toString());  // TODO
+                            scatterPlot.removeConditioningVariable(panel.getVariable().toString());
                             refreshChart(ScatterPlotView);
                         }
                     }
@@ -496,8 +495,8 @@ public class ScatterPlotView extends JPanel {
         private DoubleTextField field1;
         private DoubleTextField field2;
         private ScatterPlotController.ContinuousConditioningPanel.Type type;
-        private final Map<String, Integer> ntileMap = new HashMap<String, Integer>();
-        private double[] data;
+        private final Map<String, Integer> ntileMap = new HashMap<>();
+        private final double[] data;
 
         /**
          * @param variable          This is the variable being conditioned on. Must be continuous and one of the variables
@@ -711,7 +710,7 @@ public class ScatterPlotView extends JPanel {
 
             // first sort the _data.
             Arrays.sort(_data);
-            java.util.List<Chunk> chunks = new ArrayList<Chunk>(_data.length);
+            java.util.List<Chunk> chunks = new ArrayList<>(_data.length);
             int startChunkCount = 0;
             double lastValue = _data[0];
 
@@ -767,8 +766,8 @@ public class ScatterPlotView extends JPanel {
          */
         private static class Chunk {
 
-            private int valuesInChunk;
-            private double value;
+            private final int valuesInChunk;
+            private final double value;
 
             public Chunk(int low, int high, double value) {
                 this.valuesInChunk = (high - low);
@@ -791,7 +790,7 @@ public class ScatterPlotView extends JPanel {
     private static class ScatterPlotChart extends JPanel {
         private ScatterPlot scatterPlot;
 
-        private NumberFormat nf;
+        private final NumberFormat nf;
 
         /**
          * Constructor.

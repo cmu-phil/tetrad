@@ -30,10 +30,7 @@ import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.*;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -73,13 +70,13 @@ public final class TetradDesktop extends JPanel
     /**
      * A map from components in the desktop to the frames they're embedded in.
      */
-    private final Map<SessionEditor, JInternalFrame> framesMap = new HashMap<SessionEditor, JInternalFrame>();
+    private final Map<SessionEditor, JInternalFrame> framesMap = new HashMap<>();
 
     /**
      * A map from SessionWrapper to TetradMetadata, storing metadata for
      * sessions that have been loaded in.
      */
-    private final Map<SessionWrapper, TetradMetadata> metadataMap = new HashMap<SessionWrapper, TetradMetadata>();
+    private final Map<SessionWrapper, TetradMetadata> metadataMap = new HashMap<>();
 
 
     /**
@@ -265,9 +262,9 @@ public final class TetradDesktop extends JPanel
 
             if (o instanceof SessionEditor) {
                 SessionEditor sessionEditor = (SessionEditor) o;
-                SessionEditorWorkbench workbench =
-                        sessionEditor.getSessionWorkbench();
+                SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
                 Graph graph = workbench.getGraph();
+
                 if (graph.getNumNodes() == 0) {
                     frame.dispose();
                 }
@@ -391,8 +388,7 @@ public final class TetradDesktop extends JPanel
     public boolean closeAllSessions() {
         while (existsSession()) {
             SessionEditor sessionEditor = getFrontmostSessionEditor();
-            SessionEditorWorkbench workbench =
-                    sessionEditor.getSessionWorkbench();
+            SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
             SessionWrapper wrapper = workbench.getSessionWrapper();
 
             if (!wrapper.isSessionChanged()) {
@@ -458,8 +454,6 @@ public final class TetradDesktop extends JPanel
      * then a text area roughly 20% of the screen size will appear on the bottom
      * and will display any log output, otherwise just the standard tetrad
      * workbend is shown.
-     *
-     * @param displayLogging
      */
     public void setDisplayLogging(boolean displayLogging) {
         if (displayLogging) {
@@ -602,10 +596,8 @@ public final class TetradDesktop extends JPanel
             for (Object _o : framesMap.keySet()) {
                 if (_o instanceof SessionEditor) {
                     SessionEditor sessionEditor = (SessionEditor) _o;
-                    SessionEditorWorkbench workbench =
-                            sessionEditor.getSessionWorkbench();
-                    SessionWrapper sessionWrapper =
-                            workbench.getSessionWrapper();
+                    SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+                    SessionWrapper sessionWrapper = workbench.getSessionWrapper();
 
                     if (sessionWrapper.getName().equals(name)) {
                         continue loop;

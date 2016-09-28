@@ -29,48 +29,54 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.MathUtils;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the BayesIm.
- *
  * @author Joseph Ramsey
  */
-public final class TestBayesBicScorer extends TestCase {
+public final class TestBayesBicScorer  {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestBayesBicScorer(String name) {
-        super(name);
+    @Test
+    public void testPValue() {
+        RandomUtil.getInstance().setSeed(492834924L);
+
+//        Graph graph = GraphConverter.convert("X1,X2,X4,X4,X5,X6,X7,X8");
+        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7");
+//        Graph graph2 = GraphConverter.convert("X1,X2,X3,X7-->X6,X9,X10,X11,X12");
+
+        int numCategories = 8;
+        BayesPm pm = new BayesPm(graph, numCategories, numCategories);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
+        DataSet data = im.simulateData(1000, false);
+
+        BayesProperties scorer = new BayesProperties(data);
+
+        double lik = scorer.getLikelihoodRatioP(graph);
+
+        assertEquals(1, lik, 0.001);
     }
 
-    public static void testPValue() {
-        Graph graph1 = GraphConverter.convert("X1,X2-->X3,X4,X5-->X6,X7,X8");
-        Graph graph2 = GraphConverter.convert("X1,X2-->X3,X4,X5,X6,X7-->X8");
-
-        Dag dag2 = new Dag(graph2);
-        BayesPm bayesPm2 = new BayesPm(dag2);
-        BayesIm bayesIm2 = new MlBayesIm(bayesPm2, MlBayesIm.RANDOM);
-
-        int n = 1000;
-        DataSet dataSet2Discrete = bayesIm2.simulateData(n, false);
-
-        BayesProperties scorer = new BayesProperties(dataSet2Discrete, graph1);
-        System.out.println("P-value = " + scorer.getLikelihoodRatioP());
+    public void testGregsBdeuStructurePrior() {
+        for (int i = 100; i >= 1; i--) {
+            double e = .0001 / i;
+            System.out.println("e = " + e + "\t" + prior(e, 1, 10));
+        }
     }
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
+    private double prior(double e, int k, int v) {
+        double choose = Math.exp(MathUtils.choose(v - 1, k));
+        return choose * Math.pow(e / (v - 1), k) * Math.pow(1.0 - e / (v - 1), (v - k - 1));
+    }
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBayesBicScorer.class);
+    // Greg's structure prior
+    private double prior2(double e, int k, int v) {
+        double choose = Math.exp(MathUtils.choose(v - 1, k));
+        return 1.0 / choose;//k * Math.log(e / (v - 1)) + (v - k - 1) * Math.log(1.0 - (e / (v - 1)));
     }
 }
 

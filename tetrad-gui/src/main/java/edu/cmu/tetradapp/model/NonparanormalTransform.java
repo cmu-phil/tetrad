@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
@@ -33,11 +34,11 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  */
 public class NonparanormalTransform extends DataWrapper {
     static final long serialVersionUID = 23L;
-    private DataSet dataSet;
 
     //=============================CONSTRUCTORS==============================//
 
-    public NonparanormalTransform(DataWrapper wrapper) {
+    public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
+        DataSet dataSet;
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
             DataSet _dataSet = (DataSet) wrapper.getSelectedDataModel();
             dataSet = DataUtils.getNonparanormalTransformed(_dataSet);
@@ -56,13 +57,10 @@ public class NonparanormalTransform extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new NonparanormalTransform(wrapper);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

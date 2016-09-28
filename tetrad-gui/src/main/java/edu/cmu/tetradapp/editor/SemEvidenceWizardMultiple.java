@@ -46,7 +46,7 @@ import java.util.List;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-public class SemEvidenceWizardMultiple extends JPanel {
+class SemEvidenceWizardMultiple extends JPanel {
     private SemUpdater semUpdater;
     private GraphWorkbench workbench;
     private final SemEvidenceEditor evidenceEditor;
@@ -162,7 +162,7 @@ public class SemEvidenceWizardMultiple extends JPanel {
 //        for (int i = 0; i < selectedNodes.size(); i++) {
 //            Node selectedNode = (Node) selectedNodes.get(i);
 //            marginalsArea.append(
-//                    "\nVariable " + selectedNode.getName() + ":\n");
+//                    "\nVariable " + selectedNode.getNode() + ":\n");
 //
 //            int nodeIndex = manipulatedIm.getNodeIndex(selectedNode);
 //

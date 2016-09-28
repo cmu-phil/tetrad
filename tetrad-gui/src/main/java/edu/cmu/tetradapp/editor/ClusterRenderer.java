@@ -131,7 +131,7 @@ final class ClusterRenderer extends JPanel {
             //
             //String s = clusters.getClusterName(cluster);
             //if (s == null) {
-            //    s = "Cluster " + (cluster + 1);
+            //    s = "search_for_structure_over_latents " + (cluster + 1);
             //}
             //
             //JLabel label = new JLabel(s);
@@ -381,7 +381,7 @@ final class ClusterRenderer extends JPanel {
         /**
          * Supported dataflavors--only one.
          */
-        private DataFlavor[] dataFlavors = new DataFlavor[]{
+        private final DataFlavor[] dataFlavors = new DataFlavor[]{
                 new DataFlavor(ListSelection.class, "String List Selection")};
 
         /**
@@ -419,7 +419,7 @@ final class ClusterRenderer extends JPanel {
         }
 
         /**
-         * @return whether or not the specified data flavor is supported for
+         * Returns whether or not the specified data flavor is supported for
          * this object.
          *
          * @param flavor the requested flavor for the data
@@ -431,7 +431,7 @@ final class ClusterRenderer extends JPanel {
         }
 
         /**
-         * @return an array of DataFlavor objects indicating the flavors the
+         * Returns an array of DataFlavor objects indicating the flavors the
          * data can be provided in.  The array should be ordered according to
          * preference for providing the data (from most richly descriptive to
          * least descriptive).

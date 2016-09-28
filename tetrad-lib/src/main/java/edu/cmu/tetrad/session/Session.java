@@ -90,7 +90,7 @@ public final class Session implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private List<SessionNode> nodes = new LinkedList<SessionNode>();
+    private List<SessionNode> nodes = new LinkedList<>();
 
     /**
      * Notes when the model has changed. Should be false at time of
@@ -258,7 +258,7 @@ public final class Session implements TetradSerializable {
      * @return the getModel set of session nodes.
      */
     public Set<SessionNode> getNodes() {
-        return new HashSet<SessionNode>(nodes);
+        return new HashSet<>(nodes);
     }
 
     /**
@@ -267,7 +267,7 @@ public final class Session implements TetradSerializable {
     public void clearNodes() {
 
         // Use the removeNode method to make sure events are fired.
-        Set<SessionNode> _nodes = new HashSet<SessionNode>(this.nodes);
+        Set<SessionNode> _nodes = new HashSet<>(this.nodes);
 
         for (SessionNode node : _nodes) {
             removeNode(node);

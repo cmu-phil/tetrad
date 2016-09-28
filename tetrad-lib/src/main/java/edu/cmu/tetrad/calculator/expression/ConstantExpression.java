@@ -70,7 +70,7 @@ public class ConstantExpression implements Expression {
     /**
      * Constructs the constant expression given the value and the name.
      */
-    public ConstantExpression(double value, String name) {
+    private ConstantExpression(double value, String name) {
         if (name == null) {
             throw new NullPointerException("name was null.");
         }

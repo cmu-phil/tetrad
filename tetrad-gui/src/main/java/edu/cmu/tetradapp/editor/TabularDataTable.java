@@ -45,18 +45,6 @@ class TabularDataTable extends AbstractTableModel {
     private DataSet dataSet;
 
     /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingRows = 2;
-
-    /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingCols = 2;
-
-    /**
      * True iff category names for discrete variables should be shown.
      */
     private boolean categoryNamesShown = true;
@@ -64,7 +52,7 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * Fires property change events.
      */
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -85,8 +73,6 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
-     *
-     * @return the row count of the wrapped model or 100, whichever is larger.
      */
     public int getRowCount() {
         int maxRowCount = dataSet.getNumRows() + 3;
@@ -96,9 +82,6 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * @return the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
-     *
-     * @return the column count of the wrapped model or 30, whichever is
-     *         larger.
      */
     public int getColumnCount() {
         return (dataSet.getNumColumns() < 30) ? 30 :
@@ -117,15 +100,16 @@ class TabularDataTable extends AbstractTableModel {
         int columnIndex = col - getNumLeadingCols();
         int rowIndex = row - 2;
 
-        if (col == 1) {
-            if (row == 1) {
-                return "MULT";
-            }
-            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
-                return dataSet.getMultiplier(rowIndex);
-            }
-        }
-        else if (col >= getNumLeadingCols() &&
+//        if (col == 1) {
+//            if (row == 1) {
+//                return "MULT";
+//            }
+//            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
+//                return dataSet.getMultiplier(rowIndex);
+//            }
+//        }
+//        else
+        if (col >= getNumLeadingCols() &&
                 col < dataSet.getNumColumns() + getNumLeadingCols()) {
             Node variable = dataSet.getVariable(columnIndex);
 
@@ -170,7 +154,7 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * @return the value at the given (row, col) coordinates of the table as
+     * Sets the value at the given (row, col) coordinates of the table as
      * an Object.  If the variable for the col is a DiscreteVariable, the String
      * value (as opposed to the integer index value) is extracted and
      * returned. If the coordinates are out of range of the wrapped table model,
@@ -181,18 +165,19 @@ class TabularDataTable extends AbstractTableModel {
         if (col == 0) {
             throw new IllegalArgumentException("Bad col index: " + col);
         }
-        if (col == 1) {
-            if (row >= 2) {
-                try {
-                    int multiplier = new Integer((String) value);
-                    dataSet.setMultiplier(row - 2, multiplier);
-                }
-                catch (Exception e) {
-                    dataSet.setMultiplier(row - 2, 1);
-                }
-            }
-        }
-        else if (col >= getNumLeadingCols() &&
+//        if (col == 1) {
+//            if (row >= 2) {
+//                try {
+//                    int multiplier = new Integer((String) value);
+//                    dataSet.setMultiplier(row - 2, multiplier);
+//                }
+//                catch (Exception e) {
+//                    dataSet.setMultiplier(row - 2, 1);
+//                }
+//            }
+//        }
+//        else
+        if (col >= getNumLeadingCols() &&
                 col < dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
                 setColumnName(col, value);
@@ -228,15 +213,6 @@ class TabularDataTable extends AbstractTableModel {
 
         fireTableDataChanged();
         pcs.firePropertyChange("modelChanged", null, null);
-
-        // The only reason for this it to paste in columns or rows that go
-        // out of bounds, but it doesn't work anyway. Need to fix. In any
-        // case, definitely shouldn't call it every time a cell is set, since
-        // this resets the entire model every time, reallocating all columns,
-        // etc. Also, when calling it, need to somehow reset the sizes of the
-        // initial columns (MULT, index) so they don't get reset to the width
-        // of every other column. TODO.
-//        fireTableStructureChanged();
     }
 
     /**
@@ -396,10 +372,20 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     private int getNumLeadingRows() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingRows = 2;
         return numLeadingRows;
     }
 
     private int getNumLeadingCols() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingCols = 1;
         return numLeadingCols;
     }
 

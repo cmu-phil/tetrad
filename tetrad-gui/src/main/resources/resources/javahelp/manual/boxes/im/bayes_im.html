@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1"
+          http-equiv="content-type">
+    <title>IM</title>
+</head>
+<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
+      style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">
+<table width="95%" border="1" bgcolor="maroon">
+    <tr>
+        <td><h2><font color="#FFFFFF">Bayes Instantiated Model </font></h2></td>
+    </tr>
+</table>
+                  
+                 
+                 
+                 
+                 
+                 
+  
+<h3>Description of the Model</h3>
+<p>A Bayes Instantiated Model (Bayes IM) extends a <a href="../pm/bayes_pm.html">Bayes Parameterized Model</a>,
+    specifying values for all of the parameters in the Bayes net. The parameters for a Bayes net (in the form that
+    they're used in Tetrad) are conditional probabilities stored in <em>conditional probability tables</em>, one for
+    each variable in the Bayes net. A variable X has a (possibly empty) list of parents P1, ..., Pn--i.e., variables Pi
+    such that Pi--&gt;X in the Bayes PM. The variable itself and each of its parents has a list of categories. A
+    conditional probability table for X is a specification of the probability P(X=x' | P1=p1', ..., Pn=pn') for each
+    category x' of X and each combination of categories &lt;p1', ..., pn'&gt; for parents P1, ..., Pn of X. For any
+    particular combination of parent values &lt;p1', ..., pn'&gt;, the sum of the conditional probabilities P(X=xj |
+    P1=p1',...,Pn=pn') for all categories xj of X is equal to 1.0. </p>
+<h3><br>
+    How to Construct a Bayes IM</h3>
+<p>To construct a Bayes IM, first construct a DAG, then a Bayes PM, and add an IM box to the workspace, with an arrow
+    from the Bayes PM to the IM.</p>
+<p><img src="../../images/bayesim1.gif" width="270" height="66"></p>
+<p>Fill in the Graph box and the PM box, as explained in <a href="../pm/bayes_pm.html">Bayes Parameterized Model</a>.
+    For instance, you might end up with a graph that looks like this (the categories for X1 are shown).</p>
+<p><img src="../../images/bayesim2.gif" width="919" height="558"></p>
+<p>Now, double click the IM box. You get a choice of models; choose Bayes Instantiated Model:</p>
+<p><img src="../../images/bayesim3.gif" width="414" height="145"></p>
+<p>What you click OK, you are offered a choice. You may either initialize the parameters of your Bayes net manually
+    (i.e., fill them in one by one, by hand), or fill them in randomly.</p>
+<p><img src="../../images/bayesim4.gif" width="406" height="207"></p>
+<p>We choose &quot;Manually.&quot; We now get a dialog that looks like the following:</p>
+<p><img src="../../images/bayesim5.gif" width="911" height="560"></p>
+<p>X1 here has two parents, X2 and X5. Each combination of parent values for X2 and X5 is listed as a row in the
+    conditional probability table for X1. Each category for X1 is listed as a column in the conditional probability
+    table. We can now fill in these probability values however we like, provided we choose non-negative real numbers
+    that sum to 1.0 in each row. The interface helps out a little by filling in table cells whose values are implied. If
+    you fill in the 0.2000 and 0.5000 in the table below, the table will fill in the 0.3000 for you. Also, if you simply
+    want to fill in table cells randomly, right click on any <em>nonselected</em> table cell. You get a popup menu like
+    the one below. </p>
+<p><img src="../../images/bayesim6.gif" width="500" height="271"></p>
+<p>If you select &quot;Randomize this row,&quot; the row is filled in with random values. For example: </p>
+<p><img src="../../images/bayesim7.gif" width="444" height="243"></p>
+<p>Similarly for the other popup menu functions shown.</p>
+<p>Once all of the table cells have been filled in, the Bayes IM is ready to be used as input to other boxes. You may,
+    for example, simulate data using the Bayes IM, or you may perform updating operations on it. See <a
+            href="../../common_tasks/simulating_data.html">Simulating Data (Bayes)</a> for more information on how to
+    simulate data and <a href="../update/update_box.html">Update Box</a> for more information on updating. </p>
+<h3><br>
+    Potential Parents for a Bayes IM</h3>
+<p>A Bayes IM can be constructed as indicated above (as a child of a Bayes PM). Bayes IM's are also, however, output by
+    other processes. In particular, a Bayes IM can be made a child of the following:</p>
+<ol>
+    <li><a href="../estimate/ml_bayes_estimator.html">ML Bayes Estimator</a>. Bayes estimations take <a
+            href="../pm/bayes_pm.html">Bayes PM</a>'s and discrete data sets and produce new Bayes IM's.
+    </li>
+    <li><a href="dirichlet_bayes_im.html">Dirichlet Estimator</a>. Dirichlet estimators also take Bayes PM's and
+        discrete data sets (with possibly Dirichlet priors in the form of <a href="dirichlet_bayes_im.html">Dirichlet
+            Bayes IM</a>'s) and output Dirichlet Bayes IM's. They may alternatively output Bayes IM's.
+    </li>
+    <li>Any Bayes updater. All of the Bayes updaters (<a href="../update/row_summing_updater.html">Row Summing
+        Updater</a>, <a href="../update/cpt_invariant_updater.html">CPT Invariant Updater</a>, and <a
+            href="../update/approximate_updater.html">Approximate Updater</a>) output new, updated Bayes IM's.
+    </li>
+</ol>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Old text:</p>
+<p><br>
+    If you choose an ML Instantiated Bayes Model, the program will either randomly specify the conditional probability
+    of each value of each variable given the values of its parents, or you can specify them manually through the dialog
+    box:<br>
+    <br>
+    <br>
+    <br>
+    <img
+            src="../../images/UBaysesIMcopy.jpg" alt="" width="859" height="495"
+            style="width: 859px; height: 495px;"><br>
+    <br>
+    <br>
+    Choose a variable either using the "Next" button on the right side of the window or by clicking on the variable in
+    the graph on the left<br>
+    side of the window. In either case, you will see one or more rows of entry spaces, with each entry space labeled by
+    the name of the value of the selected variables. Each row corresponds to an allowed assignment of variables to the
+    variables that are parents of the selected variable. For each row--each assignment of allowed values to the
+    variables that are parents of the variable you have selected--you must enter a numerical value between 0 and 1 for
+    each value of the variable you have selected. These are the respective probabilities of the values of your selected
+    variable, condiitonal on the values in that row of its parents variables.&nbsp;&nbsp; The numbers you put into any
+    row must add up exactly to 1. If they don't the program will simply erase the values you have entered in that row.&nbsp;
+    If you start entering numbers in a row from the left, which is highly recommended, the program will automatically
+    fill in the next to last entry space with the number (if one exists) needed to make the row numbers sum to 1. <br>
+    <br>
+    Entering all of these conditional probabilities in even a medium sized model is very tedious, but there is no help
+    for it other than to estimate the condiitonal probabilities from a data set, or to randomize.&nbsp; If you
+    choose "Random" instead of "Manual" you will get a window very much like the one above, except that randomly chosen
+    values will be entered in each row. You can edit these values by clicking on a row and typing. As in other windows
+    showing graphs, you can select a variable by clicking on it.</p>
+<h3>Potential Parents for Bayes Instantiated Model </h3>
+<p>The Bayes IM can accept the following potential parents. </p>
+<ol>
+    <li><a href="../pm/bayes_pm.html">Bayes Parametric Model</a>. To build a Bayes IM from scratch, one should first
+        build a Bayes PM and then construct a Bayes IM as a child of the Bayes PM.
+    </li>
+    <li><a href="../estimate/dirichlet_estimator.html">ML Bayes Estimator</a>. An ML Bayes Estimator estimates a Bayes
+        IM using a given Bayes PM and discrete data set.
+    </li>
+    <li><a href="../estimate/dirichlet_estimator.html">Dirichlet Bayes Estimator</a>. The normal output of a Dirichlet
+        Bayes Estimator is a <a href="dirichlet_bayes_im.html">Dirichlet Bayes IM</a>, but a Bayes Instantiated Model
+        may be substituted. This Bayes IM will contains as parameter values the maximum likelihood probability values
+        from the estimated Dirichlet Bayes IM.
+    </li>
+</ol>
+<h3>Potential Children for Bayes Instantiated Model </h3>
+<ol>
+    <li><a href="../data/data_set_list.html">Data Box</a>--This is the way to <em>simulate data</em> from a
+        discrete Bayes model. See <a href="../../common_tasks/simulating_data.html">Simulating Data (Bayes)</a> for more
+        details.
+    </li>
+    <li>Any graph--<a href="../graph/dag.html">Directed Acyclic Graph</a>, <a href="../graph/sem_graph.html">SEM
+        Graph</a>, <a href="../graph/general_graph.html">General Graph</a>--simply copies the graph from the Bayes IM
+        into a new graph box.
+    </li>
+    <li><a href="../pm/bayes_pm.html">Bayes PM</a>--copies the Bayes PM from the Bayes IM into a new PM box.</li>
+    <li>Bayes IM--copies the Bayes IM itself into a new IM box.</li>
+    <li>Any of the updating algorithms--<a href="../update/row_summing_updater.html">Row Summing Exact Updater</a>, <a
+            href="../update/cpt_invariant_updater.html">CPT Invariant Updater</a>, <a
+            href="../update/approximate_updater.html">Approximate Updater</a>.
+    </li>
+    <li><a href="../estimate/ml_bayes_estimator.html">ML Bayes Estimator</a> (together with a discrete <a
+            href="../data/data_set_list.html">Data Set</a>)--estimates the associated Bayes PM, producing a new
+        Bayes IM.
+    </li>
+</ol>
+</body>
+</html>

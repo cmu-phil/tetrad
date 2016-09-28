@@ -25,7 +25,9 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.GraphScorer;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
@@ -43,7 +45,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable {
+public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
     /**
@@ -56,23 +58,23 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      */
     private Graph selectedGraph;
 
-    private Map<Graph, Double> graphsToScores;
-
-    /**
-     * The index of the selected graph.
-     */
-    private int index;
+    private final Map<Graph, Double> graphsToScores;
 
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).
      */
-    private transient GraphScorer graphScorer;
+    private final transient GraphScorer graphScorer;
 
     //=============================CONSTRUCTORS==========================//
 
+    private ScoredGraphsWrapper() {
+        graphsToScores = null;
+        graphScorer = null;
+    }
+
     public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
         final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
-        graphsToScores = new HashMap<Graph, Double>();
+        graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 
         for (Graph _graph : dags) {
@@ -86,59 +88,53 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         }
 
         if (!graphsToScores.keySet().isEmpty()) {
-            index = 0;
+            /*
+      The index of the selected graph.
+     */
+            int index = 0;
             selectedGraph = graphsToScores.keySet().iterator().next();
         }
 
         log();
     }
 
-    public ScoredGraphsWrapper(ImagesRunner runner) {
+    public ScoredGraphsWrapper(FgsRunner runner, Parameters parameters) {
         this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
     }
 
-    public ScoredGraphsWrapper(GesRunner runner) {
-        this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
-    }
-
-    public ScoredGraphsWrapper(DagWrapper wrapper) {
+    public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(GraphWrapper wrapper) {
+    public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(SemGraphWrapper wrapper) {
+    public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(PcRunner wrapper) {
+    public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(CpcRunner wrapper) {
-        this(wrapper.getGraph(), null);
-    }
-
-    public ScoredGraphsWrapper(JpcRunner wrapper) {
+    public ScoredGraphsWrapper(CpcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static ScoredGraphsWrapper serializableInstance() {
-        return new ScoredGraphsWrapper(PcRunner.serializableInstance());
+        return new ScoredGraphsWrapper(PcRunner.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS======================//
 
     public Map<Graph, Double> getGraphsToScores() {
-        Map<Graph, Double> _graphsToScores = new LinkedHashMap<Graph, Double>();
+        Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
         for (Graph graph : graphsToScores.keySet()) {
             _graphsToScores.put(new EdgeListGraph(graph), graphsToScores.get(graph));
@@ -159,7 +155,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==========================PRIVATE METHODS===========================//
 
     private void log() {
-        TetradLogger.getInstance().log("info", "DAGs in Pattern");
+        TetradLogger.getInstance().log("info", "DAGs in forbid_latent_common_causes");
         TetradLogger.getInstance().log("selected_graph", "\nSelected Graph\n");
         TetradLogger.getInstance().log("selected_graph",  getGraph() + "");
 

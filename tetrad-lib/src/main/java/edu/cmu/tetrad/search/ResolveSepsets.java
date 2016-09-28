@@ -32,7 +32,7 @@ import java.util.*;
 
 /**
  * Utilities for resolving inconsistencies that arise between sepsets learned for overlapping datasets. This occurs
- * frequently when using the DCI and ION algorithms. f
+ * frequently when using the DCI and ION algorithm. f
  *
  * @author Robert Tillman
  */
@@ -47,27 +47,20 @@ public final class ResolveSepsets {
      * Resolves all inconsistencies between sepsets using a paricular method. Returns a sepsetMapDci with the resolved
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check
      * later against the truth
-     *
-     * @param sepsets
-     * @param independenceTests
-     * @param method
-     * @param resolvedIndependent
-     * @param resolvedDependent
-     * @return
      */
     public static SepsetMapDci ResolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
                                               Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) {
         SepsetMapDci resolvedSepset = new SepsetMapDci();
         // get all variables
-        Set<Node> allVars = new HashSet<Node>();
+        Set<Node> allVars = new HashSet<>();
         for (IndependenceTest independenceTest : independenceTests) {
             allVars.addAll(independenceTest.getVariables());
         }
         // checks each pair of nodes for inconsistencies across independenceTests
-        for (NodePair pair : allNodePairs(new ArrayList<Node>(allVars))) {
+        for (NodePair pair : allNodePairs(new ArrayList<>(allVars))) {
             // gets independenceTests and sepsets for every dataset with the pair
-            List<List<List<Node>>> pairSepsets = new ArrayList<List<List<Node>>>();
-            List<IndependenceTest> testsWithPair = new ArrayList<IndependenceTest>();
+            List<List<List<Node>>> pairSepsets = new ArrayList<>();
+            List<IndependenceTest> testsWithPair = new ArrayList<>();
             for (int k = 0; k < independenceTests.size(); k++) {
                 IndependenceTest independenceTest = independenceTests.get(k);
                 if (independenceTest.getVariables().containsAll(Arrays.asList(pair.getFirst(), pair.getSecond()))) {
@@ -89,7 +82,7 @@ public final class ResolveSepsets {
                 continue;
             }
             // check each conditioning set from a dataset
-            List<List<Node>> allConditioningSets = new ArrayList<List<Node>>();
+            List<List<Node>> allConditioningSets = new ArrayList<>();
             for (List<List<Node>> conditioningSet : pairSepsets) {
                 if (conditioningSet == null) {
                     continue;
@@ -97,7 +90,7 @@ public final class ResolveSepsets {
                 allConditioningSets.addAll(conditioningSet);
             }
             for (List<Node> conditioningSet : allConditioningSets) {
-                List<IndependenceTest> testsWithSet = new ArrayList<IndependenceTest>();
+                List<IndependenceTest> testsWithSet = new ArrayList<>();
                 for (IndependenceTest independenceTest : testsWithPair) {
                     if (independenceTest.getVariables().containsAll(conditioningSet) || conditioningSet.isEmpty()) {
                         testsWithSet.add(independenceTest);
@@ -226,13 +219,6 @@ public final class ResolveSepsets {
 
     /**
      * Tests for independence using one of the pooled methods
-     *
-     * @param method
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         if (method == Method.fisher) {
@@ -268,19 +254,13 @@ public final class ResolveSepsets {
      * Checks independence from pooled samples using Fisher's method.
      * <p>
      * See R. A. Fisher. Statistical Methods for Research Workers. Oliver and Boyd, 11th edition, 1950.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         double tf = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
             if (missingVariable(x, y, condSet, independenceTest)) continue;
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -317,19 +297,13 @@ public final class ResolveSepsets {
      * Checks independence from pooled samples using Tippett's method
      * <p>
      * See L. H. C. Tippett. The Method of Statistics. Williams and Norgate, 1st edition, 1950.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
             if (missingVariable(x, y, condSet, independenceTest)) continue;
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -350,13 +324,6 @@ public final class ResolveSepsets {
      * Checks independence from pooled samples using Wilkinson's method
      * <p>
      * I don't have a reference for this but its basically in between Tippett and Worsley and Friston.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @param r
-     * @return
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet, int r) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -375,18 +342,12 @@ public final class ResolveSepsets {
      * <p>
      * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters
      * 2000.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             if (missingVariable(x, y, condSet, independenceTest)) continue;
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
@@ -409,18 +370,12 @@ public final class ResolveSepsets {
      * <p>
      * See S. A. Stouffer, E. A. Suchman, L. C. Devinney, S. A. Star, and R. M. Williams. The American Soldier: Vol. 1.
      * Adjustment During Army Life. Princeton University Press, 1949.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         double ts = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -436,19 +391,13 @@ public final class ResolveSepsets {
      * <p>
      * See G. S. Mudholkar and E. O. George. The logit method for combining probabilities. In J. Rustagi, editor,
      * Symposium on Optimizing Method in Statistics, pages 345-366. Academic Press, 1979.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         double c = Math.sqrt(3 * (5 * independenceTests.size() + 4) / (double) (independenceTests.size() * Math.pow(Math.PI, 2) * (5 * independenceTests.size() + 2)));
         double tm = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -479,12 +428,6 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples by taking the average p value
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -494,7 +437,7 @@ public final class ResolveSepsets {
         for (IndependenceTest independenceTest : independenceTests) {
             if (missingVariable(x, y, condSet, independenceTest)) continue;
 
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -555,12 +498,6 @@ public final class ResolveSepsets {
     /**
      * Checks independence from pooled samples by taking the average test statistic CURRENTLY ONLY WORKS FOR CHISQUARE
      * TEST
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -570,7 +507,7 @@ public final class ResolveSepsets {
             if (!(independenceTest instanceof IndTestChiSquare)) {
                 throw new RuntimeException("Must be ChiSquare Test");
             }
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -585,18 +522,12 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples by randomly selecting a p value
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         int r = RandomUtil.getInstance().nextInt(independenceTests.size());
         IndependenceTest independenceTest = independenceTests.get(r);
-        List<Node> localCondSet = new ArrayList<Node>();
+        List<Node> localCondSet = new ArrayList<>();
         for (Node node : condSet) {
             localCondSet.add(independenceTest.getVariable(node.getName()));
         }
@@ -609,7 +540,7 @@ public final class ResolveSepsets {
      * Generates NodePairs of all possible pairs of nodes from given list of nodes.
      */
     public static List<NodePair> allNodePairs(List<Node> nodes) {
-        List<NodePair> nodePairs = new ArrayList<NodePair>();
+        List<NodePair> nodePairs = new ArrayList<>();
         for (int j = 0; j < nodes.size() - 1; j++) {
             for (int k = j + 1; k < nodes.size(); k++) {
                 nodePairs.add(new NodePair(nodes.get(j), nodes.get(k)));
@@ -622,12 +553,6 @@ public final class ResolveSepsets {
      * Judges x to be independent of y conditional on condSet if the false discovery rate of the p values for the
      * separate judgements for their collective alpha level identifies no more than # p values / 2 values below
      * threshold.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     private static boolean isIndependentMajorityFdr(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         List<Double> allPValues = getAvailablePValues(independenceTests, x, y, condSet);
@@ -656,11 +581,11 @@ public final class ResolveSepsets {
     }
 
     private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = new ArrayList<Double>();
+        List<Double> allPValues = new ArrayList<>();
 
         for (IndependenceTest test : independenceTests) {
             if (missingVariable(x, y, condSet, test)) continue;
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(test.getVariable(node.getName()));
             }
@@ -680,12 +605,6 @@ public final class ResolveSepsets {
      * Judges x to be independent of y conditional on condSet if the false discovery rate of the p values for the
      * separate judgements for their collective alpha level identifies no more than # p values / 2 values below
      * threshold.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     private static boolean isIndependentMajorityIndep(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         List<Double> allPValues = getAvailablePValues(independenceTests, x, y, condSet);

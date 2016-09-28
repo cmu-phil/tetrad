@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -32,8 +33,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface ISemIm extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+public interface ISemIm extends Simulator, TetradSerializable {
+    long serialVersionUID = 23L;
 
     SemPm getSemPm();
 
@@ -106,6 +107,10 @@ public interface ISemIm extends TetradSerializable {
     TetradMatrix getImplCovar(boolean recalculate);
 
     double getBicScore();
+
+    double getRmsea();
+
+    double getCfi();
 
     double getChiSquare();
 

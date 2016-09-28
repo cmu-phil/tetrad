@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Kernelized PC algorithm. This is the same as the Pc class, the nonparametric kernel-based HSIC test is used for
+ * Kernelized PC algorithm. This is the same as the PC class, the nonparametric kernel-based HSIC test is used for
  * independence testing and the parameters for this test can be set directly when Kpc is initialized.
  *
  * @author Robert Tillman.
@@ -389,8 +389,8 @@ public class Kpc implements GraphSearch {
     //===============================PRIVATE METHODS=======================//
 
     private void enumerateTriples() {
-        this.unshieldedColliders = new HashSet<Triple>();
-        this.unshieldedNoncolliders = new HashSet<Triple>();
+        this.unshieldedColliders = new HashSet<>();
+        this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(y);

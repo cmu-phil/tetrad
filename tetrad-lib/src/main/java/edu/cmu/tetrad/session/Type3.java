@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 
@@ -34,11 +35,11 @@ public class Type3 implements SessionModel, TetradSerializableExcluded {
      * It should be possible to construct a Type3-model with a Type1-node as
      * parent.
      */
-    public Type3(Type2 model1) {
+    public Type3(Type2 model1, Parameters parameters) {
     }
 
     public static Type3 serializableInstance() {
-        return new Type3(Type2.serializableInstance());
+        return new Type3(Type2.serializableInstance(), new Parameters());
     }
 
     /**

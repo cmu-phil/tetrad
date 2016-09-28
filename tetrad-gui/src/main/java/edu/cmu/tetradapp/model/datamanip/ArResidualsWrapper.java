@@ -26,8 +26,10 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 /**
  * @author Tyler
@@ -41,7 +43,7 @@ public class ArResidualsWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public ArResidualsWrapper(DataWrapper data, ArResidualsParams params) {
+    public ArResidualsWrapper(DataWrapper data, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList convertedList = new DataModelList();
         DataModelList dataSets = data.getDataModelList();
@@ -53,7 +55,7 @@ public class ArResidualsWrapper extends DataWrapper {
                 continue;
             }
 
-            DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getNumTimeLags());
+            DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getInt("numTimeLags", 1));
             model.setKnowledge(selectedModel.getKnowledge());
             convertedList.add(model);
             setSourceGraph(data.getSourceGraph());
@@ -77,11 +79,10 @@ public class ArResidualsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ArResidualsWrapper(DataWrapper.serializableInstance(), ArResidualsParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

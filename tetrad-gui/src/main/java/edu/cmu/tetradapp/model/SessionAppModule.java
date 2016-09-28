@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 
@@ -35,9 +35,9 @@ public interface SessionAppModule {
 
     JPanel newEditor();
 
-    Params newParams();
+    Parameters newParams();
 
-    JPanel getParameterEditor(Params params, Object[] parentModels);
+    JPanel getParameterEditor(Parameters params, Object[] parentModels);
 
 }
 

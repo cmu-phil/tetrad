@@ -21,14 +21,19 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -50,14 +55,22 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * @serial Cannot be null.
      */
     private TimeLagGraph graph;
+    private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
-    public TimeLagGraphWrapper(TimeLagGraph graph) {
+    public TimeLagGraphWrapper(Parameters parameters) {
+        this.graph = new TimeLagGraph();
+        this.parameters = parameters;
+        log();
+    }
+
+    public TimeLagGraphWrapper(TimeLagGraph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
         this.graph = graph;
+        this.parameters = parameters;
         log();
     }
 
@@ -65,6 +78,8 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         if (graphWrapper == null) {
             throw new NullPointerException("No graph wrapper.");
         }
+
+        this.parameters = graphWrapper.getParameters();
 
         TimeLagGraph graph = new TimeLagGraph();
 
@@ -91,6 +106,40 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         }
 
         this.graph = graph;
+        int numLags = 1; // need to fix this!
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge1 = new Knowledge2();
+        int lag;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+        }
+        numLags = Collections.max(laglist);
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+            knowledge1.addToTier(numLags - lag, node.getName());
+        }
+
+        System.out.println("Knowledge in graph = " + knowledge1);
+        IKnowledge knowledge = knowledge1;
     }
 
     public TimeLagGraphWrapper() {
@@ -101,11 +150,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static TimeLagGraphWrapper serializableInstance() {
-        return new TimeLagGraphWrapper(new TimeLagGraph());
+        return new TimeLagGraphWrapper(new TimeLagGraph(),
+                new Parameters());
     }
 
     //============================PRIVATE METHODS========================//
@@ -168,6 +217,47 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
     public void setGraph(TimeLagGraph graph) {
         this.graph = graph;
+    }
+
+    public IKnowledge getKnowledge() {
+        int numLags = 1; // need to fix this!
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge1 = new Knowledge2();
+        int lag;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+        }
+        numLags = Collections.max(laglist);
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+            knowledge1.addToTier(numLags - lag, node.getName());
+        }
+
+        System.out.println("Knowledge in graph = " + knowledge1);
+        return knowledge1;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
 

@@ -21,45 +21,51 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.Knowledge3;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
  * @author Joseph Ramsey
  */
-public final class TestKnowledge extends TestCase {
-    public TestKnowledge(String name) {
-        super(name);
-    }
+public final class TestKnowledge {
 
+    @Test
     public final void test1() {
-        Graph g = GraphUtils.randomGraph(10, 0, 10, 3, 3, 3, false);
+        List<Node> nodes1 = new ArrayList<>();
+
+        for (int i1 = 0; i1 < 10; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph g = GraphUtils.randomGraph(nodes1, 0, 10,
+                3, 3, 3, false);
         g.getNode("X1").setName("X1.1");
         g.getNode("X2").setName("X2-1");
 
         List<Node> nodes = g.getNodes();
 
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
 
         for (Node node : nodes) {
             varNames.add(node.getName());
         }
 
-        IKnowledge knowledge = new Knowledge3(varNames);
+        IKnowledge knowledge = new Knowledge2(varNames);
 
         knowledge.addToTier(0, "X1.*1");
         knowledge.addToTier(0, "X2-1");
@@ -76,25 +82,11 @@ public final class TestKnowledge extends TestCase {
 
         assertTrue(knowledge.isRequired("X6", "X7"));
 
-        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            System.out.println("Forbidden: " + i.next());
-        }
-
         IKnowledge copy = knowledge.copy();
 
         assertTrue(copy.isForbidden("X4", "X5"));
         assertFalse(copy.isForbidden("X1", "X2-1"));
         assertTrue(copy.isForbidden("X3", "X2-1"));
-
-        for (Iterator<KnowledgeEdge> i = copy.forbiddenEdgesIterator(); i.hasNext(); ) {
-            System.out.println("Forbidden: " + i.next());
-        }
-
-        for (Iterator<KnowledgeEdge> i = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
-            System.out.println("Required: " + i.next());
-        }
-
-        System.out.println(knowledge);
 
         knowledge.setTierForbiddenWithin(0, true);
 
@@ -120,12 +112,20 @@ public final class TestKnowledge extends TestCase {
         assertFalse(knowledge.isForbidden("X1.1", "X1.1"));
     }
 
+    @Test
     public final void test2() {
-        Graph g = GraphUtils.randomGraph(100, 0, 100, 3, 3, 3, false);
+        List<Node> nodes1 = new ArrayList<>();
+
+        for (int i = 0; i < 100; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g = GraphUtils.randomGraph(nodes1, 0, 100,
+                3, 3, 3, false);
 
         List<Node> nodes = g.getNodes();
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (Node node : nodes) names.add(node.getName());
 
         Knowledge2 knowledge = new Knowledge2(names);
@@ -138,12 +138,11 @@ public final class TestKnowledge extends TestCase {
 
         assertTrue(knowledge.isForbidden("X20", "X10"));
         assertTrue(knowledge.isRequired("X6","X5"));
-
-        System.out.println(knowledge);
     }
 
+    @Test
     public final void test3() {
-        List<String> vars = new ArrayList<String>();
+        List<String> vars = new ArrayList<>();
 
         final int numVars = 1000;
 
@@ -161,32 +160,9 @@ public final class TestKnowledge extends TestCase {
         knowledge.addToTier(1, "X8*");
         knowledge.addToTier(2, "X9*");
 
-//        System.out.println(knowledge);
-
-        long start = System.currentTimeMillis();
-
         for (int i = 0; i < numVars; i++) {
-            knowledge.isForbidden("X11", "X22");
+            assertTrue(knowledge.isForbidden("X11", "X22"));
         }
-
-        long stop = System.currentTimeMillis();
-
-        System.out.println((stop - start) + " ms");
-
-
-
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestKnowledge.class);
     }
 }
 

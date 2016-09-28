@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <title>Search Algorithms: tsFCI</title>
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+    <tbody>
+    <tr>
+        <td>
+            <h2><font color="#ffffff">Search Algorithms: tsGFCI</font></h2>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<p>
+    The tsGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for
+
+    a description of the GFCI algorithm, which allows for unmeasured (hidden, latent) variables in
+
+    the data-generating process and produces a PAG (partial ancestral graph).</p>
+<p>
+
+    tsGFCI takes as input a <em>time lag data set</em>, i.e., a data set which includes time series
+
+    observations of variables X1, X2, X3, ..., and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,
+
+    X3:2, ... and so on. X1:n is the nth-lag of the variable X1. To create a time lag data set from a
+
+    standard tabular data set (i.e., a matrix of observations of X1, X2, X3, ...), use the ?create time
+
+    lag data? function in the data manipulation toolbox. The user will be prompted to specify the
+
+    number of lags (n), and a new data set will be created with the above naming convention. The
+
+    new sample size will be the old sample size minus n.
+</p>
+<p>
+
+    tsGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an
+
+    optional <em>penalty score</em> to bias the search in favor of more sparse models. See the description of
+
+    the GES algorithm for discussion of the penalty score. For the traditional definition of the BIC
+
+    score, set the penalty to 1.0. The orientation rules are the same as for FCI.
+</p>
+<p>
+
+    As is the case with tsFCI, tsGFCI will automatically respect the time order of the variables and
+
+    impose a repeating structure. Firstly, it puts lagged variables in appropriate tiers so, e.g., X3:2
+
+    can cause X3:1 and X3 but X3:1 cannot cause X3:2 and X3 cannot cause either X3:1 or X3:2.
+
+    Also, it will assume that the causal structure is the same across time, so that if the edge between
+
+    X1 and X2 is removed because this increases the BIC score, then also the edge between X1:1
+
+    and X2:1 is removed, and so on for additional lags if they exist. When some edge is removed as
+
+    the result of a score increase, all similar (or ?homologous?) edges are also removed.
+</p>
+<p>
+    References:
+</p>
+<ol>
+    <li>Entner, D., & Hoyer, P. O. (2010). On causal discovery from time series data using FCI.
+    <li>Proceedings of the Fifth European Workshop on Probabilistic Graphical Models, 121-128.
+</ol>
+
+</body>
+</html>

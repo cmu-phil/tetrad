@@ -146,20 +146,20 @@ public class BCInference {
      * given Z) = P(X dependent Y given Z) = 0.5.
      * <p/>
      * Z[0] is the length of the set represented by array Z. For an example,
-     * Z[0] = 1 represents the set Z of size 1. Z[0] = 0 represents an empty
+     * Z[0] = 1 represents the set Z of size 1. Z&lsqb;0&rsqb; = 0 represents an empty
      * set.
      * <p/>
-     * Set Z with two elements: Z = {3, 2} Z[0] = 2 // set Z has two elements
+     * Set Z with two elements: Z = &lcub;3, 2&rcub; Z&lsqb;0&rsqb; = 2 // set Z has two elements
      * (length of 2) Z[1] = 3 // first element Z[2] = 2 // second element.
      * <p/>
-     * Empty set: Z = {} Z[0] = 0
+     * Empty set: Z = &lcub;&rcub; Z&lsqb;0&rsqb; = 0
      *
      * @param constraint has the value OP.independent or OP.dependent
      * @param x node x
      * @param y node y
      * @param z set of nodes
-     * @return P(x dependent y given z | data) or P(x independent y given z |
-     * data)
+     * @return P&lpar; x dependent y given z &vert; data &rpar; or P&lpar;x independent y given z &vert;
+     * data&rpar;
      */
     public double probConstraint(OP constraint, int x, int y, int[] z) {
 //        if (true) return 0.5;
@@ -270,11 +270,6 @@ public class BCInference {
      * to return an informative prior. The code that calls priorIndependent()
      * currently assumes that it returns a value in (0, 1), and thus, does not
      * return 0 or 1.
-     *
-     * @param x
-     * @param y
-     * @param z
-     * @return
      */
     private double priorIndependent(int x, int y, int[] z) {
         return 0.5;  // currently assumes uniform priors
@@ -357,13 +352,9 @@ public class BCInference {
     }
 
     /**
-     *
-     * @param node
-     * @param instancePtr
      * @param q is the number of possible joint instantiation of the parents of
      * the parents of the node.
      * @param pess is the prior equivalent sample size
-     * @return
      */
     private double scoringFn1(int node, int instancePtr, double q, double pess) {
         int Nij = 0;
@@ -424,10 +415,6 @@ public class BCInference {
 
     /**
      * Computes the K2 score.
-     *
-     * @param node
-     * @param instancePtr
-     * @return
      */
     private double scoringFn2(int node, int instancePtr) {
         int hits = 0;
@@ -502,7 +489,6 @@ public class BCInference {
                     countsTreePtr += nodeDimension[parents[node][i + 1]];
 
                     if (countsPtr > maxCells) {
-                        System.out.println("A");
                         System.out.println(maxCells);
                         System.out.println(countsTreePtr);
                         System.out.println(ctPtr);
@@ -514,7 +500,6 @@ public class BCInference {
             }
 
             if (countsPtr > maxCells) {
-                System.out.println("B");
                 System.out.println(maxCells);
                 System.out.println(countsTreePtr);
                 System.out.println(ctPtr);
@@ -532,7 +517,6 @@ public class BCInference {
 
             countsPtr += nodeDimension[node];
             if (countsPtr > maxCells) {
-                System.out.println("C");
                 System.out.println(maxCells);
                 System.out.println(countsTreePtr);
                 System.out.println(ctPtr);

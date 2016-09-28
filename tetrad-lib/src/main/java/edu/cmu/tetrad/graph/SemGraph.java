@@ -71,13 +71,7 @@ public final class SemGraph implements Graph, TetradSerializable {
      *
      * @serial
      */
-    private Map<Node, Node> errorNodes = new HashMap<Node, Node>();
-
-    /**
-     * @serial Do not delete.
-     * @deprecated
-     */
-    private Map<Node, Node> rememberedErrorNodes;
+    private Map<Node, Node> errorNodes = new HashMap<>();
 
     /**
      * True if error terms for exogenous terms should be shown.
@@ -107,7 +101,7 @@ public final class SemGraph implements Graph, TetradSerializable {
             }
 
             this.errorNodes =
-                    new HashMap<Node, Node>(((SemGraph) graph).errorNodes);
+                    new HashMap<>(((SemGraph) graph).errorNodes);
 
             for (Node node : graph.getNodes()) {
                 if (!errorNodes.containsKey(node)) {
@@ -118,41 +112,8 @@ public final class SemGraph implements Graph, TetradSerializable {
             this.showErrorTerms = ((SemGraph) graph).showErrorTerms;
         } else if (graph instanceof TimeLagGraph) {
             this.graph = new TimeLagGraph((TimeLagGraph) graph);
-
-//            setShowErrorTerms(true);
-
-//            this.errorNodes = new HashMap<Node, Node>();
-
-//            for (Node node : graph.getNodes()) {
-//                addErrorNode(node);
-//            }
-
-//            for (Node node : graph.getNodes()) {
-//                addNode(node);
-//            }
-//
-//            setGraphConstraintsChecked(false);
-//
-//            for (Edge edge : graph.getEdges()) {
-//                if (Edges.isDirectedEdge(edge)) {
-//                    addEdge(edge);
-//                }
-//                else if (Edges.isBidirectedEdge(edge)) {
-//                    Node node1 = edge.getNode1();
-//                    Node node2 = edge.getNode2();
-//
-//                    addBidirectedEdge(getExogenous(node1), getExogenous(node2));
-//                }
-//                else {
-//                    throw new IllegalArgumentException("A SEM graph may contain " +
-//                            "only directed and bidirected edges: " + edge);
-//                }
-//            }
-//
-//            setGraphConstraintsChecked(true);
         } else {
             this.graph = new EdgeListGraph(graph.getNodes());
-            setGraphConstraintsChecked(false);
 
             for (Node node : this.graph.getNodes()) {
                 addErrorNode(node);
@@ -175,8 +136,6 @@ public final class SemGraph implements Graph, TetradSerializable {
             }
 
             setShowErrorTerms(false);
-
-            setGraphConstraintsChecked(true);
         }
 
         for (Edge edge : graph.getEdges()) {
@@ -196,7 +155,7 @@ public final class SemGraph implements Graph, TetradSerializable {
             this.graph = new EdgeListGraph(graph.getGraph());
         }
 
-        this.errorNodes = new HashMap<Node, Node>(graph.errorNodes);
+        this.errorNodes = new HashMap<>(graph.errorNodes);
 
         for (Node node : this.graph.getNodes()) {
             if (!errorNodes().containsKey(node)) {
@@ -231,53 +190,11 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     /**
-     * Finds the set of nodes which have no children, followed by the set of
-     * their parents, then the set of the parents' parents, and so on.  The
-     * result is returned as a List of Lists.
-     *
-     * @return the tiers of this digraph.
-     * @see #printTiers
-     */
-    public List<List<Node>> getTiers() {
-        Set<Node> found = new HashSet<Node>();
-        Set<Node> notFound = new HashSet<Node>();
-        List<List<Node>> tiers = new LinkedList<List<Node>>();
-
-        // first copy all the nodes into 'notFound'.
-        for (Node node : getNodes()) {
-            notFound.add(node);
-        }
-
-        // repeatedly run through the nodes left in 'notFound'.  If any node
-        // has all of its parents already in 'found', then add it to the
-        // getModel tier.
-        while (!notFound.isEmpty()) {
-            List<Node> thisTier = new LinkedList<Node>();
-
-            for (Node aNotFound : notFound) {
-                if (found.containsAll(getParents(aNotFound))) {
-                    thisTier.add(aNotFound);
-                }
-            }
-
-            // shift all the nodes in this tier from 'notFound' to 'found'.
-            notFound.removeAll(thisTier);
-            found.addAll(thisTier);
-
-            // add the getModel tier to the lists of tiers.
-            tiers.add(thisTier);
-        }
-
-        return tiers;
-    }
-
-    /**
      * This method returns the nodes of a digraph ordered in such a way that the
      * parents of any node are contained lower down in the list.
      *
      * @return a tier ordering for the nodes in this graph.
      * @throws IllegalStateException if the graph is cyclic.
-     * @see #printTierOrdering
      */
     public List<Node> getCausalOrdering() {
         return GraphUtils.getCausalOrdering(this);
@@ -304,8 +221,8 @@ public final class SemGraph implements Graph, TetradSerializable {
             throw new IllegalStateException("The tier ordering method assumes acyclicity.");
         }
 
-        List<Node> found = new LinkedList<Node>();
-        Set<Node> notFound = new HashSet<Node>(getNodes());
+        List<Node> found = new LinkedList<>();
+        Set<Node> notFound = new HashSet<>(getNodes());
 
 //        for (Node node1 : getNodes()) {
 //            notFound.add(node1);
@@ -339,39 +256,6 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     /**
-     * This is a temporary method to help debug code that uses tiers.
-     */
-    public void printTiers() {
-        List<List<Node>> tiers = getTiers();
-        System.out.println();
-
-        for (List<Node> thisTier : tiers) {
-            for (Node thisNode : thisTier) {
-                System.out.print(thisNode + "\t");
-            }
-
-            System.out.println();
-        }
-
-        System.out.println("done");
-    }
-
-    /**
-     * Prints a tier ordering for this SMG.
-     */
-    public void printTierOrdering() {
-        List<Node> v = getCausalOrdering();
-
-        System.out.println();
-
-        for (Node aV : v) {
-            System.out.print(aV + "\t");
-        }
-
-        System.out.println();
-    }
-
-    /**
      * @return true iff either node associated with edge is an error term.
      */
     public static boolean isErrorEdge(Edge edge) {
@@ -385,16 +269,12 @@ public final class SemGraph implements Graph, TetradSerializable {
      */
     public Node getVarNode(Node node) {
         boolean isError = node.getNodeType() == NodeType.ERROR;
-        //   if (!containsNode(node) && (!isError || this.showErrorTerms)) {
+
         if (!containsNode(node)) {
-            return null;
-//            throw new IllegalArgumentException("Node is not in graph: " + node);
+            throw new NullPointerException("Node is not in graph: " + node);
         }
 
         if (isError) {
-//            if(!this.showErrorTerms){
-//                return null;
-//            }
             return GraphUtils.getAssociatedNode(node, this);
         } else {
             return node;
@@ -548,7 +428,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     public boolean equals(Object o) {
-        return getGraph().equals(o);
+        return (o instanceof SemGraph) && getGraph().equals(o);
     }
 
     public Graph subgraph(List<Node> nodes) {
@@ -679,18 +559,6 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
-    }
-
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
     }
 
     public boolean removeEdge(Edge edge) {
@@ -825,6 +693,11 @@ public final class SemGraph implements Graph, TetradSerializable {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
@@ -883,15 +756,11 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     public boolean isExogenous(Node node) {
-        return getGraph().isExogenous(node) || isShowErrorTerms() == true && getErrorNode(node) == null;
+        return getGraph().isExogenous(node) || isShowErrorTerms() && getErrorNode(node) == null;
     }
 
     public String toString() {
         return getGraph().toString();
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        throw new UnsupportedOperationException();
     }
 
 
@@ -943,9 +812,8 @@ public final class SemGraph implements Graph, TetradSerializable {
      * Creates a new error node, names it, and adds it to the graph.
      *
      * @param node the node which the new error node which be attached to.
-     * @return the error node which was added.
      */
-    private Node addErrorNode(Node node) {
+    private void addErrorNode(Node node) {
         if (errorNodes.get(node) != null) {
             throw new IllegalArgumentException("Node already in map.");
         }
@@ -976,14 +844,11 @@ public final class SemGraph implements Graph, TetradSerializable {
         errorNodes.put(node, error);
         errorNodes.put(error, error);
         addDirectedEdge(error, node);
-//        final Edge edge = Edges.directedEdge(error, node);
-//        addEdge(edge);
-        return error;
     }
 
     private Map<Node, Node> errorNodes() {
         if (errorNodes == null) {
-            errorNodes = new HashMap<Node, Node>();
+            errorNodes = new HashMap<>();
         }
 
         return errorNodes;
@@ -999,10 +864,10 @@ public final class SemGraph implements Graph, TetradSerializable {
 
         if (edges == null) {
             System.out.println();
-            edges = new ArrayList<Edge>();
+            edges = new ArrayList<>();
         }
 
-        List<Edge> attachedEdges = new LinkedList<Edge>(edges);
+        List<Edge> attachedEdges = new LinkedList<>(edges);
 
         for (Edge edge : attachedEdges) {
             if (Edges.isBidirectedEdge(edge)) {

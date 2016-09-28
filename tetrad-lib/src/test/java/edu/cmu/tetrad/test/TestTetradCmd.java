@@ -25,7 +25,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-
+// This just has to run, no checking. jdramsey 12/16/2015
 public class TestTetradCmd extends TestCase {
     public TestTetradCmd(String name) {
         super(name);
@@ -34,7 +34,7 @@ public class TestTetradCmd extends TestCase {
     public void test1() {
         new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "src/test/resources/avatarwithdependencies.esv",
                 "-datatype", "discrete", "-algorithm", "pc", "-depth", "3",
-                "-significance", "0.001", "-knowledge", "src/test/resources/avatarknowledge.txt"});
+                "-significance", "0.001", "-knowledge", "src/test/resources/avatarknowledge.txt", "-silent"});
 
 
     }
@@ -43,7 +43,7 @@ public class TestTetradCmd extends TestCase {
     public void test2() {
         new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "src/test/resources/avatarwithdependencies.esv",
                      "-datatype", "discrete", "-algorithm", "cpc", "-depth", "3",
-                     "-significance", "0.001", "-knowledge", "src/test/resources/avatarknowledge.txt"});
+                     "-significance", "0.001", "-knowledge", "src/test/resources/avatarknowledge.txt", "-silent"});
 
 
     }
@@ -51,7 +51,7 @@ public class TestTetradCmd extends TestCase {
     public void test3() {
         new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "src/test/resources/eigenvox2.txt",
                      "-datatype", "continuous", "-algorithm", "cpc", "-depth", "3",
-                     "-significance", "0.001", "-verbose", "-whitespace"});
+                     "-significance", "0.001", "-whitespace", "-silent"});
 
 
     }
@@ -59,7 +59,7 @@ public class TestTetradCmd extends TestCase {
     public void test4() {
         new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-covariance", "src/test/resources/lead.modified.txt",
                 "-algorithm", "cpc", "-depth", "3",
-                "-significance", "0.001", "-verbose", "-whitespace"});
+                "-significance", "0.001", "-whitespace", "-silent"});
 
 
     }

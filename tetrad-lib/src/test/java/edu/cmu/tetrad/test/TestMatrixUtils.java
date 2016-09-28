@@ -21,33 +21,31 @@
 
 package edu.cmu.tetrad.test;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the MatrixUtils class.
  *
  * @author Joseph Ramsey
  */
-public class TestMatrixUtils extends TestCase {
+public class TestMatrixUtils {
 
-    public TestMatrixUtils(String name) {
-        super(name);
-    }
-
+    @Test
     public void testEquals() {
         double[][] m1 = {{1.0, 2.0, 3.0}};
 
@@ -64,6 +62,7 @@ public class TestMatrixUtils extends TestCase {
         assertTrue(MatrixUtils.equals(m3, m4, 0.1));
     }
 
+    @Test
     public void testSum() {
         double[][] m1 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.0, 27.0},};
@@ -73,9 +72,10 @@ public class TestMatrixUtils extends TestCase {
 
         double[][] m3 = MatrixUtils.sum(m1, m2);
 
-        System.out.println(MatrixUtils.toString(m3));
+        assertEquals(32., m3[1][2], .01);
     }
 
+    @Test
     public void testDeterminant() {
         double[][] m3 = {{6.0, 7.0}, {8.0, 9.0},};
 
@@ -83,6 +83,7 @@ public class TestMatrixUtils extends TestCase {
         assertEquals(-2.0, determinant, 0.01);
     }
 
+    @Test
     public void testDirectProduct() {
         double[][] m1 = {{1.0, 2.0, 3.0}, {1.0, 2.0, 3.0}};
 
@@ -97,6 +98,7 @@ public class TestMatrixUtils extends TestCase {
         assertTrue(MatrixUtils.equals(product, result));
     }
 
+    @Test
     public void testConcatenate() {
         double[][] m1 = {{6.0, 7.0, 12.0, 14.0}, {8.0, 9.0, 16.0, 18.0}};
 
@@ -106,6 +108,7 @@ public class TestMatrixUtils extends TestCase {
         assertTrue(MatrixUtils.equals(concat, result));
     }
 
+    @Test
     public void testProduct() {
         double[][] m1 = {{6.0, 7.0, 12.0, 14.0}, {8.0, 9.0, 16.0, 18.0}};
 
@@ -118,6 +121,7 @@ public class TestMatrixUtils extends TestCase {
         assertTrue(MatrixUtils.equals(product, result));
     }
 
+    @Test
     public void testSum0ToN() {
         assertEquals(0, MatrixUtils.sum0ToN(0));
         assertEquals(1, MatrixUtils.sum0ToN(1));
@@ -129,6 +133,7 @@ public class TestMatrixUtils extends TestCase {
     /**
      * When premultiplied by vech, this should outerProduct vec.
      */
+    @Test
     public void testVechToVecLeft() {
         double[][] n = {{6.0, 8.0, 6.0, 8.0}, {8.0, 9.0, 7.0, 9.0},
                 {6.0, 7.0, 12.0, 16.0}, {8.0, 9.0, 16.0, 18.0}};
@@ -140,55 +145,15 @@ public class TestMatrixUtils extends TestCase {
         assertTrue(MatrixUtils.equals(n4, n1));
     }
 
+    @Test
+    public void testImpiedCovar() {
+        List<Node> nodes = new ArrayList<>();
 
-    public void testConvertCovMatrixToCorrMatrix() {
-        double[][] data = {
-                {-0.377133, -1.480267, -1.696021, 1.195592, -0.345426},
-                {-0.694507, -2.568514, -4.654334, 0.094623, -6.081831},
-                {1.819202, 0.693551, 4.626220, 1.228998, 8.082000},
-                {-0.131759, -0.256599, -1.319799, 0.304622, -2.588121},
-                {-1.407105, -1.455764, -2.185402, -3.848737, -4.357246},
-                {-1.099269, -1.892556, -1.639330, -1.156234, -4.174009},
-                {-0.273420, -0.079434, 0.226354, 0.919383, 1.151157},
-                {0.358854, -0.982877, 0.890740, 1.850120, 1.504533},
-                {-0.407574, -0.316400, -1.423396, 0.991819, -0.956139},
-                {1.243824, 1.690462, 4.045195, 1.346460, 5.247904}};
-        double[][] dataT = MatrixUtils.transpose(data);
-
-        int size = 5;
-
-        TetradMatrix m = new TetradMatrix(size, size);
-
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                m.set(i, j, Descriptive.covariance(
-                        new DoubleArrayList(dataT[i]),
-                        new DoubleArrayList(dataT[j])));
-            }
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-
-        System.out.println("\n\nCovariance matrix: ");
-        System.out.println(MatrixUtils.toString(m.toArray()));
-
-        TetradMatrix corr = MatrixUtils.convertCovToCorr(new TetradMatrix(m));
-
-        System.out.println("\n\nCorrelation matrix:");
-        System.out.println(MatrixUtils.toString(corr.toArray()));
-    }
-
-    public void test5() {
-        int[][] m = new int[][]{{1, 2}, {3, 4}};
-        List<String> nodes = new ArrayList<String>();
-        nodes.add("X1");
-        nodes.add("X2");
-
-        System.out.println(MatrixUtils.toString(m, nodes));
-
-    }
-
-    public void testImpiedCovar() {
-        Graph graph = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
@@ -197,30 +162,11 @@ public class TestMatrixUtils extends TestCase {
 
         TetradMatrix implied = MatrixUtils.impliedCovar(coef, err);
 
-//        for (int i = 0; i < implied.rows(); i++) {
-//            for (int j = 0; j < implied.columns(); j++) {
-//                if (abs(implied.get(i,j)) < 1e-10) implied.set(i, j, 0);
-//            }
-//        }
-
-        System.out.println(MatrixUtils.toString(implied.toArray()));
-
-        // Why the heck is this not positive definite?
-        System.out.println("Positive definite implied: " + MatrixUtils.isPositiveDefinite(implied));
+        assertTrue(MatrixUtils.isPositiveDefinite(implied));
 
         TetradMatrix corr = MatrixUtils.convertCovToCorr(new TetradMatrix(implied));
 
-        System.out.println(MatrixUtils.toString(corr.toArray()));
-
-        System.out.println("Positive definite data corr: " + MatrixUtils.isPositiveDefinite(corr));
-//
-//        System.out.println(MatrixUtils.toString(err.toArray()));
-//
-//        System.out.println("Positive definite err: " + MatrixUtils.isPositiveDefinite(err));
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestMatrixUtils.class);
+        assertTrue(MatrixUtils.isPositiveDefinite(corr));
     }
 }
 

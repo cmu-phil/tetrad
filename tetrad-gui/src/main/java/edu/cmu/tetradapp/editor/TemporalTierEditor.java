@@ -36,13 +36,13 @@ import java.util.List;
  *
  * @author Shane Harwood
  */
-public class TemporalTierEditor extends JPanel
+class TemporalTierEditor extends JPanel
         implements PropertyChangeListener, ActionListener {
 
 
     private IKnowledge knowledge;
     //private JButton nameTiers;
-    private JButton clear;
+    private final JButton clear;
 
     /**
      * Field tierlist

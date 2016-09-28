@@ -21,11 +21,16 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.*;
+import com.sun.org.apache.bcel.internal.generic.ICONST;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,105 +43,26 @@ import java.util.List;
 public class CovMatrixAverageWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public CovMatrixAverageWrapper(DataWrapper cov1) {
+    public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
-        matrices.add(cov1);
-
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        matrices.add(cov3);
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        matrices.add(cov3);
-        matrices.add(cov4);
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4, DataWrapper cov5) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        matrices.add(cov3);
-        matrices.add(cov4);
-        matrices.add(cov5);
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4, DataWrapper cov5, DataWrapper cov6) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        matrices.add(cov3);
-        matrices.add(cov4);
-        matrices.add(cov5);
-        matrices.add(cov6);
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4, DataWrapper cov5, DataWrapper cov6,
-                                   DataWrapper cov7) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        matrices.add(cov3);
-        matrices.add(cov4);
-        matrices.add(cov5);
-        matrices.add(cov6);
-        matrices.add(cov7);
-
-        calcAverage(matrices);
-    }
-
-    public CovMatrixAverageWrapper(DataWrapper cov1, DataWrapper cov2, DataWrapper cov3,
-                                   DataWrapper cov4, DataWrapper cov5, DataWrapper cov6,
-                                   DataWrapper cov7, DataWrapper cov8) {
-        List<DataWrapper> matrices = new ArrayList<>();
-
-        matrices.add(cov1);
-        matrices.add(cov2);
-        matrices.add(cov3);
-        matrices.add(cov4);
-        matrices.add(cov5);
-        matrices.add(cov6);
-        matrices.add(cov7);
-        matrices.add(cov8);
+        for (DataWrapper cov : covs) {
+            matrices.add(cov);
+        }
 
         calcAverage(matrices);
     }
 
     private void calcAverage(List<DataWrapper> wrappers) {
-        List<TetradMatrix> cov = new ArrayList<TetradMatrix>();
+        List<TetradMatrix> cov = new ArrayList<>();
 
         for (int i = 0; i < wrappers.size(); i++) {
             DataModel selectedDataModel = wrappers.get(i).getSelectedDataModel();
+
+            if (!(selectedDataModel instanceof ICovarianceMatrix)) {
+                throw new IllegalArgumentException("Sorry, this is an average only over covariance matrices.");
+            }
+
             cov.add(((ICovarianceMatrix) selectedDataModel).getMatrix());
         }
 
@@ -170,11 +96,10 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return null;
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

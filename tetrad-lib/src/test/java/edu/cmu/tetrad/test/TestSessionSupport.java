@@ -22,9 +22,10 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.session.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the functionality of SessionSupport. SessionSupport has to be able to
@@ -33,7 +34,7 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-public class TestSessionSupport extends TestCase {
+public class TestSessionSupport {
 
     /**
      * The session support object being tested.
@@ -66,13 +67,6 @@ public class TestSessionSupport extends TestCase {
     private boolean event2Received;
 
     /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSessionSupport(String name) {
-        super(name);
-    }
-
-    /**
      * Sets up the session support object to be tested.
      */
     public void setUp() {
@@ -85,7 +79,9 @@ public class TestSessionSupport extends TestCase {
     /**
      * Tests whether listeners are correctly added and removed.
      */
+    @Test
     public void testSingleListener() {
+        setUp();
 
         SessionListener l1 = new SessionListener() {
 
@@ -233,14 +229,14 @@ public class TestSessionSupport extends TestCase {
         setEvent1Received(false);
         this.sessionSupport.fireNodeAdded(node1);
         assertTrue(!isEvent1Received());
-
-        // TODO: The modelUnclear method is not tested yet.
     }
 
     /**
      * Tests whether multiple listeners will all receive events that are sent.
      */
+    @Test
     public void testMultipleListeners() {
+        setUp();
 
         SessionListener l1 = new SessionAdapter() {
 
@@ -248,7 +244,6 @@ public class TestSessionSupport extends TestCase {
              * This method is called when a node is added.
              */
             public void nodeAdded(SessionEvent event) {
-                System.out.println("HERE");
                 setEvent1Received(true);
             }
         };
@@ -323,17 +318,6 @@ public class TestSessionSupport extends TestCase {
      */
     public SessionNode getNode2() {
         return this.node2;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSessionSupport.class);
     }
 }
 

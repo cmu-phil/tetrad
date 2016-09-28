@@ -24,12 +24,12 @@ package edu.cmu.tetrad.graph;
 /**
  * Sets whether nodes are compared by the equals method or by object
  * identity.
- * Created by josephramsey on 12/15/14.
+ * @author Joseph Ramsey
  */
 public class NodeEqualityMode {
     public enum Type {NAME, OBJECT}
 
-    public static Type type = Type.NAME;
+    private static Type type = Type.NAME;
 
     public static void setEqualityMode(Type _type) {
         type = _type;

@@ -41,17 +41,17 @@ import java.util.List;
 public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     //=================PUBLIC STATIC FINAL FIELDS=========================//
-    public static final int MEASURED_NODE = 0;
-    public static final int LATENT_NODE = 1;
-    public static final int DIRECTED_EDGE = 0;
-    public static final int NONDIRECTED_EDGE = 2;
-    public static final int PARTIALLY_ORIENTED_EDGE = 3;
-    public static final int BIDIRECTED_EDGE = 4;
+    private static final int MEASURED_NODE = 0;
+    private static final int LATENT_NODE = 1;
+    private static final int DIRECTED_EDGE = 0;
+    private static final int NONDIRECTED_EDGE = 2;
+    private static final int PARTIALLY_ORIENTED_EDGE = 3;
+    private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
     private int nodeType = MEASURED_NODE;
     private int edgeMode = DIRECTED_EDGE;
-    private List rememberedNodes = new ArrayList<Node>();
+    private List rememberedNodes = new ArrayList<>();
 
     //========================CONSTRUCTORS===============================//
 
@@ -467,7 +467,6 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @return the next string in the sequence.
      *
      * @param base the string base of the name--for example, "Graph".
-     * @return the next string in the sequence--for example, "Graph1".
      */
     private String nextUniqueName(String base) {
         if (base == null) {

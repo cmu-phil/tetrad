@@ -32,8 +32,6 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import javax.swing.text.Document;
-import javax.xml.soap.Text;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -44,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -82,7 +80,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         this.report = estimator.getReport();
     }
 
-    public static Node serializableInstance() {return new GraphNode("X");} //TODO
+    public static Node serializableInstance() {return new GraphNode("X");}
 
 
     //============================PUBLIC METHODS=========================//
@@ -155,8 +153,6 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     /**
      * The wrapped SemPm.
-     *
-     * @serial Cannot be null.
      */
     public GeneralizedSemPm getSemPm() {
         return semPm;

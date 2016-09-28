@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>PM</title>
+<style type="text/css">
+<!--
+.style1 {font-family: mon}
+-->
+</style></head>
+<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
+ style="color: rgb(0, 0, 0);">
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">SEM Parameteric Model</font></h2></td>
+  </tr>
+</table>
+<h3><span class="style1"><br>
+Description of the Model</span></h3>
+<p>A SEM Parametric Model (SEM PM) is structural equation model (SEM) up to specification of what the parameters of the model are, without giving values for those parameters.</p>
+<p>The implementation of structural equation models in Tetrad essentially follows Bollen (???). A structual equation model is a set of linear equations expressing each variable as a linear sum of its parents plus an exogenous error term--e.g.,</p>
+<blockquote>
+  <p>X1 = a1 * X2 + a2 * X3 + e1,<br>
+    X2 = a3 * X3 + e2,</p>
+</blockquote>
+<p>and so on, where the distribution of each error terms has a specified variance, and correlations among error terms are specified. </p>
+<p>The graph for such a system consists of one node for each variable, one node for each error term (which may be hidden, or at least the error terms for exogenous variable may be hidden), a directed edge from each variable on the right hand side each such equation above to the variable on the left hand side of the equation, and bidirected edges between each pair of variables whose error terms are correlated. (If the error term for a variable is being shown the bidirected edge attaches to the error terms instead of the variables itself.) Cyclical dependencies among variables are permitted. See <a href="../graph/sem_graph.html">SEM Graph</a> for details.</p>
+<p>The parameters in this model consist of:</p>
+<ol>
+  <li>Each linear coefficient in the structural equations for the model (e.g., a1, a2, and a3, above), plus</li>
+  <li>The variances of each error term in the model (e.g., var(e1), var(e2), above), plus</li>
+  <li>The covariances of each pair of error terms that is specified to be correlated. </li>
+</ol>
+<p>The number of parameters, therefore, is equal to the number of edges in the graph of the model with error terms hidden (directed plus bidirected) plus the number of variables in the model. (When error terms are shown, extra directed edges are added to the graph from error terms to their variables; these to not add parameters to the model.)</p>
+<p>The SEM Parameteric Model specifies only this list of parameters and allows this list to be edited. To give specific values for each parameter in the model, one should use the <a href="../im/sem_im.html">SEM Instantiated Model</a>. </p>
+<h3><br>
+How to Construct a SEM PM </h3>
+<p>For example, say you put the following boxes on the session, connected as follows:</p>
+<p><img src="../../images/sempm1.gif" width="188" height="65"> </p>
+<p>Say you start by creating a SEM Graph in the Graph box. (See <a href="../graph/sem_graph.html">SEM Graph</a> for details.) To make it interesting, we create a SEM Graph that uses a couple of bidirected edge and has a cycle.</p>
+<p><img src="../../images/sempm2.gif" width="585" height="576"></p>
+<p>If you click &quot;Save&quot; and double click the PM1 box, you are given a choice of which model type you would like to construct. Choose &quot;SEM Parametric Model.&quot; </p>
+<p><img src="../../images/sempm3.gif" width="303" height="136"> </p>
+<p>Once you click OK, the following dialog appears:</p>
+<p><img src="../../images/sempm4.gif" width="457" height="479"></p>
+<p>In this dialog, error terms for endogenous variables are shown explicitly, and all of the parameters are labeled. Parameters B1, B2, B3, B4, and B5 (shown in black) are linear coefficients in the underlying structural equation model; parameters T1, T2, T3, T4, and T5 (shown in blue) are error variance terms; parameters T6 and T7 (shown in red) are error covariance terms. </p>
+<p>In the dialog, you can double click on any parameter and change its name. For instance, you can double click on the variance term T3, above, and change its name to &quot;var_x3&quot;. Also, a fact which becomes important in SEM estimation, one can set here whether this parameter should be held fixed for estimation and control its starting value for estimation. (In SEM estimation, parameters are initialized in general randomly and then adjusted by an optimization algorithm to optimize, e.g., the maximum likelihood function for the model. See <a href="../estimate/sem_estimator.html">SEM Estimator</a> for details. You can control here how these values are initialized for this process.)</p>
+<p><img src="../../images/sempm5.gif" width="458" height="500"></p>
+<p>Clicking OK, you see that the name of the paramter has been changed.</p>
+<p><img src="../../images/sempm6.gif" width="457" height="480"> </p>
+<p>It is important to notice what you cannot do in this editor. You cannot change the list of variable or the names of variables, and you cannot add or remove edges to the graph. To do these things, simply edit the graph that was used to construct the SEM PM model.</p>
+<h3><br>
+Potential Parents for a Sem PM </h3>
+<p>The SEM PM must be constructed using an nodes that has a graph in it of a type that can be used to construct a structural equation model. The obvious choice is a <a href="../graph/sem_graph.html">SEM Graph</a>, since with this graph, you can add bidirected edges and cycles. You can, however, construct a SEM PM using a <a href="../graph/dag.html">Directed Acyclic Graph</a>, if you don't care that the graph cannot contain bidirected edges or cycles, or a <a href="../graph/general_graph.html">General Graph</a>, if you don't mind making sure on your own that the graph contains <em>only</em> directed and bidirected edges. </p>
+<h3><br>
+Potential Children for a SEM PM</h3>
+<p>There are two natural children for a SEM PM.</p>
+<ol>
+  <li><a href="../im/sem_im.html">SEM Instantiated Model</a> (SEM IM). The SEM PM is in a sense an incomplete SEM model, since it doesn't specify values for its parameters. To specify these values, make a SEM IM a child of the SEM PM.</li>
+  <li><a href="../estimate/sem_estimator.html">SEM Estimator</a>. A SEM Estimator takes a SEM PM and a continuous data set and generates a fully estimated SEM IM.</li>
+</ol>
+<h3>&nbsp;</h3>
+</body>
+</html>

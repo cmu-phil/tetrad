@@ -34,7 +34,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import java.util.List;
 
 /**
- * Optimizes a SEM using the ConjugateDirectionSearch class in the PAL library.
+ * Optimizes a SEM using Powell's method from the Apache library.
  *
  * @author Ricardo Silva
  * @author Joseph Ramsey
@@ -66,7 +66,7 @@ public class SemOptimizerPowell implements SemOptimizer {
         double[] point = null;
 
         for (int count = 0; count < numRestarts + 1; count++) {
-            System.out.println("Trial " + (count + 1));
+//            System.out.println("Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
@@ -92,12 +92,16 @@ public class SemOptimizerPowell implements SemOptimizer {
             );
 
             double chisq = _sem2.getChiSquare();
-            System.out.println("chisq = " + chisq);
+//            System.out.println("chisq = " + chisq);
 
             if (chisq < min) {
                 min = chisq;
                 point = pair.getPoint();
             }
+        }
+
+        if (point == null) {
+            throw new NullPointerException("Point could not be found.");
         }
 
         System.arraycopy(point, 0, semIm.getFreeParamValues(), 0, point.length);
@@ -154,8 +158,8 @@ public class SemOptimizerPowell implements SemOptimizer {
 
         @Override
         public double value(double[] parameters) {
-            for (int i = 0; i < parameters.length; i++) {
-                if (Double.isNaN(parameters[i]) || Double.isInfinite(parameters[i])) {
+            for (double parameter : parameters) {
+                if (Double.isNaN(parameter) || Double.isInfinite(parameter)) {
                     return 100000;
                 }
             }

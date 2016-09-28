@@ -92,9 +92,9 @@ public class BDeScore implements LocalDiscreteScore {
 
             int rowIndex = getRowIndex(dims, values);
 
-            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
-                n_ijk[rowIndex][childValue]++;
-            }
+//            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
+            n_ijk[rowIndex][childValue]++;
+//            }
         }
 
         // Row sums.
@@ -124,8 +124,13 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
-        return localScore(i, append(parents, extra)) - localScore(i, parents);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    @Override
+    public double localScoreDiff(int x, int y) {
+        return localScore(y, x) - localScore(y);
     }
 
     int[] append(int[] parents, int extra) {
@@ -181,7 +186,6 @@ public class BDeScore implements LocalDiscreteScore {
         return dataSet.getVariables();
     }
 
-    @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
@@ -192,8 +196,29 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return true;
+    public double getParameter1() {
+        return 0;
+    }
+
+    @Override
+    public void setParameter1(double alpha) {
+
+    }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : dataSet.getVariables()) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public int getMaxDegree() {
+        return 1000;
     }
 }
 

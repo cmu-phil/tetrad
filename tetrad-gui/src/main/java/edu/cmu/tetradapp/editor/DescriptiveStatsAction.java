@@ -38,13 +38,13 @@ import java.beans.PropertyChangeListener;
  * @author Michael Freenor
  */
 
-public class DescriptiveStatsAction extends AbstractAction {
+class DescriptiveStatsAction extends AbstractAction {
 
 
     /**
      * The data edtitor that action is attached to.
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**
@@ -144,7 +144,7 @@ public class DescriptiveStatsAction extends AbstractAction {
      */
     private static class DescriptiveStatsListener implements PropertyChangeListener {
 
-        private JTextArea display;
+        private final JTextArea display;
 
 
         public DescriptiveStatsListener(JTextArea display) {

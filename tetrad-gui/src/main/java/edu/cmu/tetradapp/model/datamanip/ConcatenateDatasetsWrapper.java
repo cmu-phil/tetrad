@@ -25,8 +25,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,45 +41,9 @@ import java.util.List;
 public class ConcatenateDatasetsWrapper extends DataWrapper {
        static final long serialVersionUID = 23L;
 
-    public ConcatenateDatasetsWrapper(DataWrapper data1) {
-        construct(data1);
+    public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
+        construct(data);
     }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2) {
-        construct(data1, data2);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3) {
-        construct(data1, data2, data3);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4) {
-        construct(data1, data2, data3, data4);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5) {
-        construct(data1, data2, data3, data4, data5);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6) {
-        construct(data1, data2, data3, data4, data5, data6);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7) {
-        construct(data1, data2, data3, data4, data5, data6, data7);
-    }
-
-    public ConcatenateDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, DataWrapper data8) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8);
-    }
-
     private void construct(DataWrapper...dataWrappers) {
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
@@ -85,16 +51,20 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
             }
         }
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (DataWrapper wrapper : dataWrappers) {
             for (DataModel model : wrapper.getDataModelList()) {
+                if (!(model instanceof DataSet)) {
+                    throw new IllegalArgumentException("Sorry, I am only willing to concatenate tabular datasets.");
+                }
                 DataSet dataSet = (DataSet) model;
                 dataSets.add(dataSet);
             }
         }
 
-        DataSet concatenated = DataUtils.concatenateData(dataSets);
+        DataSet concatenated = DataUtils.concatenate(dataSets);
+        concatenated.setName("Concatenated");
 
         this.setDataModel(concatenated);
 
@@ -105,17 +75,10 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static ConcatenateDatasetsWrapper serializableInstance() {
-        return new ConcatenateDatasetsWrapper(DataWrapper.serializableInstance(),
-                DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
-
-
-
-
-
 }
 

@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: PC</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td><h2><font color="#ffffff">Search Algorithms: CPC </font></h2></td>
+    </tr>
+  </tbody>
+</table>
+<p><font color="#000000"><b></b></font><br>
+CPC (Conservative PC) is a variant of the PC algorithm designed to improve arrowpoint orientation accuracy. The types of input data permitted and the assumptions for CPC are the same as for PC. That is, input data may be used that is either entirely discrete or entirely continuous. A DAG may be used as input, in which case graphical d-separation will be used in place of conditional independence for purposes of the search. It is assumed that the true causal DAG over which the search is being done does not contain cycles, that there are no hidden common causes between any pair of observed variables, and that with continuous variables the direct causal effect of any variable into any other is linear, with the distribution of each variable being Normal.</p>
+<p>To know how to interpret the output of CPC, it helps to know how CPC differs from PC. In the collider orientation step, instead of orienting an unshielded triple &lt;X, Y, Z&gt; as a collider just in case (as in PC) Y is not in the set Sxz that shielded off X from Z and hence led to the remove of X---Z during the adjency phase of the search, &lt;X, Y, Z&gt; is first labeled as either a <em>collider</em>, a <em>noncollider, </em>or an <em>unfaithful triple</em>, depending, respectively, on whether Y is in <em>none</em> of the sets S among adjacents of X or adjacents of Y such that X _||_ Y | S, or <em>all</em> of those sets, or <em>some but not all</em> of those sets. If &lt;X, Y, Z&gt; is labeled as a collider then it is oriented as X--&gt;Y&lt;--Z; if it is labeled as a noncollider or unfaithful, these facts are noted for later use. (It is intended for unfaithful triples to be underlined in some way, but this is not implemented in the interface currently. However, by inspecting the logs, the classification of unshielded triples into colliders, noncolliders, and unfaithful triples may be obtained.)</p>
+<p>Once all colliders have been marked and all other unshielded triples sorted properly, the Meek orientation rules are then applied as usual, with the exception that where these orientation rules require noncolliders, the fact that a triple is a noncollider is checked against the previously compiled classification of unshielded triples. </p>
+<p>Whereas the output graph of PC is a <em>pattern</em> (allowing for bidirected edges in some cases where independence information conflicts with the assumptions of PC), the output graph of CPC is an <em>e-pattern</em> (with the same allowance). The e-pattern represents an equivalence class of DAGs that have the same adjacencies as the e-pattern, with every edge A--&gt;B in the e-pattern also in the DAG and every unshielded collider in the DAG either an unshielded collider in the e-pattern or marked as unfaithful in the e-pattern. (Currently, the interface in Tetrad does how show which triples are marked as unfaithful, but the logs, accessed through the Logging menu, provide this information.) </p>
+<p>&nbsp;</p>
+<h3>References: </h3>
+<p>Spirtes, Glymour, and Scheines (2000). Causation, Prediction, and Search.</p>
+<p>Chris Meek (1995), &quot;Causal inference and causal explanation with background knowledge.&quot;</p>
+Ramsey, Zhang, and Spirtes (2006). Adjacency-Faithfulness and Conservative Causal Inference. Uncertainty in Artificial Intelligence, forthcoming.
+<p>&nbsp;</p>
+</body>
+</html>

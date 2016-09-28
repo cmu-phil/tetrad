@@ -27,8 +27,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -44,10 +46,8 @@ public class ShiftDataWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
-     *
-     * @param data
      */
-    public ShiftDataWrapper(DataWrapper data, ShiftDataParams params) {
+    public ShiftDataWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -78,13 +78,13 @@ public class ShiftDataWrapper extends DataWrapper {
 //            }
         }
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (int i = 0; i < dataModelList.size(); i++) {
             dataSets.add((DataSet) dataModelList.get(i));
         }
 
-        int[] backshifts = params.getShifts();
+        int[] backshifts = (int[]) params.get("shifts", null);
 
         if (backshifts.length < dataSets.get(0).getNumColumns()) {
             return;
@@ -100,13 +100,13 @@ public class ShiftDataWrapper extends DataWrapper {
 
         this.setDataModel(_list);
         this.setSourceGraph(data.getSourceGraph());
-        params.setShifts(backshifts);
+        params.set("shifts", backshifts);
 
         LogDataUtils.logDataModelList("Data in which variables have been shifted in time.", getDataModelList());
     }
 
     private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {
-        List<DataSet> shiftedDataSets = new ArrayList<DataSet>();
+        List<DataSet> shiftedDataSets = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             shiftedDataSets.add(TimeSeriesUtils.createShiftedData(dataSet, shifts));
@@ -117,11 +117,10 @@ public class ShiftDataWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ShiftDataWrapper(DataWrapper.serializableInstance(), ShiftDataParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

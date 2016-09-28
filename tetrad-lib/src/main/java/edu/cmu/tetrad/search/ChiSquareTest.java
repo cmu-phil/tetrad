@@ -183,8 +183,11 @@ public class ChiSquareTest {
         }
 
         // If df == 0, return indep.
+        // Actually if you don't know one way or the other, you should return dependent. jdramsey 12/22/2015
         if (df == 0) {
-            df = 1;
+            double pValue = 1.0;
+            boolean indep = false;
+            return new ChiSquareTest.Result(xSquare, pValue, df, indep);
         }
 
         double pValue = 1.0 - ProbUtils.chisqCdf(xSquare, df);
@@ -249,84 +252,84 @@ public class ChiSquareTest {
         return true;
     }
 
-    /**
-     * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
-     * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
-     * @return True if the variables at index 0 and 1 are each determined by the variables at the other indices.
-     */
-    public boolean isSplitDetermined(int[] testIndices, double p) {
-
-        // Reset the cell table for the columns referred to in
-        // 'testIndices.' Do cell coefs for those columns.
-        this.getCellTable().addToTable(getDataSet(), testIndices);
-
-        // Indicator arrays to tell the cell table which margins
-        // to calculate. For x _||_ y | z1, z2, ..., we want to
-        // calculate the margin for x, the margin for y, and the
-        // margin for x and y. (These will be used later.)
-        int[] firstVar = new int[]{0};
-        int[] secondVar = new int[]{1};
-        int[] bothVars = new int[]{0, 1};
-
-        int[] condDims = new int[testIndices.length - 2];
-        System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
-                condDims.length);
-
-        int[] coords = new int[testIndices.length];
-        int numRows = this.getCellTable().getNumValues(0);
-        int numCols = this.getCellTable().getNumValues(1);
-
-        boolean[] attestedRows = new boolean[numRows];
-        boolean[] attestedCols = new boolean[numCols];
-
-        CombinationIterator combinationIterator =
-                new CombinationIterator(condDims);
-
-        while (combinationIterator.hasNext()) {
-            int[] combination = (int[]) combinationIterator.next();
-
-            System.arraycopy(combination, 0, coords, 2, combination.length);
-            Arrays.fill(attestedRows, true);
-            Arrays.fill(attestedCols, true);
-
-            long total = this.getCellTable().calcMargin(coords, bothVars);
-
-            if (total == 0) {
-                continue;
-            }
-
-            // For every table, some marginal has to dominate, either a row
-            // marginal or a column marginal.
-            boolean dominates = false;
-
-            marginals:
-            for (int i = 0; i < numRows; i++) {
-                for (int j = 0; j < numCols; j++) {
-                    coords[0] = i;
-                    coords[1] = j;
-
-                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
-                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
-
-                    if ((double) sumRow / total >= p) {
-                        dominates = true;
-                        break marginals;
-                    }
-
-                    if ((double) sumCol / total >= p) {
-                        dominates = true;
-                        break marginals;
-                    }
-                }
-            }
-
-            if (!dominates) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+//    /**
+//     * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
+//     * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
+//     * @return True if the variables at index 0 and 1 are each determined by the variables at the other indices.
+//     */
+//    public boolean isSplitDetermined(int[] testIndices, double p) {
+//
+//        // Reset the cell table for the columns referred to in
+//        // 'testIndices.' Do cell coefs for those columns.
+//        this.getCellTable().addToTable(getDataSet(), testIndices);
+//
+//        // Indicator arrays to tell the cell table which margins
+//        // to calculate. For x _||_ y | z1, z2, ..., we want to
+//        // calculate the margin for x, the margin for y, and the
+//        // margin for x and y. (These will be used later.)
+//        int[] firstVar = new int[]{0};
+//        int[] secondVar = new int[]{1};
+//        int[] bothVars = new int[]{0, 1};
+//
+//        int[] condDims = new int[testIndices.length - 2];
+//        System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
+//                condDims.length);
+//
+//        int[] coords = new int[testIndices.length];
+//        int numRows = this.getCellTable().getNumValues(0);
+//        int numCols = this.getCellTable().getNumValues(1);
+//
+//        boolean[] attestedRows = new boolean[numRows];
+//        boolean[] attestedCols = new boolean[numCols];
+//
+//        CombinationIterator combinationIterator =
+//                new CombinationIterator(condDims);
+//
+//        while (combinationIterator.hasNext()) {
+//            int[] combination = (int[]) combinationIterator.next();
+//
+//            System.arraycopy(combination, 0, coords, 2, combination.length);
+//            Arrays.fill(attestedRows, true);
+//            Arrays.fill(attestedCols, true);
+//
+//            long total = this.getCellTable().calcMargin(coords, bothVars);
+//
+//            if (total == 0) {
+//                continue;
+//            }
+//
+//            // For every table, some marginal has to dominate, either a row
+//            // marginal or a column marginal.
+//            boolean dominates = false;
+//
+//            marginals:
+//            for (int i = 0; i < numRows; i++) {
+//                for (int j = 0; j < numCols; j++) {
+//                    coords[0] = i;
+//                    coords[1] = j;
+//
+//                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
+//                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
+//
+//                    if ((double) sumRow / total >= p) {
+//                        dominates = true;
+//                        break marginals;
+//                    }
+//
+//                    if ((double) sumCol / total >= p) {
+//                        dominates = true;
+//                        break marginals;
+//                    }
+//                }
+//            }
+//
+//            if (!dominates) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     /**
      * @return the getModel significance level being used for tests.

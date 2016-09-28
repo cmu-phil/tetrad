@@ -21,105 +21,60 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbUtils;
 import edu.cmu.tetrad.search.Mbfs;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.io.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class TestMbfs extends TestCase {
-    static Graph testGraphSub;
-    static Graph testGraphSubCorrect;
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-    public TestMbfs(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown() {
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
-
-
-    public static void testSubgraph1() {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-
-        Graph graph = GraphConverter.convert("T-->X,X-->Y,W-->X,W-->Y");
-        IndTestDSep test = new IndTestDSep(graph);
-        Mbfs mbSearch = new Mbfs(test, -1);
-        mbSearch.search("T");
-
-        // Watch printout.
-    }
-
-    public static void testSubgraph2() {
-        Graph graph = GraphConverter.convert("P1-->T,P2-->T,T-->C1,T-->C2," +
-                "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b<--C2,PC3a-->C3," +
-                "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
-
-        System.out.println("True graph is: " + graph);
-        IndTestDSep test = new IndTestDSep(graph);
-        Mbfs mbSearch = new Mbfs(test, -1);
-        mbSearch.search("T");
-
-        // Watch printout.
-    }
+public class TestMbfs {
 
     /**
      * Tests to make sure the algorithm for generating MB DAGs from an MB Pattern works, at least for one kind of tricky
      * case.
      */
-    public static void testGenerateDaglist() {
-        Graph graph =
-                GraphConverter.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
+    @Test
+    public void testGenerateDaglist() {
+        Graph graph = GraphConverter.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
 
-        System.out.println("True graph is: " + graph);
         IndTestDSep test = new IndTestDSep(graph);
         Mbfs search = new Mbfs(test, -1);
         Graph resultGraph = search.search("T");
 
-        System.out.println("\n\n################### MB DAGS #################");
         List mbDags = MbUtils.generateMbDags(resultGraph, true,
                 search.getTest(), search.getDepth(), search.getTarget());
-        System.out.println("Number of dags = " + mbDags.size());
-        System.out.println(mbDags);
 
         assertTrue(mbDags.size() == 9);
         assertTrue(mbDags.contains(graph));
     }
 
-    public static void testRandom() {
+    @Test
+    public void testRandom() {
         RandomUtil.getInstance().setSeed(8388428832L);
 
-        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 5,
-                5, 5, false));
+        List<Node> nodes1 = new ArrayList<>();
 
-//        SemPm semPm = new SemPm(dag);
-//        SemIm semIm = new SemIm(semPm);
-//        RectangularDataSet dataSet = semIm.simulateData(1000, false);
-//        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
+        for (int i = 0; i < 10; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+                5, 5, 5, false));
 
         IndependenceTest test = new IndTestDSep(dag);
         Mbfs search = new Mbfs(test, -1);
-
-        System.out.println("INDEPENDENT GRAPH: " + dag);
 
         List<Node> nodes = dag.getNodes();
 
@@ -130,20 +85,17 @@ public class TestMbfs extends TestCase {
             List<Node> resultNodes = resultMb.getNodes();
             List<Node> trueNodes = trueMb.getNodes();
 
-            Set<String> resultNames = new HashSet<String>();
+            Set<String> resultNames = new HashSet<>();
 
             for (Node resultNode : resultNodes) {
                 resultNames.add(resultNode.getName());
             }
 
-            Set<String> trueNames = new HashSet<String>();
+            Set<String> trueNames = new HashSet<>();
 
             for (Node v : trueNodes) {
                 trueNames.add(v.getName());
             }
-
-            System.out.println("result names = " + resultNames);
-            System.out.println("true names = " + trueNames);
 
             assertTrue(resultNames.equals(trueNames));
 
@@ -162,15 +114,11 @@ public class TestMbfs extends TestCase {
                     // extra nodes and edges are being included to cover the
                     // possibility that the node is actually a child.
                     if (node1 == null) {
-                        System.err.println(
-                                "Node " + name1 + " is not in the true graph.");
-                        continue;
+                        fail("Node " + name1 + " is not in the true graph.");
                     }
 
                     if (node2 == null) {
-                        System.err.println(
-                                "Node " + name2 + " is not in the true graph.");
-                        continue;
+                        fail("Node " + name2 + " is not in the true graph.");
                     }
 
                     Edge trueEdge = trueMb.getEdge(node1, node2);
@@ -202,40 +150,9 @@ public class TestMbfs extends TestCase {
                             trueEdge.getEndpoint1());
                     assertEquals(resultEdge.getEndpoint2(),
                             trueEdge.getEndpoint2());
-
-                    System.out.println("Result edge = " + resultEdge +
-                            ", true edge = " + trueEdge);
                 }
             }
-
-            // TODO
-//            // Make sure that if adj(X, Y) in the true graph that adj(X, Y)
-//            // in the result graph.
-//            Set<Edge> trueEdges = trueMb.getEdges();
-//
-//            for (Edge trueEdge : trueEdges) {
-//                Node node1 = trueEdge.getNode1();
-//                Node node2 = trueEdge.getNode2();
-//
-//                Node resultNode1 = resultMb.getNode(node1.getName());
-//                Node resultNode2 = resultMb.getNode(node2.getName());
-//
-//                assertTrue("Expected adjacency " + resultNode1 + "---" +
-//                        resultNode2,
-//                        resultMb.isAdjacentTo(resultNode1, resultNode2));
-//            }
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestMbfs.class);
     }
 }
 

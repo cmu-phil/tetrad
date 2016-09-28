@@ -23,8 +23,9 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.model.MimBuildIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,19 +40,19 @@ import java.util.List;
  * @author Ricardo Silva
  */
 class MimBuildIndTestParamsEditor extends JComponent {
-    private MimBuildIndTestParams params;
+    private final Parameters params;
 
-    public MimBuildIndTestParamsEditor(final MimBuildIndTestParams params) {
+    public MimBuildIndTestParamsEditor(final Parameters params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -60,7 +61,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
             }
         });
 
-//        if (getParams().getAlgorithmType() == 1) {
+//        if (getParameters().getAlgorithm() == 1) {
 //            alphaField.setEnabled(true);
 //        }
 //        else {
@@ -73,7 +74,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //                ClusterEditor editor =
 //                        new ClusterEditor(getClusters(), getVarNames());
 //                EditorWindow window = new EditorWindow(editor, "Edit Clusters",
-//                        "Save", false, MimBuildIndTestParamsEditor.this);
+//                        "Save", false, ParamsEditor.this);
 //                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
 //                window.setVisible(true);
 //            }
@@ -86,8 +87,6 @@ class MimBuildIndTestParamsEditor extends JComponent {
 ////                        getClusters().getNumClusters());
 //
 //                List<String> latentVarList = params.getLatentVarNames();
-//
-//                System.out.println("HHH " + params.getLatentVarNames());
 //
 //                for (String var : getKnowledge().getVariables()) {
 //                    if (!latentVarList.contains(var)) {
@@ -102,14 +101,14 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //                final KnowledgeEditor editor = new Knowledge2Editor(getKnowledge(),
 //                        latentVarList, getSourceGraph());
 //                EditorWindow window = new EditorWindow(editor,
-//                        "Edit Knowledge (Latents Only)", "Save", false, MimBuildIndTestParamsEditor.this);
+//                        "Edit Knowledge (Latents Only)", "Save", false, ParamsEditor.this);
 //                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
 //                window.setVisible(true);
 //
 //                window.addComponentListener(new ComponentAdapter() {
 //                    @Override
 //                    public void componentHidden(ComponentEvent componentEvent) {
-//                        getParams().setKnowledge(editor.getKnowledge());
+//                        getParameters().setKnowledge(editor.getKnowledge());
 //                    }
 //                });
 //            }
@@ -117,15 +116,15 @@ class MimBuildIndTestParamsEditor extends JComponent {
 
 //        final String[] descriptions = MimBuild.getAlgorithmDescriptions();
 //        JComboBox algorithmSelector = new JComboBox(descriptions);
-//        algorithmSelector.setSelectedIndex(params.getAlgorithmType());
+//        algorithmSelector.setSelectedIndex(params.getAlgorithm());
 
 //        algorithmSelector.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
 //                JComboBox combo = (JComboBox) e.getSource();
 //                int index = combo.getSelectedIndex();
-//                getParams().setAlgorithmType(index);
+//                getParameters().setAlgorithm(index);
 //
-//                if (getParams().getAlgorithmType() == 1) {
+//                if (getParameters().getAlgorithm() == 1) {
 //                    alphaField.setEnabled(true);
 //                }
 //                else {
@@ -169,22 +168,22 @@ class MimBuildIndTestParamsEditor extends JComponent {
     }
 
     private Graph getSourceGraph() {
-        return params.getSourceGraph();
+        return (Graph) params.get("sourceGraph", null);
     }
 
     private IKnowledge getKnowledge() {
-        return params.getKnowledge();
+        return (IKnowledge) params.get("knowledge", new Knowledge2());
     }
 
     private Clusters getClusters() {
-        return params.getClusters();
+        return (Clusters) params.get("clusters", null);
     }
 
     private List getVarNames() {
-        return params.getVarNames();
+        return (List<String>) params.get("varNames", null);
     }
 
-    private MimBuildIndTestParams getParams() {
+    private Parameters getParams() {
         return params;
     }
 }

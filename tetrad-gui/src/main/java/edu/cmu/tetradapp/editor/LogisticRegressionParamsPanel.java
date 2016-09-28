@@ -27,10 +27,10 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.LogisticRegressionParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
- * Edits parameters for Markov blanket search algorithms.
+ * Edits parameters for Markov blanket search algorithm.
  *
  * @author Frank Wimberly
  */
@@ -56,7 +56,7 @@ final class LogisticRegressionParamsPanel extends JPanel
     /**
      * The parameter object being edited.
      */
-    private LogisticRegressionParams params;
+    private Parameters params;
 
     /**
      * The name of the target variable or node in the regression.
@@ -68,9 +68,9 @@ final class LogisticRegressionParamsPanel extends JPanel
      */
     private List<String> varNames;
 
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
-    private String[] regressorNames;
+    private List<String> regressorNames;
 
     private JTextField responseVar;
 
@@ -89,7 +89,7 @@ final class LogisticRegressionParamsPanel extends JPanel
     /**
      * Opens up an editor to let the user view the given RegressionRunner.
      */
-    public LogisticRegressionParamsPanel(LogisticRegressionParams params,
+    public LogisticRegressionParamsPanel(Parameters params,
                                          Object[] parentModels) {
         for (Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
@@ -106,13 +106,15 @@ final class LogisticRegressionParamsPanel extends JPanel
 
         if (params == null) {
             throw new NullPointerException(
-                    "RegressionParams must not be null.");
+                    "Parameters must not be null.");
         }
 
         this.params = params;
 
-        if (params.getVarNames() != null) {
-            this.varNames = params.getVarNames();
+        Object varNames = params.get("varNames", null);
+
+        if (varNames != null) {
+            this.varNames = (List<String>) varNames;
         }
 
         if (this.varNames == null) {
@@ -122,14 +124,14 @@ final class LogisticRegressionParamsPanel extends JPanel
                 this.varNames = getVarsFromGraph(parentModels);
             }
 
-            params.setVarNames(this.varNames);
+            params.set("varNames", this.varNames);
 
             if (this.varNames == null) {
                 throw new IllegalStateException(
                         "Variables are not accessible.");
             }
 
-            params().setVarNames(varNames);
+            params().set("varNames", this.varNames);
         }
 
         JLabel instructions =
@@ -155,7 +157,7 @@ final class LogisticRegressionParamsPanel extends JPanel
         responseVar.setFont(new Font("SanSerif", Font.BOLD, 12));
 
         //TEST
-        responseVar.setText(params.getTargetName());
+        responseVar.setText(params.getString("targetName", null));
         if (!responseVar.getText().equals("") &&
                 responseButton.getText().equals(">")) {
             responseButton.toggleInclude();
@@ -163,19 +165,19 @@ final class LogisticRegressionParamsPanel extends JPanel
 
         DefaultListModel predsModel =
                 (DefaultListModel) this.predictorVarListbox.getModel();
-        String[] paramNames = params.getRegressorNames();
+        List<String> paramNames = (List<String>) params.get("regressorNames", null);
         for (String paramName : paramNames) {
             predsModel.addElement(paramName);
         }
 
         //Construct availableVarsList of variable names not response nor in predictors.
-        List<String> varListNames = new ArrayList<String>(varNames);
-        String targetName = params.getTargetName();
+        List<String> varListNames = new ArrayList<>(this.varNames);
+        String targetName = params.getString("targetName", null);
         if (varListNames.contains(targetName)) {
             varListNames.remove(targetName);
         }
 
-        String[] regNames = params.getRegressorNames();
+        List<String> regNames = (List<String>) params.get("regressorNames", null);
         for (String regName : regNames) {
             if (varListNames.contains(regName)) {
                 varListNames.remove(regName);
@@ -211,14 +213,14 @@ final class LogisticRegressionParamsPanel extends JPanel
         Box b4 = Box.createVerticalBox();
         Box b5 = Box.createVerticalBox();
 
-        DoubleTextField alphaField = new DoubleTextField(params.getAlpha(), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
-                            params().getAlpha());
+                            params().getDouble("alpha", 0.001));
                     return value;
                 }
                 catch (Exception e) {
@@ -305,7 +307,7 @@ final class LogisticRegressionParamsPanel extends JPanel
         if (dataModel == null) {
             return null;
         } else {
-            return new ArrayList<String>(dataModel.getVariableNames());
+            return new ArrayList<>(dataModel.getVariableNames());
         }
     }
 
@@ -332,7 +334,7 @@ final class LogisticRegressionParamsPanel extends JPanel
             }
 
             List<Node> nodes = graph.getNodes();
-            List<String> nodeNames = new LinkedList<String>();
+            List<String> nodeNames = new LinkedList<>();
 
             for (Node node : nodes) {
                 nodeNames.add(node.getName());
@@ -342,11 +344,11 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
     }
 
-    private void setRegressorNames(String[] names) {
+    private void setRegressorNames(List<String> names) {
         regressorNames = names;
     }
 
-    private LogisticRegressionParams params() {
+    private Parameters params() {
         return this.params;
     }
 
@@ -439,7 +441,7 @@ final class LogisticRegressionParamsPanel extends JPanel
 
             String newTargetName = responseVar.getText();
             setTargetName(newTargetName);
-            params().setTargetName(targetName());
+            params().set("targetName", targetName());
         }
 
         // include predictor variable.
@@ -501,15 +503,16 @@ final class LogisticRegressionParamsPanel extends JPanel
         int numPredictors = predsModel.size();
         Object[] predictors = new Object[numPredictors];
 
-        String[] regNames = new String[numPredictors];
+        List<String> regNames = new ArrayList<>();
+
         for (int i = 0; i < numPredictors; i++) {
             predictors[i] = predsModel.getElementAt(i);
-            regNames[i] = (String) predsModel.getElementAt(i);
+            regNames.add((String) predsModel.getElementAt(i));
         }
 
         setRegressorNames(regNames);
 
-        params().setRegressorNames(regressorNames);
+        params().set("regressorNames", regressorNames);
     }
 
 

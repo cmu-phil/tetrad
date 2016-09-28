@@ -87,7 +87,7 @@ public class PurifyScoreBased implements IPurify {
 
         Clusters clusters = MimUtils.convertToClusters(_graph);
 
-        List<int[]> _partition1 = new ArrayList<int[]>();
+        List<int[]> _partition1 = new ArrayList<>();
         List<Node> nodes = tetradTest.getVariables();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
@@ -132,7 +132,7 @@ public class PurifyScoreBased implements IPurify {
 
     private List<int[]> convertListToInt(List<List<Node>> partition) {
         List<Node> nodes = tetradTest.getVariables();
-        List<int[]> _partition = new ArrayList<int[]>();
+        List<int[]> _partition = new ArrayList<>();
 
         for (int i = 0; i < partition.size(); i++) {
             List<Node> cluster = partition.get(i);
@@ -154,11 +154,11 @@ public class PurifyScoreBased implements IPurify {
 
     private List<List<Node>> convertIntToList(List<int[]> partition) {
         List<Node> nodes = tetradTest.getVariables();
-        List<List<Node>> _partition = new ArrayList<List<Node>>();
+        List<List<Node>> _partition = new ArrayList<>();
 
         for (int i = 0; i < partition.size(); i++) {
             int[] cluster = partition.get(i);
-            List<Node> _cluster = new ArrayList<Node>();
+            List<Node> _cluster = new ArrayList<>();
 
             for (int j = 0; j < cluster.length; j++) {
                 _cluster.add(nodes.get(cluster[j]));
@@ -678,7 +678,7 @@ public class PurifyScoreBased implements IPurify {
         double tau[][] =
                 new double[numObserved][numObserved];     //measurement error variance
         //Note: error covariance matrix tau is usually *not* diagonal, unlike the implementation of other
-        //structural EM algorithms such as in MimBuildScoreSearch.
+        //structural EM algorithm such as in MimBuildScoreSearch.
         for (int i = 0; i < numLatent; i++) {
             for (int j = 0; j < numLatent; j++) {
                 beta[i][j] = 0.;
@@ -820,7 +820,7 @@ public class PurifyScoreBased implements IPurify {
             if (i < 4)
                 v[i] = new GraphNode("L" + (i + 1));
             else
-                v[i] = new GraphNode("V" + (i - 3));
+                v[i] = new GraphNode("v" + (i - 3));
             newGraph.addNode(v[i]);
         }
         for (int l = 0; l < numLatent; l++) {
@@ -846,13 +846,13 @@ public class PurifyScoreBased implements IPurify {
         this.latentNames = new Hashtable();
         this.latentNodes = new ArrayList();
         for (int i = 0; i < numLatent; i++) {
-            latentNames.put(v[i].getName(), new Integer(i));
+            latentNames.put(v[i].getNode(), new Integer(i));
             latentNodes.add(v[i]);
         }
         this.observableNames = new Hashtable();
         this.measuredNodes = new ArrayList();
         for (int i = numLatent; i < numLatent + numObserved; i++) {
-            observableNames.put(v[i].getName(), new Integer(i - numLatent));
+            observableNames.put(v[i].getNode(), new Integer(i - numLatent));
             measuredNodes.add(v[i]);
         }
 
@@ -1673,7 +1673,7 @@ public class PurifyScoreBased implements IPurify {
                 for (int p = 0; p < solution.size(); p++) {
                     int cluster[] = (int[]) solution.get(p);
                     latentsArray[p] =
-                            new GraphNode(MimBuild.LATENT_PREFIX + (p + 1));
+                            new GraphNode(ClusterUtils.LATENT_PREFIX + (p + 1));
                     latentsArray[p].setNodeType(NodeType.LATENT);
                     graph2.addNode(latentsArray[p]);
                     for (int q = 0; q < cluster.length; q++) {

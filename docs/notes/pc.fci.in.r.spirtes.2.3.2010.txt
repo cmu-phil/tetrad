@@ -177,7 +177,7 @@ skeleton = function(coltData, prgt = .05) {
        #more           Boolean
        #reachable      list of vertices
        #numvertex      integer
-       #labeled        array (by depth) of list of edges that have been labeled
+       #labeled        array (by maxIndegree) of list of edges that have been labeled
 
  makeedge = function(x,y)(list(list(x,y)))
 
@@ -213,19 +213,19 @@ skeleton = function(coltData, prgt = .05) {
  for (i in 1:numvertex) edgeslist = c(edgeslist,list(which(adjacency[,i] != 0)))
  labeled[[1]] = initialize(a,b,c)
  edgeslist[[a]] = list()
- depth = 2
+ maxIndegree = 2
  repeat
       {more = FALSE
-       labeled[[depth]] = list()
-       for (i in 1:length(labeled[[depth-1]])) {
-          edgestemp = edgeslist[[labeled[[depth-1]][[i]][[2]]]]
+       labeled[[maxIndegree]] = list()
+       for (i in 1:length(labeled[[maxIndegree-1]])) {
+          edgestemp = edgeslist[[labeled[[maxIndegree-1]][[i]][[2]]]]
           if (length(edgestemp) == 0) break
           for (j in 1:length(edgestemp))
-           {labeled[[depth]] =
-             union(legal(a,b,c,labeled[[depth-1]][[i]],edgestemp[[j]]),labeled[[depth]])}}
-       if (length(labeled[[depth]]) != 0){
+           {labeled[[maxIndegree]] =
+             union(legal(a,b,c,labeled[[maxIndegree-1]][[i]],edgestemp[[j]]),labeled[[maxIndegree]])}}
+       if (length(labeled[[maxIndegree]]) != 0){
              more = TRUE
-             depth = depth  + 1} else break}
+             maxIndegree = maxIndegree  + 1} else break}
  return(unique(unlist(labeled)))
 }
 
@@ -3526,7 +3526,7 @@ On Wed, Feb 3, 2010 at 1:26 PM, Peter Spirtes <ps7z@andrew.cmu.edu> wrote:
            #more           Boolean
            #reachable      list of vertices
            #numvertex      integer
-           #labeled        array (by depth) of list of edges that have been labeled
+           #labeled        array (by maxIndegree) of list of edges that have been labeled
 
      makeedge = function(x,y)(list(list(x,y)))
 
@@ -3562,19 +3562,19 @@ On Wed, Feb 3, 2010 at 1:26 PM, Peter Spirtes <ps7z@andrew.cmu.edu> wrote:
      for (i in 1:numvertex) edgeslist = c(edgeslist,list(which(adjacency[,i] != 0)))
      labeled[[1]] = initialize(a,b,c)
      edgeslist[[a]] = list()
-     depth = 2
+     maxIndegree = 2
      repeat
           {more = FALSE
-           labeled[[depth]] = list()
-           for (i in 1:length(labeled[[depth-1]])) {
-              edgestemp = edgeslist[[labeled[[depth-1]][[i]][[2]]]]
+           labeled[[maxIndegree]] = list()
+           for (i in 1:length(labeled[[maxIndegree-1]])) {
+              edgestemp = edgeslist[[labeled[[maxIndegree-1]][[i]][[2]]]]
               if (length(edgestemp) == 0) break
               for (j in 1:length(edgestemp))
-               {labeled[[depth]] =
-                 union(legal(a,b,c,labeled[[depth-1]][[i]],edgestemp[[j]]),labeled[[depth]])}}
-           if (length(labeled[[depth]]) != 0){
+               {labeled[[maxIndegree]] =
+                 union(legal(a,b,c,labeled[[maxIndegree-1]][[i]],edgestemp[[j]]),labeled[[maxIndegree]])}}
+           if (length(labeled[[maxIndegree]]) != 0){
                  more = TRUE
-                 depth = depth  + 1} else break}
+                 maxIndegree = maxIndegree  + 1} else break}
      return(unique(unlist(labeled)))
     }
 

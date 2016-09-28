@@ -45,12 +45,6 @@ public final class TimeSeriesData implements DataModel {
 
     /**
      * @serial
-     * @deprecated
-     */
-    private double[][] data;
-
-    /**
-     * @serial
      */
     private String name;
 
@@ -100,7 +94,7 @@ public final class TimeSeriesData implements DataModel {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static TimeSeriesData serializableInstance() {
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
         varNames.add("X");
         varNames.add("Y");
         return new TimeSeriesData(new TetradMatrix(2, 2), varNames);
@@ -120,8 +114,8 @@ public final class TimeSeriesData implements DataModel {
     }
 
     public final List<Node> getVariables() {
-        List varNames = getVariableNames();
-        List<Node> vars = new LinkedList<Node>();
+        List<String> varNames = getVariableNames();
+        List<Node> vars = new LinkedList<>();
 
         for (Object varName : varNames) {
             vars.add(new ContinuousVariable((String) varName));
@@ -182,10 +176,6 @@ public final class TimeSeriesData implements DataModel {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (data != null) {
-            data2 = new TetradMatrix(data);
-        }
 
         if (name == null) {
             throw new NullPointerException();

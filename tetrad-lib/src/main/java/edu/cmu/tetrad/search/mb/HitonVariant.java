@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Reimplemented HITON for purposes of comparison to other algorithms, to get it closer to the published definition.
+ * Reimplemented HITON for purposes of comparison to other algorithm, to get it closer to the published definition.
  *
  * @author Joseph Ramsey
  */
@@ -80,7 +80,7 @@ public class HitonVariant implements MbSearch {
         final Node t = getVariableForName(targetName);
 
         // Sort variables by decreasing association with the target.
-        sortedVariables = new LinkedList<Node>(variables);
+        sortedVariables = new LinkedList<>(variables);
 
         Collections.sort(sortedVariables, new Comparator<Node>() {
             public int compare(Node o1, Node o2) {
@@ -110,12 +110,12 @@ public class HitonVariant implements MbSearch {
 
     private List<Node> hitonMb(Node t) {
         // MB <- {}
-        Set<Node> mb = new HashSet<Node>();
-        Map<Node, List<Node>> pcSets = new HashMap<Node, List<Node>>();
+        Set<Node> mb = new HashSet<>();
+        Map<Node, List<Node>> pcSets = new HashMap<>();
 
         List<Node> pc = hitonPc(t);
         pcSets.put(t, pc);
-        Set<Node> _pcpc = new HashSet<Node>();
+        Set<Node> _pcpc = new HashSet<>();
 
         for (Node node : pc) {
             List<Node> f = hitonPc(node);
@@ -123,13 +123,13 @@ public class HitonVariant implements MbSearch {
             _pcpc.addAll(f);
         }
 
-        List<Node> pcpc = new LinkedList<Node>(_pcpc);
+        List<Node> pcpc = new LinkedList<>(_pcpc);
 
-        Set<Node> currentMb = new HashSet<Node>(pc);
+        Set<Node> currentMb = new HashSet<>(pc);
         currentMb.addAll(pcpc);
         currentMb.remove(t);
 
-        HashSet<Node> diff = new HashSet<Node>(currentMb);
+        HashSet<Node> diff = new HashSet<>(currentMb);
         diff.removeAll(pc);
         diff.remove(t);
 
@@ -143,7 +143,7 @@ public class HitonVariant implements MbSearch {
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                List<Node> _s = new LinkedList<Node>();
+                List<Node> _s = new LinkedList<>();
 
                 for (int index : choice) {
                     _s.add(pcpc.get(index));
@@ -162,7 +162,7 @@ public class HitonVariant implements MbSearch {
             }
 
             // y_set <- {y in PC(t) : x in PC(y)}
-            Set<Node> ySet = new HashSet<Node>();
+            Set<Node> ySet = new HashSet<>();
             for (Node y : pc) {
                 if (pcSets.get(y).contains(x)) {
                     ySet.add(y);
@@ -173,7 +173,7 @@ public class HitonVariant implements MbSearch {
             for (Node y : ySet) {
                 if (x == y) continue;
 
-                List<Node> _s = new LinkedList<Node>(s);
+                List<Node> _s = new LinkedList<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
@@ -185,7 +185,7 @@ public class HitonVariant implements MbSearch {
         }
 
         mb.addAll(pc);
-        return new LinkedList<Node>(mb);
+        return new LinkedList<>(mb);
     }
 
 //    public List<Node> findMb(String targetName) {
@@ -271,18 +271,18 @@ public class HitonVariant implements MbSearch {
 //    }
 
     private List<Node> hitonPc(Node t) {
-        LinkedList<Node> variables = new LinkedList<Node>(sortedVariables);
+        LinkedList<Node> variables = new LinkedList<>(sortedVariables);
 
         variables.remove(t);
 
-        List<Node> currentPc = new ArrayList<Node>();
+        List<Node> currentPc = new ArrayList<>();
 
         while (!variables.isEmpty()) {
             Node vi = variables.removeFirst();
             currentPc.add(vi);
 
             VARS:
-            for (Node x : new LinkedList<Node>(currentPc)) {
+            for (Node x : new LinkedList<>(currentPc)) {
                 currentPc.remove(x);
 
                 for (int d = 0; d <= Math.min(currentPc.size(), depth); d++) {
@@ -291,7 +291,7 @@ public class HitonVariant implements MbSearch {
                     int[] choice;
 
                     while ((choice = generator.next()) != null) {
-                        List<Node> s = new LinkedList<Node>();
+                        List<Node> s = new LinkedList<>();
 
                         for (int index : choice) {
                             s.add(currentPc.get(index));

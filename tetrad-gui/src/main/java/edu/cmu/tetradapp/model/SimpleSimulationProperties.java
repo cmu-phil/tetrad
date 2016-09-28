@@ -53,13 +53,12 @@ public class SimpleSimulationProperties implements TetradSerializable {
     /**
      * The required default constructor.
      */
-    public SimpleSimulationProperties() {
+    private SimpleSimulationProperties() {
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SimpleSimulationProperties serializableInstance() {

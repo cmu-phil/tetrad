@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -47,41 +47,39 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 
     public PurifyRunner(DataWrapper dataWrapper,
                           MeasurementModelWrapper mmWrapper,
-                          PurifyParams params) {
+                          Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         setClusters(mmWrapper.getClusters());
-        params.setClusters(mmWrapper.getClusters());
+        params.set("clusters", mmWrapper.getClusters());
     }
 
-    public PurifyRunner(DataWrapper dataWrapper, PurifyParams params) {
-        super(dataWrapper, params.getClusters(), params);
-    }
-
-    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PurifyParams params) {
-        super(dataWrapper,params.getClusters(), params);
-
-        Graph mim = graphWrapper.getGraph();
-        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
-
-        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariables());
-        Clusters clusters = ClusterUtils.partitionToClusters(partition);
-        setClusters(clusters);
-        params.setClusters(clusters);
-    }
-
-    public PurifyRunner(BuildPureClustersRunner bpc, PurifyParams params) {
-        super(bpc, params);
-    }
+//    public PurifyRunner(DataWrapper dataWrapper, Parameters params) {
+//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
+//    }
+//
+//    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
+//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
+//
+//        Graph mim = graphWrapper.getGraph();
+//        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
+//
+//        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariables());
+//        Clusters clusters = ClusterUtils.partitionToClusters(partition);
+//        setClusters(clusters);
+//        params.set("clusters", clusters);
+//    }
+//
+//    public PurifyRunner(BuildPureClustersRunner bpc, Parameters params) {
+//        super(bpc, params);
+//    }
     
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static PurifyRunner serializableInstance() {
-        return new PurifyRunner(DataWrapper.serializableInstance(),
-                PurifyParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -97,13 +95,13 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 //        if (source instanceof CovarianceMatrix) {
 //            CovarianceMatrix covMatrix = (CovarianceMatrix) source;
 //            CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
-//            purify = new Purify(corrMatrix, getParams().getAlpha(),
-//                    getParams().getTetradTestType(), getParams().getClusters());
+//            purify = new Purify(corrMatrix, getParameters().getParameter1(),
+//                    getParameters().getTetradTestType(), getParameters().getClusters());
 //        }
 //        else if (source instanceof DataSet) {
 //            purify = new Purify((DataSet) source,
-//                    getParams().getAlpha(), getParams().getTetradTestType(),
-//                    getParams().getClusters());
+//                    getParameters().getParameter1(), getParameters().getTetradTestType(),
+//                    getParameters().getClusters());
 //        }
 //        else {
 //            throw new RuntimeException(
@@ -113,20 +111,20 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         TetradTest test;
 
 
-        System.out.println("Clusters " + getParams().getClusters());
+        System.out.println("Clusters " + getParams().get("clusters", null));
 
         if (source instanceof ICovarianceMatrix) {
             ICovarianceMatrix covMatrix = (ICovarianceMatrix) source;
             CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
-            double alpha = getParams().getAlpha();
-            TestType sigTestType = getParams().getTetradTestType();
+            double alpha = getParams().getDouble("alpha", 0.001);
+            TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
             test = new ContinuousTetradTest(covMatrix, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(covMatrix);
         }
         else if (source instanceof DataSet) {
             DataSet data = (DataSet) source;
-            double alpha = getParams().getAlpha();
-            TestType sigTestType = getParams().getTetradTestType();
+            double alpha = getParams().getDouble("alpha", 0.001);
+            TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
             test = new ContinuousTetradTest(data, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(data);
         }
@@ -135,9 +133,9 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
                     "Data source for Purify of invalid type!");
         }
 
-        List<List<Node>> inputPartition = ClusterUtils.clustersToPartition(getParams().getClusters(), test.getVariables());
+        List<List<Node>> inputPartition = ClusterUtils.clustersToPartition((Clusters) getParams().get("clusters", null), test.getVariables());
 
-        IPurify purify = new PurifyTetradBased3(test);
+        IPurify purify = new PurifyTetradBased2(test);
 //        IPurify purify = new PurifySextadBased(sextadTest, test.getSignificance());
 //        IPurify purify = new PurifyTetradBasedH(test, 15);
 
@@ -157,7 +155,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         return super.getClusters();
     }
 
-    public void setClusters(Clusters clusters) {
+    protected void setClusters(Clusters clusters) {
         super.setClusters(clusters);
     }
 
@@ -166,7 +164,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);
@@ -180,7 +178,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     public List<String> getVariableNames() {
         List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());
-        return MimBuild.generateLatentNames(partition.size());
+        return ClusterUtils.generateLatentNames(partition.size());
     }
 
 }

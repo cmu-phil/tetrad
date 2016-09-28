@@ -23,6 +23,7 @@ package edu.cmu.tetrad.sem;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -88,12 +89,6 @@ public final class SemEstimator implements TetradSerializable {
      * @serial Can be null.
      */
     private DataSet dataSet;
-
-    /**
-     * The true SEM IM. If this is included. then its score will be printed
-     * out.
-     */
-    private SemIm trueSemIm;
 
     private SemIm.ScoreType scoreType = SemIm.ScoreType.Fgls;
     private int numRestarts = 1;
@@ -166,6 +161,8 @@ public final class SemEstimator implements TetradSerializable {
         if (DataUtils.containsMissingValue(covMatrix.getMatrix())) {
             throw new IllegalArgumentException("Expecting a covariance matrix with no missing values.");
         }
+
+        semPm.getGraph().setShowErrorTerms(false);
 
         setCovMatrix(submatrix(covMatrix, semPm));
         setSemPm(semPm);
@@ -267,16 +264,16 @@ public final class SemEstimator implements TetradSerializable {
         return covMatrix;
     }
 
-    public SemOptimizer getSemOptimizer() {
+    private SemOptimizer getSemOptimizer() {
         return semOptimizer;
     }
 
-    public SemIm getTrueSemIm() {
-        return trueSemIm;
-    }
-
     public void setTrueSemIm(SemIm semIm) {
-        trueSemIm = new SemIm(semIm);
+        /*
+      The true SEM IM. If this is included. then its score will be printed
+      out.
+     */
+        SemIm trueSemIm = new SemIm(semIm);
         trueSemIm.setCovMatrix(this.getCovMatrix());
     }
 
@@ -356,6 +353,7 @@ public final class SemEstimator implements TetradSerializable {
         try {
             return covMatrix.getSubmatrix(measuredVarNames);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             throw new RuntimeException(
                     "All of the variables from the SEM parameterized model " +
                             "must be in the data set.", e);
@@ -372,8 +370,7 @@ public final class SemEstimator implements TetradSerializable {
             varIndices[i] = dataVars.indexOf(variable);
         }
 
-        final DataSet subset = dataSet.subsetColumns(varIndices);
-        return subset;
+        return dataSet.subsetColumns(varIndices);
     }
 
     private static boolean containsCovarParam(SemPm semPm) {
@@ -400,7 +397,6 @@ public final class SemEstimator implements TetradSerializable {
                 double[] column = dataSet.getDoubleData().getColumn(j).toArray();
                 DoubleArrayList list = new DoubleArrayList(column);
                 double mean = Descriptive.mean(list);
-                System.out.println("Mean " + j + " = " + mean);
 
                 Node node = dataSet.getVariable(j);
                 Node variableNode = semIm.getVariableNode(node.getName());
@@ -423,7 +419,7 @@ public final class SemEstimator implements TetradSerializable {
         }
     }
 
-    public void setSemOptimizer(SemOptimizer semOptimizer) {
+    private void setSemOptimizer(SemOptimizer semOptimizer) {
         this.semOptimizer = semOptimizer;
     }
 
@@ -438,7 +434,7 @@ public final class SemEstimator implements TetradSerializable {
     private void setDataSet(DataSet dataSet) {
         List<Node> nodes1 = semPm.getMeasuredNodes();
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (Node node : nodes1) {
             Node _node = dataSet.getVariable(node.getName());
@@ -483,7 +479,7 @@ public final class SemEstimator implements TetradSerializable {
         this.scoreType = scoreType;
     }
 
-    public SemIm.ScoreType getScoreType() {
+    private SemIm.ScoreType getScoreType() {
         return scoreType;
     }
 

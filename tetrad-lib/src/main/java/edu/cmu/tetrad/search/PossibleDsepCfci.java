@@ -40,7 +40,7 @@ import java.util.Set;
  * Specifically, the methods in this class perform step D. of the algorithm. </p> The algorithm implemented by this
  * class is a bit broader, however, because it allows for the possibility that some pairs of variables have already been
  * compared by a different algorithm. Specifically, if the <code>prevCheck</code> variable is provided in the
- * constructor, then the algorithm pairwise checks every variable in the graph with every variable in V \
+ * constructor, then the algorithm pairwise checks every variable in the graph with every variable in v \
  * <code>prevCheck</code> (that is, the unchecked variables). This feature is used by the CIVI algorithm of Danks's
  * "Efficient Inclusion of Novel Variables."
  *
@@ -72,7 +72,6 @@ final class PossibleDsepCfci {
     /**
      * @param graph             The GaSearchGraph on which to work
      * @param test              The IndependenceChecker to use as an oracle
-     * @param unfaithfulTriples
      */
     public PossibleDsepCfci(Graph graph, IndependenceTest test,
                             Set<Triple> unfaithfulTriples) {
@@ -87,7 +86,7 @@ final class PossibleDsepCfci {
 
         this.graph = graph;
         this.test = test;
-        this.nodes = new LinkedList<Node>(this.graph.getNodes());
+        this.nodes = new LinkedList<>(this.graph.getNodes());
         this.sepset = new SepsetMap();
         this.legalPairs = new FciDsepLegalPairsCfci(this.graph, unfaithfulTriples);
 
@@ -128,7 +127,7 @@ final class PossibleDsepCfci {
     }
 
     private boolean tryRemovingUsingDsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> possDsep = new LinkedList<Node>(getPossibleDsep(node1, node2, maxPathLength));
+        List<Node> possDsep = new LinkedList<>(getPossibleDsep(node1, node2, maxPathLength));
 
         boolean noEdgeRequired =
                 getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
@@ -159,7 +158,7 @@ final class PossibleDsepCfci {
                 if (independent && noEdgeRequired) {
                     System.out.println("*** DSEP removed " + graph.getEdge(node1, node2));
                     graph.removeEdge(node1, node2);
-                    List<Node> z = new LinkedList<Node>(condSet);
+                    List<Node> z = new LinkedList<>(condSet);
                     sepset.set(node1, node2, z);
                     return true;
                 }
@@ -173,7 +172,7 @@ final class PossibleDsepCfci {
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
     private List<Node> possibleParents(Node x, List<Node> nodes, IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : nodes) {
@@ -192,10 +191,10 @@ final class PossibleDsepCfci {
     }
 
     /**
-     * A variable V is in Possible-D-Sep(A,B) iff
+     * A variable v is in Possible-D-Sep(A,B) iff
      * <pre>
-     * 	(i) V != A & V != B
-     * 	(ii) there is an undirected path U between A and V such that for every
+     * 	(i) v != A & v != B
+     * 	(ii) there is an undirected path U between A and v such that for every
      * 		 subpath <X,Y,Z> of U either:
      * 		(a) Y is a collider on the subpath, or
      * 		(b) X is adjacent to Z.
@@ -212,7 +211,7 @@ final class PossibleDsepCfci {
         reachable.remove(node1);
         reachable.remove(node2);
 
-        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + node1 + ", " + node2 + ") = " + reachable);
+//        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + node1 + ", " + node2 + ") = " + reachable);
 
         return reachable;
     }

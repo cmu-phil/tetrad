@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class SplitCasesAction extends AbstractAction {
+final class SplitCasesAction extends AbstractAction {
 
     /**
      * The data editor.                         -
@@ -67,7 +67,7 @@ public final class SplitCasesAction extends AbstractAction {
                     "Requires a tabular data set.");
         }
 
-        List<Node> selectedVariables = new LinkedList<Node>();
+        List<Node> selectedVariables = new LinkedList<>();
 
         DataSet dataSet = (DataSet) selectedDataModel;
         int numColumns = dataSet.getNumColumns();
@@ -90,7 +90,7 @@ public final class SplitCasesAction extends AbstractAction {
             selectedVariables.addAll(dataSet.getVariables());
         }
 //
-//        SplitCasesParamsEditor editor = new SplitCasesParamsEditor(dataSet, 3);
+//        ParamsEditor editor = new ParamsEditor(dataSet, 3);
 //
 //        int ret = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(),
 //                editor, "Split Data by Cases", JOptionPane.OK_CANCEL_OPTION,

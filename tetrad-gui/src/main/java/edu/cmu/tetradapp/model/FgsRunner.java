@@ -21,21 +21,21 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,48 +45,55 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
-        PropertyChangeListener, Indexable, IGesRunner, DoNotAddOldModel {
+public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+        PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel, Unmarshallable {
     static final long serialVersionUID = 23L;
+
+    public enum Type {CONTINUOUS, DISCRETE, MIXED, GRAPH}
+
     private transient List<PropertyChangeListener> listeners;
-    private Map<Graph, Double> dagsToScores;
-    private List<ScoredGraph> topGraphs = new ArrayList<ScoredGraph>();
+    private List<ScoredGraph> topGraphs;
     private int index;
-    private List<Map<Graph, Double>> allDagsToScores;
-    private Graph initialGraph;
-    private Graph trueGraph;// deprecated.
+    private transient Fgs fgs;
+    private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
 
-    public FgsRunner(DataWrapper dataWrapper, GesParams params) {
-        super(dataWrapper, params, null);
+    public FgsRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource trueGraph, GesParams params) {
-        this(dataWrapper, params, null);
-        this.initialGraph = trueGraph.getGraph();
+    public FgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GesParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, params, knowledgeBoxModel);
+    public FgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
+        if (graph == this) throw new IllegalArgumentException();
+        this.initialGraph = graph.getGraph();
     }
 
-    /**
-     * Constucts a wrapper for the given EdgeListGraph.
-     */
-    public FgsRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
+        if (graph == this) throw new IllegalArgumentException();
+        this.initialGraph = graph.getGraph();
+    }
+
+    public FgsRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
+    }
+
+    public FgsRunner(GraphWrapper graphWrapper, Parameters params) {
+        super(graphWrapper.getGraph(), params, null);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     *
      * @see TetradSerializableUtils
      */
-    public static IGesRunner serializableInstance() {
-        return new FgsRunner(DataWrapper.serializableInstance(),
-                GesParams.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -95,189 +102,245 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-
     public void execute() {
-        Object source = getDataModel();
+        System.out.println("A");
 
-        GesParams gesParams = (GesParams) getParams();
-        GesIndTestParams indTestParams = (GesIndTestParams) gesParams.getIndTestParams();
-        double penalty = gesParams.getComplexityPenalty();
-        Fgs ges;
-        boolean faithfulnessAssumed = false;
-        boolean ignoreLinearDependent = false;
+        Object model = getDataModel();
 
-        if (source instanceof ICovarianceMatrix) {
-//            ges = new FGS((ICovarianceMatrix) source);
-//            ges.setKnowledge(getParams().getKnowledge());
-//            ges.setPenaltyDiscount(penalty);
-//            ges.setVerbose(true);
-//            ges.setLog(true);
-//            ges.setDepth(-1);
-//            ges.setNumPatternsToStore(0);
-//            ges.setFaithfulnessAssumed(faithfulnessAssumed);
-
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
-            gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
-            gesScore.setPenaltyDiscount(penalty);
-            ges = new Fgs(gesScore);
-            ges.setKnowledge(getParams().getKnowledge());
-            ges.setPenaltyDiscount(penalty);
-            ges.setDepth(2);
-            ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
-//            ges.setIgnoreLinearDependent(ignoreLinearDependent);
-            ges.setVerbose(true);
-
-        } else if (source instanceof DataSet) {
-            DataSet dataSet = (DataSet) source;
-
-            if (dataSet.isContinuous()) {
-
-//                ges = new FGSSet);
-//                ges.setKnowledge(getParams().getKnowledge());
-//                ges.setPenaltyDiscount(penalty);
-//                ges.setVerbose(true);
-//                ges.setLog(true);
-//                ges.setDepth(-1);
-//                ges.setNumPatternsToStore(0);
-//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-
-//                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-//                gesScore.setPenaltyDiscount(penalty);
-//                ges = new FGS(gesScore);
-//                ges.setKnowledge(getParams().getKnowledge());
-//                ges.setDepth(-1);
-//                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-//                ges.setIgnoreLinearDependent(ignoreLinearDependent);
-
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
-                gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
-                gesScore.setPenaltyDiscount(penalty);
-                ges = new Fgs(gesScore);
-                ges.setKnowledge(getParams().getKnowledge());
-                ges.setPenaltyDiscount(penalty);
-                ges.setDepth(2);
-                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-//                ges.setIgnoreLinearDependent(ignoreLinearDependent);
-                ges.setVerbose(true);
-            }
-            else if (dataSet.isDiscrete()) {
-                double samplePrior = ((GesParams) getParams()).getSamplePrior();
-                double structurePrior = ((GesParams) getParams()).getStructurePrior();
-                BDeuScore score = new BDeuScore(dataSet);
-                score.setSamplePrior(samplePrior);
-                score.setStructurePrior(structurePrior);
-//                BDeScore score = new BDeScore(dataSet);
-                ges = new Fgs(score);
-                ges.setVerbose(true);
-                ges.setLog(true);
-                ges.setKnowledge(getParams().getKnowledge());
-                ges.setDepth(2);
-                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-            }
-            else {
-                throw new IllegalStateException("Data set must either be continuous or discrete.");
-            }
-        } else {
-            throw new RuntimeException(
-                    "GES does not accept this type of data input.");
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
         }
 
-        ges.setInitialGraph(initialGraph);
+        if (model == null) {
+            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
+                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
+                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
+                    "file when you save the session. It can, however, be recreated from the saved seed.");
+        }
 
-        Graph graph = ges.search();
+        Parameters params = getParams();
+
+        if (model instanceof Graph) {
+            GraphScore gesScore = new GraphScore((Graph) model);
+            fgs = new Fgs(gesScore);
+            fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+            fgs.setVerbose(true);
+        } else {
+            double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
+
+            if (model instanceof DataSet) {
+                DataSet dataSet = (DataSet) model;
+
+                if (dataSet.isContinuous()) {
+                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SvrScore gesScore = new SvrScore((DataSet) model);
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    System.out.println("Score done");
+                    fgs = new Fgs(gesScore);
+                } else if (dataSet.isDiscrete()) {
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    BDeuScore score = new BDeuScore(dataSet);
+                    score.setSamplePrior(samplePrior);
+                    score.setStructurePrior(structurePrior);
+                    fgs = new Fgs(score);
+                } else {
+                    MixedBicScore gesScore = new MixedBicScore(dataSet);
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    fgs = new Fgs(gesScore);
+                }
+            } else if (model instanceof ICovarianceMatrix) {
+                SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+                gesScore.setPenaltyDiscount(penaltyDiscount);
+                gesScore.setPenaltyDiscount(penaltyDiscount);
+                fgs = new Fgs(gesScore);
+            } else if (model instanceof DataModelList) {
+                DataModelList list = (DataModelList) model;
+
+                for (DataModel dataModel : list) {
+                    if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
+                        throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
+                                "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
+                    }
+                }
+
+                if (list.size() != 1) {
+                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
+                            "as input. For multiple data sets as input, use IMaGES.");
+                }
+
+                if (allContinuous(list)) {
+                    double penalty = getParams().getDouble("penaltyDiscount", 4);
+
+                    if (params.getBoolean("firstNontriangular", false)) {
+                        SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                        fgsScore.setPenaltyDiscount(penalty);
+                        fgs = new Fgs(fgsScore);
+                    } else {
+                        SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                        fgsScore.setPenaltyDiscount(penalty);
+                        fgs = new Fgs(fgsScore);
+                    }
+                } else if (allDiscrete(list)) {
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+
+                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
+                    fgsScore.setSamplePrior(samplePrior);
+                    fgsScore.setStructurePrior(structurePrior);
+
+                    if (params.getBoolean("firstNontriangular", false)) {
+                        fgs = new Fgs(fgsScore);
+                    } else {
+                        fgs = new Fgs(fgsScore);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+                }
+            } else {
+                System.out.println("No viable input.");
+            }
+        }
+
+        fgs.setInitialGraph(initialGraph);
+        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+        fgs.setVerbose(true);
+        fgs.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
+        Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);
 
+        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
+
         if (topGraphs.isEmpty()) {
+
             topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-        }
-
-        this.topGraphs = new ArrayList<ScoredGraph>(ges.getTopGraphs());
-
-        if (this.topGraphs.isEmpty()) {
-            this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-        }
-
-        this.allDagsToScores = new ArrayList<Map<Graph, Double>>();
-
-        for (ScoredGraph scoredGraph : topGraphs) {
-            Map<Graph, Double> dagsToScores = scoreGraphs(ges, scoredGraph.getGraph());
-            this.allDagsToScores.add(dagsToScores);
         }
 
         setIndex(topGraphs.size() - 1);
     }
 
-    public void setIndex(int index) {
-        if (getTopGraphs().size() == 0) {
-            return;
+    /**
+     * Executes the algorithm, producing (at least) a result workbench. Must be
+     * implemented in the extending class.
+     */
+    public Type getType() {
+        Object model = getDataModel();
+
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
+        }
+
+        if (model == null) {
+            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
+                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
+                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
+                    "file when you save the session. It can, however, be recreated from the saved seed.");
+        }
+
+        Type type;
+
+        if (model instanceof Graph) {
+            type = Type.GRAPH;
+        } else if (model instanceof DataSet) {
+            DataSet dataSet = (DataSet) model;
+
+            if (dataSet.isContinuous()) {
+                type = Type.CONTINUOUS;
+            } else if (dataSet.isDiscrete()) {
+                type = Type.DISCRETE;
+            } else {
+                type = Type.MIXED;
+//                throw new IllegalStateException("Data set must either be continuous or discrete.");
+            }
+        } else if (model instanceof ICovarianceMatrix) {
+            type = Type.CONTINUOUS;
+        } else if (model instanceof DataModelList) {
+            DataModelList list = (DataModelList) model;
+
+            if (allContinuous(list)) {
+                type = Type.CONTINUOUS;
+            } else if (allDiscrete(list)) {
+                type = Type.DISCRETE;
+            } else {
+                type = Type.MIXED;
+//                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+            }
         } else {
-            if (index < -1) {
-                throw new IllegalArgumentException("Must be greater than or equal to -1: " + index);
+            throw new IllegalArgumentException("Unrecognized data type.");
+        }
+
+        return type;
+    }
+
+    private boolean allContinuous(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
+            if (dataModel instanceof DataSet) {
+                if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
+                    return false;
+                }
             }
         }
 
-        this.dagsToScores = this.allDagsToScores.get(index);
+        return true;
+    }
+
+    private boolean allDiscrete(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
+            if (dataModel instanceof DataSet) {
+                if (!((DataSet) dataModel).isDiscrete()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void setIndex(int index) {
+        if (index < -1) {
+            throw new IllegalArgumentException("Must be in >= -1: " + index);
+        }
+
         this.index = index;
-        firePropertyChange(new PropertyChangeEvent(this, "modelChanged", null, null));
     }
 
     public int getIndex() {
         return index;
     }
 
-    private Map<Graph, Double> scoreGraphs(Fgs ges, Graph graph) {
-        Map<Graph, Double> dagsToScores = new HashMap<Graph, Double>();
-
-        if (false) {
-            final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
-
-            for (Graph _graph : dags) {
-                double score = ges.scoreDag(_graph);
-                dagsToScores.put(_graph, score);
-            }
-        }
-
-        return dagsToScores;
-    }
-
     public Graph getGraph() {
-        return getResultGraph();
-//        return getTopGraphs().get(getIndex()).getGraph();
+        if (getIndex() >= 0) {
+            return getTopGraphs().get(getIndex()).getGraph();
+        } else {
+            return getResultGraph();
+        }
     }
+
 
     /**
-     * @return the names of the triple classifications. Coordinates with getTriplesList.
+     * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
-        names.add("Colliders");
-        names.add("Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
-        Graph graph = getGraph();
-        triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
-        triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -286,16 +349,21 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
-    private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
-        }
-        return false;
+    @Override
+    public Map<String, String> getParamSettings() {
+        super.getParamSettings();
+        Parameters params = getParams();
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
+        return paramSettings;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "FGS";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -310,7 +378,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }
@@ -319,13 +387,20 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 
-
     public List<ScoredGraph> getTopGraphs() {
         return this.topGraphs;
     }
 
+    public String getBayesFactorsReport(Graph dag) {
+        if (fgs == null) {
+            return "Please re-run IMaGES.";
+        } else {
+            return fgs.logEdgeBayesFactorsString(dag);
+        }
+    }
+
     public GraphScorer getGraphScorer() {
-        return null;
+        return fgs;
     }
 }
 

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
@@ -35,10 +36,10 @@ public class DirichletBayesDataWrapper extends DataWrapper
         implements SessionModel, UnlistedSessionModel {
     static final long serialVersionUID = 23L;
 
-    public DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,
-            BayesDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isLatentDataSaved();
+    private DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,
+                                      Parameters params) {
+        int sampleSize = params.getInt("sampleSize", 1000);
+        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
         setDataModel(wrapper.getDirichletBayesIm().simulateData(sampleSize, latentDataSaved));
         setSourceGraph(wrapper.getDirichletBayesIm().getDag());
         LogDataUtils.logDataModelList("Data simulated from a Dirichlet Bayes net.", getDataModelList());
@@ -47,13 +48,10 @@ public class DirichletBayesDataWrapper extends DataWrapper
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new DirichletBayesDataWrapper(
-                DirichletBayesImWrapper.serializableInstance(),
-                BayesDataParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

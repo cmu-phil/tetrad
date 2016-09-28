@@ -39,7 +39,7 @@ public interface FinalizingParameterEditor extends ParameterEditor {
     /**
      * Tells the editor to commit any final details before it is closed (only called when the
      * user selects "Ok" or something of that nature). If false is returned the edit is considered
-     * invalid and it will be treated as if the user selected "cancel".
+     * invalid and it will be treated as if the user selected "cancelAll".
      *
      * @return - true iff the edit was committed.
      */

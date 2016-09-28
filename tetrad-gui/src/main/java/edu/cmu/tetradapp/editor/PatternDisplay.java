@@ -150,7 +150,7 @@ public class PatternDisplay extends JPanel implements GraphEditable {
         JScrollPane jScrollPane = new JScrollPane(workbench);
         jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
-        graphPanel.setBorder(new TitledBorder("DAG in Pattern"));
+        graphPanel.setBorder(new TitledBorder("DAG in forbid_latent_common_causes"));
         b2.add(graphPanel);
         b.add(b2);
 
@@ -162,7 +162,7 @@ public class PatternDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {

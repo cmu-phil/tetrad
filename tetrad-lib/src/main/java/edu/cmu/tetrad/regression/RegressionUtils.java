@@ -50,11 +50,11 @@ public class RegressionUtils {
                 throw new IllegalArgumentException("Data variable not in graph: " + target);
             }
 
-            Set<Node> _regressors = new HashSet<Node>(graph.getParents(_target));
+            Set<Node> _regressors = new HashSet<>(graph.getParents(_target));
 
             System.out.println("For " + target + " regressors are " + _regressors);
 
-            List<Node> regressors = new LinkedList<Node>();
+            List<Node> regressors = new LinkedList<>();
 
             for (Node node : _regressors) {
                 regressors.add(dataSet.getVariable(node.getName()));

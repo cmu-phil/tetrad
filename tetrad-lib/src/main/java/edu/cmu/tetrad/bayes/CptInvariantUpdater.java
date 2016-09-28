@@ -130,9 +130,6 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     }
 
     public void setEvidence(Evidence evidence) {
-        System.out.println("*** " + evidence);
-
-
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -145,7 +142,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         this.evidence = evidence;
 
         // Create the manipulated Bayes Im.
-        Dag graph = bayesIm.getBayesPm().getDag();
+        Graph graph = bayesIm.getBayesPm().getDag();
         Dag manipulatedGraph = createManipulatedGraph(graph);
         BayesPm manipulatedBayesPm = createManipulatedBayesPm(manipulatedGraph);
         this.manipulatedBayesIm = createdManipulatedBayesIm(manipulatedBayesPm);

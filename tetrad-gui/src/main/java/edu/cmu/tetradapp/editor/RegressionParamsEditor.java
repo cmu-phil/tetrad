@@ -21,14 +21,13 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.RegressionParams;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * Edits parameters for Markov blanket search algorithms.
+ * Edits parameters for Markov blanket search algorithm.
  *
  * @author Ricardo Silva (GES version)
  * @author Frank Wimberly adapted for PCX.
@@ -36,7 +35,7 @@ import java.awt.*;
  */
 public final class RegressionParamsEditor extends JPanel implements ParameterEditor {
 
-    private RegressionParams params;
+    private Parameters params;
     private Object[] parentModels;
 
     /**
@@ -56,8 +55,8 @@ public final class RegressionParamsEditor extends JPanel implements ParameterEdi
         return true;
     }
 
-    public void setParams(Params params) {
-        this.params = (RegressionParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {

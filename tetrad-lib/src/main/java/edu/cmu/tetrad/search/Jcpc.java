@@ -34,13 +34,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the JCPC algorithm.
+ * Implements the ICPC algorithm.
  *
  * @author Joseph Ramsey (this version).
  */
 public class Jcpc implements GraphSearch {
+    private Score score;
     private int numAdded;
     private int numRemoved;
+    private MeekRules meekRules;
 
     public enum PathBlockingSet {
         LARGE, SMALL
@@ -110,12 +112,17 @@ public class Jcpc implements GraphSearch {
     /**
      * Constructs a JPC search with the given independence oracle.
      */
-    public Jcpc(IndependenceTest independenceTest) {
+    public Jcpc(IndependenceTest independenceTest, Score score) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
 
+        if (score == null) {
+            throw new NullPointerException();
+        }
+
         this.independenceTest = independenceTest;
+        this.score = score;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -131,6 +138,10 @@ public class Jcpc implements GraphSearch {
 
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public Score getScore() {
+        return score;
     }
 
     public IKnowledge getKnowledge() {
@@ -181,28 +192,21 @@ public class Jcpc implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
+
+        meekRules = new MeekRules();
+        meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        meekRules.setKnowledge(knowledge);
+        meekRules.setUndirectUnforcedEdges(true);
+
         long time1 = System.currentTimeMillis();
 
         List<Graph> graphs = new ArrayList<Graph>();
         IndependenceTest test = getIndependenceTest();
+        Score score = getScore();
 
-        Graph graph;
-
-        if (startFromEmptyGraph) {
-            graph = new EdgeListGraph(test.getVariables());
-        } else {
-            if (initialGraph != null) {
-                graph = initialGraph;
-            } else {
-                Cpc search = new Cpc(test);
-                search.setKnowledge(getKnowledge());
-                search.setDepth(getCpcDepth());
-                search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-                graph = search.search();
-            }
-        }
-
-//        undirectedGraph(graph);
+        PcMax search = new PcMax(test);
+        search.setKnowledge(getKnowledge());
+        Graph graph = search.search();
 
         // This is the list of all changed nodes from the last iteration
         List<Node> nodes = graph.getNodes();
@@ -211,9 +215,12 @@ public class Jcpc implements GraphSearch {
 
         int minNumErrors = Integer.MAX_VALUE;
         Graph outGraph = null;
+        Graph oldGraph;
 
         LOOP:
         while (++count < getMaxIterations()) {
+            oldGraph = graph;
+//            graph = new EdgeListGraph(graph);
             TetradLogger.getInstance().log("info", "Round = " + (count + 1));
             System.out.println("Round = " + (count + 1));
             numAdded = 0;
@@ -234,7 +241,7 @@ public class Jcpc implements GraphSearch {
                         System.out.println(index + " of " + numEdges);
                     }
 
-                    tryAddingEdge(test, graph, nodes, graph, i, j);
+                    tryAddingEdge(test, graph, nodes, oldGraph, i, j);
 
                     Node x = nodes.get(i);
                     Node y = nodes.get(j);
@@ -242,14 +249,14 @@ public class Jcpc implements GraphSearch {
                     if (graph.getAdjacentNodes(x).size() > getSoftmaxAdjacencies()) {
                         for (Node w : graph.getAdjacentNodes(x)) {
                             if (w == y) continue;
-                            tryRemovingEdge(test, graph, graph, graph.getEdge(x, w));
+                            tryRemovingEdge(test, graph, oldGraph, graph.getEdge(x, w));
                         }
                     }
 
                     if (graph.getAdjacentNodes(y).size() > getSoftmaxAdjacencies()) {
                         for (Node w : graph.getAdjacentNodes(y)) {
                             if (w == x) continue;
-                            tryRemovingEdge(test, graph, graph, graph.getEdge(y, w));
+                            tryRemovingEdge(test, graph, oldGraph, graph.getEdge(y, w));
                         }
                     }
                 }
@@ -283,8 +290,15 @@ public class Jcpc implements GraphSearch {
                 outGraph = graph1;
             }
 
-            orientCpc(graph, getKnowledge(), getOrientationDepth(), test);
-            graphs.add(graph1);
+            for (Node node : nodes) {
+                reorientNode(node, graph);
+//            applyMeek(Collections.singletonList(node));
+            }
+
+            applyMeek(nodes, graph);
+
+//            orientCpc(graph, getKnowledge(), getOrientationDepth(), test);
+            graphs.add(graph);
 
             for (int i = graphs.size() - 2; i >= 0; i--) {
                 if (graphs.get(graphs.size() - 1).equals(graphs.get(i))) {
@@ -300,9 +314,103 @@ public class Jcpc implements GraphSearch {
         long time2 = System.currentTimeMillis();
         this.elapsedTime = time2 - time1;
 
-        orientCpc(outGraph, getKnowledge(), getOrientationDepth(), test);
-
+//        for (Node node : nodes) {
+//            reorientNode(node, graph);
+////            applyMeek(Collections.singletonList(node));
+//        }
+//
+//        applyMeek(nodes, graph);
+////
+//        search = new PcMaxLocal(test);
+//        search.setKnowledge(getKnowledge());
+//        search.setInitialGraph(new EdgeListGraph(graph));
+//        search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+//        graph = search.search();
+//
+//        orientCpc(outGraph, getKnowledge(), getOrientationDepth(), test);
         return outGraph;
+    }
+
+    private void applyMeek(List<Node> y, Graph graph) {
+        List<Node> start = new ArrayList<>();
+        for (Node n : y) start.add(n);
+        meekRules.orientImplied(graph, start);
+    }
+
+    private void reorientNode(Node y, Graph graph) {
+        unorientAdjacents(y, graph);
+        orientLocalColliders(y, graph);
+    }
+
+    private void unorientAdjacents(Node y, Graph graph) {
+        for (Node z : graph.getAdjacentNodes(y)) {
+            if (graph.isParentOf(y, z)) continue;
+            graph.removeEdge(z, y);
+            graph.addUndirectedEdge(z, y);
+        }
+    }
+
+    private void orientLocalColliders(Node y, Graph graph) {
+        List<Node> adjy = graph.getAdjacentNodes(y);
+
+        for (int i = 0; i < adjy.size(); i++) {
+            for (int j = i + 1; j < adjy.size(); j++) {
+                Node z = adjy.get(i);
+                Node w = adjy.get(j);
+
+                if (graph.isAncestorOf(y, z)) continue;
+                if (graph.isAncestorOf(y, w)) continue;
+
+//                if (z == w) continue;
+                if (graph.isAdjacentTo(z, w)) continue;
+                List<Node> cond = sepset(z, w, graph);
+
+                if (cond != null && !cond.contains(y)) {
+                    graph.setEndpoint(z, y, Endpoint.ARROW);
+                    graph.setEndpoint(w, y, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+    private List<Node> sepset(Node x, Node y, Graph graph) {
+        if (x == y) throw new IllegalArgumentException("Can't have x == y.");
+
+        {
+            List<Node> adj = graph.getAdjacentNodes(x);
+            adj.remove(y);
+
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                List<Node> cond = GraphUtils.asList(choice, adj);
+
+                if (getIndependenceTest().isIndependent(x, y, cond)) {
+//                    if (recordSepsets) sepsetMap.set(x, y, cond);
+                    return cond;
+                }
+            }
+        }
+
+        {
+            List<Node> adj = graph.getAdjacentNodes(y);
+            adj.remove(x);
+
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                List<Node> cond = GraphUtils.asList(choice, adj);
+
+                if (getIndependenceTest().isIndependent(x, y, cond)) {
+//                    if (recordSepsets) sepsetMap.set(x, y, cond);
+                    return cond;
+                }
+            }
+        }
+
+        return null;
     }
 
     private void tryAddingEdge(IndependenceTest test, Graph graph, List<Node> _changedNodes, Graph oldGraph, int i, int j) {
@@ -543,9 +651,10 @@ public class Jcpc implements GraphSearch {
         List<Node> nodes = graph.getNodes();
         Set<Node> colliderNodes = new HashSet<Node>();
 
+        SepsetsMinScore sepsetProducer = new SepsetsMinScore(graph, test, null, -1);
 
         for (Node y : nodes) {
-            orientCollidersAboutNode(graph, test, depth, knowledge, colliderNodes, y);
+            orientCollidersAboutNode(graph, test, depth, knowledge, colliderNodes, y, sepsetProducer);
         }
 
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
@@ -554,7 +663,7 @@ public class Jcpc implements GraphSearch {
     }
 
     private void orientCollidersAboutNode(Graph graph, IndependenceTest test, int depth, IKnowledge knowledge,
-                                          Set<Node> colliderNodes, Node y) {
+                                          Set<Node> colliderNodes, Node y, SepsetProducer sepsetProducer) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(y);
 
         if (adjacentNodes.size() < 2) {
@@ -572,21 +681,46 @@ public class Jcpc implements GraphSearch {
                 continue;
             }
 
-            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
+            List<Node> sepset = sepsetProducer.getSepset(x, z);
 
-            if (type == SearchGraphUtils.CpcTripleType.COLLIDER &&
-                    isArrowpointAllowed(x, y, knowledge) &&
-                    isArrowpointAllowed(z, y, knowledge)) {
+            if (sepset == null) continue;
+
+            if (!sepset.contains(y)) {
+//                if (verbose) {
+//                    System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+//                }
+
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
                 colliderNodes.add(y);
                 TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
 //                    System.out.println(SearchLogUtils.colliderOrientedMsg(x, y, z));
-            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-                Triple triple = new Triple(x, y, z);
-                graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+
+//                colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
+//
+//                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
             }
+//            else {
+//                Triple triple = new Triple(x, y, z);
+//                graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+//            }
+
+//            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
+//
+//            if (type == SearchGraphUtils.CpcTripleType.COLLIDER &&
+//                    isArrowpointAllowed(x, y, knowledge) &&
+//                    isArrowpointAllowed(z, y, knowledge)) {
+//                graph.setEndpoint(x, y, Endpoint.ARROW);
+//                graph.setEndpoint(z, y, Endpoint.ARROW);
+//
+//                colliderNodes.add(y);
+//                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+////                    System.out.println(SearchLogUtils.colliderOrientedMsg(x, y, z));
+//            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+//                Triple triple = new Triple(x, y, z);
+//                graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+//            }
         }
     }
 

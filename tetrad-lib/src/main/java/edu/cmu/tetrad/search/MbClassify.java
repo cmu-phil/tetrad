@@ -167,7 +167,7 @@ public class MbClassify implements DiscreteClassifier {
         System.out.println("subset vars = " + subset.getVariables());
 
         Pc patternSearch = new Pc(new IndTestChiSquare(subset, 0.05));
-//        patternSearch.setDepth(depth);
+//        patternSearch.setMaxIndegree(depth);
         Graph mbPattern = patternSearch.search();
 
 //        MbFanSearch search = new MbFanSearch(indTest, depth);
@@ -184,7 +184,7 @@ public class MbClassify implements DiscreteClassifier {
             }
         }
 
-        Dag selectedDag = MbUtils.getOneMbDag(mbPattern);
+        Graph selectedDag = MbUtils.getOneMbDag(mbPattern);
 
         TetradLogger.getInstance().log("details", "Selected DAG = " + selectedDag);
         TetradLogger.getInstance().log("details", "Vars = " + selectedDag.getNodes());

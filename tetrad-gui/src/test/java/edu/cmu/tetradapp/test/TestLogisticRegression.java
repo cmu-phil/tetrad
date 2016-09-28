@@ -21,17 +21,21 @@
 
 package edu.cmu.tetradapp.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Runs a test of logistic regression based on an example (South African heart
@@ -40,26 +44,23 @@ import junit.framework.TestSuite;
  *
  * @author Frank Wimberly
  */
-public class TestLogisticRegression extends TestCase {
+public class TestLogisticRegression {
 
-    public TestLogisticRegression(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown(){
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
-
+    @Test
     public void test1() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 3,
-                3, 3, false));
+
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                3, 3, 3, false));
+
+        System.out.println(graph);
+
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateDataRecursive(1000, false);
@@ -69,72 +70,27 @@ public class TestLogisticRegression extends TestCase {
         Node x3 = data.getVariable("X3");
         Node x4 = data.getVariable("X4");
         Node x5 = data.getVariable("X5");
-      
-    }
 
-//    public static void testLogRegRunner() {
-//
-//        //Test with discrete data.
-//
-//        String filenameD1 = "test_data/SAHDMod.dat";
-//        File fileD1 = new File(filenameD1);
-//
-//        //        FileReader frD1 = null;
-//
-//        double alpha = 0.05;
-//
-//        DataSet dds2;
-//
-//        try {
-//            DataReader reader = new DataReader();
-//            reader.setDelimiter(DelimiterType.TAB);
-//            reader.setMaxIntegralDiscrete(0);
-//            dds2 = reader.parseTabular(fileD1);
-//        }
-//        catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        DataWrapper dds2Wrapper = new DataWrapper(dds2);
-//
-//        LogisticRegressionParams params = new LogisticRegressionParams();
-//        params.setAlpha(alpha);
-//        params.setTargetName("chd");
-//        String[] regressorNames = {"sbp", "tobacco", "ldl", "famhist",
-//                "obesity", "alcohol", "age"};
-//        params.setRegressorNames(regressorNames);
-//
-//        LogisticRegressionRunner runner =
-//                new LogisticRegressionRunner(dds2Wrapper, params);
-//
-//        runner.execute();
-//        double[] coefficients = runner.getCoefficients();
-//
-//        for (int i = 0; i < coefficients.length; i++) {
-//
-//            System.out.println("Logistic Regression Coefficients Coefficients");
-//            System.out.println(i + " " + coefficients[i]);
-//        }
-//
-//        //See the South African heart disease example in Hastie, Tibshirani and Friedman,
-//        //"Elements of Statistical Learning".
-//        double[] correctCoefs =
-//                {-4.13, 0.006, 0.080, 0.185, 0.939, -0.035, 0.001, 0.043};
-//
-//        for (int i = 0; i < coefficients.length; i++) {
-//            assertEquals(correctCoefs[i], coefficients[i], 0.001);
-//        }
-//    }
+        Discretizer discretizer = new Discretizer(data);
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
+        discretizer.equalCounts(x1, 2);
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestLogisticRegression.class);
+        DataSet d2 = discretizer.discretize();
+
+        LogisticRegression regression = new LogisticRegression(d2);
+
+        List<Node> regressors = new ArrayList<>();
+
+        regressors.add(x2);
+        regressors.add(x3);
+        regressors.add(x4);
+        regressors.add(x5);
+
+        DiscreteVariable x1b = (DiscreteVariable) d2.getVariable("X1");
+
+        regression.regress(x1b, regressors);
+
+        System.out.println(regression);
     }
 }
 

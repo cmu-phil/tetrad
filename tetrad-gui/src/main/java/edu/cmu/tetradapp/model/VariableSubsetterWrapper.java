@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class VariableSubsetterWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public VariableSubsetterWrapper(DataWrapper wrapper) {
+    private VariableSubsetterWrapper(DataWrapper wrapper) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
         DataSet selection =
@@ -62,11 +62,10 @@ public class VariableSubsetterWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new VariableSubsetterWrapper(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

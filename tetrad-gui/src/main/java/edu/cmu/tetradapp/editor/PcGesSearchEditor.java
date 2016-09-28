@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -54,7 +55,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -70,73 +71,58 @@ public class PcGesSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given PcRunner.
      */
     public PcGesSearchEditor(PcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PcMaxRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PcStableRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PcPatternRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
-    public PcGesSearchEditor(JpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(CpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(VcpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(SampleVcpcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(VcpcFastRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(SampleVcpcFastRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(VcpcAltRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(MbfsPatternRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
     public PcGesSearchEditor(PcdRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(KpcRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
-    /**
-     * Opens up an editor to let the user view the given GesRunner.
-     */
-    public PcGesSearchEditor(GesRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
-    public PcGesSearchEditor(ImagesRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(PValueImproverWrapper runner) {
@@ -154,7 +140,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public PcGesSearchEditor(MmhcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public PcGesSearchEditor(LingamPatternRunner runner) {
@@ -174,6 +160,10 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public PcGesSearchEditor(InverseCorrelationRunner runner) {
+        super(runner, "Result Graph");
+    }
+
+    public PcGesSearchEditor(RandomMixedRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -202,7 +192,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
     }
 
@@ -222,7 +212,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         //JTabbedPane tabbedPane = new JTabbedPane();
         modelStatsText = new JTextArea();
         tabbedPane = new JTabbedPane();
-        tabbedPane.add("Pattern", workbenchScroll(resultLabel));
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
@@ -279,17 +269,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
-            MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
+            Parameters params = getAlgorithmRunner().getParams();
             JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
             preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
-            preventCycles.setSelected(params.isAggressivelyPreventCycles());
+            preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
 
             preventCycles.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JCheckBox box = (JCheckBox) e.getSource();
-                    MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
-                    params.setAggressivelyPreventCycles(box.isSelected());
+                    Parameters params = getAlgorithmRunner().getParams();
+                    params.set("aggressivelyPreventCycles", box.isSelected());
                 }
             });
 
@@ -330,7 +320,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-        Graph resultGraph = getAlgorithmRunner().getResultGraph();
+        Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
 
@@ -352,9 +342,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
-            PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeekRules();
+            Graph dag = SearchGraphUtils.dagFromPattern(resultGraph);
 
             DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
             String report;
@@ -394,9 +382,9 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
+            Graph pattern = new EdgeListGraphSingleConnections(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeekRules();
+            Graph dag = ptd.patternToDagMeek();
 
             ICovarianceMatrix dataSet = (ICovarianceMatrix) getAlgorithmRunner().getDataModel();
             String report = reportIfCovMatrix(dag, dataSet);
@@ -480,7 +468,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     private String reportIfDiscrete(Graph dag, DataSet dataSet) {
         List vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -497,7 +485,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -506,19 +494,23 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
 
-        BayesProperties properties = new BayesProperties(dataSet, dag);
-        properties.setGraph(dag);
-
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
         StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
-        buf.append("\nDf = ").append(properties.getPValueDf());
-        buf.append("\nChi square = ")
-                .append(nf.format(properties.getPValueChisq()));
-        buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
-        buf.append("\n\nH0: Completely disconnected graph.");
+
+        BayesProperties properties = new BayesProperties(dataSet);
+
+        double p = properties.getLikelihoodRatioP(dag);
+        double chisq = properties.getChisq();
+        double bic = properties.getBic();
+        double dof = properties.getDof();
+
+        buf.append("\nP  = ").append(p);
+        buf.append("\nDOF = ").append(dof);
+        buf.append("\nChiSq = ").append(nf.format(chisq));
+        buf.append("\nBIC = ").append(nf.format(bic));
+        buf.append("\n\nH0: Complete DAG.");
 
         return buf.toString();
     }
@@ -555,9 +547,9 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -600,7 +592,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getResultGraph();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -641,7 +633,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -653,15 +645,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        graph.removeEdge(edge);
-                    }
-                }
+//                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+//                for (Edge edge : graph.getEdges()) {
+//                    if (Edges.isBidirectedEdge(edge)) {
+//                        graph.removeEdge(edge);
+//                    }
+//                }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeekRules();
+                Graph dag = SearchGraphUtils.dagFromPattern(graph);
+
+//                PatternToDag search = new PatternToDag(new forbid_latent_common_causes(graph));
+//                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -719,14 +713,14 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
     private void addMixedTestMenuItems(JMenu test) {
         IndTestType testType = getTestType();
-        if (testType != IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
-            setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+        if (testType != IndTestType.MIXED_MLR) {
+            setTestType(IndTestType.MIXED_MLR);
         }
 
         ButtonGroup group = new ButtonGroup();
@@ -737,17 +731,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setTestType(IndTestType.MIXED_MLR);
             }
         });
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
@@ -768,72 +762,51 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        return getIndTestParamBox(getAlgorithmRunner().getParams());
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof GesIndTestParams) {
-            if (getAlgorithmRunner() instanceof IGesRunner) {
-                GesRunner gesRunner = ((GesRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataModel dataModel = gesRunner.getDataModel();
-                boolean discreteData = dataModel instanceof DataSet && ((DataSet) dataModel).isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
+        if (params instanceof Parameters) {
+            if (getAlgorithmRunner() instanceof IFgsRunner) {
+                return new FgsIndTestParamsEditor(params, ((IFgsRunner) getAlgorithmRunner()).getType());
             }
-
-            if (getAlgorithmRunner() instanceof ImagesRunner) {
-                ImagesRunner gesRunner = ((ImagesRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataSet dataSet = (DataSet) gesRunner.getDataModel();
-                boolean discreteData = dataSet.isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
-            }
-//            else if (getAlgorithmRunner() instanceof PValueImproverWrapper) {
-//                PValueImproverWrapper runner = ((PValueImproverWrapper) getAlgorithmRunner());
-//                GesIndTestParams params = (GesIndTestParams) indTestParams;
-//                boolean discreteData =
-//                        runner.getSelectedDataModel() instanceof RectangularDataSet;
-//                return new GesIndTestParamsEditor(params, discreteData);
-//            }
         }
 
-        if (indTestParams instanceof LagIndTestParams) {
+        if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(
-                    (LagIndTestParams) indTestParams);
+                     params);
         }
 
-        if (indTestParams instanceof GraphIndTestParams) {
-            return new IndTestParamsEditor((GraphIndTestParams) indTestParams);
+        if (params instanceof Parameters) {
+            return new IndTestParamsEditor(params);
         }
 
-        if (indTestParams instanceof DiscDetIndepParams) {
+        if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(
-                    (DiscDetIndepParams) indTestParams);
+                    params);
         }
 
-        if (indTestParams instanceof PcIndTestParams) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((PcIndTestParams) indTestParams);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((PcIndTestParams) indTestParams);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
-            return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
+            return new PcIndTestParamsEditor(params);
         }
 
-        return new IndTestParamsEditor(indTestParams);
+        return new IndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

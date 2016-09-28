@@ -39,7 +39,7 @@ public class ExpressionManager {
     /**
      * A mapping from tokens to their descriptors.
      */
-    private Map<String, ExpressionDescriptor> tokenMap = new HashMap<String, ExpressionDescriptor>();
+    private Map<String, ExpressionDescriptor> tokenMap = new HashMap<>();
 
 
     /**
@@ -47,7 +47,7 @@ public class ExpressionManager {
      */
     private List<ExpressionDescriptor> descriptors;
 
-    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+//    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
 
 
     /**
@@ -57,7 +57,7 @@ public class ExpressionManager {
 
 
     private ExpressionManager() {
-        this.descriptors = new ArrayList<ExpressionDescriptor>(listDescriptors());
+        this.descriptors = new ArrayList<>(listDescriptors());
         for (ExpressionDescriptor exp : this.descriptors) {
             if (this.tokenMap.containsKey(exp.getToken())) {
                 throw new IllegalStateException("Expression descriptors must have unique tokens, but " + exp.getToken()
@@ -98,7 +98,7 @@ public class ExpressionManager {
      * Builds all the descriptors.
      */
     private static List<ExpressionDescriptor> listDescriptors() {
-        List<ExpressionDescriptor> descriptors = new LinkedList<ExpressionDescriptor>();
+        List<ExpressionDescriptor> descriptors = new LinkedList<>();
 
         // For templating. "NEW" has to come before "N".
         descriptors.add(new NewExpressionDescriptor());
@@ -194,15 +194,6 @@ public class ExpressionManager {
 
     //================================ Inner class ==============================//
 
-    private static class Comp implements Comparator<ExpressionDescriptor> {
-        static final long serialVersionUID = 23L;
-
-        public int compare(ExpressionDescriptor o1, ExpressionDescriptor o2) {
-            return o1.getToken().compareTo(o2.getToken());
-        }
-
-    }
-
     /**
      * Addition
      */
@@ -211,7 +202,7 @@ public class ExpressionManager {
 
 
         public AdditionExpressionDescriptor() {
-            super("Addition", "+", Position.BOTH, true, true, true);
+            super("Addition", "+", Position.BOTH, true);
         }
 
 
@@ -245,7 +236,7 @@ public class ExpressionManager {
 
 
         public SubtractionExpressionDescriptor() {
-            super("Subtraction", "-", Position.INFIX, false, false, true);
+            super("Subtraction", "-", Position.INFIX, false);
         }
 
 
@@ -281,7 +272,7 @@ public class ExpressionManager {
 
 
         public CeilExpressionDescriptor() {
-            super("Ceil", "ceil", Position.PREFIX, false, false, true, "expr");
+            super("Ceil", "ceil", Position.PREFIX, false);
         }
 
 
@@ -305,7 +296,7 @@ public class ExpressionManager {
 
 
         public SignumExpressionDescriptor() {
-            super("Signum", "signum", Position.PREFIX, false, false, true, "expr");
+            super("Signum", "signum", Position.PREFIX, false);
         }
 
 
@@ -332,7 +323,7 @@ public class ExpressionManager {
 
 
         public CosExpressionDescriptor() {
-            super("Cosine", "cos", Position.PREFIX, false, false, true, "expr");
+            super("Cosine", "cos", Position.PREFIX, false);
         }
 
 
@@ -356,7 +347,7 @@ public class ExpressionManager {
 
 
         public CoshExpressionDescriptor() {
-            super("Hyperbolic Cosine", "cosh", Position.PREFIX, false, false, true, "expr");
+            super("Hyperbolic Cosine", "cosh", Position.PREFIX, false);
         }
 
 
@@ -380,7 +371,7 @@ public class ExpressionManager {
 
 
         public AcosExpressionDescriptor() {
-            super("Arc Cosine", "acos", Position.PREFIX, false, false, true, "expr");
+            super("Arc Cosine", "acos", Position.PREFIX, false);
         }
 
 
@@ -408,7 +399,7 @@ public class ExpressionManager {
 
 
         public FloorExpressionDescriptor() {
-            super("Floor", "floor", Position.PREFIX, false, false, true, "expr");
+            super("Floor", "floor", Position.PREFIX, false);
         }
 
 
@@ -435,7 +426,7 @@ public class ExpressionManager {
 
 
         public AbsoluteValueExpressionDescriptor() {
-            super("Abs", "abs", Position.PREFIX, false, false, true, "expr");
+            super("Abs", "abs", Position.PREFIX, false);
         }
 
 
@@ -459,7 +450,7 @@ public class ExpressionManager {
 
 
         public Log10ExpressionDescriptor() {
-            super("Log base 10", "log10", Position.PREFIX, false, false, true, "expr");
+            super("Log base 10", "log10", Position.PREFIX, false);
         }
 
 
@@ -487,7 +478,7 @@ public class ExpressionManager {
 
 
         public MultiplicationExpressionDescriptor() {
-            super("Multiplication", "*", Position.BOTH, true, true, true);
+            super("Multiplication", "*", Position.BOTH, true);
         }
 
 
@@ -518,7 +509,7 @@ public class ExpressionManager {
 
 
         public DivisionExpressionDescriptor() {
-            super("Division", "/", Position.BOTH, true, true, true);
+            super("Division", "/", Position.BOTH, true);
         }
 
 
@@ -546,7 +537,7 @@ public class ExpressionManager {
 
 
         public NaturalLogExpressionDescriptor() {
-            super("Log base e", "ln", Position.PREFIX, false, false, true, "expr");
+            super("Log base e", "ln", Position.PREFIX, false);
         }
 
 
@@ -573,7 +564,7 @@ public class ExpressionManager {
 
 
         public RandomExpressionDescriptor() {
-            super("Random", "random", Position.PREFIX, false, false, false);
+            super("Random", "random", Position.PREFIX, false);
         }
 
 
@@ -599,7 +590,7 @@ public class ExpressionManager {
 
 
         public RoundExpressionDescriptor() {
-            super("Round", "round", Position.PREFIX, false, false, true, "expr");
+            super("Round", "round", Position.PREFIX, false);
         }
 
 
@@ -627,7 +618,7 @@ public class ExpressionManager {
 
 
         public TanExpressionDescriptor() {
-            super("Tangent", "tan", Position.PREFIX, false, false, true, "expr");
+            super("Tangent", "tan", Position.PREFIX, false);
         }
 
 
@@ -651,7 +642,7 @@ public class ExpressionManager {
 
 
         public TanhExpressionDescriptor() {
-            super("Hyperbolic tangent", "tanh", Position.PREFIX, false, false, true, "expr");
+            super("Hyperbolic tangent", "tanh", Position.PREFIX, false);
         }
 
 
@@ -675,7 +666,7 @@ public class ExpressionManager {
 
 
         public AtanExpressionDescriptor() {
-            super("Arc Tangent", "atan", Position.PREFIX, false, false, true, "expr");
+            super("Arc Tangent", "atan", Position.PREFIX, false);
         }
 
 
@@ -699,7 +690,7 @@ public class ExpressionManager {
 
 
         public LogisticExpressionDescriptor() {
-            super("Logistic", "logistic", Position.PREFIX, false, false, true, "expr");
+            super("Logistic", "logistic", Position.PREFIX, false);
         }
 
 
@@ -727,7 +718,7 @@ public class ExpressionManager {
 
 
         public SquareRootExpressionDescriptor() {
-            super("Square Root", "sqrt", Position.PREFIX, false, false, true, "expr");
+            super("Square Root", "sqrt", Position.PREFIX, false);
         }
 
 
@@ -754,7 +745,7 @@ public class ExpressionManager {
 
 
         public SinExpressionDescriptor() {
-            super("Sine", "sin", Position.PREFIX, false, false, true, "expr");
+            super("Sine", "sin", Position.PREFIX, false);
         }
 
 
@@ -778,7 +769,7 @@ public class ExpressionManager {
 
 
         public SinhExpressionDescriptor() {
-            super("Sinh", "sinh", Position.PREFIX, false, false, true, "expr");
+            super("Sinh", "sinh", Position.PREFIX, false);
         }
 
 
@@ -802,7 +793,7 @@ public class ExpressionManager {
 
 
         public AsinExpressionDescriptor() {
-            super("Arc Sine", "asin", Position.PREFIX, false, false, true, "expr");
+            super("Arc Sine", "asin", Position.PREFIX, false);
         }
 
 
@@ -831,7 +822,7 @@ public class ExpressionManager {
 
 
         public PowExpressionDescriptor() {
-            super("Power", "pow", Position.PREFIX, false, false, true, "expr", "expr");
+            super("Power", "pow", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -859,7 +850,7 @@ public class ExpressionManager {
 
 
         public PowExpressionDescriptor2() {
-            super("Power", "^", Position.INFIX, false, false, true, "expr", "expr");
+            super("Power", "^", Position.INFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -886,7 +877,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ExpExpressionDescriptor() {
-            super("Exponential", "exp", Position.PREFIX, false, false, true, "expr");
+            super("Exponential", "exp", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -912,7 +903,7 @@ public class ExpressionManager {
 
 
         public MaxExpressionDescriptor() {
-            super("Maximum", "max", Position.PREFIX, false, true, true, "expr", "expr");
+            super("Maximum", "max", Position.PREFIX, true);
         }
 
 
@@ -942,7 +933,7 @@ public class ExpressionManager {
 
 
         public MinExpressionDescriptor() {
-            super("Minimum", "min", Position.PREFIX, false, true, true, "expr", "expr");
+            super("Minimum", "min", Position.PREFIX, true);
         }
 
 
@@ -971,7 +962,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ChiSquareExpressionDescriptor() {
-            super("Chi Square", "ChiSquare", Position.PREFIX, false, false, true, "expr");
+            super("Chi Square", "ChiSquare", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -985,14 +976,16 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     final ChiSquaredDistribution distribution = new ChiSquaredDistribution(randomGenerator, e1);
                     return distribution.sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
-                    return new ChiSquaredDistribution(e1);
+                    return new ChiSquaredDistribution(randomGenerator, e1);
                 }
             };
         }
@@ -1002,7 +995,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GammaExpressionDescriptor() {
-            super("Gamma", "Gamma", Position.PREFIX, false, false, true, "expr");
+            super("Gamma", "Gamma", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1016,6 +1009,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     final GammaDistribution distribution = new GammaDistribution(randomGenerator, e1, e2);
@@ -1023,6 +1017,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new GammaDistribution(randomGenerator, e1, e2);
@@ -1035,7 +1030,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public BetaExpressionDescriptor() {
-            super("Beta", "Beta", Position.PREFIX, false, false, true, "expr");
+            super("Beta", "Beta", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1049,12 +1044,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new BetaDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new BetaDistribution(randomGenerator, e1, e2);
@@ -1067,7 +1064,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public CauchyExpressionDescriptor() {
-            super("Cauchy", "Cauchy", Position.PREFIX, false, false, true, "expr");
+            super("Cauchy", "Cauchy", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1081,12 +1078,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new CauchyDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new CauchyDistribution(randomGenerator, e1, e2);
@@ -1100,7 +1099,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public FExpressionDescriptor() {
-            super("FDist", "FDist", Position.PREFIX, false, false, true, "expr");
+            super("FDist", "FDist", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1114,12 +1113,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new FDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new FDistribution(randomGenerator, e1, e2);
@@ -1132,7 +1133,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GumbelExpressionDescriptor() {
-            super("Gumbel", "Gumbel", Position.PREFIX, false, false, true, "expr");
+            super("Gumbel", "Gumbel", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1146,12 +1147,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new GumbelDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new GumbelDistribution(randomGenerator, e1, e2);
@@ -1164,7 +1167,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LaplaceExpressionDescriptor() {
-            super("Laplace", "Laplace", Position.PREFIX, false, false, true, "expr");
+            super("Laplace", "Laplace", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1178,12 +1181,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LaplaceDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LaplaceDistribution(randomGenerator, e1, e2);
@@ -1196,7 +1201,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LevyExpressionDescriptor() {
-            super("Levy", "Levy", Position.PREFIX, false, false, true, "expr");
+            super("Levy", "Levy", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1210,12 +1215,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LevyDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LevyDistribution(randomGenerator, e1, e2);
@@ -1228,7 +1235,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NakagamiExpressionDescriptor() {
-            super("Nakagami", "Nakagami", Position.PREFIX, false, false, true, "expr");
+            super("Nakagami", "Nakagami", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1242,12 +1249,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NakagamiDistribution(randomGenerator, e1, e2, 1.0E-9D).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NakagamiDistribution(randomGenerator, e1, e2, 1.0E-9D);
@@ -1260,7 +1269,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ParetoExpressionDescriptor() {
-            super("Pareto", "Pareto", Position.PREFIX, false, false, true, "expr");
+            super("Pareto", "Pareto", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1274,12 +1283,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new ParetoDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new ParetoDistribution(randomGenerator, e1, e2);
@@ -1292,7 +1303,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TriangularExpressionDescriptor() {
-            super("Triangular", "Triangular", Position.PREFIX, false, false, true, "expr");
+            super("Triangular", "Triangular", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1306,6 +1317,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     double e3 = getExpressions().get(2).evaluate(context);
@@ -1313,6 +1325,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     double e3 = getExpressions().get(2).evaluate(context);
@@ -1326,7 +1339,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public UniformExpressionDescriptor() {
-            super("Uniform", "Uniform", Position.PREFIX, false, false, true, "expr");
+            super("Uniform", "Uniform", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1340,12 +1353,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2);
@@ -1358,7 +1373,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public UExpressionDescriptor() {
-            super("Uniform", "U", Position.PREFIX, false, false, true, "expr");
+            super("Uniform", "U", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1372,12 +1387,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2);
@@ -1390,7 +1407,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public WeibullExpressionDescriptor() {
-            super("Weibull", "Weibull", Position.PREFIX, false, false, true, "expr");
+            super("Weibull", "Weibull", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1404,12 +1421,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new WeibullDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new WeibullDistribution(randomGenerator, e1, e2);
@@ -1422,7 +1441,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public PoissonExpressionDescriptor() {
-            super("Poisson", "Poisson", Position.PREFIX, false, false, true, "expr");
+            super("Poisson", "Poisson", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1436,6 +1455,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
                     return new PoissonDistribution(randomGenerator, e1, 1.0E-12D, 10000000).sample();
@@ -1446,6 +1466,7 @@ public class ExpressionManager {
                 }
 
                 public IntegerDistribution getIntegerDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
                     return new PoissonDistribution(randomGenerator, e1, 1.0E-12D, 10000000);
@@ -1458,7 +1479,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public IndicatorExpressionDescriptor() {
-            super("Indicator", "Indicator", Position.PREFIX, false, false, true, "expr");
+            super("Indicator", "Indicator", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1512,7 +1533,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ExponentialExpressionDescriptor() {
-            super("ExponentialDist", "ExponentialDist", Position.PREFIX, false, false, true, "expr");
+            super("ExponentialDist", "ExponentialDist", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1526,6 +1547,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
 
                     double e1 = exp1.evaluate(context);
@@ -1535,6 +1557,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
 
                     double e1 = exp1.evaluate(context);
@@ -1553,20 +1576,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LogNormalExpressionDescriptor() {
-            super("Log Normal", "LogNormal", Position.PREFIX, false, false, true, "expr");
+            super("LogNormal", "LogNormal", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
-            if (expressions.length != 1) {
-                throw new ExpressionInitializationException("Exp must have one argument.");
+            if (expressions.length != 2) {
+                throw new ExpressionInitializationException("Exp must have two arguments.");
             }
 
             return new AbstractExpression("LogNormal", Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     Expression exp2 = getExpressions().get(1);
 
@@ -1582,6 +1606,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     Expression exp2 = getExpressions().get(1);
 
@@ -1605,7 +1630,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NormalExpressionDescriptor() {
-            super("Normal", "Normal", Position.PREFIX, false, false, true, "expr");
+            super("Normal", "Normal", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1619,12 +1644,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2);
@@ -1637,7 +1664,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TruncNormalExpressionDescriptor() {
-            super("TruncNormal", "TruncNormal", Position.PREFIX, false, false, true, "expr");
+            super("TruncNormal", "TruncNormal", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1678,7 +1705,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NExpressionDescriptor() {
-            super("Normal", "N", Position.PREFIX, false, false, true, "expr");
+            super("Normal", "N", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1692,6 +1719,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     final NormalDistribution distribution = new NormalDistribution(randomGenerator, e1, e2);
@@ -1701,9 +1729,10 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
-                    return new NormalDistribution(e1, e2);
+                    return new NormalDistribution(randomGenerator, e1, e2);
                 }
             };
         }
@@ -1713,7 +1742,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public DiscreteExpressionDescriptor() {
-            super("Discrete", "Discrete", Position.PREFIX, false, false, true, "expr");
+            super("Discrete", "Discrete", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1775,7 +1804,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public MixtureDescriptor() {
-            super("Mixture", "Mixture", Position.PREFIX, false, false, true, "expr");
+            super("Mixture", "Mixture", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1830,7 +1859,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public StudentTExpressionDescriptor() {
-            super("StudentT", "StudentT", Position.PREFIX, false, false, true, "expr");
+            super("StudentT", "StudentT", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1844,15 +1873,17 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
-                    return new TDistribution(e1).sample();
+                    return new TDistribution(randomGenerator, e1).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
-                    return new TDistribution(e1);
+                    return new TDistribution(randomGenerator, e1);
                 }
             };
         }
@@ -1892,7 +1923,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public SplitExpressionDescriptor() {
-            super("Split", "Split", Position.PREFIX, false, false, true, "expr");
+            super("Split", "Split", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -1959,7 +1990,7 @@ public class ExpressionManager {
 
 
         public AndExpressionDescriptor() {
-            super("And", "AND", Position.PREFIX, false, true, true, "expr", "expr");
+            super("And", "AND", Position.PREFIX, true);
         }
 
 
@@ -1993,7 +2024,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public OrExpressionDescriptor() {
-            super("Or", "OR", Position.PREFIX, false, true, true, "expr", "expr");
+            super("Or", "OR", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2022,7 +2053,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public XOrExpressionDescriptor() {
-            super("Exclusive or", "XOR", Position.PREFIX, false, false, true, "expr", "expr");
+            super("Exclusive or", "XOR", Position.PREFIX, false);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2048,7 +2079,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LessThanExpressionDescriptor() {
-            super("Less Than", "<", Position.BOTH, true, true, true);
+            super("Less Than", "<", Position.BOTH, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2073,7 +2104,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LessThanOrEqualExpressionDescriptor() {
-            super("Less Than Or Equals", "<=", Position.BOTH, true, true, true);
+            super("Less Than Or Equals", "<=", Position.BOTH, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2098,7 +2129,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public EqualsExpressionDescriptor() {
-            super("Equals", "=", Position.BOTH, true, true, true);
+            super("Equals", "=", Position.BOTH, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2123,7 +2154,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GreaterThanExpressionDescriptor() {
-            super("Greater Than", ">", Position.BOTH, true, true, true);
+            super("Greater Than", ">", Position.BOTH, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2148,7 +2179,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GreaterThanOrEqualExpressionDescriptor() {
-            super("Greater Than Or Equals", ">=", Position.BOTH, true, true, true);
+            super("Greater Than Or Equals", ">=", Position.BOTH, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2173,7 +2204,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public IfExpressionDescriptor() {
-            super("If", "IF", Position.PREFIX, true, true, true);
+            super("If", "IF", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2199,7 +2230,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor() {
-            super("New Parameter", "NEW", Position.PREFIX, true, true, false);
+            super("New Parameter", "NEW", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2225,7 +2256,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor2() {
-            super("New Parameter", "new", Position.PREFIX, true, true, false);
+            super("New Parameter", "new", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2251,7 +2282,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor() {
-            super("Template Sum", "TSUM", Position.PREFIX, true, true, false);
+            super("Template Sum", "TSUM", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2273,7 +2304,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor2() {
-            super("Template Sum", "tsum", Position.PREFIX, true, true, false);
+            super("Template Sum", "tsum", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2295,7 +2326,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor() {
-            super("Template Product", "TPROD", Position.PREFIX, true, true, false);
+            super("Template Product", "TPROD", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2317,7 +2348,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor2() {
-            super("Template Product", "tprod", Position.PREFIX, true, true, false);
+            super("Template Product", "tprod", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2342,7 +2373,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public DiscErrorExpressionDescriptor() {
-            super("DiscError", "DiscError", Position.PREFIX, false, false, true, "expr");
+            super("DiscError", "DiscError", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
@@ -2411,7 +2442,7 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public SwitchExpressionDescriptor() {
-            super("Switch", "Switch", Position.PREFIX, true, true, true);
+            super("Switch", "Switch", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {

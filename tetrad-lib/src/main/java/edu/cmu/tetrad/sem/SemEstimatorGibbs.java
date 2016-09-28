@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -46,12 +44,6 @@ import java.util.List;
 public final class SemEstimatorGibbs {
     static final long serialVersionUID = 23L;
 
-    /**
-     * For now, we are moving SemEstimatorGibbsParams variables into this
-     * class for easier testing
-     */
-
-    private double[][] sampleCovars; // why is this never used?
     private int numIterations;
     private double stretch1;
     private double stretch2;
@@ -73,19 +65,11 @@ public final class SemEstimatorGibbs {
     private ParamConstraint[] paramConstraints;
 
     /**
-     * An instance containing the freeParameters of this run.  These will eventually
-     * be specified by the user via the GUI.
-     */
-    //private SemEstimatorGibbsParams params;
-
-    /**
      * The initial semIm, obtained via params.
      */
     private SemIm startIm;
 
     private TetradMatrix priorCov;
-
-    //private TetradMatrix sampleCovar;
 
     /**
      * The most recently estimated model, or null if no model has been estimated
@@ -109,8 +93,6 @@ public final class SemEstimatorGibbs {
      * @param flatPrior     whether or not the prior is informative
      * @param stretch       scaling for the variance
      * @param numIterations number of times to iterate sampler
-     * @return a new SemEstimator for the given SemPm and continuous data set.
-     * (Uses a default optimizer.)
      */
 
     // using different constructor for now
@@ -120,7 +102,10 @@ public final class SemEstimatorGibbs {
     //	this.params = params;
     //}
     public SemEstimatorGibbs(SemPm semPm, SemIm startIm, double[][] sampleCovars, boolean flatPrior, double stretch, int numIterations) {
-        this.sampleCovars = sampleCovars;
+        /*
+      For now, we are moving SemEstimatorGibbsParams variables into this
+      class for easier testing
+     */
         this.semPm = semPm;
         this.startIm = startIm;
         this.flatPrior = flatPrior;
@@ -129,14 +114,8 @@ public final class SemEstimatorGibbs {
         this.numIterations = numIterations;
         this.tolerance = 0.0001;
         this.priorVariance = 16;
+        this.priorCov = new TetradMatrix(sampleCovars);
     }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-//    public static SemEstimatorGibbs serializableInstance() {
-    //       return new SemEstimatorGibbs(null, null);
-    //  }
 
     //==============================PUBLIC METHODS=========================//
 
@@ -152,10 +131,7 @@ public final class SemEstimatorGibbs {
         //as brent, neglogpost, etc.
 
         // Initialize method variables
-
-        boolean lrtest = false; // likelihood ratio test
-
-        List<Parameter> parameters = this.semPm.getParameters();                                     // semPm from constructor
+        List<Parameter> parameters = this.semPm.getParameters();
 
         int numParameters = parameters.size();
         double[][] parameterCovariances = new double[numParameters][numParameters];
@@ -191,25 +167,12 @@ public final class SemEstimatorGibbs {
             this.priorCov = new TetradMatrix(parameterCovariances);
 
         } else {
-            //Informative prior
-            // hence, multivariate normal truncated below zero for variance params
-
-            // mean in the prior is used as starting value... q^0 = m_0
-
-            if (!lrtest) {
-                // need something in here to ask for prior variance between 0 and 500
-            }
-
             System.out.println("Informative Prior. Exiting.");
             return;
         }
         //END PRIORINIT
 
         //GIBBSINIT
-        TetradMatrix impliedCovMatrix = this.startIm.getImplCovar(true); // why is this never used?
-        //GIBBSINIT DONE
-
-
         SemIm posteriorIm = new SemIm(this.startIm);
 
         List postFreeParams = posteriorIm.getFreeParameters();
@@ -219,7 +182,6 @@ public final class SemEstimatorGibbs {
         for (int iter = 1; iter <= this.numIterations; iter++) {
             System.out.println(iter);
 
-            PARAMETERS:
             for (int param = 0; param < postFreeParams.size(); param++) {
 
                 Parameter p = parameters.get(param);
@@ -469,7 +431,7 @@ public final class SemEstimatorGibbs {
         // this is only called when flatprior is false, which it will never be with the getModel code
 
         double answer = 0.0;
-        int n = 0;
+        int n = dataSet.columns();
         int numParameters = parameters.size();
         double[] xvec = new double[numParameters];
         double[] temp = new double[numParameters];
@@ -543,56 +505,52 @@ public final class SemEstimatorGibbs {
     }
 
 
-    private DataSet subset(DataSet dataSet, SemPm semPm) {
+//    private DataSet subset(DataSet dataSet, SemPm semPm) {
+//
+//        String[] measuredVarNames = semPm.getMeasuredVarNames();
+//        int[] varIndices = new int[measuredVarNames.length];
+//
+//        for (int i = 0; i < measuredVarNames.length; i++) {
+//            Node variable = dataSet.getVariable(measuredVarNames[i]);
+//            varIndices[i] = dataSet.getVariables().indexOf(variable);
+//        }
+//
+//        return dataSet.subsetColumns(varIndices);
+//    }
 
-        String[] measuredVarNames = semPm.getMeasuredVarNames();
-        int[] varIndices = new int[measuredVarNames.length];
 
-        for (int i = 0; i < measuredVarNames.length; i++) {
-            Node variable = dataSet.getVariable(measuredVarNames[i]);
-            varIndices[i] = dataSet.getVariables().indexOf(variable);
-        }
-
-        return dataSet.subsetColumns(varIndices);
-    }
-
-
-    /**
-     * Sets the means of variables in the SEM IM based on the given data set.
-     *
-     * @param semIm   SemIm
-     * @param dataSet The data produced by iterating the sampler
-     */
-    private void setMeans(SemIm semIm, TetradMatrix dataSet) {
-
-        double[] means = new double[semIm.getSemPm().getVariableNodes().size()];
-        int numMeans = means.length;
-
-        if (dataSet == null) {
-            for (int i = 0; i < numMeans; i++) {
-                means[i] = 0.0;
-            }
-        } else {
-            double[] sum = new double[numMeans];
-
-            for (int j = 0; j < dataSet.columns(); j++) {
-                for (int i = 0; i < dataSet.rows(); i++) {
-                    sum[j] += dataSet.get(i, j);
-                }
-
-                means[j] = sum[j] / dataSet.rows();
-            }
-        }
-
-        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
-            Node node = semIm.getVariableNodes().get(i);
-            semIm.setMean(node, means[i]);
-        }
-    }
-
-    public void setEstimatedSem(SemIm estimatedSem) {
-        this.estimatedSem = estimatedSem;
-    }
+//    /**
+//     * Sets the means of variables in the SEM IM based on the given data set.
+//     *
+//     * @param semIm   SemIm
+//     * @param dataSet The data produced by iterating the sampler
+//     */
+//    private void setMeans(SemIm semIm, TetradMatrix dataSet) {
+//
+//        double[] means = new double[semIm.getSemPm().getVariableNodes().size()];
+//        int numMeans = means.length;
+//
+//        if (dataSet == null) {
+//            for (int i = 0; i < numMeans; i++) {
+//                means[i] = 0.0;
+//            }
+//        } else {
+//            double[] sum = new double[numMeans];
+//
+//            for (int j = 0; j < dataSet.columns(); j++) {
+//                for (int i = 0; i < dataSet.rows(); i++) {
+//                    sum[j] += dataSet.get(i, j);
+//                }
+//
+//                means[j] = sum[j] / dataSet.rows();
+//            }
+//        }
+//
+//        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
+//            Node node = semIm.getVariableNodes().get(i);
+//            semIm.setMean(node, means[i]);
+//        }
+//    }
 
     public SemPm getSemPm() {
         return semPm;

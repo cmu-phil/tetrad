@@ -29,10 +29,10 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Tyler Gibson
  */
 public interface ExpressionDescriptor extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
 
-    public enum Position implements TetradSerializable {
+    enum Position implements TetradSerializable {
         NEITHER,
         INFIX,
         PREFIX,
@@ -48,17 +48,17 @@ public interface ExpressionDescriptor extends TetradSerializable {
     /**
      * @return the name that the expressions is known under.
      */
-    public String getName();
+    String getName();
 
     /**
      * @return the token that represents the expression, such as "+".
      */
-    public String getToken();
+    String getToken();
 
     /**
      * @return the signature that should be used.
      */
-    public ExpressionSignature getSignature();
+    ExpressionSignature getSignature();
 
     /**
      * @return the position that the expression can occur in.
@@ -70,7 +70,7 @@ public interface ExpressionDescriptor extends TetradSerializable {
      * Creates the actual expression that can be used to evaluate matters from the given
      * expressions.
      */
-    public Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
+    Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
 
 
 }

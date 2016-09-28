@@ -24,13 +24,13 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface for algorithms that optimize the fitting function of a SemIm model
+ * Interface for algorithm that optimize the fitting function of a SemIm model
  * by adjusting its freeParameters in search of a global maximum.
  *
  * @author Joseph Ramsey
  */
 public interface SemOptimizer extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Optimizes the fitting function of a Sem by adjusting its parameter

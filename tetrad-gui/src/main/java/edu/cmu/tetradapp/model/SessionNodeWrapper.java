@@ -48,7 +48,7 @@ public class SessionNodeWrapper extends GraphNode
      *
      * @serial Cannot be null.
      */
-    private SessionNode sessionNode;
+    private final SessionNode sessionNode;
 
     /**
      * The button type of the session node (some string defined in the config
@@ -74,7 +74,6 @@ public class SessionNodeWrapper extends GraphNode
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GraphNode serializableInstance() {
@@ -84,7 +83,7 @@ public class SessionNodeWrapper extends GraphNode
     //===========================PUBLIC METHODS=======================//
 
     /**
-     * @return the session name. (Should return the same as getName.)
+     * @return the session name. (Should return the same as getNode.)
      */
     public String getSessionName() {
         return this.sessionNode.getDisplayName();

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Introduction to TETRAD</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="white">Tetrad Overview</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h2>What is Tetrad? </h2>
+<p>Tetrad is a program for </p>
+<ul>
+  <li>creating, </li>
+  <li>simulating data from, </li>
+  <li>estimating, </li>
+  <li>testing, </li>
+  <li>predicting with, </li>
+  <li>and searching for </li>
+</ul>
+<p>causal/statistical models. </p>
+<p>The aim of the program is to provide sophisticated methods in a friendly interface 
+  requiring very little statistical sophistication of the user and no programming 
+  knowledge. It is not intended to replace flexible statistical programming systems 
+  such as Matlab, Splus or R. Tetrad is freeware that performs many of the functions 
+  in commercial programs such as Netica, Hugin, LISREL, EQS and other programs, 
+  and many discovery functions these commercial programs do not perform.</p>
+<p>Tetrad is unique in the suite of principled search ("exploration," "discovery") 
+  algorithms it provides--for example its ability to search when there may be 
+  unobserved confounders of measured variables, to search for models of latent 
+  structure, and to search for linear feedback models--and in the ability to calculate 
+  predictions of the effects of interventions or experiments based on a model. 
+  All of its search procedures are "pointwise consistent"--they are guaranteed 
+  to converge almost certainly to correct information about the true structure 
+  in the large sample limit, provided that structure and the sample data satisfy
+  various commonly made (but not always true!) assumptions.</p>
+<p>Tetrad is limited to models of categorical data (which can also be used for
+  ordinal data) and to linear models ("structural equation models') with a Normal
+  probability distribution, and to a <span style="font-style: italic;">very</span> 
+  limited class of time series models. The Tetrad programs describe causal models 
+  in three distinct parts or stages: a picture, representing a directed graph 
+  specifying hypothetical causal relations among the variables; a specification 
+  of the family of probability distributions and kinds of parameters associated 
+  with the graphical model; and a specification of the numerical values of those 
+  parameters.</p>
+<p>The program and its search algorithms have been developed over several years 
+  with support from the National Aeronautics and Space Administration and the 
+  Office of Naval Research. Joseph Ramsey has implemented most of the program, 
+  with substantial<br>
+  assistance from Frank Wimberly. Executable and Source code for all versions 
+  of Tetrad IV, and this manual, are copyrighted, 2004, by Clark Glymour, Richard 
+  Scheines, Peter Spirtes and Joseph Ramsey. The program may be freely downloaded 
+  and used without permission of copyright holders, who reserve the right to alter 
+  the program at any time without notification.</p>
+<p>The Tetrad suite of programs permits the user to do any of the following:</p>
+<ol>
+  <li><span style="font-style: italic;">Generate</span> a graphical statistical/causal&nbsp; 
+    model of any of the following kinds:</li>
+  <ol>
+    <li>Models for categorical data (Bayes networks);</li>
+    <li>Models for continuous data with variables having a Gaussian (Normal) joint
+      probability distribution;</li>
+    <li>Models for a limited class of time-series representing genetic regulatory 
+      networks..</li>
+  </ol>
+  <li><span style="font-style: italic;">Estimate </span>parameters of models of 
+    the following kinds:</li>
+  <ol>
+    <li>Models for categorical data in which all variables are recorded in the
+      data (no "latent" variables);</li>
+    <li>Models for continuous data with or without latent variables;</li>
+  </ol>
+  <li><span style="font-style: italic;">Test</span> the fit of models of any of 
+    the kinds listed in 2. above.</li>
+  <li><span style="font-style: italic;">Simulate</span> data from a model. or
+    any of the kinds listed in 1. above.</li>
+  <li><span style="font-style: italic;">Update</span> models of categorical data;
+    i.e.,, compute the probability of any variable in the model conditional on 
+    any set of values for other variables in the model.</li>
+  <li><span style="font-style: italic;">Predict</span> the probability of a variable 
+    in a model (without latent variables) from interventions that fix or randomize 
+    values for any set of other variables in the model.</li>
+  <li><span style="font-style: italic;">Search</span> for models:</li>
+  <ol>
+    <li>Of categorical data with or without latent variables;</li>
+    <li>Of continuous, Gaussian data with or without latent variables.</li>
+  </ol>
+  <li><span style="font-style: italic;">Compare </span>graphical features of two 
+    models.</li>
+  <li><span style="font-style: italic;">Find </span>alternative models statistically 
+    equivalent to any given model without latent variables.</li>
+  <li><span style="font-style: italic;">Select </span>variables within a dataset 
+    for classifying values of cases of another variable in the dataset</li>
+  <li><span style="font-style: italic;">Classify</span> new (or old) cases using 
+    the variables selected in 9. above.</li>
+  <li><span style="font-style: italic;">Assess</span> the accuracy of classification.</li>
+</ol>
+<p><a href="manual.html">Manual</a></p>
+<p><a href="why_doesnt_tetrad.html">Why Doesn't Tetrad...?</a></p>
+<p><a href="for_further_help.html">For Further Help</a></p>
+<p><a href="references.html">References </a></p>
+</body>
+</html>

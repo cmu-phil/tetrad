@@ -31,8 +31,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Puts up a panel showing some graph properties, e.g., number of nodes and
@@ -40,7 +38,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
+class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private GraphWorkbench workbench;
 
     /**
@@ -52,24 +50,28 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         this.workbench = workbench;
     }
 
+    public GraphPropertiesAction(Graph graph, GraphWorkbench workbench) {
+        super("Graph Properties");
+        this.workbench = workbench;
+    }
+
     /**
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Box b = Box.createVerticalBox();
-        Graph graph = workbench.getGraph();
 
         int numLatents = 0;
-        for (Node node : graph.getNodes()) {
+        for (Node node : getGraph().getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 numLatents++;
             }
         }
 
         int maxIndegree = 0;
-        for (Node node : graph.getNodes()) {
-            int indegree = graph.getNodesInTo(node, Endpoint.ARROW).size();
+        for (Node node : getGraph().getNodes()) {
+            int indegree = getGraph().getNodesInTo(node, Endpoint.ARROW).size();
 
             if (indegree > maxIndegree) {
                 maxIndegree = indegree;
@@ -77,8 +79,8 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         }
 
         int maxOutdegree = 0;
-        for (Node node : graph.getNodes()) {
-            int outdegree = graph.getNodesOutTo(node, Endpoint.ARROW).size();
+        for (Node node : getGraph().getNodes()) {
+            int outdegree = getGraph().getNodesOutTo(node, Endpoint.ARROW).size();
 
             if (outdegree > maxOutdegree) {
                 maxOutdegree = outdegree;
@@ -89,36 +91,29 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         int numBidirectedEdges = 0;
         int numUndirectedEdges = 0;
 
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : getGraph().getEdges()) {
             if (Edges.isDirectedEdge(edge)) numDirectedEdges++;
             else if (Edges.isBidirectedEdge(edge)) numBidirectedEdges++;
             else if (Edges.isUndirectedEdge(edge)) numUndirectedEdges++;
         }
 
-        boolean cyclic = graph.existsDirectedCycle();
-//        List<Node> cycle = GraphUtils.directedCycle(graph);
+        boolean cyclic = getGraph().existsDirectedCycle();
 
         JTextArea textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(300, 300));
 
-//        textArea.append("Graph Properties for " + workbench.getName());
-        textArea.append("\nNumber of nodes: " + String.valueOf(graph.getNumNodes()));
+        textArea.append("\nNumber of nodes: " + String.valueOf(getGraph().getNumNodes()));
         textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
-        textArea.append("\nNumber of edges: " + String.valueOf(graph.getNumEdges()));
+        textArea.append("\nNumber of edges: " + String.valueOf(getGraph().getNumEdges()));
         textArea.append("\nNumber of directed edges: " + String.valueOf(numDirectedEdges));
         textArea.append("\nNumber of bidirected edges: " + String.valueOf(numBidirectedEdges));
         textArea.append("\nNumber of undirected edges: " + String.valueOf(numUndirectedEdges));
-        textArea.append("\nMax degree: " + String.valueOf(graph.getConnectivity()));
+        textArea.append("\nMax degree: " + String.valueOf(getGraph().getConnectivity()));
         textArea.append("\nMax indegree: " + String.valueOf(maxIndegree));
         textArea.append("\nMax outdegree: " + String.valueOf(maxOutdegree));
         textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
         textArea.append("\n" + (cyclic ? "Cyclic": "Acyclic"));
-
-//        if (cyclic) {
-//            textArea.append("\nExample cycle: " + cycle.toString());
-//        }
-
 
         Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
@@ -133,9 +128,6 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
                 "Graph Properties", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
-
-//        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
-//                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
     /**
@@ -145,6 +137,14 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
     }
 
 
+    public void setGraph(Graph graph, GraphWorkbench workbench) {
+        workbench.setGraph(graph);
+        this.workbench = workbench;
+    }
+
+    public Graph getGraph() {
+        return workbench.getGraph();
+    }
 }
 
 

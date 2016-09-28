@@ -29,70 +29,37 @@ import edu.cmu.tetrad.sem.SemEvidence;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.SemUpdater;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.List;
 
 /**
  * @author Joseph Ramsey
  */
-public class TestSemUpdater extends TestCase {
+public class TestSemUpdater {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSemUpdater(String name) {
-        super(name);
-    }
-
+    @Test
     public void testUpdate() {
+
         Graph graph = constructGraph1();
 
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
-        System.out.println("Original graph: " + semIm.getSemPm().getGraph());
-        System.out.println("Original semIm: " + semIm);
-
-        List nodes = semIm.getVariableNodes();
+        List<Node> nodes = semIm.getVariableNodes();
 
         SemUpdater semUpdater = new SemUpdater(semIm);
 
         SemEvidence evidence = new SemEvidence(semIm);
-        evidence.getProposition().setValue((Node) nodes.get(4), 10.0);
-//        evidence.getProposition().setValue((Node) nodes.get(2), 1.5);
+        evidence.getProposition().setValue(nodes.get(4), 10.0);
+        evidence.getProposition().setValue(nodes.get(2), 1.5);
 
         semUpdater.setEvidence(evidence);
-
-
         evidence.setManipulated(1, true);
 
-        SemIm manipulatedSemIm = semUpdater.getManipulatedSemIm();
+        semUpdater.getManipulatedSemIm();
 
-        System.out.println("Manipulated Sem IM: " + manipulatedSemIm);
-
-        System.out.println(
-                "Manipulated graph: " + manipulatedSemIm.getSemPm().getGraph());
-        System.out.println("Manipulated semIm: " + manipulatedSemIm);
-
-        SemIm updatedSemIm = semUpdater.getUpdatedSemIm();
-
-        System.out.println(
-                "Updated graph: " + updatedSemIm.getSemPm().getGraph());
-        System.out.println("Updated SEM = " + updatedSemIm);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemUpdater.class);
+        semUpdater.getUpdatedSemIm();
     }
 
     private Graph constructGraph1() {

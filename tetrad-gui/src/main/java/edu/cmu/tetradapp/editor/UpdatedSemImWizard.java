@@ -49,7 +49,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class UpdatedSemImWizard extends JPanel {
+final class UpdatedSemImWizard extends JPanel {
     private SemEvidence evidence;
     private GraphWorkbench workbench;
     private SemUpdater semUpdater;
@@ -174,10 +174,6 @@ public final class UpdatedSemImWizard extends JPanel {
         boolean foundACondition = false;
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
-            if (evidence.hasNoEvidence(i)) {
-                continue;
-            }
-
             foundACondition = true;
 
             Node node = evidence.getNode(i);
@@ -241,7 +237,7 @@ public final class UpdatedSemImWizard extends JPanel {
         addListOfEvidence(marginalBox);
         marginalBox.add(Box.createRigidArea(new Dimension(1, 20)));
 
-//        Node node1 = semUpdater.getEstIm().getIndex(node.getName());
+//        Node node1 = semUpdater.getEstIm().getIndex(node.getNode());
 //        int nodeIndex = semUpdater.getEstIm().getNodeIndex(node1);
 //
 //        double[] priorMeans =

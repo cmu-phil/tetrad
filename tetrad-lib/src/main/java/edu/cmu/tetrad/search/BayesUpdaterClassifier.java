@@ -122,11 +122,6 @@ public final class BayesUpdaterClassifier
      */
     private int totalUsableCases;
 
-    /**
-     * @serial
-     */
-    private int targetCategory;
-
     //===========================CONSTRUCTORS==========================//
 
     /*
@@ -146,7 +141,7 @@ public final class BayesUpdaterClassifier
         this.bayesIm = bayesIm;
         this.testData = testData;
         this.percentCorrect = Double.NaN;
-        this.bayesImVars = new LinkedList<Node>(bayesIm.getVariables());
+        this.bayesImVars = new LinkedList<>(bayesIm.getVariables());
     }
 
     /**
@@ -179,7 +174,6 @@ public final class BayesUpdaterClassifier
         }
 
         this.targetVariable = targetVariable;
-        this.targetCategory = targetCategory;
     }
 
     /**
@@ -320,7 +314,7 @@ public final class BayesUpdaterClassifier
 
                 for (int m = 0; m < nvars; m++) {
                     //System.out.print(getBayesImVars()
-                    //        .get(m).getName());
+                    //        .get(m).getNode());
                     TetradLogger.getInstance().log("details", "  " + selectedData.getDouble(i, m));
                 }
 

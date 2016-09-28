@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.GrowShrink;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Runner for the Grow Shrink mb search.
@@ -33,7 +34,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
 
 
 
-    public GrowShrinkRunner(DataWrapper data, MbSearchParams params){
+    public GrowShrinkRunner(DataWrapper data, Parameters params){
         super(data.getSelectedDataModel(), params);
     }
 
@@ -44,7 +45,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
     public void execute() throws Exception {
         validate();
         GrowShrink search = new GrowShrink(this.getIndependenceTest());
-        setSearchResults(search.findMb(this.getParams().getTargetName()));
+        setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         setSearchName(search.getAlgorithmName());
     }
 }

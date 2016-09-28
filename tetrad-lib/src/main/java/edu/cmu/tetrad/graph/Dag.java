@@ -24,7 +24,6 @@ package edu.cmu.tetrad.graph;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -34,20 +33,11 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class Dag implements Graph /*, KnowledgeTransferable*/ {
+public final class Dag implements Graph {
     static final long serialVersionUID = 23L;
-//    private Knowledge knowledge;
-    /**
-     * The constraints that the graph must satisfy.
-     */
-    private final static GraphConstraint[] constraints = {
-            new MeasuredLatentOnly(), new AtMostOneEdgePerPair(),
-            new NoEdgesToSelf(), new DirectedEdgesOnly(), new InArrowImpliesNonancestor()};
 
     /**
      * The wrapped graph.
-     *
-     * @serial
      */
     private final Graph graph;
 
@@ -63,14 +53,14 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
     /**
      * New edges that need to be added to the dpath matrix.
      */
-    private transient LinkedList<Edge> dpathNewEdges = new LinkedList<Edge>();
+    private transient LinkedList<Edge> dpathNewEdges = new LinkedList<>();
 
     /**
      * The order of nodes used for dpath.
      */
     private transient List<Node> dpathNodes;
 
-    Map<Node, Integer> nodesHash = new HashMap<Node, Integer>();
+    private Map<Node, Integer> nodesHash = new HashMap<>();
 
     //===============================CONSTRUCTORS=======================//
 
@@ -78,31 +68,16 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
      * Constructs a new directed acyclic graph (DAG).
      */
     public Dag() {
-//    	this.knowledge = new Knowledge2();
 
         // Must use EdgeListGraph because property change events are correctly implemeted. Don't change it!
         // unless you fix that or the interface will break the interface! jdramsey 2015-6-5
         this.graph = new EdgeListGraph();
-//        setGraphConstraintsChecked(true);
-        List<GraphConstraint> constraints1 = Arrays.asList(constraints);
-
-        for (GraphConstraint aConstraints1 : constraints1) {
-            addGraphConstraint(aConstraints1);
-        }
 
         reconstituteDpath();
     }
 
     public Dag(List<Node> nodes) {
-//    	this.knowledge = new Knowledge2();
         this.graph = new EdgeListGraphSingleConnections(nodes);
-//        setGraphConstraintsChecked(true);
-        List<GraphConstraint> constraints1 = Arrays.asList(constraints);
-
-        for (GraphConstraint aConstraints1 : constraints1) {
-            addGraphConstraint(aConstraints1);
-        }
-
         reconstituteDpath();
     }
 
@@ -114,13 +89,11 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
      *                                  reason be converted into a DAG.
      */
     public Dag(Graph graph) throws IllegalArgumentException {
-        this.graph = new EdgeListGraph();
-
-        List<GraphConstraint> constraints1 = Arrays.asList(constraints);
-
-        for (GraphConstraint aConstraints1 : constraints1) {
-            addGraphConstraint(aConstraints1);
+        if (graph.existsDirectedCycle()) {
+            throw new IllegalArgumentException("That graph was not acyclic.");
         }
+
+        this.graph = new EdgeListGraph();
 
         transferNodesAndEdges(graph);
         resetDPath();
@@ -174,10 +147,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
 
     public boolean addDirectedEdge(Node node1, Node node2) {
         return addEdge(Edges.directedEdge(node1, node2));
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        return getGraph().addGraphConstraint(gc);
     }
 
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
@@ -244,15 +213,15 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
     }
 
     public boolean equals(Object o) {
-        return getGraph().equals(o);
+        return o instanceof Dag && getGraph().equals(o);
     }
 
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
 //        resetDPath();
 //        reconstituteDpath();
 
-//        node1 = graph.getNode(node1.getName());
-//        node2 = graph.getNode(node2.getName());
+//        node1 = graph.getNode(node1.getNode());
+//        node2 = graph.getNode(node2.getNode());
 
         //System.out.println(MatrixUtils.toString(dpath));
 
@@ -336,51 +305,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         return getGraph().getNumEdges(node);
     }
 
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    /**
-     * Finds the set of nodes which have no children, followed by the set of
-     * their parents, then the set of the parents' parents, and so on.  The
-     * result is returned as a List of Lists.
-     *
-     * @return the tiers of this digraph.
-     * @see #printTiers
-     */
-    public List<List<Node>> getTiers() {
-        Set<Node> found = new HashSet<Node>();
-        Set<Node> notFound = new HashSet<Node>();
-        List<List<Node>> tiers = new LinkedList<List<Node>>();
-
-        // first copy all the nodes into 'notFound'.
-        for (Node node1 : getNodes()) {
-            notFound.add(node1);
-        }
-
-        // repeatedly run through the nodes left in 'notFound'.  If any node
-        // has all of its parents already in 'found', then add it to the
-        // getModel tier.
-        while (!notFound.isEmpty()) {
-            List<Node> thisTier = new LinkedList<Node>();
-
-            for (Node node : notFound) {
-                if (found.containsAll(getParents(node))) {
-                    thisTier.add(node);
-                }
-            }
-
-            // shift all the nodes in this tier from 'notFound' to 'found'.
-            notFound.removeAll(thisTier);
-            found.addAll(thisTier);
-
-            // add the getModel tier to the list of tiers.
-            tiers.add(thisTier);
-        }
-
-        return tiers;
-    }
-
     public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
@@ -409,6 +333,11 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
@@ -419,7 +348,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
      * encountered in the list.
      *
      * @return a tier ordering for the nodes in this graph.
-     * @see #printTierOrdering
      */
     public List<Node> getCausalOrdering() {
         return GraphUtils.getCausalOrdering(this);
@@ -472,10 +400,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         return false;
     }
 
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
     public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
     }
@@ -507,47 +431,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
 
     public boolean isDescendentOf(Node node1, Node node2) {
         return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
-    }
-
-    /**
-     * Prints the tiers found by method getTiers() to System.out.
-     *
-     * @param out the printstream to sent output to.
-     * @see #getTiers
-     */
-    public void printTiers(PrintStream out) {
-
-        List<List<Node>> tiers = getTiers();
-
-        System.out.println();
-
-        for (List<Node> thisTier : tiers) {
-            for (Node thisNode : thisTier) {
-                out.print(thisNode + "\t");
-            }
-
-            out.println();
-        }
-
-        out.println("done");
-    }
-
-    /**
-     * Prints the tier ordering found by method getTierOrdering() to
-     * System.out.
-     *
-     * @see #getCausalOrdering
-     */
-    public void printTierOrdering() {
-        List<Node> v = getCausalOrdering();
-
-        System.out.println();
-
-        for (Node aV : v) {
-            System.out.print(aV + "\t");
-        }
-
-        System.out.println();
     }
 
     public boolean removeEdge(Node node1, Node node2) {
@@ -583,10 +466,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
 
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
     }
 
     public boolean removeEdge(Edge edge) {
@@ -663,7 +542,7 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
             adjustDPath(i, j);
         }
 
-        nodesHash = new HashMap<Node, Integer>();
+        nodesHash = new HashMap<>();
 
         for (int i = 0; i < dpathNodes.size(); i++) {
             nodesHash.put(dpathNodes.get(i), i);
@@ -772,7 +651,7 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
 
     private LinkedList<Edge> dpathNewEdges() {
         if (dpathNewEdges == null) {
-            dpathNewEdges = new LinkedList<Edge>();
+            dpathNewEdges = new LinkedList<>();
         }
         return dpathNewEdges;
     }
@@ -786,9 +665,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -799,43 +675,9 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         }
     }
 
-    //Gustavo 5 May 2007
-    //this returns the nodes that have zero parents
-    //  
-    //should we use getTiers() instead?
-    public List<Node> getExogenousTerms() {
-        List<Node> errorTerms = new Vector();
-
-        List<Node> nodes = getNodes();
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
-            if (getParents(node).isEmpty())
-                errorTerms.add(node);
-        }
-
-        return errorTerms;
-    }
-
     private Graph getGraph() {
         return graph;
     }
-
-    public static boolean isDag(Graph graph) {
-        try {
-            new Dag(graph);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-//	public Knowledge getKnowledge() {
-//		return knowledge;
-//	}
-//
-//	public void setKnowledge(Knowledge knowledge) {
-//		this.knowledge = knowledge;
-//	}
 }
 
 

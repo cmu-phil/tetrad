@@ -23,66 +23,46 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Ges;
-import edu.cmu.tetrad.search.LingamPattern;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
 import edu.cmu.tetrad.util.dist.Uniform;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests the BooleanFunction class.
- *
  * @author Joseph Ramsey
  */
-public class TestLingamPattern extends TestCase {
+public class TestLingamPattern {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestLingamPattern(String name) {
-        super(name);
-    }
-
-
+    @Test
     public void test1() {
+        RandomUtil.getInstance().setSeed(4938492L);
+
         int sampleSize = 1000;
 
-        Graph graph = new Dag(GraphUtils.randomGraph(6, 0, 6, 4,
-                4, 4, false));
-//        new EdgeListGraph();
+        List<Node> nodes = new ArrayList<>();
 
-//        Node x = new GraphNode("X");
-//        Node y = new GraphNode("Y");
-//        Node w = new GraphNode("W");
+        for (int i = 0; i < 6; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
 
-//        graph.addIndex(x);
-//        graph.addIndex(y);
-//        graph.addIndex(w);
-//
-//        graph.addDirectedEdge(x, y);
-//        graph.addDirectedEdge(y, w);
-//        graph.addDirectedEdge(x, w);
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+                4, 4, 4, false));
 
-        System.out.println("true graph = " + graph);
+        List<Distribution> variableDistributions = new ArrayList<>();
 
-        List<Distribution> variableDistributions = new ArrayList<Distribution>();
-
-//        variableDistributions.add(new Uniform(-1, 1));
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
@@ -90,42 +70,23 @@ public class TestLingamPattern extends TestCase {
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
 
-
         SemPm semPm = new SemPm(graph);
-
-//        semPm.setCoefDistribution(new SplitDistribution(1.0, 2.0));
-//        SemImInitializationParams params = new SemImInitializationParams();
-//        params.setCoefRange(.5, 1.5);
-//        params.setCoefSymmetric(true);
         SemIm semIm = new SemIm(semPm);
 
-//        System.out.println(semIm);
-
         DataSet dataSet = simulateDataNonNormal(semIm, sampleSize, variableDistributions);
-//        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
-//
-//        LingamPattern2 lingamPattern = new LingamPattern2();
-//
-//        Graph estPattern = new Cpc(test, new Knowledge2()).search();
-//        Graph estPattern = new Pc(simulateData, new Knowledge2()).search();
-        Graph estPattern = new Ges(dataSet).search();
-
+        Score score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        Graph estPattern = new Fgs(score).search();
 
         LingamPattern lingam = new LingamPattern(estPattern, dataSet);
-        Graph pattern = lingam.search();
-
-        System.out.println("Pattern = " + pattern);
+        lingam.search();
 
         double[] pvals = lingam.getPValues();
 
-        System.out.println("Anderson Darling P value for Variables\n");
-        NumberFormat nf = new DecimalFormat("0.0000");
+        double[] expectedPVals = {0.18,0.29,0.88,0.00,0.01,0.58};
 
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            System.out.println(dataSet.getVariable(j) + ": " + nf.format(pvals[j]));
+        for (int i = 0; i < pvals.length; i++) {
+            assertEquals(expectedPVals[i], pvals[i], 0.01);
         }
-
-        System.out.println();
     }
 
     /**
@@ -133,12 +94,11 @@ public class TestLingamPattern extends TestCase {
      * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
      * @param sampleSize    > 0.
-     * @param distributions
      * @return the simulated data set.
      */
     private DataSet simulateDataNonNormal(SemIm semIm, int sampleSize,
                                           List<Distribution> distributions) {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         List<Node> variableNodes = semIm.getSemPm().getVariableNodes();
 
         for (Node node : variableNodes) {
@@ -204,18 +164,6 @@ public class TestLingamPattern extends TestCase {
         }
 
         return dataSet;
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestPc.class);
     }
 }
 

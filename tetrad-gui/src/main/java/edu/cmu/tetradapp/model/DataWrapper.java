@@ -29,7 +29,8 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -42,7 +43,8 @@ import java.util.*;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput, DoNotAddOldModel {
+public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
+        DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -50,11 +52,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      */
     private String name;
 
-    /**
-     * Stores a reference to the data model being wrapped.
-     *
-     * @serial Cannot be null.
-     */
     private DataModelList dataModelList;
 
     /**
@@ -63,7 +60,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      *
      * @serial Cannot be null.
      */
-    private Map discretizationSpecs = new HashMap();
+    private final Map discretizationSpecs = new HashMap();
 
     /**
      * Stores a reference to the source workbench, if there is one.
@@ -81,54 +78,80 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private List<Node> knownVariables;
 
     /**
-     * The params being edited.
+     * The parameters being edited.
      */
-    private Params params = null;
+    private Parameters parameters = null;
+    private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
+
+    protected DataWrapper() {
+        setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        this.parameters = new Parameters();
+    }
 
     /**
      * Constructs a data wrapper using a new DataSet as data model.
      */
-    public DataWrapper() {
+    public DataWrapper(Parameters parameters) {
         setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
+        this.parameters = parameters;
+    }
+
+    public DataWrapper(Simulation wrapper, Parameters parameters) {
+        this.name = wrapper.getName();
+        this.dataModelList = new DataModelList();
+
+        for (DataModel model : wrapper.getDataModels()) {
+            if (model instanceof DataSet) {
+                dataModelList.add(((DataSet) model).copy());
+            } else if (model instanceof ICovarianceMatrix) {
+                dataModelList.add(new CovarianceMatrix((CovarianceMatrix) model));
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+
+        this.dataModelList = wrapper.getDataModelList();
+        this.parameters = parameters;
     }
 
 
     /**
      * Copy constructor.
-     *
-     * @param wrapper
      */
-    public DataWrapper(DataWrapper wrapper) {
+    public DataWrapper(DataWrapper wrapper,Parameters parameters) {
         this.name = wrapper.name;
-        this.dataModelList = new DataModelList();
+        DataModelList dataModelList = new DataModelList();
         int selected = -1;
 
-        for (int i = 0; i < wrapper.dataModelList.size(); i++) {
-            if (wrapper.dataModelList.get(i) instanceof DataSet) {
-                DataSet data = (DataSet) wrapper.dataModelList.get(i);
+        for (int i = 0; i < wrapper.getDataModelList().size(); i++) {
+            if (wrapper.getDataModelList().get(i) instanceof DataSet) {
+                DataSet data = (DataSet) wrapper.getDataModelList().get(i);
 
-                if (data.equals(wrapper.dataModelList.getSelectedModel())) {
+                if (data.equals(wrapper.getDataModelList().getSelectedModel())) {
                     selected = i;
                 }
 
-                this.dataModelList.add(copyData(data));
+                dataModelList.add(copyData(data));
             }
 
         }
 
         if (selected > -1) {
-            this.dataModelList.setSelectedModel(this.dataModelList.get(selected));
+            dataModelList.setSelectedModel(dataModelList.get(selected));
         }
 
-        if(wrapper.sourceGraph != null){
+        if (wrapper.sourceGraph != null) {
             this.sourceGraph = new EdgeListGraph(wrapper.sourceGraph);
         }
 
-        if(wrapper.knownVariables != null){
-            this.knownVariables = new ArrayList<Node>(wrapper.knownVariables);
+        if (wrapper.knownVariables != null) {
+            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
         }
+
+        this.dataModelList = dataModelList;
 
         LogDataUtils.logDataModelList("Standalone data set.", getDataModelList());
     }
@@ -141,13 +164,13 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         setDataModel(dataSet);
     }
 
-    public DataWrapper(Graph graph) {
+    public DataWrapper(Graph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException();
         }
 
         List<Node> nodes = graph.getNodes();
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
@@ -160,32 +183,33 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         DataSet dataSet = new ColtDataSet(0, variables);
-        this.dataModelList = new DataModelList();
-        this.dataModelList.add(dataSet);
+        DataModelList dataModelList = new DataModelList();
+        dataModelList.add(dataSet);
+        this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(DagWrapper dagWrapper) {
-        this(dagWrapper.getDag());
+    public DataWrapper(DagWrapper dagWrapper, Parameters parameters) {
+        this(dagWrapper.getDag(), parameters);
     }
 
-    public DataWrapper(SemGraphWrapper wrapper) {
-        this(wrapper.getGraph());
+    public DataWrapper(SemGraphWrapper wrapper, Parameters parameters) {
+        this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(GraphWrapper wrapper) {
-        this(wrapper.getGraph());
+    public DataWrapper(GraphWrapper wrapper, Parameters parameters) {
+        this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(RegressionRunner regression, DataWrapper wrapper) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
+    public DataWrapper(RegressionRunner regression, DataWrapper wrapper, Parameters parameters) {
+        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
-    public DataWrapper(RegressionRunner regression, SemDataWrapper wrapper) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
+    public DataWrapper(RegressionRunner regression, Simulation wrapper, Parameters parameters) {
+        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
     // Computes regression predictions.
-    public DataWrapper(RegressionResult result, DataSet data) {
+    public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
 //        if (!data.isContinuous()) {
 //            throw new IllegalArgumentException("Must provide a continuous data set.");
 //        }
@@ -217,15 +241,17 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
 
-        this.dataModelList = new DataModelList();
-        this.dataModelList.add(data2);
+        DataModelList dataModelList = new DataModelList();
+        dataModelList.add(data2);
+        this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(MimBuildRunner mimBuild) {
+    public DataWrapper(MimBuildRunner mimBuild, Parameters parameters) {
         ICovarianceMatrix cov = mimBuild.getCovMatrix();
 
-        this.dataModelList = new DataModelList();
-        this.dataModelList.add(cov);
+        DataModelList dataModelList = new DataModelList();
+        dataModelList.add(cov);
+        this.dataModelList = dataModelList;
     }
 
     /**
@@ -236,7 +262,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    public String nextVariableName(String base, DataSet data) {
+    private String nextVariableName(String base, DataSet data) {
 
         // Variable names should start with "1."
         int i = -1;
@@ -248,8 +274,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
             if (i == 0) {
                 name = base;
-            }
-            else {
+            } else {
                 name = base + i;
             }
 
@@ -268,24 +293,36 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new DataWrapper(DataUtils.discreteSerializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS========================//
 
     /**
+     * Stores a reference to the data model being wrapped.
+     *
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
-        return dataModelList;
+        return this.dataModelList;
+    }
+
+    public List<DataModel> getDataModels() {
+        List<DataModel> dataModels = new ArrayList<>();
+        for (DataModel model : this.dataModelList) {
+            dataModels.add(model);
+        }
+        return dataModels;
     }
 
     public void setDataModelList(DataModelList dataModelList) {
+        if (dataModelList == null) throw new NullPointerException("Data model list not provided.");
         this.dataModelList = dataModelList;
     }
 
@@ -293,7 +330,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * @return the data model for this wrapper.
      */
     public DataModel getSelectedDataModel() {
-        DataModelList modelList = this.dataModelList;
+        DataModelList modelList = getDataModelList();
         return modelList.getSelectedModel();
     }
 
@@ -308,8 +345,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         if (dataModel instanceof DataModelList) {
             this.dataModelList = (DataModelList) dataModel;
         } else {
-            this.dataModelList = new DataModelList();
-            this.dataModelList.add(dataModel);
+            DataModelList dataModelList = new DataModelList();
+            dataModelList.add(dataModel);
+            this.dataModelList = dataModelList;
         }
     }
 
@@ -346,7 +384,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * Sets the source graph.
      */
-    public void setSourceGraph(Graph sourceGraph) {
+    protected void setSourceGraph(Graph sourceGraph) {
         this.sourceGraph = sourceGraph;
     }
 
@@ -398,14 +436,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (dataModelList == null) {
-            throw new NullPointerException();
-        }
-
-        if (discretizationSpecs == null) {
-            throw new NullPointerException();
-        }
     }
 
     public String getName() {
@@ -418,24 +448,64 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * This method is overridden by classes that can identify parameters.
+     *
      * @return null
      */
-    public Params getParams() {
-        return this.params;
+    public Parameters getParams() {
+        return this.parameters;
     }
 
-    public void setParams(Params params) {
-        this.params = params;
+    public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
     }
 
 
-	public List<String> getVariableNames() {
-		List<String> variableNames = new ArrayList<String>();
-		for (Node n: getVariables()) {
-			variableNames.add(n.getName());
-		}
-		return variableNames;
-	}
+    public List<String> getVariableNames() {
+        List<String> variableNames = new ArrayList<>();
+        for (Node n : getVariables()) {
+            variableNames.add(n.getName());
+        }
+        return variableNames;
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+
+        if (dataModelList == null) {
+            System.out.println();
+        }
+
+        if (dataModelList.size() > 1) {
+            paramSettings.put("# Datasets", Integer.toString(dataModelList.size()));
+        } else {
+            DataModel dataModel = dataModelList.get(0);
+
+            if (dataModel instanceof CovarianceMatrix) {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));
+                }
+                paramSettings.put("N", Integer.toString(((CovarianceMatrix) dataModel).getSampleSize()));
+            } else {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
+                }
+                paramSettings.put("N", Integer.toString(((DataSet) dataModel).getNumRows()));
+            }
+        }
+
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
 }
 
 

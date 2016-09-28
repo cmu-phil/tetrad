@@ -47,7 +47,16 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * covariance matrix.
      */
     public CorrelationMatrix(ICovarianceMatrix matrix) {
-        this(matrix.getVariables(), matrix.getMatrix(), matrix.getSampleSize());
+        this(matrix.getVariables(), matrix.getMatrix().copy(), matrix.getSampleSize());
+    }
+
+    /**
+     * Constructs a new correlation matrix using the covariances in the given
+     * covariance matrix.
+     */
+    public CorrelationMatrix(ICovarianceMatrix matrix, boolean inPlace) {
+        this(matrix.getVariables(), (inPlace ? matrix.getMatrix() : new CovarianceMatrix(matrix).getMatrix()),
+                matrix.getSampleSize(), inPlace);
     }
 
     /**
@@ -69,9 +78,19 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Constructs a correlation matrix data set using the given information. The
      * matrix matrix is internally converted to a correlation matrix.
      */
-    public CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
-                             int sampleSize) {
-        super(variables, MatrixUtils.convertCovToCorr(matrix), sampleSize);
+    private CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
+                              int sampleSize) {
+        super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
+    }
+
+    /**
+     * Constructs a correlation matrix data set using the given information. The
+     * matrix matrix is internally converted to a correlation matrix.
+     */
+    private CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
+                              int sampleSize, boolean inPlace) {
+        super(variables, inPlace ? MatrixUtils.convertCovToCorr(matrix) :
+                MatrixUtils.convertCovToCorr(matrix.copy()), sampleSize);
     }
 
     /**
@@ -98,11 +117,6 @@ public final class CorrelationMatrix extends CovarianceMatrix
         }
 
         super.setMatrix(matrix);
-    }
-
-    @Override
-    public void setVariables(List<Node> variables) {
-        super.setVariables(variables);
     }
 
     @Override

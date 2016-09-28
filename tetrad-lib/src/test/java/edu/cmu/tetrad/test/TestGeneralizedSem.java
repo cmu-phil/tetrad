@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.calculator.expression.Expression;
-import edu.cmu.tetrad.calculator.parser.ExpressionParser;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -30,37 +29,27 @@ import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.apache.commons.math3.distribution.RealDistribution;
+import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests Sem.
- *
  * @author Joseph Ramsey
  */
-public class TestGeneralizedSem extends TestCase {
+public class TestGeneralizedSem {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestGeneralizedSem(String name) {
-        super(name);
-    }
+    private boolean printStuff = false;
 
+    @Test
     public void test1() {
         GeneralizedSemPm pm = makeTypicalPm();
 
-        System.out.println(pm);
+        print(pm);
 
         Node x1 = pm.getNode("X1");
         Node x2 = pm.getNode("X2");
@@ -71,15 +60,15 @@ public class TestGeneralizedSem extends TestCase {
         SemGraph graph = pm.getGraph();
 
         List<Node> variablesNodes = pm.getVariableNodes();
-        System.out.println(variablesNodes);
+        print(variablesNodes);
 
         List<Node> errorNodes = pm.getErrorNodes();
-        System.out.println(errorNodes);
+        print(errorNodes);
 
 
         try {
             pm.setNodeExpression(x1, "cos(B1) + E_X1");
-            System.out.println(pm);
+            print(pm);
 
             String b1 = "B1";
             String b2 = "B2";
@@ -92,7 +81,7 @@ public class TestGeneralizedSem extends TestCase {
 
             Set<String> referencedParameters = pm.getReferencedParameters(x3);
 
-            System.out.println("Parameters referenced by X3 are: " + referencedParameters);
+            print("Parameters referenced by X3 are: " + referencedParameters);
 
             assertTrue(referencedParameters.contains(b1) && referencedParameters.contains(b2));
             assertTrue(!(referencedParameters.contains(b1) && referencedParameters.contains(b3)));
@@ -101,12 +90,12 @@ public class TestGeneralizedSem extends TestCase {
 //
             for (Node node : pm.getNodes()) {
                 Set<Node> referencingNodes = pm.getReferencingNodes(node);
-                System.out.println("Nodes referencing " + node + " are: " + referencingNodes);
+                print("Nodes referencing " + node + " are: " + referencingNodes);
             }
 
             for (Node node : pm.getVariableNodes()) {
                 Set<Node> referencingNodes = pm.getReferencedNodes(node);
-                System.out.println("Nodes referenced by " + node + " are: " + referencingNodes);
+                print("Nodes referenced by " + node + " are: " + referencingNodes);
             }
 
             Set<Node> referencingX3 = pm.getReferencingNodes(x3);
@@ -126,7 +115,7 @@ public class TestGeneralizedSem extends TestCase {
 
             pm.setNodeExpression(e_x5, "Beta(3, 5)");
 
-            System.out.println(pm);
+            print(pm);
 
             assertEquals("Split(-1.5,-.5,.5,1.5)", pm.getParameterExpressionString(b1));
             pm.setParameterExpression(b1, "N(0, 2)");
@@ -134,23 +123,61 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println(im);
+            print(im);
 
             DataSet dataSet = im.simulateDataAvoidInfinity(10, false);
 
-            System.out.println(dataSet);
+            print(dataSet);
 
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
-    public void rtest2() {
+    private void print(GeneralizedSemPm pm) {
+        if (printStuff) {
+            System.out.println(pm);
+        }
+    }
+
+    private void print(List<Node> errorNodes) {
+        if (printStuff) {
+            System.out.println(errorNodes);
+        }
+    }
+
+    private void print(GeneralizedSemIm im) {
+        if (printStuff) {
+            System.out.println(im);
+        }
+    }
+
+    private void print(DataSet dataSet) {
+        if (printStuff) {
+            System.out.println(dataSet);
+        }
+    }
+
+    private void print(String x) {
+        if (printStuff) {
+            System.out.println(x);
+        }
+    }
+
+
+    private void print(SemPm semPm) {
+        if (printStuff) {
+            System.out.println(semPm);
+        }
+    }
+
+    @Test
+    public void test2() {
         RandomUtil.getInstance().setSeed(2999983L);
 
         int sampleSize = 1000;
 
-        List<Node> variableNodes = new ArrayList<Node>();
+        List<Node> variableNodes = new ArrayList<>();
         ContinuousVariable x1 = new ContinuousVariable("X1");
         ContinuousVariable x2 = new ContinuousVariable("X2");
         ContinuousVariable x3 = new ContinuousVariable("X3");
@@ -176,13 +203,13 @@ public class TestGeneralizedSem extends TestCase {
         SemIm semIm = new SemIm(semPm);
         DataSet dataSet = semIm.simulateData(sampleSize, false);
 
-        System.out.println(semPm);
+        print(semPm);
 
         GeneralizedSemPm _semPm = new GeneralizedSemPm(semPm);
         GeneralizedSemIm _semIm = new GeneralizedSemIm(_semPm, semIm);
         DataSet _dataSet = _semIm.simulateDataMinimizeSurface(sampleSize, false);
 
-        System.out.println(_semPm);
+        print(_semPm);
 
 //        System.out.println(_dataSet);
 
@@ -201,8 +228,11 @@ public class TestGeneralizedSem extends TestCase {
         }
     }
 
+    @Test
     public void test3() {
-        List<Node> variableNodes = new ArrayList<Node>();
+        RandomUtil.getInstance().setSeed(49293843L);
+
+        List<Node> variableNodes = new ArrayList<>();
         ContinuousVariable x1 = new ContinuousVariable("X1");
         ContinuousVariable x2 = new ContinuousVariable("X2");
         ContinuousVariable x3 = new ContinuousVariable("X3");
@@ -237,10 +267,10 @@ public class TestGeneralizedSem extends TestCase {
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);
 
         List<Node> variablesNodes = pm.getVariableNodes();
-        System.out.println(variablesNodes);
+        print(variablesNodes);
 
         List<Node> errorNodes = pm.getErrorNodes();
-        System.out.println(errorNodes);
+        print(errorNodes);
 
 
         try {
@@ -257,24 +287,28 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println(im);
+            print(im);
 
             DataSet dataSet = im.simulateDataNSteps(1000, false);
 
 //            System.out.println(dataSet);
+
+            double[] d1 = dataSet.getDoubleData().getColumn(0).toArray();
+            double[] d2 = dataSet.getDoubleData().getColumn(1).toArray();
+
+            double cov = StatUtils.covariance(d1, d2);
+
+            assertEquals(-0.002, cov, 0.001);
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
+    @Test
     public void test4() {
-        makeSamplePm();
-    }
-
-    private GeneralizedSemPm makeSamplePm() {
         // For X3
 
-        Map<String, String[]> templates = new HashMap<String, String[]>();
+        Map<String, String[]> templates = new HashMap<>();
 
         templates.put("NEW(b) + NEW(b) + NEW(c) + NEW(c) + NEW(c)", new String[]{"X1", "X2", "X3", "X4", "X5"});
         templates.put("NEW(X1) + NEW(b) + NEW(c) + NEW(c) + NEW(c)", new String[]{});
@@ -293,20 +327,20 @@ public class TestGeneralizedSem extends TestCase {
 
         for (String template : templates.keySet()) {
             GeneralizedSemPm semPm = makeTypicalPm();
-            System.out.println(semPm.getGraph());
+            print(semPm.getGraph().toString());
 
-            Set<Node> shouldWork = new HashSet<Node>();
+            Set<Node> shouldWork = new HashSet<>();
 
             for (String name : templates.get(template)) {
                 shouldWork.add(semPm.getNode(name));
             }
 
-            Set<Node> works = new HashSet<Node>();
+            Set<Node> works = new HashSet<>();
 
             for (int i = 0; i < semPm.getNodes().size(); i++) {
-                System.out.println("-----------");
-                System.out.println(semPm.getNodes().get(i));
-                System.out.println("Trying template: " + template);
+                print("-----------");
+                print(semPm.getNodes().get(i).toString());
+                print("Trying template: " + template);
                 String _template = template;
 
                 Node node = semPm.getNodes().get(i);
@@ -314,56 +348,60 @@ public class TestGeneralizedSem extends TestCase {
                 try {
                     _template = TemplateExpander.getInstance().expandTemplate(_template, semPm, node);
                 } catch (Exception e) {
-                    System.out.println("Couldn't expand template: " + template);
+                    print("Couldn't expand template: " + template);
                     continue;
                 }
 
                 try {
                     semPm.setNodeExpression(node, _template);
-                    System.out.println("Set formula " + _template + " for " + node);
+                    print("Set formula " + _template + " for " + node);
 
                     if (semPm.getVariableNodes().contains(node)) {
                         works.add(node);
                     }
 
                 } catch (Exception e) {
-                    System.out.println("Couldn't set formula " + _template + " for " + node);
+                    print("Couldn't set formula " + _template + " for " + node);
                 }
             }
 
             for (String parameter : semPm.getParameters()) {
-                System.out.println("-----------");
-                System.out.println(parameter);
-                System.out.println("Trying template: " + template);
+                print("-----------");
+                print(parameter);
+                print("Trying template: " + template);
                 String _template = template;
 
                 try {
                     _template = TemplateExpander.getInstance().expandTemplate(_template, semPm, null);
                 } catch (Exception e) {
-                    System.out.println("Couldn't expand template: " + template);
+                    print("Couldn't expand template: " + template);
                     continue;
                 }
 
                 try {
                     semPm.setParameterExpression(parameter, _template);
-                    System.out.println("Set formula " + _template + " for " + parameter);
+                    print("Set formula " + _template + " for " + parameter);
                 } catch (Exception e) {
-                    System.out.println("Couldn't set formula " + _template + " for " + parameter);
+                    print("Couldn't set formula " + _template + " for " + parameter);
                 }
             }
 
             assertEquals(shouldWork, works);
-
-            return semPm;
         }
-
-        throw new NullPointerException();
     }
 
+    @Test
     public void test5() {
         RandomUtil.getInstance().setSeed(29999483L);
 
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
@@ -381,15 +419,16 @@ public class TestGeneralizedSem extends TestCase {
         TetradVector record1 = semIm.simulateOneRecord(e);
         TetradVector record2 = im.simulateOneRecord(e);
 
-        System.out.println("XXX1" + e);
-        System.out.println("XXX2" + record1);
-        System.out.println("XXX3" + record2);
+        print("XXX1" + e);
+        print("XXX2" + record1);
+        print("XXX3" + record2);
 
         for (int i = 0; i < record1.size(); i++) {
             assertEquals(record1.get(i), record2.get(i), 1e-10);
         }
     }
 
+    @Test
     public void test6() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -398,13 +437,15 @@ public class TestGeneralizedSem extends TestCase {
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false, true);
 
         SemPm spm = new SemPm(graph);
 
-        SemImInitializationParams params = new SemImInitializationParams();
-        params.setCoefRange(0.5, 1.5);
-        params.setVarRange(1, 3);
+        Parameters params = new Parameters();
+        params.set("coefLow", 0.5);
+        params.set("coefHigh", 1.5);
+        params.set("varLow", 1);
+        params.set("varHigh", 3);
 
         SemIm sim = new SemIm(spm, params);
 
@@ -413,15 +454,20 @@ public class TestGeneralizedSem extends TestCase {
 
         DataSet data = im.simulateData(1000, false);
 
-        System.out.println(im);
+        print(im);
 
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-        System.out.println(estIm);
-        System.out.println(estimator.getReport());
+        print(estIm);
+        print(estimator.getReport());
+
+        double aSquaredStar = estimator.getaSquaredStar();
+
+        assertEquals(0.59, aSquaredStar, 0.01);
     }
 
+    @Test
     public void test7() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -430,22 +476,27 @@ public class TestGeneralizedSem extends TestCase {
 
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false, true);
 
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-        System.out.println(im);
+        print(im);
 
         DataSet data = im.simulateDataRecursive(1000, false);
 
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-        System.out.println(estIm);
-        System.out.println(estimator.getReport());
+        print(estIm);
+        print(estimator.getReport());
+
+        double aSquaredStar = estimator.getaSquaredStar();
+
+        assertEquals(0.67, aSquaredStar, 0.01);
     }
 
+    @Test
     public void test8() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -470,7 +521,7 @@ public class TestGeneralizedSem extends TestCase {
         GeneralizedSemPm pm = new GeneralizedSemPm(spm);
         GeneralizedSemIm im = new GeneralizedSemIm(pm, sim);
 
-        System.out.println(im);
+        print(im);
 
         try {
             pm.setParameterEstimationInitializationExpression("b1", "U(10, 30)");
@@ -485,10 +536,15 @@ public class TestGeneralizedSem extends TestCase {
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-        System.out.println(estIm);
+        print(estIm);
 //        System.out.println(estimator.getReport());
+
+        double aSquaredStar = estimator.getaSquaredStar();
+
+        assertEquals(0.69, aSquaredStar, 0.01);
     }
 
+    @Test
     public void test9() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -537,8 +593,8 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -550,14 +606,20 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(0.62, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test10() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -605,8 +667,8 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -619,14 +681,19 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(1.42, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test11() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -666,8 +733,8 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -680,14 +747,19 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(7.07, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test12() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -735,8 +807,8 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -753,14 +825,19 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(2.56, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test13() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -810,8 +887,8 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(500, false);
 
@@ -824,14 +901,19 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(3.19, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test14() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -875,8 +957,8 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -889,14 +971,19 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(71.25, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test15() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -943,22 +1030,27 @@ public class TestGeneralizedSem extends TestCase {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(.79, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test16() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -1007,8 +1099,8 @@ public class TestGeneralizedSem extends TestCase {
             im.setParameterValue("c3", 1);
             im.setParameterValue("c4", 1);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -1026,14 +1118,19 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(50.38, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test17() {
         RandomUtil.getInstance().setSeed(29999483L);
 
@@ -1082,8 +1179,8 @@ public class TestGeneralizedSem extends TestCase {
             im.setParameterValue("c3", 1);
             im.setParameterValue("c4", 1);
 
-            System.out.println("True model: ");
-            System.out.println(im);
+            print("True model: ");
+            print(im);
 
             DataSet data = im.simulateDataRecursive(1000, false);
 
@@ -1101,54 +1198,20 @@ public class TestGeneralizedSem extends TestCase {
             GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
             GeneralizedSemIm estIm = estimator.estimate(pm, data);
 
-            System.out.println("\n\n\nEstimated model: ");
-            System.out.println(estIm);
-            System.out.println(estimator.getReport());
+            print("\n\n\nEstimated model: ");
+            print(estIm);
+            print(estimator.getReport());
+
+            double aSquaredStar = estimator.getaSquaredStar();
+
+            assertEquals(14.26, aSquaredStar, 0.01);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
-
-    public void test18() {
-        RandomUtil.getInstance().setSeed(29999483L);
-
-        NumberFormat nf = new DecimalFormat("0.0000");
-
-        try {
-            List<Double> drawFromDistribution = new ArrayList<>();
-            ExpressionParser parser = new ExpressionParser();
-            Expression expression = parser.parseExpression("Normal(0, 1)");
-
-            GeneralizedSemEstimator.MyContext context = new GeneralizedSemEstimator.MyContext();
-
-            for (int k = 0; k < 1000; k++) {
-                double evaluate = expression.evaluate(context);
-                drawFromDistribution.add(evaluate);
-            }
-
-            double[] d = new double[drawFromDistribution.size()];
-            for (int i = 0; i < drawFromDistribution.size(); i++) d[i] = drawFromDistribution.get(i);
-
-            EmpiricalCdf dist = new EmpiricalCdf(drawFromDistribution);
-
-            for (double x = -3; x <= 3; x+= 0.1) {
-                double density = dist.density(x);
-
-//                if (Double.isNaN(density) || Double.isInfinite(density)) {
-//                    density = 0.0;
-//                }
-
-                System.out.println(nf.format(x) + " " + nf.format(density));
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-    }
-
 
     private GeneralizedSemPm makeTypicalPm() {
-        List<Node> variableNodes = new ArrayList<Node>();
+        List<Node> variableNodes = new ArrayList<>();
         ContinuousVariable x1 = new ContinuousVariable("X1");
         ContinuousVariable x2 = new ContinuousVariable("X2");
         ContinuousVariable x3 = new ContinuousVariable("X3");
@@ -1170,74 +1233,7 @@ public class TestGeneralizedSem extends TestCase {
         graph.addDirectedEdge(x4, x5);
         graph.addDirectedEdge(x2, x5);
 
-        GeneralizedSemPm semPm = new GeneralizedSemPm(graph);
-        return semPm;
-    }
-
-
-    private String replaceNewParameters(GeneralizedSemPm semPm, String formula, List<String> usedNames) {
-        String parameterPattern = "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/]*))";
-        Pattern p = Pattern.compile("NEW\\((" + parameterPattern + ")\\)");
-
-        while (true) {
-            Matcher m = p.matcher(formula);
-
-            if (!m.find()) {
-                break;
-            }
-
-//            String group0 = m.group(0).replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
-            String group0 = Pattern.quote(m.group(0));
-            String group1 = m.group(1);
-
-            String nextName = semPm.nextParameterName(group1, usedNames);
-            formula = formula.replaceFirst(group0, nextName);
-            usedNames.add(nextName);
-//            System.out.println(formula);
-        }
-        return formula;
-    }
-
-    public void testEmpiricalDistribution() {
-        NumberFormat nf = new DecimalFormat("0.0000");
-
-        try {
-            Graph g = new EdgeListGraphSingleConnections();
-            Node x = new GraphNode("X");
-            g.addNode(x);
-            GeneralizedSemPm pm = new GeneralizedSemPm(g);
-            pm.setNodeExpression(x, "E_X");
-            Node error = pm.getErrorNode(x);
-            pm.setNodeExpression(error, "N(0, 1)");
-
-            GeneralizedSemEstimator.MyContext context = new GeneralizedSemEstimator.MyContext();
-
-            Expression expression = pm.getNodeExpression(error);
-            RealDistribution dist1 = expression.getRealDistribution(context);
-            RealDistribution dist2 = new EmpiricalDistributionForExpression(pm, error, context).getDist();
-
-            for (double z = -2; z <= 2.01; z += 0.1) {
-                System.out.println(nf.format(z) + " " + (nf.format(dist1.density(z) -
-                        dist2.density(z))));
-//                System.out.println(nf.format(z) + " " + (nf.format(dist1.density(z) -
-//                        dist2.density(z))));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestGeneralizedSem.class);
+        return new GeneralizedSemPm(graph);
     }
 }
 

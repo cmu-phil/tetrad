@@ -233,13 +233,7 @@ public class Pcd implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-//        if (getIndependenceTest() instanceof IndTestFisherZConcatenateResiduals2) {
-//            return search(new FasICov2(getIndependenceTest()), nodes);
-////            return search(new FasICov(getIndependenceTest()), nodes);
-//        }
-
-//        return search(new Fas(getIndependenceTest()), nodes);
-        return search(new Fas(getIndependenceTest()), nodes);
+        return search(new Fas(initialGraph, getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -261,7 +255,6 @@ public class Pcd implements GraphSearch {
         }
 
 
-        fas.setInitialGraph(initialGraph);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);
@@ -319,7 +312,7 @@ public class Pcd implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<Edge>();
+        Set<Edge> adjacencies = new HashSet<>();
         for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
@@ -331,14 +324,14 @@ public class Pcd implements GraphSearch {
         Set<Edge> nonAdjacencies = complete.getEdges();
         Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<Edge>(nonAdjacencies);
+        return new HashSet<>(nonAdjacencies);
     }
 
     //===============================PRIVATE METHODS=======================//
 
     private void enumerateTriples() {
-        this.unshieldedColliders = new HashSet<Triple>();
-        this.unshieldedNoncolliders = new HashSet<Triple>();
+        this.unshieldedColliders = new HashSet<>();
+        this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(y);

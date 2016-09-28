@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -45,7 +46,8 @@ public class AverageOverClusters extends DataWrapper {
     //=============================CONSTRUCTORS==============================//
 
 
-    public AverageOverClusters(DataWrapper dataWrapper, MeasurementModelWrapper measurementModelWrapper) {
+    public AverageOverClusters(DataWrapper dataWrapper, MeasurementModelWrapper measurementModelWrapper,
+                               Parameters parameters) {
         DataModel dataModel = calcAveragesOverClusters(dataWrapper.getSelectedDataModel(),
                 measurementModelWrapper);
 
@@ -68,21 +70,18 @@ public class AverageOverClusters extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new CorrMatrixConverter(wrapper);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
-    public DataModel calcAveragesOverClusters(DataModel dataModel, MeasurementModelWrapper measurementModelWrapper) {
+    private DataModel calcAveragesOverClusters(DataModel dataModel, MeasurementModelWrapper measurementModelWrapper) {
         if (dataModel instanceof DataSet) {
             DataSet data = (DataSet) dataModel;
             Clusters clusters = measurementModelWrapper.getClusters();
 
-            List<Node> avgVars = new ArrayList<Node>();
+            List<Node> avgVars = new ArrayList<>();
 
             for (int j = 0; j < clusters.getNumClusters(); j++) {
                 Node latent = null;
@@ -189,7 +188,7 @@ public class AverageOverClusters extends DataWrapper {
 
                 List<Node> trueChildren = trueGraph.getChildren(_latent);
 
-                for (Node node2 : new ArrayList<Node>(trueChildren)) {
+                for (Node node2 : new ArrayList<>(trueChildren)) {
                     if (node2.getNodeType() == NodeType.LATENT) {
                         trueChildren.remove(node2);
                     }

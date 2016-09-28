@@ -24,15 +24,14 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetrad.util.Parameters;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
  * Implements a stub that basic algorithm wrappers can extend if they take
  * either a dataModel model or a workbench model as parent. Contains basic
- * methods for executing algorithms and returning results.
+ * methods for executing algorithm and returning results.
  *
  * @author Joseph Ramsey
  */
@@ -50,14 +49,14 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      *
      * @serial Cannot be null.
      */
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     /**
      * The parameters guiding this search (when executed).
      *
      * @serial Cannot be null.
      */
-    private MimParams params;
+    private Parameters params;
 
     /**
      * Clusters resulting from the last run of the algorithm.
@@ -86,6 +85,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * @serial Can be null.
      */
     private Graph structureGraph;
+    private DataWrapper dataWrapper;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -94,7 +94,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, MimParams params) {
+    AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -102,18 +102,20 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
             throw new NullPointerException();
         }
 
+        this.dataWrapper = dataWrapper;
+
         this.params = params;
         setClusters(clusters);
         this.sourceGraph = dataWrapper.getSourceGraph();
 
         DataModel data = getDataModel(dataWrapper);
-        getParams().setKnowledge(dataWrapper.getKnowledge());
+        getParams().set("knowledge", dataWrapper.getKnowledge());
         List names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, MimParams params) {
+    AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -131,13 +133,13 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MimRunner runner, MimParams params) {
+    AbstractMimRunner(MimRunner runner, Parameters params) {
         if (runner == null) {
             throw new NullPointerException();
         }
 
         this.params = params;
-        this.params.setClusters(runner.getClusters());
+        this.params.set("clusters", runner.getClusters());
         this.sourceGraph = runner.getSourceGraph();
 
         DataModel dataSource = runner.getData();
@@ -148,7 +150,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //============================PUBLIC METHODS==========================//
 
-	public final Graph getResultGraph() {
+    public final Graph getResultGraph() {
         return this.resultGraph;
     }
 
@@ -169,15 +171,27 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     public final DataModel getData() {
-        return dataModel;
+        if (dataWrapper != null) {
+            DataModelList dataModelList = dataWrapper.getDataModelList();
+
+            if (dataModelList.size() == 1) {
+                return dataModelList.get(0);
+            } else {
+                return dataModelList;
+            }
+        } else if (dataModel != null) {
+            return dataModel;
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
-    public final MimParams getParams() {
+    public final Parameters getParams() {
         return this.params;
     }
 
     public void resetParams(Object params) {
-        this.params = (MimParams) params;
+        this.params = (Parameters) params;
     }
 
     public Object getResettableParams() {
@@ -186,11 +200,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //===========================PROTECTED METHODS========================//
 
-    protected void setResultGraph(Graph graph) {
+    void setResultGraph(Graph graph) {
         this.resultGraph = graph;
     }
 
-    protected void setClusters(Clusters clusters) {
+    void setClusters(Clusters clusters) {
         if (clusters == null) {
             throw new NullPointerException();
         }
@@ -198,7 +212,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.clusters = clusters;
     }
 
-    protected void setStructureGraph(Graph graph) {
+    void setStructureGraph(Graph graph) {
         this.structureGraph = graph;
     }
 
@@ -222,20 +236,17 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
             if (dataSet.isDiscrete()) {
                 return dataSet;
-            }
-            else if (dataSet.isContinuous()) {
+            } else if (dataSet.isContinuous()) {
                 return dataSet;
             }
 
             throw new IllegalArgumentException("<html>" +
                     "This dataModel set contains a mixture of discrete and continuous " +
-                    "<br>columns; there are no algorithms in Tetrad currently to " +
+                    "<br>columns; there are no algorithm in Tetrad currently to " +
                     "<br>search over such data sets." + "</html>");
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+        } else if (dataModel instanceof ICovarianceMatrix) {
             return dataModel;
-        }
-        else if (dataModel instanceof TimeSeriesData) {
+        } else if (dataModel instanceof TimeSeriesData) {
             return dataModel;
         }
 
@@ -244,37 +255,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     private void transferVarNamesToParams(List names) {
-        getParams().setVarNames(names);
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (dataModel == null) {
-            throw new NullPointerException();
-        }
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        if (clusters == null) {
-            throw new NullPointerException();
-        }
+        getParams().set("varNames", names);
     }
 
     public String getName() {

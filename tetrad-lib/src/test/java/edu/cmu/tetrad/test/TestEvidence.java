@@ -28,50 +28,32 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the BayesUpdqater
  *
  * @author William Taysom
  */
-public final class TestEvidence extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestEvidence(String name) {
-        super(name);
-    }
+public final class TestEvidence {
 
     /**
      * Richard's 2-variable example worked by hand.
      */
-    public static void testUpdate1() {
+    @Test
+    public void testUpdate1() {
         BayesIm bayesIm = sampleBayesIm2();
 
         Evidence evidence = Evidence.tautology(bayesIm);
-
-        System.out.println(evidence);
-
         evidence.getProposition().removeCategory(0, 1);
-
-        System.out.println(evidence);
-
         evidence.getProposition().setVariable(1, false);
         evidence.setManipulated(0, true);
-
-        System.out.println(evidence);
-
         Evidence evidence2 = new Evidence(evidence, bayesIm);
 
-        System.out.println("Copied evidence:");
-        System.out.println(evidence2);
-
         assertEquals(evidence2, evidence);
-
         assertEquals(evidence, new Evidence(evidence));
 
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
@@ -129,17 +111,6 @@ public final class TestEvidence extends TestCase {
         bayesIm1.setProbability(2, 5, 0, .7);
         bayesIm1.setProbability(2, 5, 1, .3);
         return bayesIm1;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestEvidence.class);
     }
 }
 

@@ -45,35 +45,15 @@ import java.util.Map;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class KnowledgeEditorToolbar extends JPanel {
+class KnowledgeEditorToolbar extends JPanel {
 
     //=========================MEMBER FIELDS============================//
 
     /**
-     * Node infos for all of the nodes.
-     */
-    private ButtonInfo[] buttonInfos = new ButtonInfo[]{new ButtonInfo("Select",
-            "Select and Move", "move",
-            "<html>Select and move nodes or groups of nodes " +
-                    "<br>on the workbench.</html>"), new ButtonInfo("Forbidden",
-            "Add Forbidden", "flow",
-            "<html>Add an edge from one node to another to indicate " +
-                    "<br>that for purposes of searches that edge will not be " +
-                    "<br>allowed in the graph.</html>"), new ButtonInfo(
-            "Required", "Add Required", "flow",
-            "<html>Add an edge from one node to another to indicate " +
-                    "<br>that for purposes of searches that edge will be " +
-                    "<br>required in the graph.</html>"), new ButtonInfo(
-            "Source Layout", "Source Layout", "flow",
-            "<html>Lays out the nodes according to the source graph.</html>"),
-            new ButtonInfo("Knowledge Layout", "Knowledge Layout", "flow",
-                    "<html>Lays out the nodes according to knowledge tiers.</html>")};
-
-    /**
      * The map from JToggleButtons to String node types.
      */
-    private Map<JToggleButton, String> nodeTypes =
-            new HashMap<JToggleButton, String>();
+    private final Map<JToggleButton, String> nodeTypes =
+            new HashMap<>();
 
     /**
      * The workbench this toolbar controls.
@@ -87,7 +67,6 @@ public class KnowledgeEditorToolbar extends JPanel {
      * Constructs a new session toolbar.
      *
      * @param workbench   the workbench this toolbar controls.
-     * @param sourceGraph
      */
     public KnowledgeEditorToolbar(KnowledgeWorkbench workbench,
                                   Graph sourceGraph) {
@@ -109,6 +88,25 @@ public class KnowledgeEditorToolbar extends JPanel {
         buttonsPanel.setBorder(new CompoundBorder(outsideBorder, insideBorder));
 
         // Create buttons.
+        /*
+      Node infos for all of the nodes.
+     */
+        ButtonInfo[] buttonInfos = new ButtonInfo[]{new ButtonInfo("Select",
+                "Select and Move", "move",
+                "<html>Select and move nodes or groups of nodes " +
+                        "<br>on the workbench.</html>"), new ButtonInfo("Forbidden",
+                "Add Forbidden", "flow",
+                "<html>Add an edge from one node to another to indicate " +
+                        "<br>that for purposes of searches that edge will not be " +
+                        "<br>allowed in the graph.</html>"), new ButtonInfo(
+                "Required", "Add Required", "flow",
+                "<html>Add an edge from one node to another to indicate " +
+                        "<br>that for purposes of searches that edge will be " +
+                        "<br>required in the graph.</html>"), new ButtonInfo(
+                "Source Layout", "Source Layout", "flow",
+                "<html>Lays out the nodes according to the source graph.</html>"),
+                new ButtonInfo("Knowledge Layout", "Knowledge Layout", "flow",
+                        "<html>Lays out the nodes according to knowledge tiers.</html>")};
         JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
         for (int i = 0; i < buttonInfos.length; i++) {
@@ -243,7 +241,7 @@ public class KnowledgeEditorToolbar extends JPanel {
         }
     }
 
-    public Graph getSourceGraph() {
+    private Graph getSourceGraph() {
         return sourceGraph;
     }
 
@@ -261,7 +259,7 @@ public class KnowledgeEditorToolbar extends JPanel {
         /**
          * The name displayed on the button.
          */
-        private String displayName;
+        private final String displayName;
 
         /**
          * The prefixes for images for this button. It is assumed that files
@@ -269,12 +267,12 @@ public class KnowledgeEditorToolbar extends JPanel {
          * <prefix>Roll.gif are located in the /images directory relative to
          * this compiled class.
          */
-        private String imagePrefix;
+        private final String imagePrefix;
 
         /**
          * Tool tip text displayed for the button.
          */
-        private String toolTipText;
+        private final String toolTipText;
 
         public ButtonInfo(String nodeTypeName, String displayName,
                           String imagePrefix, String toolTipText) {

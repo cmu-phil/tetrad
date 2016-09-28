@@ -31,14 +31,11 @@ public class DoubleDataBox implements DataBox {
     /**
      * The stored double data.
      */
-    private double[][] data;
+    private final double[][] data;
 
     /**
      * Constructs an 2D double array consisting entirely of missing values
      * (Double.NaN).
-     *
-     * @param rows
-     * @param cols
      */
     public DoubleDataBox(int rows, int cols) {
         this.data = new double[rows][cols];
@@ -92,9 +89,13 @@ public class DoubleDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            data[row][col] = Double.NaN;
+            synchronized (data) {
+                data[row][col] = Double.NaN;
+            }
         } else {
-            data[row][col] = value.doubleValue();
+            synchronized (data) {
+                data[row][col] = value.doubleValue();
+            }
         }
     }
 
@@ -130,8 +131,31 @@ public class DoubleDataBox implements DataBox {
     /**
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
-    public DataBox like(int rows, int cols) {
-        return new DoubleDataBox(rows, cols);
+    public DataBox like() {
+        int[] rows = new int[numRows()];
+        int[] cols = new int[numCols()];
+
+        for (int i = 0; i < numRows(); i++) rows[i] = i;
+        for (int j = 0; j < numCols(); j++) cols[j] = j;
+
+        return viewSelection(rows, cols);
+    }
+
+    @Override
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new DoubleDataBox(rows.length, cols.length);
+
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                _dataBox.set(i, j, get(rows[i], cols[j]));
+            }
+        }
+
+        return _dataBox;
+    }
+
+    public double[][] getData() {
+        return data;
     }
 }
 

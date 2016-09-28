@@ -229,7 +229,6 @@ public class ProbUtils {
      * Java. </p> The static double array above goes with this. </p> Converted
      * to Java by Frank Wimberly
      *
-     * @param xx
      * @return the value ln[?(xx)] for xx > 0
      */
     public static double lngamma(double xx) {
@@ -251,41 +250,6 @@ public class ProbUtils {
         }
         return -tmp + Math.log(2.5066282746310005 * ser / x);
     }
-
-    /*
-    private static final double COF1 = 76.18009173, COF2 = -86.50532033,
-    COF3 = 24.01409822, COF4 = -1.231739516,
-    COF5 = 0.120858003e-2, COF6 = -0.536382e-5;
-    */
-
-    /**
-     * Log gamma function from Numerical Recipes.  Calculates the log gamma function
-     * of xx.
-     *
-     * This is a less accurate version of the above and it has therefore been commented out.
-     * @param xx value to calculate the log gamma for.
-     * @return the log gamma of xx.
-     */
-    /*
-    public static double lngamma(double xx) {
-
-        double x, tmp, ser;
-
-        if (xx < 1.0) {
-            return (lngamma(1.0 + xx) - Math.log(xx));
-        }
-        else {
-            x = xx - 1.0;
-            tmp = x + 5.5;
-            tmp -= (x + 0.5) * Math.log(tmp);
-            ser = 1.0 + COF1 / (x + 1.0) + COF2 / (x + 2.0)
-                    + COF3 / (x + 3.0) + COF4 / (x + 4.0) + COF5 / (x + 5.0)
-                    + COF6 / (x + 6.0);
-
-            return (-tmp + Math.log(2.50662827465 * ser));
-        }
-    }
-    */
 
     /**
      * Calculates the log beta function of p and q.
@@ -1620,7 +1584,7 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlation
-     * @return Prob(x1 <= ah, x2 <= ak)
+     * @return Prob&lpar;x1 &le; ah, x2 &le; ak&rpar;
      */
 
     public static double biNormalCdf(double ah, double ak, double r) {

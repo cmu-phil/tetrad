@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+</head>
+
+<body style="direction: ltr;">
+<table bgcolor="maroon" border="1" width="95%">
+<tbody>
+<tr>
+<td>
+<h2><font color="#ffffff">Data Loader </font></h2>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+The data loader is launched from the File menu of a Data box. From this
+File menu, select <b>Load Data...</b>; you will be asked to select a data
+file, and once you do, the data loader dialog will be displayed.</p>
+<p>The data loader is capable of loading <i>tabular</i>
+and <i>covariance</i> data files, with variations of each.
+A <i>tabular</i> data file stores a rectangular mixed
+continuous/discrete dataset, with optional variable definitions and
+knowledge specification. A <i>covariance</i> data file
+stores a lower-triangular covariance matrix, with optional knowledge
+specification.</p>
+<p align="center"><img src="../../images/dataloader1.gif" height="400" width="600"></p>
+<p align="center">(a)</p>
+<p align="center"><img src="../../images/dataloader4.jpg" height="400" width="600"></p>
+<p align="center">(b)</p>
+<p align="center"><strong>Figure 1. Flat mixed data
+file. </strong></p>
+<p>
+It is perhaps easiest to see how data loading works for tabular data
+files by looking at some examples. Figure 1(a) shows a simple mixed
+data file; in this file, X and Y are continuous, Z is ambiguously discrete,
+and W is unambiguously discrete. To load this simple file, we use the
+following parameter settings:</p>
+<ul>
+<li>File type = Tabular Data</li>
+<li>Delimiter = Whitespace</li>
+<li>Variable names in first row of data? Yes.</li>
+<li>Case ID's provided? No.</li>
+<li>Comment marker = //</li>
+<li>Quote character = "</li>
+<li>Missing value marker = *</li>
+<li>Integer columns with up to <i>10</i> values
+are discrete.</li>
+</ul>
+<p>Note that some of these
+parameters do not even apply to this file; we just accept the defaults.
+The delimiter is the character pattern used to separate tokens on a
+single line; in this case, any whitespace is sufficient. In this file,
+variable names do appear in the first row of the data; they are X, Y,
+Z, and W. It is not necessary to include variable names, but if they
+are not included, this checkbox should unchecked. Case IDs are
+identifiers for each row in the data set; in this file they are not
+included. A comment line is a line beginning with the <i>comment
+marker</i>. This file contains no comment lines. A quote
+character is either ' or "; and in pairs surrounds quoted bits of
+text; this file contains no quoted bits of text. A <i>missing
+value marker</i> stands in for missing values in the data set.
+This file contains one missing value, which is indicated using an
+asterisk (*); that option is selected. Finally, integer columns, like
+W, can be interpreted either as continuous or as discrete. The final
+parameter specifies a cutoff for the number of distinct values in a
+column if it is to be considered discrete;in this case, the cutoff is
+set to 10. So when W is read in, it will be considered discrete.</p>
+
+<p>Once the data loading
+parameters are correct, the data is loaded by pressing <i>Load</i>;, at
+which point focus shifts from the File tab to the Loading
+Log tab. Information about the loading process is displayed in the
+Loading Log tab, along with information about read twoCycleErrors.</p>
+
+<p>Figure 1(b) shows how the data loading dialog looks if
+multiple data sets are selected. Note that in this case, to the left
+of the Load button, new buttons are added, Previous and Next, to 
+navigate through the data sets, together with an indication (1 / 10)
+as to which data set is currently in focus. To load a series of data
+sets, click Load, then Next, then Load, then Next, and so on, until
+all of the data sets have been loaded. As each data set is loaded,
+an asterisk appears next to its progress indicator--thus, *1 / 10.
+One can tell that all data sets have been loaded by clicking back
+and forth through the data sets using the Previous and Next buttons
+and making sure all progress indicators have an asterisk beside them.
+When finished loading all data sets, click "Save."  </p>
+
+<p>Figure 2 shows an example
+of a tabular data file with optional variable definitions and knowledge
+specification. Comments are included in Figure 2, using the indicated
+comment marker, which must appear at the beginning of each comment line.</p>
+<p align="center"><img src="../../images/dataloader2.gif" height="400" width="600"> </p>
+<p align="center"><strong>Figure
+2: A more complex tabular data example.</strong> </p>
+
+<p>It is important to
+understand why a variable might be defined in a /variables section and
+why knowledge might be given in a /knowledge section, as these are
+optional sections of the file. Note that if a /variables section is
+provided, the data must be prefaced by a line containing only data,
+to indicate where the data itself begins.</p>
+
+<p>The reason to define a
+variable in the /variables section is that the definition guessed
+at by the data loader is incorrect. One may want to specify
+explicitly that an integral variable is continuous for instance, if
+one needs to have a variable V1 with a small number of values be
+discrete but another variable V2 with a larger number of values be
+continuous. Likewise, one may wish to gain some fine control over the
+precise definition of a discrete variable, adding in categories for
+that do not appear in the relevant data column. An example of a
+variable being specified as continuous is W in Figure 2; and example of
+a variable being specified as discrete in a particular way is Z in
+Figure 2.</p>
+
+<p>The reason for including
+knowledge (of forbidden and required edges) in a data file is that
+several operations may need to be performed on the data set using
+common knowledge, so it is a matter of convenience to associate the
+knowledge with the data file itself, rather than redefining or copying
+the knowledge each time it is used. Knowledge is specified in a
+/knowledge section, which may optionally contain any of the following
+three sections: addtemporal, forbiddirect, and
+requiredirect. The addtemporal section specifies temporal
+tiers. a list of rows is specified, each beginning with the number of a
+tier and followed by a list of variables for that tier. Edges from
+nodes in higher-numbered tiers to nodes in lower-numbered tiers will be
+forbidden. The forbiddirect section consists of a list of rows
+with two variable each in them. The edge from the first variable to the
+second variable is explicitly forbidden. The requiredirect
+section consists of a list of rows with two variable each in them. The
+edge from the first variable to the second variable is explicitly
+required.</p>
+
+<p>An example of a <i>covariance</i>
+data file being loaded is given in Figure 3. Note the form of the
+covariance file. It begins with an optional line containing only
+"/covariance". This is followed by the sample size, in a single
+line. The next line contains the list of variable names. Then, the
+lower triangle of the covariance matrix is specified. Finally, and
+optionally, knowledge may be specified.</p>
+<p align="center"><img src="../../images/dataloader3.gif" height="400" width="600"></p>
+<p align="center"><strong>Figure
+3. An example covariance file. </strong></p>
+</body></html>

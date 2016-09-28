@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1"
+          http-equiv="content-type">
+    <title>Menu</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+    <tr>
+        <td><h2><font color="#FFFFFF">Tetrad Menubar </font></h2></td>
+    </tr>
+</table>
+<p><br>
+    The main menu bar in Tetrad lets you manage Tetrad sessions, lets you perform some editing operations on the current
+    session, and gives you access to the help functionality (this), among other things. It looks like this:</p>
+<p><img src="../images/menubar.png"></p>
+<p>The function of each item in each menu is described below. If you were looking for help for popup menus for boxes,
+    see <a href="../common_tasks/using_popup_menus.html">Popup Menus</a>.</p>
+<p>&nbsp;</p>
+<h3>The File Menu</h3>
+<p><img src="../images/file_menu.png"></p>
+<p>Here's what each item does in the File menu. </p>
+<ul>
+    <li></li>
+    <li><em>New Session</em> - creates a new, empty Tetrad session. Your previous session is still available-just go to
+        the Session menu--see below.
+    </li>
+    <li><em>Open Session</em> - prompts you for a saved Tetrad session file (with suffice &quot;.tet&quot;)
+        and opens it.
+    </li>
+    <li><em>Close Session</em> - closes your main workbench and leaves you in Tetrad or in a stored session in memory.
+        If there are no sessions you get a blank Tetrad screen with no workbench You can't do anything in the program
+        until another session is opened or a new one is created.
+    </li>
+    <li><em>Save Session</em> - saves all of your work, data, the whole thing, to a file (suffix &quot;.tet&quot;) so
+        that you can call it back up later. You are asked to give the session a name if you haven't done so already.
+    </li>
+    <li><em>Save Session As - </em>Does the same thing as Save Session, but always asks you for a file name.</li>
+    <li><em>Session Version</em> - Gives version information for the current session. See <a
+            href="tetrad_versioning.html">Tetrad Versioning</a>.
+    </li>
+    <li><em>Save Screenshot</em> - Saves a screenshog (PNG format) of the entire Tetrad Session, in case you don't want
+        to fool around with Photoshop or GIMP.
+    </li>
+    <li><em>Save Session Graph Image</em> - Saves an image of <em>just</em> the session graph in the white workspace are
+        with the boxes and arrow in it. Leaves out the menubar and toolbar. This is useful if your session flowchart is
+        larger than your screen.
+    </li>
+    <li><em>Exit</em> - Gets you out of Tetrad the polite way.<br>
+    </li>
+</ul>
+<p>In using Tetrad you will put together a sequence of boxes connected by flowchart arrows. (See <a
+        href="how_to_build_a_session.html">How to Build a Session</a>.) Some sequences are so commonly used, that Tetrad
+    will
+    insert the entire sequence for you--boxes and arrows--in the workbench all at once.
+</p>
+<p>In addition, there are several
+    <em>shortcut</em> items to help you create flowcharts of sessions nodes
+    on the
+    workbench. The Load Data/Simulate buttons puts a Data node on the workbench. If you double click this and
+    select <em>Loaded Data</em> you will be able to load data usign the File menu in that box. If you select
+    Simulation, you will be able to select a model type and simulate random data. The Search item puts a Data box
+    on the workbench connected to a Search box. If you double click the Data box you will be able to load or simulate
+    data, as above, and then if you double click the Search box, you will be able to search over this data for a
+    suitable model or class of models. The easiest way to see what these menu items do is to try them.
+    See <a href="../common_tasks/using_templates.html">Using Templates</a> for more details.</p>
+</ul>
+<h3>The Edit Menu </h3>
+<p><img src="../images/edit_menu.png"></p>
+<p>Here's what each item does in the Edit Menu.</p>
+<ul>
+    <li><em>Cut</em> - Cuts out any selected boxes from the workbench (together with any edges between them) and allows
+        you to paste them. For advise on how to select groups of boxes, see <a
+                href="../common_tasks/selecting_groups_of_nodes.html">Selecting Groups of Nodes</a>.
+    </li>
+    <li><em>Copy </em>- Same as Cut, but leaves the original nodes in the session.</li>
+    <li><em>Paste</em> - Paste the cut or copied boxes slightly down and to the right of the original ones, either in
+        the current session or in some other session. Multiple pastes are supported; if you paste multiple times, new
+        copies appear down and to the right of the originally selected boxes.
+    <li><em>Number Format</em> - This lets you set the number format used throughout the code. If you need more
+        digits to the right of the decimal place, here's the place to do it.
+    </li>
+</ul>
+
+<p>&nbsp;</p>
+<h3>The Window Menu </h3>
+<p><img src="../images/window_menu.png"></p>
+<p><span style="font-weight: bold;"><br>
+  </span>Tetrad can keep multiple sessions open at once, but only one
+    workbench is visible at a time. &quot;Sessions&quot; lists all of your open
+    sessions and lets you switch to the workbench of whichever session you
+    want. Your sessions are automatically given a name, e.g., "Untitled1.tet" unless you have saved them with a name.
+    <br>
+</p>
+
+
+<p>&nbsp;</p>
+<h3>The Logging Menu </h3>
+<p><img src="../images/logging_menu.png"></p>
+<p><span style="font-weight: bold;"><br>
+  </span>Tetrad is able to do logging on search algorithms and other components. This
+    menu lets you choose where to put the logs, what the file prefix should be for the
+    logs (they will be sequentially numbered), and lets you start and stop logging.
+    Each time you start logging, a new log file will be created, and logging will
+    continue until you stop logging.
+    <br>
+</p>
+
+<h3>The Help Menu </h3>
+<p><img src="../images/help_menu.png"><br>
+</p>
+<p>The items listed do the following.</p>
+<ul>
+    <li><em>Tetrad Manual</em> - That's this. You already know about it.</li>
+    <li><em>About Tetrad [version-number]</em> - Shows information about the project in general.</li>
+    <li><em>Warranty</em> - Warranty information displayed as per requirements of the GNU General Public License.</li>
+    <li><em>License</em> - License information displayed as per requirements of the GNU General Public Licence.</li>
+</ul>
+</body>
+</html>
+

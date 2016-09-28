@@ -35,9 +35,9 @@ public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     private Dag graph = new Dag();
-    private List<String> variables = new ArrayList<String>();
+    private List<String> variables = new ArrayList<>();
     private int numLags = 0;
-    private Map<String, List<Node>> laggedVariables = new HashMap<String, List<Node>>();
+    private Map<String, List<Node>> laggedVariables = new HashMap<>();
 
     // New methods.
     public boolean addVariable(String variable) {
@@ -72,26 +72,6 @@ public class LagGraph implements Graph {
         return new LagGraph();
     }
 
-    public boolean removeVariable(Node node) {
-        return false;
-    }
-
-    public int addLag() {
-
-        // Creates a new numbered lag variable for each variable (of same latent type as variable)
-        // and adds it to the graph... where??
-        return 0;
-    }
-
-    public int removeLag() {
-        return 0;
-    }
-
-    public int getNumLags() {
-        return 0;
-    }
-
-
     // Modified methods from graph.
     public boolean addDirectedEdge(Node node1, Node node2) {
         return getGraph().addDirectedEdge(node1, node2);
@@ -120,10 +100,6 @@ public class LagGraph implements Graph {
     }
 
     public boolean addEdge(Edge edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
         throw new UnsupportedOperationException();
     }
 
@@ -164,7 +140,7 @@ public class LagGraph implements Graph {
     }
 
     public boolean existsTrek(Node node1, Node node2) {
-        return existsTrek(node1, node2);
+        return getGraph().existsTrek(node1, node2);
     }
 
     public void fullyConnect(Endpoint endpoint) {
@@ -223,12 +199,13 @@ public class LagGraph implements Graph {
         return getGraph().getEndpointMatrix();
     }
 
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
+    }
+
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
     }
 
     public Node getNode(String name) {
@@ -371,14 +348,6 @@ public class LagGraph implements Graph {
         return getGraph().setEndpoint(from, to, endPoint);
     }
 
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
-    }
-
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
@@ -481,7 +450,7 @@ public class LagGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    public Dag getGraph() {
+    private Dag getGraph() {
         return graph;
     }
 

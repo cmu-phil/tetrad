@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td height="28"> 
+      <h2><font color="#FFFFFF">Popup Menus </font></h2></td>
+  </tr>
+</table>
+
+<p>If you right click on any box in the session workbench (a Graph box, a Data box, etc.), a popup menu will be displayed with a number of options. The options are as follows. </p>
+<ol>
+  <li>Create Model.</li>
+  <li>Edit Model.</li>
+  <li>Destroy Model.</li>
+  <li>(Re)create Descendant Models.</li>
+  <li>Rename Box.</li>
+  <li>Clone Box.</li>
+  <li>Delete Box.</li>
+  <li>Set Repetitions for Simulation</li>
+  <li>Run Simulation.</li>
+  <li>Info for this Box.</li>
+</ol>
+<p>Create Model.</p>
+<p>"Create" does the same thing as double clicking on the Graph box the first time--if you have not yet created a graph. Otherwise it does nothing.</p>
+<p>Edit Model.</p>
+<p>"Edit" does the same thing as double clicking on the Graph box after you have already created a graph--it opens a graph editing window.</p>
+<p>Destroy Model.</p>
+<p>Removes the model that the box contains and lets you create another one from scratch. Any models downstream will be destroyed as well, since they depend on the model being destroyed. </p>
+<p>(Re)create Descendant Models.</p>
+<p>Allows you to quickly create (or recreate if they already exist) a model and all of the models downstream of it. This is helpful if you're just playing around with random models but can be frustrating if you accidentally overwrite models you're spent a long time creating. Therefore, a warning is displayed before any changes are made to make sure you really want to make the changes. </p>
+<p>Rename Box.</p>
+<p>This lets you rename the session box you right-clicked on. This is useful if you have a number of similar session boxes on the workbench and would like to keep track of which is which. </p>
+<p>Clone Box.</p>
+<p>Clones the box you've right-clicked on so you can edit the copy separately.</p>
+<p>Delete Box.</p>
+<p>Deletes the box you've right-clicked on, destroying its model and removing it from the session altogether. Cannot be undone.</p>
+<p>Set Repetitions for Simulation</p>
+<p>Sets the number of times a node is  &quot;executed&quot; (i.e., destroyed and randomly recreated) in simulation. Each time a node is destroyed and recreated, all of the children of the node are executed as well. </p>
+<p>Run Simulation.</p>
+<p>Executes (i.e. destroys and recreates) the node right-clicked on. This starts a cascade of nodes being destroyed and recreated downstream. This can be useful if you'd like to know how well a particular search performs on graphs with 10 nodes in them, with 20 edges selected randomly, for instance. </p>
+<p>Info for this Box.</p>
+<p>Lets you choose which of the models for the box being right-clicked on you'd like help for, and which of the possible parent combinations of that box you're interested in.<br>
+  <br style="font-weight: bold;">
+  <span style="font-weight: bold;">Three things are important:&nbsp; </span><br>
+  <br>
+  <span style="font-weight: bold;">1. The "Unoriented" and "Half-Oriented"&nbsp; buttons are for creating theoretical graphical objects of various kinds. Do 
+  not use these buttons</span><span
+ style="font-weight: bold;"> for ordinary modeling. Currently, none of the statistical 
+  procedures in the program work for graphs with such edges.&nbsp; </span><br style="font-weight: bold;">
+  <br style="font-weight: bold;">
+  <span style="font-weight: bold;">2. If you create a model with a latent variable, 
+  if you later use the model to generate data, values for the latent variables
+  will not be shown.</span><br style="font-weight: bold;">
+  <br style="font-weight: bold;">
+  <span style="font-weight: bold;">3. If you have introduced any boxes that depend 
+  on a Graph box, changing the graph will alter the contents of all boxes downstream 
+  in the flowchart from the Graph box. Often it is easier to simply create a new 
+  Graph box in the same main workspace window--there is no limit to how many graph 
+  or other boxes you can have at the same time.</span><br style="font-weight: bold;">
+  <br>
+  The menu at the top of the Graph window has two options, "File" and "Edit".&nbsp; "Edit" currently does nothing. "File" gives three options: You can save a graph 
+  in a file--<span
+ style="font-style: italic;">but there is no point because we have not yet implemented 
+  a facility to paste the saved graph into a new window. </span>You can introduce 
+  the ALARM network,&nbsp; a fairly complex graph standardly used as a test for
+  search algorithms, and you can save any graph you create as an image file that 
+can be introduced into text documents, e.g., into Microsoft World.</p>
+</body>
+</html>

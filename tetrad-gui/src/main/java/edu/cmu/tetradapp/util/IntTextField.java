@@ -204,7 +204,7 @@ public final class IntTextField extends JTextField {
      * uses are permitted. Side effects (such as storing the value in the
      * process of filtering it) are permitted.
      */
-    public static interface Filter {
+    public interface Filter {
 
         /**
          * Filters the given value, returning the new value that should be

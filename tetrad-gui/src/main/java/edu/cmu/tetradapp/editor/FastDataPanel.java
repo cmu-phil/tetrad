@@ -23,11 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
 
 import javax.swing.*;
@@ -48,17 +45,16 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class FastDataPanel extends JPanel {
-    private DataModel[] dataModels;
+    private transient DataModel[] dataModels;
 
     private JRadioButton tabularRadioButton;
 
-    private JRadioButton discrete;
     private JRadioButton continuous;
 
     private JRadioButton delimiter2RadioButton;
     private JRadioButton delimiter3RadioButton;
 
-    private int fileIndex = 0;
+    private final int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
 
@@ -98,7 +94,7 @@ final class FastDataPanel extends JPanel {
 
         // Tabular/covariance.
         continuous = new JRadioButton("Continuous");
-        discrete = new JRadioButton("Discrete");
+        JRadioButton discrete = new JRadioButton("Discrete");
 
         continuous.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -252,7 +248,7 @@ final class FastDataPanel extends JPanel {
         add(b, BorderLayout.CENTER);
     }
 
-    public String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
+    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
         return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
     }
 
@@ -264,7 +260,7 @@ final class FastDataPanel extends JPanel {
         return tabularRadioButton;
     }
 
-    public JRadioButton getDelimiter2RadioButton() {
+    private JRadioButton getDelimiter2RadioButton() {
         return delimiter2RadioButton;
     }
 
@@ -292,7 +288,7 @@ final class FastDataPanel extends JPanel {
             tabbedPane.setSelectedIndex(1);
 
             char delim = getDelimiter2RadioButton().isSelected() ? '\t' : ',';
-            Set<String> excluded = new HashSet<String>();
+            Set<String> excluded = new HashSet<>();
             excluded.add("MULT");
 
             DataSet dataSet;

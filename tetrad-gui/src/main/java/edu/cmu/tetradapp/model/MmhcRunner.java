@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -30,6 +32,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.search.mb.Mmhc;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
@@ -46,20 +49,18 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
 
     //============================CONSTRUCTORS============================//
 
-    public MmhcRunner(DataWrapper dataWrapper, BasicSearchParams params) {
+    private MmhcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static MmhcRunner serializableInstance() {
-        return new MmhcRunner(DataWrapper.serializableInstance(),
-                BasicSearchParams.serializableInstance());
-    }                                                     
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
 
     //============================PUBLIC METHODS==========================//
 
@@ -71,11 +72,11 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
     public void execute() {
         Mmhc search;
 
-        int depth = getParams().getIndTestParams().getDepth();
+        int depth = getParams().getInt("depth", -1);
 
-        search = new Mmhc(getIndependenceTest());
+        search = new Mmhc(getIndependenceTest(), getIndependenceTest().getDataSets().get(0));
         search.setDepth(depth);
-        search.setKnowledge(getParams().getKnowledge());
+        search.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
         Graph graph = search.search();
         setResultGraph(graph);
@@ -97,7 +98,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -107,7 +108,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -116,18 +117,23 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
-    public IndependenceTest getIndependenceTest() {
+    @Override
+    public String getAlgorithmName() {
+        return "MMHC";
+    }
+
+    private IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
         if (dataModel == null) {
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 }

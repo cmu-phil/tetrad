@@ -25,10 +25,7 @@ import edu.cmu.tetrad.calculator.expression.Context;
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionLexer;
 import edu.cmu.tetrad.calculator.parser.Token;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.analysis.MultivariateFunction;
@@ -50,7 +47,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemIm implements IM, TetradSerializable {
+public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -84,7 +81,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
     public GeneralizedSemIm(GeneralizedSemPm pm) {
         this.pm = new GeneralizedSemPm(pm);
 
-        this.parameterValues = new HashMap<String, Double>();
+        this.parameterValues = new HashMap<>();
 
         Set<String> parameters = pm.getParameters();
 
@@ -259,7 +256,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
      * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
      */
     public String toString() {
-        List<String> parameters = new ArrayList<String>(pm.getParameters());
+        List<String> parameters = new ArrayList<>(pm.getParameters());
         Collections.sort(parameters);
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
@@ -269,20 +266,20 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
         for (Node node : pm.getVariableNodes()) {
             String string = getNodeSubstitutedString(node);
-            buf.append("\n" + node + " = " + string);
+            buf.append("\n").append(node).append(" = ").append(string);
         }
 
         buf.append("\n\nErrors:\n");
 
         for (Node node : pm.getErrorNodes()) {
             String string = getNodeSubstitutedString(node);
-            buf.append("\n" + node + " ~ " + string);
+            buf.append("\n").append(node).append(" ~ ").append(string);
         }
 
         buf.append("\n\nParameter values:\n");
         for (String parameter : parameters) {
             double value = getParameterValue(parameter);
-            buf.append("\n" + parameter + " = " + nf.format(value));
+            buf.append("\n").append(parameter).append(" = ").append(nf.format(value));
         }
 
         return buf.toString();
@@ -302,12 +299,22 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 //        return simulateDataNSteps(sampleSize, latentDataSaved);
     }
 
+    @Override
+    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
+        random.setSeed(seed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.revertSeed(_seed);
+        return dataSet;
+    }
+
     private DataSet simulateTimeSeries(int sampleSize) {
         SemGraph semGraph = new SemGraph(getSemPm().getGraph());
         semGraph.setShowErrorTerms(true);
         TimeLagGraph timeLagGraph = getSemPm().getGraph().getTimeLagGraph();
 
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         for (Node node : timeLagGraph.getLag0Nodes()) {
             if (node.getNodeType() == NodeType.ERROR) continue;
@@ -316,7 +323,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
         List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
 
-        for (Node node : new ArrayList<Node>(lag0Nodes)) {
+        for (Node node : new ArrayList<>(lag0Nodes)) {
             if (node.getNodeType() == NodeType.ERROR) {
                 lag0Nodes.remove(node);
             }
@@ -324,7 +331,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
         DataSet fullData = new ColtDataSet(sampleSize, variables);
 
-        Map<Node, Integer> nodeIndices = new HashMap<Node, Integer>();
+        Map<Node, Integer> nodeIndices = new HashMap<>();
 
         for (int i = 0; i < lag0Nodes.size(); i++) {
             nodeIndices.put(lag0Nodes.get(i), i);
@@ -334,13 +341,13 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
         List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
 
-        for (Node node : new ArrayList<Node>(tierOrdering)) {
+        for (Node node : new ArrayList<>(tierOrdering)) {
             if (node.getNodeType() == NodeType.ERROR) {
                 tierOrdering.remove(node);
             }
         }
 
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
+        final Map<String, Double> variableValues = new HashMap<>();
 
         Context context = new Context() {
             public Double getValue(String term) {
@@ -407,7 +414,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
      * @return the simulated data set.
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
+        final Map<String, Double> variableValues = new HashMap<>();
 
         Context context = new Context() {
             public Double getValue(String term) {
@@ -428,7 +435,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
         };
 
         List<Node> variables = pm.getNodes();
-        List<Node> continuousVariables = new LinkedList<Node>();
+        List<Node> continuousVariables = new LinkedList<>();
         List<Node> nonErrorVariables = pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
@@ -468,7 +475,6 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
         }
 
         // Do the simulation.
-        ROW:
         for (int row = 0; row < sampleSize; row++) {
             variableValues.clear();
 
@@ -508,12 +514,9 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
 
     public DataSet simulateDataMinimizeSurface(int sampleSize, boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
+        final Map<String, Double> variableValues = new HashMap<>();
 
-        final double func_tolerance = 1.0e-4;
-        final double param_tolerance = 1.0e-3;
-
-        List<Node> continuousVariables = new LinkedList<Node>();
+        List<Node> continuousVariables = new LinkedList<>();
         final List<Node> variableNodes = pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
@@ -592,9 +595,12 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (int i = 0; i < variableNodes.size(); i++) {
-                Node variable = variableNodes.get(i);
+            for (Node variable : variableNodes) {
                 Node error = pm.getErrorNode(variable);
+
+                if (error == null) {
+                    throw new NullPointerException();
+                }
 
                 Expression expression = pm.getNodeExpression(error);
                 double value = expression.evaluate(context);
@@ -606,8 +612,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
                 variableValues.put(error.getName(), value);
             }
 
-            for (int i = 0; i < variableNodes.size(); i++) {
-                Node variable = variableNodes.get(i);
+            for (Node variable : variableNodes) {
                 variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
             }
 
@@ -655,9 +660,9 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
     }
 
     public DataSet simulateDataAvoidInfinity(int sampleSize, boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
+        final Map<String, Double> variableValues = new HashMap<>();
 
-        List<Node> continuousVariables = new LinkedList<Node>();
+        List<Node> continuousVariables = new LinkedList<>();
         final List<Node> variableNodes = pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
@@ -699,6 +704,10 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
             // Take random draws from error distributions.
             for (Node variable : variableNodes) {
                 Node error = pm.getErrorNode(variable);
+
+                if (error == null) {
+                    throw new NullPointerException();
+                }
 
                 Expression expression = pm.getNodeExpression(error);
                 double value;
@@ -776,180 +785,14 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
                 if (count < 10000) {
                     row--;
                     System.out.println("Trying another starting point...");
-                    continue ROW;
+                    continue;
                 } else {
                     System.out.println("Couldn't converge in simulation.");
 
                     for (int i = 0; i < variableNodes.size(); i++) {
                         fullDataSet.setDouble(row, i, Double.NaN);
-//                    continue ROW;
-                        return fullDataSet;
                     }
-                }
-            }
 
-            for (int i = 0; i < variableNodes.size(); i++) {
-                double value = variableValues.get(variableNodes.get(i).getName());
-
-                if (isSimulatePositiveDataOnly() && value < 0) {
-                    row--;
-                    continue ROW;
-                }
-
-                if (!Double.isNaN(selfLoopCoef) && row > 0) {
-                    value += selfLoopCoef * fullDataSet.getDouble(row - 1, i);
-                }
-
-                fullDataSet.setDouble(row, i, value);
-            }
-        }
-
-        if (latentDataSaved) {
-            return fullDataSet;
-        } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
-        }
-
-    }
-
-    public DataSet simulateDataSpecial1(int sampleSize, boolean latentDataSaved, int timeStepsPerSecond) {
-
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
-
-        List<Node> continuousVariables = new LinkedList<Node>();
-        final List<Node> variableNodes = pm.getVariableNodes();
-
-        // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
-
-            if (var.getNodeType() != NodeType.ERROR) {
-                continuousVariables.add(var);
-            }
-        }
-
-        double[][] impulses = new double[continuousVariables.size()][sampleSize];
-
-        for (int j = 0; j < impulses.length; j++) {
-            int value = 0;
-
-            for (int i = 0; i < impulses[j].length; i++) {
-                double random = RandomUtil.getInstance().nextDouble();
-                if (value == 0 && random < 0.1) {
-                    value = 1;
-                } else if (value == 1 && random < 0.4) {
-                    value = 0;
-                }
-
-                impulses[j][i] = value;
-            }
-        }
-
-        DataSet fullDataSet = new ColtDataSet(sampleSize, continuousVariables);
-
-        final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
-            }
-        };
-
-        boolean allInRange = true;
-        int _count = -1;
-
-        // Do the simulation.
-        ROW:
-        for (int row = 0; row < sampleSize; row++) {
-
-            // Take random draws from error distributions.
-            for (Node variable : variableNodes) {
-                Node error = pm.getErrorNode(variable);
-
-                Expression expression = pm.getNodeExpression(error);
-                double value = expression.evaluate(context);
-
-                value += impulses[variableNodes.indexOf(variable)][row];
-
-                if (Double.isNaN(value)) {
-                    throw new IllegalArgumentException("Undefined value for expression: " + expression);
-                }
-
-                variableValues.put(error.getName(), value);
-            }
-
-            // Set the variable nodes to zero.
-            for (Node variable : variableNodes) {
-                Node error = pm.getErrorNode(variable);
-
-                Expression expression = pm.getNodeExpression(error);
-                double value = expression.evaluate(context);
-
-                if (Double.isNaN(value)) {
-                    throw new IllegalArgumentException("Undefined value for expression: " + expression);
-                }
-
-                variableValues.put(variable.getName(), value); //0.0; //RandomUtil.getInstance().nextUniform(-1, 1));
-            }
-
-            // Repeatedly update variable values until one of them hits infinity or negative infinity or
-            // convergence within delta.
-
-            double delta = 1e-6;
-            int count = -1;
-
-            while (++count < 1000) {
-                double[] values = new double[variableNodes.size()];
-
-                for (int i = 0; i < values.length; i++) {
-                    Node node = variableNodes.get(i);
-                    Expression expression = pm.getNodeExpression(node);
-                    double value = expression.evaluate(context);
-                    values[i] = value;
-                }
-
-                allInRange = true;
-
-                for (int i = 0; i < values.length; i++) {
-                    Node node = variableNodes.get(i);
-
-                    if (!(Math.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
-                        allInRange = false;
-                        break;
-                    }
-                }
-
-
-                for (int i = 0; i < variableNodes.size(); i++) {
-                    variableValues.put(variableNodes.get(i).getName(), values[i]);
-                }
-
-                if (allInRange) {
-                    break;
-                }
-            }
-
-            if (!allInRange && ++_count < 20) {
-                row--;
-                System.out.println("Trying another starting point...");
-                continue ROW;
-            } else if (_count >= 100) {
-                System.out.println("Couldn't converge in simulation.");
-
-                for (int i = 0; i < variableNodes.size(); i++) {
-                    fullDataSet.setDouble(row, i, Double.NaN);
-//                    continue ROW;
                     return fullDataSet;
                 }
             }
@@ -976,179 +819,10 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
             return DataUtils.restrictToMeasured(fullDataSet);
         }
 
-
     }
-
-    public DataSet simulateDataSpecial2(int sampleSize, boolean latentDataSaved, int timeStepsPerSecond, double sigma) {
-
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
-
-        List<Node> continuousVariables = new LinkedList<Node>();
-        final List<Node> variableNodes = pm.getVariableNodes();
-
-        // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
-
-            if (var.getNodeType() != NodeType.ERROR) {
-                continuousVariables.add(var);
-            }
-        }
-
-        double[][] impulses = new double[continuousVariables.size()][sampleSize];
-
-
-        for (int j = 0; j < impulses.length; j++) {
-            int zeroThisRound = 0;
-            int oneThisRound = 0;
-
-            double totalZeroThisRound = 0;
-            double totalOneThisRound = 0;
-
-            int numZeroThisRound = 0;
-            int numOneThisRound = 0;
-
-            int value = 0;
-
-            double alpha = 0.025;
-
-            for (int i = 0; i < impulses[j].length; i++) {
-                double random = RandomUtil.getInstance().nextDouble();
-                if (value == 0 && random < alpha / 4.0) {
-                    value = 1;
-//                    System.out.println("Zero this round = " + zeroThisRound / (double) timeStepsPerSecond);
-                    totalZeroThisRound += zeroThisRound / (double) timeStepsPerSecond;
-                    numZeroThisRound++;
-                    oneThisRound = 0;
-                } else if (value == 1 && random < alpha) {
-                    value = 0;
-//                    System.out.println("One this round = " + oneThisRound / (double) timeStepsPerSecond);
-                    totalOneThisRound += oneThisRound / (double) timeStepsPerSecond;
-                    numOneThisRound++;
-                    zeroThisRound = 0;
-                }
-
-                impulses[j][i] = value;
-
-//                System.out.println(value);
-
-                if (value == 0) {
-                    zeroThisRound++;
-                } else {
-                    oneThisRound++;
-                }
-            }
-
-            System.out.println();
-            System.out.println("Average 0 this round = " + totalZeroThisRound / (double) numZeroThisRound);
-            System.out.println("Average 1 this round = " + totalOneThisRound / (double) numOneThisRound);
-        }
-
-
-        DataSet fullDataSet = new ColtDataSet(sampleSize, continuousVariables);
-
-        final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
-            }
-        };
-
-        // Do the simulation.
-        for (int row = 0; row < sampleSize; row++) {
-            if (row == 0) {
-                for (int i = 0; i < variableNodes.size(); i++) {
-                    Node variable = variableNodes.get(i);
-                    Node error = pm.getErrorNode(variable);
-
-                    Expression expression = pm.getNodeExpression(error);
-                    double errorValue = expression.evaluate(context);
-//                    errorValue += impulses[variableNodes.indexOf(variable)][row];
-
-                    if (Double.isNaN(errorValue)) {
-                        throw new IllegalArgumentException("Undefined value for expression: " + expression);
-                    }
-
-//                    errorValue = Math.max(0, errorValue);
-
-                    fullDataSet.setDouble(row, i, errorValue);
-                    variableValues.put(variable.getName(), errorValue);
-                }
-            } else {
-                for (int i = 0; i < variableNodes.size(); i++) {
-                    Node variable = variableNodes.get(i);
-
-                    Node error = pm.getErrorNode(variable);
-
-                    Expression errorExpression = pm.getNodeExpression(error);
-                    double errorValue = errorExpression.evaluate(context);
-                    errorValue += impulses[variableNodes.indexOf(variable)][row];
-
-                    if (Double.isNaN(errorValue)) {
-                        throw new IllegalArgumentException("Undefined value for expression: " + errorExpression);
-                    }
-
-                    variableValues.put(error.getName(), errorValue);
-
-                    double value = 0; //variableValues.get(variable.getName());
-
-                    selfLoopCoef = -.05;
-                    double delta = 0.05;
-
-                    // sl * z0
-                    if (!Double.isNaN(selfLoopCoef) && row > 0) {
-                        double v = sigma * selfLoopCoef;
-                        value += v * fullDataSet.getDouble(row - 1, i);
-                    }
-
-                    // sigma * A z0 + C u0
-                    Expression expression = pm.getNodeExpression(variable);
-                    value += expression.evaluate(context);
-
-                    // z = sigma * A z + C u + z0
-                    value += variableValues.get(variable.getName());
-
-                    value *= delta; //timeStepsPerSecond;
-
-//                    value = Math.max(0, value);
-
-                    if (Double.isNaN(value)) {
-                        throw new IllegalArgumentException("Undefined value for expression: " + expression);
-                    }
-
-                    fullDataSet.setDouble(row, i, value);
-                    variableValues.put(variable.getName(), value);
-                }
-
-                for (int i = 0; i < variableNodes.size(); i++) {
-                    variableValues.put(variableNodes.get(i).getName(), fullDataSet.getDouble(row, i));
-                }
-            }
-        }
-
-        if (latentDataSaved) {
-            return fullDataSet;
-        } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
-        }
-
-    }
-
 
     public TetradVector simulateOneRecord(TetradVector e) {
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
+        final Map<String, Double> variableValues = new HashMap<>();
 
         final List<Node> variableNodes = pm.getVariableNodes();
 
@@ -1173,6 +847,11 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
         // Take random draws from error distributions.
         for (int i = 0; i < variableNodes.size(); i++) {
             Node error = pm.getErrorNode(variableNodes.get(i));
+
+            if (error == null) {
+                throw new NullPointerException();
+            }
+
             variableValues.put(error.getName(), e.get(i));
         }
 
@@ -1229,9 +908,9 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
     }
 
     public DataSet simulateDataNSteps(int sampleSize, boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<String, Double>();
+        final Map<String, Double> variableValues = new HashMap<>();
 
-        List<Node> continuousVariables = new LinkedList<Node>();
+        List<Node> continuousVariables = new LinkedList<>();
         final List<Node> variableNodes = pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
@@ -1271,6 +950,10 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
             // Take random draws from error distributions.
             for (Node variable : variableNodes) {
                 Node error = pm.getErrorNode(variable);
+
+                if (error == null) {
+                    throw new NullPointerException();
+                }
 
                 Expression expression = pm.getNodeExpression(error);
                 double value = expression.evaluate(context);
@@ -1345,16 +1028,12 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
         }
     }
 
-    public boolean isSimulatePositiveDataOnly() {
+    private boolean isSimulatePositiveDataOnly() {
         return simulatePositiveDataOnly;
     }
 
     public void setSimulatePositiveDataOnly(boolean simulatedPositiveDataOnly) {
         this.simulatePositiveDataOnly = simulatedPositiveDataOnly;
-    }
-
-    public void setSelfLoop(double selfLoop) {
-        this.selfLoopCoef = selfLoop;
     }
 }
 

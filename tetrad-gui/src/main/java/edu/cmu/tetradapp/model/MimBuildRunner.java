@@ -25,11 +25,13 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.search.MimUtils;
 import edu.cmu.tetrad.search.Mimbuild2;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -45,135 +47,151 @@ import java.util.List;
  */
 public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     static final long serialVersionUID = 23L;
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private Graph fullGraph;
     private ICovarianceMatrix covMatrix;
-    private double p = -1;
 
     //============================CONSTRUCTORS===========================//
 
     public MimBuildRunner(DataWrapper dataWrapper,
                           MeasurementModelWrapper mmWrapper,
-                          MimBuildParams params) {
+                          Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
-        params.setClusters(mmWrapper.getClusters());
+        params.set("clusters", mmWrapper.getClusters());
     }
 
     public MimBuildRunner(DataWrapper dataWrapper,
-                          BuildPureClustersRunner mmWrapper,
-                          MimBuildParams params) {
+                          PurifyRunner mmWrapper,
+                          Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
-        params.setClusters(mmWrapper.getClusters());
+        params.set("clusters", mmWrapper.getClusters());
     }
 
     public MimBuildRunner(DataWrapper dataWrapper,
-                          MeasurementModelWrapper mmWrapper,
-                          MimBuildParams params,
-                          KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, mmWrapper.getClusters(), params);
+                          GraphSource graphSource,
+                          Parameters params) {
+        super(dataWrapper, ClusterUtils.mimClusters(graphSource.getGraph()), params);
         this.dataSet = (DataSet) getData();
-        setClusters(mmWrapper.getClusters());
-        params.setClusters(mmWrapper.getClusters());
-        params.setKnowledge(knowledgeBoxModel.getKnowledge());
+        params.set("clusters", getClusters());
     }
 
-    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
-                          DataWrapper dataWrapper,
-                          MimBuildParams params) {
-        super(mmWrapper, mmWrapper.getClusters(), params);
-        this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
-        setClusters(mmWrapper.getClusters());
-        params.setClusters(mmWrapper.getClusters());
-    }
-
-    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
-                          MimBuildParams params,
-                          KnowledgeBoxModel knowledgeBoxModel) {
-        super(mmWrapper, mmWrapper.getClusters(), params);
-        this.dataSet = (DataSet) getData();
-        setClusters(mmWrapper.getClusters());
-        getParams().setClusters(mmWrapper.getClusters());
-        params.setKnowledge(knowledgeBoxModel.getKnowledge());
-    }
-
-//    public MimBuildRunner(DataWrapper dataWrapper, MimBuildParams params) {
-//        super(dataWrapper, params.getClusters(), params);
+//    public MimBuildRunner(DataWrapper dataWrapper,
+//                          FofcRunner mmWrapper,
+//                          Parameters params) {
+//        super(dataWrapper, mmWrapper.getClusters(), params);
 //        this.dataSet = (DataSet) getData();
+//        setClusters(mmWrapper.getClusters());
+//        params.set("clusters", mmWrapper.getClusters());
+//    }
+
+//    public MimBuildRunner(DataWrapper dataWrapper,
+//                          MeasurementModelWrapper mmWrapper,
+//                          Parameters params,
+//                          KnowledgeBoxModel knowledgeBoxModel) {
+//        super(dataWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters(mmWrapper.getClusters());
+//        params.set("clusters", mmWrapper.getClusters());
+//        params.set("knowledge", knowledgeBoxModel.getKnowledge());
+//    }
+
+//    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
+//                          DataWrapper dataWrapper,
+//                          Parameters params) {
+//        super(dataWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
+//        setClusters(mmWrapper.getClusters());
+//        params.set("clusters", mmWrapper.getClusters());
+//    }
+
+//    public MimBuildRunner(MeasurementModelWrapper mmWrapper,
+//                          Parameters params,
+//                          KnowledgeBoxModel knowledgeBoxModel) {
+//        super(mmWrapper, mmWrapper.getClusters(), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters(mmWrapper.getClusters());
+//        getParams().set("clusters", mmWrapper.getClusters());
+//        params.set("knowledge", knowledgeBoxModel.getKnowledge());
+//    }
+
+//    public MimBuildRunner(DataWrapper dataWrapper, Parameters params) {
+//        super(dataWrapper, params.getClusters(), params);
+//        this.dataSet = (DataSet) getContinuousData();
 //        setClusters(params.getClusters());
 //    }
 
-    public MimBuildRunner(DataWrapper dataWrapper, MimBuildParams params, KnowledgeBoxModel knowledgeBox) {
-        super(dataWrapper, params.getClusters(), params);
-        this.dataSet = (DataSet) getData();
-        setClusters(params.getClusters());
-        params.setKnowledge(knowledgeBox.getKnowledge());
-    }
+//    public MimBuildRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBox) {
+//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
 
-    public MimBuildRunner(BuildPureClustersRunner pureClustersRunner,
-                          MimBuildParams params) {
-        super(pureClustersRunner, params);
-
-        if (getData() instanceof CovarianceMatrix) {
-            CovarianceMatrix cov = (CovarianceMatrix) getData();
-            this.dataSet = DataUtils.choleskySimulation(cov);
-        }
-        else {
-            this.dataSet = (DataSet) getData();
-        }
-
-        setClusters(params.getClusters());
-    }
-
-    public MimBuildRunner(BuildPureClustersRunner bpcRunner, KnowledgeBoxModel knowledgeBox, MimBuildParams params) {
-        super(bpcRunner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters(params.getClusters());
-        params.setKnowledge(knowledgeBox.getKnowledge());
-    }
-
-    public MimBuildRunner(PurifyRunner runner, MimBuildParams params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters(params.getClusters());
-    }
-
-    public MimBuildRunner(PurifyRunner runner, KnowledgeBoxModel knowledgeBox, MimBuildParams params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters(params.getClusters());
-        params.setKnowledge(knowledgeBox.getKnowledge());
-    }
-
-    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, MimBuildParams params) {
-        super(runner, params);
-        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        setClusters(params.getClusters());
-    }
-
-    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBox, MimBuildParams params) {
-        super(runner, params);
-        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        setClusters(params.getClusters());
-        params.setKnowledge(knowledgeBox.getKnowledge());
-    }
-
-
-    public MimBuildRunner(MimBuildRunner runner, MimBuildParams params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters(params.getClusters());
-    }
-
-    public MimBuildRunner(MimBuildRunner runner, KnowledgeBoxModel knowledgeBox, MimBuildParams params) {
-        super(runner, params);
-        this.dataSet = (DataSet) getData();
-        setClusters(params.getClusters());
-        params.setKnowledge(knowledgeBox.getKnowledge());
-    }
+//    public MimBuildRunner(BuildPureClustersRunner pureClustersRunner,
+//                          Parameters params) {
+//        super(pureClustersRunner, params);
+//
+//        if (getData() instanceof CovarianceMatrix) {
+//            CovarianceMatrix cov = (CovarianceMatrix) getData();
+//            this.dataSet = DataUtils.choleskySimulation(cov);
+//        }
+//        else {
+//            this.dataSet = (DataSet) getData();
+//        }
+//
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(BuildPureClustersRunner bpcRunner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(bpcRunner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
+//
+//
+//    public MimBuildRunner(MimBuildRunner runner, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//    }
+//
+//    public MimBuildRunner(MimBuildRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+//        super(runner, params);
+//        this.dataSet = (DataSet) getData();
+//        setClusters((Clusters) params.get("clusters", null));
+//        params.set("knowledge", knowledgeBox.getKnowledge());
+//    }
 
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
@@ -182,15 +200,10 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static MimBuildRunner serializableInstance() {
-        DataSet dataSet = DataUtils.discreteSerializableInstance();
-        DataWrapper dataWrapper = new DataWrapper(dataSet);
-        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, MimBuildParams.serializableInstance());
-        return new MimBuildRunner(mmWrapper, DataWrapper.serializableInstance(),
-                MimBuildParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -203,20 +216,20 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         DataSet data = this.dataSet;
 
         Mimbuild2 mimbuild = new Mimbuild2();
-        mimbuild.setAlpha(getParams().getAlpha());
-        mimbuild.setKnowledge(getParams().getKnowledge());
+        mimbuild.setAlpha(getParams().getDouble("alpha", 0.001));
+        mimbuild.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
-        if (getParams().isInclude3Clusters()) {
+        if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);
         }
         else {
             mimbuild.setMinClusterSize(4);
         }
 
-        Clusters clusters = getParams().getClusters();
+        Clusters clusters = (Clusters) getParams().get("clusters", null);
 
         List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());
-        List<String> latentNames = new ArrayList<String>();
+        List<String> latentNames = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
             latentNames.add(clusters.getClusterName(i));
@@ -244,35 +257,35 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         setStructureGraph(structureGraph);
 
-        getParams().getMimIndTestParams().setLatentVarNames(new ArrayList<String>(latentNames));
+        getParams().set("latentVariableNames", new ArrayList<>(latentNames));
 
         this.covMatrix = latentsCov;
 
-        this.p = mimbuild.getpValue();
+        double p = mimbuild.getpValue();
 
         TetradLogger.getInstance().log("details", "\nStructure graph = " + structureGraph);
         TetradLogger.getInstance().log("details", getLatentClustersString(fullGraph).toString());
         TetradLogger.getInstance().log("details", "P = " + p);
 
-        if (getParams().isShowMaxP()) {
-            if (p > getParams().getMaxP()) {
-                getParams().setMaxP(p);
-                getParams().setMaxStructureGraph(structureGraph);
-                getParams().setMaxClusters(getClusters());
-                getParams().setMaxFullGraph(fullGraph);
-                getParams().setMaxAlpha(getParams().getAlpha());
+        if (getParams().getBoolean("showMaxP", false)) {
+            if (p > getParams().getDouble("maxP", 1.0)) {
+                getParams().set("maxP", p);
+                getParams().set("maxStructureGraph", structureGraph);
+                getParams().set("maxClusters", getClusters());
+                getParams().set("maxFullGraph", fullGraph);
+                getParams().set("maxAlpha", getParams().getDouble("alpha", 0.001));
             }
 
-            setStructureGraph(getParams().getMaxStructureGraph());
-            setFullGraph(getParams().getMaxFullGraph());
-            if (getParams().getMaxClusters() != null) {
-                setClusters(getParams().getMaxClusters());
+            setStructureGraph((Graph) getParams().get("maxStructureGraph", null));
+            setFullGraph((Graph) getParams().get("maxFullGraph", null));
+            if (getParams().get("maxClusters", null) != null) {
+                setClusters((Clusters) getParams().get("maxClusters", null));
             }
-            setResultGraph(getParams().getMaxFullGraph());
+            setResultGraph((Graph) getParams().get("maxFullGraph", null));
 
-            TetradLogger.getInstance().log("maxmodel", "\nMAX GRAPH = " + getParams().getMaxStructureGraph());
-            TetradLogger.getInstance().log("maxmodel", getLatentClustersString(getParams().getMaxFullGraph()).toString());
-            TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getMaxP());
+            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().get("maxStructureGraph", null));
+            TetradLogger.getInstance().log("maxmodel", getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
+            TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getDouble("maxP", 1.0));
         }
     }
 

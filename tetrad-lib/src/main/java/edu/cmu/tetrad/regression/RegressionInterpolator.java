@@ -31,14 +31,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Joseph Ramsey
- * @return a data set in which missing values in each column are filled using
+ * Creates a data set in which missing values in each column are filled using
  * the mean of that column.
+ * @author Joseph Ramsey
  */
 public final class RegressionInterpolator implements DataFilter {
     public DataSet filter(DataSet dataSet) {
-        DataSet d1 = new ColtDataSet((ColtDataSet) dataSet);
-        DataSet d2 = new ColtDataSet((ColtDataSet) dataSet);
+        DataSet d1 = dataSet.copy();
+        DataSet d2 = dataSet.copy();
         d2 = new MeanInterpolator().filter(d2);
 
         // Copy out columns and names from mean-interpolated d2 to feed to
@@ -70,7 +70,7 @@ public final class RegressionInterpolator implements DataFilter {
 //            double[][] regressors = new double[numVars - 1][numCases];
             String[] regressorNames = new String[numVars - 1];
 
-            List<Node> _regressors = new ArrayList<Node>();
+            List<Node> _regressors = new ArrayList<>();
 
             int k = -1;
 
@@ -78,7 +78,7 @@ public final class RegressionInterpolator implements DataFilter {
                 if (m == j) continue;
 
                 ++k;
-//                regressors[k] = columns[m];
+//                `regressors[k] = columns[m];
                 regressorNames[k] = names[m];
 
                 _regressors.add(dataSet.getVariable(regressorNames[k]));

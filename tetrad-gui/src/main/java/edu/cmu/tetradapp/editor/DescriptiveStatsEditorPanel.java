@@ -38,18 +38,18 @@ import java.util.LinkedList;
  *
  * @author Michael Freenor
  */
-public class DescriptiveStatsEditorPanel extends JPanel {
+class DescriptiveStatsEditorPanel extends JPanel {
 
 
     /**
      * Combo box of all the variables.
      */
-    private JComboBox variableBox;
+    private final JComboBox variableBox;
 
     /**
      * The dataset being viewed.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     private QQPlot qqPlot;
 
@@ -57,13 +57,11 @@ public class DescriptiveStatsEditorPanel extends JPanel {
     /**
      * The discrete variables of the data set (may be empty).
      */
-    private LinkedList<DiscreteVariable> variables = new LinkedList<DiscreteVariable>();
+    private LinkedList<DiscreteVariable> variables = new LinkedList<>();
 
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
-     *
-     * @param dataSet
      */
     public DescriptiveStatsEditorPanel(Node selected, DataSet dataSet) {
         //   construct components

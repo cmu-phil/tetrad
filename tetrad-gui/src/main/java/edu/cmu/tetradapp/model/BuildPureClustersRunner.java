@@ -22,17 +22,21 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetrad.util.Unmarshallable;
 
-import java.io.IOException;
 import java.rmi.MarshalledObject;
-import java.util.*;
-import java.util.prefs.Preferences;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the
@@ -41,7 +45,7 @@ import java.util.prefs.Preferences;
  * @author Ricardo Silva
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
-        implements GraphSource, KnowledgeBoxInput {
+        implements GraphSource, Unmarshallable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -57,33 +61,31 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
 
     public BuildPureClustersRunner(DataWrapper dataWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static BuildPureClustersRunner serializableInstance() {
-        return new BuildPureClustersRunner(DataWrapper.serializableInstance(),
-                BuildPureClustersParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -93,9 +95,9 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * implemented in the extending class.
      */
     public void execute() {
-        boolean rKey = Preferences.userRoot().getBoolean("BPCrDown", false);
+        boolean rKey = getParams().getBoolean("BPCrDown", false);
 
-        BpcAlgorithmType algorithm = ((BuildPureClustersIndTestParams) getParams().getMimIndTestParams()).getAlgorithmType();
+        BpcAlgorithmType algorithm = (BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS);
 
         Graph searchGraph;
 
@@ -104,55 +106,15 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             Object source = getData();
 
             if (source instanceof DataSet) {
-                washdown = new Washdown((DataSet) source, getParams().getAlpha());
+                washdown = new Washdown((DataSet) source, getParams().getDouble("alpha", 0.001));
             } else {
-                washdown = new Washdown((CovarianceMatrix) source, getParams().getAlpha());
+                washdown = new Washdown((CovarianceMatrix) source, getParams().getDouble("alpha", 0.001));
             }
 
             searchGraph = washdown.search();
-//        } else if (algorithm == BpcAlgorithmType.SIMPLIFIED_BPC_DEPTH_0) {
-//            BpcSimplified bpc;
-//            Object source = getData();
-//
-//            if (source instanceof DataSet) {
-//                bpc = new BpcSimplified(
-//                        (DataSet) source,
-//                        getParams().getTetradTestType(),
-//                        getParams().getAlpha());
-//                bpc.setDepthOne(false);
-//            } else {
-//                bpc = new BpcSimplified((ICovarianceMatrix) source,
-//                        getParams().getTetradTestType(), getParams().getAlpha());
-//                bpc.setDepthOne(false);
-//            }
-//
-//            searchGraph = bpc.search();
         } else {
-            TestType tetradTestType = getParams().getTetradTestType();
+            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
 
-//            FindOneFactorClusters.TestType type = tetradTestType == TestType.TETRAD_WISHART ?
-//                    FindOneFactorClusters.TestType.wishart :
-//                    FindOneFactorClusters.TestType.delta;
-
-//            if (algorithm == BpcAlgorithmType.SIMPLIFIED_BPC) {
-//                BpcSimplified bpc;
-//                Object source = getData();
-//
-//                if (source instanceof DataSet) {
-//                    bpc = new BpcSimplified(
-//                            (DataSet) source,
-//                            tetradTestType,
-//                            getParams().getAlpha());
-//
-//                    bpc.setDepthOne(true);
-//                } else {
-//                    bpc = new BpcSimplified((ICovarianceMatrix) source,
-//                            tetradTestType, getParams().getAlpha());
-//                    bpc.setDepthOne(true);
-//                }
-//
-//                searchGraph = bpc.search();
-//            } else
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
                 Object source = getData();
@@ -161,79 +123,103 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                     bpc = new BpcTetradPurifyWashdown(
                             (DataSet) source,
                             tetradTestType,
-                            getParams().getAlpha());
+                            getParams().getDouble("alpha", 0.001));
 
                 } else {
                     bpc = new BpcTetradPurifyWashdown((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
+                            tetradTestType, getParams().getDouble("alpha", 0.001));
 
                 }
 
                 searchGraph = bpc.search();
             } else if (algorithm == BpcAlgorithmType.BUILD_PURE_CLUSTERS) {
                 BuildPureClusters bpc;
-                Object source = getData();
+                DataModel source = getData();
 
-                TestType testType = getParams().getTetradTestType();
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,
-                            getParams().getAlpha(),
+                            getParams().getDouble("alpha", 0.001),
                             testType,
                             purifyType);
                 } else if (source instanceof DataSet) {
                     bpc = new BuildPureClusters(
-                            (DataSet) source, getParams().getAlpha(),
+                            (DataSet) source, getParams().getDouble("alpha", 0.001),
                             testType,
                             purifyType);
                 } else {
-                    bpc = new BuildPureClusters(
-                            (DataSet) source, getParams().getAlpha(),
-                            testType,
-                            purifyType);
+                    throw new IllegalArgumentException();
                 }
 
                 searchGraph = bpc.search();
 
-            } else if (algorithm == BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) {
-                FindOneFactorClusters bpc;
-                Object source = getData();
-
-                if (source instanceof DataSet) {
-                    bpc = new FindOneFactorClusters(
-                            (DataSet) source,
-                            tetradTestType,
-                            getParams().getAlpha());
-                } else {
-                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
-                }
-
-                searchGraph = bpc.search();
-            } else if (algorithm == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
-                FindTwoFactorClusters bpc;
-                Object source = getData();
-
-                if (source instanceof DataSet) {
-                    bpc = new FindTwoFactorClusters(
-                            (DataSet) source,
-                            tetradTestType,
-                            getParams().getAlpha());
-
-//                    bpc = new FindTwoFactorClusters4(
-//                            (DataSet) source,
-//                            getParams().getAlpha());
-                } else {
-                    bpc = new FindTwoFactorClusters((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
+            }
+//            else if (algorithm == BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) {
+////                FindOneFactorClusters bpc;
+////                Object source = getContinuousData();
+////
+////                if (source instanceof DataSet) {
+////                    bpc = new FindOneFactorClusters(
+////                            (DataSet) source,
+////                            tetradTestType,
+////                            getParameters().getParameter1());
+////                } else {
+////                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
+////                            tetradTestType, getParameters().getParameter1());
+////                }
+////
+////                searchGraph = bpc.search();
 //
-//                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-//                            getParams().getAlpha());
-                }
-
-                searchGraph = bpc.search();
-            } else {
+//                FindOneFactorClusters2 bpc;
+//                Object source = getContinuousData();
+//                FindOneFactorClusters2.Algorithm sag = FindOneFactorClusters2.Algorithm.SAG;
+//
+//                if (source instanceof DataSet) {
+//                    bpc = new FindOneFactorClusters2(
+//                            (DataSet) source,
+//                            tetradTestType, sag,
+//                            getParameters().getParameter1());
+//
+////                    bpc = new FindTwoFactorClusters4(
+////                            (DataSet) source,
+////                            getParameters().getParameter1());
+//                } else {
+//                    bpc = new FindOneFactorClusters2((ICovarianceMatrix) source,
+//                            tetradTestType, sag, getParameters().getParameter1());
+////
+////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
+////                            getParameters().getParameter1());
+//                }
+//
+//                searchGraph = bpc.search();
+//
+//            }
+//            else if (algorithm == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
+//                FindTwoFactorClusters2 bpc;
+//                Object source = getContinuousData();
+//
+//                if (source instanceof DataSet) {
+//                    bpc = new FindTwoFactorClusters2(
+//                            (DataSet) source,
+//                            tetradTestType,
+//                            getParameters().getParameter1());
+//
+////                    bpc = new FindTwoFactorClusters4(
+////                            (DataSet) source,
+////                            getParameters().getParameter1());
+//                } else {
+//                    bpc = new FindTwoFactorClusters2((ICovarianceMatrix) source,
+//                            tetradTestType, getParameters().getParameter1());
+////
+////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
+////                            getParameters().getParameter1());
+//                }
+//
+//                searchGraph = bpc.search();
+//            }
+            else {
                 throw new IllegalStateException();
             }
         }
@@ -241,7 +227,6 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         if (semIm != null) {
             List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
 
-            // cov?? todo
             List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, trueGraph, (DataSet) getData());
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables2(searchGraph, semIm);
@@ -293,27 +278,15 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         try
 
         {
-            Graph graph = new MarshalledObject<Graph>(searchGraph).get();
+            Graph graph = new MarshalledObject<>(searchGraph).get();
             GraphUtils.circleLayout(graph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
             setClusters(MimUtils.convertToClusters(graph, getData().getVariables()));
-        } catch (
-                IOException e
-                )
-
-        {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (
-                ClassNotFoundException e
-                )
-
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
     }
 
     private void rename(Graph searchGraph, List<List<Node>> partition, List<String> variableNames) {
@@ -326,240 +299,240 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             children.removeAll(ReidentifyVariables.getLatents(searchGraph));
 
             for (int i = 0; i < partition.size(); i++) {
-                if (new HashSet<Node>(partition.get(i)).equals(new HashSet<Node>(children))) {
+                if (new HashSet<>(partition.get(i)).equals(new HashSet<>(children))) {
                     node.setName(variableNames.get(i));
                 }
             }
         }
     }
 
-    // This reidentifies a variable if all of its members belong to one of the clusters
-    // in the original graph.
-    private Graph reidentifyVariables(Graph searchGraph, Graph trueGraph) {
-        if (trueGraph == null) {
-            return searchGraph;
-        }
+//    // This reidentifies a variable if all of its members belong to one of the clusters
+//    // in the original graph.
+//    private Graph reidentifyVariables(Graph searchGraph, Graph trueGraph) {
+//        if (trueGraph == null) {
+//            return searchGraph;
+//        }
+//
+//        Graph reidentifiedGraph = new EdgeListGraph();
+////        Graph trueGraph = semIm.getSemPm().getGraph();
+//
+//        for (Node latent : searchGraph.getNodes()) {
+//            if (latent.getNodeType() != NodeType.LATENT) {
+//                continue;
+//            }
+//
+//            boolean added = false;
+//
+//            List<Node> searchChildren = searchGraph.getChildren(latent);
+//
+//            for (Node _latent : trueGraph.getNodes()) {
+//                if (_latent.getNodeType() != NodeType.LATENT) ;
+//
+//                List<Node> trueChildren = trueGraph.getChildren(_latent);
+//
+//                for (Node node2 : new ArrayList<Node>(trueChildren)) {
+//                    if (node2.getNodeType() == NodeType.LATENT) {
+//                        trueChildren.remove(node2);
+//                    }
+//                }
+//
+//                boolean containsAll = true;
+//
+//                for (Node child : searchChildren) {
+//                    boolean contains = false;
+//
+//                    for (Node _child : trueChildren) {
+//                        if (child.getNode().equals(_child.getNode())) {
+//                            contains = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (!contains) {
+//                        containsAll = false;
+//                        break;
+//                    }
+//                }
+//
+//                if (containsAll) {
+//                    reidentifiedGraph.addNode(_latent);
+//
+//                    for (Node child : searchChildren) {
+//                        if (!reidentifiedGraph.containsNode(child)) {
+//                            reidentifiedGraph.addNode(child);
+//                        }
+//
+//                        reidentifiedGraph.addDirectedEdge(_latent, child);
+//                    }
+//
+//                    added = true;
+//                    break;
+//                }
+//            }
+//
+//            if (!added) {
+//                reidentifiedGraph.addNode(latent);
+//
+//                for (Node child : searchChildren) {
+//                    if (!reidentifiedGraph.containsNode(child)) {
+//                        reidentifiedGraph.addNode(child);
+//                    }
+//
+//                    reidentifiedGraph.addDirectedEdge(latent, child);
+//                }
+//            }
+//        }
+//
+//        return reidentifiedGraph;
+//    }
 
-        Graph reidentifiedGraph = new EdgeListGraph();
+//    private Graph reidentifyVariables2(Graph searchGraph, SemIm semIm) {
+//        if (semIm == null) {
+//            return searchGraph;
+//        }
+//
 //        Graph trueGraph = semIm.getSemPm().getGraph();
+//        List<Node> trueLatents = new ArrayList<Node>();
+//
+//        for (Node node : trueGraph.getNodes()) {
+//            if (node.getNodeType() == NodeType.LATENT) {
+//                trueLatents.add(node);
+//            }
+//        }
+//
+//        List<Node> searchLatents = new ArrayList<Node>();
+//
+//        for (Node node : searchGraph.getNodes()) {
+//            if (!getContinuousData().getVariables().contains(node)) {
+////                if (node.getNodeType() == NodeType.LATENT) {
+//                searchLatents.add(node);
+//            }
+//        }
+//
+//        Graph reidentifiedGraph = new EdgeListGraph();
+//
+//        Map<Node, Node> remap = new HashMap<Node, Node>();
+//        Map<Node, Double> score = new HashMap<Node, Double>();
+//
+//        for (Node searchLatent : searchLatents) {
+//            List<Node> searchChildren = searchGraph.getChildren(searchLatent);
+//            searchChildren.removeAll(searchLatents);
+//            double max = 0.0;
+//            Node maxLatent = null;
+//
+//            for (Node trueLatent : trueLatents) {
+//                List<Node> trueChildren = trueGraph.getChildren(trueLatent);
+//                trueChildren.removeAll(trueLatents);
+//
+//                double sum = 0.0;
+//
+//                for (Node child : searchChildren) {
+//                    double beta = getCoefficient(semIm, trueLatent, child);
+//                    sum += Math.abs(beta);
+//                }
+//
+//                if (sum > max) {
+//                    max = sum;
+//                    maxLatent = trueLatent;
+//                }
+//            }
+//
+//            remap.put(searchLatent, maxLatent);
+//            score.put(searchLatent, max);
+//        }
+//
+//        for (Node _trueLatent : trueLatents) {
+//            Node trueLatent = new ContinuousVariable(_trueLatent.getNode());
+//
+//            double max = 0.0;
+//            Node maxNode = null;
+//            List<Node> searchOthers = new ArrayList<Node>();
+//
+//            for (Node searchLatent : searchLatents) {
+//                if (remap.get(searchLatent) == _trueLatent) {
+//                    double _score = score.get(searchLatent);
+//
+//                    if (_score > max) {
+//                        max = _score;
+//                        maxNode = searchLatent;
+//                        searchOthers.add(searchLatent);
+//                    }
+//                }
+//            }
+//
+//            if (maxNode == null) continue;
+//
+//            searchOthers.remove(maxNode);
+//
+//            reidentifiedGraph.addNode(trueLatent);
+//            List<Node> searchChildren = searchGraph.getChildren(maxNode);
+//
+//            for (Node node : searchChildren) {
+//                reidentifiedGraph.addNode(node);
+//                reidentifiedGraph.addDirectedEdge(trueLatent, node);
+//            }
+//
+//            for (Node searchLatent : searchOthers) {
+//                Node _latent = newLatent(reidentifiedGraph, "_L");
+//                reidentifiedGraph.addNode(_latent);
+//                List<Node> _searchChildren = searchGraph.getChildren(searchLatent);
+//
+//                for (Node node : _searchChildren) {
+//                    reidentifiedGraph.addNode(node);
+//                    reidentifiedGraph.addDirectedEdge(_latent, node);
+//                }
+//            }
+//        }
+//
+//        return reidentifiedGraph;
+//    }
 
-        for (Node latent : searchGraph.getNodes()) {
-            if (latent.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
+//    private Node newLatent(Graph graph, String name) {
+//        INDEX:
+//        for (int i = 1; ; i++) {
+//            for (Node node : graph.getNodes()) {
+//                if (node.getNode().equals(name + i)) {
+//                    continue INDEX;
+//                }
+//            }
+//
+//            GraphNode latent = new GraphNode(name + i);
+//            latent.setNodeType(NodeType.LATENT);
+//            return latent;
+//        }
+//    }
 
-            boolean added = false;
-
-            List<Node> searchChildren = searchGraph.getChildren(latent);
-
-            for (Node _latent : trueGraph.getNodes()) {
-                if (_latent.getNodeType() != NodeType.LATENT) ;
-
-                List<Node> trueChildren = trueGraph.getChildren(_latent);
-
-                for (Node node2 : new ArrayList<Node>(trueChildren)) {
-                    if (node2.getNodeType() == NodeType.LATENT) {
-                        trueChildren.remove(node2);
-                    }
-                }
-
-                boolean containsAll = true;
-
-                for (Node child : searchChildren) {
-                    boolean contains = false;
-
-                    for (Node _child : trueChildren) {
-                        if (child.getName().equals(_child.getName())) {
-                            contains = true;
-                            break;
-                        }
-                    }
-
-                    if (!contains) {
-                        containsAll = false;
-                        break;
-                    }
-                }
-
-                if (containsAll) {
-                    reidentifiedGraph.addNode(_latent);
-
-                    for (Node child : searchChildren) {
-                        if (!reidentifiedGraph.containsNode(child)) {
-                            reidentifiedGraph.addNode(child);
-                        }
-
-                        reidentifiedGraph.addDirectedEdge(_latent, child);
-                    }
-
-                    added = true;
-                    break;
-                }
-            }
-
-            if (!added) {
-                reidentifiedGraph.addNode(latent);
-
-                for (Node child : searchChildren) {
-                    if (!reidentifiedGraph.containsNode(child)) {
-                        reidentifiedGraph.addNode(child);
-                    }
-
-                    reidentifiedGraph.addDirectedEdge(latent, child);
-                }
-            }
-        }
-
-        return reidentifiedGraph;
-    }
-
-    private Graph reidentifyVariables2(Graph searchGraph, SemIm semIm) {
-        if (semIm == null) {
-            return searchGraph;
-        }
-
-        Graph trueGraph = semIm.getSemPm().getGraph();
-        List<Node> trueLatents = new ArrayList<Node>();
-
-        for (Node node : trueGraph.getNodes()) {
-            if (node.getNodeType() == NodeType.LATENT) {
-                trueLatents.add(node);
-            }
-        }
-
-        List<Node> searchLatents = new ArrayList<Node>();
-
-        for (Node node : searchGraph.getNodes()) {
-            if (!getData().getVariables().contains(node)) {
-//                if (node.getNodeType() == NodeType.LATENT) {
-                searchLatents.add(node);
-            }
-        }
-
-        Graph reidentifiedGraph = new EdgeListGraph();
-
-        Map<Node, Node> remap = new HashMap<Node, Node>();
-        Map<Node, Double> score = new HashMap<Node, Double>();
-
-        for (Node searchLatent : searchLatents) {
-            List<Node> searchChildren = searchGraph.getChildren(searchLatent);
-            searchChildren.removeAll(searchLatents);
-            double max = 0.0;
-            Node maxLatent = null;
-
-            for (Node trueLatent : trueLatents) {
-                List<Node> trueChildren = trueGraph.getChildren(trueLatent);
-                trueChildren.removeAll(trueLatents);
-
-                double sum = 0.0;
-
-                for (Node child : searchChildren) {
-                    double beta = getCoefficient(semIm, trueLatent, child);
-                    sum += Math.abs(beta);
-                }
-
-                if (sum > max) {
-                    max = sum;
-                    maxLatent = trueLatent;
-                }
-            }
-
-            remap.put(searchLatent, maxLatent);
-            score.put(searchLatent, max);
-        }
-
-        for (Node _trueLatent : trueLatents) {
-            Node trueLatent = new ContinuousVariable(_trueLatent.getName());
-
-            double max = 0.0;
-            Node maxNode = null;
-            List<Node> searchOthers = new ArrayList<Node>();
-
-            for (Node searchLatent : searchLatents) {
-                if (remap.get(searchLatent) == _trueLatent) {
-                    double _score = score.get(searchLatent);
-
-                    if (_score > max) {
-                        max = _score;
-                        maxNode = searchLatent;
-                        searchOthers.add(searchLatent);
-                    }
-                }
-            }
-
-            if (maxNode == null) continue;
-
-            searchOthers.remove(maxNode);
-
-            reidentifiedGraph.addNode(trueLatent);
-            List<Node> searchChildren = searchGraph.getChildren(maxNode);
-
-            for (Node node : searchChildren) {
-                reidentifiedGraph.addNode(node);
-                reidentifiedGraph.addDirectedEdge(trueLatent, node);
-            }
-
-            for (Node searchLatent : searchOthers) {
-                Node _latent = newLatent(reidentifiedGraph, "_L");
-                reidentifiedGraph.addNode(_latent);
-                List<Node> _searchChildren = searchGraph.getChildren(searchLatent);
-
-                for (Node node : _searchChildren) {
-                    reidentifiedGraph.addNode(node);
-                    reidentifiedGraph.addDirectedEdge(_latent, node);
-                }
-            }
-        }
-
-        return reidentifiedGraph;
-    }
-
-    private Node newLatent(Graph graph, String name) {
-        INDEX:
-        for (int i = 1; ; i++) {
-            for (Node node : graph.getNodes()) {
-                if (node.getName().equals(name + i)) {
-                    continue INDEX;
-                }
-            }
-
-            GraphNode latent = new GraphNode(name + i);
-            latent.setNodeType(NodeType.LATENT);
-            return latent;
-        }
-    }
-
-    private double getCoefficient(SemIm semIm, Node trueLatent, Node child) {
-        SemGraph graph = semIm.getSemPm().getGraph();
-
-        Node _node = graph.getNode(child.getName());
-        List<Node> parents = graph.getParents(_node);
-
-        int numLatents = 0;
-
-        for (Node parent : parents) {
-            if (parent.getNodeType() == NodeType.LATENT) {
-                numLatents++;
-            }
-        }
-
-        if (_node == null) {
-            return 0.0;
-        } else if (!graph.isParentOf(trueLatent, _node)) {
-            return 0.0;
-        } else if (numLatents > 1) {
-            return 0.0;
-        } else {
-            return semIm.getEdgeCoef(trueLatent, _node);
-        }
-    }
+//    private double getCoefficient(SemIm semIm, Node trueLatent, Node child) {
+//        SemGraph graph = semIm.getSemPm().getGraph();
+//
+//        Node _node = graph.getNode(child.getNode());
+//        List<Node> parents = graph.getParents(_node);
+//
+//        int numLatents = 0;
+//
+//        for (Node parent : parents) {
+//            if (parent.getNodeType() == NodeType.LATENT) {
+//                numLatents++;
+//            }
+//        }
+//
+//        if (_node == null) {
+//            return 0.0;
+//        } else if (!graph.isParentOf(trueLatent, _node)) {
+//            return 0.0;
+//        } else if (numLatents > 1) {
+//            return 0.0;
+//        } else {
+//            return semIm.getEdgeCoef(trueLatent, _node);
+//        }
+//    }
 
     public Graph getGraph() {
         return getResultGraph();
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);
@@ -573,7 +546,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     public List<String> getVariableNames() {
         List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());
-        return MimBuild.generateLatentNames(partition.size());
+        return ClusterUtils.generateLatentNames(partition.size());
     }
 }
 

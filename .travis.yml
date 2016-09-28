@@ -1,0 +1,14 @@
+language: java
+jdk:
+- oraclejdk8
+branches:
+  only:
+  - development
+env:
+  global:
+  - SONATYPE_USERNAME=deployment
+  matrix:
+    secure: wGwIAcDZqcYrauavk7aysGXi5/SOjLsWOVV0Ffv609kJPTTsS+InvIGv+6D1MS/KSH8GKKGD7jFHaUREJdrMoT4crr4LUZejedZyDaflfGTDH9ZZOC3qq832hUxj9hpEF9P5G/1liLFwYIoPhs/eYRRGY9EoMv8RJ+erOwZjYwKFMzuJI28gB4r68oe6kjvfrQgIUW6xCFtleDTOuzXplFIbHwePxkimtGYIJgTcR2ksgQEAf3pkFJtRo/Cpp/bwfE42BQ/APxhXFcoePOmq6g39kR/j/ihTVGyXxGPYgzPQsPcdmt+V9+1oApI4Qn8bV+3d/o/WIM92BRcyQc+P4dBBs2v8Isq1kAYCW1AIFaqg5bme6CxuDcp53dtnEjDtAoW4wH4BBwatOROy7GCvTMdmojuQdpfkm6xQVJdi/ci18KHxHCN6zON3DMIWdarkYotz9MgP4C47HRBW1zhuNdBVuayDz0vOrk8zLWXtWYz7ONB0Xxu47n8dqpnU5E4Hhs5MPEtBAIGT+NSDhokatoPXLt8M03b1G+bOj54Rckrlc2JrfzBUsoiEQEzS4wKjYOKd3WK8qtjq49Ylrxul2mFM4rxIJ8W/FZmOuVWJUV2NygorCHIcKm8nzVFnJ3M/h/LO28KlilY4SA+5avZ3qx88kEMYnXQa9eluZqZLuk0=
+
+after_success:
+- mvn deploy --settings settings.xml -DskipTests=true -B

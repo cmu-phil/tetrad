@@ -23,10 +23,13 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Ling;
 import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -50,34 +53,33 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     //============================CONSTRUCTORS============================//
 
     public LingRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, new LingParams(), knowledgeBoxModel);
+        super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
     public LingRunner(DataWrapper dataWrapper) {
-        super(dataWrapper, new LingParams(), null);
+        super(dataWrapper, new Parameters(), null);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public LingRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static LingRunner serializableInstance() {
-        return new LingRunner(DataWrapper.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//
@@ -101,7 +103,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 //        }
 //
 //        Ling ling = new Ling(data);
-//        LingParams searchParams = (LingParams) getParams();
+//        Parameters searchParams = (Parameters) getParameters();
 //        ling.setThreshold(searchParams.getThreshold());
 //        Ling.StoredGraphs graphs = ling.search();
 //        Graph graph = null;
@@ -148,8 +150,8 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
         }
 
         Ling ling = new Ling(data);
-        LingParams searchParams = (LingParams) getParams();
-        ling.setThreshold(searchParams.getThreshold());
+        Parameters searchParams = getParams();
+        ling.setThreshold(searchParams.getDouble("threshold", 0.5));
         Ling.StoredGraphs graphs = ling.search();
         Graph graph = null;
 
@@ -197,7 +199,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -207,7 +209,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -216,14 +218,19 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "LiNG";
+    }
+
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
@@ -240,7 +247,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

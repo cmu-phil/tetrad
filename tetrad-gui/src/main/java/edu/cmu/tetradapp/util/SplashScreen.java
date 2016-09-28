@@ -68,7 +68,7 @@ public class SplashScreen {
         increment(1);
     }
 
-    public static void increment(int by) {
+    private static void increment(int by) {
         COUNTER += by;
         if (COUNTER > MAX) {
             COUNTER = MAX;
@@ -79,8 +79,8 @@ public class SplashScreen {
     }
 
     private static class SplashWindow extends Window {
-        Image splashIm;
-        JProgressBar bar;
+        final Image splashIm;
+        final JProgressBar bar;
 
         SplashWindow(Frame parent, Image image, String title) {
             super(parent);
@@ -113,7 +113,7 @@ public class SplashScreen {
             bar.setBorderPainted(false);
             b.add(bar);
 
-            /** Center the WINDOW */
+            /* Center the WINDOW */
             pack();
 
             Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();

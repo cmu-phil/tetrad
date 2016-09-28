@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -30,6 +32,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -51,43 +54,42 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
     //============================CONSTRUCTORS============================//
 
     public LingamRunner(DataWrapper dataWrapper) {
-        super(dataWrapper, new LingamParams(), null);
+        super(dataWrapper, new Parameters(), null);
     }
     
-    public LingamRunner(DataWrapper dataWrapper, LingamParams params) {
+    public LingamRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, new LingamParams(), knowledgeBoxModel);
+        super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
-    public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, LingamParams params) {
+    public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamRunner(GraphSource graphWrapper, LingamParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamRunner(GraphSource graphWrapper, LingamParams params) {
+    public LingamRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
     
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static LingamRunner serializableInstance() {
-        return new LingamRunner(DataWrapper.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//
@@ -111,17 +113,17 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
         }
 
 //        Lingam_old lingam = new Lingam_old();
-//        lingam.setAlpha(getParams().getIndTestParams().getAlpha());
+//        lingam.setParameter1(getParameters().getParameter1());
 //        lingam.setPruningDone(true);
 //
 //        double lingamPruningAlpha = Preferences.userRoot().getDouble("lingamPruningAlpha", 0.05);
 //
-//        lingam.setAlpha(lingamPruningAlpha);
+//        lingam.setParameter1(lingamPruningAlpha);
 //        Graph graph = lingam.lingam(data).getGraph();
 
         Lingam lingam = new Lingam();
-        LingamParams params = (LingamParams) getParams();
-        lingam.setPruneFactor(params.getPruneFactor());
+        Parameters params = getParams();
+        lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
         if (getSourceGraph() != null) {
@@ -143,7 +145,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         return names;
@@ -154,7 +156,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
@@ -167,8 +169,13 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "LiNGAM";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -183,7 +190,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

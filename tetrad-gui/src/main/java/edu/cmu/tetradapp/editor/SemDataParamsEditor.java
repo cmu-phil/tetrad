@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.SemDataParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -41,7 +40,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private transient SemDataParams params = null;
+    private transient Parameters params = null;
 
     /**
      * Constructs a dialog to edit the given workbench OldSem simulation
@@ -50,12 +49,12 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     public SemDataParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (SemDataParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -65,12 +64,12 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getSampleSize(), 8);
+        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
 
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setSampleSize(value);
+                    getParams().set("sampleSize", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -79,12 +78,12 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        IntTextField numDataSetsField = new IntTextField(getParams().getNumDataSets(), 8);
+        IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
 
         numDataSetsField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setNumDataSets(value);
+                    getParams().set("numDataSets", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -94,26 +93,26 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-//                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
+//                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-                getParams().isIncludeLatents());
+                getParams().getBoolean("latentDataSaved", false));
         latentDataSaved.setHorizontalTextPosition(SwingConstants.LEFT);
         latentDataSaved.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setIncludeLatents(b.isSelected());
+                getParams().set("includeLatents", b.isSelected());
             }
         });
 
-        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
-                getParams().isPositiveDataOnly());
-        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
-        positiveOnlyBox.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setPositiveDataOnly(b.isSelected());
-            }
-        });
+//        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
+//                getParameters().isPositiveDataOnly());
+//        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
+//        positiveOnlyBox.addActionListener(new ActionListener(){
+//            public void actionPerformed(ActionEvent e) {
+//                JCheckBox b = (JCheckBox)e.getSource();
+//                getParameters().setPositiveDataOnly(b.isSelected());
+//            }
+//        });
 
         setLayout(new BorderLayout());
 
@@ -136,9 +135,9 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         b2.add(latentDataSaved);
         b.add(b2);
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(positiveOnlyBox);
-        b.add(b3);
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(positiveOnlyBox);
+//        b.add(b3);
 
         add(b, BorderLayout.CENTER);
         setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -150,11 +149,9 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
+     * public, but it is needed so that the textfields can edit the model.).
      */
-    private synchronized SemDataParams getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

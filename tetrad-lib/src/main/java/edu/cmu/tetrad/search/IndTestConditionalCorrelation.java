@@ -74,6 +74,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Map from nodes to the indices.
      */
     private Map<Node, Integer> indices;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -89,6 +90,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        if (!(alpha >= 0 && alpha <= 1)) {
+                throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -97,12 +102,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.dataSet = dataSet;
         data = this.dataSet.getDoubleData().getRealMatrix();
 
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) varNames.add(variables.get(i).getName());
 
         this.cci = new Cci(data, varNames, alpha);
 
-        indices = new HashMap<Node, Integer>();
+        indices = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             indices.put(nodes.get(i), i);
@@ -121,16 +126,20 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         String _x = x.getName();
         String _y = y.getName();
-        List<String> _z = new ArrayList<String>();
+        List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+//        System.out.println(Runtime.getRuntime().freeMemory());
+
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -143,16 +152,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public boolean isDependent(Node x, Node y, List<Node> z) {
         String _x = x.getName();
         String _y = y.getName();
-        List<String> _z = new ArrayList<String>();
+        List<String> _z = new ArrayList<>();
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return !independent;
@@ -213,7 +224,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -255,11 +266,24 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return cci.getScore();
+    }
+
     /**
      * @return a string representation of this test.
      */
     public String toString() {
         return "Conditional Correlation, alpha = " + nf.format(getAlpha());
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     //==================================PRIVATE METHODS================================

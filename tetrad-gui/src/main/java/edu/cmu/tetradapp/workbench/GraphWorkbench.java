@@ -22,17 +22,12 @@
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Extends AbstractWorkbench in the ways needed to display tetrad-style graphs.
@@ -368,8 +363,6 @@ public class GraphWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * @return the next string in the sequence.
-     *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
      */

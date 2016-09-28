@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.Sem2DataParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -40,7 +39,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Sem2DataParams params = null;
+    private Parameters params = null;
 
     /**
      * Constructs a dialog to edit the given workbench  simulation
@@ -49,12 +48,12 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     public Sem2DataParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Sem2DataParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -64,11 +63,11 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getSampleSize(), 4);
+        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 4);
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setSampleSize(value);
+                    getParams().set("sampleSize", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -81,18 +80,18 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         latentVarsBox.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setIncludeLatents(b.isSelected());
+                getParams().set("includeLatents", b.isSelected());
             }
         });
 
-        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only");
-        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
-        positiveOnlyBox.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setPositiveDataOnly(b.isSelected());
-            }
-        });
+//        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only");
+//        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
+//        positiveOnlyBox.addActionListener(new ActionListener(){
+//            public void actionPerformed(ActionEvent e) {
+//                JCheckBox b = (JCheckBox)e.getSource();
+//                getParameters().setPositiveDataOnly(b.isSelected());
+//            }
+//        });
 
 
         setLayout(new BorderLayout());
@@ -109,9 +108,9 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         b2.add(latentVarsBox);
         b2.add(Box.createHorizontalGlue());
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(positiveOnlyBox);
-        b3.add(Box.createHorizontalGlue());
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(positiveOnlyBox);
+//        b3.add(Box.createHorizontalGlue());
 
         b6.add(b1);
     //    b6.add(Box.createVerticalStrut(5));
@@ -127,10 +126,8 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
      */
-    private synchronized Sem2DataParams getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

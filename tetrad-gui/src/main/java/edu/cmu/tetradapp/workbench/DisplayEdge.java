@@ -59,20 +59,20 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Indicates that one end of the edge is anchored to one component, but the
      * other half is tracking the mouse point.
      */
-    public static final int HALF_ANCHORED = 0;
+    protected static final int HALF_ANCHORED = 0;
 
     /**
      * Indicates that both ends of the edge are anchored to components.  The
      * edge will move when those components move.
      */
-    public static final int ANCHORED_UNSELECTED = 1;
+    protected static final int ANCHORED_UNSELECTED = 1;
 
     /**
      * Indicates that the edge is under construction, which is similar to the
      * normal mode except that it's displayed as selected and will identify
      * itself as selected upon request (for possible deletion, e.g.).
      */
-    public static final int ANCHORED_SELECTED = 2;
+    protected static final int ANCHORED_SELECTED = 2;
 
     /**
      * Represents the fact that this is a directed edge, A--&gt;B.
@@ -214,7 +214,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * @param node2 the 'to' component.
      * @param type  the type of the edge, either UNRANDOMIZED or RANDOMIZED.
      */
-    public DisplayEdge(DisplayNode node1, DisplayNode node2, int type) {
+    protected DisplayEdge(DisplayNode node1, DisplayNode node2, int type) {
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
         }
@@ -289,7 +289,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
-     * @param type
      * @see #updateTrackPoint
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type) {
@@ -446,7 +445,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @return the click region.
      */
-    public Polygon getClickRegion() {
+    private Polygon getClickRegion() {
 
         if ((this.clickRegion == null) && (getConnectedPoints() != null)) {
             this.clickRegion = getSleeve(getConnectedPoints());
@@ -501,7 +500,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * @return the getModel mode of the component.
      */
-    public final int getMode() {
+    protected final int getMode() {
         return this.mode;
     }
 
@@ -615,7 +614,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Allows subclasses to set the clickable region is for this component.
      */
-    public final void setClickRegion(Polygon clickRegion) {
+    protected final void setClickRegion(Polygon clickRegion) {
         this.clickRegion = clickRegion;
     }
 
@@ -626,8 +625,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * non-overlapping rectangles.  (Should give back null for overlapping
      * rectangles but doesn't always...)
      *
-     * @param comp1
-     * @param comp2
      * @return a point pair which represents the connecting line segment through
      *         the center of each rectangle touching the edge of each.
      */
@@ -918,18 +915,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * bounds of the two components which the edge connects.  It also calculates
      * the bounds of these two components relative to this new union.
      */
-    protected void resetBounds() {
-        // TODO: This should be final since it's called from the constructor
-        // but it's already been overridden. Abstracting an interface
-        // may be the thing to do. jdramsey 5/6/02
-        //        Rectangle node1RelativeBounds, node2RelativeBounds;
-
+    private void resetBounds() {
         switch (this.mode) {
             case HALF_ANCHORED:
                 Rectangle temp = new Rectangle(this.mouseTrackPoint.x,
                         this.mouseTrackPoint.y, 0, 0);
 
-                setBounds(((Component) getNode1()).getBounds().union(temp.getBounds()));
+                setBounds(getNode1().getBounds().union(temp.getBounds()));
 
                 //                node1RelativeBounds = new Rectangle(getNode1().getBounds());
                 this.relativeMouseTrackPoint = new Point(this.mouseTrackPoint);
@@ -943,8 +935,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
                 // Falls through!
             case ANCHORED_SELECTED:
-                Rectangle r1 = ((Component) node1).getBounds();
-                Rectangle r2 = ((Component) node2).getBounds();
+                Rectangle r1 = node1.getBounds();
+                Rectangle r2 = node2.getBounds();
                 Point c1 = new Point((int) (r1.x + r1.width / 2.0),
                         (int) (r1.y + r1.height / 2.0));
                 Point c2 = new Point((int) (r2.x + r2.width / 2.0),
@@ -1038,7 +1030,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Handles <code>ComponentEvent</code>s.
      */
-    final class ComponentHandler extends ComponentAdapter {
+    private final class ComponentHandler extends ComponentAdapter {
         public final void componentMoved(ComponentEvent e) {
             resetBounds();
             repaint();
@@ -1053,7 +1045,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Handles <code>PropertyChangeEvent</code>s.
      */
-    final class PropertyChangeHandler implements PropertyChangeListener {
+    private final class PropertyChangeHandler implements PropertyChangeListener {
 
         /**
          * This method gets called when a bound property is changed.

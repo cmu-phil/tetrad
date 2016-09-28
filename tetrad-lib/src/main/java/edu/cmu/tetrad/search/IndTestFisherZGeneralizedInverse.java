@@ -77,6 +77,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private DataSet dataSet;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -88,6 +89,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZGeneralizedInverse(DataSet dataSet, double alpha) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.dataSet = dataSet;
         this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
@@ -125,7 +130,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
 //                sampleSize);
 //
-//        double alphaNew = getAlpha();
+//        double alphaNew = getParameter1();
 //        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
 //                alphaNew);
 //        return newIndTest;
@@ -198,7 +203,9 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         if (Double.isNaN(r)) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            if (verbose) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            }
             return true;
         }
 
@@ -225,10 +232,12 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             indFisher = false;  //Two sided
         }
 
-        if (indFisher) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+        if (verbose) {
+            if (indFisher) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            }
         }
 
         return indFisher;
@@ -307,7 +316,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -412,7 +421,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //                PersistentRandomUtil.getInstance().getEngine());
 //
 //        double p = chiSquare.cdf(sum);
-//        boolean determined = p < 1 - getAlpha();
+//        boolean determined = p < 1 - getParameter1();
 //
         boolean determined = variance < getAlpha();
 
@@ -463,6 +472,19 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

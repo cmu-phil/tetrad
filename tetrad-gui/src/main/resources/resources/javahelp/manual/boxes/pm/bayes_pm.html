@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>PM</title>
+</head>
+<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
+ style="color: rgb(0, 0, 0);">
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Bayes Parametric Model </font></h2></td>
+  </tr>
+</table>
+<h3><br>
+Description of Model <span
+ style="font-family: mon;">    </span></h3>
+<p>Bayes Parametric Model (Bayes PM) takes a DAG and adds to it two bits of information:</p>
+<ol>
+  <li>For each named node in the graph, the <em>number of categories</em> for the variable by that name.</li>
+  <li>For each variable, with a given number of categories, the <em>list of category names</em> for that variable.</li>
+</ol>
+<p>Given the graph and the additional information in (1) and (2), a Bayes net can be formally specified; it is determined what all the parameters of the Bayes net are, although no values for parameters are yet known. To specify a Bayes net up to parameter values, a Bayes Instantiated Model must be constructed, based on a Bayes PM. For details on the parameters of a Bayes IM, see <a href="../im/bayes_im.html">Bayes Instantiated Model</a>.</p>
+<p>It is assumed in the current version of Tetrad that all discrete variables are nominal--that is, that the order of their categories is not important. See <a href="../../common_tasks/defining_discrete_variables.html">Defining Discrete Variables</a> for more details. </p>
+<h3><br>
+  How to Construct a Bayes PM</h3>
+<p>For example, say you put the following boxes on the session, connected as follows:</p>
+<p><img src="../../images/bayespm1.gif" width="188" height="65"> </p>
+<p>For example, say you start with this DAG. (It need not be, specifically, in a Directed Acyclic Graph box; all that matters is that it contain only directed edges with no cycles.)</p>
+<p><img src="../../images/bayespm2.gif" width="587" height="577"></p>
+<p>If you click &quot;Save&quot; and double click the PM1 box, you are given a choice of which model type you would like to construct. Choose &quot;Bayes Parametric Model.&quot;</p>
+<p><img src="../../images/bayespm3.gif" width="300" height="138"> </p>
+<p>Once you click OK, the following dialog appears:</p>
+<p><img src="../../images/bayespm4.gif" width="921" height="561"></p>
+<p>In this dialog, you can click on a variable and edit its number of nodes and category names. For instance, we can change the number of categories for X1 to 3 and set its categories to &lt;Low, Medium, High&gt;.</p>
+<p><img src="../../images/bayespm5.gif" width="920" height="560"> </p>
+<p>When you're finished editing categories for variables, click &quot;Save.&quot; <br>
+</p>
+<h3>Potential Parents for Bayes Parametric Model </h3>
+<p>The Bayes PM can take any graph as parent that contains a DAG--that is, a graph that contains only directed edges (--&gt;) with no cycles (i.e. there is no X such that X--&gt;...--&gt;X in the graph). The simplest option is to construct Directed Acyclic Graph in the Graph box. (See <a href="../graph/dag.html">Directed Acyclic Graph</a> for more details.) If the parent is not a DAG, an error message will be displayed when the Bayes PM is constructed.</p>
+</body>
+</html>

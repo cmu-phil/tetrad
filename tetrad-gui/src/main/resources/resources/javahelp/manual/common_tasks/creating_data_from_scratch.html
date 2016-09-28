@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Data</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Creating a Tabular Data Set from Scratch </font></h2></td>
+  </tr>
+</table>
+<p>To create a data set from scratch, first place a <a href="../boxes/data/data_set_list.html">Data Box</a> in the main workspace:</p>
+<p><img src="../images/data_standatalone_highlight.gif" width="68" height="66"> </p>
+<p>Double click the data box, select &quot;Data Box,&quot; click OK, and this editor appears:</p>
+<p><img src="../images/editing_data1.gif" width="616" height="492"> </p>
+<p>The column headers indicate which column you're in and (as will be seen shortly) which type of variable data for each column is for. You may type variable names in the row directly beneat the column names. </p>
+<p><img src="../images/editing_data2.gif" width="618" height="496"></p>
+<p>X1, X2, and X3 are assumed by default to be continuous variables. If you begin typing numeric data into a column that assumption will be confirmed. If you begin typing non-numeric data into a column, the variable will be changed to a discrete variable. Note that the column header below changed from &quot;C2&quot; to &quot;C2-T,&quot; indicating that column 2 is discrete. </p>
+<p><img src="../images/editing_data3.gif" width="607" height="486"> </p>
+<p>To copy, cut, delete, etc., values, columns, or columns ranges, use the Edit menu--e.g. selecting the &quot;34.000&quot; below and selecting &quot;Delete Cells&quot; will delete the value. </p>
+<p><img src="../images/editing_data4.gif" width="268" height="152"> </p>
+<p>It is important to understand that a tabular data set consists of a <em>list of columns</em>, that each column has a <em>variable specifying the range of values it may contain</em>, and that columns may be of <em>any length</em>. Since search and estimation procedures typically require that data sets consist entirely of continuous data or of discrete data and that data sets be rectangular, exceptions may be thrown if the data sets you use do not satisfy these criteria. [Note: Probably should create ContinuousData, DiscreteData, and MixedData containers.]</p>
+<p>You may find it more to your liking to create your data set in another program, such as Minitab or Excel, save it out, and load it in Tetrad. For details on how to do this, see <a href="loading_data.html">Loading Data</a> and <a href="transferring_data.html">Transferring Data from Other Programs</a>. </p>
+<h3><br>
+  Knowledge</h3>
+<p>It is often useful to associate background knowledge with a data set. For instance, two search procedures operating on the same data set can then share the common knowledge specification.</p>
+<p>To do this, use the Knowledge menu. For details, see <a href="editing_knowledge.html">Editing Knowledge</a>. </p>
+<p>&nbsp;</p>
+</body>
+</html>

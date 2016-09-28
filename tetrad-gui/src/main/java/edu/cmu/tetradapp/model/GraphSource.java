@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author Joseph Ramsey
  */
 public interface GraphSource {
-    public Graph getGraph();
+    Graph getGraph();
 }
 
 

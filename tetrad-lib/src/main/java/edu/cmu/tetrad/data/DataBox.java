@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey
  */
 public interface DataBox extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the (fixed) number of rows of the dataset.
@@ -38,7 +38,7 @@ public interface DataBox extends TetradSerializable {
     int numRows();
 
     /**
-     * @returne the (fixed) number of columns of the dataset.
+     * @return the (fixed) number of columns of the dataset.
      */
     int numCols();
 
@@ -64,11 +64,13 @@ public interface DataBox extends TetradSerializable {
     DataBox copy();
 
     /**
-     * @return a new data box of the same type as this one with the given
-     * dimensions.
+     * @return this data box, restricted to the given rows and columns.
      */
-    DataBox like(int rows, int cols);
+    DataBox viewSelection(int[] rows, int[] cols);
+
+    DataBox like();
 }
+
 
 
 

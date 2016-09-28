@@ -18,18 +18,23 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DataUtility;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A utility to read in large tabular dataset efficiently. This class will most
@@ -38,6 +43,7 @@ import java.util.*;
  * Apr 30, 2015 11:30:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @deprecated User the data readers in the edu.cmu.tetrad.io package.
  */
 public class BigDataSetUtility {
 
@@ -45,16 +51,20 @@ public class BigDataSetUtility {
 
     private static final byte CARRIAGE_RETURN = '\r';
 
+    private static final byte DOUBLE_QUOTE = '"';
+
+    private static final byte SINGLE_QUOTE = '\'';
+
     private BigDataSetUtility() {
     }
 
     /**
      * Read in continuous dataset.
      *
-     * @param file      dataset
+     * @param file dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.TabularContinuousDataReader instead
      */
     public static DataSet readInContinuousData(File file, char delimiter) throws IOException {
         byte delim = (byte) delimiter;
@@ -87,6 +97,9 @@ public class BigDataSetUtility {
                         break;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -135,6 +148,9 @@ public class BigDataSetUtility {
                         row++;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -160,11 +176,11 @@ public class BigDataSetUtility {
     /**
      * Read in continuous dataset.
      *
-     * @param file             dataset
-     * @param delimiter        a single character used to separate the data
+     * @param file dataset
+     * @param delimiter a single character used to separate the data
      * @param excludeVariables the names of the columns to be excluded
-     * @return
      * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.TabularContinuousDataReader instead
      */
     public static DataSet readInContinuousData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
         if (excludeVariables == null || excludeVariables.isEmpty()) {
@@ -210,6 +226,9 @@ public class BigDataSetUtility {
                         break;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -275,6 +294,9 @@ public class BigDataSetUtility {
                             row++;
                         }
                     } else {
+                        if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                            continue;
+                        }
                         dataBuilder.append((char) currentChar);
                     }
 
@@ -334,6 +356,9 @@ public class BigDataSetUtility {
                             row++;
                         }
                     } else {
+                        if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                            continue;
+                        }
                         dataBuilder.append((char) currentChar);
                     }
 
@@ -362,9 +387,8 @@ public class BigDataSetUtility {
     /**
      * Read in continuous dataset.
      *
-     * @param file      dataset
+     * @param file dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      * @deprecated use readInContinuousData instead
      */
@@ -372,6 +396,16 @@ public class BigDataSetUtility {
         return readInContinuousData(file, delimiter, Collections.singleton("MULT"));
     }
 
+    /**
+     *
+     * @param file
+     * @param delimiter
+     * @param excludeVariables
+     * @return
+     * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader
+     * instead
+     */
     public static DataSet readInDiscreteData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
         if (excludeVariables == null || excludeVariables.isEmpty()) {
             return readInDiscreteData(file, delimiter);
@@ -443,6 +477,9 @@ public class BigDataSetUtility {
                         row++;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -459,7 +496,16 @@ public class BigDataSetUtility {
         return new BoxDataSet(new IntDataBox(data), nodes);
     }
 
-    public static DataSet readInDiscreteData(File file, char delimiter) throws IOException {
+    /**
+     *
+     * @param file
+     * @param delimiter
+     * @return
+     * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader
+     * instead
+     */
+    private static DataSet readInDiscreteData(File file, char delimiter) throws IOException {
         DiscreteDataAnalysis dataAnalysis = analyDiscreteData(file, delimiter);
         dataAnalysis.recategorizeDiscreteVariables();
 
@@ -518,6 +564,9 @@ public class BigDataSetUtility {
                         row++;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -537,9 +586,8 @@ public class BigDataSetUtility {
     /**
      * Read in discrete dataset.
      *
-     * @param file      dataset
+     * @param file dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      * @deprecated use method readInDiscreteData instead
      */
@@ -547,7 +595,7 @@ public class BigDataSetUtility {
         return readInDiscreteData(file, delimiter, Collections.singleton("MULT"));
     }
 
-    public static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
+    private static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
         DiscreteDataAnalysis dataAnalysis = new DiscreteDataAnalysis();
         byte delim = (byte) delimiter;
 
@@ -581,6 +629,9 @@ public class BigDataSetUtility {
                         break;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -629,6 +680,9 @@ public class BigDataSetUtility {
                         numOfRows++;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -658,7 +712,7 @@ public class BigDataSetUtility {
         return dataAnalysis;
     }
 
-    public static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter) throws IOException {
+    private static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter) throws IOException {
         DiscreteDataAnalysis dataAnalysis = new DiscreteDataAnalysis();
         byte delim = (byte) delimiter;
 
@@ -687,6 +741,9 @@ public class BigDataSetUtility {
                         break;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -735,6 +792,9 @@ public class BigDataSetUtility {
                         numOfRows++;
                     }
                 } else {
+                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        continue;
+                    }
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -764,6 +824,9 @@ public class BigDataSetUtility {
         return dataAnalysis;
     }
 
+    /**
+     * @deprecated User the data readers in the edu.cmu.tetrad.io package.
+     */
     public static class DiscreteDataAnalysis {
 
         private DiscreteVar[] discreteVars;
@@ -781,7 +844,8 @@ public class BigDataSetUtility {
 
         @Override
         public String toString() {
-            return "DiscreteDataAnalysis{" + "discreteVars=" + discreteVars + ", numOfRows=" + numOfRows + ", numOfCols=" + numOfCols + '}';
+            return "DiscreteDataAnalysis{" + "numOfRows=" + numOfRows
+                    + ", numOfCols=" + numOfCols + '}';
         }
 
         public void recategorizeDiscreteVariables() {
@@ -818,19 +882,20 @@ public class BigDataSetUtility {
 
     /**
      * This class is used to store information on a discrete variable.
+     *
+     * @deprecated User the data readers in the edu.cmu.tetrad.io package.
      */
     public static class DiscreteVar {
 
-        private String name;
-        private Map<String, Integer> values;
+        private final String name;
+        private final Map<String, Integer> values;
         private boolean excluded;
 
-        private List<String> categories;
+        private final List<String> categories;
 
         public DiscreteVar(String name, boolean excluded) {
             this.name = name;
             this.values = new HashMap<>();
-            ;
             this.excluded = excluded;
             this.categories = new ArrayList<>();
         }
@@ -889,10 +954,10 @@ public class BigDataSetUtility {
     /**
      * Counts the number of column of the first line in the file.
      *
-     * @param file      dataset
+     * @param file dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
+     * @deprecated User edu.cmu.tetrad.io.AbstractDataReader instead.
      */
     public static int countColumn(File file, char delimiter) throws IOException {
         int count = 0;
@@ -931,8 +996,8 @@ public class BigDataSetUtility {
      * Counts the number of lines that contain data.
      *
      * @param file dataset
-     * @return
      * @throws IOException
+     * @deprecated User edu.cmu.tetrad.io.AbstractDataReader instead.
      */
     public static int countLine(File file) throws IOException {
         int count = 0;
@@ -962,4 +1027,3 @@ public class BigDataSetUtility {
     }
 
 }
-

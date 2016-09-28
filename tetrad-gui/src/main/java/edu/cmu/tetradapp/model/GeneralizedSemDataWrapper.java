@@ -21,12 +21,14 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
+import java.rmi.MarshalledObject;
 
 
 /**
@@ -38,26 +40,40 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class GeneralizedSemDataWrapper extends DataWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
     private GeneralizedSemIm semIm = null;
+    private Parameters params;
+    private long seed;
+
+    private transient DataModelList dataModelList;
 
     //==============================CONSTRUCTORS=============================//
 
-    public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, SemDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-        GeneralizedSemIm semIm = wrapper.getSemIm();
-        semIm.setSimulatePositiveDataOnly(params.isPositiveDataOnly());
+    private GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
+        GeneralizedSemIm semIm = null;
 
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet columnDataModel = semIm.simulateData(sampleSize, latentDataSaved);
-            list.add(columnDataModel);
+        if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
 
-//        DataSet columnDataModel = semIm.simulateData(sampleSize, latentDataSaved);
-        this.setDataModel(list);
+        try {
+            semIm = new MarshalledObject<>(wrapper.getSemIms().get(0)).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SEM IM.");
+        }
+
+        this.semIm = semIm;
+
+        try {
+            params = new MarshalledObject<>(params).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the Parameters.");
+        }
+
+        setParameters(params);
+
+        setSeed();
+
         this.setSourceGraph(semIm.getSemPm().getGraph());
-        setParams(params);
+        setParameters(params);
         this.semIm = semIm;
         LogDataUtils.logDataModelList("Data simulated from a generalized SEM model.", getDataModelList());
     }
@@ -69,12 +85,67 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new GeneralizedSemDataWrapper(GeneralizedSemImWrapper.serializableInstance(),
-                SemDataParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
+
+    /**
+     * Sets the data model.
+     */
+    public void setDataModel(DataModel dataModel) {
+//        if (dataModel == null) {
+//            dataModel = new ColtDataSet(0, new LinkedList<Node>());
+//        }
+//
+//        if (dataModel instanceof DataModelList) {
+//            this.dataModelList = (DataModelList) dataModel;
+//        } else {
+//            this.dataModelList = new DataModelList();
+//            this.dataModelList.add(dataModel);
+//        }
+
+        // These are generated from seeds.
+    }
+
+    private DataModelList simulateData(Simulator simulator, Parameters params) {
+        if (this.dataModelList != null) {
+            return this.dataModelList;
+        }
+
+        DataModelList list = new DataModelList();
+        int sampleSize = params.getInt("sampleSize", 1000);
+        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
+
+        for (int i = 0; i < params.getInt("numDataSets", 1); i++) {
+            DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
+            list.add(dataSet);
+        }
+
+        this.dataModelList = list;
+
+        return list;
+    }
+
+    /**
+     * @return the list of models.
+     */
+    public DataModelList getDataModelList() {
+        return simulateData(semIm, params);
+//        return this.dataModelList;
+    }
+
+    public void setDataModelList(DataModelList dataModelList) {
+//        this.dataModelList = dataModelList;
+    }
+
+    public void setParameters(Parameters params) {
+        this.params = params;
+    }
+
+    private void setSeed() {
+        this.seed = RandomUtil.getInstance().getSeed();
     }
 }
 

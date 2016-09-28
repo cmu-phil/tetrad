@@ -26,12 +26,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -81,6 +81,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     private Map<Node, Integer> indexMap;
     private Map<String, Node> nameMap;
     private boolean verbose = true;
+    private double fisherZ = Double.NaN;
+    private double cutoff = Double.NaN;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -96,8 +98,11 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
-//        this._covMatrix = covMatrix.getMatrix();
         List<Node> nodes = covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -105,11 +110,11 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.nameMap = nameMap(variables);
         setAlpha(alpha);
 
-        this.dataSet = DataUtils.center(dataSet);
+        this.dataSet = dataSet;
     }
 
     /**
-     * Constructs a new Fisher Z independence test with the listed arguments.
+     * Constructs a new Fisher Z independence test with  the listed arguments.
      *
      * @param data      A 2D continuous data set with no missing values.
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
@@ -117,7 +122,6 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
         this.dataSet = ColtDataSet.makeContinuousData(variables, data);
-        this.dataSet = DataUtils.center(dataSet);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
@@ -179,68 +183,61 @@ public final class IndTestFisherZ implements IndependenceTest {
         int n = sampleSize();
         double r = partialCorrelation(x, y, z);
 
+
 //        double high = 0.999999;
 //
 //        if (r > high) r = high;
 //        if (r < -high) r = -high;
 //
         double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+//        fisherZ /= 2.0;
+
+        this.fisherZ = fisherZ;
 
 //        double pValue = 2.0 * (1.0 - value);//  RandomUtil.getInstance().normalCdf(0, 1, key));// abs(fisherZ)));
-        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
+//        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
+//
+//        boolean independent = pValue > alpha;
 
-        boolean independent = pValue > alpha;
+        boolean independent = Math.abs(fisherZ) < cutoff;
 
-        this.pValue = pValue;
+//        this.pValue = pValue;
 
-        if (verbose) {
-            if (independent) {
-                if (TetradLogger.getInstance().isEventActive("independencies")) {
-                    TetradLogger.getInstance().log("independencies",
-                            SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-                }
-            } else {
-                if (pValueLogger != null) {
-                    pValueLogger.println(getPValue());
-                }
-
-                if (TetradLogger.getInstance().isEventActive("dependencies")) {
-                    TetradLogger.getInstance().log("dependencies",
-                            SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-                }
-            }
-        }
+//        if (verbose) {
+//            if (independent) {
+//                if (TetradLogger.getInstance().isEventActive("independencies")) {
+//                    TetradLogger.getInstance().log("independencies",
+//                            SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+//                }
+//            } else {
+//                if (pValueLogger != null) {
+//                    pValueLogger.println(getPValue());
+//                }
+//
+//                if (TetradLogger.getInstance().isEventActive("dependencies")) {
+//                    TetradLogger.getInstance().log("dependencies",
+//                            SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+//                }
+//            }
+//        }
 
         return independent;
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) {
-        double r;
-
         if (z.isEmpty()) {
-            Integer xi = indexMap.get(x);
-            Integer yi = indexMap.get(y);
-
-            if (xi == null || yi == null) {
-                xi = indexMap.get(nameMap.get(x.getName()));
-                yi = indexMap.get(nameMap.get(y.getName()));
-
-                if (xi == null || yi == null) {
-                    throw new IllegalArgumentException("Node not in map");
-                }
-            }
-
-            double a = covMatrix.getValue(xi, xi);
-            double b = covMatrix.getValue(xi, yi);
-            double d = covMatrix.getValue(yi, yi);
-
-            r = -b / sqrt(a * d);
+            double a = covMatrix.getValue(indexMap.get(x), indexMap.get(y));
+            double b = covMatrix.getValue(indexMap.get(x), indexMap.get(x));
+            double c = covMatrix.getValue(indexMap.get(y), indexMap.get(y));
+            return -a / Math.sqrt(b * c);
         } else {
-            TetradMatrix submatrix = DataUtils.subMatrix(covMatrix, indexMap, x, y, z);
-            r = StatUtils.partialCorrelation(submatrix);
+            int[] indices = new int[z.size() + 2];
+            indices[0] = indexMap.get(x);
+            indices[1] = indexMap.get(y);
+            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+            TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
+            return StatUtils.partialCorrelation(submatrix);
         }
-
-        return r;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -273,6 +270,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         this.alpha = alpha;
+        this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
     /**
@@ -302,7 +300,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -353,7 +351,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<Node>(this.variables);
+        ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
         this.variables = Collections.unmodifiableList(nodes);
     }
@@ -362,7 +360,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher's Z, alpha = " + nf.format(getAlpha());
+        return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
 
     public void setPValueLogger(PrintStream pValueLogger) {
@@ -380,7 +378,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private Map<String, Node> nameMap(List<Node> variables) {
-        Map<String, Node> nameMap = new ConcurrentHashMap<String, Node>();
+        Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
         for (Node node : variables) {
             nameMap.put(node.getName(), node);
@@ -390,7 +388,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<Node, Integer>();
+        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -401,7 +399,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<Node>(variables);
+        this.variables = new ArrayList<>(variables);
         covMatrix.setVariables(variables);
     }
 
@@ -412,7 +410,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     @Override
     public List<DataSet> getDataSets() {
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         dataSets.add(dataSet);
 
@@ -427,6 +425,11 @@ public final class IndTestFisherZ implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return Math.abs(fisherZ) - cutoff;
     }
 
     public boolean isVerbose() {

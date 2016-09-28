@@ -34,7 +34,10 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.prefs.Preferences;
 
 /**
@@ -45,14 +48,10 @@ import java.util.prefs.Preferences;
  */
 final class LoadDataDialog extends JPanel {
     private final JTabbedPane pane;
-    private DataModel[] dataModels;
-
-    private JRadioButton tabularRadioButton;
-    private JRadioButton covarianceRadioButton;
+    private transient DataModel[] dataModels;
 
     private JRadioButton comment1RadioButton;
     private JRadioButton comment2RadioButton;
-    private JRadioButton comment3RadioButton;
     private StringTextField commentStringField;
 
     private JRadioButton delimiter1RadioButton;          
@@ -62,7 +61,6 @@ final class LoadDataDialog extends JPanel {
     //    private JRadioButton delimiter4RadioButton;
     //    private StringTextField delimiterStringField;
     private JRadioButton quote1RadioButton;
-    private JRadioButton quote2RadioButton;
 
     private JCheckBox varNamesCheckBox;
     private JCheckBox idsSupplied;
@@ -72,10 +70,8 @@ final class LoadDataDialog extends JPanel {
 
     private JRadioButton missing1RadioButton;
     private JRadioButton missing2RadioButton;
-    private JRadioButton missing3RadioButton;
     private StringTextField missingStringField;
 
-    private JCheckBox logEmptyTokens;
     private IntTextField maxIntegralDiscreteIntField;
     private JLabel maxIntegralLabel1;
     private JLabel maxIntegralLabel2;
@@ -92,8 +88,8 @@ final class LoadDataDialog extends JPanel {
         this.dataModels = new DataModel[files.length];
 
         // Tabular/covariance.
-        tabularRadioButton = new JRadioButton("Tabular Data");
-        covarianceRadioButton = new JRadioButton("Covariance Data");
+        JRadioButton tabularRadioButton = new JRadioButton("Tabular Data");
+        JRadioButton covarianceRadioButton = new JRadioButton("Covariance Data");
 
         tabularRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -133,7 +129,7 @@ final class LoadDataDialog extends JPanel {
         // Comment prefix.
         comment1RadioButton = new JRadioButton("//");
         comment2RadioButton = new JRadioButton("#");
-        comment3RadioButton = new JRadioButton("Other: ");
+        JRadioButton comment3RadioButton = new JRadioButton("Other: ");
 
         comment1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -253,7 +249,7 @@ final class LoadDataDialog extends JPanel {
 
         // Quote char
         quote1RadioButton = new JRadioButton("\"");
-        quote2RadioButton = new JRadioButton("'");
+        JRadioButton quote2RadioButton = new JRadioButton("'");
 
         quote1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -287,7 +283,7 @@ final class LoadDataDialog extends JPanel {
         }
 
         // Log empty tokens
-        logEmptyTokens = new JCheckBox("Log Empty Tokens");
+        JCheckBox logEmptyTokens = new JCheckBox("Log Empty Tokens");
         logEmptyTokens.setHorizontalTextPosition(SwingConstants.LEFT);
 
         logEmptyTokens.addActionListener(new ActionListener() {
@@ -382,7 +378,7 @@ final class LoadDataDialog extends JPanel {
 //        Missing value marker
         missing1RadioButton = new JRadioButton("*");
         missing2RadioButton = new JRadioButton("?");
-        missing3RadioButton = new JRadioButton("Other: ");
+        JRadioButton missing3RadioButton = new JRadioButton("Other: ");
 
         missing1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -606,7 +602,7 @@ final class LoadDataDialog extends JPanel {
                                 loadDataSelect(fileIndex, anomaliesTextArea, tabbedPane, files, progressLabel);
 //                                DataModel dataModel = loadDataSelect(anomaliesTextArea, tabbedPane, files, progressLabel);
 //                                if (dataModel == null) throw new NullPointerException("Data not loaded.");
-//                                addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+//                                addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
                             }
                         };
                     }
@@ -647,7 +643,7 @@ final class LoadDataDialog extends JPanel {
         });
     }
 
-    public void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, JTabbedPane tabbedPane, File[] files, JLabel progressLabel) {
+    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, JTabbedPane tabbedPane, File[] files, JLabel progressLabel) {
         System.out.println("File index = " + fileIndex);
 
         Component selectedComponent = pane.getSelectedComponent();
@@ -830,7 +826,7 @@ final class LoadDataDialog extends JPanel {
         this.dataModels[index] = dataModel;
     }
 
-    public String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
+    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
         return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
     }
 }

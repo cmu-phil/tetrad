@@ -23,28 +23,22 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Tests the BayesPm. Must test whether nodes in graph can be given particular
- * numbers of values and whether their names can be set.
+ * Tests the BayesPm.
  *
  * @author William Taysom
  */
-public final class TestBayesPm extends TestCase {
+public final class TestBayesPm {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestBayesPm(String name) {
-        super(name);
-    }
-
-    public static void testInitializeFixed() {
+    @Test
+    public void testInitializeFixed() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag, 3, 3);
@@ -56,7 +50,8 @@ public final class TestBayesPm extends TestCase {
         }
     }
 
-    public static void testInitializeRandom() {
+    @Test
+    public void testInitializeRandom() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag, 2, 5);
@@ -69,7 +64,8 @@ public final class TestBayesPm extends TestCase {
         }
     }
 
-    public static void testChangeNumValues() {
+    @Test
+    public void testChangeNumValues() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
 
@@ -83,7 +79,8 @@ public final class TestBayesPm extends TestCase {
         assertEquals(3, bayesPm.getNumCategories(x2));
     }
 
-    public static void testEquals() {
+    @Test
+    public void testEquals() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
 
@@ -92,7 +89,8 @@ public final class TestBayesPm extends TestCase {
         assertEquals(bayesPm, bayesPm);
     }
 
-    public static void testMeasuredNodes() {
+    @Test
+    public void testMeasuredNodes() {
         Dag dag = new Dag();
 
         Node x1 = new GraphNode("X1");
@@ -106,28 +104,8 @@ public final class TestBayesPm extends TestCase {
         dag.addNode(x2);
         dag.addNode(x3);
         dag.addNode(x4);
-
         dag.addDirectedEdge(x1, x2);
-
-        System.out.println(dag);
-
-
-        BayesPm bayesPm = new BayesPm(dag, 3, 3);
-
-        System.out.println(bayesPm);
-
-        System.out.println(bayesPm.getMeasuredNodes());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBayesPm.class);
+        new BayesPm(dag, 3, 3);
     }
 }
 

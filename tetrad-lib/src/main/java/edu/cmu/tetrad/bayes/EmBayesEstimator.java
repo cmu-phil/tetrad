@@ -467,7 +467,7 @@ public final class EmBayesEstimator {
 //                                continue;
 //                            }
 //                            existsEvidence = true;
-//                            String otherVarName = otherVar.getName();
+//                            String otherVarName = otherVar.getNode();
 //                            Node otherNode = graph.getNode(otherVarName);
 //                            int otherIndex = inputBayesIm.getNodeIndex(
 //                                    otherNode);
@@ -506,7 +506,7 @@ public final class EmBayesEstimator {
                                 for(int k = 0; k < parPlusChildIndices.length; k++) {
                                     int pIndex = parPlusChildIndices[k];
                                     Node pNode = inputBayesIm.getIndex(pIndex);
-                                    String pName = pNode.getName();
+                                    String pName = pNode.getNode();
                                     System.out.println(pName + " " + parPlusChildValues[k]);
                                 }
                             }
@@ -534,7 +534,7 @@ public final class EmBayesEstimator {
                             //System.out.println("Case " + i + " parent values ");
                             //for (int pp = 0; pp < parentVarIndices.length; pp++) {
                             //    Variable par = (Variable) allVariables.get(parentVarIndices[pp]);
-                            //    System.out.print("    " + par.getName() + " " + parValues[pp]);
+                            //    System.out.print("    " + par.getNode() + " " + parValues[pp]);
                             //}
 
                             //System.out.println();
@@ -550,7 +550,7 @@ public final class EmBayesEstimator {
                     //System.out.println("    Parent values:  ");
                     //for (int i = 0; i < parentVarIndices.length; i++) {
                     //    Variable par = (Variable) allVariables.get(parentVarIndices[i]);
-                    //    System.out.print("    " + par.getName() + " " + parValues[i] + "    ");
+                    //    System.out.print("    " + par.getNode() + " " + parValues[i] + "    ");
                     //}
                     //System.out.println();
 
@@ -600,7 +600,7 @@ public final class EmBayesEstimator {
 
                     //for (int p = 0; p < parentVarIndices.length; p++) {
                     //    Variable par = (Variable) allVariables.get(parentVarIndices[p]);
-                    //    System.out.print("    " + par.getName() + " " + parValues[p]);
+                    //    System.out.print("    " + par.getNode() + " " + parValues[p]);
                     //}
 
                     //double sum = 0.0;
@@ -649,21 +649,14 @@ public final class EmBayesEstimator {
         double distance = Double.MAX_VALUE;
         BayesIm oldBayesIm = estimatedIm;
         BayesIm newBayesIm = null;
-        int iteration = 0;
 
         while (Double.isNaN(distance) || distance > threshhold) {
             expectation(oldBayesIm);
             newBayesIm = getEstimatedIm();
 
             distance = BayesImDistanceFunction.distance(newBayesIm, oldBayesIm);
-            iteration++;
 
             oldBayesIm = newBayesIm;
-// For some reason this won't log. 7/20/2009
-//            TetradLogger.getInstance().log("optimization",
-//                    "Distance = " + distance + " at iteration " + iteration);
-//            System.out.println(
-//                    "Distance = " + distance + " at iteration " + iteration);
         }
         return newBayesIm;
     }
@@ -734,9 +727,9 @@ public final class EmBayesEstimator {
             }
 
             //int nodeObsIndex = estimatedIm.getCorrespondingNodeIndex(node, observedIm);
-            //System.out.println("nodes[node] name = " + nodes[node].getName());
+            //System.out.println("nodes[node] name = " + nodes[node].getNode());
             Node nodeObs = observedIm.getNode(nodes[node].getName());
-            //System.out.println("nodeObs name = " + nodeObs.getName());
+            //System.out.println("nodeObs name = " + nodeObs.getNode());
             int nodeObsIndex = observedIm.getNodeIndex(nodeObs);
 //            int[] parentsObs = observedIm.getParents(nodeObsIndex);
 
@@ -782,66 +775,66 @@ public final class EmBayesEstimator {
         return estimatedIm;
     }
 
-    public double[][][] getEstimatedCounts() {
-        return estimatedCounts;
-    }
+//    public double[][][] getEstimatedCounts() {
+//        return estimatedCounts;
+//    }
+//
+//    public double[][][] getCondProbs() {
+//        return condProbs;
+//    }
 
-    public double[][][] getCondProbs() {
-        return condProbs;
-    }
 
+//    /**
+//     * This method is useful in computing all combinations of possible values of
+//     * a set of variables.  The int array sizes contains the number of values
+//     * (categories) of each of n variables.  For example suppose sizes = {2, 3,
+//     * 4, 2, 2}. Then consider the table: 0   0 0 0 0 0 1   1 0 0 0 0 2   0 1 0
+//     * 0 0 3   1 1 0 0 0 4   0 2 0 0 0 5   1 2 0 0 0 . . . 94   0 2 3 1 1 95   1
+//     * 2 3 1 1 </p> In this example the method returns the 5 values
+//     * corresponding to the index ind which ranges from 0 to 95. E.g.
+//     * indexToValues(94, {2, 3, 4, 2, 2}, 5) = {0, 2, 3, 1, 1}
+//     */
+//    public static int[] indexToValues(int ind, int[] sizes) {
+//        int n = sizes.length;
+//        int[] rep = new int[n];
+//
+//        for (int i = 0; i < n; i++) {
+//            rep[i] = (byte) 0;
+//        }
+//
+//        for (int i = 0; i < n; i++) {
+//            int rem = ind % sizes[i];
+//            if (rem != 0) {
+//                //rep[n - i - 1] = (byte) rem;
+//                rep[i] = rem;
+//                ind -= 1;
+//            }
+//            ind /= sizes[i];
+//        }
+//
+//        return rep;
+//    }
 
-    /**
-     * This method is useful in computing all combinations of possible values of
-     * a set of variables.  The int array sizes contains the number of values
-     * (categories) of each of n variables.  For example suppose sizes = {2, 3,
-     * 4, 2, 2}. Then consider the table: 0   0 0 0 0 0 1   1 0 0 0 0 2   0 1 0
-     * 0 0 3   1 1 0 0 0 4   0 2 0 0 0 5   1 2 0 0 0 . . . 94   0 2 3 1 1 95   1
-     * 2 3 1 1 </p> In this example the method returns the 5 values
-     * corresponding to the index ind which ranges from 0 to 95. E.g.
-     * indexToValues(94, {2, 3, 4, 2, 2}, 5) = {0, 2, 3, 1, 1}
-     */
-    public static int[] indexToValues(int ind, int[] sizes) {
-        int n = sizes.length;
-        int[] rep = new int[n];
-
-        for (int i = 0; i < n; i++) {
-            rep[i] = (byte) 0;
-        }
-
-        for (int i = 0; i < n; i++) {
-            int rem = ind % sizes[i];
-            if (rem != 0) {
-                //rep[n - i - 1] = (byte) rem;
-                rep[i] = rem;
-                ind -= 1;
-            }
-            ind /= sizes[i];
-        }
-
-        return rep;
-    }
-
-    /**
-     * Inverse of the function indexToValues.  Given a set of values this method
-     * computes the corresonding index.  Hence for the example above
-     * valuesToIndex({2, 3, 4, 2, 2}, {0, 2, 3, 1, 1}, 5) = 94.
-     *
-     * @param sizes
-     * @param values
-     * @return index
-     */
-    public static int valuesToIndex(int[] sizes, int[] values) {
-        int n = sizes.length;
-        int index = values[0];
-
-        int prod = 1;
-        for (int i = 1; i < n; i++) {
-            prod *= sizes[i - 1];
-            index += values[i] * prod;
-        }
-        return index;
-    }
+//    /**
+//     * Inverse of the function indexToValues.  Given a set of values this method
+//     * computes the corresonding index.  Hence for the example above
+//     * valuesToIndex({2, 3, 4, 2, 2}, {0, 2, 3, 1, 1}, 5) = 94.
+//     *
+//     * @param sizes
+//     * @param values
+//     * @return index
+//     */
+//    public static int valuesToIndex(int[] sizes, int[] values) {
+//        int n = sizes.length;
+//        int index = values[0];
+//
+//        int prod = 1;
+//        for (int i = 1; i < n; i++) {
+//            prod *= sizes[i - 1];
+//            index += values[i] * prod;
+//        }
+//        return index;
+//    }
 
 }
 

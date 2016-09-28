@@ -51,8 +51,6 @@ public class ScatterPlotOld {
 
     /**
      * Constructs the scatter plot given the dataset to wrap and the node that should be viewed.
-     *
-     * @param dataSet
      */
     public ScatterPlotOld(DataSet dataSet, ContinuousVariable yVariable, ContinuousVariable xVariable) {
 
@@ -131,8 +129,6 @@ public class ScatterPlotOld {
 
      /**
      * @return the max sample value between the y and x variables.
-     *
-     * @return - max Value amongst the y and x variables.
      */
     public double getMaxSample() {
         if(xMax > yMax) return xMax;
@@ -142,8 +138,6 @@ public class ScatterPlotOld {
 
     /**
      * @return the min sample value.
-     *
-     * @return - min value in sample.
      */
     public double getMinSample() {
         if(xMin < yMin) return xMin;
@@ -181,7 +175,7 @@ public class ScatterPlotOld {
         return yData;
     }
 
-    public void setyData(double[] yData) {
+    private void setyData(double[] yData) {
         this.yData = yData;
     }
 
@@ -189,11 +183,11 @@ public class ScatterPlotOld {
         return xData;
     }
 
-    public void setxData(double[] xData) {
+    private void setxData(double[] xData) {
         this.xData = xData;
     }
 
-    public void setDataSet(DataSet dataSet) {
+    private void setDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -230,11 +224,11 @@ public class ScatterPlotOld {
         this.drawRegLine = drawRegLine;
     }
 
-    public ContinuousVariable getyVariable() {
+    private ContinuousVariable getyVariable() {
         return yVariable;
     }
 
-    public void setyVariable(ContinuousVariable yVariable) {
+    private void setyVariable(ContinuousVariable yVariable) {
         this.yVariable = yVariable;
     }
 }

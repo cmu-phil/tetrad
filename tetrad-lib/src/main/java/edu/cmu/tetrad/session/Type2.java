@@ -21,24 +21,28 @@
 
 package edu.cmu.tetrad.session;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
+
 
 /**
  * A sample class to be wrapped in a SessionNode as a model.
  */
-public class Type2 implements SessionModel, TetradSerializableExcluded, Params {
+public class Type2 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
     /**
-     * A blank constructor only: it should be possible to construct a model of
-     * this type in a SessionNode with no parents.
+     * A sample constructor that takes Model 2 and Type3 as parent. The session
+     * node wrapping this should allow parent session nodes to be added that
+     * wrap either Type2 or Type3 and when parents of both types are added it
+     * should allow a model of type Type1 to be created. SessionNodes wrapping
+     * models of other types should not be addable as parents.
      */
-    public Type2() {
+    public Type2(Parameters parameters) {
     }
 
     public static Type2 serializableInstance() {
-        return new Type2();
+        return new Type2(new Parameters());
     }
 
     public boolean equals(Object o) {
@@ -59,7 +63,6 @@ public class Type2 implements SessionModel, TetradSerializableExcluded, Params {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
-
 
 
 

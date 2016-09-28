@@ -136,15 +136,6 @@ public final class Edges {
                 (edge.getEndpoint2() == Endpoint.TAIL));
     }
 
-    public static boolean isAdjacentEdge(Edge edge) {
-        if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint1() == Endpoint.ARROW || edge.getEndpoint1() == Endpoint.TAIL) {
-            if (edge.getEndpoint2() == Endpoint.ARROW || edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint1() == Endpoint.TAIL) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * @return the node opposite the given node along the given edge.
      */
@@ -197,6 +188,24 @@ public final class Edges {
         } else if (node == edge.getNode2()) {
             if ((edge.getEndpoint2() == Endpoint.ARROW) &&
                     (edge.getEndpoint1() == Endpoint.TAIL)) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
+    }
+
+    public static Node traverseReverseSemiDirected(Node node, Edge edge) {
+        if (edge == null) {
+            return null;
+        }
+
+        if (node == edge.getNode1()) {
+            if ((edge.getEndpoint2() == Endpoint.TAIL || edge.getEndpoint2() == Endpoint.CIRCLE)) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if ((edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE)) {
                 return edge.getNode1();
             }
         }

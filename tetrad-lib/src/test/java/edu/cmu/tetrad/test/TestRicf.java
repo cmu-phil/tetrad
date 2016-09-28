@@ -26,41 +26,21 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 /**
- * Tests the BooleanFunction class.
- *
  * @author Joseph Ramsey
  */
-public class TestRicf extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestRicf(String name) {
-        super(name);
-    }
-
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown() {
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
+public class TestRicf {
 
     /**
      * <pre>
@@ -120,6 +100,7 @@ public class TestRicf extends TestCase {
      *
      * </pre>
      */
+    @Test
     public void testRicf1() {
         String[] varNames = new String[]{"y", "x", "z", "u"};
         int numVars = varNames.length;
@@ -129,8 +110,6 @@ public class TestRicf extends TestCase {
         TetradMatrix m = matrix(values, numVars, numVars);
 
         ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
-
-        System.out.println(s);
 
         Graph mag = new EdgeListGraph();
         Node x = new ContinuousVariable("x");
@@ -147,15 +126,11 @@ public class TestRicf extends TestCase {
         mag.addBidirectedEdge(x, z);
         mag.addDirectedEdge(u, z);
 
-        System.out.println(mag);
-
 //        int n = 100;
         double tol = 1e-06;
 
         Ricf ricf = new Ricf();
         Ricf.RicfResult ricfResult = ricf.ricf(new SemGraph(mag), s, tol);
-
-        System.out.println(ricfResult);
 
         // Test shat at least.
         double[] shatValues = {2.93, -1.434425, 0, 0,
@@ -174,11 +149,7 @@ public class TestRicf extends TestCase {
         mag.addBidirectedEdge(x, z);
         mag.addBidirectedEdge(u, z);
 
-        System.out.println(mag);
-
-        Ricf.RicfResult ricfResult2 = ricf.ricf(new SemGraph(mag), s, tol);
-
-        System.out.println(ricfResult2);
+        ricf.ricf(new SemGraph(mag), s, tol);
 
         norm = normdiff(ricfResult, shatValues, numVars, numVars);
         assertTrue(norm < 0.0001);
@@ -189,7 +160,7 @@ public class TestRicf extends TestCase {
         TetradMatrix shat = matrix(shatValues, rows, cols);
         TetradMatrix diff = shat.copy();
 //        diff.assign(ricfResult.getShat(), PlusMult.plusMult(-1));
-        diff = diff.minus(new TetradMatrix(ricfResult.getShat().toArray()));  // todo right???
+        diff = diff.minus(new TetradMatrix(ricfResult.getShat().toArray()));
         return diff.norm1();
     }
 
@@ -205,6 +176,7 @@ public class TestRicf extends TestCase {
         return m;
     }
 
+    @Test
     public void testCliques() {
         Graph graph = new EdgeListGraph();
 
@@ -234,22 +206,26 @@ public class TestRicf extends TestCase {
         graph.addUndirectedEdge(x5, x1);
         graph.addUndirectedEdge(x5, x2);
 
-        List<List<Node>> cliques = new Ricf().cliques(graph);
-
-        System.out.println(cliques);
+        new Ricf().cliques(graph);
     }
 
+    @Test
     public void testCliques2() {
-        Graph graph = new Dag(GraphUtils.randomGraph(8, 0, 20, 5,
-                5, 5, false));
-        List<List<Node>> cliques = new Ricf().cliques(graph);
-        System.out.println(graph);
-        System.out.println(cliques);
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 8; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+                5, 5, 5, false));
+        new Ricf().cliques(graph);
     }
 
     /**
      * Whittaker p. 59.
      */
+    @Test
     public void testCliques3() {
         Graph graph = new EdgeListGraph();
 
@@ -277,101 +253,65 @@ public class TestRicf extends TestCase {
         graph.addUndirectedEdge(x4, x5);
         graph.addUndirectedEdge(x5, x6);
 
-        List<List<Node>> cliques = new Ricf().cliques(graph);
-
-        System.out.println(cliques);
+        new Ricf().cliques(graph);
     }
 
-//    public void testFitConGraph() {
-//        DataSet data = null;
-//
-//        try {
-//            DataReader reader = new DataReader();
-//            reader.setIdsSupplied(true);
-//            data = reader.parseTabular(new File("test_data/marks.txt"));
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-////        System.out.println(data);
-//
-//        CovarianceMatrix s = new CovarianceMatrix(data);
-//
-////        System.out.println(s);
-//
-//        Graph graph = new EdgeListGraph();
-//        Node mechanics = new ContinuousVariable("mechanics");
-//        Node vectors = new ContinuousVariable("vectors");
-//        Node algebra = new ContinuousVariable("algebra");
-//        Node analysis = new ContinuousVariable("analysis");
-//        Node statistics = new ContinuousVariable("statistics");
-//        graph.addIndex(mechanics);
-//        graph.addIndex(vectors);
-//        graph.addIndex(algebra);
-//        graph.addIndex(analysis);
-//        graph.addIndex(statistics);
-//
-//        graph.addUndirectedEdge(mechanics, algebra);
-//        graph.addUndirectedEdge(mechanics, vectors);
-//        graph.addUndirectedEdge(algebra, vectors);
-//        graph.addUndirectedEdge(algebra, analysis);
-//        graph.addUndirectedEdge(algebra, statistics);
-//        graph.addUndirectedEdge(analysis, statistics);
-//
-////        System.out.println(graph);
-//
-//        int n = 88;
-//        double tol = 1e-06;
-//
-//        Ricf ricf = new Ricf();
-////        Ricf.IcfMagResult icfMagResult = ricf.icfmag(graph, s, n, tol);
-//        Ricf.FitConGraphResult result = ricf.fitConGraph(graph, s, n, tol);
-//
-//        System.out.println(result);
-//    }
-
+    @Test
     public void test2() {
-        Graph graph = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
         CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        System.out.println(im);
-
         Ricf.RicfResult result = new Ricf().ricf(new SemGraph(graph), cov, 0.001);
 
         result.getBhat();
 
-        System.out.println(result);
-
     }
 
+    @Ignore // File not found.
     public void test3() {
         try {
             DataReader reader = new DataReader();
             final File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-
-            System.out.println(datapath.getAbsolutePath());
 
             DataSet dataSet = reader.parseTabular(datapath);
             Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
             ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
-            Ricf.RicfResult result = new Ricf().ricf(new SemGraph(mag), cov, 0.001);
-//            Ricf.RicfResult result = new Ricf().fitConGraph(mag, cov, 0.0000001);
-
-            System.out.println(result);
+            new Ricf().ricf(new SemGraph(mag), cov, 0.001);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test4() {
-        Graph g1 = GraphUtils.randomGraph(5, 0, 5, 0, 0, 0, false);
-        Graph g2 = GraphUtils.randomGraph(5, 0, 5, 0, 0, 0, false);
+        List<Node> nodes1 = new ArrayList<>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
+                0, 0, 0, false);
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
+                0, 0, 0, false);
 
         SemPm pm = new SemPm(g1);
         SemIm im = new SemIm(pm);
@@ -380,22 +320,8 @@ public class TestRicf extends TestCase {
 
         ICovarianceMatrix cov = new CovarianceMatrix(dataset);
 
-        Ricf.RicfResult result1 = new Ricf().ricf(new SemGraph(g1), cov, 0.001);
-        Ricf.RicfResult result2 = new Ricf().ricf(new SemGraph(g2), cov, 0.001);
-
-        System.out.println(result1);
-        System.out.println(result2);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestRicf.class);
+        new Ricf().ricf(new SemGraph(g1), cov, 0.001);
+        new Ricf().ricf(new SemGraph(g2), cov, 0.001);
     }
 }
 

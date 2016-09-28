@@ -51,7 +51,7 @@ public final class SepsetMap implements TetradSerializable {
     private Map<Set<Node>, List<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
 
-    private Map<Node, HashSet<Node>> parents = new HashMap<Node, HashSet<Node>>();
+    private Map<Node, HashSet<Node>> parents = new HashMap<>();
     private Set<Set<Node>> correlations;
     private boolean returnEmptyIfNotSet = false;
 
@@ -78,7 +78,7 @@ public final class SepsetMap implements TetradSerializable {
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
     public void set(Node x, Node y, List<Node> z) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         if (z == null) {
@@ -89,7 +89,7 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     public void setPValue(Node x, Node y, double p) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         pValues.put(pair, p);
@@ -99,7 +99,7 @@ public final class SepsetMap implements TetradSerializable {
      * Retrieves the sepset previously set for {x, y}, or null if no such set was previously set.
      */
     public List<Node> get(Node x, Node y) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
 
@@ -115,7 +115,7 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     public double getPValue(Node x, Node y) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
 

@@ -187,10 +187,10 @@ public final class Cefs {
     public Graph search(String targetName) {
         long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
         if (targetName == null) {
             throw new IllegalArgumentException(
@@ -217,7 +217,7 @@ public final class Cefs {
         // remove it by conditioning on nodes adjacent to v2. Once an edge
         // is removed, it should not be re-added to the graph.
         // jdramsey 8/6/04
-        this.visited = new HashSet<Node>();
+        this.visited = new HashSet<>();
 
         // Step 1. Get associates for the target.
         TetradLogger.getInstance().log("info", "BEGINNING step 1 (prune target).");
@@ -261,7 +261,7 @@ public final class Cefs {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
 
-        List<Node> _visited = new LinkedList<Node>(getVisited());
+        List<Node> _visited = new LinkedList<>(getVisited());
         orientUnshieldedTriples(knowledge, graph, getTest(), getDepth(), _visited);
 
         MeekRules meekRules = new MeekRules();
@@ -308,7 +308,7 @@ public final class Cefs {
      * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     /**
@@ -466,12 +466,12 @@ public final class Cefs {
 
         // Otherwise, try removing all other edges adjacent node node. Return
         // true if more edges could be removed at the next depth.
-        List<Node> a = new LinkedList<Node>(graph.getAdjacentNodes(node));
+        List<Node> a = new LinkedList<>(graph.getAdjacentNodes(node));
 
         NEXT_EDGE:
         for (Node y : a) {
             List<Node> adjNode =
-                    new LinkedList<Node>(graph.getAdjacentNodes(node));
+                    new LinkedList<>(graph.getAdjacentNodes(node));
             adjNode.remove(y);
             adjNode = possibleParents(node, adjNode);
 
@@ -582,9 +582,9 @@ public final class Cefs {
                                          IndependenceTest test, int depth, List<Node> nodes) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         if (nodes == null) {
             nodes = graph.getNodes();
@@ -640,10 +640,10 @@ public final class Cefs {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<Node>(graph.getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(graph.getAdjacentNodes(x));
         __nodes.remove(z);
 
-        List<Node> _nodes = new LinkedList<Node>(__nodes);
+        List<Node> _nodes = new LinkedList<>(__nodes);
 //        TetradLogger.getInstance().log("details", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
@@ -669,10 +669,10 @@ public final class Cefs {
             }
         }
 
-        __nodes = new HashSet<Node>(graph.getAdjacentNodes(z));
+        __nodes = new HashSet<>(graph.getAdjacentNodes(z));
         __nodes.remove(x);
 
-        _nodes = new LinkedList<Node>(__nodes);
+        _nodes = new LinkedList<>(__nodes);
 //        TetradLogger.getInstance().log("details", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         _depth = depth;
@@ -721,7 +721,7 @@ public final class Cefs {
      * Removes from adjx any that cannot be parents of x given the background knowledge.
      */
     private List<Node> possibleParents(Node node, List<Node> adjNode) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = node.getName();
 
         for (Node z : adjNode) {
@@ -744,7 +744,7 @@ public final class Cefs {
     }
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<>();
 
         for (int i : indices) {
             list.add(nodes.get(i));

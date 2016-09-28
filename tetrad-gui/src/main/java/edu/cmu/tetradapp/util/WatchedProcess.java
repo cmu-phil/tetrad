@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TaskManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -97,7 +98,7 @@ public abstract class WatchedProcess {
      * @param owner The ancestor window in front of which the stop dialog
      * is being displayed.
      */
-    public WatchedProcess(Window owner, Component centeringComp) {
+    private WatchedProcess(Window owner, Component centeringComp) {
         if (owner == null) {
             throw new NullPointerException();
         }
@@ -125,7 +126,7 @@ public abstract class WatchedProcess {
      */
     public abstract void watch();
 
-    public String getErrorMessage() {
+    private String getErrorMessage() {
         return errorMessage;
     }
 
@@ -133,19 +134,19 @@ public abstract class WatchedProcess {
         this.errorMessage = errorMessage;
     }
 
-    public JDialog getStopDialog() {
+    private JDialog getStopDialog() {
         return stopDialog;
     }
 
-    public void setStopDialog(JDialog stopDialog) {
+    private void setStopDialog(JDialog stopDialog) {
         this.stopDialog = stopDialog;
     }
 
-    public Window getOwner() {
+    private Window getOwner() {
         return owner;
     }
 
-    public boolean isShowDialog() {
+    private boolean isShowDialog() {
         return SHOW_DIALOG;
     }
 
@@ -174,6 +175,7 @@ public abstract class WatchedProcess {
                     }
 
                     setErrorMessage(message);
+                    throw e;
                 }
             }
         };
@@ -195,8 +197,7 @@ public abstract class WatchedProcess {
 
                     if (getErrorMessage() != null) {
                         JOptionPane.showMessageDialog(
-                                centeringComp,
-                                "Stopped with error:\n" + getErrorMessage());
+                                centeringComp, getErrorMessage());
                         return;
                     }
 
@@ -209,7 +210,9 @@ public abstract class WatchedProcess {
                         public void actionPerformed(ActionEvent e) {
                             if (getThread() != null) {
                                 while (getThread().isAlive()) {
+                                    TaskManager.getInstance().setCanceled(true);
                                     getThread().stop();
+
                                     try {
                                         sleep(500);
                                     } catch (InterruptedException e1) {
@@ -317,6 +320,15 @@ public abstract class WatchedProcess {
         }
 
         return false;
+    }
+
+    /**
+     * True if the thread is canceled. Implements of the watch() method should
+     * check for this periodically and respond gracefully.
+     */
+    public boolean isCanceled() {
+        boolean isCanceled = false;
+        return isCanceled;
     }
 }
 

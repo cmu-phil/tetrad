@@ -43,7 +43,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class Tsls {
+class Tsls {
     private SemPm spm;
     private SemIm semIm;
     private List<String> fixedLoadings;
@@ -84,13 +84,6 @@ public class Tsls {
     public SemIm estimate() {
         semIm = new SemIm(spm);
         semIm = estimateCoeffs(semIm);
-        //semIm = estimateCovars(semIm);
-        // TODO: *NOT IMPLEMENTED YET*. 2SLS is not being used as an estimator
-        // for the whole model, just for the edges. Currently, it just
-        // returns the random values for variances assigned in the
-        // SemIm constructor.
-        //
-        //            Ricardo Silva, 05/01/2003
         return semIm;
     }
 
@@ -155,7 +148,7 @@ public class Tsls {
         }
     }
 
-    protected SemIm estimateCoeffs(SemIm semIm) {
+    private SemIm estimateCoeffs(SemIm semIm) {
 
         //System.out.print("\n****************\nCalling 2SLS... ");
         SemGraph semGraph = semIm.getSemPm().getGraph();
@@ -163,11 +156,11 @@ public class Tsls {
         // Get list of fixed measurements that will be kept fixed, and the
         // respective latent variables that are their parents.
         // "X" variables are exogenous, while "Y" variables are endogenous.
-        List<Node> ly = new LinkedList<Node>();
-        List<Node> lx = new LinkedList<Node>();
-        List<Node> my1 = new LinkedList<Node>();
-        List<Node> mx1 = new LinkedList<Node>();
-        List<Node> observed = new LinkedList<Node>();
+        List<Node> ly = new LinkedList<>();
+        List<Node> lx = new LinkedList<>();
+        List<Node> my1 = new LinkedList<>();
+        List<Node> mx1 = new LinkedList<>();
+        List<Node> observed = new LinkedList<>();
 
         for (Node nodeA : semGraph.getNodes()) {
             if (nodeA.getNodeType() == NodeType.ERROR) {
@@ -194,10 +187,10 @@ public class Tsls {
             }
             // Build Z, the matrix containing the data for the fixed measurements
             // associated with the parents of the getModel (endogenous) latent node
-            List<Node> endo_parents_m = new LinkedList<Node>();
-            List<Node> exo_parents_m = new LinkedList<Node>();
-            List<Node> endo_parents = new LinkedList<Node>();
-            List<Node> exo_parents = new LinkedList<Node>();
+            List<Node> endo_parents_m = new LinkedList<>();
+            List<Node> exo_parents_m = new LinkedList<>();
+            List<Node> endo_parents = new LinkedList<>();
+            List<Node> exo_parents = new LinkedList<>();
             Iterator<Node> it_p = semGraph.getParents(current).iterator();
             lNames = new String[lx.size() + ly.size()];
             while (it_p.hasNext()) {
@@ -260,15 +253,15 @@ public class Tsls {
             }
             // Build V, the matrix containing the data for the nonfixed measurements
             // associated with the parents of the getModel (endogenous) latent node
-            endo_parents_m = new LinkedList<Node>();
-            exo_parents_m = new LinkedList<Node>();
+            endo_parents_m = new LinkedList<>();
+            exo_parents_m = new LinkedList<>();
             it_p = semGraph.getParents(current).iterator();
             while (it_p.hasNext()) {
                 Node node = it_p.next();
                 if (node.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
-                List<Node> other_measures = new LinkedList<Node>();
+                List<Node> other_measures = new LinkedList<>();
 
                 for (Node next : semGraph.getChildren(node)) {
                     if (next.getNodeType() == NodeType.MEASURED) {
@@ -405,7 +398,7 @@ public class Tsls {
             }
             Iterator<Node> children =
                     semGraph.getChildren(current_latent).iterator();
-            List<Node> other_measures = new LinkedList<Node>();
+            List<Node> other_measures = new LinkedList<>();
             Node fixed_measurement;
             while (children.hasNext()) {
                 Node next = children.next();

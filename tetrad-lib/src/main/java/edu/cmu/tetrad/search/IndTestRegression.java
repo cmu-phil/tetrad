@@ -88,6 +88,7 @@ public final class IndTestRegression implements IndependenceTest {
      */
     private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private DataSet dataSet;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -99,6 +100,10 @@ public final class IndTestRegression implements IndependenceTest {
      * @param alpha   The alpha level of the test.
      */
     public IndTestRegression(DataSet dataSet, double alpha) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.dataSet = dataSet;
         this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
@@ -136,7 +141,7 @@ public final class IndTestRegression implements IndependenceTest {
 //        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
 //                sampleSize);
 //
-//        double alphaNew = getAlpha();
+//        double alphaNew = getParameter1();
 //        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
 //                alphaNew);
 //        return newIndTest;
@@ -164,7 +169,7 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
         regressors.add(dataSet.getVariable(yVar.getName()));
 
         for (Node zVar : zList) {
@@ -184,10 +189,12 @@ public final class IndTestRegression implements IndependenceTest {
 
         boolean independent = p > alpha;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(xVar, yVar, zList, p));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(xVar, yVar, zList, p));
+            }
         }
 
 
@@ -262,7 +269,7 @@ public final class IndTestRegression implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
 
         for (Node variable : variables) {
             variableNames.add(variable.getName());
@@ -398,6 +405,19 @@ public final class IndTestRegression implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

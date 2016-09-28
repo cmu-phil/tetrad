@@ -25,10 +25,7 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -55,11 +52,11 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
-    private UpdaterParams params;
+    private Parameters params;
 
     //==========================CONSTRUCTORS=========================//
 
-    public ApproximateUpdaterWrapper(BayesImWrapper wrapper, UpdaterParams params) {
+    public ApproximateUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -68,7 +65,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     }
 
 
-    public ApproximateUpdaterWrapper(DirichletBayesImWrapper wrapper, UpdaterParams params) {
+    public ApproximateUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -76,7 +73,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(BayesEstimatorWrapper wrapper, UpdaterParams params) {
+    public ApproximateUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -84,7 +81,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(DirichletEstimatorWrapper wrapper, UpdaterParams params) {
+    public ApproximateUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -95,12 +92,11 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static ApproximateUpdaterWrapper serializableInstance() {
         return new ApproximateUpdaterWrapper(
-                BayesImWrapper.serializableInstance(), new UpdaterParams());
+                BayesImWrapper.serializableInstance(), new Parameters());
     }
 
     //============================PUBLIC METHODS=========================//
@@ -111,18 +107,18 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
 
     //============================PRIVATE METHODS========================//
 
-    private void setup(BayesIm bayesIm, UpdaterParams params) {
+    private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
-        if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
+        if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
             bayesUpdater = new ApproximateUpdater(bayesIm);
         }
         else {
             bayesUpdater = new ApproximateUpdater(bayesIm,
-                    params.getEvidence());
+                    (Evidence) params.get("evidence", null));
         }
 
-        Node node = getParams().getVariable();
+        Node node = (Node) getParams().get("variable", null);
 
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -136,7 +132,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
 
             TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
             TetradLogger.getInstance().log("details", "\nEvidence:");
-            Evidence evidence = getParams().getEvidence();
+            Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
             for (int i = 0; i < proposition.getNumVariables(); i++) {
@@ -198,7 +194,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         this.name = name;
     }
 
-    public UpdaterParams getParams() {
+    public Parameters getParams() {
         return params;
     }
 }

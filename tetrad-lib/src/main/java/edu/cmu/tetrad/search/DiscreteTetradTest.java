@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * Implementation of a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
- * binary. Such tests are a core statistical procedure in algorithms BuildPureClusters and Purify. </p> An "underlying
+ * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. </p> An "underlying
  * latent variable" approach is used to test tetrads indirectly by fitting discrete one-factor and two-factor models.
  * See Bartholomew and Knott (1999) for details. A two-stage procedure for fitting polychorics correlations (Olsson,
  * 1979) and a chi-square test of tetrad constraints over those correlations is the key for this method. </p>
@@ -128,8 +128,6 @@ public final class DiscreteTetradTest implements TetradTest {
             0.0114140658374343833765845047287,
             0.0601796466589122671716641792812, 0.192120324066997756129082460739,
             0.381669073613502098270416641564, 0.479023703120177648419744153424};
-    //Caching test constraints
-    //TODO: a space-efficient caching system
 
     /**
      * @serial
@@ -556,9 +554,9 @@ public final class DiscreteTetradTest implements TetradTest {
         return -1;
     }
 
-    /*****************************************************************************************************
-     * ESTIMATION METHODS
-     */
+    //*****************************************************************************************************
+    // * ESTIMATION METHODS
+    // */
 
     /**
      * See Olsson (1979) for details.
@@ -605,8 +603,6 @@ public final class DiscreteTetradTest implements TetradTest {
 
     /**
      * Estimate the polychoric correlation of two variables.
-     *
-     * @param indices
      */
 
     private double estimatePolychoric(int indices[]) {
@@ -860,11 +856,11 @@ public final class DiscreteTetradTest implements TetradTest {
 //                new MimBuildEstimator(covarianceMatrix, semPm, 5, 5);
 //        //System.out.println("1.");
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            cacheOneFactorTest(this.indices, true);
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            cacheOneFactorTest(this.indices, false);
 //            return false;
 //        }
@@ -1024,11 +1020,11 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            cacheOneFactorTest(this.indices, true);
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            cacheOneFactorTest(this.indices, false);
 //            return false;
 //        }
@@ -1140,10 +1136,10 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            return false;
 //        }
 //
@@ -1272,12 +1268,12 @@ public final class DiscreteTetradTest implements TetradTest {
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        //System.out.println("1.");
 //        est.estimate();
-//        tempProb = est.getEstimatedSem().getPValue();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        tempProb = est.getEstimatedSem().getScore();
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            cacheTwoFactorTest(this.indices, true);
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            cacheTwoFactorTest(this.indices, false);
 //            return false;
 //        }
@@ -1422,10 +1418,10 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            return false;
 //        }
 //
@@ -1545,10 +1541,10 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            return false;
 //        }
 //

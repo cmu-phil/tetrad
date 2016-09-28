@@ -27,13 +27,13 @@ FMat N df-tail}B /dfs{div /sf X /fntrx[sf 0 0 sf neg 0 0]N df-tail}B /E{
 pop nn dup definefont setfont}B /ch-width{ch-data dup length 5 sub get}
 B /ch-height{ch-data dup length 4 sub get}B /ch-xoff{128 ch-data dup
 length 3 sub get sub}B /ch-yoff{ch-data dup length 2 sub get 127 sub}B
-/ch-dx{ch-data dup length 1 sub get}B /ch-image{ch-data dup type
+/ch-dx{ch-data dup length 1 sub get}B /ch-image{ch-data dup test
 /stringtype ne{ctr get /ctr ctr 1 add N}if}B /id 0 N /rw 0 N /rc 0 N /gp
 0 N /cp 0 N /G 0 N /sf 0 N /CharBuilder{save 3 1 roll S dup /base get 2
 index get S /BitMaps get S get /ch-data X pop /ctr 0 N ch-dx 0 ch-xoff
 ch-yoff ch-height sub ch-xoff ch-width add ch-yoff setcachedevice
 ch-width ch-height true[1 0 0 -1 -.1 ch-xoff sub ch-yoff .1 add]{
-ch-image}imagemask restore}B /D{/cc X dup type /stringtype ne{]}if nn
+ch-image}imagemask restore}B /D{/cc X dup test /stringtype ne{]}if nn
 /base get cc ctr put nn /BitMaps get S ctr S sf 1 ne{dup dup length 1
 sub dup 2 index S get sf div put}if put /ctr ctr 1 add N}B /I{cc 1 add D
 }B /bop{userdict /bop-hook known{bop-hook}if /SI save N @rigin 0 0
@@ -2053,7 +2053,7 @@ b(T)l(o)18 b(solv)o(e)e(problem)f(\(D\))i(w)o(e)f(m)o(ust)f(\014nd)j
 (all)e(of)h(the)f(orien)o(tations)h(common)p 164 2387
 648 2 v 220 2417 a Fj(4)239 2433 y Fq(The)c(existence)h(of)e(a)g
 (complete)g(causal)g(explanation)f(for)i Fu(M)f Fq(is)g(equiv)n(alen)o
-(t)g(to)g(the)h(assumption)164 2482 y(of)g(faithfulness)h(\(Spirtes)h
+(t)g(to)g(the)h(assumption)164 2482 y(of)g(heuristicSpeedup)h(\(Spirtes)h
 (et)f(al.)f(1993\))g(or)h(stabilit)o(y)e(\(P)o(earl)i(and)g(V)m(erma)f
 (1991\).)961 2607 y Fs(7)p eop
 %%Page: 8 8

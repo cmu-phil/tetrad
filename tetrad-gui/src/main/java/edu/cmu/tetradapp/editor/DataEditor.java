@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.TabularComparison;
@@ -59,6 +60,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * 'dataModel' currently.
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
+    private boolean showMenus = true;
+    private final Parameters parameters;
 
     //==========================CONSTUCTORS===============================//
 
@@ -66,21 +69,58 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * Constructs the data editor with an empty list of data displays.
      */
     public DataEditor() {
+        this.parameters = new Parameters();
+    }
+
+    public DataEditor(int tabPlacement) {
+        tabbedPane = new JTabbedPane(tabPlacement);
+        this.parameters = new Parameters();
+    }
+
+    /**
+     * Constructs the data editor with an empty list of data displays, showing
+     * menus optionally.
+     *
+     * @param showMenus True if menus should be shown.
+     */
+    public DataEditor(boolean showMenus) {
+        this.showMenus = showMenus;
+        this.parameters = new Parameters();
+    }
+
+    public DataEditor(DataWrapper dataWrapper) {
+        this(dataWrapper, true);
+    }
+
+    public DataEditor(DataWrapper dataWrapper, int tabPlacement) {
+        this(dataWrapper, true, tabPlacement);
     }
 
     public DataEditor(TabularComparison comparison) {
         this(new DataWrapper(comparison.getDataSet()));
-
     }
 
+    public DataEditor(TabularComparison comparison, boolean showMenus) {
+        this(new DataWrapper(comparison.getDataSet()), showMenus);
+    }
+
+    public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
+        this(dataWrapper, showMenus, JTabbedPane.TOP);
+    }
 
     /**
      * Constructs a standalone data editor.
      */
-    public DataEditor(DataWrapper dataWrapper) {
+    public DataEditor(DataWrapper dataWrapper, boolean showMenus, int tabPlacement) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
+
+        this.parameters = dataWrapper.getParams();
+
+        this.tabbedPane = new JTabbedPane(tabPlacement);
+
+        this.showMenus = showMenus;
 
         this.dataWrapper = dataWrapper;
         setLayout(new BorderLayout());
@@ -123,7 +163,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     //==========================PUBLIC METHODS=============================//
 
-
     /**
      * Replaces the getModel Datamodels with the given one. Note, that by calling this
      * you are removing ALL the getModel data-models, they will be lost forever!
@@ -158,11 +197,18 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
-            add(menuBar(), BorderLayout.NORTH);
+
+            if (showMenus) {
+                add(menuBar(), BorderLayout.NORTH);
+            }
         } else {
             this.tabbedPane.addTab(tabName(model, 1), dataDisplay(model));
             add(this.tabbedPane, BorderLayout.CENTER);
-            add(menuBar(), BorderLayout.NORTH);
+
+            if (showMenus) {
+                add(menuBar(), BorderLayout.NORTH);
+            }
+
             validate();
         }
 
@@ -178,7 +224,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         setPreferredSize(new Dimension(600, 400));
 
         DataModelList dataModelList = dataWrapper.getDataModelList();
-        DataModel selectedModel = dataWrapper.getSelectedDataModel();
+        DataModel selectedModel = dataModelList.getSelectedModel();
 
         removeAll();
         removeEmptyModels(dataModelList);
@@ -210,7 +256,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         });
 
         add(tabbedPane(), BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+
+        if (showMenus) {
+            add(menuBar(), BorderLayout.NORTH);
+        }
+
         validate();
     }
 
@@ -234,7 +284,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         }
 
         add(tabbedPane(), BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+
+        if (showMenus) {
+            add(menuBar(), BorderLayout.NORTH);
+        }
+
         validate();
 
         firePropertyChange("modelChanged", null, null);
@@ -258,7 +312,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         }
 
         add(tabbedPane(), BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+
+        if (showMenus) {
+            add(menuBar(), BorderLayout.NORTH);
+        }
+
         validate();
 
         firePropertyChange("modelChanged", null, null);
@@ -458,8 +516,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 String[] tokens = variables.split(" ");
 
                 for (int i = 0; i < getNumJTables(); i++) {
-                    System.out.println(i);
-
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
@@ -496,15 +552,13 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
                 String[] tokens = variables.split(" ");
 
-                Set _tokens = new HashSet<String>();
+                Set _tokens = new HashSet<>();
 
                 for (String token : tokens) {
                     _tokens.add(token);
                 }
 
                 for (int i = 0; i < getNumJTables(); i++) {
-                    System.out.println(i);
-
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
@@ -570,8 +624,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         setToMissingCells.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 for (int i = 0; i < getNumJTables(); i++) {
-                    System.out.println(i);
-
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
@@ -646,19 +698,19 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new DescriptiveStatsAction(this));
 //        tools.add(new ConditionalIndependenceTestAction(this));
 
-//        final Params _params = dataWrapper.getParams();
+//        final Parameters _params = dataWrapper.getParameters();
 //
-//        if (_params instanceof BayesDataParams || _params instanceof SemDataParams) {
+//        if (_params instanceof Parameters || _params instanceof Parameters) {
 //            JMenuItem drawSample = new JMenuItem("Draw New Sample");
 //            tools.add(drawSample);
 //
 //            drawSample.addActionListener(new ActionListener() {
 //                public void actionPerformed(ActionEvent event) {
-//                    if (_params instanceof BayesDataParams) {
-//                        BayesDataParams params = (BayesDataParams) _params;
+//                    if (_params instanceof Parameters) {
+//                        Parameters params = (Parameters) _params;
 //
 //                        BayesDataParamsEditor paramsEditor = new BayesDataParamsEditor();
-//                        paramsEditor.setParams(params);
+//                        paramsEditor.setParameters(params);
 //                        paramsEditor.setup();
 //
 //                        int ret = JOptionPane.showConfirmDialog(DataEditor.this, paramsEditor,
@@ -680,12 +732,12 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //                        selectFirstTab();
 //                        firePropertyChange("modelChanged", null, null);
 //                    }
-//                    else if (_params instanceof SemDataParams) {
-//                        SemDataParams params = (SemDataParams) _params;
+//                    else if (_params instanceof Parameters) {
+//                        Parameters params = (Parameters) _params;
 //                        SemDataWrapper wrapper = (SemDataWrapper) dataWrapper;
 //
 //                        SemDataParamsEditor paramsEditor = new SemDataParamsEditor();
-//                        paramsEditor.setParams(params);
+//                        paramsEditor.setParameters(params);
 //                        paramsEditor.setup();
 //
 //                        int ret = JOptionPane.showConfirmDialog(DataEditor.this, paramsEditor,
@@ -747,11 +799,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //
 //                    if (nonsingular) {
 //                        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                                "This dataset has full rank.");
+//                                "This dataset has allowUnfaithfulness rank.");
 //                        return;
 //                    } else {
 //                        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                                "This dataset has less than full rank.");
+//                                "This dataset has less than allowUnfaithfulness rank.");
 //                        return;
 //                    }
 //                }
@@ -837,7 +889,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             });
 
             add(tabbedPane(), BorderLayout.CENTER);
-            add(menuBar(), BorderLayout.NORTH);
+
+            if (showMenus) {
+                add(menuBar(), BorderLayout.NORTH);
+            }
+
             validate();
         }
     }
@@ -877,6 +933,10 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     public DataModelList getDataModelList() {
         return dataWrapper.getDataModelList();
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
 

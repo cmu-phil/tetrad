@@ -68,7 +68,7 @@ final class LoadDataAction extends AbstractAction {
 //                    "Do you want to continue?";
 //            int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Removal Warning",
 //                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null);
-//            // if not yes, cancel action.
+//            // if not yes, cancelAll action.
 //            if (option != JOptionPane.YES_OPTION) {
 //                return;
 //            }

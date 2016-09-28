@@ -21,11 +21,14 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Cefs;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
@@ -49,7 +52,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CeFanSearchRunner(DataWrapper dataWrapper, MbSearchParams params) {
+    public CeFanSearchRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -58,34 +61,34 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(Graph graph, MbSearchParams params) {
+    public CeFanSearchRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(GraphWrapper graphWrapper, MbSearchParams params) {
+    public CeFanSearchRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(DagWrapper dagWrapper, MbSearchParams params) {
+    public CeFanSearchRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     public CeFanSearchRunner(SemGraphWrapper dagWrapper,
-            BasicSearchParams params) {
+            Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, MbSearchParams params) {
+    public CeFanSearchRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, MbSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CeFanSearchRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -93,12 +96,10 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static CeFanSearchRunner serializableInstance() {
-        return new CeFanSearchRunner(Dag.serializableInstance(),
-                MbSearchParams.serializableInstance());
+        return new CeFanSearchRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -108,22 +109,22 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((MbSearchParams) getParams()).getDepth();
+        int pcDepth = getParams().getInt("depth", -1);
         Cefs search =
                 new Cefs(getIndependenceTest(), pcDepth);
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-            search.setAggressivelyPreventCycles(((MeekSearchParams) params).isAggressivelyPreventCycles());
+        Parameters params = getParams();
+        if(params instanceof Parameters){
+            search.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
-        String targetName = ((MbSearchParams) getParams()).getTargetName();
+        String targetName = getParams().getString("targetName", null);
         Graph graph = search.search(targetName);
         setResultGraph(graph);
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         }
-        else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         }
         else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
@@ -137,8 +138,8 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        MbSearchParams params = (MbSearchParams) getParams();
-        IndTestType testType = params.getIndTestType();
+        Parameters params = getParams();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
@@ -150,15 +151,19 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     * @param node
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "CE-Fan-Search";
     }
 }
 

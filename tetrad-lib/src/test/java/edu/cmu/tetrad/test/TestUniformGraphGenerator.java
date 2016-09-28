@@ -23,24 +23,19 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.GraphGeneratorRandomNumEdges;
 import edu.cmu.tetrad.graph.UniformGraphGenerator;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joseph Ramsey
  */
-public final class TestUniformGraphGenerator extends TestCase {
+public final class TestUniformGraphGenerator {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestUniformGraphGenerator(String name) {
-        super(name);
-    }
-
+    @Test
     public void testRandomDag1() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
@@ -49,14 +44,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setNumIterations(50000);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(19, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag2() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
@@ -65,14 +58,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMaxEdges(20);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(49, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag3() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
@@ -81,14 +72,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setNumIterations(20000);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(19, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag4() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
@@ -97,14 +86,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMaxDegree(3);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(19, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag5() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
@@ -112,14 +99,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMaxDegree(3);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(19, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag6() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
@@ -130,16 +115,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMaxEdges(10);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        generator.printEdges();
-
-        System.out.println(generator.getDag());
+        assertEquals(10, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag7() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
@@ -148,14 +129,12 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMaxOutDegree(3);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(19, generator.getDag().getNumEdges());
     }
 
+    @Test
     public void testRandomDag8() {
-        long start = System.currentTimeMillis();
+        RandomUtil.getInstance().setSeed(3848283L);
 
         UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
@@ -163,23 +142,17 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMaxDegree(14);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
+        assertEquals(14, generator.getDag().getNumEdges());
     }
 
     /**
      * Tests the second version of the generator that generates random DAGs
      * (unconnected only) with #edges in a given range.
      */
+    @Test
     public void testRandomDag9() {
-        long start = System.currentTimeMillis();
-
         int N = 25;
         int E = N * (N - 1) / 2;
-
-        System.out.println("N = " + N + ", E = " + E);
 
         GraphGeneratorRandomNumEdges generator =
                 new GraphGeneratorRandomNumEdges(UniformGraphGenerator.ANY_DAG);
@@ -188,21 +161,7 @@ public final class TestUniformGraphGenerator extends TestCase {
         generator.setMinEdges(E - 5);
         generator.generate();
 
-        long stop = System.currentTimeMillis();
-        System.out.println("Elapsed time " + (stop - start) + " ms.");
-
-        System.out.println(generator.getDag());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestUniformGraphGenerator.class);
+        assertEquals(295, generator.getDag().getNumEdges());
     }
 }
 

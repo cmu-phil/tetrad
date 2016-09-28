@@ -60,7 +60,7 @@ public class ParamType implements TetradSerializable {
     /**
      * A parameter of a distribution.
      */
-    public static final ParamType DIST = new ParamType("Distribution Parameter");
+    private static final ParamType DIST = new ParamType("Distribution Parameter");
 
     /**
      * The name of this type.
@@ -71,7 +71,7 @@ public class ParamType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    protected ParamType(String name) {
+    private ParamType(String name) {
         this.name = name;
     }
 

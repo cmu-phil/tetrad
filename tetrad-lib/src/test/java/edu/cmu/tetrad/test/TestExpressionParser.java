@@ -24,14 +24,14 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.calculator.expression.Context;
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
-import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -39,17 +39,11 @@ import java.util.regex.Matcher;
  *
  * @author Joseph Ramsey
  */
-public class TestExpressionParser extends TestCase {
+public class TestExpressionParser {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestExpressionParser(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
-        final Map<String, Double> values = new HashMap<String, Double>();
+        final Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -74,7 +68,7 @@ public class TestExpressionParser extends TestCase {
         };
 
 
-        Map<String, Double> formulasToEvaluations = new HashMap<String, Double>();
+        Map<String, Double> formulasToEvaluations = new HashMap<>();
 
         formulasToEvaluations.put("0", 0.0);
         formulasToEvaluations.put("b11*X1 + sin(X2) + B22*X2 + B12*X4+b13*X5", 100.14);
@@ -157,14 +151,10 @@ public class TestExpressionParser extends TestCase {
         try {
             for (String formula : formulasToEvaluations.keySet()) {
                 Expression expression = parser.parseExpression(formula);
-                System.out.println(expression);
 
                 double value = expression.evaluate(context);
 
                 assertEquals(formulasToEvaluations.get(formula), value, 0.01);
-
-                System.out.println(value);
-
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -172,7 +162,7 @@ public class TestExpressionParser extends TestCase {
     }
 
     public void test2() {
-        final Map<String, Double> values = new HashMap<String, Double>();
+        final Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -198,7 +188,7 @@ public class TestExpressionParser extends TestCase {
             }
         };
 
-        List<String> formulas = new ArrayList<String>();
+        List<String> formulas = new ArrayList<>();
 //
         formulas.add("ChiSquare(s3)");
         formulas.add("Gamma(1, 1)");
@@ -223,23 +213,15 @@ public class TestExpressionParser extends TestCase {
 
         try {
             for (String formula : formulas) {
-                System.out.println(formula);
-
                 Expression expression = parser.parseExpression(formula);
-                System.out.println(expression);
-
                 double value = expression.evaluate(context);
-
-//                assertEquals(formulas.get(formula), value, 0.01);
-
-                System.out.println(value);
-
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
     public void test3() {
 
         // Need a regex that will match all numbers (and only numbers).
@@ -262,88 +244,53 @@ public class TestExpressionParser extends TestCase {
         Matcher matcher = pattern.matcher("0.5");
         boolean matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher(".5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher("5.");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher("5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher(".");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(!matches);
 
         matcher = pattern.matcher("-.5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher("-5.");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher("-5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher("-.");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(!matches);
     }
 
     // Formulas that should and should not fail.
+    @Test
     public void test4() {
-        Map<String, Integer> formulasToOffsets = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> formulasToOffsets = new LinkedHashMap<>();
 
         // -1 means it should parse.
         formulasToOffsets.put("X X", 2);
@@ -358,37 +305,26 @@ public class TestExpressionParser extends TestCase {
         formulasToOffsets.put("b1*X1 +@**!! b2 * X2", 7);
         formulasToOffsets.put("X7", 0);
         
-        List<String> otherNodes = new ArrayList<String>();
+        List<String> otherNodes = new ArrayList<>();
         otherNodes.add("X7");
 
         ExpressionParser parser = new ExpressionParser(otherNodes, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
 
         for (String formula : formulasToOffsets.keySet()) {
             try {
-                System.out.println(formula);
                 parser.parseExpression(formula);
                 assertEquals(formulasToOffsets.get(formula).intValue(), -1);
             } catch (ParseException e) {
                 int offset = e.getErrorOffset();
-
-                for (int i = 0; i < offset; i++) {
-                    System.out.print(" ");
-                }
-
-                System.out.println("^");
-                System.out.println("offset = " + offset);
-                System.out.println();
-
-//                e.printStackTrace();
-
                 assertEquals(formulasToOffsets.get(formula).intValue(), offset);
             }
         }
     }
 
     // Test distribution means.
+    @Test
     public void test5() {
-        final Map<String, Double> values = new HashMap<String, Double>();
+        final Map<String, Double> values = new HashMap<>();
 
         Context context = new Context() {
             public Double getValue(String var) {
@@ -396,7 +332,7 @@ public class TestExpressionParser extends TestCase {
             }
         };
 
-        Map<String, Double> formulas = new LinkedHashMap<String, Double>();
+        Map<String, Double> formulas = new LinkedHashMap<>();
 
         formulas.put("ChiSquare(1)", 1.0);
         formulas.put("Gamma(2, .5)", 1.0);
@@ -412,7 +348,6 @@ public class TestExpressionParser extends TestCase {
 
         try {
             for (String formula : formulas.keySet()) {
-                System.out.println(formula);
                 Expression expression = parser.parseExpression(formula);
 
                 double sum = 0.0;
@@ -430,24 +365,6 @@ public class TestExpressionParser extends TestCase {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-    }
-
-    public void test6() {
-        try {
-            System.out.println(RandomUtil.getInstance().nextNormal(5, -1));
-        } catch (IllegalArgumentException e) {
-        }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestExpressionParser.class);
     }
 }
 

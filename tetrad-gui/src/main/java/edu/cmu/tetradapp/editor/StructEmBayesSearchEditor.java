@@ -47,17 +47,12 @@ import java.text.NumberFormat;
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
  *         Bayes estimator
  */
-public class StructEmBayesSearchEditor extends JPanel {
+class StructEmBayesSearchEditor extends JPanel {
 
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
     private StructEMBayesSearchEditorWizard wizard;
-
-    /**
-     * Formats numbers.
-     */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
@@ -99,14 +94,17 @@ public class StructEmBayesSearchEditor extends JPanel {
 
         JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        BayesProperties scorer = new BayesProperties(dataSet, graph);
-        scorer.setGraph(graph);
+        BayesProperties scorer = new BayesProperties(dataSet);
 
         StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP());
-        buf.append("\nDf = ").append(scorer.getPValueDf());
+        buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP(graph));
+        buf.append("\nDf = ").append(scorer.getDof());
+        /*
+      Formats numbers.
+     */
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ").append(
-                nf.format(scorer.getPValueChisq()));
+                nf.format(scorer.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(scorer.getBic()));
 
         JTextArea modelParametersText = new JTextArea();

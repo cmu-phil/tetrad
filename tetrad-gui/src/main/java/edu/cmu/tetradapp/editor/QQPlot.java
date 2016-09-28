@@ -35,7 +35,7 @@ import javax.swing.*;
  *
  * @author Michael Freenor
  */
-public class QQPlot {
+class QQPlot {
 
 
     /**
@@ -94,9 +94,6 @@ public class QQPlot {
 
     /**
      * Constructs the histogram given the dataset to wrap and the node that should be viewed.
-     *
-     * @param dataSet
-     * @param selectedNode
      */
     public QQPlot(DataSet dataSet, Node selectedNode) {
 
@@ -164,8 +161,6 @@ public class QQPlot {
     
      /**
      * @return the max sample value.
-     *
-     * @return - max Value in sample.
      */
     public double getMaxSample() {
         return this.maxData;
@@ -174,8 +169,6 @@ public class QQPlot {
 
     /**
      * @return the min sample value.
-     *
-     * @return - min value in sample.
      */
     public double getMinSample() {
         return this.minData;
@@ -183,8 +176,6 @@ public class QQPlot {
 
      /**
      * @return the max comparison value.
-     *
-     * @return - max Value in comparison.
      */
     public double getMaxIdeal() {
         return this.maxComparison;
@@ -193,8 +184,6 @@ public class QQPlot {
 
     /**
      * @return the min comparison value.
-     *
-     * @return - min value in comparison.
      */
     public double getMinIdeal() {
         return this.minComparison;
@@ -202,8 +191,6 @@ public class QQPlot {
 
     /**
      * @return the min value in the q-q
-     *
-     * @return min value in q-q
      */
 
     public double getMinValue() {
@@ -212,8 +199,6 @@ public class QQPlot {
 
     /**
      * @return the max value in the q-q
-     *
-     * @return max value in q-q
      */
 
     public double getMaxValue() {
@@ -222,8 +207,6 @@ public class QQPlot {
 
     /**
      * @return the node that has been selected.
-     *
-     * @return selected
      */
     public Node getSelectedVariable() {
         return this.selectedVariable;
@@ -355,7 +338,7 @@ public class QQPlot {
      * @param n Normal distribution generated from the dataset.
      * @param data Dataset that n is generated from, and whose normality is in question.
      */
-    public void calculateComparisonSet(cern.jet.random.Normal n, DataSet data)
+    private void calculateComparisonSet(cern.jet.random.Normal n, DataSet data)
     {
         //this.comparisonVariable = new ContinuousVariable("comparisonVariable");
         //data.addVariable(this.comparisonVariable);
@@ -391,7 +374,7 @@ public class QQPlot {
      * @param count Feed this zero -- ensures the stack doesn't fill up
      * @param searchCap Desired maximum number of searches -- too high and the stack might overflow!
      */
-    public static double findQuantile(double quantile, double low, double high, cern.jet.random.Normal n, double precision, int count, int searchCap)
+    private static double findQuantile(double quantile, double low, double high, cern.jet.random.Normal n, double precision, int count, int searchCap)
     {
         //System.out.println("Low: " + low + "High: " + high);
         double mid = low + ((high - low) / 2.);

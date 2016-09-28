@@ -63,8 +63,6 @@ public interface IFas {
 
     List<Triple> getAmbiguousTriples(Node node);
 
-    void setInitialGraph(Graph initialGraph);
-
     boolean isVerbose();
 
     void setVerbose(boolean verbose);

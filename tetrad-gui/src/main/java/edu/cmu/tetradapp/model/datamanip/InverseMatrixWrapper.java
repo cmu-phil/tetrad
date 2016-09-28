@@ -24,9 +24,11 @@ package edu.cmu.tetradapp.model.datamanip;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.PcRunner;
 import edu.cmu.tetradapp.model.SemImWrapper;
 
 import java.util.List;
@@ -41,10 +43,8 @@ public class InverseMatrixWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
-    public InverseMatrixWrapper(DataWrapper wrapper) {
+    public InverseMatrixWrapper(DataWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -75,7 +75,7 @@ public class InverseMatrixWrapper extends DataWrapper {
 
     }
 
-    public InverseMatrixWrapper(SemImWrapper wrapper) {
+    public InverseMatrixWrapper(SemImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The Sem IM must not be null.");
         }
@@ -96,11 +96,10 @@ public class InverseMatrixWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new InverseMatrixWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()));
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

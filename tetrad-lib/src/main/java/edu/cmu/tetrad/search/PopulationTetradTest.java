@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Implements a test of tetrad constraints in a known correlation matrix. It might be useful for debugging
- * BuildPureClusters/Purify-like algorithms.
+ * BuildPureClusters/Purify-like algorithm.
  *
  * @author Ricardo Silva
  */
@@ -161,8 +161,6 @@ public class PopulationTetradTest implements TetradTest {
     }
 
     public double tetradPValue(int v1, int v2, int v3, int v4) {
-        //TODO: evalTetradDifference(v1, v2, v3, v4);
-        //return prob[0];
         return -1;
     }
 

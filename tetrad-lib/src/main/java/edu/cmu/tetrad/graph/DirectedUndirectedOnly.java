@@ -78,7 +78,6 @@ public final class DirectedUndirectedOnly implements GraphConstraint {
     }
 
     /**
-     * @param node
      * @param graph the graph to check.
      * @return true.
      */

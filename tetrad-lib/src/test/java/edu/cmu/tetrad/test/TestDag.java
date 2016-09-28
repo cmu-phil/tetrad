@@ -21,13 +21,17 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
@@ -35,19 +39,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class TestDag extends TestCase {
+public final class TestDag {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDag(String name) {
-        super(name);
-    }
-
-    public void testSearchGraph() {
-        checkGraph(new Dag());
-    }
-
+    @Test
     public void testDag() {
         checkGraph(new Dag());
     }
@@ -75,20 +69,14 @@ public final class TestDag extends TestCase {
         graph.addDirectedEdge(x3, x4);
         graph.addDirectedEdge(x5, x4);
 
-        System.out.println(graph);
-
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
 
-        System.out.println("Children of x1 = " + children);
-        System.out.println("Parents of x4 = " + parents);
+        assertTrue(children.contains(x2));
+        assertTrue(parents.contains(x3));
+        assertTrue(parents.contains(x5));
 
         assertTrue(graph.isDConnectedTo(x1, x3, Collections.EMPTY_LIST));
-
-        //graph.removeNode(x2);
-        //
-        //System.out.println("Without x2: " + graph);
-
 
         assertTrue(graph.existsDirectedPathFromTo(x1, x4));
         assertTrue(!graph.existsDirectedPathFromTo(x1, x5));
@@ -98,23 +86,11 @@ public final class TestDag extends TestCase {
 
         assertTrue(graph.isDescendentOf(x4, x2));
         assertTrue(!graph.isDescendentOf(x2, x4));
-
     }
 
     private void checkCopy(Graph graph) {
-        Graph graph2 = new EdgeListGraph(graph);
+        Graph graph2 = new Dag(graph);
         assertEquals(graph, graph2);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDag.class);
     }
 }
 

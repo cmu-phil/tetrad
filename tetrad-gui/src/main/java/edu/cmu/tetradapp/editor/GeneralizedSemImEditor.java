@@ -60,7 +60,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     /**
      * The SemPm being edited.
      */
-    GeneralizedSemIm semIm;
+    private GeneralizedSemIm semIm;
 
     /**
      * The graphical editor for the SemIm.
@@ -86,7 +86,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * A common map of nodes to launched editors so that they can all be closed when this editor
      * is closed.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
     //========================CONSTRUCTORS===========================//
 
@@ -230,7 +230,10 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     }
 
     public GeneralizedSemImEditor(final GeneralizedSemImWrapper wrapper) {
-        GeneralizedSemIm semIm = wrapper.getSemIm();
+        if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
+        GeneralizedSemIm semIm = wrapper.getSemIms().get(0);
 
         if (semIm == null) {
             throw new NullPointerException("Generalized SEM IM must not be null.");
@@ -442,7 +445,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         return this.paramsEditor;
     }
 
-    public GeneralizedSemIm getSemIm() {
+    private GeneralizedSemIm getSemIm() {
         return semIm;
     }
 }

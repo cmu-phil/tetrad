@@ -21,12 +21,12 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Implements an editor some specific type of parameter object. It is assumed
  * that the parameter editor implementing this class has a blank constructor,
- * that <code>setParams</code> is called first, followed by
+ * that <code>setParameters</code> is called first, followed by
  * <code>setParantModel</code>, then <code>setup</code>. It is also assumed
  * that the implementing class will implement JComponent.
  *
@@ -36,8 +36,9 @@ public interface ParameterEditor {
 
     /**
      * Sets the parameter object to be edited.
+     * @param params
      */
-    void setParams(Params params);
+    void setParams(Parameters params);
 
     /**
      * Sets the parent models that can be exploited for information in the

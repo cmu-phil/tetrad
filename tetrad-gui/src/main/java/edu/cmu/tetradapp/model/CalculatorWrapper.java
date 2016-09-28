@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.calculator.CalculatorParams;
 import edu.cmu.tetrad.calculator.Transformation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -43,11 +43,8 @@ public class CalculatorWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
-     *
-     * @param data
-     * @param params
      */
-    public CalculatorWrapper(DataWrapper data, CalculatorParams params) {
+    public CalculatorWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -62,10 +59,10 @@ public class CalculatorWrapper extends DataWrapper {
         for (DataModel model : originals) {
             DataSet copy = copy((DataSet) model);
 
-            List<String> equations = new ArrayList<String>();
+            List<String> equations = new ArrayList<>();
 
-            int size = params.getEquations().size();
-            String[] displayEquations = params.getEquations().toArray(new String[size]);
+            int size = ((List<String>) params.get("equations", null)).size();
+            String[] displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);
 
             for (String equation : displayEquations) {
                 if (equation.contains("$")) {
@@ -100,12 +97,10 @@ public class CalculatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static CalculatorWrapper serializableInstance() {
-        return new CalculatorWrapper(DataWrapper.serializableInstance(),
-                CalculatorParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================== Private Methods =========================//

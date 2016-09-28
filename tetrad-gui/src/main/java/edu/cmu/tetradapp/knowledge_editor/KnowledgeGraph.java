@@ -58,12 +58,8 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     /**
      * Constructs a new directed acyclic graph (DAG).
-     *
-     * @param knowledge
      */
     public KnowledgeGraph(IKnowledge knowledge) {
-        setGraphConstraintsChecked(false);
-
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -74,7 +70,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static KnowledgeGraph serializableInstance() {
@@ -370,18 +365,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getNumEdges(node);
     }
 
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
-    }
-
     public boolean removeEdge(Edge edge) {
         KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
         KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
@@ -489,6 +472,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
@@ -552,10 +540,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public String toString() {
         return getGraph().toString();
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        return getGraph().addGraphConstraint(gc);
     }
 
     public IKnowledge getKnowledge() {

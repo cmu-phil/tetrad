@@ -26,9 +26,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.IndependenceFactsModel;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileReader;
@@ -36,21 +34,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the Knowledge class.
  *
  * @author Joseph Ramsey
  */
-public final class TestIndependenceFacts extends TestCase {
+public final class TestIndependenceFacts {
     private IndependenceFactsModel facts;
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestIndependenceFacts(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
         IndependenceFactsModel facts = new IndependenceFactsModel();
 
@@ -68,20 +62,14 @@ public final class TestIndependenceFacts extends TestCase {
         facts.add(new IndependenceFact(x2, x4, x3));
         facts.add(new IndependenceFact(x2, x4, x3, x6));
 
-        System.out.println(facts);
-
         facts.remove(new IndependenceFact(x1, x2, x3));
 
-//        System.out.println(facts);
-
         IndependenceFacts _facts = new IndependenceFacts(facts.getFacts());
-
-        System.out.println(_facts.toString());
 
         assertTrue(_facts.isIndependent(x4, x2, x1, x2));
         assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
 
-        List<Node> l = new ArrayList<Node>();
+        List<Node> l = new ArrayList<>();
         l.add(x1);
         l.add(x2);
 
@@ -89,27 +77,15 @@ public final class TestIndependenceFacts extends TestCase {
 
     }
 
+    @Test
     public void test2() {
-        File file = new File("resources/sample.independencies.txt");
+        File file = new File("src/test/resources/sample.independencies.txt");
 
         try {
             IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));
-
-            System.out.println(facts);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestIndependenceFacts.class);
     }
 }
 

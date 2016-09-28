@@ -90,6 +90,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
     private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private DataSet dataSet;
     private double pvalue = Double.NaN;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -139,7 +140,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
         TetradVector v1, v2;
 
         try {
-            List<Node> regressors = new ArrayList<Node>();
+            List<Node> regressors = new ArrayList<>();
             regressors.add(dataSet.getVariable(yVar.getName()));
 
             for (Node zVar : zList) {
@@ -152,7 +153,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
 
             v2 = regression.getResidualsWithoutFirstRegressor();
 
-//            regressors.remove(dataSet.getVariable(yVar.getName()));
+//            regressors.remove(dataSet.getVariable(yVar.getNode()));
 //            regression = new RegressionDataset(dataSet);
 //            result = regression.regress(xVar, regressors);
 //            v2 = result.getResiduals();
@@ -184,10 +185,12 @@ public final class IndTestRegressionAD implements IndependenceTest {
 
         this.pvalue = aa2;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, 0.));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(xVar, yVar, zList, 0.));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, 0.));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(xVar, yVar, zList, 0.));
+            }
         }
 
         return independent;
@@ -261,7 +264,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
 
         for (Node variable : variables) {
             variableNames.add(variable.getName());
@@ -397,6 +400,19 @@ public final class IndTestRegressionAD implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

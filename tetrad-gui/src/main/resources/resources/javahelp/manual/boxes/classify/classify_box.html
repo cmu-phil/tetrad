@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Classify</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Inside the Classify Box</font></h2></td>
+  </tr>
+</table>
+<p>A Classify box in the main workspace looks like this:</p>
+<p><img src="../../images/classify_highlight.gif" width="312" height="69"> </p>
+<p>  The operations in the Classify box permit you to use an instantiated model to 
+  estimate values for a variable from a data set--the variable estimated<br>
+  must be in the Instantiated Model, but it need not be in the data set.&nbsp;
+  A Classify Box requires input from a Data box containing data and input from
+  an Instantiated Model in an IM box. (Remember that you can copy an estimated 
+  model in an Estimate box into an IM box simply by putting a flowchart arrow 
+  fromthe estimate box to a new IM box.)<br>
+  <br>
+Here are some things to note: </p>
+<ul>
+  <li>The Instantiated Model can contain variables that are not in the Data</li>
+  <li>The Data can contain variables that are not in the Instantiated Model</li>
+  <li>The variable values must all be categorical--a data file with decimal numbers
+    will not be accepted by Classify</li>
+  <li>The IM must be a Bayes net--either Maximum Likelihood or Dirichlet..</li>
+  <li>If the target variable to be classified has multiple values, the Classifier 
+    will assign the target variable its most probable value for each case.</li>
+  <li>If the target variable to be classified has two values, you can specify 
+    the cut-off probability for classification.</li>
+</ul>
+The Classifier box will show the graph of the IM used for
+classification.. <br>
+<br>
+<br>
+<img
+ src="../../images/UntitledClsassifyWindow.jpg" alt="" width="481" height="546" style="width: 481px; height: 546px;"><br>
+<br>
+<br>
+The original data can be viewed by cliicking the "Test Data" tab.<br>
+<br>
+Tabs above the graph give choices for how the Classifer will work. You can choose:
+<ul>
+  <li>The variable&nbsp; in the IM that is the target--to be classified (you can 
+    also chose this variable by clicking on it in the graph.)</li>
+  <li>If the target is binary, with only two possible values, you can choose the 
+    cut-off value below which the variable will be classfied one way, and above 
+    which, the other.</li>
+</ul>
+When you hit the "Classify" button at the top of the graph window inside the Classify 
+box, the Classifier does its work and gives you some viewing choices.<br>
+<br>
+<img
+ src="../../images/UntitledClasssifyResult.jpg" alt="" width="481" height="546" style="width: 481px; height: 546px;"><br>
+<br>
+<br>
+According to which tab you then click, you can see:
+<ul>
+  <li>The original data</li>
+  <li>The orginal data plus, in the first column, for each case the value of the
+    target variable the classifier predicts.</li>
+</ul>
+<span style="font-style: italic;">If the target variable is included in the data</span>,
+the tabs at the top of the Classifier window after the classfication program has 
+run will also give you.
+<ul>
+  <li>A Receiver Operating Characteristic, or ROC curve for short. There is a 
+    distinct ROC curve for each value of the target variable, showing the ratio 
+    of true positives to false positives as a function of the cutoff value of 
+    probabilities for positive classification. ROC curves are traditionally used 
+    only with binary variables but the program allows them for muliptle valued 
+    variables. </li>
+  <li>The Area Under the ROC curve, or AUC</li>
+  <li>A Confusion Matrix, showiing, for each value of the target variable, the 
+    number of cases having that true value that were predicted (by the classifier) 
+    to have&nbsp; each of the possible values of the target variable.</li>
+</ul>
+You do not need to leave the Classify Box, or destroy its contents, to
+view the ROC curves or Confusion matrices for alternative values of the
+target variable. You do need to do so (or create a new Classify Box) if
+you want to classify a different target.<br>
+<br>
+<br>
+<img
+ src="../../images/UntitiledsROC.jpg" alt="" width="481" height="546" style="width: 481px; height: 546px;"><br>
+</body>
+</html>

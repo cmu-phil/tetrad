@@ -24,6 +24,7 @@ package edu.cmu.tetrad.session;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.prefs.Preferences;
 
 /**
  * Runs a simulation study for a session which traverses a subtree of the
@@ -124,7 +125,7 @@ public final class SimulationStudy {
 
         // Begin the execution, making sure that each node's children are
         // executed in the order of the given tier ordering.
-        LinkedList<SessionNode> tierOrdering = new LinkedList<SessionNode>(getTierOrdering(sessionNode));
+        LinkedList<SessionNode> tierOrdering = new LinkedList<>(getTierOrdering(sessionNode));
         notifyDownstreamOfStart(sessionNode);
 
         boolean doRepetition = true;
@@ -173,7 +174,7 @@ public final class SimulationStudy {
     //===========================PRIVATE METHODS===========================//
 
     private HashSet<SessionNode> nodesWithModels() {
-        HashSet<SessionNode> nodesWithModels = new HashSet<SessionNode>();
+        HashSet<SessionNode> nodesWithModels = new HashSet<>();
 
         for (SessionNode node : session.getNodes()) {
             if (node.getModel() != null) {
@@ -232,7 +233,14 @@ public final class SimulationStudy {
         // jdramsey 1/11/01
         int repetition = doRepetition ? getRepetition(sessionNode) : 1;
 
+        Preferences.userRoot().putBoolean("errorFound", false);
+
         for (int i = 0; i < repetition; i++) {
+            if (Preferences.userRoot().getBoolean("experimental", false) &&
+                    Preferences.userRoot().getBoolean("errorFound", false)) {
+//                break;
+            }
+
             if (!overwrite && sessionNode.getModel() != null) {
                 return false;
             }
@@ -248,14 +256,25 @@ public final class SimulationStudy {
 
                 boolean created = sessionNode.createModel(simulation);
 
+                if (created) {
+                    SessionModel source = sessionNode.getModel();
+                    Map<String, String> paramSettings = new LinkedHashMap<>();
+                    collectParentParamSettings(sessionNode, paramSettings);
+
+                    if (source instanceof SimulationParamsSource) {
+                        ((SimulationParamsSource) source).setAllParamSettings(paramSettings);
+                    }
+                }
+
                 if (!created) {
                     return false;
                 }
             } catch (RuntimeException e) {
+                e.printStackTrace();
                 return false;
             }
 
-            LinkedList<SessionNode> _tierOrdering = new LinkedList<SessionNode>(tierOrdering);
+            LinkedList<SessionNode> _tierOrdering = new LinkedList<>(tierOrdering);
             _tierOrdering.removeFirst();
             boolean success =
                     execute(_tierOrdering, doRepetition, simulation, overwrite);
@@ -266,6 +285,17 @@ public final class SimulationStudy {
         }
 
         return true;
+    }
+
+    private void collectParentParamSettings(SessionNode sessionNode,
+                                            Map<String, String> paramSettings) {
+        for (SessionNode parent : sessionNode.getParents()) {
+            collectParentParamSettings(parent, paramSettings);
+        }
+
+//        if (sessionNode.getModel() instanceof SimulationParamsSource) {
+//            paramSettings.putAll(((SimulationParamsSource) sessionNode.getModel()).getParamSettings());
+//        }
     }
 
     /**
@@ -287,8 +317,8 @@ public final class SimulationStudy {
         Session session = this.session;
         Set<SessionNode> sessionNodes = session.getNodes();
 
-        LinkedList<SessionNode> found = new LinkedList<SessionNode>();
-        Set<SessionNode> notFound = new HashSet<SessionNode>();
+        LinkedList<SessionNode> found = new LinkedList<>();
+        Set<SessionNode> notFound = new HashSet<>();
 
         // The getVariableNodes() method already returns a copy, so there's no
         // need to make a new copy.
@@ -310,7 +340,7 @@ public final class SimulationStudy {
     }
 
     public static Set getDescendants(SessionNode node) {
-        HashSet<SessionNode> descendants = new HashSet<SessionNode>();
+        HashSet<SessionNode> descendants = new HashSet<>();
         doChildClosureVisit(node, descendants);
         return descendants;
     }

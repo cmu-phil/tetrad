@@ -61,12 +61,12 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * A label displaying the name of this node--for instance, "Graph1".
      */
-    private JLabel nameLabel;
+    private final JLabel nameLabel;
 
     /**
      * A label displaying the acronym for this node--for instance, "Lag Graph".
      */
-    private JLabel acronymLabel;
+    private final JLabel acronymLabel;
 
     /**
      * Whether the node is selected.
@@ -76,7 +76,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * The image that's displayed in the node.
      */
-    private Image image;
+    private final Image image;
 
 
     public StdDisplayComp(String imagePath) {
@@ -97,7 +97,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         repaint();
     }
 
-    public boolean isSelected() {
+    private boolean isSelected() {
         return selected;
     }
 
@@ -111,7 +111,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         layoutComponents();
     }
 
-    public Shape getShape() {
+    private Shape getShape() {
         return new Rectangle2D.Double(0, 0, getSize().width - 1,
                     getSize().height - 1);
     }

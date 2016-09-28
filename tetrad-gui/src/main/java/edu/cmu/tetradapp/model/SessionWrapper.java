@@ -62,14 +62,14 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      *
      * @serial Cannot be null.
      */
-    private Set<Node> sessionNodeWrappers = new HashSet<Node>();
+    private final Set<Node> sessionNodeWrappers = new HashSet<>();
 
     /**
      * The set of SessionEdges.
      *
      * @serial Cannot be null.
      */
-    private Set<Edge> sessionEdges = new HashSet<Edge>();
+    private final Set<Edge> sessionEdges = new HashSet<>();
 
     /**
      * The property change support.
@@ -99,7 +99,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SessionWrapper serializableInstance() {
@@ -181,10 +180,10 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         // Extract the SessionNodes from the SessionNodeWrappers
         // and pass the list of them to the Session.  Choose a unique
         // name for each of the session wrappers.
-        List<SessionNode> sessionNodes = new ArrayList<SessionNode>();
+        List<SessionNode> sessionNodes = new ArrayList<>();
         List<SessionNodeWrapper> sessionNodeWrappers =
-                new ArrayList<SessionNodeWrapper>();
-        List<Edge> sessionEdges = new ArrayList<Edge>();
+                new ArrayList<>();
+        List<Edge> sessionEdges = new ArrayList<>();
 
         Point oldUpperLeft = EditorUtils.getTopLeftPoint(sessionElements);
         int deltaX = upperLeft.x - oldUpperLeft.x;
@@ -242,7 +241,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * Indirect reference to session handler to avoid saving out listeners
      * during serialization.
      */
-    SessionHandler getSessionHandler() {
+    private SessionHandler getSessionHandler() {
         if (this.sessionHandler == null) {
             this.sessionHandler = new SessionHandler();
         }
@@ -276,8 +275,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     /**
      * @return the substring of <code>name</code> up to but not including a
      * contiguous string of digits at the end. For example, given "Graph123"
-     * @return "Graph". If the name consists entirely of digits, "Node" is
-     * returned.
      */
     private String extractBase(String name) {
 
@@ -297,8 +294,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * @return the next string in the sequence.
-     *
      * @param base                the string base of the name--for example,
      *                            "Graph".
      * @param sessionNodeWrappers list of wrappers with names that cannot be the
@@ -359,7 +354,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * the edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        return new HashSet<Edge>(sessionEdges);
+        return new HashSet<>(sessionEdges);
     }
 
     public Edge getEdge(Node node1, Node node2) {
@@ -392,7 +387,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * ordering of the edges in the list is guaranteed.
      */
     public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new LinkedList<Edge>();
+        List<Edge> edgeList = new LinkedList<>();
 
         for (Edge edge : sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
@@ -440,11 +435,10 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * particular node.
      *
      * @param node the node in question
-     * @return the number of edges connected to that node.
      */
     public int getNumEdges(Node node) {
 
-        Set<Edge> edgeSet = new HashSet<Edge>();
+        Set<Edge> edgeSet = new HashSet<>();
 
         for (Edge edge : sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
@@ -456,30 +450,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<Node>(sessionNodeWrappers);
-    }
-
-    /**
-     * @return the list of graph constraints for this graph.
-     */
-    public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<GraphConstraint>();
-    }
-
-    /**
-     * @return true iff graph constraints will be checked for future graph
-     * modifications.
-     */
-    public boolean isGraphConstraintsChecked() {
-        return false;
-    }
-
-    /**
-     * Set whether graph constraints will be checked for future graph
-     * modifications.
-     */
-    public void setGraphConstraintsChecked(boolean checked) {
-        throw new UnsupportedOperationException();
+        return new ArrayList<>(sessionNodeWrappers);
     }
 
     /**
@@ -631,8 +602,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
 
     /**
      * @return a string representation of the workbench.
-     *
-     * @return a string representation of this object.
      */
     public String toString() {
         return "Wrapper for " + this.session.toString();
@@ -726,15 +695,11 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        throw new UnsupportedOperationException();
-    }
-
     public Graph subgraph(List nodes) {
         throw new UnsupportedOperationException();
     }
 
-    /** ***************OTHER PUBLIC METHODS ******************** */
+    //** ***************OTHER PUBLIC METHODS ******************** */
 
     /**
      * @return a reference to the session being edited.
@@ -934,6 +899,11 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * @return the number of arrow endpoint adjacent to an edge.
      */
     public int getIndegree(Node node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getDegree(Node node) {
         throw new UnsupportedOperationException();
     }
 

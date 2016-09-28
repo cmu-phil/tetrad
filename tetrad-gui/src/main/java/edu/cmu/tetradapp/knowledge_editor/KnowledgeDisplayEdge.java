@@ -62,20 +62,20 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * Indicates that one end of the edge is anchored to one component, but the
      * other half is tracking the mouse point.
      */
-    public static final int HALF_ANCHORED = 0;
+    private static final int HALF_ANCHORED = 0;
 
     /**
      * Indicates that both ends of the edge are anchored to components.  The
      * edge will move when those components move.
      */
-    public static final int ANCHORED_UNSELECTED = 1;
+    private static final int ANCHORED_UNSELECTED = 1;
 
     /**
      * Indicates that the edge is under construction, which is similar to the
      * normal mode except that it's displayed as selected and will identify
      * itself as selected upon request (for possible deletion, e.g.).
      */
-    public static final int ANCHORED_SELECTED = 2;
+    private static final int ANCHORED_SELECTED = 2;
 
     /**
      * Indicates an explicitly forbidden edge.
@@ -85,7 +85,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Indicates an edges forbidden by tiers.
      */
-    public static final int FORBIDDEN_BY_TIERS = 4;
+    private static final int FORBIDDEN_BY_TIERS = 4;
 
     /**
      * Indicates a required edges.
@@ -96,49 +96,49 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Indicates a edge required by a knowledge group.
      */
-    public static final int REQUIRED_BY_GROUPS = 6;
+    private static final int REQUIRED_BY_GROUPS = 6;
 
 
     /**
      * Indicates a edge forbidden by a knowledge group.
      */
-    public static final int FORBIDDEN_BY_GROUPS = 7;
+    private static final int FORBIDDEN_BY_GROUPS = 7;
 
 
     /**
      * The color that forbidden edges are drawn in.
      */
-    private Color forbiddenExplicitlyColor = Color.MAGENTA.darker().darker();
+    private final Color forbiddenExplicitlyColor = Color.MAGENTA.darker().darker();
 
 
     /**
      * The color for forbidden group edges.
      */
-    private Color forbiddenGroupsColor = Color.MAGENTA.brighter();
+    private final Color forbiddenGroupsColor = Color.MAGENTA.brighter();
 
 
     /**
      * The color for required group edges.
      */
-    private Color requiredGroupsColor = Color.GREEN.brighter();
+    private final Color requiredGroupsColor = Color.GREEN.brighter();
 
 
     /**
      * The color that forbidden edges are drawn in.
      */
-    private Color forbiddenByTiersColor = Color.LIGHT_GRAY;
+    private final Color forbiddenByTiersColor = Color.LIGHT_GRAY;
 
     /**
      * The color that required edges are drawn in.
      */
-    private Color requiredColor = Color.GREEN.darker();
+    private final Color requiredColor = Color.GREEN.darker();
 
     /**
      * The color that selected edges will be drawn in.
      */
-    public Color selectedColor = Color.red;
+    private final Color selectedColor = Color.red;
 
-    public Color highlightedColor = Color.red.darker().darker();
+    private Color highlightedColor = Color.red.darker().darker();
 
     /**
      * The model edge that this display is is portraying (if known).
@@ -196,11 +196,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * component to the edge of the other.
      */
     private PointPair connectedPoints;
-
-    /**
-     * True iff this edge is highlighted.
-     */
-    private boolean highlighted;
 
     /**
      * Handler for <code>ComponentEvent</code>s.
@@ -313,7 +308,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
-     * @param type
      * @see #updateTrackPoint
      */
     public KnowledgeDisplayEdge(DisplayNode node1, Point mouseTrackPoint,
@@ -436,7 +430,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @return the click region.
      */
-    public Polygon getClickRegion() {
+    private Polygon getClickRegion() {
 
         if ((this.clickRegion == null) && (getConnectedPoints() != null)) {
             this.clickRegion = getSleeve(getConnectedPoints());
@@ -605,7 +599,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Allows subclasses to set the clickable region is for this component.
      */
-    public final void setClickRegion(Polygon clickRegion) {
+    private void setClickRegion(Polygon clickRegion) {
         this.clickRegion = clickRegion;
     }
 
@@ -616,12 +610,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * non-overlapping rectangles.  (Should give back null for overlapping
      * rectangles but doesn't always...)
      *
-     * @param comp1
-     * @param comp2
      * @return a point pair which represents the connecting line segment through
      *         the center of each rectangle touching the edge of each.
      */
-    protected final PointPair calculateEdge(Component comp1, Component comp2) {
+    private PointPair calculateEdge(Component comp1, Component comp2) {
         Rectangle r1 = comp1.getBounds();
         Rectangle r2 = comp2.getBounds();
         Point c1 = new Point((int) (r1.x + r1.width / 2.0),
@@ -661,7 +653,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * from a given point p to a given component. Assumes that the component
      * contains the center point of its bounding rectangle.
      */
-    protected final PointPair calculateEdge(DisplayNode comp, Point p) {
+    private PointPair calculateEdge(DisplayNode comp, Point p) {
         Rectangle r = comp.getBounds();
         Point p1 = new Point((int) (r.x + r.width / 2.0),
                 (int) (r.y + r.height / 2.0));
@@ -677,7 +669,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Calculates the distance between a pair of points.
      */
-    protected static final double distance(Point p1, Point p2) {
+    private static double distance(Point p1, Point p2) {
 
         double d;
 
@@ -697,7 +689,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *           endpoint, and vice-versa.
      * @param g  the graphics context.
      */
-    protected final void drawEndpoints(PointPair pp, Graphics g) {
+    private void drawEndpoints(PointPair pp, Graphics g) {
 
         if (getModelEdge() != null) {
             Endpoint endpointA = getModelEdge().getEndpoint1();
@@ -881,10 +873,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * bounds of the two components which the edge connects.  It also calculates
      * the bounds of these two components relative to this new union.
      */
-    protected void resetBounds() {
-        // TODO: This should be final since it's called from the constructor
-        // but it's already been overridden. Abstracting an interface
-        // may be the thing to do. jdramsey 5/6/02
+    private void resetBounds() {
         Rectangle node1RelativeBounds, node2RelativeBounds;
 
         switch (this.mode) {
@@ -1036,7 +1025,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public void setHighlighted(boolean highlighted) {
-        this.highlighted = highlighted;
+        /*
+      True iff this edge is highlighted.
+     */
+        boolean highlighted1 = highlighted;
     }
 
     //======================= Event handler class========================//
@@ -1044,7 +1036,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Handles <code>ComponentEvent</code>s.
      */
-    final class ComponentHandler extends ComponentAdapter {
+    private final class ComponentHandler extends ComponentAdapter {
 
         /**
          * This method captures motion events on the components to which the
@@ -1059,7 +1051,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Handles <code>PropertyChangeEvent</code>s.
      */
-    final class PropertyChangeHandler implements PropertyChangeListener {
+    private final class PropertyChangeHandler implements PropertyChangeListener {
 
         /**
          * This method gets called when a bound property is changed.

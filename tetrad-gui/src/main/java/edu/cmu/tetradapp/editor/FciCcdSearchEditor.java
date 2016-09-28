@@ -22,14 +22,15 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -46,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -59,45 +60,40 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given PcRunner.
      */
     public FciCcdSearchEditor(PcRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given FciRunner.
      */
     public FciCcdSearchEditor(FciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public FciCcdSearchEditor(CfciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
     public FciCcdSearchEditor(GFciRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(TFciRunner runner) {
-        super(runner, "Result PAG");
-    }
-    public FciCcdSearchEditor(TGFciRunner runner) {
-        super(runner, "Result PAG");
+    public FciCcdSearchEditor(TsFciRunner runner) {
+        super(runner, "Result allow_latent_common_causes");
     }
 
+    public FciCcdSearchEditor(TsGFciRunner runner) {
+        super(runner, "Result allow_latent_common_causes");
+    }
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */
     public FciCcdSearchEditor(CcdRunner runner) {
-        super(runner, "Result PAG");
+        super(runner, "Result allow_latent_common_causes");
     }
-
-    /**
-     * Opens up an editor to let the user view the given GesRunner.
-     */
-    public FciCcdSearchEditor(GesRunner runner) {
-        super(runner, "Result Pattern");
+    public FciCcdSearchEditor(CcdRunner2 runner) {
+        super(runner, "Result allow_latent_common_causes");
     }
-
 
     public Graph getGraph() {
         return getWorkbench().getGraph();
@@ -118,7 +114,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
     }
 
@@ -186,9 +182,9 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -231,7 +227,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getResultGraph();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -272,7 +268,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -291,8 +287,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeekRules();
+                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
+                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -350,8 +346,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setTestType(IndTestType testType) {
@@ -363,11 +359,11 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
@@ -388,55 +384,51 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Parameters params = getAlgorithmRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof GesIndTestParams) {
-            GesRunner gesRunner = ((GesRunner) getAlgorithmRunner());
-            GesIndTestParams params = (GesIndTestParams) indTestParams;
-            DataSet dataSet = (DataSet) gesRunner.getDataModel();
-            boolean discreteData = dataSet.isDiscrete();
-            return new GesIndTestParamsEditor(params, discreteData);
+        if (params instanceof Parameters) {
+            FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
+            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
 
-        if (indTestParams instanceof LagIndTestParams) {
-            return new TimeSeriesIndTestParamsEditor(
-                    (LagIndTestParams) indTestParams);
-        }
+//        if (params instanceof LagIndTestParams) {
+//            return new TimeSeriesIndTestParamsEditor(
+//                    (LagIndTestParams) params);
+//        }
+//
+//        if (params instanceof GraphIndTestParams) {
+//            return new IndTestParamsEditor((GraphIndTestParams) params);
+//        }
+//
+//        if (params instanceof Parameters) {
+//            return new PcIndTestParamsEditor((Parameters) params);
+//        }
 
-        if (indTestParams instanceof GraphIndTestParams) {
-            return new IndTestParamsEditor((GraphIndTestParams) indTestParams);
-        }
+//        if (params instanceof ParamsOld) {
+//            throw new IllegalArgumentException();
+////            return new ParamsEditorOld((ParamsOld) params);
+//        }
+//
+//        if (params instanceof Parameters) {
+//            return new ParamsEditor((Parameters) params);
+//        }
+//
+//        if (params instanceof Parameters) {
+//            return new ParamsEditor((Parameters) params);
+//        }
 
-        if (indTestParams instanceof PcIndTestParams) {
-            return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
-        }
-
-        if (indTestParams instanceof FciIndTestParamsOld) {
-            throw new IllegalArgumentException();
-//            return new FciIndTestParamsEditorOld((FciIndTestParamsOld) indTestParams);
-        }
-
-        if (indTestParams instanceof FciIndTestParams) {
-            return new FciIndTestParamsEditor((FciIndTestParams) indTestParams);
-        }
-
-        if (indTestParams instanceof GFciIndTestParams) {
-            return new GFciIndTestParamsEditor((GFciIndTestParams) indTestParams);
-        }
-
-        return new IndTestParamsEditor(indTestParams);
+        return new IndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

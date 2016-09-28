@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.HitonMb;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * @author Tyler Gibson
@@ -30,15 +31,15 @@ public class VanderbiltHitonMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltHitonMbSearchRunner(DataWrapper data, MbSearchParams params) {
+    public VanderbiltHitonMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
         HitonMb search = new HitonMb(getIndependenceTest(),
-                getParams().getDepth(),true);
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+                getParams().getInt("depth", -1),true);
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

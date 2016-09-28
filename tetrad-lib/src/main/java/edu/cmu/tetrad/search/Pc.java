@@ -218,6 +218,7 @@ public class Pc implements GraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
+    @Override
     public Graph search() {
         return search(independenceTest.getVariables());
     }
@@ -232,7 +233,13 @@ public class Pc implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-        IFas fas = new Fas(getIndependenceTest());
+        IFas fas = null;
+
+        if (initialGraph == null) {
+            fas = new Fas(getIndependenceTest());
+        } else {
+            fas = new Fas(initialGraph, getIndependenceTest());
+        }
         fas.setVerbose(verbose);
         return search(fas, nodes);
     }
@@ -255,7 +262,6 @@ public class Pc implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        fas.setInitialGraph(initialGraph);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);
@@ -275,6 +281,7 @@ public class Pc implements GraphSearch {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(knowledge);
+        rules.setUndirectUnforcedEdges(false);
         rules.orientImplied(graph);
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
@@ -312,7 +319,7 @@ public class Pc implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<Edge>();
+        Set<Edge> adjacencies = new HashSet<>();
         for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
@@ -324,7 +331,7 @@ public class Pc implements GraphSearch {
         Set<Edge> nonAdjacencies = complete.getEdges();
         Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<Edge>(nonAdjacencies);
+        return new HashSet<>(nonAdjacencies);
     }
 
     //===============================PRIVATE METHODS=======================//

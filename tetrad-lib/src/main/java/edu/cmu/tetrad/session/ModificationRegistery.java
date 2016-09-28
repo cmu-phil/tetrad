@@ -37,9 +37,9 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public final class ModificationRegistery {
-    private static final Set<Object> EDITED_MODELS = new HashSet<Object>();
-    private static final Map<JComponent, SessionNode> EDITORS_TO_SESSION_NODES = new HashMap<JComponent, SessionNode>();
-    private static final Map<JComponent, PropertyChangeListener> EDITORS_TO_LISTENERS = new HashMap<JComponent, PropertyChangeListener>();
+    private static final Set<Object> EDITED_MODELS = new HashSet<>();
+    private static final Map<JComponent, SessionNode> EDITORS_TO_SESSION_NODES = new HashMap<>();
+    private static final Map<JComponent, PropertyChangeListener> EDITORS_TO_LISTENERS = new HashMap<>();
 
     /**
      * Registers an editor which could modify model.

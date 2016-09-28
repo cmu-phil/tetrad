@@ -24,306 +24,466 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.TextTable;
+import org.junit.Test;
 
-import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+
 /**
- * Tests the PC search.
- *
  * @author Joseph Ramsey
  */
-public class TestFci extends TestCase {
+public class TestFci {
 
-    private PrintStream out = System.out;
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestFci(String name) {
-        super(name);
+    @Test
+    public void testSearch1() {
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge2()); // With Jiji's R6.
     }
 
-    public void test1() {
-//        RandomUtil.getInstance().setSeed(2949399828492L);
+    /**
+     * Tests a specific search. (See code for details.)
+     */
+    @Test
+    public void testSearch2() {
+        checkSearch("Z1-->X,Z2-->X,X-->Y", "Z1o->X,Z2o->X,X-->Y", new Knowledge2());
+    }
 
-        int numNodes = 50;
-        int numLatents = 10;
-        int numEdges = 50;
-        int sampleSize = 1000;
 
-//        int numNodes = 3000;
-//        int numLatents = 150;
-//        int numEdges = 4500;
-//        int sampleSize = 1000;
+    /**
+     * Basic discriminating path checker.
+     */
+    @Test
+    public void testSearch3() {
+        checkSearch("A-->C,B-->C,B-->D,C-->D", "Ao->C,Bo->C,B-->D,C-->D", new Knowledge2());
+    }
 
-        double alpha = 0.001;
-        int depth = 3;
-        int maxPathLength = 3;
-        boolean possibleDsepDone = true;
-        boolean completeRuleSetUsed = false;
+    /**
+     * Basic discriminating path checker.
+     */
+    @Test
+    public void testSearch4() {
+        checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
+                "Ho->F,F<->A,A<->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge2());
+    }
 
-        System.out.println("Making list of vars");
+    /**
+     * Basic discriminating path checker with an extra variable thrown in. (For some reason, FCI was screwing up on
+     * this.)
+     */
+    @Test
+    public void testSearch5() {
+        checkSearch("A-->C,B-->C,B-->D,C-->D,E", "Ao->C,Bo->C,B-->D,C-->D,E", new Knowledge2());
+    }
 
-        List<Node> vars = new ArrayList<Node>();
+    /**
+     * FCI was breaking with 1 or 2 variables.
+     */
+    @Test
+    public void testSearch6() {
+        checkSearch("A-->B", "Ao-oB", new Knowledge2());
+    }
 
-        for (int i = 0; i < numNodes; i++) {
-            vars.add(new ContinuousVariable("X" + (i + 1)));
+    /**
+     * A specific graph.
+     */
+    @Test
+    public void testSearch7() {
+        checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
+                "H-->M,L-->M,S-->D,I-->S,P-->S",
+                "D<->H,D-->L,D-->M,H<->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge2());
+    }
+
+    /**
+     * A specific graph. This is the graph on p. 5 of Danks, Learning Integrated Structure from Distributed Databases
+     * with Overlapping Variables.
+     */
+    @Test
+    public void testSearch8() {
+        checkSearch("X-->Z,Y-->Z,Z-->B,B-->A,C-->A",
+                "Xo->Z,Yo->Z,Z-->B,B-->A,Co->A", new Knowledge2());
+    }
+
+    /**
+     * A specific graph. This is the test case from p. 142-144 that tests the possible Dsep step of FCI. This doesn't
+     * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
+     */
+    @Test
+    public void testSearch9() {
+        checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
+                        "H-->D,D-->A,T2-->D,T2-->E",
+//                "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge2()); // Left out E<->A.
+                "A<->B,B-->E,Co-oH,D-->A,E<->A,E<->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
+    }
+
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @Test
+    public void testSearch10() {
+        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+                "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge2());
+    }
+
+    @Test
+    public void testSearch11() {
+        checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
+                "X1o->X2,X3o->X2", new Knowledge2());
+
+        List<String> varNames = new ArrayList<>();
+        varNames.add("X1");
+        varNames.add("X2");
+        varNames.add("X3");
+
+        IKnowledge knowledge = new Knowledge2(varNames);
+        knowledge.addToTier(1, "X1");
+        knowledge.addToTier(1, "X2");
+        knowledge.addToTier(2, "X3");
+
+        checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
+                "X1o-oX2,X2o->X3", knowledge);
+    }
+
+    @Test
+    public void testSearch12() {
+        checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
+                "X1o->X2,X3o->X4,X2<->X4", new Knowledge2());
+
+        Knowledge2 knowledge = new Knowledge2();
+        knowledge.setRequired("X2", "X4");
+
+        assertTrue(knowledge.isRequired("X2", "X4"));
+
+        checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
+                "X1o-oX2,X3o->X4,X2-->X4", knowledge);
+    }
+
+    @Test
+    public void testSearch13() {
+        int numVars = 10;
+        int numEdges = 10;
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        System.out.println("Finishing list of vars");
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 10, numEdges,
+                7, 5, 5, false));
 
-//        Graph dag = DataGraphUtils.randomDagUniform(vars, numLatents, numEdges, 4, 4, 4, false);
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
-//        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
+        IndependenceTest test = new IndTestDSep(trueGraph);
 
-        System.out.println("Graph done");
+        Fci fci = new Fci(test);
 
-        DataSet data;
-                                                           ;
-        if (true) {
-            SemPm pm = new SemPm(dag);
+        Graph graph = fci.search();
 
-            SemImInitializationParams params = new SemImInitializationParams();
-            params.setCoefRange(.3, 1.5);
-            params.setCoefSymmetric(true);
-            params.setVarRange(1, 3);
-            params.setCoefSymmetric(true);
-
-            SemIm im = new SemIm(pm, params);
-            data = im.simulateData(sampleSize, false);
-        } else {
-            LargeSemSimulator simulator = new LargeSemSimulator(dag);
-            simulator.setCoefRange(.5, 1.5);
-            simulator.setVarRange(1, 3);
-            data = simulator.simulateDataAcyclic(sampleSize);
-            data = DataUtils.restrictToMeasured(data);
-        }
-
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
-
-        final IndependenceTest independenceTest = new IndTestDSep(dag, false);
-//        final IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
-//        final IndependenceTest independenceTest = new IndTestRegressionAD(data, alpha);
-
-        System.out.println("True PAG done");
-        independenceTest.setAlpha(alpha);
-
-//        FciMax fci = new FciMax(independenceTest);
-//        FciMax2 fci = new FciMax2(independenceTest);
-        Fci fci = new Fci(independenceTest);
-//        GFCI fci = new GFCI(independenceTest);
-        fci.setVerbose(true);
-        fci.setDepth(depth);
-        fci.setMaxPathLength(maxPathLength);
-        fci.setPossibleDsepSearchDone(possibleDsepDone);
-        fci.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fci.setTrueDag(dag);
-        Graph outGraph = fci.search();
-
-        final DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        dagToPag.setMaxPathLength(maxPathLength);
+        DagToPag dagToPag = new DagToPag(trueGraph);
         Graph truePag = dagToPag.convert();
 
-        outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
-
-        printCorrectArrows(dag, outGraph, truePag);
-        printCorrectTails(dag, outGraph, truePag);
-
-        SearchGraphUtils.graphComparison(outGraph, truePag, System.out);
+        assertEquals(graph, truePag);
     }
 
-    private double[] printCorrectArrows(Graph dag, Graph outGraph, Graph truePag) {
-        int correctArrows = 0;
-        int totalEstimatedArrows = 0;
-        int totalTrueArrows = 0;
-        int correctNonAncestorRelationships = 0;
+    @Test
+    public void testSearch15() {
+        int numVars = 80;
+        int numEdges = 80;
+        int sampleSize = 1000;
+        boolean latentDataSaved = false;
+        int numLatents = 40;
 
-        double[] stats = new double[6];
+        List<Node> nodes = new ArrayList<>();
 
-        for (Edge edge : outGraph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            final Edge edge1 = truePag.getEdge(x, y);
-
-            if (ex == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(x, y)) {
-                    correctNonAncestorRelationships++;
-                }
-
-                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.ARROW) {
-                    correctArrows++;
-                }
-
-                totalEstimatedArrows++;
-            }
-
-            if (ey == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(y, x)) {
-                    correctNonAncestorRelationships++;
-                }
-
-                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.ARROW) {
-                    correctArrows++;
-                }
-
-                totalEstimatedArrows++;
-            }
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        for (Edge edge : truePag.getEdges()) {
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, numLatents, numEdges,
+                7, 5, 5, false));
 
-            if (ex == Endpoint.ARROW) {
-                totalTrueArrows++;
-            }
+        SemPm bayesPm = new SemPm(trueGraph);
+        SemIm bayesIm = new SemIm(bayesPm);
+        DataSet dataSet = bayesIm.simulateData(sampleSize, latentDataSaved);
 
-            if (ey == Endpoint.ARROW) {
-                totalTrueArrows++;
-            }
-        }
+        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
 
-        out.println();
-        out.println("# correct arrows = " + correctArrows);
-        out.println("# total estimated arrows = " + totalEstimatedArrows);
-        out.println("# correct arrow nonancestor relationships = " + correctNonAncestorRelationships);
-        out.println("# total true arrows = " + totalTrueArrows);
+        Cfci search = new Cfci(test);
 
-        out.println();
-        NumberFormat nf = new DecimalFormat("0.00");
-        final double precision = correctArrows / (double) totalEstimatedArrows;
-        out.println("Arrow precision = " + nf.format(precision));
-        final double recall = correctArrows / (double) totalTrueArrows;
-        out.println("Arrow recall = " + nf.format(recall));
-        final double proportionCorrectNonAncestorRelationships = correctNonAncestorRelationships /
-                (double) totalEstimatedArrows;
-        out.println("Proportion correct arrow nonancestor relationships " + nf.format(proportionCorrectNonAncestorRelationships));
-
-        stats[0] = correctArrows;
-        stats[1] = totalEstimatedArrows;
-        stats[2] = totalTrueArrows;
-        stats[3] = precision;
-        stats[4] = recall;
-        stats[5] = proportionCorrectNonAncestorRelationships;
-
-        return stats;
-    }
-
-    private double[] printCorrectTails(Graph dag, Graph outGraph, Graph truePag) {
-        int correctTails = 0;
-        int correctAncestorRelationships = 0;
-        int totalEstimatedTails = 0;
-        int totalTrueTails = 0;
-
-        double[] stats = new double[6];
-
-        for (Edge edge : outGraph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            final Edge edge1 = truePag.getEdge(x, y);
-
-            if (ex == Endpoint.TAIL) {
-                if (dag.isAncestorOf(x, y)) {
-                    correctAncestorRelationships++;
-                }
-
-                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.TAIL) {
-                    correctTails++;
-                }
-
-                totalEstimatedTails++;
-            }
-
-            if (ey == Endpoint.TAIL) {
-                if (dag.isAncestorOf(y, x)) {
-                    correctAncestorRelationships++;
-                }
-
-                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.TAIL) {
-                    correctTails++;
-                }
-
-                totalEstimatedTails++;
-            }
-        }
-
-        for (Edge edge : truePag.getEdges()) {
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            if (ex == Endpoint.TAIL) {
-                totalTrueTails++;
-            }
-
-            if (ey == Endpoint.TAIL) {
-                totalTrueTails++;
-            }
-        }
-
-        out.println();
-        out.println("# correct tails = " + correctTails);
-        out.println("# total estimated tails = " + totalEstimatedTails);
-        out.println("# correct tail ancestor relationships = " + correctAncestorRelationships);
-        out.println("# total true tails = " + totalTrueTails);
-
-        out.println();
-        NumberFormat nf = new DecimalFormat("0.00");
-        final double precision = correctTails / (double) totalEstimatedTails;
-        out.println("Tail precision = " + nf.format(precision));
-        final double recall = correctTails / (double) totalTrueTails;
-        out.println("Tail recall = " + nf.format(recall));
-        final double proportionCorrectAncestorRelationships = correctAncestorRelationships /
-                (double) totalEstimatedTails;
-        out.println("Proportion correct tail ancestor relationships " + nf.format(proportionCorrectAncestorRelationships));
-
-        stats[0] = correctTails;
-        stats[1] = totalEstimatedTails;
-        stats[2] = totalTrueTails;
-        stats[3] = precision;
-        stats[4] = recall;
-        stats[5] = proportionCorrectAncestorRelationships;
-
-        return stats;
-    }
-
-    private static int getIndex(Endpoint endpoint) {
-        if (endpoint == Endpoint.CIRCLE) return 0;
-        if (endpoint == Endpoint.ARROW) return 1;
-        if (endpoint == Endpoint.TAIL) return 2;
-        if (endpoint == null) return 3;
-        throw new IllegalArgumentException();
+        // Run search
+        search.search();
     }
 
     /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
+     * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
+     * graph.
      */
-    public static Test suite() {
+    private void checkSearch(String inputGraph, String outputGraph, IKnowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestFci.class);
+        // Set up graph and node objects.
+        Graph graph = GraphConverter.convert(inputGraph);
+
+        // Set up search.
+        IndependenceTest independence = new IndTestDSep(graph);
+        Fci fci = new Fci(independence);
+        fci.setPossibleDsepSearchDone(true);
+        fci.setCompleteRuleSetUsed(true);
+        fci.setKnowledge(knowledge);
+        fci.setMaxPathLength(-1);
+
+        // Run search
+        Graph resultGraph = fci.search();
+//
+//        // Build comparison graph.
+//        Graph compareGraph = new EdgeListGraph(GraphConverter.convert(outputGraph));
+//
+//        // Do test (output of FCI search equals true graph)
+//        resultGraph.setUnderLineTriples(compareGraph.getUnderLines());
+//        resultGraph.setDottedUnderLineTriples(compareGraph.getDottedUnderlines());
+//
+//        resultGraph = GraphUtils.replaceNodes(resultGraph, compareGraph.getNodes());
+//
+//        assertTrue(compareGraph.equals(resultGraph));
     }
+
+//    @Test
+    public void testFciAnc() {
+        int numMeasures = 50;
+        double edgeFactor = 2.0;
+
+        int numRuns = 10;
+        double alpha = 0.01;
+        double penaltyDiscount = 4.0;
+        int numVarsToMarginalize = 5;
+        int numLatents = 10;
+
+        System.out.println("num measures = " + numMeasures);
+        System.out.println("edge factor = " + edgeFactor);
+        System.out.println("alpha = " + alpha);
+        System.out.println("penaltyDiscount = " + penaltyDiscount);
+        System.out.println("num runs = " + numRuns);
+        System.out.println("num vars to marginalize = " + numVarsToMarginalize);
+        System.out.println("num latents = " + numLatents);
+
+        System.out.println();
+
+        for (int i = 0; i < numRuns; i++) {
+            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+
+            List<Node> nodes = new ArrayList<>();
+
+            for (int r = 0; r < numMeasures + numLatents; r++) {
+                String name = "X" + (r + 1);
+                nodes.add(new ContinuousVariable(name));
+            }
+
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+                    10, 10, 10, false);
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
+
+            Graph pag = getPag(alpha, penaltyDiscount, data);
+
+            DataSet marginalData = data.copy();
+
+            List<Node> variables = marginalData.getVariables();
+            Collections.shuffle(variables);
+
+            for (int m = 0; m < numVarsToMarginalize; m++) {
+                marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
+            }
+
+            Graph margPag = getPag(alpha, penaltyDiscount, marginalData);
+
+            int ancAnc = 0;
+            int ancNanc = 0;
+            int nancAnc = 0;
+            int nancNanc = 0;
+            int ambAnc = 0;
+            int ambNanc = 0;
+
+            int totalAncMarg = 0;
+            int totalNancMarg = 0;
+
+            for (Node n1 : marginalData.getVariables()) {
+                for (Node n2 : marginalData.getVariables()) {
+                    if (n1 == n2) continue;
+
+                    if (ancestral(n1, n2, margPag)) {
+                        if (ancestral(n1, n2, pag)) {
+                            ancAnc++;
+                        } else if (nonAncestral(n1, n2, pag)) {
+                            nancAnc++;
+                        } else {
+                            ambAnc++;
+                        }
+
+                        totalAncMarg++;
+                    } else if (nonAncestral(n1, n2, margPag)) {
+                        if (ancestral(n1, n2, pag)) {
+                            ancNanc++;
+                        } else if (nonAncestral(n1, n2, pag)) {
+                            nancNanc++;
+                        } else {
+                            ambNanc++;
+                        }
+
+                        totalNancMarg++;
+                    }
+                }
+            }
+
+//            {
+//                TextTable table = new TextTable(5, 3);
+//                table.setToken(0, 1, "Ancestral");
+//                table.setToken(0, 2, "Nonancestral");
+//                table.setToken(1, 0, "Ancestral");
+//                table.setToken(2, 0, "Nonancestral");
+//                table.setToken(3, 0, "Ambiguous");
+//                table.setToken(4, 0, "Total");
+//
+//                table.setToken(1, 1, ancAnc + "");
+//                table.setToken(2, 1, nancAnc + "");
+//                table.setToken(3, 1, ambAnc + "");
+//                table.setToken(1, 2, ancNanc + "");
+//                table.setToken(2, 2, nancNanc + "");
+//                table.setToken(3, 2, ambNanc + "");
+//                table.setToken(4, 1, totalAncMarg + "");
+//                table.setToken(4, 2, totalNancMarg + "");
+//
+//                System.out.println(table);
+//            }
+
+            {
+                TextTable table = new TextTable(5, 3);
+                table.setToken(0, 1, "Ancestral");
+                table.setToken(0, 2, "Nonancestral");
+                table.setToken(1, 0, "Ancestral");
+                table.setToken(2, 0, "Nonancestral");
+                table.setToken(3, 0, "Ambiguous");
+                table.setToken(4, 0, "Total");
+
+                NumberFormat nf = new DecimalFormat("0.00");
+
+                table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg) + "");
+                table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg) + "");
+                table.setToken(3, 1, nf.format(ambAnc / (double) totalAncMarg) + "");
+                table.setToken(1, 2, nf.format(ancNanc / (double) totalNancMarg) + "");
+                table.setToken(2, 2, nf.format(nancNanc / (double) totalNancMarg) + "");
+                table.setToken(3, 2, nf.format(ambNanc / (double) totalNancMarg) + "");
+                table.setToken(4, 1, totalAncMarg + "");
+                table.setToken(4, 2, totalNancMarg + "");
+
+                System.out.println(table);
+            }
+        }
+    }
+
+    private boolean ancestral(Node n, Node q, Graph pag) {
+        if (n == q) return false;
+
+        if (pag.isAncestorOf(n, q)) {
+            return true;
+        } else {
+            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>());
+
+            if (adj.size() >= 2) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+                int[] choice;
+                boolean found = false;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> c = GraphUtils.asList(choice, adj);
+                    Node n1 = c.get(0);
+                    Node n2 = c.get(1);
+
+                    if (!pag.isAdjacentTo(n1, n2)) {
+                        if (pag.isDefNoncollider(n1, n, n2)) {
+                            found = true;
+                        }
+                    }
+                }
+
+                if (found) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean nonAncestral(Node n, Node q, Graph pag) {
+        if (n == q) return false;
+
+        if (ancestral(n, q, pag)) {
+            return false;
+        }
+
+        if (pag.isAdjacentTo(n, q)) {
+            if (pag.getEdge(n, q).pointsTowards(n)) {
+                return true;
+            }
+        }
+
+        if (uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {
+        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        score.setPenaltyDiscount(penaltyDiscount);
+
+//        GraphSearch search = new Fci(test);
+//        GraphSearch search = new GFci(score);
+        GraphSearch search = new Pc(test);
+
+        return search.search();
+    }
+
+    /**
+     * Returns the adjacents n of x such that x*-*n... starts a potentially directed path.
+     */
+    private List<Node> uncoveredPotentiallyDirectedPathStarts(Node x, Node y, Graph g, LinkedList<Node> path) {
+        List<Node> pathThrough = new ArrayList<>();
+
+        if (x == y) return path;
+        if (path.contains(x)) return path;
+        path.add(x);
+
+        for (Node n : g.getAdjacentNodes(x)) {
+            Edge e = g.getEdge(x, n);
+
+            if (e.getProximalEndpoint(x) == Endpoint.ARROW) continue;
+
+            if (!uncoveredPotentiallyDirectedPathStarts(n, y, g, path).isEmpty()) {
+                pathThrough.add(n);
+            }
+        }
+
+        path.remove(x);
+        return pathThrough;
+    }
+
 }
 
 

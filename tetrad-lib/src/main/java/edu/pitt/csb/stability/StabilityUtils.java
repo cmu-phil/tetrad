@@ -26,16 +26,12 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.RandomSampler;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
-import org.apache.commons.math3.util.CombinatoricsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * Runs a search algorithm over a N subsamples of size b to asses stability
@@ -116,12 +111,12 @@ public class StabilityUtils {
 
                     return;
                 } else {
-                    List<StabilityAction> tasks = new ArrayList<StabilityAction>();
+                    List<StabilityAction> tasks = new ArrayList<>();
 
-                    final int mid = (to - from) / 2;
+                    final int mid = (to + from) / 2;
 
-                    tasks.add(new StabilityAction(chunk, from, from + mid));
-                    tasks.add(new StabilityAction(chunk, from + mid, to));
+                    tasks.add(new StabilityAction(chunk, from, mid));
+                    tasks.add(new StabilityAction(chunk, mid, to));
 
                     invokeAll(tasks);
 
@@ -198,7 +193,7 @@ public class StabilityUtils {
             throw new IllegalArgumentException("Sample size must be > 0.");
         }
 
-        List<Integer> indices = new ArrayList<Integer>(sampSize);
+        List<Integer> indices = new ArrayList<>(sampSize);
         for (int i = 0; i < sampSize; i++) {
             indices.add(i);
         }
@@ -225,7 +220,7 @@ public class StabilityUtils {
     }
 
     private static int[] subSampleIndices(int N, int subSize){
-        List<Integer> indices = new ArrayList<Integer>(N);
+        List<Integer> indices = new ArrayList<>(N);
         for (int i = 0; i < N; i++) {
             indices.add(i);
         }

@@ -36,7 +36,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     /**
      * The text area written to.
      */
-    private JTextArea textArea;
+    private final JTextArea textArea;
 
     /**
      * A string bugger used to buffer lines.

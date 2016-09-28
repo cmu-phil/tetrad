@@ -54,22 +54,16 @@ class GeneralizedSemPmListEditor extends JPanel {
     /**
      * The SemPm being edited.
      */
-    private GeneralizedSemPm semPm;
+    private final GeneralizedSemPm semPm;
 
 
-    /**
-     * This delay needs to be restored when the component is hidden.
-     */
-    private int savedTooltipDelay;
-
-
-    private GeneralizedSemPmParamsEditor paramsEditor;
+    private final GeneralizedSemPmParamsEditor paramsEditor;
 
 
     /**
      * The set of launched editors--or rather, the nodes for the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors  = new HashMap<Object, EditorWindow>();
+    private Map<Object, EditorWindow> launchedEditors  = new HashMap<>();
     private Box formulasBox;
 
     /**
@@ -88,10 +82,6 @@ class GeneralizedSemPmListEditor extends JPanel {
     }
 
     //========================PRIVATE PROTECTED METHODS======================//
-
-    private int getSavedTooltipDelay() {
-        return savedTooltipDelay;
-    }
 
     private JComponent equationPane() {
         formulasBox = Box.createVerticalBox();
@@ -216,17 +206,6 @@ class GeneralizedSemPmListEditor extends JPanel {
     private GeneralizedSemPm semPm() {
         return this.semPm;
     }
-
-    private Graph graph() {
-        return semPm().getGraph();
-    }
-
-    private void setSavedTooltipDelay(int savedTooltipDelay) {
-        this.savedTooltipDelay = savedTooltipDelay;
-    }
-
-    //=======================PRIVATE INNER CLASSES==========================//
-
 
 }
 

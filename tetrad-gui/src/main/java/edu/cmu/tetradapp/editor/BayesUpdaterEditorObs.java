@@ -44,8 +44,8 @@ import java.beans.PropertyChangeListener;
  * @author Joseph Ramsey
  */
 public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
-    private static int SINGLE_VALUE = 0;
-    private static int MULTI_VALUE = 1;
+    private static final int SINGLE_VALUE = 0;
+    private static final int MULTI_VALUE = 1;
 
     /**
      * The Bayes updater being edited.
@@ -127,33 +127,6 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
             }
         });
     }
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-	/*
-    public BayesUpdaterEditor(RowSummingExactWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-	 */
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-	/*
-    public BayesUpdaterEditor(CptInvariantUpdaterWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-	 */
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-	/*
-    public BayesUpdaterEditor(ApproximateUpdaterWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-	 */
 
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.

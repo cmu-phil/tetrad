@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Tyler Gibson
  */
-public class LoggingMenu extends JMenu {
+class LoggingMenu extends JMenu {
 
 
     /**
@@ -56,10 +56,8 @@ public class LoggingMenu extends JMenu {
 
     /**
      * Constructs the menu given the logger that the menu is to display.
-     *
-     * @param config
      */
-    public LoggingMenu(TetradLoggerConfig config) {
+    private LoggingMenu(TetradLoggerConfig config) {
         super("Logging");
         if (config == null) {
             throw new NullPointerException("The given config must not be null");
@@ -72,9 +70,6 @@ public class LoggingMenu extends JMenu {
     /**
      * Constructs the logging menu, given the parent component that should be used
      * to center dialogs on.
-     *
-     * @param config
-     * @param parent
      */
     public LoggingMenu(TetradLoggerConfig config, Component parent){
         this(config);

@@ -340,7 +340,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      *                              type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
-        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+            TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
 
         if (nodeConfig == null) {
@@ -351,8 +351,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * @return the next string in the sequence.
-     *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
      */

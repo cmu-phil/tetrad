@@ -26,22 +26,19 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Frank Wimberly
  */
-public final class TestModelGenerator extends TestCase {
+public final class TestModelGenerator {
 
-    public TestModelGenerator(String name) {
-        super(name);
-    }
-
-    public static void testGenerate() {
+    @Test
+    public void testGenerate() {
         Node x1 = new GraphNode("x1");
         Node x2 = new GraphNode("x2");
         Node x3 = new GraphNode("x3");
@@ -66,24 +63,7 @@ public final class TestModelGenerator extends TestCase {
 
         List<Graph> variants1 = ModelGenerator.generate(graph);
 
-        System.out.println("Size of list = " + variants1.size());
         assertEquals(17, variants1.size());
-
-        for (Graph aVariants1 : variants1) {
-            System.out.println(aVariants1);
-        }
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestModelGenerator.class);
     }
 }
 

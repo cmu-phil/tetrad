@@ -88,8 +88,8 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
 
     public static IndependenceFactsModel loadFacts(Reader reader) throws IOException {
         IndependenceFactsModel facts = new IndependenceFactsModel();
-        Set<String> names = new HashSet<String>();
-        Map<String, Node> nodes = new HashMap<String, Node>();
+        Set<String> names = new HashSet<>();
+        Map<String, Node> nodes = new HashMap<>();
 
         BufferedReader in = new BufferedReader(reader);
         String line;
@@ -109,7 +109,7 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
                 }
             }
 
-            List<Node> z = new ArrayList<Node>();
+            List<Node> z = new ArrayList<>();
 
             for (int i = 2; i < tokens.length; i++) {
                 z.add(nodes.get(tokens[i]));

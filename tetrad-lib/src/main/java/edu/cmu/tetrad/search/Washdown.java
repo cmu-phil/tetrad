@@ -36,7 +36,7 @@ import java.util.List;
  * Implements the Washdown algorithm,
  * <p>
  * Initialization: Current Model = M1 := single factor pure model in
- * which L1 is a cause of all Vi in V
+ * which L1 is a cause of all Vi in v
  * <p>
  * 1) Purify step:  run Purify on getModel model.
  * 2) Create new model: for each indicator Vi in Vdiscard (variables
@@ -47,7 +47,7 @@ import java.util.List;
  * passes, else getModel model:= new model, and go to step 1.
  * <p>
  * Purify
- * 1) Vkeep := V, Vdiscard := null set
+ * 1) Vkeep := v, Vdiscard := null set
  * 2) Do goodness-of-fit test on getModel model Mc, stop if Mc passes,
  * return Vkeep and Vdiscard
  * 2) For each indicator Vi, do goodness-of-fit test on Mc - Vi, store
@@ -82,8 +82,8 @@ public class Washdown {
     }
 
     public Graph search() {
-        List<List<Node>> clusters = new ArrayList<List<Node>>();
-        clusters.add(new ArrayList<Node>(variables));
+        List<List<Node>> clusters = new ArrayList<>();
+        clusters.add(new ArrayList<>(variables));
 
         double pValue;
 
@@ -128,7 +128,7 @@ public class Washdown {
     }
 
     private List<Node> getDiscards(List<List<Node>> clusters, List<Node> variables) {
-        List<Node> disgards = new ArrayList<Node>();
+        List<Node> disgards = new ArrayList<>();
 
         for (Node node : variables) {
             boolean found = false;
@@ -148,8 +148,8 @@ public class Washdown {
     }
 
     private List<List<Node>> purify(List<List<Node>> clusters) {
-        List<Node> keep = new ArrayList<Node>(this.variables);
-        List<Node> disgards = new ArrayList<Node>();
+        List<Node> keep = new ArrayList<>(this.variables);
+        List<Node> disgards = new ArrayList<>();
         double bestGof = gof(clusters);
         System.out.println("Purify Best GOF = " + bestGof + " clusters = " + clusters);
 
@@ -184,10 +184,10 @@ public class Washdown {
     }
 
     private List<List<Node>> removeVar(Node node, List<List<Node>> clusters) {
-        List<List<Node>> _clusters = new ArrayList<List<Node>>();
+        List<List<Node>> _clusters = new ArrayList<>();
 
         for (List<Node> cluster : clusters) {
-            List<Node> _cluster = new ArrayList<Node>(cluster);
+            List<Node> _cluster = new ArrayList<>(cluster);
             _cluster.remove(node);
             if (!cluster.isEmpty()) {
                 _clusters.add(_cluster);
@@ -242,7 +242,7 @@ public class Washdown {
     }
 
     private List<List<Node>> removeEmpty(List<List<Node>> clusters) {
-        List<List<Node>> _clusters = new ArrayList<List<Node>>();
+        List<List<Node>> _clusters = new ArrayList<>();
 
         for (List<Node> cluster : clusters) {
             if (!cluster.isEmpty()) {
@@ -256,7 +256,7 @@ public class Washdown {
     private Graph pureMeasurementModel(List<List<Node>> clusters) {
         Graph G = new EdgeListGraph();
 
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
         for (int i = 0; i < clusters.size(); i++) {
             Node node = new GraphNode("L" + i);
             node.setNodeType(NodeType.LATENT);

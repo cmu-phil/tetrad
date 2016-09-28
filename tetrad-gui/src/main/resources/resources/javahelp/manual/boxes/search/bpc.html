@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: Find Pure Clusters</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Search Algorithms: BPC </font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<font color="#000000"><b><br>
+</b><b>Introduction </b></font>
+<p>Build Pure Clusters (BPC) is one of the three algorithms in Tetrad
+designed to build <font color="#000000"><a
+ href="../../definitions/measurement_structural_graph.html">pure
+measurement/structural models</a></font> (the others are the <font
+ color="#000000"><a href="../../search/mimbuild.html">MIM Build algorithm</a></font>
+and the <font color="#000000"><a href="../../search/purify.html">Purify algorithm</a></font>).</p>
+<p>The goal of Build Pure Clusters is to build a pure measurement model
+using observed variables from a data set. Observed variables are
+clustered into disjoint groups,  each group representing
+indicators of a single hidden variable. Variables in one group are not
+indicators of the hidden variables associated with the other groupsl. Also, some variables given as input will not be
+used because they do not fit into a pure measurement model along with
+the chosen ones.</p>
+<p>The Build Pure Clusters algorithm assumes that the population can be
+described as a measurement/structural model where observed variab<font
+ color="#000000">les are linear indicators of the unknown latents.
+Notice that linearity among latents is not necessary (although it will
+be necessary for the <a href="../../search/mimbuild.html">MIM Build algorithm</a>)
+and latents do not need to be continuous. It is also assumed that the
+unknown population graph contains a pure subgraph where each latent has
+at least three indicators. This assumption is not testable is should be
+evaluated by the plausibility of the final model.</font></p>
+<p><font color="#000000">The current implementation of the algorithm
+accepts only continuous data sets as input. For general information
+about model building algorithms, consult the <font color="#000000"><a
+ href="../../search/../search.html">Search Algorithms</a></font> page.</font></p>
+<p><font color="#000000"><a name="Introduction" id="Introduction"></a><br>
+Entering Build Pure Clusters parameters</font></p>
+<p>For example, consider a model with this true graph: <br>
+</p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/mimbuild1.png"
+ width="769" height="470"></font></p>
+</blockquote>
+<p>If data is generated using this model and a search is constructed from the data, selecting BPC, the following parameters will be requested: </p>
+<ul>
+  <li><em>alpha value</em>: Build Pure Clusters uses
+statistical hypothesis tests in order to generate models automatically.
+The alpha value parameter represents the level by which such tests are
+used to accept or reject constraints that compose the final output. The
+default value is 0.05, but the user may want to experiment with
+different alpha values in order to test the sensitivity of her data
+within this algorithm.</li>
+  <li><em>number of iterations</em>: Build Pure Clusters uses a
+randomized procedure in order to generate a model, since in general
+there are different pure measurement submodels of a given general
+measurement/structural model. This option allows the use to specify a
+given number of runs of the algorithm, where the outputs given for each
+run are combined together into s single model. This usually provides
+models that are more robust against statistical flunctuations and
+slight deviances from the assumptions.</li>
+  <li><em>statistical test</em>: as stated before, automated
+model building is done by testing statistical hypothesis. Build Pure
+Clusters provides two basic statistical tests that can be used.
+Wishart's Tetrad ssumes that the given variables follow a multivariate
+normal distribution. Bollen's Tetrad test not make this assumption.
+However, it needs to compute a matrix of fourth moments, which can be
+time consuming. It is also less robust against sampling variability
+when compared to Wishart's test if the data actually follows a
+multivariate normal distribution..</li>
+</ul>
+<p><font color="#000000"><a name="Interpretation" id="Interpretation"></a><br>
+  Interpreting the Output. 
+</font></p>
+<p><font color="#000000">Upon executin the search, BPC returns a pure measurement
+model. Because of the internal randomization, outputs may vary from run
+to run, but one should not expect large differences (and this can be
+actually used to evaluate if the assumptions are reasonable for a given
+set of input variables). In our example, the outcome should be as
+follows if the sample is representative of the population:</font></p>
+<blockquote>
+  <p><font color="#000000"><img src="../../images/cluster2.png" width="536"
+ height="264"></font></p>
+</blockquote>
+<p>Edges with circles at the endpoints are added only to distinguish
+latent variables from the indicators. BPC does not make
+any claims about the causal relationships among latent variables (this
+is the role of the <font color="#000000"><a href="../../search/mimbuild.html">MIM
+Build algorithm</a></font>). The labels given to the latent
+variables are arbitrary. As part of the analysis, a domain expert
+should evaluate if such latents have indeed a physical or abstract
+meaning, or if they should be discarded as meaningless. Such
+reification is domain dependent.</p>
+<p>Note: If the output is not arranged helpfully, use the Fruchterman-Reingold layout in the Layout menu to arrange more readably. <br>
+</p>
+</body>
+</html>

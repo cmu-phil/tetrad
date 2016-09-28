@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.LogisticRegressionParams;
 import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -53,16 +53,16 @@ public class LogisticRegressionEditor extends JPanel {
     /**
      * Text area for display output.
      */
-    private JTextArea modelParameters;
+    private final JTextArea modelParameters;
 
 
     /**
      * The number formatter used for printing reports.
      */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
 
-    public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {
+    public LogisticRegressionEditor(final LogisticRegressionRunner regressionRunner) {
         final LogisticRegressionRunner regRunner = regressionRunner;
         final GraphWorkbench workbench = new GraphWorkbench();
         this.modelParameters = new JTextArea();
@@ -73,7 +73,7 @@ public class LogisticRegressionEditor extends JPanel {
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 regRunner.execute();
-              //  modelParameters.setText(regRunner.getReport());
+                //  modelParameters.setText(regRunner.getReport());
                 print(regRunner.getResult(), regRunner.getAlpha());
                 Graph outGraph = regRunner.getOutGraph();
                 GraphUtils.circleLayout(outGraph, 200, 200, 150);
@@ -88,9 +88,9 @@ public class LogisticRegressionEditor extends JPanel {
         tabbedPane.add("Model", new JScrollPane(this.modelParameters));
         tabbedPane.add("Output Graph", new JScrollPane(workbench));
 
-        LogisticRegressionParams params =
-                (LogisticRegressionParams) regRunner.getParams();
-        RegressionParamsEditorPanel paramsPanel = new RegressionParamsEditorPanel(params, regRunner.getDataModel());
+        Parameters params = regRunner.getParams();
+        RegressionParamsEditorPanel paramsPanel
+                = new RegressionParamsEditorPanel(regressionRunner, params, regRunner.getDataModel(), true);
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
@@ -105,6 +105,36 @@ public class LogisticRegressionEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
+
+        int numModels = regressionRunner.getNumModels();
+
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    regressionRunner.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box c = Box.createHorizontalBox();
+            c.add(new JLabel("Using model"));
+            c.add(comp);
+            c.add(new JLabel("from "));
+            c.add(new JLabel(regressionRunner.getModelSourceName()));
+            c.add(Box.createHorizontalGlue());
+
+            add(c, BorderLayout.NORTH);
+        }
     }
 
     /**
@@ -151,7 +181,7 @@ public class LogisticRegressionEditor extends JPanel {
         }
 
         text+= "\n\nIntercept = " + nf.format(result.getIntercept()) + "\n";
-        
+
         this.modelParameters.setText(text);
     }
 

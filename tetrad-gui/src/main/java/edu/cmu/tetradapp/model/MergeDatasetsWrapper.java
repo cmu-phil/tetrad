@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
@@ -34,56 +34,8 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class MergeDatasetsWrapper extends DataWrapper {
        static final long serialVersionUID = 23L;
 
-    public MergeDatasetsWrapper(DataWrapper data1) {
-        construct(data1);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2) {
-        construct(data1, data2);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3) {
-        construct(data1, data2, data3);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4) {
-        construct(data1, data2, data3, data4);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5) {
-        construct(data1, data2, data3, data4, data5);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6) {
-        construct(data1, data2, data3, data4, data5, data6);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7) {
-        construct(data1, data2, data3, data4, data5, data6, data7);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, DataWrapper data8) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, DataWrapper data8, DataWrapper data9) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9);
-    }
-
-    public MergeDatasetsWrapper(DataWrapper data1, DataWrapper data2, DataWrapper data3,
-                                DataWrapper data4, DataWrapper data5, DataWrapper data6,
-                                DataWrapper data7, DataWrapper data8, DataWrapper data9,
-                                DataWrapper data10) {
-        construct(data1, data2, data3, data4, data5, data6, data7, data8, data9, data10);
+    public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
+        construct(data);
     }
 
     private void construct(DataWrapper...dataWrappers) {
@@ -96,27 +48,21 @@ public class MergeDatasetsWrapper extends DataWrapper {
         DataModelList merged = new DataModelList();
 
         for (DataWrapper wrapper : dataWrappers) {
-            for (DataModel model : wrapper.getDataModelList()) {
-                merged.add(model);
-            }
+            merged.addAll(wrapper.getDataModelList());
         }
 
         this.setDataModel(merged);
 
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
-
-
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static MergeDatasetsWrapper serializableInstance() {
-        return new MergeDatasetsWrapper(DataWrapper.serializableInstance(),
-                DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
 

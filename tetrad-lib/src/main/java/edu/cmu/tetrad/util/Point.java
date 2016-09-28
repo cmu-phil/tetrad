@@ -26,7 +26,7 @@ package edu.cmu.tetrad.util;
  *
  * @author Joseph Ramsey
  */
-class Point implements Comparable {
+public class Point implements Comparable {
 
     /**
      * A vector representing the point coordinates.
@@ -46,14 +46,14 @@ class Point implements Comparable {
      * @param index Ibid.
      * @return Ibid.
      */
-    private double getValue(int index) {
+    public double getValue(int index) {
         return vector.get(index);
     }
 
     /**
      * @return Ibid.
      */
-    private int getSize() {
+    public int getSize() {
         return vector.size();
     }
 

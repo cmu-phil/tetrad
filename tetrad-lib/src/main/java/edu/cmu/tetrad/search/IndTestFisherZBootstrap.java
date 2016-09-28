@@ -52,10 +52,15 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     private DataSet dataSet;
     private int numBootstrapSamples;
     private IndependenceTest[] tests;
+    private boolean verbose = false;
 
     public IndTestFisherZBootstrap(DataSet dataSet, double alpha, int numBootstrapSamples, int bootstrapSampleSize) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
+        }
+
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
         ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
@@ -93,12 +98,14 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
         for (int i = 0; i < numBootstrapSamples; i++) sum += independentGuys[i];
         boolean independent = sum > numBootstrapSamples / 2;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -149,7 +156,7 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -195,6 +202,19 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return -(getPValue() - getAlpha());
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

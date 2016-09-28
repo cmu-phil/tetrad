@@ -49,6 +49,9 @@ public class TemplateExpander {
     }
 
     /**
+     * Returns the expanded template, which needs to be checked to make sure it can be used. Try setting it as the
+     * expression for the node or freeParameters you wish to use it for.
+     *
      * @param template A template formula, which includes the functions TSUM and TPROD, which are not nestable,
      *                 and NEW. TSUM(f($)) = f(X1) + f(X2) + .... TPROD(f($)) = f(X1) * f(X2) * .... NEW(a) = a new parameter with
      *                 name beginning with a, such as a3, if a1 and a2 have already been used.
@@ -145,7 +148,7 @@ public class TemplateExpander {
 
     private String replaceLists(String operator, GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        List<String> templateOperators = new ArrayList<String>();
+        List<String> templateOperators = new ArrayList<>();
         templateOperators.add("TSUM");
         templateOperators.add("TPROD");
         templateOperators.add("tsum");
@@ -190,7 +193,7 @@ public class TemplateExpander {
                 }
             }
 
-            List<Node> parents = new ArrayList<Node>();
+            List<Node> parents = new ArrayList<>();
 
             if (semPm != null && node != null) {
                 parents = semPm.getParents(node);
@@ -248,7 +251,9 @@ public class TemplateExpander {
 
         if (error != null) {
             return formula.replaceAll("ERROR", error.getName());
-        } else return formula;
+        }
+
+        else return formula;
     }
 
     private String removeOperatorStrings(String formula) {
@@ -259,7 +264,7 @@ public class TemplateExpander {
         while (found) {
             found = false;
 
-            List<Character> operatorList = new ArrayList<Character>();
+            List<Character> operatorList = new ArrayList<>();
             int first = 0;
             int last = 0;
 

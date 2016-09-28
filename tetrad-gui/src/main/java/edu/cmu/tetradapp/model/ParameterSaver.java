@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public interface ParameterSaver extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return a map of parameters to their values to be persisted. The map

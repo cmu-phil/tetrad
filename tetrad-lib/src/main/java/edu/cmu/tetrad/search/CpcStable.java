@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -33,12 +32,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
- * locally. Uses the Pc-Stable adjacency search.
+ * locally. Uses the PC-Stable adjacency search.
  *
  * @author Joseph Ramsey (this version).
  */
@@ -86,11 +83,6 @@ public final class CpcStable implements GraphSearch {
      * The sepsets.
      */
     private SepsetMap sepsets;
-
-    /**
-     * True iff orientation should be done.
-     */
-    private boolean doOrientation = true;
 
     /**
      * Whether verbose output about independencies is output.
@@ -187,11 +179,11 @@ public final class CpcStable implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {
-        return new HashSet<Triple>(allTriples);
+        return new HashSet<>(allTriples);
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<Edge>();
+        Set<Edge> adjacencies = new HashSet<>();
         for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
@@ -203,7 +195,7 @@ public final class CpcStable implements GraphSearch {
         Set<Edge> nonAdjacencies = complete.getEdges();
         Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<Edge>(nonAdjacencies);
+        return new HashSet<>(nonAdjacencies);
     }
 
     /**
@@ -226,7 +218,7 @@ public final class CpcStable implements GraphSearch {
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.allTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariables());
 
@@ -263,27 +255,19 @@ public final class CpcStable implements GraphSearch {
 //            }
 //        }
 
-        if (isDoOrientation()) {
-            if (verbose) {
-                out.println("CPC orientation...");
-            }
-
-            SearchGraphUtils.pcOrientbk(knowledge, getGraph(), nodes);
-
-//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getDepth());
-            orientUnshieldedTriples(knowledge, getIndependenceTest(), getDepth());
-
-            System.out.println("Meek rules");
-
-            MeekRules meekRules = new MeekRules();
-            meekRules.setOut(out);
-
-            meekRules.orientImplied(getGraph());
-
-            System.out.println("Meek rules done");
+        if (verbose) {
+            out.println("CPC orientation...");
         }
 
-//        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + getGraph());
+        SearchGraphUtils.pcOrientbk(knowledge, getGraph(), nodes);
+
+//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
+        orientUnshieldedTriples(knowledge);
+
+        MeekRules meekRules = new MeekRules();
+        meekRules.setOut(out);
+
+        meekRules.orientImplied(getGraph());
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
@@ -297,8 +281,7 @@ public final class CpcStable implements GraphSearch {
 
     //==========================PRIVATE METHODS===========================//
 
-    private void orientUnshieldedTriples(IKnowledge knowledge,
-                                         IndependenceTest test, int depth) {
+    private void orientUnshieldedTriples(IKnowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
@@ -323,7 +306,7 @@ public final class CpcStable implements GraphSearch {
 
                 List<List<Node>> sepsetsxz = getSepsets(x, z, graph);
 
-                if (isColliderSepset(x, y, z, graph, sepsetsxz)) {
+                if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
@@ -345,7 +328,7 @@ public final class CpcStable implements GraphSearch {
     private List<List<Node>> getSepsets(Node i, Node k, Graph g) {
         List<Node> adji = g.getAdjacentNodes(i);
         List<Node> adjk = g.getAdjacentNodes(k);
-        List<List<Node>> sepsets = new ArrayList<List<Node>>();
+        List<List<Node>> sepsets = new ArrayList<>();
 
         for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
@@ -373,7 +356,7 @@ public final class CpcStable implements GraphSearch {
     }
 
 
-    private boolean isColliderSepset(Node i, Node j, Node k, Graph graph, List<List<Node>> sepsets) {
+    private boolean isColliderSepset(Node j, List<List<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
         for (List<Node> sepset : sepsets) {
@@ -384,90 +367,90 @@ public final class CpcStable implements GraphSearch {
     }
 
 
-    private void orientUnshieldedTriplesConcurrent(final IKnowledge knowledge,
-                                                   final IndependenceTest test, final int depth) {
-        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-
-        final List<Node> nodes = getGraph().getNodes();
-
-        final int chunk = 50;
-
-        class TripleTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public TripleTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if ((i + 1) % 1000 == 0) System.out.println((i + 1) + " triple task");
-                        final Node y = nodes.get(i);
-
-                        List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
-
-                        if (adjacentNodes.size() < 2) {
-                            continue;
-                        }
-
-                        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-                        int[] combination;
-
-                        while ((combination = cg.next()) != null) {
-                            final Node x = adjacentNodes.get(combination[0]);
-                            final Node z = adjacentNodes.get(combination[1]);
-
-                            if (graph.isAdjacentTo(x, z)) {
-                                continue;
-                            }
-
-                            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph(), verbose);
-
-                            if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-                                if (colliderAllowed(x, y, z, knowledge)) {
-                                    getGraph().setEndpoint(x, y, Endpoint.ARROW);
-                                    getGraph().setEndpoint(z, y, Endpoint.ARROW);
-
-                                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-                                }
-                            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-                                Triple triple = new Triple(x, y, z);
-                                getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                            }
-                        }
-                    }
-
-                    return true;
-                } else {
-                    List<TripleTask> tasks = new ArrayList<TripleTask>();
-
-                    final int mid1 = (this.to - from) / 4;
-                    final int mid2 = mid1 + mid1;
-                    final int mid3 = mid1 + mid1 + mid1;
-
-                    tasks.add(new TripleTask(chunk, from, from + mid1));
-                    tasks.add(new TripleTask(chunk, from + mid1, from + mid2));
-                    tasks.add(new TripleTask(chunk, from + mid2, from + mid3));
-                    tasks.add(new TripleTask(chunk, from + mid3, to));
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
-            }
-        }
-
-        pool.invoke(new TripleTask(chunk, 0, nodes.size()));
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
-    }
+//    private void orientUnshieldedTriplesConcurrent(final IKnowledge knowledge,
+//                                                   final IndependenceTest test, final int depth) {
+//        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+//
+//        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+//
+//        final List<Node> nodes = getGraph().getNodes();
+//
+//        final int chunk = 50;
+//
+//        class TripleTask extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//
+//            public TripleTask(int chunk, int from, int to) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        if ((i + 1) % 1000 == 0) System.out.println((i + 1) + " triple task");
+//                        final Node y = nodes.get(i);
+//
+//                        List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
+//
+//                        if (adjacentNodes.size() < 2) {
+//                            continue;
+//                        }
+//
+//                        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+//                        int[] combination;
+//
+//                        while ((combination = cg.next()) != null) {
+//                            final Node x = adjacentNodes.get(combination[0]);
+//                            final Node z = adjacentNodes.get(combination[1]);
+//
+//                            if (graph.isAdjacentTo(x, z)) {
+//                                continue;
+//                            }
+//
+//                            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph(), verbose);
+//
+//                            if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
+//                                if (colliderAllowed(x, y, z, knowledge)) {
+//                                    getGraph().setEndpoint(x, y, Endpoint.ARROW);
+//                                    getGraph().setEndpoint(z, y, Endpoint.ARROW);
+//
+//                                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+//                                }
+//                            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+//                                Triple triple = new Triple(x, y, z);
+//                                getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+//                            }
+//                        }
+//                    }
+//
+//                    return true;
+//                } else {
+//                    List<TripleTask> tasks = new ArrayList<TripleTask>();
+//
+//                    final int mid1 = (this.to - from) / 4;
+//                    final int mid2 = mid1 + mid1;
+//                    final int mid3 = mid1 + mid1 + mid1;
+//
+//                    tasks.add(new TripleTask(chunk, from, from + mid1));
+//                    tasks.add(new TripleTask(chunk, from + mid1, from + mid2));
+//                    tasks.add(new TripleTask(chunk, from + mid2, from + mid3));
+//                    tasks.add(new TripleTask(chunk, from + mid3, to));
+//
+//                    invokeAll(tasks);
+//
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        pool.invoke(new TripleTask(chunk, 0, nodes.size()));
+//        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+//    }
 
     private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
         return CpcStable.isArrowpointAllowed1(x, y, knowledge) &&
@@ -482,14 +465,6 @@ public final class CpcStable implements GraphSearch {
 
     public SepsetMap getSepsets() {
         return sepsets;
-    }
-
-    public boolean isDoOrientation() {
-        return doOrientation;
-    }
-
-    public void setDoOrientation(boolean doOrientation) {
-        this.doOrientation = doOrientation;
     }
 
     /**

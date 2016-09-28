@@ -39,13 +39,11 @@ public class GraphIntersectionsEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private List<Graph> graphs;
+    private final List<Graph> graphs;
 
 
     /**
      * Constructs the editor given the model
-     *
-     * @param comparison
      */
     public GraphIntersectionsEditor(GraphAdjacencyIntersectionWrapper comparison) {
         this.graphs = comparison.getGraphs();

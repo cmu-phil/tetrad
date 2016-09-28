@@ -55,13 +55,13 @@ public final class DataSetProbs implements DiscreteProbs {
      */
     private final int[] dims;
 
-    /**
-     * Indicates whether bounds on coordinate values are explicitly enforced.
-     * This may slow down loops.
-     *
-     * @serial
-     */
-    private boolean boundsEnforced = true;
+//    /**
+//     * Indicates whether bounds on coordinate values are explicitly enforced.
+//     * This may slow down loops.
+//     *
+//     * @serial
+//     */
+//    private boolean boundsEnforced = true;
 
     /**
      * The number of rows in the data.
@@ -227,19 +227,19 @@ public final class DataSetProbs implements DiscreteProbs {
         return null;
     }
 
-    /**
-     * True iff bounds checking is performed on variable values indices.
-     */
-    public boolean isBoundsEnforced() {
-        return boundsEnforced;
-    }
-
-    /**
-     * True iff bounds checking is performed on variable values indices.
-     */
-    public void setBoundsEnforced(boolean boundsEnforced) {
-        this.boundsEnforced = boundsEnforced;
-    }
+//    /**
+//     * True iff bounds checking is performed on variable values indices.
+//     */
+//    public boolean isBoundsEnforced() {
+//        return boundsEnforced;
+//    }
+//
+//    /**
+//     * True iff bounds checking is performed on variable values indices.
+//     */
+//    public void setBoundsEnforced(boolean boundsEnforced) {
+//        this.boundsEnforced = boundsEnforced;
+//    }
 
     public boolean isMissingValueCaseFound() {
         return missingValueCaseFound;

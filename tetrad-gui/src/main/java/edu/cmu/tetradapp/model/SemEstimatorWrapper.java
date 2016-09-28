@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.performance.ComparisonParameters;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
@@ -58,8 +59,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
     private boolean multipleResults = false;
 
-    private List<SemEstimator> multipleResultList = new ArrayList<SemEstimator>();
-    private SemEstimatorParams params;
+    private List<SemEstimator> multipleResultList = new ArrayList<>();
+    private Parameters params;
 
     //==============================CONSTRUCTORS==========================//
 
@@ -69,13 +70,55 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      * pops up a dialog. This is irritating when running unit tests.
      * jdramsey 8/29/07
      */
-    private SemEstimatorWrapper(DataSet dataSet, SemPm semPm, SemEstimatorParams params) {
+    public SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Parameters params) {
         this.params = params;
+        this.semPm = semPm;
+
+
+        DataModelList dataModel = new DataModelList();
+        dataModel.add(dataSet);
+
+        this.params = params;
+
+        for (DataModel model : dataModel) {
+            if (model instanceof DataSet) {
+                this.semPm = semPm;
+                SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
+                if (!degreesOfFreedomCheck(semPm));
+                estimator.estimate();
+
+                getMultipleResultList().add(estimator);
+            } else if (model instanceof ICovarianceMatrix) {
+                ICovarianceMatrix covMatrix = new CovarianceMatrix((ICovarianceMatrix) model);
+                this.semPm = semPm;
+                SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic));
+                if (!degreesOfFreedomCheck(semPm));
+                estimator.estimate();
+
+                getMultipleResultList().add(estimator);
+            } else {
+                throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
+            }
+        }
+
+
+        if (dataModel != null) {
+            multipleResults = true;
+
+            this.semEstimator = getMultipleResultList().get(0);
+        } else {
+            throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
+        }
+
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemPmWrapper semPmWrapper, SemEstimatorParams params) {
+                               SemPmWrapper semPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
@@ -89,7 +132,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
         this.params = params;
 
-        if (dataModel instanceof DataModelList) {
+        if (dataModel != null) {
             multipleResults = true;
 
             if (setParams(semPmWrapper, (DataModelList) dataModel)) return;
@@ -109,8 +152,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 SemPm semPm = semPmWrapper.getSemPm();
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
-                estimator.setNumRestarts(getParams().getNumRestarts());
-                estimator.setScoreType(getParams().getScoreType());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
 
@@ -120,8 +163,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 SemPm semPm = semPmWrapper.getSemPm();
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
-                estimator.setNumRestarts(getParams().getNumRestarts());
-                estimator.setScoreType(getParams().getScoreType());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic));
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
 
@@ -133,28 +176,30 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         return false;
     }
 
-    public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemImWrapper semImWrapper, SemEstimatorParams params) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        if (semImWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        DataSet dataSet =
-                (DataSet) dataWrapper.getSelectedDataModel();
-        SemPm semPm = semImWrapper.getSemIm().getSemPm();
-
-        this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
-        if (!degreesOfFreedomCheck(semPm)) return;
-        this.semEstimator.estimate();
-
-        this.params = params;
-
-        log();
-    }
+//    public SemEstimatorWrapper(DataWrapper dataWrapper,
+//                               SemImWrapper semImWrapper, Parameters params) {
+//        if (dataWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (semImWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.params = params;
+//
+//        DataSet dataSet =
+//                (DataSet) dataWrapper.getSelectedDataModel();
+//        SemPm semPm = semImWrapper.getSemIm().getSemPm();
+//
+//        this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
+//        if (!degreesOfFreedomCheck(semPm)) return;
+//        this.semEstimator.estimate();
+//
+//        this.params = params;
+//
+//        log();
+//    }
 
     private boolean degreesOfFreedomCheck(SemPm semPm) {
         if (semPm.getDof() < 1) {
@@ -172,46 +217,45 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         return true;
     }
 
-    public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemPmWrapper semPmWrapper,
-                               SemImWrapper semImWrapper,
-                               SemEstimatorParams params) {
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        if (semPmWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        if (semImWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        DataSet dataSet =
-                (DataSet) dataWrapper.getSelectedDataModel();
-        SemPm semPm = semPmWrapper.getSemPm();
-        SemIm semIm = semImWrapper.getSemIm();
-
-        this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
-        if (!degreesOfFreedomCheck(semPm)) return;
-        this.semEstimator.setTrueSemIm(semIm);
-        this.semEstimator.setNumRestarts(getParams().getNumRestarts());
-        this.semEstimator.estimate();
-
-        this.params = params;
-
-        log();
-    }
+//    public SemEstimatorWrapper(DataWrapper dataWrapper,
+//                               SemPmWrapper semPmWrapper,
+//                               SemImWrapper semImWrapper,
+//                               Parameters params) {
+//        if (dataWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (semPmWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (semImWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        DataSet dataSet =
+//                (DataSet) dataWrapper.getSelectedDataModel();
+//        SemPm semPm = semPmWrapper.getSemPm();
+//        SemIm semIm = semImWrapper.getSemIm();
+//
+//        this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
+//        if (!degreesOfFreedomCheck(semPm)) return;
+//        this.semEstimator.setTrueSemIm(semIm);
+//        this.semEstimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+//        this.semEstimator.estimate();
+//
+//        this.params = params;
+//
+//        log();
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SemEstimatorWrapper serializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         ContinuousVariable x = new ContinuousVariable("X");
         variables.add(x);
         DataSet dataSet = new ColtDataSet(10, variables);
@@ -224,7 +268,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         Dag dag = new Dag();
         dag.addNode(x);
         SemPm pm = new SemPm(dag);
-        SemEstimatorParams params1 = SemEstimatorParams.serializableInstance();
+        Parameters params1 = new Parameters();
         return new SemEstimatorWrapper(dataSet, pm, params1);
     }
 
@@ -243,11 +287,11 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public String getSemOptimizerType() {
-        return getParams().getSemOptimizerType();
+        return getParams().getString("semOptimizerType", "Regression");
     }
 
     public void setSemOptimizerType(String type) {
-        getParams().setSemOptimizerType(type);
+        getParams().set("semOptimizerType", type);
     }
 
     public Graph getGraph() {
@@ -295,16 +339,10 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 //        }
     }
 
-    /**
-     * @serial
-     */
     public boolean isMultipleResults() {
         return multipleResults;
     }
 
-    /**
-     * @serial
-     */
     public List<SemEstimator> getMultipleResultList() {
         return multipleResultList;
     }
@@ -313,13 +351,13 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         this.multipleResultList = multipleResultList;
     }
 
-    public SemEstimatorParams getParams() {
+    public Parameters getParams() {
         return params;
     }
 
     private SemOptimizer getOptimizer() {
         SemOptimizer optimizer;
-        String type = getParams().getSemOptimizerType();
+        String type = getParams().getString("semOptimizerType", "Regression");
 
         if ("Regression".equals(type)) {
             SemOptimizer defaultOptimization = getDefaultOptimization();
@@ -327,7 +365,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             if (!(defaultOptimization instanceof  SemOptimizerRegression)) {
                 optimizer = defaultOptimization;
                 type = getType(defaultOptimization);
-                getParams().setSemOptimizerType(type);
+                getParams().set("semOptimizerType", type);
             }
             else {
                 optimizer = new SemOptimizerRegression();
@@ -349,7 +387,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 String _type = getType(optimizer);
 
                 if (_type != null) {
-                    getParams().setSemOptimizerType(_type);
+                    getParams().set("semOptimizerType", _type);
                 }
             } else {
                 optimizer = null;
@@ -396,24 +434,25 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public SemIm.ScoreType getScoreType() {
-        return params.getScoreType();
+        return (SemIm.ScoreType) params.get("scoreType", ComparisonParameters.ScoreType.SemBic);
     }
 
     public void setScoreType(SemIm.ScoreType scoreType) {
-        params.setScoreType(scoreType);
+        params.set("scoreType", scoreType);
     }
 
     public void setNumRestarts(int numRestarts) {
-        getParams().setNumRestarts(numRestarts);
+        getParams().set("numRestarts", numRestarts);
     }
 
     public int getNumRestarts() {
-        return getParams().getNumRestarts();
+        return getParams().getInt("numRestarts", 1);
     }
 
 
-    public SemOptimizer getDefaultOptimization() {
-        if (semPm == null) throw new NullPointerException();
+    private SemOptimizer getDefaultOptimization() {
+        if (semPm == null) throw new NullPointerException(
+                "Sorry, I didn't see a SEM PM as parent to the estimator; perhaps the parents are wrong.");
 
         boolean containsLatent = false;
 
@@ -435,7 +474,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             optimizer = new SemOptimizerRegression();
         }
 
-        optimizer.setNumRestarts(getParams().getNumRestarts());
+        optimizer.setNumRestarts(getParams().getInt("numRestarts", 1));
 
         return optimizer;
 

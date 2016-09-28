@@ -24,9 +24,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SplitCasesSpec;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.datamanip.SplitCasesParams;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
@@ -63,7 +62,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params used to store the values this editor edits.
      */
-    private SplitCasesParams params;
+    private Parameters params;
 
 
     /**
@@ -85,17 +84,17 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     //================================PUBLIC METHODS=======================//
 
-    public void setNumSplits(int numSplits) {
+    private void setNumSplits(int numSplits) {
         if (numSplits < 1) {
             throw new IllegalArgumentException("Number of splits must be " +
                     "at least 1.");
         }
 
-        this.params.setNumSplits(numSplits);
+        this.params.set("numSplits", numSplits);
         splitEditorPanel.removeAll();
         SplitCasesSpec defaultSpec = getDefaultSpec(this.dataSet.getNumRows(), numSplits);
         SplitEditor splitEditor = new SplitEditor(defaultSpec);
-        this.params.setSpec(defaultSpec);
+        this.params.set("splitCasesSpec", defaultSpec);
         splitEditorPanel.add(splitEditor, BorderLayout.CENTER);
         splitEditorPanel.revalidate();
         splitEditorPanel.repaint();
@@ -104,11 +103,11 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        SplitCasesSpec spec = this.params.getSpec();
+        SplitCasesSpec spec = (SplitCasesSpec) this.params.get("splitCasesSpec", null);
         if(spec != null){
-           spec = getDefaultSpec(this.dataSet.getNumRows(), this.params.getNumSplits());
+            spec = getDefaultSpec(this.dataSet.getNumRows(), this.params.getInt("numSplits", 3));
         }
-        numSplitsField = new IntTextField(this.params.getNumSplits(), 2);
+        numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
         numSplitsField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 setNumSplits(value);
@@ -118,27 +117,27 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
         splitEditorPanel = new JPanel();
         splitEditorPanel.setLayout(new BorderLayout());
-        setNumSplits(this.params.getNumSplits());
+        setNumSplits(params.getInt("numSplits", 3));
 
         JRadioButton shuffleButton = new JRadioButton("Shuffled order");
         JRadioButton noShuffleButton = new JRadioButton("Original order");
 
         shuffleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                params.setDataShuffled(true);
+                params.set("dataShuffled", true);
             }
         });
 
         noShuffleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                params.setDataShuffled(false);
+                params.set("dataShuffled", false);
             }
         });
 
         ButtonGroup group = new ButtonGroup();
         group.add(shuffleButton);
         group.add(noShuffleButton);
-        shuffleButton.setSelected(this.params.isDataShuffled());
+        shuffleButton.setSelected(params.getBoolean("dataShuffled", true));
 
         Box b1 = Box.createVerticalBox();
 
@@ -177,8 +176,8 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
 
 
-    public void setParams(Params params) {
-        this.params = (SplitCasesParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
 
@@ -212,7 +211,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     private static SplitCasesSpec getDefaultSpec(int sampleSize, int numSplits) {
         int[] breakpoints = defaultBreakpoints(sampleSize, numSplits);
-        List<String> splitNames = new LinkedList<String>();
+        List<String> splitNames = new LinkedList<>();
 
         if (numSplits == 1) {
             splitNames.add("same_data");
@@ -247,10 +246,10 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         private IntTextField[] leftSplitFields;
         private IntTextField[] rightSplitFields;
 
-        private LinkedList<JTextField> focusTraveralOrder =
-                new LinkedList<JTextField>();
-        private Map<Object, Integer> labels = new HashMap<Object, Integer>();
-        private int sampleSize;
+        private final LinkedList<JTextField> focusTraveralOrder =
+                new LinkedList<>();
+        private final Map<Object, Integer> labels = new HashMap<>();
+        private final int sampleSize;
 
         public SplitEditor(SplitCasesSpec spec) {
             this.sampleSize = spec.getSampleSize();

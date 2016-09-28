@@ -39,36 +39,36 @@ public interface ModelChooser {
     /**
      * @return the title of the chooser.
      */
-    public String getTitle();
+    String getTitle();
 
 
     /**
      * @return the model class that was selected or null if nothing was selected.
      */
-    public Class getSelectedModel();
+    Class getSelectedModel();
 
 
     /**
      * @param title The title to use for the chooser.
      */
-    public void setTitle(String title);
+    void setTitle(String title);
 
     /**
      * @param configs the models that this chooser should display.
      */
-    public void setModelConfigs(List<SessionNodeModelConfig> configs);
+    void setModelConfigs(List<SessionNodeModelConfig> configs);
 
 
     /**
      * @param id the id for the node.
      */
-    public void setNodeId(String id);
+    void setNodeId(String id);
 
 
     /**
      * Call after the set methods are called so that the component can build itself.
      */
-    public void setup();
+    void setup();
 
     /**
      * @param sessionNode the SessionNode for the getModel node.

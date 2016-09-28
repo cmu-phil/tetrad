@@ -46,8 +46,8 @@ public enum BpcAlgorithmType implements TetradSerializable {
                 BpcAlgorithmType.BUILD_PURE_CLUSTERS,
 //                BpcAlgorithmType.SIMPLIFIED_BPC,
                 BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN,
-                BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS,
-                BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS
+//                BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS,
+//                BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS
         };
     }
 }

@@ -147,7 +147,7 @@ public final class CpcOrienter implements Reorienter {
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     public Set<Triple> getColliderTriples() {
@@ -165,10 +165,10 @@ public final class CpcOrienter implements Reorienter {
         TetradLogger.getInstance().log("info", "Starting CPC algorithm.");
         TetradLogger.getInstance().log("info", "Independence test = " + independenceTest + ".");
         long startTime = System.currentTimeMillis();
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -194,14 +194,14 @@ public final class CpcOrienter implements Reorienter {
 //        Fas fas =
 //                new Fas(graph, getIndependenceTest());
 //        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
+//        fas.setMaxIndegree(getMaxIndegree());
 //        graph = fas.search();
 //        this.sepsetMap = fas.getSepsets();
 
 //        FastAdjacencySearchLo fas =
 //                new FastAdjacencySearchLo(graph, getIndependenceTest());
 //        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(depth());
+//        fas.setMaxIndegree(depth());
 //        fas.search();
 
 //        if (!sepsetMap.equals(sepsetPc)) {
@@ -250,27 +250,27 @@ public final class CpcOrienter implements Reorienter {
     }
 
 
-    public final Graph orientationForGraph(Dag trueGraph) {
-        Graph graph = new EdgeListGraph(independenceTest.getVariables());
-
-        for (Edge edge : trueGraph.getEdges()) {
-            Node nodeA = edge.getNode1();
-            Node nodeB = edge.getNode2();
-
-            Node _nodeA = independenceTest.getVariable(nodeA.getName());
-            Node _nodeB = independenceTest.getVariable(nodeB.getName());
-
-            graph.addUndirectedEdge(_nodeA, _nodeB);
-        }
-
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
-        orientUnshieldedTriples(knowledge, getIndependenceTest(), depth);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
-        meekRules.orientImplied(graph);
-
-        return graph;
-    }
+//    public final Graph orientationForGraph(Dag trueGraph) {
+//        Graph graph = new EdgeListGraph(independenceTest.getVariables());
+//
+//        for (Edge edge : trueGraph.getEdges()) {
+//            Node nodeA = edge.getNode1();
+//            Node nodeB = edge.getNode2();
+//
+//            Node _nodeA = independenceTest.getVariable(nodeA.getNode());
+//            Node _nodeB = independenceTest.getVariable(nodeB.getNode());
+//
+//            graph.addUndirectedEdge(_nodeA, _nodeB);
+//        }
+//
+//        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
+//        orientUnshieldedTriples(knowledge, getIndependenceTest(), depth);
+//        MeekRules meekRules = new MeekRules();
+//        meekRules.setKnowledge(knowledge);
+//        meekRules.orientImplied(graph);
+//
+//        return graph;
+//    }
 
     //==========================PRIVATE METHODS===========================//
 
@@ -279,9 +279,9 @@ public final class CpcOrienter implements Reorienter {
                                          IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
             List<Node> adjacentNodes = graph.getAdjacentNodes(y);
@@ -339,10 +339,10 @@ public final class CpcOrienter implements Reorienter {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<Node>(this.graph.getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(this.graph.getAdjacentNodes(x));
         __nodes.remove(z);
 
-        List<Node> _nodes = new LinkedList<Node>(__nodes);
+        List<Node> _nodes = new LinkedList<>(__nodes);
         TetradLogger.getInstance().log("adjacencies",
                 "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -369,10 +369,10 @@ public final class CpcOrienter implements Reorienter {
             }
         }
 
-        __nodes = new HashSet<Node>(this.graph.getAdjacentNodes(z));
+        __nodes = new HashSet<>(this.graph.getAdjacentNodes(z));
         __nodes.remove(x);
 
-        _nodes = new LinkedList<Node>(__nodes);
+        _nodes = new LinkedList<>(__nodes);
         TetradLogger.getInstance().log("adjacencies",
                 "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -427,7 +427,7 @@ public final class CpcOrienter implements Reorienter {
     }
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<>();
 
         for (int i : indices) {
             list.add(nodes.get(i));

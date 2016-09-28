@@ -27,6 +27,7 @@ import edu.cmu.tetrad.bayes.EmBayesEstimator;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -89,7 +90,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //    }
 
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, EmBayesEstimatorParams params) {
+            BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -110,7 +111,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         this.dataSet = estimator.getMixedDataSet();
 
         try {
-            estimator.maximization(params.getTolerance());
+            estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
         }
         catch (IllegalArgumentException e) {
@@ -122,54 +123,52 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         TetradLogger.getInstance().log("im", "" + estimateBayesIm);
     }
 
-    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesImWrapper bayesImWrapper, EmBayesEstimatorParams params) {
-        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-
-        if (dataWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        if (bayesImWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        DataSet dataSet =
-                (DataSet) dataWrapper.getSelectedDataModel();
-        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
-
-        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
-        this.dataSet = estimator.getMixedDataSet();
-
-        System.out.println("B" + dataSet.getVariables());
-
-        try {
-            estimator.maximization(params.getTolerance());
-            this.estimateBayesIm = estimator.getEstimatedIm();
-        }
-        catch (IllegalArgumentException e) {
-            e.printStackTrace();
-
-            throw new RuntimeException(
-                    "Please specify the search tolerance first.");
-        }
-
-        TetradLogger.getInstance().log("im", "" + estimateBayesIm);
-    }
+//    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
+//            BayesImWrapper bayesImWrapper, Parameters params) {
+//        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
+//
+//        if (dataWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (bayesImWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (params == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        DataSet dataSet =
+//                (DataSet) dataWrapper.getSelectedDataModel();
+//        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
+//
+//        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
+//        this.dataSet = estimator.getMixedDataSet();
+//
+//        System.out.println("B" + dataSet.getVariables());
+//
+//        try {
+//            estimator.maximization(params.getDouble("tolerance", 0.0001));
+//            this.estimateBayesIm = estimator.getEstimatedIm();
+//        }
+//        catch (IllegalArgumentException e) {
+//            e.printStackTrace();
+//
+//            throw new RuntimeException(
+//                    "Please specify the search tolerance first.");
+//        }
+//
+//        TetradLogger.getInstance().log("im", "" + estimateBayesIm);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static EmBayesEstimatorWrapper serializableInstance() {
-        return new EmBayesEstimatorWrapper(DataWrapper.serializableInstance(),
-                BayesPmWrapper.serializableInstance(), new EmBayesEstimatorParams());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //================================PUBLIC METHODS======================//

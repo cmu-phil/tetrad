@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>IM</title>
+</head>
+<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
+ style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td><h2><font color="#FFFFFF">Dirichlet Bayes Instantiated Model </font></h2></td>
+  </tr>
+</table>
+                                                                                                               
+<h3>Description of the Model</h3>
+<p>A Dirichlet Bayes Instantiated Model (Bayes IM) is an alternative to a <a href="dirichlet_bayes_im.html">Bayes Instantiated Model</a> that represents the distribution over each row in each conditional probability table as a Dirichlet distribution. A Dirichlet distribution the probability distribution of the parameters of a multinomial distribution. That is, it is the probability distribution of the parameters of a list of &quot;cells&quot; whose probabilities are (a) mutually independent and (b) sum to 1.0. Each row in a conditional probability table satisfies this criterion, so we build an alternative Bayes net representation row by row out of distributions defined in this way. </p>
+<p>A specific Dirichlet model for a list of cells is given by specifying a <em>Dirichlet parameter</em> for each cell. The maximum likelihood probability for the cells is then given by the ratio of the Dirichlet parameter for that cell divided by the sum of Dirichlet parameters for all of cells in the list. In the simple case, these Dirichlet parameters will just be <em>cell counts</em>, considered as real numbers. We will usually, therefore, refer to Dirichlet parameters as <em>pseudocounts</em>. In the more general case, these pseudocounts can in fact be any positive real numbers.</p>
+<p>A Dirichlet Bayes Instantiated Model is constructed using a <a href="../pm/bayes_pm.html">Bayes Parametric Model</a>, just like a Bayes Instantiated Model. The main differences are:</p>
+<ul>
+  <li>Instead of conditional probability tables, the Dirichlet Bayes Instantiated Model contains tables of pseudocounts, as described above.</li>
+  <li> Dirichlet Bayes Instantiated Models are used as inputs to a <a href="../estimate/dirichlet_estimator.html">Dirichlet Estimator</a>, rather than as inputs to an ML Bayes Estimator.</li>
+</ul>
+<h3><br>
+  How to Construct a Dirichlet Bayes IM</h3>
+<p>To construct a Bayes IM, first construct a DAG, then a Bayes PM, and add an IM box to the workspace, with an arrow from the Bayes PM to the IM.</p>
+<p> <img src="../../images/bayesim1.gif" width="270" height="66"></p>
+<p>Fill in the Graph box and the PM box, as explained in <a href="../pm/bayes_pm.html">Bayes Parameterized Model</a>. For instance, you might end up with a graph that looks like this (the categories for X1 are shown).</p>
+<p><img src="../../images/dirichletbayesim1.gif" width="920" height="556"></p>
+<p>Now, double click the IM box. You get a choice of models; choose Dirichlet Bayes Instantiated Model:</p>
+<p><img src="../../images/dirichletbayesim2.gif" width="459" height="152"> </p>
+<p>What you click OK, you are offered a choice. You may either initialize the parameters of your Dirichlet Bayes net manually (i.e., fill them in one by one, by hand), or fill them in randomly.</p>
+<p><img src="../../images/dirichletbayesim4.gif" width="516" height="195"></p>
+<p>We choose &quot;Manually.&quot; We now get a dialog that looks like the following:</p>
+<p><img src="../../images/dirichletbayesim5.gif" width="844" height="514"> </p>
+<p>There are two tabs in the dialog that comes up next, &quot;Probabilities&quot; and &quot;Pseudocounts.&quot; Let us consider &quot;Pseudocounts&quot; first. Pseudocounts are displayed in tables, one for each variable, with the same structure as conditional probability tables in Bayes IM's. Each pseudocount is a positive real number; in this case the are all initialized to 1.0. The sum of the pseudocounts in each row is shown in the rightmost column.</p>
+<p>Turning now to the &quot;Probabilities&quot; tab, we have a table in the form of a conditional probability table that displays maximum likelihood probabilities for each cell of each Dirichlet distribution (row) in the model. These probabilities are calculated by dividing each pseudocount value in the previous display by the sum or pseudocounts in that row. In order not to lose information, the total count for each row is displayed in the &quot;Probabiliities&quot; tab as well. To recover pseudocounts, simply multiply the probability of a cell by the &quot;total count&quot; in the rightmost column. </p>
+<p><img src="../../images/dirichletbayesim6.gif" width="844" height="510"> </p>
+<p>[Note: there is some funny business going on with the right-click popup menus for doing randomization. Need to make this work.] </p>
+<p>&nbsp;</p>
+<p>Old text:</p>
+<p><br>
+If you choose a Dirichlet Instantiated Bayes Model, you will be putting an initial (or prior) Dirichlet probability distribution over the conditional probability of each&nbsp; value of each variable condtional on values of its parent variables:. a probability distribution over conditional probabiliy distributions. The probability distribution over the conditional probability distributions implies an "all probabilities" considered probability for each value of each variable condiitonal on its parent's values. Such Dirichlet distributions can be specified by pseudocounts, essentially a kind of fictional database.&nbsp; The program will automatically create a uniform and symmetric Dirichlet prior distribution for you in which all counts have the same value--you can pick the value. A Dirichlet Bayes IM may be set up manually (all values set by hand) or set up automatically as a symmetric prior in which all pseudocounts for all cells are set to a given, specified, value. Such Dirichlet distributions are called "symmetric, because the distribution function itself with such a choice of pseudocounts is symmetric with respect to variable permutation. (If all pseudocounts are set to 1.0, the distribution function is completely flat and therefore uninformative. If all pseudocounts are set to 0.5, the resulting distribution is known as a Jeffreys prior and has connections to information theory.) <br>
+</p>
+</body>
+</html>

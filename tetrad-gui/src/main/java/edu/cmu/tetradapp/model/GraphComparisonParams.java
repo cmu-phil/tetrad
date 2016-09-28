@@ -24,19 +24,17 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.ExecutionRestarter;
 import edu.cmu.tetrad.session.SessionAdapter;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Stores a reference to a file to which records can be appended.
@@ -44,7 +42,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public class GraphComparisonParams extends SessionAdapter
-        implements Params, ExecutionRestarter {
+        implements ExecutionRestarter {
     static final long serialVersionUID = 23L;
 
     /**
@@ -77,44 +75,28 @@ public class GraphComparisonParams extends SessionAdapter
      */
     private String referenceGraphName;
 
-    
+
     /**
      * The name of the session model that has the true graph in it.
      *
      * @serial Can be null.
      */
     private String targetGraphName;
-    /**
-     * @serial
-     * @deprecated
-     */
-    private ContinuousVariable missingEdgesVar;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private ContinuousVariable correctEdgesVar;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private ContinuousVariable extraEdgesVar;
 
     //===========================CONSTRUCTORS============================//
 
     /**
      * Constructs a getMappings object with no file set.
      */
-    public GraphComparisonParams() {
+    private GraphComparisonParams() {
         newExecution();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GraphComparisonParams serializableInstance() {
@@ -123,64 +105,64 @@ public class GraphComparisonParams extends SessionAdapter
 
     //==========================PUBLIC METHODS===========================//
 
-    public void addRecord(int adjCorrect, int adjFn, int adjFp,
-            int arrowptCorrect, int arrowptFn, int arrowptFp,
-            int twoCycleCorrect, int twoCycleFn, int twoCycleFp) {
+    public final void newExecution() {
+        ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
+        ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
+        ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
+
+        ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
+        ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
+        ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
+
+        ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
+        ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
+        ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
+        ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
+        ContinuousVariable shd = new ContinuousVariable("SHD");
+
+//        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
+//        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
+//        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
+
+        List<Node> variables = new LinkedList<>();
+        variables.add(adjCorrect);
+        variables.add(adjFn);
+        variables.add(adjFp);
+        variables.add(arrowptCorrect);
+        variables.add(arrowptFn);
+        variables.add(arrowptFp);
+        variables.add(adjPrec);
+        variables.add(adjRec);
+        variables.add(arrowptPrec);
+        variables.add(arrowptRec);
+        variables.add(shd);
+//        variables.add(twoCycleCorrect);
+//        variables.add(twoCycleFn);
+//        variables.add(twoCycleFp);
+
+        dataSet = new ColtDataSet(0, variables);
+        dataSet.setNumberFormat(new DecimalFormat("0"));
+    }
+
+    public void addRecord(GraphUtils.GraphComparison comparison) {
         int newRow = dataSet.getNumRows();
-        dataSet.setDouble(newRow, 0, adjCorrect);
-        dataSet.setDouble(newRow, 1, adjFn);
-        dataSet.setDouble(newRow, 2, adjFp);
-        dataSet.setDouble(newRow, 3, arrowptCorrect);
-        dataSet.setDouble(newRow, 4, arrowptFn);
-        dataSet.setDouble(newRow, 5, arrowptFp);
-        dataSet.setDouble(newRow, 6, twoCycleCorrect);
-        dataSet.setDouble(newRow, 7, twoCycleFn);
-        dataSet.setDouble(newRow, 8, twoCycleFp);
+        dataSet.setDouble(newRow, 0, comparison.getAdjCor());
+        dataSet.setDouble(newRow, 1, comparison.getAdjFn());
+        dataSet.setDouble(newRow, 2, comparison.getAdjFp());
+        dataSet.setDouble(newRow, 3, comparison.getAhdCor());
+        dataSet.setDouble(newRow, 4, comparison.getAhdFn());
+        dataSet.setDouble(newRow, 5, comparison.getAhdFp());
+        dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
+        dataSet.setDouble(newRow, 7, comparison.getAdjRec());
+        dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
+        dataSet.setDouble(newRow, 9, comparison.getAhdRec());
+        dataSet.setDouble(newRow, 10, comparison.getShd());
     }
 
     public DataSet getDataSet() {
         return dataSet;
     }
 
-    public final void newExecution() {
-        if (isResetTableOnExecute()) {
-            ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
-            ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
-            ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
-
-            ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
-            ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
-            ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
-
-            ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
-            ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
-            ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
-
-            List<Node> variables = new LinkedList<Node>();
-            variables.add(adjCorrect);
-            variables.add(adjFn);
-            variables.add(adjFp);
-            variables.add(arrowptCorrect);
-            variables.add(arrowptFn);
-            variables.add(arrowptFp);
-            variables.add(twoCycleCorrect);
-            variables.add(twoCycleFn);
-            variables.add(twoCycleFp);
-
-            dataSet = new ColtDataSet(0, variables);
-            dataSet.setNumberFormat(new DecimalFormat("0"));
-
-            Map<String, String> columnToTooltip = new Hashtable<String, String>();
-        	columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
-        	columnToTooltip.put("ADJ_FN", "Adjacencies in the true graph that are not in the reference graph.");
-        	columnToTooltip.put("ADJ_FP", "Adjacencies in the reference graph that are not in the true graph.");
-        	columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
-        	columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
-        	columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
-        	System.out.println("columnToTooltip " + columnToTooltip);
-        	dataSet.setColumnToTooltip(columnToTooltip);
-        }
-    }
 
     public boolean isResetTableOnExecute() {
         return resetTableOnExecute;
@@ -224,13 +206,13 @@ public class GraphComparisonParams extends SessionAdapter
         s.defaultReadObject();
     }
 
-	public void setTargetGraphName(String targetGraphName) {
-		this.targetGraphName = targetGraphName;
-	}
+    public void setTargetGraphName(String targetGraphName) {
+        this.targetGraphName = targetGraphName;
+    }
 
-	public String getTargetGraphName() {
-		return targetGraphName;
-	}
+    public String getTargetGraphName() {
+        return targetGraphName;
+    }
 }
 
 

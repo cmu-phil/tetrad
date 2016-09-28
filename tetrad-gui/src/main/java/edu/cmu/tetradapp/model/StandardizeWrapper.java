@@ -41,10 +41,8 @@ public class StandardizeWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
-     *
-     * @param data
      */
-    public StandardizeWrapper(DataWrapper data) {
+    private StandardizeWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -62,11 +60,10 @@ public class StandardizeWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static StandardizeWrapper serializableInstance() {
-        return new StandardizeWrapper(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================== Private Methods =========================//

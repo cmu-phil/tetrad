@@ -104,7 +104,7 @@ public final class IndTestChiSquare implements IndependenceTest {
         // variables themselves in a List.
         this.dataSet = dataSet;
 
-        this.variables = new ArrayList<Node>(dataSet.getVariables());
+        this.variables = new ArrayList<>(dataSet.getVariables());
 
         int[] numVals = new int[this.variables.size()];
 
@@ -341,7 +341,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -367,7 +367,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private double getDeterminationP() {
         return determinationP;
     }
-
+    
     public void setDeterminationP(double determinationP) {
         this.determinationP = determinationP;
     }
@@ -396,8 +396,13 @@ public final class IndTestChiSquare implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return -(getPValue() - getAlpha());
+    }
+
     public void startRecordingFacts() {
-        this.facts = new HashSet<IndependenceFact>();
+        this.facts = new HashSet<>();
 
     }
 

@@ -39,7 +39,7 @@ import java.util.concurrent.*;
  * <p>
  * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
  * the graph. This is a restricted form of the faithfulness assumption, something GES does not assume. This
- * faithfulness assumption needs to be explicitly turned on using setFaithfulnessAssumed(true).
+ * faithfulness assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
  * <p>
  * A number of other optimizations were added 5/2015. See code for details.
  *
@@ -94,7 +94,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     private long elapsedTime;
 
     /**
-     * Penalty discount--the BIC penalty is multiplied by this (for continuous variables).
+     * Penalty penaltyDiscount--the BIC penalty is multiplied by this (for continuous variables).
      */
     private double penaltyDiscount = 1.0;
 
@@ -244,14 +244,14 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public void setFaithfulnessAssumed(boolean faithfulness) {
         this.faithfulnessAssumed = faithfulness;
     }
 
     /**
-     * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * @return true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public boolean isFaithfulnessAssumed() {
         return this.faithfulnessAssumed;
@@ -363,7 +363,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) {
-            throw new IllegalArgumentException("Penalty discount must be >= 0: "
+            throw new IllegalArgumentException("Penalty penaltyDiscount must be >= 0: "
                     + penaltyDiscount);
         }
 
@@ -564,7 +564,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
                         Node y = nodes.get(i);
 
-                        for (int j = i + 1; j < nodes.size(); j++) {
+                        for (int j = 0; j < i; j++) {
                             Node x = nodes.get(j);
 //
                             if (!graphToOrient.isAdjacentTo(x, y)) {
@@ -617,12 +617,12 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
                     return true;
                 } else {
-                    int mid = (to - from) / 2;
+                    int mid = (to + from) / 2;
 
                     List<EffectTask> tasks = new ArrayList<>();
 
-                    tasks.add(new EffectTask(chunk, from, from + mid));
-                    tasks.add(new EffectTask(chunk, from + mid, to));
+                    tasks.add(new EffectTask(chunk, from, mid));
+                    tasks.add(new EffectTask(chunk, mid, to));
 
                     invokeAll(tasks);
 
@@ -636,7 +636,9 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
         long stop = System.currentTimeMillis();
 
-        out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        if (verbose) {
+            out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        }
 
         return effectEdgesGraph;
     }
@@ -827,12 +829,12 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
                     return true;
                 } else {
-                    int mid = (to - from) / 2;
+                    int mid = (to + from) / 2;
 
                     List<AdjTask> tasks = new ArrayList<>();
 
-                    tasks.add(new AdjTask(pairs, from, from + mid));
-                    tasks.add(new AdjTask(pairs, from + mid, to));
+                    tasks.add(new AdjTask(pairs, from, mid));
+                    tasks.add(new AdjTask(pairs, mid, to));
 
                     invokeAll(tasks);
 
@@ -938,12 +940,12 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
                     return true;
                 } else {
-                    int mid = (to - from) / 2;
+                    int mid = (to + from) / 2;
 
                     List<BackwardTask> tasks = new ArrayList<>();
 
-                    tasks.add(new BackwardTask(nodes, chunk, from, from + mid, hashIndices));
-                    tasks.add(new BackwardTask(nodes, chunk, from + mid, to, hashIndices));
+                    tasks.add(new BackwardTask(nodes, chunk, from, mid, hashIndices));
+                    tasks.add(new BackwardTask(nodes, chunk, mid, to, hashIndices));
 
                     invokeAll(tasks);
 

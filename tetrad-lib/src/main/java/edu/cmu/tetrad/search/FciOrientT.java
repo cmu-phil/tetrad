@@ -35,11 +35,11 @@ import java.util.*;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
@@ -168,8 +168,6 @@ public final class FciOrientT {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
-        System.out.println("R0 start");
-
         addColliders(graph, sepsets, knowledge);
     }
 
@@ -179,7 +177,7 @@ public final class FciOrientT {
      */
     public List<Triple> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
-        List<Triple> colliders = new ArrayList<Triple>();
+        List<Triple> colliders = new ArrayList<>();
 
         List<Node> nodes = graph.getNodes();
 
@@ -243,8 +241,6 @@ public final class FciOrientT {
      * Orients the graph according to rules in the graph (FCI step D).
      * <p>
      * Zhang's step F4, rules R1-R10.
-     *
-     * @param graph
      */
     public void doFinalOrientation(Graph graph) {
         if (completeRuleSetUsed) {
@@ -481,7 +477,7 @@ public final class FciOrientT {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     System.out.println("Found pattern " + a + " " + b + " " + c);
                     reachablePathFind(a, b, c, reachable, graph);
@@ -502,10 +498,10 @@ public final class FciOrientT {
 //        next.put(a, b);
 //        next.put(b, c);
 
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -628,13 +624,13 @@ public final class FciOrientT {
      * a DDP consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
-        Queue<Node> Q = new ArrayDeque<Node>();
-        Set<Node> V = new HashSet<Node>();
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
 
         Node e = null;
         int distance = 0;
 
-        Map<Node, Node> previous = new HashMap<Node, Node>();
+        Map<Node, Node> previous = new HashMap<>();
 
         List<Node> cParents = graph.getParents(c);
 
@@ -693,7 +689,7 @@ public final class FciOrientT {
 
         boolean ind = getSepsets().isIndependent(d, c, path);
 
-        List<Node> path2 = new ArrayList<Node>(path);
+        List<Node> path2 = new ArrayList<>(path);
 
         path2.remove(b);
 
@@ -735,7 +731,7 @@ public final class FciOrientT {
     }
 
     private void printDdp(Node d, List<Node> path, Node a, Node b, Node c, Graph graph) {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(d);
         nodes.addAll(path);
         nodes.add(a);
@@ -745,7 +741,7 @@ public final class FciOrientT {
     }
 
     private List<Node> getPath(Node c, Map<Node, Node> previous) {
-        List<Node> l = new ArrayList<Node>();
+        List<Node> l = new ArrayList<>();
 
         Node p = c;
 
@@ -792,9 +788,6 @@ public final class FciOrientT {
                     graph.setEndpoint(b, a, Endpoint.TAIL);
                     orientTailPath(u, graph);
                     changeFlag = true;
-
-                    // TODO we should break here if one doesn't need to undirect
-                    // TODO every such uncovered circle path, ask Jiji?
                 }
             }
         }
@@ -906,9 +899,9 @@ public final class FciOrientT {
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucPdPaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        LinkedList<Node> soFar = new LinkedList<Node>();
+        LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -951,7 +944,7 @@ public final class FciOrientT {
 
         if (curr.equals(end)) {
             // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<Node>(soFar));
+            ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
             List<Node> adjacents = graph.getAdjacentNodes(curr);
@@ -974,7 +967,7 @@ public final class FciOrientT {
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     private List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucCirclePaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
 
         for (List<Node> path : ucPdPaths) {
@@ -1048,7 +1041,7 @@ public final class FciOrientT {
         List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
 
         for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1); // TODO do we need to check if b is c?
+            Node b = u.get(1);
             if (graph.isAdjacentTo(b, c)) continue;
             if (b == c) continue;
             // We know u is as required: R9 applies!
@@ -1089,7 +1082,6 @@ public final class FciOrientT {
 
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
-                // TODO do we need to check if d is b?  I think so--jdramsey--added code.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
@@ -1098,7 +1090,7 @@ public final class FciOrientT {
                     for (List<Node> u2 : ucPdPsToD) {
                         Node n = u2.get(1);
 
-                        if (m.equals(n)) continue; // TODO use ==?
+                        if (m.equals(n)) continue;
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: R10 applies!
 

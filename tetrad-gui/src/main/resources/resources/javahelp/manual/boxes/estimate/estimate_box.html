@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Estimate</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Inside the Estimate Box</font></h2></td>
+  </tr>
+</table>
+<p>An Estimate box in the main workspace looks like this:
+<p><img src="../../images/im_highlight.gif" width="276" height="67"> </p>
+<p><br>
+<p><img
+ src="../../images/Uestimsate.jpg" alt="" width="498" height="136" style="width: 498px; height: 136px;"><br>
+  <br>
+  The Estimate program takes a parametrized model (in PM) and a data set
+  for the variables in that model, and returns an Instantiated Model,
+  an IM. It will also take
+  data and an (ML) IM as input.. Once a model is estimated, the contents
+  of
+  the Estimate box
+  can be transferred to an empty IM box&nbsp; and then used to generate
+  data, to classify, or to update (in the
+  last two cases, only if the model is a Bayes net, not a SEM). <br>
+  <br>
+  If a Maximum Likelihood Bayes Net and data are directly connected to
+  Estimate, the estimation procedures will ignore all cases in the data
+  set with missing values for any&nbsp; variables. Missing data values
+  can be interpolated by connecing the data to a Manipulate Data box, and
+  connecting that box to the Estimator box.<br>
+  <br>
+  There are several&nbsp; varieties of estimation, depending on
+  the.graphical input (the PM or IM):<br>
+  <br>
+  1. If the input PM&nbsp; or IM&nbsp; is for a SEM, the Estimate program
+  immediately produces a full
+  information maximum likelihood estimate of the parameters, provided the
+  model in the PM or IM is identifiable. Latent variables are allowed.
+  The procedure also gives
+  model statistics, including
+  the implied covariance and correlation matrices, and the chi square
+  likelihood ratio statistic and its p value for the model.<br>
+  <br>
+  2. If the input is a PM for a Bayes Net,&nbsp; the Estimate program
+  produces a maximum likelihood estimate of the model parameters,
+  provided the model has no latent variables..<br>
+  <br>
+  3. If the input is an Maximum Likelihhod Instatiated Bayes Net (an IM),
+  the Estimate program produces a maximum likelihood estimate of the
+  model parameters.<br>
+  <br>
+  <span style="font-weight: bold;"></span>4. If the input is a Dirichlet
+  Instantiated Bayes Model,&nbsp; the Dirichlet Bayes estimator estimates
+  a posterior Dirichlet Bayes
+  instantiated model given a prior Dirichlet Bayes instantiated model and
+  a a discrete data set. The data set must contain all of the same
+  variables as the prior instantiated model.
+  Latent variables are not allowed.<br>
+  <br>
+  The Dirichlet estimation algorithm is simple. First, a new (blank)
+  posterior
+  Dirichlet Bayes IM is created. Then, for each cell in the posterior,
+  the value (a) from the corresponding cell in the prior is retrieved,
+  and the number of cases in the data satisfying the condition of that
+  cell (n) is counted. The value of the cell in the posterior is set to a
+  + n. Estimated conditional probabilities total pseudocount in each row
+  are calculated from these cell values. <br>
+  <br>
+  As a shortcut, it is possible in the interface to use a Bayes PM and a
+  discrete data set as parents to the Dirichlet Bayes Estimator. If you
+  do this, a symmetric Dirichlet Bayes IM will be generated in the
+  background and used as the prior for the Dirichlet estimation
+  algorithm. The symmetric pseudocount that should be used here may be
+  specified at time of construction. <br>
+  <br>
+  In its present implementation, <span style="font-weight: bold;">Bayes
+  nets with
+latent variables cannot be estimated. </span></p>
+<p>&nbsp;</p>
+<p>Types of estimators: </p>
+<ul>
+  <li><a href="ml_bayes_estimator.html">ML Bayes Estimator</a></li>
+  <li><a href="sem_estimator.html">SEM Estimator</a></li>
+  <li><a href="dirichlet_estimator.html">Dirichlet Estimator</a> <br>
+    <br>
+  </li>
+</ul>
+</body>
+</html>

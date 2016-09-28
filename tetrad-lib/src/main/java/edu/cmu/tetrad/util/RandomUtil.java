@@ -21,11 +21,14 @@
 
 package edu.cmu.tetrad.util;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Provides a common random number generator to be used throughout Tetrad, to avoid problems that happen when random
@@ -55,6 +58,8 @@ public class RandomUtil {
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
     private long seed;
+
+    private Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
 
 
     //========================================CONSTRUCTORS===================================//
@@ -102,7 +107,10 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextUniform(double low, double high) {
-        return new UniformRealDistribution(randomGenerator, low, high).sample();
+        if (low == high) return low;
+        else {
+            return new UniformRealDistribution(randomGenerator, low, high).sample();
+        }
     }
 
     /**
@@ -115,7 +123,8 @@ public class RandomUtil {
             throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
         }
 
-        return (normal.sample() - mean) / sd;
+        double sample = normal.sample();
+        return (sample - mean) * sd;
 
 //        return new NormalDistribution(randomGenerator, mean, sd).sample();
     }
@@ -152,10 +161,20 @@ public class RandomUtil {
      */
     public void setSeed(long seed) {
 
-        // Apache offers several random number generators; picking one that works pretty well.
-        randomGenerator = new Well44497b(seed);
+        // Do not change this generator; you will screw up innuerable unit tests!
+        randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));
+        seedsToGenerators.put(seed, randomGenerator);
         normal = new NormalDistribution(randomGenerator, 0, 1);
         this.seed = seed;
+    }
+
+    public void revertSeed(long seed) {
+
+        // Do not change this generator; you will screw up innuerable unit tests!
+        randomGenerator = seedsToGenerators.get(seed);
+        normal = new NormalDistribution(randomGenerator, 0, 1);
+        this.seed = seed;
+
     }
 
     /**
@@ -237,6 +256,10 @@ public class RandomUtil {
 
     public RandomGenerator getRandomGenerator() {
         return randomGenerator;
+    }
+
+    public long nextLong() {
+        return randomGenerator.nextLong();
     }
 }
 

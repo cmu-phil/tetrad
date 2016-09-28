@@ -137,7 +137,7 @@ public final class KamadaKawaiLayout {
     }
 
 
-    public boolean isRandomlyInitialized() {
+    private boolean isRandomlyInitialized() {
         return randomlyInitialized;
     }
 
@@ -145,7 +145,7 @@ public final class KamadaKawaiLayout {
         this.randomlyInitialized = randomlyInitialized;
     }
 
-    public double getStopEnergy() {
+    private double getStopEnergy() {
         return stopEnergy;
     }
 
@@ -159,7 +159,7 @@ public final class KamadaKawaiLayout {
     }
 
 
-    public double getNaturalEdgeLength() {
+    private double getNaturalEdgeLength() {
         return naturalEdgeLength;
     }
 
@@ -172,7 +172,7 @@ public final class KamadaKawaiLayout {
         this.naturalEdgeLength = naturalEdgeLength;
     }
 
-    public double getSpringConstant() {
+    private double getSpringConstant() {
         return springConstant;
     }
 
@@ -511,11 +511,11 @@ public final class KamadaKawaiLayout {
         return monitor;
     }
 
-    public List<Node> getComponentNodes() {
+    private List<Node> getComponentNodes() {
         return componentNodes;
     }
 
-    public void setComponentNodes(List<Node> componentNodes) {
+    private void setComponentNodes(List<Node> componentNodes) {
         this.componentNodes = componentNodes;
     }
 }

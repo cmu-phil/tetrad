@@ -59,7 +59,7 @@ import static java.lang.Math.*;
  * <p>
  * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
  */
-public class Ling implements GraphGroupSearch {
+public class Ling {
 
     /**
      * Number of samples used when simulating data.
@@ -296,7 +296,7 @@ public class Ling implements GraphGroupSearch {
     }
 
     private double[] removeNaN(double[] data) {
-        List<Double> _leaveOutMissing = new ArrayList<Double>();
+        List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < data.length; i++) {
             if (!Double.isNaN(data[i])) {
@@ -312,7 +312,7 @@ public class Ling implements GraphGroupSearch {
     }
 
     private List<Mapping> mappingsForRow(int rowIndex, List<Mapping> allMappings) {
-        final List<Mapping> mappings = new ArrayList<Mapping>();
+        final List<Mapping> mappings = new ArrayList<>();
 
         for (Mapping mapping : allMappings) {
             if (mapping.getI() == rowIndex) mappings.add(mapping);
@@ -340,7 +340,7 @@ public class Ling implements GraphGroupSearch {
     private List<Mapping> createMappings(Graph graph, List<Node> nodes, int numNodes) {
 
         // Mark as parameters all non-adjacencies from the graph, excluding self edges.
-        final List<Mapping> allMappings = new ArrayList<Mapping>();
+        final List<Mapping> allMappings = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
@@ -416,9 +416,9 @@ public class Ling implements GraphGroupSearch {
         int rows = X.rows();
         int piecesize = (int) Math.floor(cols / npieces);
 
-        List<TetradMatrix> bpieces = new ArrayList<TetradMatrix>();
-        List<TetradVector> diststdpieces = new ArrayList<TetradVector>();
-        List<TetradVector> cpieces = new ArrayList<TetradVector>();
+        List<TetradMatrix> bpieces = new ArrayList<>();
+        List<TetradVector> diststdpieces = new ArrayList<>();
+        List<TetradVector> cpieces = new ArrayList<>();
 
         for (int p = 0; p < npieces; p++) {
 
@@ -796,7 +796,7 @@ public class Ling implements GraphGroupSearch {
     private List<PermutationMatrixPair> zerolessDiagonalPermutations(TetradMatrix ica_W, boolean approximateZeros,
                                                                      List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
+        List<PermutationMatrixPair> permutations = new Vector<>();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
@@ -808,11 +808,7 @@ public class Ling implements GraphGroupSearch {
         TetradMatrix mat = ica_W.transpose();
         //returns all zeroless-diagonal column-permutations
 
-        System.out.println("AAA");
-
         List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
-
-        System.out.println("BBB");
 
         //for each assignment, add the corresponding permutation to 'permutations'
         for (List<Integer> permutation : nRookAssignments) {
@@ -821,15 +817,13 @@ public class Ling implements GraphGroupSearch {
             permutations.add(permTetradMatrixPair);
         }
 
-        System.out.println("CCC");
-
         return permutations;
     }
 
     private List<PermutationMatrixPair> zerolessDiagonalPermutation(TetradMatrix ica_W, boolean approximateZeros,
                                                                     List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
+        List<PermutationMatrixPair> permutations = new Vector<>();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
@@ -839,7 +833,7 @@ public class Ling implements GraphGroupSearch {
 
 //        List<PermutationMatrixPair > zldPerms = new ArrayList<PermutationMatrixPair >();
 
-        List<Integer> perm = new ArrayList<Integer>();
+        List<Integer> perm = new ArrayList<>();
 
         for (int i = 0; i < vars.size(); i++) perm.add(i);
 
@@ -854,11 +848,7 @@ public class Ling implements GraphGroupSearch {
 //        TetradMatrix mat = ica_W.transpose();
 //        //returns all zeroless-diagonal column-permutations
 //
-//        System.out.println("AAA");
-//
 //        List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
-//
-//        System.out.println("BBB");
 //
 //        //for each assignment, add the corresponding permutation to 'permutations'
 //        for (List<Integer> permutation : nRookAssignments) {
@@ -866,8 +856,6 @@ public class Ling implements GraphGroupSearch {
 //            PermutationMatrixPair  permTetradMatrixPair = new PermutationMatrixPair (permutation, matrixW, vars);
 //            permutations.add(permTetradMatrixPair);
 //        }
-//
-//        System.out.println("CCC");
 
         return permutations;
     }
@@ -875,8 +863,8 @@ public class Ling implements GraphGroupSearch {
     private TetradMatrix removeZeroRowsAndCols(TetradMatrix w, List<Node> variables) {
 
         TetradMatrix _W = w.copy();
-        List<Node> _variables = new ArrayList<Node>(variables);
-        List<Integer> remove = new ArrayList<Integer>();
+        List<Node> _variables = new ArrayList<>(variables);
+        List<Integer> remove = new ArrayList<>();
 
         ROW:
         for (int i = 0; i < _W.rows(); i++) {
@@ -935,7 +923,7 @@ public class Ling implements GraphGroupSearch {
     }
 
     private static List<Integer> makeAllRows(int n) {
-        List<Integer> l = new ArrayList<Integer>();
+        List<Integer> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             l.add(i);
         }
@@ -943,7 +931,7 @@ public class Ling implements GraphGroupSearch {
     }
 
     private static List<List<Integer>> nRookColumnAssignments(TetradMatrix mat, List<Integer> availableRows) {
-        List<List<Integer>> concats = new ArrayList<List<Integer>>();
+        List<List<Integer>> concats = new ArrayList<>();
 
         System.out.println("mat = " + mat);
 
@@ -954,7 +942,7 @@ public class Ling implements GraphGroupSearch {
 
             if (mat.get(currentRowIndex, 0) != 0) {
                 if (mat.columns() > 1) {
-                    Vector<Integer> newAvailableRows = (new Vector<Integer>(availableRows));
+                    Vector<Integer> newAvailableRows = (new Vector<>(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
                     TetradMatrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
                     List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
@@ -964,7 +952,7 @@ public class Ling implements GraphGroupSearch {
                         concats.add(laterPerm);
                     }
                 } else {
-                    List<Integer> l = new ArrayList<Integer>();
+                    List<Integer> l = new ArrayList<>();
                     l.add(currentRowIndex);
                     concats.add(l);
                 }
@@ -1050,7 +1038,7 @@ public class Ling implements GraphGroupSearch {
     /**
      * This small class is used to store graph permutations. It contains basic methods for adding and accessing graphs.
      * <p>
-     * It is likely that this class will move elesewhere once the role of algorithms that produce multiple graphs is
+     * It is likely that this class will move elesewhere once the role of algorithm that produce multiple graphs is
      * better defined.
      */
 
@@ -1059,18 +1047,18 @@ public class Ling implements GraphGroupSearch {
         /**
          * Graph permutations are stored here.
          */
-        private List<Graph> graphs = new ArrayList<Graph>();
+        private List<Graph> graphs = new ArrayList<>();
 
         /**
          * Store data for each graph in case the data is needed later
          */
-        private List<DataSet> dataSet = new ArrayList<DataSet>();
+        private List<DataSet> dataSet = new ArrayList<>();
 
         /**
          * Boolean valued vector that contains the stability information for its corresponding graph. stable = true
          * means the graph has all eigenvalues with modulus < 1.
          */
-        private List<Boolean> stable = new ArrayList<Boolean>();
+        private List<Boolean> stable = new ArrayList<>();
 
         /**
          * Gets the number of graphs stored by the class.

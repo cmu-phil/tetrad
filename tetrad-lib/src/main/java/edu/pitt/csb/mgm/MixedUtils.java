@@ -22,22 +22,21 @@
 package edu.pitt.csb.mgm;
 
 import cern.colt.matrix.DoubleFactory2D;
+import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.*;//IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
-import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.dist.Discrete;
 
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.util.*;
 
@@ -83,7 +82,7 @@ public class MixedUtils {
 
     //Converts a Dataset with both ContinuousVariables and DiscreteVariables to only ContinuousVariables
     public static DataSet makeContinuousData(DataSet dsMix) {
-        ArrayList<Node> contVars = new ArrayList<Node>();
+        ArrayList<Node> contVars = new ArrayList<>();
         for(Node n: dsMix.getVariables()){
             if(n instanceof DiscreteVariable){
                 ContinuousVariable nc = new ContinuousVariable(n.getName());
@@ -99,7 +98,7 @@ public class MixedUtils {
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, "Disc"> in nodeDists
     public static DataSet makeMixedData(DataSet dsCont,  Map<String, String> nodeDists, int numCategories) {
-        ArrayList<Node> mixVars = new ArrayList<Node>();
+        ArrayList<Node> mixVars = new ArrayList<>();
         for(Node n: dsCont.getVariables()){
             if(nodeDists.get(n.getName()).equals("Disc")){
                 DiscreteVariable nd = new DiscreteVariable(n.getName(), numCategories);
@@ -115,7 +114,7 @@ public class MixedUtils {
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, x> with x > 0, num categories set to x
     public static DataSet makeMixedData(DataSet dsCont,  Map<String, Integer> nodeDists) {
-        ArrayList<Node> mixVars = new ArrayList<Node>();
+        ArrayList<Node> mixVars = new ArrayList<>();
         for(Node n: dsCont.getVariables()){
             int nC = nodeDists.get(n.getName());
             if(nC>0){
@@ -126,12 +125,46 @@ public class MixedUtils {
             }
         }
 
+//        MixedDataBox box = new MixedDataBox(mixVars, dsCont.getNumRows());
+//
+//        for (int i = 0; i < box.numRows(); i++) {
+//            for (int j = 0; j < box.numCols(); j++) {
+//                if (mixVars.get(j) instanceof ContinuousVariable) {
+//                    box.set(i, j, dsCont.getDouble(i, j));
+//                } else {
+//                    box.set(i, j, (int) Math.round(dsCont.getDouble(i, j)));
+//                }
+//            }
+//        }
+
+//        return new BoxDataSet(box, mixVars);
+
         return ColtDataSet.makeData(mixVars, dsCont.getDoubleData());
+    }
+
+    /**
+     * Makes a deep copy of a dataset (Nodes copied as well). Useful for paralellization
+     * @param ds dataset to be copied
+     * @return
+     */
+    public static ColtDataSet deepCopy(ColtDataSet ds){
+        List<Node> vars = new ArrayList<>(ds.getNumColumns());
+        for(Node n : ds.getVariables()){
+            if(n instanceof ContinuousVariable)
+                vars.add(new ContinuousVariable((ContinuousVariable)n));
+            else if (n instanceof DiscreteVariable)
+                vars.add(new DiscreteVariable((DiscreteVariable) n));
+            else
+                throw new IllegalArgumentException("Variable type of node " + n + "could not be determined");
+        }
+        ColtDataSet out = ColtDataSet.makeData(vars,ds.getDoubleData());
+
+        return out;
     }
 
     //Takes a mixed dataset and returns only data corresponding to ContinuousVariables in order
     public static DataSet getContinousData(DataSet ds){
-        ArrayList<Node> contVars = new ArrayList<Node>();
+        ArrayList<Node> contVars = new ArrayList<>();
         for(Node n: ds.getVariables()){
             if(n instanceof ContinuousVariable)
                 contVars.add(n);
@@ -141,7 +174,7 @@ public class MixedUtils {
 
     //Takes a mixed dataset and returns only data corresponding to DiscreteVariables in order
     public static DataSet getDiscreteData(DataSet ds){
-        ArrayList<Node> discVars = new ArrayList<Node>();
+        ArrayList<Node> discVars = new ArrayList<>();
         for(Node n: ds.getVariables()){
             if(n instanceof DiscreteVariable)
                 discVars.add(n);
@@ -159,6 +192,49 @@ public class MixedUtils {
             i++;
         }
         return levels;
+    }
+
+    /**
+     * return vector of the maximum of each column in m (as ints, i.e. for discrete data)
+     * @param m
+     * @return
+     */
+    public static int[] colMax(DoubleMatrix2D m){
+        int[] maxVec = new int[m.columns()];
+        for(int i = 0; i < m.columns(); i++){
+            double curmax = -1;
+            for(int j = 0; j < m.rows(); j++){
+                double curval = m.getQuick(j,i);
+                if(curval>curmax){
+                    curmax = curval;
+                }
+            }
+            maxVec[i] = (int) curmax;
+        }
+        return maxVec;
+    }
+
+    public static double vecMax(DoubleMatrix1D vec){
+        double curMax = Double.NEGATIVE_INFINITY;
+        for(int i = 0; i < vec.size(); i++){
+            double curVal = vec.getQuick(i);
+            if(curVal>curMax){
+                curMax = curVal;
+            }
+        }
+        return curMax;
+    }
+
+    public static double numVals(DoubleMatrix1D vec){
+        return valSet(vec).size();
+    }
+
+    public static Set<Double> valSet(DoubleMatrix1D vec){
+        Set<Double> vals = new HashSet<>();
+        for(int i = 0; i < vec.size(); i++){
+            vals.add(vec.getQuick(i));
+        }
+        return vals;
     }
 
     //generate PM from trueGraph for mixed Gaussian and Trinary variables
@@ -346,9 +422,47 @@ public class MixedUtils {
         return semPm;
     }
 
-    //This method is needed to normalize edge parameters for an Instantiated Mixed Model
-    //public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm, HashMap<String, Integer> nodeDists){
+    /**
+     * Set all existing parameters that begins with sta to template and also set template for any new parameters
+     *
+     * @param sta
+     * @param template
+     * @param pm
+     * @return
+     */
+    public static void setStartsWith(String sta, String template, GeneralizedSemPm pm){
+        try {
+            pm.setStartsWithParametersTemplate(sta, template);
+            for (String param : pm.getParameters()) {
+                if (param.startsWith(sta)) {
+                    pm.setParameterExpression(param, template);
+                }
+            }
+        } catch(Throwable t){
+            t.printStackTrace();
+        }
+        return;
+    }
+
+    //legacy
     public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm){
+        return GaussianCategoricalIm(pm, true);
+    }
+
+    /**
+     *    This method is needed to normalize edge parameters for an Instantiated Mixed Model
+     *    Generates edge parameters for c-d and d-d edges from a single weight, abs(w), drawn by the normal IM constructor.
+     *    Abs(w) is used for d-d edges.
+     *
+     *    For deterministic, c-d are evenly spaced between -w and w, and d-d are a matrix with w on the diagonal and
+     *    -w/(categories-1) in the rest.
+     *    For random, c-d params are uniformly drawn from 0 to 1 then transformed to have w as max value and sum to 0.
+     *
+     * @param pm
+     * @param discParamRand true for random edge generation behavior, false for deterministic
+     * @return
+     */
+    public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm, boolean discParamRand){
 
         Map<String, Integer> nodeDists = getNodeDists(pm.getGraph());
 
@@ -368,32 +482,62 @@ public class MixedUtils {
                 }
                 int cL = nodeDists.get(n.getName());
                 int pL = nodeDists.get(par.getName());
+
+                // c-c edges don't need params changed
                 if(cL==0 && pL==0){
                     continue;
                 }
 
                 List<String> params = getEdgeParams(n, par, pm);
-                //just use the first parameter as the "weight" for the whole edge
+                // just use the first parameter as the "weight" for the whole edge
                 double w = im.getParameterValue(params.get(0));
-                double[] newWeights;
+                // double[] newWeights;
 
-                //d-d edges use one vector and permute edges, could use different strategy
+                // d-d edges use one vector and permute edges, could use different strategy
                 if(cL > 0 && pL > 0) {
-                    newWeights = new double[pL*cL];
-                    PermutationGenerator pg = new PermutationGenerator(pL);
-                    int[] permInd = pg.next();
-                    double[] weightVals = generateMixedEdgeParams(w, pL);
+                    double[][] newWeights = new double[cL][pL];
+                    //List<Integer> indices = new ArrayList<Integer>(pL);
+                    //PermutationGenerator pg = new PermutationGenerator(pL);
+                    //int[] permInd = pg.next();
+                    w = Math.abs(w);
+                    double bgW = w/((double) pL - 1.0);
+                    double[] weightVals;
+
+                    /*if(discParamRand)
+                        weightVals = generateMixedEdgeParams(w, pL);
+                    else
+                        weightVals = evenSplitVector(w, pL);
+                    */
+                    int [] weightInds = new int[cL];
+                    for(int i = 0; i < cL; i++){
+                        if(i < pL)
+                            weightInds[i] = i;
+                        else
+                            weightInds[i] = i % pL;
+                    }
+
+                    if(discParamRand)
+                        weightInds = arrayPermute(weightInds);
+
+
                     for(int i = 0; i < cL; i++){
                         for(int j = 0; j < pL; j++){
                             int index = i*pL + j;
-                            im.setParameterValue(params.get(index), weightVals[permInd[j]]);
+                            if(weightInds[i]==j)
+                                im.setParameterValue(params.get(index), w);
+                            else
+                                im.setParameterValue(params.get(index), -bgW);
                         }
-                        permInd = pg.next();
                     }
-
+                    //params for c-d edges
                 } else {
+                    double[] newWeights;
                     int curL = (pL > 0 ? pL: cL);
-                    newWeights = generateMixedEdgeParams(w, curL);
+                    if(discParamRand)
+                        newWeights = generateMixedEdgeParams(w, curL);
+                    else
+                        newWeights = evenSplitVector(w, curL);
+
                     int count = 0;
                     for(String p : params){
                         im.setParameterValue(p, newWeights[count]);
@@ -417,6 +561,44 @@ public class MixedUtils {
         Node n1 = pm.getNode(s1);
         Node n2 = pm.getNode(s2);
         return getEdgeParams(n1, n2, pm);
+    }
+
+    //randomly permute an array of doubles
+    public static double[] arrayPermute(double[] a){
+        double[] out = new double[a.length];
+        List<Double> l = new ArrayList<>(a.length);
+        for(int i =0; i < a.length; i++){
+            l.add(i, a[i]);
+        }
+        Collections.shuffle(l);
+        for(int i =0; i < a.length; i++){
+            out[i] = l.get(i);
+        }
+        return out;
+    }
+
+    //randomly permute array of ints
+    public static int[] arrayPermute(int[] a){
+        int[] out = new int[a.length];
+        List<Integer> l = new ArrayList<>(a.length);
+        for(int i =0; i < a.length; i++){
+            l.add(i, a[i]);
+        }
+        Collections.shuffle(l);
+        for(int i =0; i < a.length; i++){
+            out[i] = l.get(i);
+        }
+        return out;
+    }
+
+    //generates a vector of length L that starts with -w and increases with consistent steps to w
+    public static double[] evenSplitVector(double w, int L){
+        double[] vec = new double[L];
+        double step = 2.0*w/(L-1.0);
+        for(int i = 0; i < L; i++){
+            vec[i] = -w + i*step;
+        }
+        return vec;
     }
 
     //Given two nodes and a parameterized model return list of parameters corresponding to edge between them
@@ -512,7 +694,7 @@ public class MixedUtils {
 
     //assumes Graphs have properly assigned variable types
     public static int[][] allEdgeStats(Graph pT, Graph pE){
-        HashMap<String, String> nd = new HashMap<String, String>();
+        HashMap<String, String> nd = new HashMap<>();
 
         //Estimated graph more likely to have correct node types...
         for(Node n : pE.getNodes()){
@@ -680,13 +862,40 @@ public class MixedUtils {
         return reader.parseTabular(file);
     }
 
+    /**
+     * Check each pair of variables to see if correlation is 1. WARNING: calculates correlation matrix, memory heavy
+     * when there are lots of variables
+     *
+     * @param ds
+     * @param verbose
+     * @return
+     */
+    public static boolean isColinear(DataSet ds, boolean verbose) {
+        List<Node> nodes = ds.getVariables();
+        boolean isco = false;
+        CorrelationMatrix cor = new CorrelationMatrix(makeContinuousData(ds));
+        for(int i = 0; i < nodes.size(); i++){
+            for(int j = i+1; j < nodes.size(); j++){
+                if(cor.getValue(i,j) == 1){
+                    if(verbose){
+                        isco = true;
+                        System.out.println("Colinearity found between: " + nodes.get(i).getName() + " and " + nodes.get(j).getName());
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return isco;
+    }
+
     public static DoubleMatrix2D graphToMatrix(Graph graph, double undirectedWeight, double directedWeight) {
         // initialize matrix
         int n = graph.getNumNodes();
         DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
 
         // map node names in order of appearance
-        HashMap<Node, Integer> map = new HashMap<Node, Integer>();
+        HashMap<Node, Integer> map = new HashMap<>();
         int i = 0;
         for (Node node : graph.getNodes()) {
             map.put(node, i);
@@ -707,7 +916,7 @@ public class MixedUtils {
                 if (edge.pointsTowards(node1)) {
                     matrix.set(map.get(node2), map.get(node1), directedWeight);
                 } else {
-                //if (edge.pointsTowards(node2)) {
+                    //if (edge.pointsTowards(node2)) {
                     matrix.set(map.get(node1), map.get(node2), directedWeight);
                 }
             }
@@ -722,7 +931,7 @@ public class MixedUtils {
         DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
 
         // map node names in order of appearance
-        HashMap<Node, Integer> map = new HashMap<Node, Integer>();
+        HashMap<Node, Integer> map = new HashMap<>();
         int i = 0;
         for (Node node : graph.getNodes()) {
             map.put(node, i);
@@ -739,11 +948,66 @@ public class MixedUtils {
             matrix.set(map.get(node2), map.get(node1), 1.0);
 
         }
+
         return matrix;
     }
 
     public static DoubleMatrix2D graphToMatrix(Graph graph){
         return graphToMatrix(graph, 1, 1);
+    }
+
+    /**
+     * Returns independence tests by name located in edu.cmu.tetrad.search and edu.pitt.csb.mgm
+     * also supports shorthand for LRT ("lrt) and t-tests ("tlin" for prefer linear (fastest) or "tlog" for prefer logistic)
+     * @param name
+     * @return
+     */
+    public static IndependenceTest IndTestFromString(String name, DataSet data, double alpha) {
+
+        IndependenceTest test = null;
+
+        if (name.equals("tlin")) {
+            test = new edu.pitt.csb.mgm.IndTestMixedMultipleTTest(data, alpha);
+            ((edu.pitt.csb.mgm.IndTestMixedMultipleTTest)test).setPreferLinear(true);
+            //test = new IndTestMultinomialLogisticRegressionWald(data, alpha, true);
+        } else if (name.equals("tlog")){
+            test = new edu.pitt.csb.mgm.IndTestMixedMultipleTTest(data, alpha);
+            ((edu.pitt.csb.mgm.IndTestMixedMultipleTTest)test).setPreferLinear(false);
+            //test = new IndTestMultinomialLogisticRegressionWald(data, alpha, false);
+        } else {
+
+            // This should allow the user to call any independence test found in tetrad.search or mgm
+            Class cl = null;
+            try {
+                cl = Class.forName("edu.cmu.tetrad.search." + name);
+            } catch (ClassNotFoundException e) {
+                System.out.println("Not found: " + "edu.cmu.tetrad.search." + name);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if(cl==null) {
+                try {
+                    cl = Class.forName("edu.pitt.csb.mgm." + name);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalArgumentException("-test argument not recognized");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                Constructor con = cl.getConstructor(DataSet.class, double.class);
+                test = (IndependenceTest) con.newInstance(data, alpha);
+            } catch (NoSuchMethodException e) {
+                System.err.println("Independence Test: " + name + " not found");
+            } catch (Exception e) {
+                System.err.println("Independence Test: " + name + " found but not constructed");
+                e.printStackTrace();
+            }
+        }
+
+        return test;
     }
 
     //main for testing
@@ -767,14 +1031,28 @@ public class MixedUtils {
         g.addNode(new DiscreteVariable("X3", 4));
         g.addNode(new DiscreteVariable("X4", 4));
         g.addNode(new ContinuousVariable("X5"));
-
         g.addDirectedEdge(g.getNode("X1"), g.getNode("X2"));
         g.addDirectedEdge(g.getNode("X2"), g.getNode("X3"));
         g.addDirectedEdge(g.getNode("X3"), g.getNode("X4"));
         g.addDirectedEdge(g.getNode("X4"), g.getNode("X5"));
         */
-        GeneralizedSemPm pm = GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
+        GeneralizedSemPm pm = GaussianCategoricalPm(g, "Split(-1.5,-1,1,1.5)");
         System.out.println(pm);
+
+        System.out.println("STARTS WITH");
+        System.out.println(pm.getStartsWithParameterTemplate("C"));
+
+        try{
+            MixedUtils.setStartsWith("C", "Split(-.9,-.5,.5,.9)", pm);
+        }
+        catch (Throwable t) {t.printStackTrace();}
+
+        System.out.println("STARTS WITH");
+        System.out.println(pm.getStartsWithParameterTemplate("C"));
+
+
+        System.out.println(pm);
+
 
         GeneralizedSemIm im = GaussianCategoricalIm(pm);
         System.out.println(im);
@@ -791,15 +1069,12 @@ public class MixedUtils {
         for(int i = 0; i < nodes.size(); i++){
             int coin = RandomUtil.getInstance().nextInt(2);
             int dist = (coin==0) ? 0 : 3; //continuous if coin == 0
-            nd.put(nodes.get(i).getName(), dist);
+            nd.put(nodes.get(i).getNode(), dist);
         }
-
-
         //System.out.println(getEdgeParams(g.getNode("X3"), g.getNode("X2"), pm).toString());
         //System.out.println(getEdgeParams(g.getNode("X4"), g.getNode("X3"), pm).toString());
         //System.out.println(getEdgeParams(g.getNode("X5"), g.getNode("X4"), pm).toString());
         //System.out.println("num cats " + ((DiscreteVariable) g.getNode("X4")).getNumCategories());
-
         /*
         HashMap<String, String> nd2 = new HashMap<>();
         nd2.put("X1", "Norm");
@@ -807,11 +1082,9 @@ public class MixedUtils {
         nd2.put("X3", "Disc");
         nd2.put("X4", "Disc");
         nd2.put("X5", "Disc");
-
         GeneralizedSemPm pm2 = GaussianTrinaryPm(g, nd2, 10, "Split(-1.5,-.5,.5,1.5)");
         System.out.println("OLD pm:");
         System.out.print(pm2);
         */
     }
 }
-

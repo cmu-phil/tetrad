@@ -24,11 +24,6 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:05:28 PM
- * To change this template use File | Settings | File Templates.
- */
-
-/**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
  *
@@ -43,20 +38,24 @@ public class MixtureOfGaussians implements Distribution {
     private double mean2;
     private double sd2;
 
-    private MixtureOfGaussians(double mean1) {
-        if ((double) 2 <= 0) {
+    public MixtureOfGaussians(double a, double mean1, double sd1, double mean2, double sd2) {
+        if (a < 0 || a > 1) {
             throw new IllegalArgumentException();
         }
 
-        if ((double) 2 <= 0) {
+        if (sd1 <= 0) {
             throw new IllegalArgumentException();
         }
 
-        this.a = .5;
+        if (sd2 <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        this.a = a;
         this.mean1 = mean1;
-        this.sd1 = (double) 2;
-        this.mean2 = (double) 2;
-        this.sd2 = (double) 2;
+        this.sd1 = sd1;
+        this.mean2 = mean2;
+        this.sd2 = sd2;
     }
 
     /**
@@ -64,8 +63,9 @@ public class MixtureOfGaussians implements Distribution {
      *
      * @return The exemplar.
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public static MixtureOfGaussians serializableInstance() {
-        return new MixtureOfGaussians(-2);
+        return new MixtureOfGaussians(.5, -2, 2, 2, 2);
     }
 
     public int getNumParameters() {
@@ -79,13 +79,17 @@ public class MixtureOfGaussians implements Distribution {
     public void setParameter(int index, double value) {
         if (index == 0) {
             a = value;
-        } else if (index == 1) {
+        }
+        else if (index == 1) {
             mean1 = value;
-        } else if (index == 2) {
+        }
+        else if (index == 2) {
             sd1 = value;
-        } else if (index == 3) {
+        }
+        else if (index == 3) {
             mean2 = value;
-        } else if (index == 5) {
+        }
+        else if (index == 5) {
             sd2 = value;
         }
 
@@ -95,13 +99,17 @@ public class MixtureOfGaussians implements Distribution {
     public double getParameter(int index) {
         if (index == 0) {
             return a;
-        } else if (index == 1) {
+        }
+        else if (index == 1) {
             return mean1;
-        } else if (index == 2) {
+        }
+        else if (index == 2) {
             return sd1;
-        } else if (index == 3) {
+        }
+        else if (index == 3) {
             return mean2;
-        } else if (index == 5) {
+        }
+        else if (index == 5) {
             return sd2;
         }
 
@@ -111,13 +119,17 @@ public class MixtureOfGaussians implements Distribution {
     public String getParameterName(int index) {
         if (index == 0) {
             return "Ratio";
-        } else if (index == 1) {
+        }
+        else if (index == 1) {
             return "Mean 1";
-        } else if (index == 2) {
+        }
+        else if (index == 2) {
             return "Standard Deviation 1";
-        } else if (index == 3) {
+        }
+        else if (index == 3) {
             return "Mean 2";
-        } else if (index == 5) {
+        }
+        else if (index == 5) {
             return "Standard Deviation 2";
         }
 

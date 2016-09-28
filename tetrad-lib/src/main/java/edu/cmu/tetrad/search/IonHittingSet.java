@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * **************************************************************************
  *
- * @author: Trevor Burns
+ * @author Trevor Burns
  * <p>
  * Provides a static method which implements a correct version of Reiter's hitting set algorithm as described by
  * Greiner, Smith, and Wilkerson in "A Correction to the Algorithm in Reiter's Theory of Diagnosis" Artificial
@@ -51,9 +51,9 @@ public class IonHittingSet {
      */
     public static List<GraphChange> findHittingSet(List<Set<GraphChange>> Forig) {
 
-        LinkedList<HsNode> currentLevel = new LinkedList<HsNode>();
-        LinkedList<HsNode> nextLevel = new LinkedList<HsNode>();
-        List<GraphChange> hittingSets = new ArrayList<GraphChange>();
+        LinkedList<HsNode> currentLevel = new LinkedList<>();
+        LinkedList<HsNode> nextLevel = new LinkedList<>();
+        List<GraphChange> hittingSets = new ArrayList<>();
         List<Set<GraphChange>> F;
 
         /* Enhancement Step 3 */
@@ -98,7 +98,7 @@ public class IonHittingSet {
             /* if there are no nodes left in the getModel level, continue onto the next */
             if (currentLevel.isEmpty()) {
                 currentLevel = nextLevel;
-                nextLevel = new LinkedList<HsNode>();
+                nextLevel = new LinkedList<>();
             }
         }
         return hittingSets;
@@ -177,7 +177,7 @@ public class IonHittingSet {
      */
     private static List precompute(List<Set<GraphChange>> F) {
         int size = F.size();
-        List<Set<GraphChange>> pruned = new ArrayList<Set<GraphChange>>(size);
+        List<Set<GraphChange>> pruned = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
             Set<GraphChange> setI = F.get(i);

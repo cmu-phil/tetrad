@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.Executable;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
 
@@ -33,12 +34,12 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public interface MarkovBlanketSearchRunner extends Executable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the search params.
      */
-    MbSearchParams getParams();
+    Parameters getParams();
 
 
     /**

@@ -36,7 +36,7 @@ import java.io.IOException;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class SaveScreenshot extends AbstractAction {
+class SaveScreenshot extends AbstractAction {
 
     /**
      * The component whose image is to be saved.
@@ -106,7 +106,7 @@ public class SaveScreenshot extends AbstractAction {
 //         * Accepts a file if its name ends with ".tet".
 //         */
 //        public boolean accept(File file) {
-//            return file.isDirectory() || file.getName().endsWith(".png");
+//            return file.isDirectory() || file.getNode().endsWith(".png");
 //        }
 //
 //        /**

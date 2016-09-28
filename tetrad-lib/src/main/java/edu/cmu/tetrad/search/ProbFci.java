@@ -32,11 +32,11 @@ import java.util.*;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
@@ -65,7 +65,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * The independence test.
@@ -145,7 +145,7 @@ public final class ProbFci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<Node>();
+        Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -187,7 +187,7 @@ public final class ProbFci implements GraphSearch {
         setMaxReachablePathLength(maxReachablePathLength);
 
         //List<Node> variables = independenceTest.getVariables();       - Robert Tillman 2008
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
         for (Node variable : variables) {
             nodes.add(variable);
@@ -201,7 +201,7 @@ public final class ProbFci implements GraphSearch {
 ////        // Step FCI B.  (Zhang's step F2.)
 //        Fas adj = new Fas(graph, independenceTest);
 //        adj.setKnowledge(getKnowledge());
-//        adj.setDepth(depth);
+//        adj.setMaxIndegree(depth);
 //        adj.setFci(true);
 //        graph = adj.search();
 //        this.sepsets = adj.getSepsets();
@@ -374,7 +374,7 @@ public final class ProbFci implements GraphSearch {
     // Orient colliders
     ////////////////////////////////////////////
     private void ruleR0_RFCI(List<Node[]> rTuples) {
-        List<Node[]> lTuples = new ArrayList<Node[]>();
+        List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = graph.getNodes();
 
@@ -387,7 +387,7 @@ public final class ProbFci implements GraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            List<Node> sepSet = new ArrayList<Node>();
+            List<Node> sepSet = new ArrayList<>();
             sepSet.remove(j);
 
             boolean independent1 = false;
@@ -519,7 +519,7 @@ public final class ProbFci implements GraphSearch {
     // collect in rTupleList all unshielded tuples
     ////////////////////////////////////////////////
     private List<Node[]> getRTuples() {
-        List<Node[]> rTuples = new ArrayList<Node[]>();
+        List<Node[]> rTuples = new ArrayList<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node j : nodes) {
@@ -557,7 +557,7 @@ public final class ProbFci implements GraphSearch {
         // (for example, setting independent1 and independent2 in ruleR0_RFCI)
         /*
 		// background knowledge requires this edge
-		if (knowledge.noEdgeRequired(x.getName(), y.getName()))
+		if (knowledge.noEdgeRequired(x.getNode(), y.getNode()))
 		{
 			return;
 		}
@@ -918,7 +918,7 @@ public final class ProbFci implements GraphSearch {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     reachablePathFind(a, b, c, reachable);
 
@@ -941,15 +941,15 @@ public final class ProbFci implements GraphSearch {
     private void reachablePathFind(Node a, Node b, Node c,
                                    LinkedList<Node> reachable) {
 
-        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
+        Map<Node, Node> next = new HashMap<>();   // RFCI: stores the next node in the disciminating path
         // path containing the nodes in the traiangle
         next.put(a, b);
         next.put(b, c);
 
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -1057,7 +1057,7 @@ public final class ProbFci implements GraphSearch {
 
                 if (sepset1 == null) continue;
 
-                List<Node> sepSet2 = new ArrayList<Node>(sepset1);
+                List<Node> sepSet2 = new ArrayList<>(sepset1);
                 sepSet2.remove(r);
                 sepSet2.remove(q);
 
@@ -1079,7 +1079,7 @@ public final class ProbFci implements GraphSearch {
                             getSepsets().set(r, q, condSet);
 
                             // add new unshielded tuples to rTuples
-                            List<Node[]> rTuples = new ArrayList<Node[]>();
+                            List<Node[]> rTuples = new ArrayList<>();
                             for (Node thisNode : nodes) {
                                 List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
                                 if (adjacentNodes.contains(r) && adjacentNodes.contains(q)) {
@@ -1169,9 +1169,6 @@ public final class ProbFci implements GraphSearch {
                     graph.setEndpoint(b, a, Endpoint.TAIL);
                     orientTailPath(u);
                     changeFlag = true;
-
-                    // TODO we should break here if one doesn't need to undirect
-                    // TODO every such uncovered circle path, ask Jiji?
                 }
             }
         }
@@ -1284,9 +1281,9 @@ public final class ProbFci implements GraphSearch {
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2) {
-        List<List<Node>> ucPdPaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        LinkedList<Node> soFar = new LinkedList<Node>();
+        LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -1329,7 +1326,7 @@ public final class ProbFci implements GraphSearch {
 
         if (curr.equals(end)) {
             // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<Node>(soFar));
+            ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
             List<Node> adjacents = graph.getAdjacentNodes(curr);
@@ -1352,7 +1349,7 @@ public final class ProbFci implements GraphSearch {
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     private List<List<Node>> getUcCirclePaths(Node n1, Node n2) {
-        List<List<Node>> ucCirclePaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2);
 
         for (List<Node> path : ucPdPaths) {
@@ -1426,7 +1423,7 @@ public final class ProbFci implements GraphSearch {
         List<List<Node>> ucPdPsToC = getUcPdPaths(a, c);
 
         for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1); // TODO do we need to check if b is c?
+            Node b = u.get(1);
             if (graph.isAdjacentTo(b, c)) continue;
             if (b == c) continue;
             // We know u is as required: R9 applies!
@@ -1467,7 +1464,6 @@ public final class ProbFci implements GraphSearch {
 
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
-                // TODO do we need to check if d is b?  I think so--jdramsey--added code.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d);
@@ -1476,7 +1472,7 @@ public final class ProbFci implements GraphSearch {
                     for (List<Node> u2 : ucPdPsToD) {
                         Node n = u2.get(1);
 
-                        if (m.equals(n)) continue; // TODO use ==?
+                        if (m.equals(n)) continue;
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: R10 applies!
 

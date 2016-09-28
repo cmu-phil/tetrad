@@ -37,6 +37,7 @@ public class SepsetsMinPValue implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private double p = Double.NaN;
+    private boolean verbose = false;
 
     public SepsetsMinPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -45,7 +46,6 @@ public class SepsetsMinPValue implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -56,13 +56,13 @@ public class SepsetsMinPValue implements SepsetProducer {
     public boolean isCollider(Node i, Node j, Node k) {
 //        if (graph.isAdjacentTo(i, k)) return false;
         List<Node> _v = getMaxSepset(i, k);
-        return /*getPValue() > independenceTest.getAlpha() &&*/ _v != null && !_v.contains(j);
+        return /*getScore() > independenceTest.getParameter1() &&*/ _v != null && !_v.contains(j);
     }
 
     public boolean isNoncollider(Node i, Node j, Node k) {
 //        if (graph.isAdjacentTo(i, k)) return false;
         List<Node> _v = getMaxSepset(i, k);
-        return /*getPValue() > independenceTest.getAlpha() &&*/ _v != null && _v.contains(j);
+        return /*getScore() > independenceTest.getParameter1() &&*/ _v != null && _v.contains(j);
     }
 
     private List<Node> getMaxSepset(Node i, Node k) {
@@ -139,6 +139,11 @@ public class SepsetsMinPValue implements SepsetProducer {
     }
 
     @Override
+    public double getScore() {
+        return -(p - independenceTest.getAlpha());
+    }
+
+    @Override
     public List<Node> getVariables() {
         return independenceTest.getVariables();
     }
@@ -146,5 +151,16 @@ public class SepsetsMinPValue implements SepsetProducer {
     private IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+
 }
 

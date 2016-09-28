@@ -60,7 +60,7 @@ public class GraphNodeMeasured extends DisplayNode {
         }
 
         setDisplayComp(new MeasuredDisplayComp(modelNode.getName()));
-//        setDisplayComp(new MeasuredDisplaySmallComp(modelNode.getName()));
+//        setDisplayComp(new MeasuredDisplaySmallComp(modelNode.getNode()));
     }
 
     /**
@@ -187,7 +187,7 @@ public class GraphNodeMeasured extends DisplayNode {
         doDoubleClickAction(null);
     }
 
-    public boolean isEditExitingMeasuredVarsAllowed() {
+    private boolean isEditExitingMeasuredVarsAllowed() {
         return editExitingMeasuredVarsAllowed;
     }
 

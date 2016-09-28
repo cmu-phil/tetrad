@@ -131,7 +131,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
         this.n = xDat.rows();
 
         //the variables are now ordered continuous first then discrete
-        this.variables = new ArrayList<Node>();
+        this.variables = new ArrayList<>();
         variables.addAll(dsCont.getVariables());
         variables.addAll(dsDisc.getVariables());
 
@@ -1029,7 +1029,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
         /*public Matrix compute(double t, Matrix X){
             double[][] out = new double[1][];
-            out[0] = computeColt(t, factory1D.make(X.getData()[0])).toArray();
+            out[0] = computeColt(t, factory1D.make(X.getContinuousData()[0])).toArray();
             return new DenseMatrix(out);
         }*/
 
@@ -1285,8 +1285,8 @@ public class MGM extends ConvexProximal implements GraphSearch{
             }
 
             double lam = .2;
-            MGM model = new MGM(xIn, yIn, new ArrayList<Node>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
-            MGM model2 = new MGM(xIn, yIn, new ArrayList<Node>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
+            MGM model = new MGM(xIn, yIn, new ArrayList<>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
+            MGM model2 = new MGM(xIn, yIn, new ArrayList<>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
 
             System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
 

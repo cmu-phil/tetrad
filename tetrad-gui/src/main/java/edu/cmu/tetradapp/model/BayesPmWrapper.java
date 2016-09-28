@@ -21,6 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -29,7 +32,9 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -45,20 +50,18 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class BayesPmWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     /**
      * @serial Can be null.
      */
     private String name;
 
-    /**
-     * The wrapped BayesPm.
-     *
-     * @serial Cannot be null.
-     */
-    private BayesPm bayesPm;
+    private List<BayesPm> bayesPms;
 
     //==============================CONSTRUCTORS=========================//
 
@@ -66,29 +69,75 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
      * Creates a new BayesPm from the given DAG and uses it to construct a new
      * BayesPm.
      */
-    public BayesPmWrapper(Dag graph, BayesPmParams params) {
+    public BayesPmWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode() == BayesPmParams.MANUAL) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getInitializationMode() == BayesPmParams.AUTOMATIC) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("minCategories", 2);
+            upperBound = params.getInt("maxCategories", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
         }
 
-        this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
-        log(bayesPm);
+        setBayesPm(graph, lowerBound, upperBound);
+//        log(bayesPm);
     }
 
-    public BayesPmWrapper(Dag graph, BayesPm bayesPm, BayesPmParams params) {
+    private void setBayesPm(Graph graph, int lowerBound, int upperBound) {
+        BayesPm b = new BayesPm(graph, lowerBound, upperBound);
+        setBayesPm(b);
+    }
+
+    private void setBayesPm(BayesPm b) {
+        this.bayesPms = new ArrayList<>();
+        bayesPms.add(b);
+    }
+
+    public BayesPmWrapper(Simulation simulation) {
+        List<BayesIm> bayesIms = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof BayesNetSimulation)) {
+            throw new IllegalArgumentException("That was not a discrete Bayes net simulation.");
+        }
+
+        bayesIms = ((BayesNetSimulation) _simulation).getBayesIms();
+
+        if (bayesIms == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        List<BayesPm> bayesPms = new ArrayList<>();
+
+        for (BayesIm bayesIm : bayesIms) {
+            bayesPms.add(bayesIm.getBayesPm());
+        }
+
+        this.bayesPms = bayesPms;
+
+        this.numModels = simulation.getDataModelList().size();
+        this.modelIndex = 0;
+        this.modelSourceName = simulation.getName();
+    }
+
+    public BayesPmWrapper(Dag graph, BayesPm bayesPm, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -99,14 +148,14 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode() == BayesPmParams.MANUAL) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
-            this.bayesPm = new BayesPm(graph, bayesPm, lowerBound, upperBound);
+            setBayesPm(new BayesPm(graph, bayesPm, lowerBound, upperBound));
         }
-        else if (params.getInitializationMode() == BayesPmParams.AUTOMATIC) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
-            this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("minCategories", 2);
+            upperBound = params.getInt("maxCategories", 2);
+            setBayesPm(graph, lowerBound, upperBound);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
@@ -121,7 +170,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
      * @throws RuntimeException If the parent graph cannot be converted into a
      *                          DAG.
      */
-    public BayesPmWrapper(GraphWrapper graphWrapper, BayesPmParams params) {
+    public BayesPmWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (graphWrapper == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -142,23 +191,23 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode() == BayesPmParams.MANUAL) {
+        if (params.getString("bayesPmInitializationMode", "automatic").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getInitializationMode() == BayesPmParams.AUTOMATIC) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
+            lowerBound = params.getInt("minCategories", 2);
+            upperBound = params.getInt("maxCategories", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
         }
 
-        this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
-        log(bayesPm);
+        setBayesPm(graph, lowerBound, upperBound);
+//        log(bayesPm);
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            BayesPmWrapper oldBayesPmWrapper, BayesPmParams params) {
+            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (graphWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -172,16 +221,19 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
             int lowerBound, upperBound;
 
-            if (params.getInitializationMode() == BayesPmParams.MANUAL) {
+            if (params.getString("initializationMode", "manualRetain").equals("manual")) {
                 lowerBound = upperBound = 2;
-                this.bayesPm = new BayesPm(graph,
+
+
+                BayesPm bayesPm = new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound);
+                setBayesPm(bayesPm);
             }
             else
-            if (params.getInitializationMode() == BayesPmParams.AUTOMATIC) {
-                lowerBound = params.getLowerBoundNumVals();
-                upperBound = params.getUpperBoundNumVals();
-                this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
+            if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+                lowerBound = params.getInt("lowerBoundNumVals", 2);
+                upperBound = params.getInt("upperBoundNumVals", 2);
+                setBayesPm(graph, lowerBound, upperBound);
             }
             else {
                 throw new IllegalStateException("Unrecognized type.");
@@ -191,30 +243,28 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
-        log(bayesPm);
+//        log(bayesPm);
     }
 
     public BayesPmWrapper(BayesEstimatorWrapper wrapper) {
-        this.bayesPm = new BayesPm(wrapper.getEstimatedBayesIm().getBayesPm());
-        log(bayesPm);
+        setBayesPm(new BayesPm(wrapper.getEstimatedBayesIm().getBayesPm()));
     }
 
     public BayesPmWrapper(BayesImWrapper wrapper) {
-        this.bayesPm = new BayesPm(wrapper.getBayesIm().getBayesPm());
-        log(bayesPm);
+        setBayesPm(new BayesPm(wrapper.getBayesIm().getBayesPm()));
     }
 
-    public BayesPmWrapper(GraphWrapper graphWrapper, DataWrapper dataWrapper) {
+    public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new Dag(graphWrapper.getGraph()), dataWrapper);
     }
 
-    public BayesPmWrapper(Dag graph, DataWrapper dataWrapper) {
+    public BayesPmWrapper(Graph graph, DataWrapper dataWrapper) {
         DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
         List vars = dataSet.getVariables();
 
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -231,7 +281,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -239,50 +289,29 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             }
         }
 
-        this.bayesPm = bayesPm;
-        log(bayesPm);
+        setBayesPm(bayesPm);
+//        log(bayesPm);
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            BayesDataWrapper dataWrapper) {
-        this(graphWrapper, (DataWrapper) dataWrapper);
+            Simulation simulation) {
+        this(graphWrapper, (DataWrapper) simulation);
     }
 
-    public BayesPmWrapper(GraphWrapper graphWrapper,
-            SemDataWrapper dataWrapper) {
-        this(graphWrapper, (DataWrapper) dataWrapper);
-    }
-
-//    public BayesPmWrapper(GraphWrapper graphWrapper,
-//            GeneSimDataWrapper dataWrapper) {
-//        this(graphWrapper, (DataWrapper) dataWrapper);
-//    }
-
-    public BayesPmWrapper(AlgorithmRunner wrapper, BayesPmParams params) {
-        this(new Dag(wrapper.getResultGraph()), params);
+    public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
+        this(new Dag(wrapper.getGraph()), params);
     }
 
     public BayesPmWrapper(AlgorithmRunner wrapper, DataWrapper dataWrapper) {
-        this(new Dag(wrapper.getResultGraph()), dataWrapper);
-    }
-
-    public BayesPmWrapper(AlgorithmRunner wrapper,
-            BayesDataWrapper dataWrapper) {
-        this(new Dag(wrapper.getResultGraph()), dataWrapper);
-    }
-
-    public BayesPmWrapper(AlgorithmRunner wrapper, SemDataWrapper dataWrapper) {
-        this(new Dag(wrapper.getResultGraph()), dataWrapper);
-    }
-
-//    public BayesPmWrapper(AlgorithmRunner wrapper,
-//            GeneSimDataWrapper dataWrapper) {
-//        this(new Dag(wrapper.getResultGraph()), dataWrapper);
-//    }
-
-    public BayesPmWrapper(BayesEstimatorWrapper wrapper,
-                          BayesDataWrapper dataWrapper) {
         this(new Dag(wrapper.getGraph()), dataWrapper);
+    }
+
+    public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
+        this(new Dag(wrapper.getGraph()), simulation);
+    }
+
+    public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
+        this(new Dag(wrapper.getGraph()), simulation);
     }
 
     public BayesPmWrapper(BayesEstimatorWrapper wrapper,
@@ -297,7 +326,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
      * @throws RuntimeException If the parent graph cannot be converted into a
      *                          DAG.
      */
-    public BayesPmWrapper(DagWrapper dagWrapper, BayesPmParams params) {
+    public BayesPmWrapper(DagWrapper dagWrapper, Parameters params) {
         if (dagWrapper == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -314,23 +343,23 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode() == BayesPmParams.MANUAL) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getInitializationMode() == BayesPmParams.AUTOMATIC) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
         }
 
-        this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
-        log(bayesPm);
+        setBayesPm(graph, lowerBound, upperBound);
+//        log(bayesPm);
     }
 
     public BayesPmWrapper(DagWrapper dagWrapper,
-            BayesPmWrapper oldBayesPmWrapper, BayesPmParams params) {
+            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (dagWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -344,16 +373,16 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
             int lowerBound, upperBound;
 
-            if (params.getInitializationMode() == BayesPmParams.MANUAL) {
+            if (params.getString("initializationMode", "manualRetain").equals("manual")) {
                 lowerBound = upperBound = 2;
-                this.bayesPm = new BayesPm(graph,
-                        oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound);
+                setBayesPm(new BayesPm(graph,
+                        oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound));
             }
             else
-            if (params.getInitializationMode() == BayesPmParams.AUTOMATIC) {
-                lowerBound = params.getLowerBoundNumVals();
-                upperBound = params.getUpperBoundNumVals();
-                this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
+            if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+                lowerBound = params.getInt("lowerBoundNumVals", 2);
+                upperBound = params.getInt("upperBoundNumVals", 2);
+                setBayesPm(graph, lowerBound, upperBound);
             }
             else {
                 throw new IllegalStateException("Unrecognized type.");
@@ -363,7 +392,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
-        log(bayesPm);
+//        log(bayesPm);
     }
 
     public BayesPmWrapper(DagWrapper dagWrapper, DataWrapper dataWrapper) {
@@ -371,7 +400,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
                 (DataSet) dataWrapper.getSelectedDataModel();
         List vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -389,7 +418,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -397,38 +426,29 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             }
         }
 
-        this.bayesPm = bayesPm;
-        log(bayesPm);                
+        setBayesPm(bayesPm);
+
+//        this.bayesPm = bayesPm;
+//        log(bayesPm);
     }
 
-    public BayesPmWrapper(DagWrapper dagWrapper, BayesDataWrapper dataWrapper) {
+    public BayesPmWrapper(DagWrapper dagWrapper, Simulation dataWrapper) {
         this(dagWrapper, (DataWrapper) dataWrapper);
     }
-
-    public BayesPmWrapper(DagWrapper dagWrapper, SemDataWrapper dataWrapper) {
-        this(dagWrapper, (DataWrapper) dataWrapper);
-    }
-
-//    public BayesPmWrapper(DagWrapper dagWrapper,
-//            GeneSimDataWrapper dataWrapper) {
-//        this(dagWrapper, (DataWrapper) dataWrapper);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BayesPmWrapper serializableInstance() {
-        return new BayesPmWrapper(Dag.serializableInstance(),
-                BayesPmParams.serializableInstance());
+        return new BayesPmWrapper(Dag.serializableInstance(), new Parameters());
     }
 
     //=============================PUBLIC METHODS========================//
 
     public BayesPm getBayesPm() {
-        return this.bayesPm;
+        return bayesPms.get(getModelIndex());
     }
 
     /**
@@ -447,14 +467,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (bayesPm == null) {
-            throw new NullPointerException();
-        }
     }
 
     public Graph getGraph() {
-        return bayesPm.getDag();
+        return getBayesPm().getDag();
     }
 
     public String getName() {
@@ -489,7 +505,21 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 		return getGraph().getNodes();
 	}
 
+    public int getNumModels() {
+        return numModels;
+    }
 
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
 }
 
 

@@ -21,51 +21,60 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagInPatternIterator;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
- * Tests the BooleanFunction class.
- *
  * @author Joseph Ramsey
  */
-public class TestDagInPatternIterator extends TestCase {
+public class TestDagInPatternIterator {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDagInPatternIterator(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
-        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 3,
-                3, 3, false));
+        List<Node> nodes = new ArrayList<>();
 
-        System.out.println("DAG " + dag);
-
-        Graph pattern = SearchGraphUtils.patternFromDag(dag);
-
-        System.out.println("Pattern " + pattern);
-
-        DagInPatternIterator iterator = new DagInPatternIterator(pattern);
-
-        while (iterator.hasNext()) {
-            System.out.println(iterator.next());
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
         }
 
+        RandomUtil.getInstance().setSeed(342233L);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
+                3, 3, false, true);
+        Graph p = new EdgeListGraphSingleConnections(graph);
+
+        Dag dag = new Dag(graph);
+
+
+
+        Graph pattern = SearchGraphUtils.patternFromDag(graph);
+
+        System.out.println(pattern);
+
+
+        DagInPatternIterator iterator = new DagInPatternIterator(pattern);
+        int count = 0;
+
+        while (iterator.hasNext()) {
+            iterator.next();
+            count++;
+        }
+
+        assertEquals(6, count);
     }
 
+    @Test
     public void test2() {
         Graph pattern = new EdgeListGraph();
         Node x = new GraphNode("X");
@@ -75,16 +84,18 @@ public class TestDagInPatternIterator extends TestCase {
         pattern.addDirectedEdge(x, y);
 
         DagInPatternIterator iterator = new DagInPatternIterator(pattern);
+        int count = 0;
 
         while (iterator.hasNext()) {
-            System.out.println(iterator.next());
+            iterator.next();
+            count++;
         }
+
+        assertEquals(1, count);
     }
 
+    @Test
     public void test3() {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-
         Graph pattern = new EdgeListGraph();
 
         Node x1 = new GraphNode("X1");
@@ -109,16 +120,18 @@ public class TestDagInPatternIterator extends TestCase {
         pattern.addUndirectedEdge(x4, x6);
 
         DagInPatternIterator iterator = new DagInPatternIterator(pattern);
+        int count = 0;
 
         while (iterator.hasNext()) {
-            System.out.println(iterator.next());
+            iterator.next();
+            count++;
         }
+
+        assertEquals(1, count);
     }
 
+    @Test
     public void test4() {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-
         Graph pattern = new EdgeListGraph();
 
         Node x1 = new GraphNode("X1");
@@ -143,19 +156,30 @@ public class TestDagInPatternIterator extends TestCase {
         pattern.addUndirectedEdge(x4, x6);
 
         DagInPatternIterator iterator = new DagInPatternIterator(pattern);
+        int count = 0;
 
         while (iterator.hasNext()) {
-            System.out.println(iterator.next());
+            iterator.next();
+            count++;
         }
+
+        assertEquals(1, count);
     }
 
+    @Test
     public void test5() {
-        Dag dag1 = new Dag(GraphUtils.randomGraph(3, 0, 3, 30, 15, 15, false));
+        RandomUtil.getInstance().setSeed(34828384L);
 
-        System.out.println(dag1);
+        List<Node> nodes1 = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag1 = new Dag(GraphUtils.randomGraph(nodes1, 0, 3,
+                30, 15, 15, false));
 
         Graph pattern = SearchGraphUtils.patternForDag(dag1);
-        System.out.println(pattern);
         List<Node> nodes = pattern.getNodes();
 
         // Make random knowedge.
@@ -167,8 +191,6 @@ public class TestDagInPatternIterator extends TestCase {
             if (tier < 2) continue;
             knowledge.addToTier(tier, node.getName());
         }
-
-        System.out.println(knowledge);
 
         if (!knowledge.isViolatedBy(pattern)) {
             DagInPatternIterator iterator1 = new DagInPatternIterator(pattern);
@@ -194,35 +216,20 @@ public class TestDagInPatternIterator extends TestCase {
                 Graph dag = iterator2.next();
 
                 if (knowledge.isViolatedBy(dag)) {
-                    System.out.println(dag);
                     throw new IllegalArgumentException("Knowledge violated");
                 }
             }
         }
 
-        System.out.println("Pattern " + pattern);
-
         DagInPatternIterator iterator3 = new DagInPatternIterator(pattern);
         int count = 0;
 
         while (iterator3.hasNext()) {
-            Graph dag = iterator3.next();
-            System.out.println(dag);
+            iterator3.next();
             count++;
         }
 
         assertEquals(6, count);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDagInPatternIterator.class);
     }
 }
 

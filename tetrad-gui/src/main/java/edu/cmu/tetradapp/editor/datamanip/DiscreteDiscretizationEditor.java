@@ -50,7 +50,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         int numCategories = variable.getNumCategories();
         this.variable = variable;
 
-        //String name = variable.getName();
+        //String name = variable.getNode();
 
         Box b1 = Box.createVerticalBox();
 
@@ -108,7 +108,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
     }
 
     private static List<String> defaultCategories(DiscreteVariable variable) {
-        List<String> categories = new LinkedList<String>();
+        List<String> categories = new LinkedList<>();
         for (int i = 0; i < variable.getNumCategories(); i++) {
             categories.add(variable.getCategory(i));
         }
@@ -128,13 +128,13 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
     final static class RemapEditor extends JComponent {
         private final DiscreteVariable variable;
-        private final List<String> newCategories = new LinkedList<String>();
+        private final List<String> newCategories = new LinkedList<>();
         private StringTextField[] categoryFields;
         private StringTextField[] rangeFields;
-        private final Map<Object, Integer> labels = new HashMap<Object, Integer>();
+        private final Map<Object, Integer> labels = new HashMap<>();
 
         private final LinkedList<StringTextField> focusTraveralOrder =
-                new LinkedList<StringTextField>();
+                new LinkedList<>();
         private DiscreteVariable oldVariable;
 
         public RemapEditor(DiscreteVariable variable,
@@ -270,7 +270,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         }
 
         public DiscreteDiscretizationSpec getDiscretizationSpec() {
-            List<String> categoryList = new LinkedList<String>();
+            List<String> categoryList = new LinkedList<>();
 
             for (String newCategory : newCategories) {
                 if (!categoryList.contains(newCategory)) {

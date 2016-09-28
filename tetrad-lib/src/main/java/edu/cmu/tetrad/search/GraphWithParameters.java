@@ -85,7 +85,7 @@ public class GraphWithParameters {
 
     public GraphWithParameters(Graph graph) {
         this.graph = graph;
-        weightHash = new HashMap<Edge, Double>();
+        weightHash = new HashMap<>();
     }
 
 //	public PatternWithParameters(ColtDataSet B) {
@@ -112,7 +112,7 @@ public class GraphWithParameters {
 //    	List<Node> variables = Bmatrix.getVariables();
 
         this.graph = new EdgeListGraph();
-        weightHash = new HashMap<Edge, Double>();
+        weightHash = new HashMap<>();
 
         int n = Bmatrix.rows();
 //		System.out.println("n = " + n);
@@ -297,7 +297,6 @@ public class GraphWithParameters {
     /**
      * evalute coefficients for some node pairs
      *
-     * @param standardGraph
      * @param edges         edges from the pattern returned by PC-search
      */
     public CoefficientEvaluationResult evalCoeffsForNodePairs(GraphWithParameters standardGraph, List<Edge> edges) {
@@ -445,10 +444,6 @@ public class GraphWithParameters {
 
     /**
      * creates a PatternWithParameters by running a regression, given a graph and data
-     *
-     * @param dataSet
-     * @param graph
-     * @return
      */
     public static GraphWithParameters regress(DataSet dataSet, Graph graph) {
         SemPm semPmEstDag = new SemPm(graph);

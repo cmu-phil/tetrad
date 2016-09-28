@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 /**
@@ -52,11 +51,11 @@ public final class DataWriter {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         StringBuilder buf = new StringBuilder();
 
-        boolean isCaseMultipliersCollapsed = dataSet.isMulipliersCollapsed();
+//        boolean isCaseMultipliersCollapsed = dataSet.isMulipliersCollapsed();
 
-        if (!isCaseMultipliersCollapsed) {
-            buf.append("MULT").append(separator);
-        }
+//        if (false) {
+//            buf.append("MULT").append(separator);
+//        }
 
         for (int col = 0; col < dataSet.getNumColumns(); col++) {
             String name = dataSet.getVariable(col).getName();
@@ -75,10 +74,10 @@ public final class DataWriter {
         for (int row = 0; row < dataSet.getNumRows(); row++) {
             buf.append("\n");
 
-            if (!isCaseMultipliersCollapsed) {
-                int multiplier = dataSet.getMultiplier(row);
-                buf.append(multiplier).append(separator);
-            }
+//            if (isCaseMultipliersCollapsed) {
+//                int multiplier = dataSet.getMultiplier(row);
+//                buf.append(multiplier).append(separator);
+//            }
 
             for (int col = 0; col < dataSet.getNumColumns(); col++) {
                 Node variable = dataSet.getVariable(col);
@@ -113,70 +112,69 @@ public final class DataWriter {
         out.close();
     }
 
-    /**
-     * Writes a dataset to file. The dataset may have continuous and/or discrete
-     * columns. Note that <code>out</code> is not closed by this method, so
-     * the close method on <code>out</code> will need to be called externally.
-     *
-     * @param dataSet   The data set to save.
-     * @param out       The writer to write the output to.
-     * @param separator The character separating fields, usually '\t' or ','.
-     * @throws IOException If there is some problem dealing with the writer.
-     */
-    public static void writeRectangularDataALittleFaster(DataSet dataSet,
-                                                         PrintWriter out, char separator) throws IOException {
-        NumberFormat nf = new DecimalFormat("0.0000");
-//        StringBuilder buf = new StringBuilder();
-
-        for (int col = 0; col < dataSet.getNumColumns(); col++) {
-            String name = dataSet.getVariable(col).getName();
-
-            if (name.trim().equals("")) {
-                name = "C" + (col - 1);
-            }
-
-            out.append(name);
-
-            if (col < dataSet.getNumColumns() - 1) {
-                out.append(separator);
-            }
-        }
-
-        for (int row = 0; row < dataSet.getNumRows(); row++) {
-            out.append("\n");
-
-            for (int col = 0; col < dataSet.getNumColumns(); col++) {
-                Node variable = dataSet.getVariable(col);
-
-                if (variable instanceof ContinuousVariable) {
-                    double value = dataSet.getDouble(row, col);
-
-                    if (ContinuousVariable.isDoubleMissingValue(value)) {
-                        out.print("*");
-                    } else {
-                        out.print(nf.format(value));
-//                        out.print(value);
-                    }
-
-                    if (col < dataSet.getNumColumns() - 1) {
-                        out.print(separator);
-                    }
-                } else if (variable instanceof DiscreteVariable) {
-                    Object obj = dataSet.getObject(row, col);
-                    String val = ((obj == null) ? "" : obj.toString());
-
-                    out.print(val);
-
-                    if (col < dataSet.getNumColumns() - 1) {
-                        out.print(separator);
-                    }
-                }
-            }
-        }
-
-        out.print("\n");
-        out.close();
-    }
+//    /**
+//     * Writes a dataset to file. The dataset may have continuous and/or discrete
+//     * columns. Note that <code>out</code> is not closed by this method, so
+//     * the close method on <code>out</code> will need to be called externally.
+//     *
+//     * @param dataSet   The data set to save.
+//     * @param out       The writer to write the output to.
+//     * @param separator The character separating fields, usually '\t' or ','.
+//     */
+//    public static void writeRectangularDataALittleFaster(DataSet dataSet,
+//                                                         PrintWriter out, char separator) {
+//        NumberFormat nf = new DecimalFormat("0.0000");
+////        StringBuilder buf = new StringBuilder();
+//
+//        for (int col = 0; col < dataSet.getNumColumns(); col++) {
+//            String name = dataSet.getVariable(col).getNode();
+//
+//            if (name.trim().equals("")) {
+//                name = "C" + (col - 1);
+//            }
+//
+//            out.append(name);
+//
+//            if (col < dataSet.getNumColumns() - 1) {
+//                out.append(separator);
+//            }
+//        }
+//
+//        for (int row = 0; row < dataSet.getNumRows(); row++) {
+//            out.append("\n");
+//
+//            for (int col = 0; col < dataSet.getNumColumns(); col++) {
+//                Node variable = dataSet.getVariable(col);
+//
+//                if (variable instanceof ContinuousVariable) {
+//                    double value = dataSet.getDouble(row, col);
+//
+//                    if (ContinuousVariable.isDoubleMissingValue(value)) {
+//                        out.print("*");
+//                    } else {
+//                        out.print(nf.format(value));
+////                        out.print(value);
+//                    }
+//
+//                    if (col < dataSet.getNumColumns() - 1) {
+//                        out.print(separator);
+//                    }
+//                } else if (variable instanceof DiscreteVariable) {
+//                    Object obj = dataSet.getObject(row, col);
+//                    String val = ((obj == null) ? "" : obj.toString());
+//
+//                    out.print(val);
+//
+//                    if (col < dataSet.getNumColumns() - 1) {
+//                        out.print(separator);
+//                    }
+//                }
+//            }
+//        }
+//
+//        out.print("\n");
+//        out.close();
+//    }
 
 
     /**
@@ -185,7 +183,6 @@ public final class DataWriter {
      * <code>out</code> will need to be called externally.
      *
      * @param out The writer to write the output to.
-     * @throws IOException If there is some problem dealing with the writer.
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
                                       PrintWriter out, NumberFormat nf) {

@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -28,20 +25,21 @@ public class DMSearch {
     private double alphaPC = .05;
 
 
-    //Starting ges penalty discount.
+    //Starting ges penalty penaltyDiscount.
     private double gesDiscount = 10;
     private int gesDepth = 0;
 
-    //Minimum ges penalty discount to use in recursive search.
+    //Minimum ges penalty penaltyDiscount to use in recursive search.
     private int minDiscount = 4;
 
     //If true, use GES, else use PC.
-    private boolean useGES = true;
+    private boolean useFgs = true;
 
     //Lets the user select a subset of the inputs in the dataset to search over.
     //If not subseting, should be set to the entire input set.
     private int[] trueInputs;
     private DataSet data;
+    private boolean verbose = false;
 
     public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
@@ -114,8 +112,8 @@ public class DMSearch {
         this.gesDiscount = discount;
     }
 
-    public void setUseGES(boolean set) {
-        this.useGES = set;
+    public void setUseFgs(boolean set) {
+        this.useFgs = set;
     }
 
 
@@ -125,7 +123,7 @@ public class DMSearch {
 
         DataSet data = getData();
 
-        //TODO: Break stuff below here into seperate fuct/classes.
+        //2DO: Break stuff below here into seperate fuct/classes.
         this.cov = new CovarianceMatrixOnTheFly(data);
 
 
@@ -143,9 +141,9 @@ public class DMSearch {
         knowledge.setTierForbiddenWithin(0, true);
         knowledge.setTierForbiddenWithin(1, true);
 
-        Set<String> inputString = new HashSet<String>();
+        Set<String> inputString = new HashSet<>();
 
-        HashSet actualInputs = new HashSet<Integer>();
+        HashSet actualInputs = new HashSet<>();
         for (int i = 0; i < trueInputs.length; i++) {
             actualInputs.add(trueInputs[i]);
         }
@@ -160,21 +158,26 @@ public class DMSearch {
 
         Graph pattern = new EdgeListGraph();
 
-        if (useGES == true) {
-            Fgs ges = new Fgs(cov);
+        if (useFgs) {
+            Score score = new SemBicScore(cov);
+            Fgs fgs = new Fgs(score);
 
-            pattern = recursiveGES(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
+            pattern = recursiveFgs(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
             this.cov = new CovarianceMatrixOnTheFly(data);
-//            Pc pc = new Pc(new IndTestFisherZ(cov, this.alphaPC));
+//            PC pc = new PC(new IndTestFisherZ(cov, this.alphaPC));
 //            pc.setKnowledge(knowledge);
-//            pc.setDepth(0);
-            System.out.println("Running PC Search");
+//            pc.setMaxIndegree(0);
+            if (verbose) {
+                if (verbose) {
+                    System.out.println("Running PC Search");
+                }
+            }
 //            pattern = pc.search();
             double penalty = 2;
 
 
-//           TODO: Alternative to using built in PC. Needs a fix so that all nodes added to pattern are looked at in applyDmSearch
+//           2DO: Alternative to using built in PC. Needs a fix so that all nodes added to pattern are looked at in applyDmSearch
 //            ExecutorService executorService = Executors.newFixedThreadPool(4); // number of threads
 
             IndTestFisherZ ind = new IndTestFisherZ(cov, this.alphaPC);
@@ -198,7 +201,9 @@ public class DMSearch {
                 }
             }
 
-            System.out.println("Running DM search");
+            if (verbose) {
+                System.out.println("Running DM search");
+            }
             applyDmSearch(pattern, inputString, penalty);
         }
 
@@ -208,13 +213,13 @@ public class DMSearch {
 
     public LatentStructure applyDmSearch(Graph pattern, Set<String> inputString, double penalty) {
 
-        List<Set<Node>> outputParentsList = new ArrayList<Set<Node>>();
+        List<Set<Node>> outputParentsList = new ArrayList<>();
         final List<Node> patternNodes = pattern.getNodes();
 
-//        TODO: add testcase to see how sort compares 10, 11, 1, etc.
+//        2DO: add testcase to see how sort compares 10, 11, 1, etc.
         java.util.Collections.sort(patternNodes, new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
-//TODO: string length error here. Fix.
+//2DO: string length error here. Fix.
 
                 if (node1.getName().length() > node2.getName().length()) {
                     return (1);
@@ -228,9 +233,11 @@ public class DMSearch {
             }
         });
 
-        System.out.println("Sorted patternNodes");
+        if (verbose) {
+            System.out.println("Sorted patternNodes");
+        }
         //constructing treeSet of output nodes.
-        SortedSet<Node> outputNodes = new TreeSet<Node>();
+        SortedSet<Node> outputNodes = new TreeSet<>();
         for (int i : getOutputs()) {
 
 //            System.out.println("patternNodes");
@@ -241,16 +248,20 @@ public class DMSearch {
             outputNodes.add(patternNodes.get(i));
         }
 
-        System.out.println("Got output nodes");
+        if (verbose) {
+            System.out.println("Got output nodes");
+        }
 
 //        System.out.println(outputNodes);
 
         //Constructing list of output node parents.
         for (Node node : outputNodes) {
-            outputParentsList.add(new TreeSet<Node>(getInputParents(node, inputString, pattern)));
+            outputParentsList.add(new TreeSet<>(getInputParents(node, inputString, pattern)));
         }
 
-        System.out.println("Created list of output node parents");
+        if (verbose) {
+            System.out.println("Created list of output node parents");
+        }
         int sublistStart = 1;
         int nLatents = 0;
 
@@ -260,7 +271,7 @@ public class DMSearch {
         // And adding both inputs and outputs to their respective latents.
         for (Set<Node> set1 : outputParentsList) {
 
-            TreeSet<Node> sameSetParents = new TreeSet<Node>(new Comparator<Node>() {
+            TreeSet<Node> sameSetParents = new TreeSet<>(new Comparator<Node>() {
                 public int compare(Node node1, Node node2) {
 
                     if (node1.getName().length() > node2.getName().length()) {
@@ -296,7 +307,7 @@ public class DMSearch {
 
             if (sameSetParents.size() > 0) {
                 //Creates a new latent with a size 1 less than actually present.
-                GraphNode tempLatent = new GraphNode("L" + nLatents);
+                ContinuousVariable tempLatent = new ContinuousVariable("L" + nLatents);
 
                 if (!setContained(structure, structure.inputs.keySet(), sameSetParents) || structure.inputs.isEmpty()) {
                     structure.latents.add(tempLatent);
@@ -306,15 +317,14 @@ public class DMSearch {
                     continue;
                 }
 
-                // TODO: Spin off into own function, which adds the output nodes
                 //Adding Outputs to their Map.
                 for (Node node : outputNodes) {
 
-                    if (new TreeSet<Node>(getInputParents(node, inputString, pattern)).equals(sameSetParents)) {
+                    if (new TreeSet<>(getInputParents(node, inputString, pattern)).equals(sameSetParents)) {
 
                         //If haven't created latent, then do so.
                         if (structure.outputs.get(tempLatent) == null) {
-                            TreeSet<Node> outputNode = new TreeSet<Node>();
+                            TreeSet<Node> outputNode = new TreeSet<>();
                             outputNode.add(node);
                             structure.outputs.put(tempLatent, outputNode);
                         }
@@ -326,23 +336,29 @@ public class DMSearch {
                     }
                 }
             }
-            System.out.println("Completed starting point: " + sublistStart + " out of #" + outputParentsList.size() + " sets, and is " + set1.size() + " units large.");
+            if (verbose) {
+                System.out.println("Completed starting point: " + sublistStart + " out of #" + outputParentsList.size() + " sets, and is " + set1.size() + " units large.");
+            }
             sublistStart++;
         }
-        System.out.println("created initial sets");
+        if (verbose) {
+            System.out.println("created initial sets");
+        }
 
         //Need to order latents by entryset value size (smallest to largest)
         //as Map only allows sorting by keyset size.
         TreeMap<TreeSet<Node>, Node> latentsSortedByInputSetSize = sortMapByValue(structure.inputs, structure.latents, structure);
 
 
-        System.out.println("Finding initial latent-latent effects");
+        if (verbose) {
+            System.out.println("Finding initial latent-latent effects");
+        }
 
 
 //        System.out.println(latentsSortedByInputSetSize);
 
 
-        TreeSet<Node> inputs1 = new TreeSet<Node>(new Comparator<Node>() {
+        TreeSet<Node> inputs1 = new TreeSet<>(new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -357,7 +373,7 @@ public class DMSearch {
             }
         });
 
-        TreeSet<Node> inputs2 = new TreeSet<Node>(new Comparator<Node>() {
+        TreeSet<Node> inputs2 = new TreeSet<>(new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -377,10 +393,10 @@ public class DMSearch {
         //Finding initial latent-latent Effects.
         for (int i = 0; i <= latentsSortedByInputSetSize.keySet().size(); i++) {
 
-//          TODO: Need to only perform this test if haven't already looked at latent. (for latent 1).
+//          2DO: Need to only perform this test if haven't already looked at latent. (for latent 1).
 
 
-            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {
+            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<>(new Comparator<TreeSet<Node>>() {
                 public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
                     int size = o1.size() - o2.size();
                     if (size == 0) {
@@ -410,7 +426,7 @@ public class DMSearch {
             for (int j = 0; j <= latentsSortedByInputSetSize.keySet().size(); j++) {
 
 
-                TreeSet temp2 = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {
+                TreeSet temp2 = new TreeSet<>(new Comparator<TreeSet<Node>>() {
                     public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
                         int size = o1.size() - o2.size();
                         if (size == 0) {
@@ -445,7 +461,7 @@ public class DMSearch {
                 //if latent1 is a subset of latent2...
                 if (structure.getInputs(latent2).containsAll(structure.getInputs(latent1))) {
                     if (structure.latentEffects.get(latent1) == null) {
-                        TreeSet<Node> latentEffects = new TreeSet<Node>(new Comparator<Node>() {
+                        TreeSet<Node> latentEffects = new TreeSet<>(new Comparator<Node>() {
                             public int compare(Node node1, Node node2) {
 
                                 if (node1.getName().length() > node2.getName().length()) {
@@ -478,7 +494,7 @@ public class DMSearch {
 
 
 //        Ensuring no nulls in latenteffects map.
-        SortedSet<Node> emptyTreeSet = new TreeSet<Node>(new Comparator<Node>() {
+        SortedSet<Node> emptyTreeSet = new TreeSet<>(new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -499,10 +515,14 @@ public class DMSearch {
             }
         }
 
-        System.out.println("Structure prior to Sober's step:");
+        if (verbose) {
+            System.out.println("Structure prior to Sober's step:");
+        }
 //        System.out.println(structure);
 
-        System.out.println("Applying Sober's step ");
+        if (verbose) {
+            System.out.println("Applying Sober's step ");
+        }
 
         //Sober's step.
         for (Node latent : structure.getLatents()) {
@@ -525,7 +545,9 @@ public class DMSearch {
             PrintStream outStream = new PrintStream(out);
             outStream.println(structure.latentStructToEdgeListGraph(structure));
         } catch (java.io.FileNotFoundException e) {
-            System.out.println("Can't write to file.");
+            if (verbose) {
+                System.out.println("Can't write to file.");
+            }
 
         }
 
@@ -540,7 +562,7 @@ public class DMSearch {
                 return (currentSet);
             }
         }
-        GraphNode end = new GraphNode("alreadySeenEverything");
+        ContinuousVariable end = new ContinuousVariable("alreadySeenEverything");
 
         TreeSet seenEverything = new TreeSet();
         seenEverything.add(end);
@@ -602,28 +624,22 @@ public class DMSearch {
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveGES(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
+    private Graph recursiveFgs(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
 
         for (Edge edge : previousGES.getEdges()) {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
         }
 
-        previousGES = null;
-
         this.cov = new CovarianceMatrixOnTheFly(data);
 
+        SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(penalty);
+        Fgs fgs = new Fgs(score);
+        fgs.setKnowledge(knowledge);
+//        fgs.setMaxIndegree(this.gesDepth);
+//        fgs.setIgnoreLinearDependent(true);
 
-        Fgs ges = new Fgs((ICovarianceMatrix) cov);
-
-        ges.setKnowledge(knowledge);
-        ges.setDepth(this.gesDepth);
-        ges.setPenaltyDiscount(penalty);
-
-        ges.setIgnoreLinearDependent(true);
-
-
-        Graph pattern = ges.search();
-
+        Graph pattern = fgs.search();
 
         //Saves GES output in case is needed.
         File file = new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty + "_.txt");
@@ -632,13 +648,15 @@ public class DMSearch {
             PrintStream outStream = new PrintStream(out);
             outStream.println(pattern);
         } catch (java.io.FileNotFoundException e) {
-            System.out.println("Can't write to file.");
+            if (verbose) {
+                System.out.println("Can't write to file.");
+            }
 
         }
 
         if (penalty > minPenalty) {
             applyDmSearch(pattern, inputString, penalty);
-            return (recursiveGES(pattern, knowledge, penalty - 1, minPenalty, data, inputString));
+            return (recursiveFgs(pattern, knowledge, penalty - 1, minPenalty, data, inputString));
         } else {
             applyDmSearch(pattern, inputString, penalty);
             return (pattern);
@@ -653,7 +671,7 @@ public class DMSearch {
                                  SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
                                  Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
 
-        List<Node> latentList = new ArrayList<Node>();
+        List<Node> latentList = new ArrayList<>();
 
         latentList.addAll(inputsLatent);
 
@@ -664,13 +682,15 @@ public class DMSearch {
         try {
             testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList);
         } catch (SingularMatrixException error) {
-            System.out.println(error);
-            System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
-            System.out.println(testResult);
-            System.out.println("outputsLatent.first()");
-            System.out.println(outputsLatent.first());
-            System.out.println("outputsLatentEffect.first()");
-            System.out.println(outputsLatentEffect.first());
+            if (verbose) {
+                System.out.println(error);
+                System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
+                System.out.println(testResult);
+                System.out.println("outputsLatent.first()");
+                System.out.println(outputsLatent.first());
+                System.out.println("outputsLatentEffect.first()");
+                System.out.println(outputsLatentEffect.first());
+            }
         }
         if (testResult == true) {
             structure.latentEffects.get(latent).remove(latentEffect);
@@ -730,7 +750,7 @@ public class DMSearch {
 
     private TreeMap<TreeSet<Node>, Node> sortMapByValue(Map<Node, SortedSet<Node>> inputMap, List<Node> latents, LatentStructure structure) {
 
-        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<TreeSet<Node>, Node>(new Comparator<SortedSet<Node>>() {
+        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<>(new Comparator<SortedSet<Node>>() {
             public int compare(SortedSet o1, SortedSet o2) {
                 int size = o1.size() - o2.size();
                 if (size == 0) {
@@ -771,7 +791,7 @@ public class DMSearch {
 
     //Making sure found nodes are actually inputs before adding as knowledge is now disabled.
     private Set<Node> getInputParents(Node node, Set inputString, Graph pattern) {
-        Set<Node> actualInputs = new HashSet<Node>();
+        Set<Node> actualInputs = new HashSet<>();
         for (Node posInput : pattern.getAdjacentNodes(node)) {
             if (inputString.contains(posInput.getName())) {
                 actualInputs.add(posInput);
@@ -780,11 +800,19 @@ public class DMSearch {
         return (actualInputs);
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     public class LatentStructure {
-        List<Node> latents = new ArrayList<Node>();
-        Map<Node, SortedSet<Node>> inputs = new TreeMap<Node, SortedSet<Node>>();
-        Map<Node, SortedSet<Node>> outputs = new TreeMap<Node, SortedSet<Node>>();
-        Map<Node, SortedSet<Node>> latentEffects = new TreeMap<Node, SortedSet<Node>>();
+        List<Node> latents = new ArrayList<>();
+        Map<Node, SortedSet<Node>> inputs = new TreeMap<>();
+        Map<Node, SortedSet<Node>> outputs = new TreeMap<>();
+        Map<Node, SortedSet<Node>> latentEffects = new TreeMap<>();
 
 
         public LatentStructure() {
@@ -807,7 +835,7 @@ public class DMSearch {
         }
 
         public List<Node> getLatents() {
-            return new ArrayList<Node>(latents);
+            return new ArrayList<>(latents);
         }
 
         public boolean containsLatent(Node latent) {
@@ -815,15 +843,15 @@ public class DMSearch {
         }
 
         public SortedSet<Node> getInputs(Node latent) {
-            return new TreeSet<Node>(inputs.get(latent));
+            return new TreeSet<>(inputs.get(latent));
         }
 
         public SortedSet<Node> getOutputs(Node latent) {
-            return new TreeSet<Node>(outputs.get(latent));
+            return new TreeSet<>(outputs.get(latent));
         }
 
         public SortedSet<Node> getLatentEffects(Node latent) {
-            return new TreeSet<Node>(latentEffects.get(latent));
+            return new TreeSet<>(latentEffects.get(latent));
         }
 
         public String toString() {

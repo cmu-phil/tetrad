@@ -42,9 +42,6 @@ public final class PagUtils {
      * @return true if every vertex in gamma is in O.
      */
     public static boolean graphInPagStep0(Graph pag, Graph dag) {
-        System.out.println("graphInPag entered!");
-        System.out.println("PAG = " + pag);
-        System.out.println("DAG = " + dag);
 
         //(1) Every vertex in gamma is in O (measured nodes in dag)
         List<Node> pagNodes = pag.getNodes();
@@ -106,7 +103,7 @@ public final class PagUtils {
                 Node Ad = dag.getNode(A.getName());
                 Node Bd = dag.getNode(B.getName());
 
-                List<Node> singletonB = new ArrayList<Node>();
+                List<Node> singletonB = new ArrayList<>();
                 singletonB.add(Bd);
                 List<Node> ancestorsOfB = dag.getAncestors(singletonB);
                 if (!ancestorsOfB.contains(Ad)) {

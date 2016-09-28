@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetradapp.model.RegressionParams;
 import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -73,12 +72,12 @@ public class RegressionEditor extends JPanel {
      * Presents the same information in reportText as a text preamble with a
      * table of coefficients etc.
      */
-    private JComponent textWithTable = TextWithTable.emptyCompoenent();
+    private final JComponent textWithTable = TextWithTable.emptyCompoenent();
 
     /**
      * The gadget that does the regression.
      */
-    private RegressionRunner runner;
+    private final RegressionRunner runner;
 
     /**
      * Constructs a regression editor. A regression runner is required, since
@@ -123,9 +122,8 @@ public class RegressionEditor extends JPanel {
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
-        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(
-                (RegressionParams) runner.getParams(),
-                this.runner.getDataModel());
+        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner, runner.getParams(),
+                    this.runner.getDataModel(), false);
 
         editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -148,6 +146,36 @@ public class RegressionEditor extends JPanel {
 
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
+
+        int numModels = runner.getNumModels();
+
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    runner.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box c = Box.createHorizontalBox();
+            c.add(new JLabel("Using model"));
+            c.add(comp);
+            c.add(new JLabel("from "));
+            c.add(new JLabel(runner.getModelSourceName()));
+            c.add(Box.createHorizontalGlue());
+
+            add(c, BorderLayout.NORTH);
+        }
 
         setName("Regression Result:");
     }

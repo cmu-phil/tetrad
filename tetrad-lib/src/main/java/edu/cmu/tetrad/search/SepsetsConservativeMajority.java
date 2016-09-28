@@ -37,6 +37,7 @@ public class SepsetsConservativeMajority implements SepsetProducer {
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
     private int depth = 3;
+    private boolean verbose = false;
 
     public SepsetsConservativeMajority(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -45,7 +46,6 @@ public class SepsetsConservativeMajority implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -119,8 +119,8 @@ public class SepsetsConservativeMajority implements SepsetProducer {
     public List<List<List<Node>>> getSepsetsLists(Node x, Node y, Node z,
                                                   IndependenceTest test, int depth,
                                                   boolean verbose) {
-        List<List<Node>> sepsetsContainingY = new ArrayList<List<Node>>();
-        List<List<Node>> sepsetsNotContainingY = new ArrayList<List<Node>>();
+        List<List<Node>> sepsetsContainingY = new ArrayList<>();
+        List<List<Node>> sepsetsNotContainingY = new ArrayList<>();
 
         List<Node> _nodes = graph.getAdjacentNodes(x);
         _nodes.remove(z);
@@ -179,7 +179,7 @@ public class SepsetsConservativeMajority implements SepsetProducer {
             }
         }
 
-        List<List<List<Node>>> ret = new ArrayList<List<List<Node>>>();
+        List<List<List<Node>>> ret = new ArrayList<>();
         ret.add(sepsetsContainingY);
         ret.add(sepsetsNotContainingY);
 
@@ -198,6 +198,11 @@ public class SepsetsConservativeMajority implements SepsetProducer {
     }
 
     @Override
+    public double getScore() {
+        return independenceTest.getPValue() - independenceTest.getAlpha();
+    }
+
+    @Override
     public List<Node> getVariables() {
         return independenceTest.getVariables();
     }
@@ -205,5 +210,15 @@ public class SepsetsConservativeMajority implements SepsetProducer {
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
 }
 

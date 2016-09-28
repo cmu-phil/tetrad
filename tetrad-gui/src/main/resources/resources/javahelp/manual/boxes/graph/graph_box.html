@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Inside the Graph Box</font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>A Graph box in the main workspace looks like this: </p>
+<p><img src="../../images/graph_highlight.gif" width="68" height="64"></p>
+<p><br>
+  When you double left click on the graph box a dialog box opens:<br>
+</p>
+<p><img src="../../images/graph1choices.gif" width="295" height="148">  <br>
+  <br>
+If you choose &quot;Directed Acyclic Graph,&quot; you will only be able to construct directed acyclic graphs. That is, you will only be allowed to constructed directed (--&gt;) edges, and you will not be permitted to construct cycles in your graph (X--&gt;...--&gt;X for some variable X in your graph). See <a href="../graph_dag.html">Directed Acyclic Graphs</a>. </p>
+<p>If you choose &quot;(General) Graph,&quot; you will be permitted to construct edges between variables with endpoints of the following three types: segment (-), arrow (-&gt;), and circle (-o). See <a href="../graph_general.html">General Graphs</a>.</p>
+<p>If you choose &quot;Time Series Graph,&quot; you will be permitted to construct directed graphs over time-lagged variables for a give set of variables X1,..., Xn. See <a href="../time_graph.html">Time Series Graphs</a>.</p>
+<p>&nbsp;</p>
+<h3>Choosing a graph type</h3>
+<p>Here is some general advise for picking graph types.</p>
+<ul>
+  <li>If you are consructing a Bayes model, choose &quot;Directed Acyclic Graph.&quot; This will ensure that you use only directed edges and don't create cycles.</li>
+  <li>If you are constructing a SEM model, choose &quot;SEM Graph.&quot; This will ensure that you construct a graph with only directed edges (--&gt;, showing causal relationships) and bidirected edges (&lt;-&gt;, showing correlated twoCycleErrors) and that cycles in the graph will be permitted. </li>
+  <li>If you want to construct or edit other types of graphs used in Tetrad, choose &quot;General Graph.&quot; This will allow you to construct directed graphs, patterns, PAGs, POIPGs, MAGs, and so on. See <a href="../tetrad_graph_types.html">Tetrad Graph Types</a> for more details. In most cases, you do not need to construct these types of graphs yourself, but they are output by Tetrad search algorithms, and you may need to edit them to turn them into DAGs. In that case, a &quot;General Graph&quot; editor will be displayed to help you edit these graphs. </li>
+</ul>
+<p>See also <a href="sem_graph.html">SEM Graph</a>. </p>
+</body>
+</html>

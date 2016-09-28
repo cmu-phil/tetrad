@@ -240,7 +240,7 @@ public class ProximalGradient {
                 //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
             }
             //System.out.println("t: " + t);
-            //System.out.println("Params: " + params);
+            //System.out.println("Parameters: " + params);
 
             iterCount++;
             if (iterCount >= iterLimit) {

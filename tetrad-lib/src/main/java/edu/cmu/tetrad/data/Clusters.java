@@ -39,19 +39,19 @@ public final class Clusters implements TetradSerializable {
     /**
      * This is used to store information on pure measurement models (when the
      * graph is a measurement/structural model). The information is stored
-     * variable clusters, and is used by algorithms such as Purify and MIM Build
+     * variable clusters, and is used by algorithm such as Purify and MIM Build
      * (R. Silva, 04/2003)
      *
      * @serial
      */
-    private Map<String, Integer> clusters = new HashMap<String, Integer>();
+    private Map<String, Integer> clusters = new HashMap<>();
 
     /**
      * Node names.
      *
      * @serial
      */
-    private Map<Integer, String> names;
+    private final Map<Integer, String> names;
 
     /**
      * The number of clusters represented. If there is no fixed upper bound, set
@@ -67,16 +67,16 @@ public final class Clusters implements TetradSerializable {
      * Constructs a blank knowledge object.
      */
     public Clusters() {
-        this.clusters = new HashMap<String, Integer>();
-        this.names = new HashMap<Integer, String>();
+        this.clusters = new HashMap<>();
+        this.names = new HashMap<>();
     }
 
     /**
      * Copy constructor.
      */
     public Clusters(Clusters clusters) {
-        this.clusters = new HashMap<String, Integer>(clusters.clusters);
-        this.names = new HashMap<Integer, String>(clusters.names);
+        this.clusters = new HashMap<>(clusters.clusters);
+        this.names = new HashMap<>(clusters.names);
         this.numClusters = clusters.numClusters;
     }
 
@@ -92,7 +92,7 @@ public final class Clusters implements TetradSerializable {
     /**
      * Adds the given variable to the given index.  If a variable which is being
      * added is already in a index, it is moved to the new index. This
-     * information is used specifically by algorithms such as Purify and MIM
+     * information is used specifically by algorithm such as Purify and MIM
      * Build. </p> The first variation only put an Integer associated with the
      * index, i.e., the clusterings forms a partition where the integer
      * represents the index id for the corresponding variable. </p> The second
@@ -118,7 +118,7 @@ public final class Clusters implements TetradSerializable {
      * @return the list of edges not in any tier.
      */
     public final List<String> getVarsNotInCluster(List<String> varNames) {
-        List<String> notInCluster = new ArrayList<String>(varNames);
+        List<String> notInCluster = new ArrayList<>(varNames);
 
         for (int i = 0; i < getNumClusters(); i++) {
             List<String> tier = getCluster(i);
@@ -157,7 +157,7 @@ public final class Clusters implements TetradSerializable {
      * integers.
      */
     public final Map<String, Integer> getClusters() {
-        return new HashMap<String, Integer>(clusters);
+        return new HashMap<>(clusters);
     }
 
     /**
@@ -169,7 +169,7 @@ public final class Clusters implements TetradSerializable {
             throw new IllegalArgumentException();
         }
 
-        List<String> cluster = new LinkedList<String>();
+        List<String> cluster = new LinkedList<>();
 
         for (String _varName : clusters.keySet()) {
             Integer _index = clusters.get(_varName);
@@ -318,10 +318,6 @@ public final class Clusters implements TetradSerializable {
         s.defaultReadObject();
 
         if (clusters == null) {
-            throw new NullPointerException();
-        }
-
-        if (names == null) {
             throw new NullPointerException();
         }
     }

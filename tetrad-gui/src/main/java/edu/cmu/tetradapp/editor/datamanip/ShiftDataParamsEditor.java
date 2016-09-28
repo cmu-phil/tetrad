@@ -27,10 +27,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ShiftSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.datamanip.ShiftDataParams;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
 
 import javax.swing.*;
@@ -51,7 +51,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private ShiftDataParams params;
+    private Parameters params;
     private Object[] parentModels;
     private ShiftSearch search;
 
@@ -66,9 +66,10 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (ShiftDataParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     /**
@@ -103,7 +104,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             }
         }
 
-        final List<DataSet> dataSets = new ArrayList<DataSet>();
+        final List<DataModel> dataSets = new ArrayList<>();
 
         for (Object aDataModelList : dataModelList) {
             dataSets.add((DataSet) aDataModelList);
@@ -161,20 +162,21 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (search != null) {
                     search.stop();
+                    TaskManager.getInstance().setCanceled(true);
                 }
             }
         });
 
 
         JComboBox directionBox = new JComboBox(new String[] {"forward", "backward"});
-        directionBox.setSelectedItem(params.isForwardSearch() ? "forward" : "backward");
+        directionBox.setSelectedItem(params.getBoolean("forwardSearch", true) ? "forward" : "backward");
         directionBox.setMaximumSize(directionBox.getPreferredSize());
 
         directionBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JComboBox source = (JComboBox) actionEvent.getSource();
                 String selected = (String) source.getSelectedItem();
-                params.setForwardSearch("forward".equals(selected));
+                params.set("forwardSearch", "forward".equals(selected));
             }
         });
 
@@ -234,18 +236,22 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
     }
 
-    private void setUpA1(List<DataSet> dataSets, Box a1) {
-        int[] shifts = params.getShifts();
+    private void setUpA1(List<DataModel> dataSets, Box a1) {
+        int[] shifts = (int[]) params.get("shifts", null);
 
-        if (shifts.length != dataSets.get(0).getNumColumns()) {
-            shifts = new int[dataSets.get(0).getNumColumns()];
-            params.setShifts(shifts);
+        if (dataSets.isEmpty()) {
+            throw new IllegalArgumentException("There are not datasets to shift.");
+        }
+
+        if (shifts.length != ((DataSet)dataSets.get(0)).getNumColumns()) {
+            shifts = new int[((DataSet)dataSets.get(0)).getNumColumns()];
+            params.set("shifts", shifts);
         }
 
         final int[] _shifts = shifts;
 
-        for (int i = 0; i < dataSets.get(0).getNumColumns(); i++) {
-            Node node = dataSets.get(0).getVariable(i);
+        for (int i = 0; i < ((DataSet)dataSets.get(0)).getNumColumns(); i++) {
+            Node node = ((DataSet)dataSets.get(0)).getVariable(i);
             Box a5 = Box.createHorizontalBox();
 
             SpinnerModel shiftModel = new SpinnerNumberModel(_shifts[i], -50, 50, 1);
@@ -259,7 +265,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
                     SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
                     int value = (Integer) model.getValue();
                     _shifts[nodeIndex] = value;
-                    params.setShifts(_shifts);
+                    params.set("shifts", _shifts);
                 }
             });
 
@@ -272,7 +278,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         }
     }
 
-    private void doShiftSearch(List<DataSet> dataSets, JTextArea textArea) {
+    private void doShiftSearch(List<DataModel> dataSets, JTextArea textArea) {
         TextAreaOutputStream out = new TextAreaOutputStream(textArea);
 
         search = new ShiftSearch(dataSets);
@@ -280,7 +286,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         search.setMaxShift(Preferences.userRoot().getInt("shiftSearchMaxShift", 2));
         search.setC(1);
         search.setOut(out);
-        search.setForwardSearch(params.isForwardSearch());
+        search.setForwardSearch(params.getBoolean("forwardSearch", true));
         int[] backshifts = search.search();
 
 //        List<DataSet> backshiftedDataSets = shiftDataSets(dataSets, backshifts);
@@ -291,7 +297,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 //            _list.add(dataSet);
 //        }
 
-        params.setShifts(backshifts);
+        params.set("shifts", backshifts);
     }
 
 //    private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {

@@ -50,7 +50,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private double percent = .5;
     private List<DataSet> allLagged;
 
-    private List<IndependenceTest> tests = new ArrayList<IndependenceTest>();
+    private List<IndependenceTest> tests = new ArrayList<>();
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -58,8 +59,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
         this.sampleSize = dataSets.get(0).getNumRows();
         setAlpha(alpha);
-        ncov = new ArrayList<ICovarianceMatrix>();
-        allLagged = new ArrayList<DataSet>();
+        ncov = new ArrayList<>();
+        allLagged = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
 //            dataSet = DataUtils.center(dataSet);
@@ -72,7 +73,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
 
         this.variables = dataSets.get(0).getVariables();
-        variablesMap = new HashMap<Node, Integer>();
+        variablesMap = new HashMap<>();
         for (int i = 0; i < variables.size(); i++) {
             variablesMap.put(variables.get(i), i);
         }
@@ -98,7 +99,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             all[i + 2] = variablesMap.get(z.get(i));
         }
 
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < ncov.size(); m++) {
             TetradMatrix _ncov = ncov.get(m).getSelection(all, all);
@@ -144,24 +145,26 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
         boolean independent = p > alpha;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
     }
 
     private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = new ArrayList<Double>();
+        List<Double> allPValues = new ArrayList<>();
 
         for (IndependenceTest test : independenceTests) {
 //            if (missingVariable(x, y, condSet, test)) continue;
-            List<Node> localCondSet = new ArrayList<Node>();
+            List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(test.getVariable(node.getName()));
             }
@@ -244,7 +247,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -266,13 +269,13 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     public ICovarianceMatrix getCov() {
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenateData(_dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
     @Override
@@ -288,6 +291,11 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     /**
@@ -308,6 +316,14 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     public void setPercent(double percent) {
         if (percent < 0.0 || percent > 1.0) throw new IllegalArgumentException();
         this.percent = percent;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

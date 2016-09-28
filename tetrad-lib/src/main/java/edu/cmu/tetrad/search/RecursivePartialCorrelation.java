@@ -36,8 +36,8 @@ import static java.lang.Math.sqrt;
 public class RecursivePartialCorrelation {
 
     private final TetradMatrix corr;
-    private final Map<Node, Integer> nodesMap = new HashMap<Node, Integer>();
-    private Map<IndependenceFact, Double> memory = new WeakHashMap<IndependenceFact, Double>();
+    private final Map<Node, Integer> nodesMap = new HashMap<>();
+    private Map<IndependenceFact, Double> memory = new WeakHashMap<>();
 
     public RecursivePartialCorrelation(List<Node> nodes, TetradMatrix cov) {
         this.corr = MatrixUtils.convertCovToCorr(new TetradMatrix(cov));
@@ -72,7 +72,7 @@ public class RecursivePartialCorrelation {
 //            }
 //        }
 
-        List<Node> _z = new ArrayList<Node>(z);
+        List<Node> _z = new ArrayList<>(z);
         _z.remove(z0);
 
         double corr0 = corr(x, y, _z);

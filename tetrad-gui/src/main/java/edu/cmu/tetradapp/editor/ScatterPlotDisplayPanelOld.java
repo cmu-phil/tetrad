@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.RegressionParams;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,34 +44,34 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Michael Freenor
  */
-public class ScatterPlotDisplayPanelOld extends JPanel {
+class ScatterPlotDisplayPanelOld extends JPanel {
 
 
     /**
      * The line color around the histogram.
      */
-    private static Color LINE_COLOR = Color.GRAY.darker();
+    private static final Color LINE_COLOR = Color.GRAY.darker();
 
     /**
      * Variables that control the size of the drawing area.
      */
-    int PADDINGLEFT = 75;
-    int PADDINGOTHER = 50;
-    int HEIGHT = 600 + PADDINGOTHER;
-    int WIDTH = 600 + PADDINGLEFT;
-    int SPACE = 2;
-    int DASH = 10;
+    private int PADDINGLEFT = 75;
+    private int PADDINGOTHER = 50;
+    private int HEIGHT = 600 + PADDINGOTHER;
+    private int WIDTH = 600 + PADDINGLEFT;
+    private int SPACE = 2;
+    private int DASH = 10;
 
 
     /**
      * The default size of the component.
      */
-    private Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
+    private final Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
 
     /**
      * Format for continuous data.
      */
-    private NumberFormat format = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat format = NumberFormatUtil.getInstance().getNumberFormat();
 
 
     /**
@@ -81,20 +81,13 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
     private ScatterPlotOld scatterPlot;
 
     /**
-     * A cached string displaying what is being viewed in the histogram.
-     */
-    private String displayString;
-
-    /**
      * A map from the rectangles that define the bars, to the number of units in the bar.
      */
-    private Map<Rectangle, Integer> rectMap = new ConcurrentHashMap<Rectangle, Integer>();
+    private final Map<Rectangle, Integer> rectMap = new ConcurrentHashMap<>();
 
 
     /**
      * Constructs the scatterplot dipslay panel given the initial scatterplot to display.
-     *
-     * @param scatterPlot
      */
     public ScatterPlotDisplayPanelOld(ScatterPlotOld scatterPlot) {
         this.scatterPlot = scatterPlot;
@@ -111,14 +104,15 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
     /**
      * Updates the histogram that is dispalyed to the given one.
-     *
-     * @param scatterPlot
      */
     public synchronized void updateScatterPlot(ScatterPlotOld scatterPlot) {
         if (scatterPlot == null) {
             throw new NullPointerException("The given scatter plot must not be null");
         }
-        this.displayString = null;
+        /*
+      A cached string displaying what is being viewed in the histogram.
+     */
+        String displayString = null;
         this.scatterPlot = scatterPlot;
         this.repaint();
     }
@@ -131,8 +125,6 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
     /**
      * Paints the histogram and related items.
-     *
-     * @param graphics
      */
     public void paintComponent(Graphics graphics) {
 
@@ -224,16 +216,16 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
             //RegressionRunner regRunner;
             RegressionDataset regData;
 
-            /**
+            /*
              * In the following code, the complement of the indexSet (for all integers <= (n - 1)) is
              * calculated.  This set of indices is removed from a copy of our original dataSet, such
              * that the ScatterPlot only contains the appropriate points for rendering.
              */
 
-            RegressionParams params = new RegressionParams();
+            Parameters params = new Parameters();
             Vector<String> regressors = new Vector();
             regressors.add(scatterPlot.getXVariable().getName());
-            params.setTargetName(scatterPlot.getYVariable().getName());
+            params.set("targetName", scatterPlot.getYVariable().getName());
 
             if(scatterPlot.getIndexSet().size() != scatterPlot.getDataSet().getNumRows())
             {
@@ -272,7 +264,7 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
 //    private String getDisplayString() {
 //        if (this.displayString == null) {
-//            this.displayString = "Showing: " + scatterPlot.getYVariable().getName();
+//            this.displayString = "Showing: " + scatterPlot.getYVariable().getNode();
 //        }
 //        return this.displayString;
 //    }
@@ -285,7 +277,7 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
      * @param maxRange The value at the extremity (determined by the largest value encountered in either variable).
      * @return An ordered pair determining the proper location on the screen in Java2D coordinates. 
      */
-    public double[] plotPoint(double x, double y, double minRange, double maxRange) {
+    private double[] plotPoint(double x, double y, double minRange, double maxRange) {
         double[] result = new double[2];
         double range = maxRange - minRange;
         result[0] = (WIDTH - PADDINGLEFT) * ((x - minRange) / range) + 4 + PADDINGLEFT;

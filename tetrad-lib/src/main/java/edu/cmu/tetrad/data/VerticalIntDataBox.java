@@ -31,14 +31,11 @@ public class VerticalIntDataBox implements DataBox {
     /**
      * The stored int data.
      */
-    private int[][] data;
+    private final int[][] data;
 
     /**
      * Constructs an 2D int array consisting entirely of missing values
      * (int.NaN).
-     *
-     * @param rows
-     * @param cols
      */
     public VerticalIntDataBox(int rows, int cols) {
         this.data = new int[cols][rows];
@@ -63,6 +60,16 @@ public class VerticalIntDataBox implements DataBox {
         }
 
         this.data = data;
+    }
+
+    public VerticalIntDataBox(DataBox dataBox) {
+        data = new int[dataBox.numCols()][dataBox.numRows()];
+
+        for (int i = 0; i < dataBox.numRows(); i++) {
+            for (int j = 0; j < dataBox.numCols(); j++) {
+                data[j][i] = dataBox.get(i, j).intValue();
+            }
+        }
     }
 
     /**
@@ -91,10 +98,16 @@ public class VerticalIntDataBox implements DataBox {
      * The value used is number.intValue().
      */
     public void set(int row, int col, Number value) {
+        int[] ints = data[col];
+
         if (value == null) {
-            data[col][row] = -99;
+            synchronized (ints) {
+                ints[row] = -99;
+            }
         } else {
-            data[col][row] = value.intValue();
+            synchronized (ints) {
+                ints[row] = value.intValue();
+            }
         }
     }
 
@@ -120,22 +133,41 @@ public class VerticalIntDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        VerticalIntDataBox box = new VerticalIntDataBox(numRows(), numCols());
+        double[][] copy = new double[numCols()][numRows()];
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
-                box.set(i, j, get(i, j));
+                copy[j][i] = data[j][i];
             }
         }
 
-        return box;
+        return new VerticalDoubleDataBox(copy);
     }
 
     /**
      * @return a DataBox of type intDataBox, but with the given dimensions.
      */
-    public DataBox like(int rows, int cols) {
-        return new VerticalIntDataBox(rows, cols);
+    public DataBox like() {
+        int[] rows = new int[numRows()];
+        int[] cols = new int[numCols()];
+
+        for (int i = 0; i < numRows(); i++) rows[i] = i;
+        for (int j = 0; j < numCols(); j++) cols[j] = j;
+
+        return viewSelection(rows, cols);
+    }
+
+    @Override
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new VerticalIntDataBox(rows.length, cols.length);
+
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                _dataBox.set(i, j, get(rows[i], cols[j]));
+            }
+        }
+
+        return _dataBox;
     }
 }
 

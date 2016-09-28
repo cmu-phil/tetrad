@@ -87,13 +87,10 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static BayesUpdaterClassifierWrapper serializableInstance() {
-        return new BayesUpdaterClassifierWrapper(
-                BayesImWrapper.serializableInstance(),
-                DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS=======================//

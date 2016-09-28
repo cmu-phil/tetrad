@@ -31,14 +31,13 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
@@ -46,44 +45,21 @@ import java.util.List;
  *
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
-public class RegressionRunner implements AlgorithmRunner {
+public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     static final long serialVersionUID = 23L;
-
-    /**
-     * @serial Can be null.
-     */
+    private List<String> regressorNames;
     private String name;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private RegressionParams params;
-
-    /**
-     * @serial Cannot be null.
-     */
+    private Parameters params;
     private String targetName;
-
-    /**
-     * @serial Cannot be null. Note that the name of this field can't be
-     * changed because of serialization. Ugh.
-     */
-    private DataModel dataSet;
-
-    /**
-     * @serial Can be null.
-     */
+    private DataModelList dataModels;
     private Graph outGraph;
-
-    /**
-     * The result of the regression--that is, coefficients, p-values, etc.
-     */
     private RegressionResult result;
+    private Map<String, String> allParamsSettings;
+    private List<String> variableNames;
 
-    /**
-     * @deprecated
-     */
-    private String report;
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     //=========================CONSTRUCTORS===============================//
 
@@ -92,7 +68,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RegressionRunner(DataWrapper dataWrapper, RegressionParams params) {
+    public RegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -100,6 +76,15 @@ public class RegressionRunner implements AlgorithmRunner {
         if (params == null) {
             throw new NullPointerException();
         }
+
+        if (dataWrapper instanceof  Simulation) {
+            Simulation simulation = (Simulation) dataWrapper;
+            this.numModels = dataWrapper.getDataModelList().size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        }
+
+        this.params = params;
 
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
@@ -110,16 +95,17 @@ public class RegressionRunner implements AlgorithmRunner {
             }
         }
 
-        this.params = params;
-        this.targetName = params.getTargetName();
-        this.dataSet = dataModel;
+        dataModels = dataWrapper.getDataModelList();
+
+        this.variableNames = dataModel.getVariableNames();
+        this.targetName = null;
+        this.regressorNames = new ArrayList<>();
 
         TetradLogger.getInstance().log("info", "Linear Regression");
 
         if (result == null) {
             TetradLogger.getInstance().log("info", "Please double click this regression node to run the regession.");
         } else {
-
             TetradLogger.getInstance().log("result", "\n" + result.getResultsTable().toString());
         }
     }
@@ -127,11 +113,10 @@ public class RegressionRunner implements AlgorithmRunner {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static RegressionRunner serializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         ContinuousVariable var1 = new ContinuousVariable("X");
         ContinuousVariable var2 = new ContinuousVariable("Y");
 
@@ -147,31 +132,17 @@ public class RegressionRunner implements AlgorithmRunner {
         }
 
         DataWrapper dataWrapper = new DataWrapper(_dataSet);
-        return new RegressionRunner(dataWrapper,
-                RegressionParams.serializableInstance());
+        return new RegressionRunner(dataWrapper, new Parameters());
     }
 
     //===========================PUBLIC METHODS============================//
 
     public DataModel getDataModel() {
         //return (DataModel) this.dataWrapper.getDataModelList().get(0);
-        return this.dataSet;
+        return this.dataModels.get(getModelIndex());
     }
 
-    public void resetParams(Object params) {
-        //ignore
-        //this.params = (RegressionParams) params;
-    }
-
-    public void setParams(RegressionParams params) {
-        this.params = params;
-    }
-
-    public boolean isSearchingOverSubset() {
-        return false;
-    }
-
-    public SearchParams getParams() {
+    public Parameters getParams() {
         return params;
     }
 
@@ -179,7 +150,7 @@ public class RegressionRunner implements AlgorithmRunner {
         return outGraph;
     }
 
-    public void setResultGraph(Graph graph) {
+    private void setResultGraph(Graph graph) {
         this.outGraph = graph;
     }
 
@@ -193,15 +164,12 @@ public class RegressionRunner implements AlgorithmRunner {
      * implemented in the extending class.
      */
     public void execute() {
-
-        if (params.getRegressorNames().length == 0 ||
-                params.getTargetName() == null) {
+        if (regressorNames.size() == 0 || targetName == null) {
             outGraph = new EdgeListGraph();
             return;
         }
 
-        if (Arrays.asList(params.getRegressorNames()).contains(
-                params.getTargetName())) {
+        if (regressorNames.contains(targetName)) {
             outGraph = new EdgeListGraph();
             return;
         }
@@ -210,35 +178,32 @@ public class RegressionRunner implements AlgorithmRunner {
         Node target;
         List<Node> regressors;
 
-        if (dataSet instanceof DataSet) {
-            DataSet _dataSet = (DataSet) dataSet;
+        if (getDataModel() instanceof DataSet) {
+            DataSet _dataSet = (DataSet) getDataModel();
             regression = new RegressionDataset(_dataSet);
-            target = _dataSet.getVariable(params.getTargetName());
-            String[] regressorNames = params.getRegressorNames();
-            regressors = new LinkedList<Node>();
+            target = _dataSet.getVariable(targetName);
+            regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
                 regressors.add(_dataSet.getVariable(regressorName));
             }
 
-            double alpha = params.getAlpha();
+            double alpha = params.getDouble("alpha", 0.001);
             regression.setAlpha(alpha);
 
             result = regression.regress(target, regressors);
             outGraph = regression.getGraph();
-        }
-        else if (dataSet instanceof ICovarianceMatrix) {
-            ICovarianceMatrix covariances = (ICovarianceMatrix) dataSet;
+        } else if (getDataModel() instanceof ICovarianceMatrix) {
+            ICovarianceMatrix covariances = (ICovarianceMatrix) getDataModel();
             regression = new RegressionCovariance(covariances);
-            target = covariances.getVariable(params.getTargetName());
-            String[] regressorNames = params.getRegressorNames();
-            regressors = new LinkedList<Node>();
+            target = covariances.getVariable(targetName);
+            regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
                 regressors.add(covariances.getVariable(regressorName));
             }
 
-            double alpha = params.getAlpha();
+            double alpha = params.getDouble("alpha", 0.001);
             regression.setAlpha(alpha);
 
             result = regression.regress(target, regressors);
@@ -257,11 +222,15 @@ public class RegressionRunner implements AlgorithmRunner {
     }
 
     public void setInitialGraph(Graph graph) {
-        return;
     }
 
     public Graph getInitialGraph() {
         return null;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "Regression";
     }
 
     public RegressionResult getResult() {
@@ -272,8 +241,28 @@ public class RegressionRunner implements AlgorithmRunner {
         return outGraph;
     }
 
+    @Override
+    public List<String> getVariableNames() {
+        return variableNames;
+    }
+
+    @Override
+    public List<String> getRegressorNames() {
+        return regressorNames;
+    }
+
+    @Override
+    public void setRegressorName(List<String> predictors) {
+        this.regressorNames = predictors;
+    }
+
     public String getTargetName() {
         return targetName;
+    }
+
+    @Override
+    public void setTargetName(String target) {
+        this.targetName = target;
     }
 
     /**
@@ -297,15 +286,6 @@ public class RegressionRunner implements AlgorithmRunner {
             throw new NullPointerException();
         }
 
-        /*
-        if (targetName == null) {
-            throw new NullPointerException();
-        }
-        */
-
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
     }
 
     public String getName() {
@@ -324,19 +304,57 @@ public class RegressionRunner implements AlgorithmRunner {
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
+     * @param node The node that the classifications are for. All triple from adjacencies to this
+     *             node to adjacencies to this node through the given node will be considered.
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
-     * @param node The node that the classifications are for. All triple from adjacencies to this
-     * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("Algorithm", "Regression");
+        return paramSettings;
+    }
+
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamsSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return this.allParamsSettings;
+    }
+
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
+
+    @Override
+    public List<Graph> getGraphs() {
+        return null;
+    }
 }
 
 

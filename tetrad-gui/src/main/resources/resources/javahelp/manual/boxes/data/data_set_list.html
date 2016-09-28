@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Data</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Data Set List </font></h2></td>
+  </tr>
+</table>
+<p><br>
+A <em>data set list</em> stores a list of one or more data set, possibly of different types. One of data sets is designated as &quot;active,&quot; in the sense that (a) it's the one you see when you double click the Data Box, and (b) it's the one that's used downstream by, e.g., by search and estimation algorithms. The types of data sets that can currently be stored in a data set list are: </p>
+<ol>
+  <li>Tabular Data Set,</li>
+  <li>Covariance Matrix, and</li>
+  <li> Correlation Matrix.</li>
+</ol>
+<p>These types of data sets each has a distinctive appearance when being edited, as shown below. </p>
+<p>For information on how to load data files, see the help file for <a href="data_loader.html">Data Loader</a>. </p>
+<h3><br>
+  Tabular Data Sets </h3>
+Tabular data sets are rectangular data sets with data for a (possibly mixed) list of continuous and discrete variables. (For detailed information on tabular data sets, see <a href="../../common_tasks/tabular_data_sets.html">Tabular Data Sets</a>. For information on continuous and discrete variables, see <a href="../../common_tasks/continuous_and_discrete_variables.html">Continuous and Discrete Variables</a>. A tabular data set containing all discrete data (that is, a <em>discrete data set</em>) looks like this:
+<p><img src="../../images/databox1.gif" width="610" height="485"> </p>
+<p>A tabular data set contain all continuous data (that is, a <em>continuous data set</em>)  looks like this:</p>
+<p><img src="../../images/databox2.gif" width="607" height="483"></p>
+<p>These data sets can be edited directly. For information on how to edit tabular data sets in the Data Editor, see <a href="../../common_tasks/editing_tabular_data.html">Editing Tabular Data Set</a>. </p>
+<h3><br>
+  Covariance Matrices</h3>
+<p>A covariance matrix in Tetrad is a symmetric, positive definite matrix M with dimension equal to the number of variables in the data set, associated with a sample size. If the list of variables in &lt;X1, X2, X3, X4, X5&gt;, then var(Xi) = m(i, i) and covariances(Xi, Xj) = m(i, j) The sample size may be any number greater than zero. Here is what a covariance matrix looks like in the data editor:</p>
+<p><img src="../../images/databox3.gif" width="611" height="484"> </p>
+<p>Only the lower triangle is shown, since the matrix is symmetric. For information on how to edit a covariance matrix in the Data Editor,  see <a href="../../common_tasks/editing_covariance_matrices.html">Editing Covariance/Correlation Matrices</a>. </p>
+<h3><br>
+  Correlation Matrices</h3>
+<p>A correlation matrix in Tetrad behaves just like a covariance matrix (it is one!), except that it is labelled as &quot;Correlation Matrix,&quot; has a diagonal consisting entirely of 1.0's, and shows correlations instead of covariances. That is, if the list of variables in &lt;X1, X2, X3, X4, X5&gt;, as in the above example, then a symmetric, positive dfinite matrix M is shown such that then m(i, j) is the correlation of Xi and Xj and in particular m(i, i) = 1.0 for all i, j. The sample size may be any number greater than zero. Here is what a covariance matrix looks like in the data editor (notice that only the lower triangle is shown since it is symmetric): </p>
+<p><img src="../../images/databox4.gif" width="611" height="483"> </p>
+<p>Notice that these last images shows tabs that let you switch back and forth between three different data sets. All three are stored in the Data Box; if you want to, say, search over a different one, simply click the tab for that data set and your next search will be over that one instead. </p>
+<h3><br>
+Missing Data</h3>
+<p>Missing data for all data types is represented using asterisks (&quot;*&quot;). See <a href="../../common_tasks/handling_missing_data.html">Handling Missing Data</a> for details.</p>
+<h3><br>
+Creating Data Sets </h3>
+<p>You can make a data set in a number different ways:</p>
+<ol>
+  <li>You may <em>create a data set from scratch</em>, by typing it into the data set. See <a href="../../common_tasks/creating_data_from_scratch.html">Creating Data from Scratch </a> for details. </li>
+  <li>You may <em>load a data set from a file</em>. See <a href="../../common_tasks/loading_data.html">Loading Data</a> for details. </li>
+  <li>You may <em>simulate data from a model</em>. See <a href="../../common_tasks/simulating_data.html">Simulating Data</a> for details. </li>
+  <li>You may <em>manipulate  one data set to create another </em>. See <a href="../../common_tasks/manipulating_data.html">Manipulating Data</a> for details.</li>
+</ol>
+<h3><br>
+Knowledge</h3>
+<p>Every data set may be associated with background knowledge. The reason for this is that one often wants to run more than one search from the same data set, using the same knowledge, and associated knowledge with a data set is an easy way to accomplish that. To see how to set up background knowledge, see <a href="../../common_tasks/editing_knowledge.html">Editing Knowledge</a>. </p>
+<p>To use knowledge associated with a data set in a search, simply (a) construct the data set, (b) associate the knowledge, (c) add a search box to the main workspace, (d) draw an edge from the data box to the search box, and (e) execute the search.</p>
+</body>
+</html>

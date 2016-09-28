@@ -23,31 +23,29 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataWriter;
-import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests data loaders against sample files.
  *
  * @author Joseph Ramsey
  */
-public class TestDataLoadersRoundtrip extends TestCase {
-    public TestDataLoadersRoundtrip(String name) {
-        super(name);
-    }
+public class TestDataLoadersRoundtrip {
 
     public void setUp() {
         RandomUtil.getInstance().setSeed(302040392L);
@@ -59,13 +57,22 @@ public class TestDataLoadersRoundtrip extends TestCase {
         }
     }
 
+    @Test
     public void testContinuousRoundtrip() {
+        setUp();
+
         try {
-            Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+            List<Node> nodes = new ArrayList<>();
+
+            for (int i = 0; i < 5; i++) {
+                nodes.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                    30, 15, 15, false));
             SemPm semPm1 = new SemPm(randomGraph);
             SemIm semIm1 = new SemIm(semPm1);
             DataSet dataSet = semIm1.simulateData(10, false);
-//            System.out.println(dataSet);
 
             FileWriter fileWriter = new FileWriter("target/test_data/roundtrip.dat");
             Writer writer = new PrintWriter(fileWriter);
@@ -79,8 +86,6 @@ public class TestDataLoadersRoundtrip extends TestCase {
             reader.setDelimiter(DelimiterType.COMMA);
             DataSet _dataSet = reader.parseTabular(file);
 
-//            System.out.println(dataSet);
-//            System.out.println(_dataSet);
             assertTrue(dataSet.equals(_dataSet));
         }
         catch (IOException e) {
@@ -89,16 +94,23 @@ public class TestDataLoadersRoundtrip extends TestCase {
         }
     }
 
+    @Test
     public void testDiscreteRoundtrip() {
+        setUp();
+
         try {
             for (int i = 0; i < 1; i++) {
+                List<Node> nodes = new ArrayList<>();
 
-                Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 8, false));
+                for (int j = 0; j < 5; j++) {
+                    nodes.add(new ContinuousVariable("X" + (j + 1)));
+                }
+
+                Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
                 Dag dag = new Dag(randomGraph);
                 BayesPm bayesPm1 = new BayesPm(dag);
                 MlBayesIm bayesIm1 = new MlBayesIm(bayesPm1, MlBayesIm.RANDOM);
                 DataSet dataSet = bayesIm1.simulateData(10, false);
-//                System.out.println(dataSet);
 
                 new File("target/test_data").mkdir();
 
@@ -114,7 +126,6 @@ public class TestDataLoadersRoundtrip extends TestCase {
                 reader.setKnownVariables(dataSet.getVariables());
                 DataSet _dataSet = reader.parseTabular(file);
 
-//                System.out.println(_dataSet);
                 assertTrue(dataSet.equals(_dataSet));
             }
         }
@@ -122,19 +133,6 @@ public class TestDataLoadersRoundtrip extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to
-     *
-     * the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDataLoadersRoundtrip.class);
     }
 }
 

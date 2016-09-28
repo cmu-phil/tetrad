@@ -21,12 +21,19 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
+import java.rmi.MarshalledObject;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on
@@ -34,120 +41,225 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class SemDataWrapper extends DataWrapper implements SessionModel {
+public class SemDataWrapper extends DataWrapper implements SessionModel,
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
-    private SemIm semIm = null;
+    private Parameters params;
+    private Simulator semIm = null;
+    private long seed;
+    private transient DataModelList dataModelList;
+
 
     //==============================CONSTRUCTORS=============================//
 
-    public SemDataWrapper(SemImWrapper wrapper, SemDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-        SemIm semIm = wrapper.getSemIm();
-        semIm.setSimulatedPositiveDataOnly(params.isPositiveDataOnly());
+    private SemDataWrapper(SemImWrapper wrapper, Parameters params) {
+        SemIm semIm = null;
 
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet dataSet = semIm.simulateData(sampleSize, latentDataSaved);
-            list.add(dataSet);
+        try {
+            semIm = new MarshalledObject<>(wrapper.getSemIm()).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SEM IM.");
         }
 
-        this.setDataModel(list);
-        this.setSourceGraph(semIm.getSemPm().getGraph());
-        setParams(params);
         this.semIm = semIm;
+
+        try {
+            params = new MarshalledObject<>(params).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the Parameters.");
+        }
+
+        setParameters(params);
+
+        setSeed();
+
+//        DataModelList dataModelList = simulateData((Parameters) getParameters(), semIm);
+//        setDataModel(dataModelList);
+        setSourceGraph(semIm.getSemPm().getGraph());
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemDataWrapper(SemImWrapper wrapper, DataWrapper initialValues, SemDataParams params) {
-//        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-        SemIm semIm = wrapper.getSemIm();
-        semIm.setSimulatedPositiveDataOnly(params.isPositiveDataOnly());
-
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet _dataSet = (DataSet) initialValues.getSelectedDataModel();
-            DataSet dataSet = semIm.simulateDataRecursive(_dataSet, latentDataSaved);
-            list.add(dataSet);
+    public SemDataWrapper(SemEstimatorWrapper wrapper, Parameters params) {
+        SemIm semIm = null;
+        try {
+            semIm = new MarshalledObject<>(wrapper.getEstimatedSemIm()).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SEM IM.");
         }
 
-        this.setDataModel(list);
-        this.setSourceGraph(semIm.getSemPm().getGraph());
-        setParams(params);
         this.semIm = semIm;
-        LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
-    }
 
-    public SemDataWrapper(SemEstimatorWrapper wrapper, SemDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet dataSet = wrapper.getSemEstimator().getEstimatedSem().simulateData(sampleSize, latentDataSaved);
-            list.add(dataSet);
+        try {
+            params = new MarshalledObject<>(params).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setDataModel(list);
+        setParameters(params);
+
+        setSeed();
+
+//        DataModelList dataModelList = simulateData((Parameters) getParameters(), semIm);
+//        setDataModel(dataModelList);
         setSourceGraph(wrapper.getSemEstimator().getEstimatedSem().getSemPm().getGraph());
-        setParams(params);
-        this.semIm = wrapper.getEstimatedSemIm();
+        setParameters(params);
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemDataWrapper(SemUpdaterWrapper wrapper, SemDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet dataSet = wrapper.getSemUpdater().getUpdatedSemIm().simulateData(sampleSize, latentDataSaved);
-            list.add(dataSet);
+    public SemDataWrapper(SemUpdaterWrapper wrapper, Parameters params) {
+        SemIm semIm = null;
+        try {
+            semIm = new MarshalledObject<>(wrapper.getSemUpdater().getManipulatedSemIm()).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SEM IM.");
         }
 
-        setDataModel(list);
+        this.semIm = semIm;
+
+        try {
+            params = new MarshalledObject<>(params).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the Parameters.");
+        }
+
+        setParameters(params);
+
+        setSeed();
+
         setSourceGraph(wrapper.getSemUpdater().getUpdatedSemIm().getSemPm().getGraph());
-        setParams(params);
-        this.semIm = wrapper.getSemUpdater().getUpdatedSemIm();
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemDataWrapper(StandardizedSemImWrapper wrapper, SemDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet columnDataModel =
-                    wrapper.getStandardizedSemIm().simulateData(sampleSize, latentDataSaved);
-            list.add(columnDataModel);
+    public SemDataWrapper(StandardizedSemImWrapper wrapper, Parameters params) {
+        Simulator semIm = null;
+        try {
+            semIm = new MarshalledObject<>(wrapper.getStandardizedSemIm()).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SEM IM.");
         }
 
-        setDataModel(list);
+        this.semIm = semIm;
+
+        try {
+            params = new MarshalledObject<>(params).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the Parameters.");
+        }
+
+        setParameters(params);
+
+        setSeed();
+
         setSourceGraph(wrapper.getStandardizedSemIm().getSemPm().getGraph());
-        setParams(params);
+        setParameters(params);
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemIm getSemIm() {
+    private void setSeed() {
+        this.seed = RandomUtil.getInstance().getSeed();
+    }
+
+    private DataModelList simulateData(Simulator simulator) {
+        if (this.dataModelList != null) {
+            return this.dataModelList;
+        }
+
+        RandomUtil.getInstance().setSeed(new Date().getTime());
+
+        DataModelList dataModelList = new DataModelList();
+        int sampleSize = params.getInt("sampleSize", 1000);
+        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
+
+        for (int i = 0; i < params.getInt("numDataSets", 1); i++) {
+            DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
+            dataSet.setName("data" + (i + 1));
+            dataModelList.add(dataSet);
+        }
+
+        this.dataModelList = dataModelList;
+        return dataModelList;
+    }
+
+    /**
+     * Sets the data model.
+     */
+    public void setDataModel(DataModel dataModel) {
+//        if (dataModel == null) {
+//            dataModel = new ColtDataSet(0, new LinkedList<Node>());
+//        }
+//
+//        if (dataModel instanceof DataModelList) {
+//            this.dataModelList = (DataModelList) dataModel;
+//        } else {
+//            this.dataModelList = new DataModelList();
+//            this.dataModelList.add(dataModel);
+//        }
+
+        // These are generated from seeds.
+    }
+
+    public Simulator getSemIm() {
         return this.semIm;
+    }
+
+    /**
+     * @return the list of models.
+     */
+    public DataModelList getDataModelList() {
+        return simulateData(semIm);
+//        return this.dataModelList;
+    }
+
+    public void setDataModelList(DataModelList dataModelList) {
+//        this.dataModelList = dataModelList;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new SemDataWrapper(SemImWrapper.serializableInstance(),
-                SemDataParams.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new SemDataWrapper(SemImWrapper.serializableInstance(), new Parameters());
+    }
+
+    public void setParameters(Parameters params) {
+        this.params = params;
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+
+        if (dataModelList == null) {
+            System.out.println();
+        }
+
+        if (dataModelList.size() > 1) {
+            paramSettings.put("# Datasets", Integer.toString(dataModelList.size()));
+        } else {
+            DataModel dataModel = dataModelList.get(0);
+
+            if (dataModel instanceof CovarianceMatrix) {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));
+                }
+                paramSettings.put("N", Integer.toString(((CovarianceMatrix) dataModel).getSampleSize()));
+            } else {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
+                }
+                paramSettings.put("N", Integer.toString(((DataSet) dataModel).getNumRows()));
+            }
+        }
+
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        LinkedHashMap<String, String> allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 }
 

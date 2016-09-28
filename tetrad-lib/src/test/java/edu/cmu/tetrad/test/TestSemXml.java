@@ -21,9 +21,11 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.SemXmlParser;
@@ -36,6 +38,8 @@ import nu.xom.Element;
 import nu.xom.Serializer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests the Bayes XML parsing/rendering.
@@ -51,84 +55,41 @@ public final class TestSemXml extends TestCase {
         super(name);
     }
 
-    public static void testRoundtrip() {
+    public static void testRosemIm2undtrip() {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 
-        System.out.println("Started with this semIm: " + semIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         SemXmlParser parser = new SemXmlParser();
         SemIm semIm2 = parser.getSemIm(element);
-
-        System.out.println(semIm2.getSemPm().getGraph());
-        System.out.println(semIm2);
     }
 
     public void testRoundtrip2() {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 
-        System.out.println("Started with this semIm: " + semIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         SemXmlParser parser = new SemXmlParser();
         SemIm semIm2 = parser.getSemIm(element);
-
-        System.out.println(semIm2.getSemPm().getGraph());
-        System.out.println(semIm2);
     }
 
     public void testRoundtrip3() {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 
-        System.out.println("Started with this semIm: " + semIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         SemXmlParser parser = new SemXmlParser();
         SemIm semIm2 = parser.getSemIm(element);
-
-        System.out.println(semIm2.getSemPm().getGraph());
-        System.out.println(semIm2);
     }
 
-    /**
-     * Tests to make sure that a particular file produced by the renderer on 6/26/04 remains parsable. VERY IMPORTANT
-     * THIS DOES NOT BREAK!!!
-     */
-//    public void testLoadFromFile() {
-//        try {
-//            Builder builder = new Builder();
-//            Document document =
-//                    builder.build(new File("sample_data/parsableSemNet.xml"));
-//            printDocument(document);
-//
-//            SemXmlParser parser = new SemXmlParser();
-//            SemIm bayesIm = parser.getEstIm(document.getRootElement());
-//            System.out.println(bayesIm);
-//        }
-//        catch (ParsingException e) {
-//            e.printStackTrace();
-//            fail("The file referred to cannot be parsed as a SEM IM." +
-//                    " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
-//                    " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//            fail("The file referred to cannot be opened (or doesn't exist). " +
-//                    "Maybe the working directory is not set correctly.");
-//        }
-//    }
-
     private static SemIm sampleSemIm1() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, true));
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, true));
         SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        return im;
+        return new SemIm(pm);
     }
 
     /**

@@ -21,120 +21,87 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 
 /**
  * Implements FindOneFactorCluster by Erich Kummerfeld (adaptation of a two factor
- * sextet algorithm to a one factor tetrad algorithm).
+ * sextet algorithm to a one factor IntSextad algorithm).
  *
  * @author Joseph Ramsey
  */
 public class FindTwoFactorClusters {
 
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    public enum Algorithm {SAG, GAP}
+
+    private CorrelationMatrix corr;
     // The list of all variables.
     private List<Node> variables;
 
     // The significance level.
     private double alpha;
 
-    // Pentads first or Sextads first, two algorithms. Pendads first (GAP) is TestType.Tetrad_DELTA,
-    // Tetrads first is TestType.TETRAD_WISHART. (Sorry, I'll fix this.)
-    private TestType testType = TestType.GAP;
-
-    // The Bollen test. Testing two tetrads simultaneously.
-    private IDeltaSextadTest test;
-
-    // independence test.
-    private IndependenceTest indTest;
-
-    // independence test alpha.
-    private double indTestAlpha = 0.1;
+    // The Delta test. Testing two sextads simultaneously.
+    private DeltaSextadTest test;
 
     // The data.
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     private List<List<Node>> clusters;
 
-    private int depth = 0;
     private boolean verbose = false;
-    private boolean significanceCalculated = false;
+    private Algorithm algorithm = Algorithm.GAP;
 
     //========================================PUBLIC METHODS====================================//
 
-    public FindTwoFactorClusters(ICovarianceMatrix cov, TestType testType, double alpha) {
+    public FindTwoFactorClusters(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
         cov = new CovarianceMatrix(cov);
-//        this.variables = cov.getVariables();
-//
-//        List<Integer> removedVars = removeVariables(cov.getMatrix(), 0.1, 0.9, .1);
-//        List<Node> allVars = new ArrayList<Node>(cov.getVariables());
-//        List<Node> _removedVars = new ArrayList<Node>();
-//        for (int i = 0; i < allVars.size(); i++) {
-//            if (removedVars.contains(i)) _removedVars.add(allVars.get(i));
-//        }
-//
-//        allVars.removeAll(_removedVars);
-//
-//        List<String> names = new ArrayList<String>();
-//        for (Node node : allVars) names.add(node.getName());
-//
-//        cov = cov.getSubmatrix(names);
-
         this.variables = cov.getVariables();
-        this.indTest = new IndTestFisherZ(cov, indTestAlpha);
         this.alpha = alpha;
-        this.testType = testType;
         this.test = new DeltaSextadTest(cov);
-//        this.test = new DeltaSextadTest2(cov);
         this.dataModel = cov;
+        this.algorithm = algorithm;
+
+        this.corr = new CorrelationMatrix(cov);
 
 
     }
 
-    public FindTwoFactorClusters(DataSet dataSet, TestType testType, double alpha) {
-//        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
-//        this.variables = cov.getVariables();
-//
-//        List<Integer> removedVars = removeVariables(cov.getMatrix(), 0.1, 0.9, .1);
-//        List<Node> allVars = new ArrayList<Node>(cov.getVariables());
-//        List<Node> _removedVars = new ArrayList<Node>();
-//        for (int i = 0; i < allVars.size(); i++) {
-//            if (removedVars.contains(i)) _removedVars.add(allVars.get(i));
-//        }
-//
-//        allVars.removeAll(_removedVars);
-//
-//        dataSet = dataSet.subsetColumns(allVars);
-
+    public FindTwoFactorClusters(DataSet dataSet, Algorithm algorithm, double alpha) {
         this.variables = dataSet.getVariables();
-        this.indTest = new IndTestFisherZ(dataSet, indTestAlpha);
         this.alpha = alpha;
-        this.testType = testType;
         this.test = new DeltaSextadTest(dataSet);
-//        this.test = new DeltaSextadTest2(dataSet); // The old test.
         this.dataModel = dataSet;
+        this.algorithm = algorithm;
+
+        this.corr = new CorrelationMatrix(dataSet);
     }
 
     // renjiey
     private int findFrequentestIndex(Integer outliers[]) {
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> map = new HashMap<>();
 
-        for (int i = 0; i < outliers.length; i++) {
-            if (map.containsKey(outliers[i])) {
-                map.put(outliers[i], map.get(outliers[i]) + 1);
+        for (Integer outlier : outliers) {
+            if (map.containsKey(outlier)) {
+                map.put(outlier, map.get(outlier) + 1);
             } else {
-                map.put(outliers[i], 1);
+                map.put(outlier, 1);
             }
         }
 
@@ -180,7 +147,7 @@ public class FindTwoFactorClusters {
         }
 
         //find out the variables that should be deleted
-        ArrayList<Integer> removedVariables = new ArrayList<Integer>();
+        ArrayList<Integer> removedVariables = new ArrayList<>();
 
         // Added the percent bound jdramsey
         while (outlier.length > 1 && removedVariables.size() < percentBound * correlationMatrix.rows()) {
@@ -214,7 +181,7 @@ public class FindTwoFactorClusters {
 
     // renjiey
     private Integer[] removeZeroIndex(Integer outlier[]) {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         for (int i = 0; i < outlier.length; i++) {
             list.add(outlier[i]);
         }
@@ -230,30 +197,30 @@ public class FindTwoFactorClusters {
     public Graph search() {
         Set<List<Integer>> allClusters;
 
-        if (testType == TestType.SAG) {
-            allClusters = estimateClustersSextadsFirst();
+        if (algorithm == Algorithm.SAG) {
+            allClusters = estimateClustersSAG();
+        } else if (algorithm == Algorithm.GAP) {
+            allClusters = estimateClustersGAP();
         } else {
-            allClusters = estimateClustersPentadsFirst();
+            throw new IllegalStateException("Expected SAG or GAP: " + algorithm);
         }
-        this.clusters = variablesForIndices2(allClusters);
+        this.clusters = variablesForIndices(allClusters);
         return convertToGraph(allClusters);
     }
 
     //========================================PRIVATE METHODS====================================//
 
     // This is the main algorithm.
-    private Set<List<Integer>> estimateClustersPentadsFirst() {
-//        List<Integer> _variables = new ArrayList<Integer>();
-//        for (int i = 0; i < variables.size(); i++) _variables.add(i);
+    private Set<List<Integer>> estimateClustersGAP() {
         List<Integer> _variables = allVariables();
 
-        Set<Set<Integer>> fiveClusters = findPurePentads(_variables);
-        Set<Set<Integer>> combined = combinePurePentads(fiveClusters, _variables);
+        Set<List<Integer>> pentads = findPurepentads(_variables);
+        Set<List<Integer>> combined = combinePurePentads(pentads, _variables);
 
-        Set<List<Integer>> _combined = new HashSet<List<Integer>>();
+        Set<List<Integer>> _combined = new HashSet<>();
 
-        for (Set<Integer> c : combined) {
-            List a = new ArrayList<Integer>(c);
+        for (List<Integer> c : combined) {
+            List<Integer> a = new ArrayList<>(c);
             Collections.sort(a);
             _combined.add(a);
         }
@@ -263,77 +230,64 @@ public class FindTwoFactorClusters {
     }
 
     private List<Integer> allVariables() {
-        List<Integer> _variables = new ArrayList<Integer>();
+        List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) _variables.add(i);
         return _variables;
     }
 
-    private Set<List<Integer>> estimateClustersSextadsFirst() {
-        if (verbose) {
-            log("Running PC adjacency search...", true);
-        }
-
-        Graph graph = new EdgeListGraph(variables);
-        Fas fas = new Fas(graph, indTest);
-        fas.setDepth(depth);
-        graph = fas.search();
-        if (verbose) {
-            log("...done.", true);
-        }
-
-//        List<Integer> _variables = new ArrayList<Integer>();
-//        for (int i = 0; i < variables.size(); i++) _variables.add(i);
+    private Set<List<Integer>> estimateClustersSAG() {
         List<Integer> _variables = allVariables();
 
-        Set<List<Integer>> pureClusters = findPureClusters(_variables, graph);
-        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters), graph);
-        Set<List<Integer>> allClusters = new HashSet<List<Integer>>(pureClusters);
+        Set<List<Integer>> pureClusters = findPureClusters(_variables);
+        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters));
+        Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
         return allClusters;
 
     }
 
-    private Set<Set<Integer>> findPurePentads(List<Integer> allVariables) {
-        if (allVariables.size() < 6) {
-            return new HashSet<Set<Integer>>();
+    private Set<List<Integer>> findPurepentads(List<Integer> variables) {
+        if (variables.size() < 6) {
+            return new HashSet<>();
         }
 
         log("Finding pure pentads.", true);
 
-        ChoiceGenerator gen = new ChoiceGenerator(allVariables.size(), 5);
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 5);
         int[] choice;
-        Set<Set<Integer>> purePentads = new HashSet<Set<Integer>>();
+        Set<List<Integer>> purePentads = new HashSet<>();
         CHOICE:
         while ((choice = gen.next()) != null) {
-            int n1 = allVariables.get(choice[0]);
-            int n2 = allVariables.get(choice[1]);
-            int n3 = allVariables.get(choice[2]);
-            int n4 = allVariables.get(choice[3]);
-            int n5 = allVariables.get(choice[4]);
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
+            int n4 = variables.get(choice[3]);
+            int n5 = variables.get(choice[4]);
 
             List<Integer> pentad = pentad(n1, n2, n3, n4, n5);
 
-            for (int o : allVariables) {
+            if (zeroCorr(pentad, 4)) continue;
+
+            for (int o : variables) {
                 if (pentad.contains(o)) {
                     continue;
                 }
 
                 List<Integer> sextet = sextet(n1, n2, n3, n4, n5, o);
 
-                double p = sextadVanishingP(sextet);
+                Collections.sort(sextet);
 
-                if (!(p > alpha)) {
+                boolean vanishes = vanishes(sextet);
+
+                if (!vanishes) {
                     continue CHOICE;
                 }
-
-//                if (!(avgSumLnP(sextet) > -20)) {
-//                    continue CHOICE;
-//                }
             }
 
-            HashSet<Integer> _cluster = new HashSet<Integer>(pentad);
+            List<Integer> _cluster = new ArrayList<>(pentad);
 
             if (verbose) {
+                System.out.println(variablesForIndices(pentad));
                 log("++" + variablesForIndices(pentad), false);
             }
 
@@ -343,13 +297,13 @@ public class FindTwoFactorClusters {
         return purePentads;
     }
 
-    private Set<Set<Integer>> combinePurePentads(Set<Set<Integer>> purePentads, List<Integer> _variables) {
+    private Set<List<Integer>> combinePurePentads(Set<List<Integer>> purePentads, List<Integer> _variables) {
         log("Growing pure pentads.", true);
-        Set<Set<Integer>> grown = new HashSet<Set<Integer>>();
+        Set<List<Integer>> grown = new HashSet<>();
 
         // Lax grow phase with speedup.
-        if (true) {
-            Set<Integer> t = new HashSet<Integer>();
+        if (false) {
+            List<Integer> t = new ArrayList<>();
             int count = 0;
             int total = purePentads.size();
 
@@ -358,13 +312,13 @@ public class FindTwoFactorClusters {
                     break;
                 }
 
-                Set<Integer> cluster = purePentads.iterator().next();
-                Set<Integer> _cluster = new HashSet<Integer>(cluster);
+                List<Integer> cluster = purePentads.iterator().next();
+                List<Integer> _cluster = new ArrayList<>(cluster);
 
                 for (int o : _variables) {
                     if (_cluster.contains(o)) continue;
 
-                    List<Integer> _cluster2 = new ArrayList<Integer>(_cluster);
+                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
                     int rejected = 0;
                     int accepted = 0;
 
@@ -398,9 +352,9 @@ public class FindTwoFactorClusters {
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
-                ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 5);
+                ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
                 int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<Integer>(_cluster);
+                List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
                     int n1 = _cluster3.get(choice2[0]);
@@ -420,7 +374,7 @@ public class FindTwoFactorClusters {
                 }
 
                 if (verbose) {
-                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<Integer>(_cluster)));
+                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
                 }
                 grown.add(_cluster);
             } while (!purePentads.isEmpty());
@@ -432,17 +386,17 @@ public class FindTwoFactorClusters {
             int total = purePentads.size();
 
             // Optimized lax version of grow phase.
-            for (Set<Integer> cluster : new HashSet<Set<Integer>>(purePentads)) {
-                Set<Integer> _cluster = new HashSet<Integer>(cluster);
+            for (List<Integer> cluster : new HashSet<>(purePentads)) {
+                List<Integer> _cluster = new ArrayList<>(cluster);
 
                 for (int o : _variables) {
                     if (_cluster.contains(o)) continue;
 
-                    List<Integer> _cluster2 = new ArrayList<Integer>(_cluster);
+                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
                     int rejected = 0;
                     int accepted = 0;
 
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
+                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 6);
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
@@ -453,15 +407,15 @@ public class FindTwoFactorClusters {
 
                         List<Integer> pentad = pentad(n1, n2, n3, n4, o);
 
-                        Set<Integer> t = new HashSet<Integer>(pentad);
+                        List<Integer> t = new ArrayList<>(pentad);
+
+                        Collections.sort(t);
 
                         if (!purePentads.contains(t)) {
                             rejected++;
                         } else {
                             accepted++;
                         }
-
-//                        if (avgSumLnP(pentad) < -10) continue CLUSTER;
                     }
 
                     if (rejected > accepted) {
@@ -471,7 +425,7 @@ public class FindTwoFactorClusters {
                     _cluster.add(o);
                 }
 
-                for (Set<Integer> c : new HashSet<Set<Integer>>(purePentads)) {
+                for (List<Integer> c : new HashSet<>(purePentads)) {
                     if (_cluster.containsAll(c)) {
                         purePentads.remove(c);
                     }
@@ -486,8 +440,8 @@ public class FindTwoFactorClusters {
         }
 
         // Strict grow phase.
-        if (false) {
-            Set<Integer> t = new HashSet<Integer>();
+        if (true) {
+            List<Integer> t = new ArrayList<>();
             int count = 0;
             int total = purePentads.size();
 
@@ -496,14 +450,14 @@ public class FindTwoFactorClusters {
                     break;
                 }
 
-                Set<Integer> cluster = purePentads.iterator().next();
-                Set<Integer> _cluster = new HashSet<Integer>(cluster);
+                List<Integer> cluster = purePentads.iterator().next();
+                List<Integer> _cluster = new ArrayList<>(cluster);
 
                 VARIABLES:
                 for (int o : _variables) {
                     if (_cluster.contains(o)) continue;
 
-                    List<Integer> _cluster2 = new ArrayList<Integer>(_cluster);
+                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
 
                     ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
                     int[] choice;
@@ -521,20 +475,32 @@ public class FindTwoFactorClusters {
                         t.add(n4);
                         t.add(o);
 
+                        Collections.sort(t);
+
                         if (!purePentads.contains(t)) {
                             continue VARIABLES;
                         }
-
-//                        if (avgSumLnP(new ArrayList<Integer>(t)) < -10) continue CLUSTER;
                     }
 
                     _cluster.add(o);
                 }
 
+//                for (Set<Integer> c : new HashSet<>(purePentads)) {
+////                    for (Integer d : c) {
+////                        if (_cluster.contains(d)) {
+////                            purePentads.remove(c);
+////                        }
+////                    }
+//
+//                    if (_cluster.containsAll(c)) {
+//                        purePentads.remove(c);
+//                    }
+//                }
+
                 // This takes out all pure clusters that are subsets of _cluster.
                 ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 5);
                 int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<Integer>(_cluster);
+                List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
                     int n1 = _cluster3.get(choice2[0]);
@@ -550,134 +516,45 @@ public class FindTwoFactorClusters {
                     t.add(n4);
                     t.add(n5);
 
+                    Collections.sort(t);
+
                     purePentads.remove(t);
                 }
 
                 if (verbose) {
                     System.out.println("Grown " + (++count) + " of " + total + ": " + _cluster);
                 }
+
                 grown.add(_cluster);
             } while (!purePentads.isEmpty());
-        }
-
-        if (false) {
-            System.out.println("# pure pentads = " + purePentads.size());
-
-            List<Set<Integer>> clusters = new LinkedList<Set<Integer>>(purePentads);
-            Set<Integer> t = new HashSet<Integer>();
-
-            I:
-            for (int i = 0; i < clusters.size(); i++) {
-                System.out.println("I = " + i);
-
-//                // remove "i" clusters that intersect with previous clusters.
-//                for (int k = 0; k < i - 1; k++) {
-//                    Set<Integer> ck = clusters.get(k);
-//                    Set<Integer> ci = clusters.get(i);
-//
-//                    if (ck == null) continue;
-//                    if (ci == null) continue;
-//
-//                    Set<Integer> cm = new HashSet<Integer>(ck);
-//                    cm.retainAll(ci);
-//
-//                    if (!cm.isEmpty()) {
-//                        clusters.remove(i);
-//                        i--;
-//                        continue I;
-//                    }
-//                }
-
-                J:
-                for (int j = i + 1; j < clusters.size(); j++) {
-                    Set<Integer> ci = clusters.get(i);
-                    Set<Integer> cj = clusters.get(j);
-
-                    if (ci == null) continue;
-                    if (cj == null) continue;
-
-                    Set<Integer> ck = new HashSet<Integer>(ci);
-                    ck.addAll(cj);
-
-                    List<Integer> cm = new ArrayList<Integer>(ck);
-
-                    ChoiceGenerator gen = new ChoiceGenerator(cm.size(), 5);
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        t.clear();
-                        t.add(cm.get(choice[0]));
-                        t.add(cm.get(choice[1]));
-                        t.add(cm.get(choice[2]));
-                        t.add(cm.get(choice[3]));
-                        t.add(cm.get(choice[4]));
-
-                        if (!purePentads.contains(t)) {
-                            continue J;
-                        }
-                    }
-
-                    clusters.set(i, ck);
-                    clusters.remove(j);
-                    j--;
-                    System.out.println("Removing " + ci + ", " + cj + ", adding " + ck);
-                }
-            }
-
-            grown = new HashSet<Set<Integer>>(clusters);
         }
 
         // Optimized pick phase.
         log("Choosing among grown clusters.", true);
 
-        for (Set<Integer> l : grown) {
-            ArrayList<Integer> _l = new ArrayList<Integer>(l);
+        for (List<Integer> l : grown) {
+            ArrayList<Integer> _l = new ArrayList<>(l);
             Collections.sort(_l);
             if (verbose) {
                 log("Grown: " + variablesForIndices(_l), false);
             }
         }
 
-        Set<Set<Integer>> out = new HashSet<Set<Integer>>();
+        Set<List<Integer>> out = new HashSet<>();
 
-        List<Set<Integer>> list = new ArrayList<Set<Integer>>(grown);
+        List<List<Integer>> list = new ArrayList<>(grown);
 
-        Collections.sort(list, new Comparator<Set<Integer>>() {
+        Collections.sort(list, new Comparator<List<Integer>>() {
             @Override
-            public int compare(Set<Integer> o1, Set<Integer> o2) {
+            public int compare(List<Integer> o1, List<Integer> o2) {
                 return o2.size() - o1.size();
             }
         });
 
-//        final Map<Set<Integer>, Double> significances = new HashMap<Set<Integer>, Double>();
-
-//        Collections.sort(list, new Comparator<Set<Integer>>() {
-//            @Override
-//            public int compare(Set<Integer> cluster1, Set<Integer> cluster2) {
-////                Double sum1 = significances.get(cluster1);
-////                if (sum1 == null) {
-////                    double sig = significance(new ArrayList<Integer>(cluster1));
-////                    significances.put(cluster1, sig);
-////                    sum1 = sig;
-////                }
-////                Double sum2 = significances.get(cluster2);
-////                if (sum2 == null) {
-////                    double sig = significance(new ArrayList<Integer>(cluster2));
-////                    significances.put(cluster2, sig);
-////                    sum2 = sig;
-////                }
-//
-//                double avg1 = avgSumLnP(new ArrayList<Integer>(cluster1));
-//                double avg2 = avgSumLnP(new ArrayList<Integer>(cluster2));
-//
-//                return Double.compare(avg2, avg1);
-//            }
-//        });
-
-        Set<Integer> all = new HashSet<Integer>();
+        List<Integer> all = new ArrayList<>();
 
         CLUSTER:
-        for (Set<Integer> cluster : list) {
+        for (List<Integer> cluster : list) {
             for (Integer i : cluster) {
                 if (all.contains(i)) continue CLUSTER;
             }
@@ -686,187 +563,169 @@ public class FindTwoFactorClusters {
             all.addAll(cluster);
         }
 
+        boolean significanceCalculated = false;
         if (significanceCalculated) {
-            for (Set<Integer> _out : out) {
+            for (List<Integer> _out : out) {
                 try {
-                    double p = significance(new ArrayList<Integer>(_out));
-                    log("OUT: " + variablesForIndices(new ArrayList<Integer>(_out)) + " p = " + p, true);
+                    double p = significance(new ArrayList<>(_out));
+                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = " + p, true);
                 } catch (Exception e) {
-                    log("OUT: " + variablesForIndices(new ArrayList<Integer>(_out)) + " p = EXCEPTION", true);
+                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = EXCEPTION", true);
                 }
             }
         } else {
-            for (Set<Integer> _out : out) {
-                log("OUT: " + variablesForIndices(new ArrayList<Integer>(_out)), true);
+            for (List<Integer> _out : out) {
+                log("OUT: " + variablesForIndices(new ArrayList<>(_out)), true);
             }
         }
+
+//        C:
+//        for (List<Integer> cluster : new HashSet<>(out)) {
+//            if (cluster.size() >= 6) {
+//                ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 6);
+//                int[] choice;
+//
+//                while ((choice = gen.next()) != null) {
+//                    int n1 = cluster.get(choice[0]);
+//                    int n2 = cluster.get(choice[1]);
+//                    int n3 = cluster.get(choice[2]);
+//                    int n4 = cluster.get(choice[3]);
+//                    int n5 = cluster.get(choice[4]);
+//                    int n6 = cluster.get(choice[5]);
+//
+//                    List<Integer> _cluster = sextet(n1, n2, n3, n4, n5, n6);
+//
+//                    // Note that purity needs to be assessed with respect to all of the variables in order to
+//                    // remove all latent-measure impurities between pairs of latents.
+//                    if (!pure(_cluster)) {
+//                        out.remove(cluster);
+//                        continue C;
+//                    }
+//                }
+//            }
+//        }
 
         return out;
     }
 
-    Map<Set<Integer>, Double> avgSumLnPs = new HashMap<Set<Integer>, Double>();
+    // Finds clusters of size 6 or higher for the IntSextad first algorithm.
+    private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
+        Set<List<Integer>> clusters = new HashSet<>();
 
-    private double avgSumLnP(List<Integer> cluster) {
-        ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 5);
-        int[] choice;
-        int count = 0;
-        double sumLnP = 0;
-
-        Set<Integer> _cluster = new HashSet<Integer>(cluster);
-
-        if (avgSumLnPs.containsKey(_cluster)) {
-            return avgSumLnPs.get(_cluster);
-        }
-
-        while ((choice = gen.next()) != null) {
-            int n1 = cluster.get(choice[0]);
-            int n2 = cluster.get(choice[1]);
-            int n3 = cluster.get(choice[2]);
-            int n4 = cluster.get(choice[3]);
-            int n5 = cluster.get(choice[4]);
-
-            List<Integer> pentad = pentad(n1, n2, n3, n4, n5);
-
-            for (int o : cluster) {
-                if (pentad.contains(o)) {
-                    continue;
+        for (int k = 6; k >= 6; k--) {
+            VARIABLES:
+            while (!_variables.isEmpty()) {
+                if (verbose) {
+                    System.out.println(_variables);
                 }
+                if (_variables.size() < 6) break;
 
-                List<Integer> sextad = sextet(n1, n2, n3, n4, n5, o);
-                double p = sextadVanishingP(sextad);
-                sumLnP += p;
-                count++;
-            }
-        }
+                ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), 6);
+                int[] choice;
 
-        sumLnP /= count;
+                while ((choice = gen.next()) != null) {
+                    int n1 = _variables.get(choice[0]);
+                    int n2 = _variables.get(choice[1]);
+                    int n3 = _variables.get(choice[2]);
+                    int n4 = _variables.get(choice[3]);
+                    int n5 = _variables.get(choice[4]);
+                    int n6 = _variables.get(choice[5]);
 
-        if (count == 0) sumLnP = Double.NEGATIVE_INFINITY;
+                    List<Integer> cluster = sextet(n1, n2, n3, n4, n5, n6);
 
-        avgSumLnPs.put(_cluster, sumLnP);
-        return sumLnP;
-    }
-
-    // Finds clusters of size 6 or higher for the sextad first algorithm.
-    private Set<List<Integer>> findPureClusters(List<Integer> _variables, Graph graph) {
-        Set<List<Integer>> clusters = new HashSet<List<Integer>>();
-//        List<Integer> allVariables = new ArrayList<Integer>();
-//        for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
-        List<Integer> allVariables = allVariables();
-
-        VARIABLES:
-        while (!_variables.isEmpty()) {
-            if (verbose) {
-                System.out.println(_variables);
-            }
-            if (_variables.size() < 6) break;
-
-            ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), 6);
-            int[] choice;
-
-            CHOICE:
-            while ((choice = gen.next()) != null) {
-                int n1 = _variables.get(choice[0]);
-                int n2 = _variables.get(choice[1]);
-                int n3 = _variables.get(choice[2]);
-                int n4 = _variables.get(choice[3]);
-                int n5 = _variables.get(choice[4]);
-                int n6 = _variables.get(choice[5]);
-
-                List<Integer> cluster = sextet(n1, n2, n3, n4, n5, n6);
-
-                // Note that purity needs to be assessed with respect to all of the variables in order to
-                // remove all latent-measure impurities between pairs of latents.
-                if (pure(cluster, allVariables)) {
-                    if (verbose) {
-                        log("Found a pure: " + variablesForIndices(cluster), false);
-                    }
-
-//                    if (modelInsignificantWithNewCluster(clusters, cluster)) continue CHOICE;
-
-                    O:
-                    for (int o : _variables) {
-                        if (cluster.contains(o)) continue;
-                        List<Integer> _cluster = new ArrayList<Integer>(cluster);
-                        _cluster.add(o);
-
-                        ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 6);
-                        int[] choice2;
-
-                        while ((choice2 = gen2.next()) != null) {
-                            int t1 = _cluster.get(choice2[0]);
-                            int t2 = _cluster.get(choice2[1]);
-                            int t3 = _cluster.get(choice2[2]);
-                            int t4 = _cluster.get(choice2[3]);
-                            int t5 = _cluster.get(choice2[4]);
-                            int t6 = _cluster.get(choice2[5]);
-
-                            List<Integer> sextet = sextet(t1, t2, t3, t4, t5, t6);
-
-                            if (sextet.contains(o)) {
-
-//                                Optimizes for large clusters.
-//                                if (++count > 100) {
-//                                    break WHILE;
-//                                }
-
-                                if (!pure(sextet, allVariables)) {
-                                    continue O;
-                                }
-                            }
+                    // Note that purity needs to be assessed with respect to all of the variables in order to
+                    // remove all latent-measure impurities between pairs of latents.
+                    if (pure(cluster)) {
+                        if (verbose) {
+                            log("Found a pure: " + variablesForIndices(cluster), false);
                         }
 
-//                        if (modelInsignificantWithNewCluster(clusters, cluster)) continue O;
+                        addOtherVariables(_variables, cluster);
+
+                        if (cluster.size() < k) continue;
 
                         if (verbose) {
-                            log("Extending by " + variables.get(o), false);
+                            log("Cluster found: " + variablesForIndices(cluster), true);
+                            System.out.println("Indices for cluster = " + cluster);
                         }
-                        cluster.add(o);
-                    }
 
-                    if (verbose) {
-                        log("Cluster found: " + variablesForIndices(cluster), true);
-                    }
-                    clusters.add(cluster);
-                    _variables.removeAll(cluster);
+                        clusters.add(cluster);
+                        _variables.removeAll(cluster);
 
-                    for (int p : cluster) {
-                        graph.removeNode(variables.get(p));
+                        continue VARIABLES;
                     }
-
-                    continue VARIABLES;
                 }
+
+                break;
             }
 
-            break;
+//            C:
+//            for (List<Integer> cluster : new HashSet<>(clusters)) {
+//                if (cluster.size() >= 6) {
+//                    ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 6);
+//                    int[] choice;
+//
+//                    while ((choice = gen.next()) != null) {
+//                        int n1 = cluster.get(choice[0]);
+//                        int n2 = cluster.get(choice[1]);
+//                        int n3 = cluster.get(choice[2]);
+//                        int n4 = cluster.get(choice[3]);
+//                        int n5 = cluster.get(choice[4]);
+//                        int n6 = cluster.get(choice[5]);
+//
+//                        List<Integer> _cluster = sextet(n1, n2, n3, n4, n5, n6);
+//
+//                        // Note that purity needs to be assessed with respect to all of the variables in order to
+//                        // remove all latent-measure impurities between pairs of latents.
+//                        if (!pure(_cluster)) {
+//                            clusters.remove(cluster);
+//                            continue C;
+//                        }
+//                    }
+//                }
+//            }
         }
 
         return clusters;
     }
 
-    private boolean modelInsignificantWithNewCluster(Set<List<Integer>> clusters, List<Integer> cluster) {
-        if (true) return false;
+    private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
 
-        List<List<Integer>> __clusters = new ArrayList<List<Integer>>(clusters);
-        __clusters.add(cluster);
-        double significance3 = getModelPValue(__clusters);
-        if (verbose) {
-            log("Significance * " + __clusters + " = " + significance3, false);
-        }
+        O:
+        for (int o : _variables) {
+            if (cluster.contains(o)) continue;
+            List<Integer> _cluster = new ArrayList<>(cluster);
 
-        if (significance3 < alpha) {
-            return true;
+            ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 6);
+            int[] choice;
+
+            while ((choice = gen2.next()) != null) {
+                int t1 = _cluster.get(choice[0]);
+                int t2 = _cluster.get(choice[1]);
+                int t3 = _cluster.get(choice[2]);
+                int t4 = _cluster.get(choice[3]);
+                int t5 = _cluster.get(choice[4]);
+
+                List<Integer> sextad = pentad(t1, t2, t3, t4, t5);
+                sextad.add(o);
+
+                if (!pure(sextad)) {
+                    continue O;
+                }
+            }
+
+            log("Extending by " + variables.get(o), false);
+            cluster.add(o);
         }
-        return false;
     }
 
     //  Finds clusters of size 5 for the sextet first algorithm.
-    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure, Graph graph) {
-        Set<List<Integer>> fiveClusters = new HashSet<List<Integer>>();
-        Set<List<Integer>> _clusters = new HashSet<List<Integer>>(clusters);
+    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
+        Set<List<Integer>> pentads = new HashSet<>();
+        Set<List<Integer>> _clusters = new HashSet<>(clusters);
 
         if (unionPure.isEmpty()) {
-            return new HashSet<List<Integer>>();
+            return new HashSet<>();
         }
 
         REMAINING:
@@ -874,13 +733,12 @@ public class FindTwoFactorClusters {
             if (remaining.size() < 5) break;
 
             if (verbose) {
-                log("UnionPure = " + variablesForIndices(new ArrayList<Integer>(unionPure)), false);
+                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)), false);
             }
 
             ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 5);
             int[] choice;
 
-            CHOICE:
             while ((choice = gen.next()) != null) {
                 int t2 = remaining.get(choice[0]);
                 int t3 = remaining.get(choice[1]);
@@ -888,41 +746,44 @@ public class FindTwoFactorClusters {
                 int t5 = remaining.get(choice[3]);
                 int t6 = remaining.get(choice[4]);
 
-                List<Integer> cluster = new ArrayList<Integer>();
+                List<Integer> cluster = new ArrayList<>();
                 cluster.add(t2);
                 cluster.add(t3);
                 cluster.add(t4);
                 cluster.add(t5);
                 cluster.add(t6);
 
-                // Check all x as a cross check; really only one should be necessary.
-                boolean allT1 = true;
-                boolean someT1 = false;
-                int count = 0;
+                if (zeroCorr(cluster, 4)) {
+                    continue;
+                }
 
-                for (int t1 : unionPure) {
+                // Check all x as a cross check; really only one should be necessary.
+                boolean allvanish = true;
+                boolean someVanish = false;
+
+                for (int t1 : allVariables()) {
                     if (cluster.contains(t1)) continue;
 
-                    List<Integer> _cluster = new ArrayList<Integer>(cluster);
+                    List<Integer> _cluster = new ArrayList<>(cluster);
                     _cluster.add(t1);
 
-                    if (!(sextadVanishingP(_cluster) > alpha)) {
-                        allT1 = false;
+
+                    if (vanishes(_cluster)) {
+                        someVanish = true;
                     } else {
-                        someT1 = true;
+                        allvanish = false;
+                        break;
                     }
                 }
 
-                if (someT1 && allT1) {
-                    if (modelInsignificantWithNewCluster(_clusters, cluster)) continue;
-
-                    fiveClusters.add(cluster);
+                if (someVanish && allvanish) {
+                    pentads.add(cluster);
                     _clusters.add(cluster);
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
 
                     if (verbose) {
-                        log("5-cluster found: " + variablesForIndices(cluster), false);
+                        log("3-cluster found: " + variablesForIndices(cluster), false);
                     }
 
                     continue REMAINING;
@@ -932,21 +793,17 @@ public class FindTwoFactorClusters {
             break;
         }
 
-        return fiveClusters;
+        return pentads;
     }
 
     private double significance(List<Integer> cluster) {
         double chisq = getClusterChiSquare(cluster);
 
-        // From "Algebraic factor analysis: tetrads, pentads and beyond" Drton et al.
+        // From "Algebraic factor analysis: sextads, pentads and beyond" Drton et al.
         int n = cluster.size();
         int dof = dofHarman(n);
         double q = ProbUtils.chisqCdf(chisq, dof);
         return 1.0 - q;
-    }
-
-    private double modelSignificance(List<List<Integer>> clusters) {
-        return getModelPValue(clusters);
     }
 
     private int dofDrton(int n) {
@@ -962,19 +819,17 @@ public class FindTwoFactorClusters {
     }
 
     private List<Node> variablesForIndices(List<Integer> cluster) {
-        List<Node> _cluster = new ArrayList<Node>();
+        List<Node> _cluster = new ArrayList<>();
 
         for (int c : cluster) {
             _cluster.add(variables.get(c));
         }
 
-        Collections.sort(_cluster);
-
         return _cluster;
     }
 
-    private List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters) {
-        List<List<Node>> variables = new ArrayList<List<Node>>();
+    private List<List<Node>> variablesForIndices(Set<List<Integer>> clusters) {
+        List<List<Node>> variables = new ArrayList<>();
 
         for (List<Integer> cluster : clusters) {
             variables.add(variablesForIndices(cluster));
@@ -983,27 +838,27 @@ public class FindTwoFactorClusters {
         return variables;
     }
 
-    private boolean pure(List<Integer> sextet, List<Integer> variables) {
-        if (sextadVanishingP(sextet) > alpha) {
-            int fails = 0;
+    private boolean pure(List<Integer> sextet) {
+        if (zeroCorr(sextet, 5)) {
+            return false;
+        }
 
-            for (int o : variables) {
+        if (vanishes(sextet)) {
+            for (int o : allVariables()) {
                 if (sextet.contains(o)) continue;
 
                 for (int i = 0; i < sextet.size(); i++) {
-                    List<Integer> _sextet = new ArrayList<Integer>(sextet);
-                    _sextet.remove(_sextet.get(i));
+                    List<Integer> _sextet = new ArrayList<>(sextet);
+                    _sextet.remove(sextet.get(i));
                     _sextet.add(i, o);
 
-                    if (!(sextadVanishingP(_sextet) > alpha)) {
-                        fails++;
-
-                        if (fails > 0) {
-                            return false;
-                        }
+                    if (!(vanishes(_sextet))) {
+                        return false;
                     }
                 }
             }
+
+            System.out.println("PURE: " + variablesForIndices(sextet));
 
             return true;
         }
@@ -1025,8 +880,8 @@ public class FindTwoFactorClusters {
         g.addNode(l1);
         g.addNode(l2);
 
-        for (int i = 0; i < sextet.size(); i++) {
-            Node n = this.variables.get(sextet.get(i));
+        for (Integer aQuartet : sextet) {
+            Node n = this.variables.get(aQuartet);
             g.addNode(n);
             g.addDirectedEdge(l1, n);
             g.addDirectedEdge(l2, n);
@@ -1045,16 +900,11 @@ public class FindTwoFactorClusters {
         return est.estimate();
     }
 
-    private double getModelPValue(List<List<Integer>> clusters) {
-        SemIm im = estimateModel(clusters);
-        return im.getPValue();
-    }
-
     private SemIm estimateModel(List<List<Integer>> clusters) {
         Graph g = new EdgeListGraph();
 
-        List<Node> upperLatents = new ArrayList<Node>();
-        List<Node> lowerLatents = new ArrayList<Node>();
+        List<Node> upperLatents = new ArrayList<>();
+        List<Node> lowerLatents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
             List<Integer> cluster = clusters.get(i);
@@ -1070,8 +920,8 @@ public class FindTwoFactorClusters {
             g.addNode(l1);
             g.addNode(l2);
 
-            for (int k = 0; k < cluster.size(); k++) {
-                Node n = this.variables.get(cluster.get(k));
+            for (Integer aCluster : cluster) {
+                Node n = this.variables.get(aCluster);
                 g.addNode(n);
                 g.addDirectedEdge(l1, n);
                 g.addDirectedEdge(l2, n);
@@ -1118,7 +968,7 @@ public class FindTwoFactorClusters {
     }
 
     private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
-        List<Integer> sextet = new ArrayList<Integer>();
+        List<Integer> sextet = new ArrayList<>();
         sextet.add(n1);
         sextet.add(n2);
         sextet.add(n3);
@@ -1126,28 +976,45 @@ public class FindTwoFactorClusters {
         sextet.add(n5);
         sextet.add(n6);
 
-        if (new HashSet<Integer>(sextet).size() < 6)
-            throw new IllegalArgumentException("Sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3 + ", " + n4 + ", " + n5 + ", " + n6 + ">");
+        if (new HashSet<>(sextet).size() < 6)
+            throw new IllegalArgumentException("sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3
+                    + ", " + n4 + ", " + n5 + ", " + n6 + ">");
 
         return sextet;
     }
 
     private List<Integer> pentad(int n1, int n2, int n3, int n4, int n5) {
-        List<Integer> pentad = new ArrayList<Integer>();
+        List<Integer> pentad = new ArrayList<>();
         pentad.add(n1);
         pentad.add(n2);
         pentad.add(n3);
         pentad.add(n4);
         pentad.add(n5);
 
-        if (new HashSet<Integer>(pentad).size() < 5)
-            throw new IllegalArgumentException("Pentad elements must be unique: <" + n1 + ", " + n2 + ", " + n3 + ", " + n4 + ", " + n5 + ">");
+        if (new HashSet<>(pentad).size() < 5)
+            throw new IllegalArgumentException("pentad elements must be unique: <" + n1 + ", " + n2 + ", " + n3
+                    + ", " + n4 + ", " + n5 + ">");
 
         return pentad;
     }
 
-    private double sextadVanishingP(List<Integer> sextet) {
-//        Collections.sort(sextet);
+    private boolean vanishes(List<Integer> sextet) {
+
+        PermutationGenerator gen = new PermutationGenerator(6);
+        int[] perm;
+
+//        while ((perm = gen.next()) != null) {
+//            int n1 = sextet.get(perm[0]);
+//            int n2 = sextet.get(perm[1]);
+//            int n3 = sextet.get(perm[2]);
+//            int n4 = sextet.get(perm[3]);
+//            int n5 = sextet.get(perm[4]);
+//            int n6 = sextet.get(perm[5);
+//
+//            if (!vanishes(n1, n2, n3, n4, n5, n6)) return false;
+//        }
+//
+//        return true;
 
         int n1 = sextet.get(0);
         int n2 = sextet.get(1);
@@ -1156,7 +1023,26 @@ public class FindTwoFactorClusters {
         int n5 = sextet.get(4);
         int n6 = sextet.get(5);
 
-        return testVanishing(n1, n2, n3, n4, n5, n6);
+        return vanishes(n1, n2, n3, n4, n5, n6)
+                && vanishes(n3, n2, n1, n6, n5, n4)
+                && vanishes(n4, n5, n6, n1, n2, n3)
+                && vanishes(n6, n5, n4, n3, n2, n1);
+    }
+
+    private boolean zeroCorr(List<Integer> cluster, int n) {
+        int count = 0;
+
+        for (int i = 0; i < cluster.size(); i++) {
+            for (int j = i + 1; j < cluster.size(); j++) {
+                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+                int N = this.corr.getSampleSize();
+                double f = sqrt(N) * Math.log((1. + r) / (1. - r));
+                double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
+                if (p > alpha) count++;
+            }
+        }
+
+        return count >= n;
     }
 
     /**
@@ -1170,92 +1056,63 @@ public class FindTwoFactorClusters {
         this.verbose = verbose;
     }
 
-    private double testVanishing(int n1, int n2, int n3, int n4, int n5, int n6) {
-        Node m1 = variables.get(n1);
-        Node m2 = variables.get(n2);
-        Node m3 = variables.get(n3);
-        Node m4 = variables.get(n4);
-        Node m5 = variables.get(n5);
-        Node m6 = variables.get(n6);
+    private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {
+        IntSextad t1 = new IntSextad(n1, n2, n3, n4, n5, n6);
+        IntSextad t2 = new IntSextad(n1, n5, n6, n2, n3, n4);
+        IntSextad t3 = new IntSextad(n1, n4, n6, n2, n3, n5);
+        IntSextad t4 = new IntSextad(n1, n4, n5, n2, n3, n6);
+        IntSextad t5 = new IntSextad(n1, n3, n4, n2, n5, n6);
+        IntSextad t6 = new IntSextad(n1, n3, n5, n2, n4, n6);
+        IntSextad t7 = new IntSextad(n1, n3, n6, n2, n4, n5);
+        IntSextad t8 = new IntSextad(n1, n2, n4, n3, n5, n6);
+        IntSextad t9 = new IntSextad(n1, n2, n5, n3, n4, n6);
+        IntSextad t10 = new IntSextad(n1, n2, n6, n3, n4, n5);
 
-//            sextad[,1]=c(indices[1],indices[2],indices[3],indices[4],indices[5],indices[6])
-//            sextad[,2]=c(indices[1],indices[5],indices[6],indices[2],indices[3],indices[4])
-//            sextad[,3]=c(indices[1],indices[4],indices[6],indices[2],indices[3],indices[5])
-//            sextad[,4]=c(indices[1],indices[4],indices[5],indices[2],indices[3],indices[6])
-//            sextad[,5]=c(indices[1],indices[3],indices[4],indices[2],indices[5],indices[6])
-//            sextad[,6]=c(indices[1],indices[3],indices[5],indices[2],indices[4],indices[6])
-//            sextad[,7]=c(indices[1],indices[3],indices[6],indices[2],indices[4],indices[5])
-//            sextad[,8]=c(indices[1],indices[2],indices[4],indices[3],indices[5],indices[6])
-//            sextad[,9]=c(indices[1],indices[2],indices[5],indices[3],indices[4],indices[6])
-//            sextad[,10]=c(indices[1],indices[2],indices[6],indices[3],indices[4],indices[5])
+//            IntSextad[] independents = {t2, t5, t10, t3, t6};
 
-        Sextad t1 = new Sextad(m1, m2, m3, m4, m5, m6);
-        Sextad t2 = new Sextad(m1, m5, m6, m2, m3, m4);
-        Sextad t3 = new Sextad(m1, m4, m6, m2, m3, m5);
-        Sextad t4 = new Sextad(m1, m4, m5, m2, m3, m6);
-        Sextad t5 = new Sextad(m1, m3, m4, m2, m5, m6);
-        Sextad t6 = new Sextad(m1, m3, m5, m2, m4, m6);
-        Sextad t7 = new Sextad(m1, m3, m6, m2, m4, m5);
-        Sextad t8 = new Sextad(m1, m2, m4, m3, m5, m6);
-        Sextad t9 = new Sextad(m1, m2, m5, m3, m4, m6);
-        Sextad t10 = new Sextad(m1, m2, m6, m3, m4, m5);
+        List<IntSextad[]> independents = new ArrayList<>();
+        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
+//        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
+//        independents.add(new IntSextad[]{t6, t7, t8, t9, t10});
+//        independents.add(new IntSextad[]{t1, t2, t4, t5, t9});
+//        independents.add(new IntSextad[]{t1, t3, t4, t6, t10});
 
-        if (test instanceof DeltaSextadTest) {
+//        independents.add(new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
 
-//            Sextad[] independents = {t2, t5, t10, t3, t6};
+        // The four sextads implied by equation 5.17 in Harmann.
+//            independents.add(new IntSextad[]{t3, t7, t8, t9});
 
-            List<Sextad[]> independents = new ArrayList<Sextad[]>();
-//            independents.add(new Sextad[]{t1a, t2, t3, t5, t6});
-//            independents.add(new Sextad[]{t1a, t2, t3, t9, t10});
-//            independents.add(new Sextad[]{t6, t7, t8, t9, t10});
-//            independents.add(new Sextad[]{t1a, t2, t4, t5, t9});
-//            independents.add(new Sextad[]{t1a, t3, t4, t6, t10});
+        for (IntSextad[] sextads : independents) {
+            double p = test.getPValue(sextads);
 
-            // The four tetrads implied by equation 5.17 in Harmann.
-            independents.add(new Sextad[]{t3, t7, t8, t9});
+            if (Double.isNaN(p)) {
+                return false;
+            }
 
-
-//            1	2	4	5	9
-//            1	3	4	6	10
-//            double p = test.getPValue(independents);
-//            return p > alpha;
-
-//            List<Sextad> t = new ArrayList<Sextad>();
-//            t.add(t1a);
-//            t.add(t2);
-//            t.add(t3);
-//            t.add(t4);
-//            t.add(t5);
-//            t.add(t6);
-//            t.add(t7);
-//            t.add(t8);
-//            t.add(t9);
-//            t.add(t10);
-//
-//            for (Sextad[] sextad : independents) {
-//                double p = test.getPValue(sextad);
-//                if (p < alpha) return false;
-//            }
-            double p = test.getPValue(independents.get(0));
-            return p;
-//
-        } else {
-            throw new IllegalArgumentException();
+            if (p < alpha) return false;
         }
+
+//        IntSextad[] sextads = new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10};
+//
+//        for (IntSextad sextad : sextads) {
+//            if (test.getScore(sextad) < alpha) return false;
+//        }
+
+        return true;
     }
 
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
         Graph graph = new EdgeListGraph(variables);
 
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
         for (int i = 0; i < clusters.size(); i++) {
-            Node latent = new GraphNode(MimBuild.LATENT_PREFIX + (i + 1));
+            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
             graph.addNode(latent);
         }
 
-        List<Set<Node>> _clusters = new ArrayList<Set<Node>>(clusters);
+        List<Set<Node>> _clusters = new ArrayList<>(clusters);
 
         for (int i = 0; i < latents.size(); i++) {
             for (Node node : _clusters.get(i)) {
@@ -1268,10 +1125,10 @@ public class FindTwoFactorClusters {
     }
 
     private Graph convertToGraph(Set<List<Integer>> allClusters) {
-        Set<Set<Node>> _clustering = new HashSet<Set<Node>>();
+        Set<Set<Node>> _clustering = new HashSet<>();
 
         for (List<Integer> cluster : allClusters) {
-            Set<Node> nodes = new HashSet<Node>();
+            Set<Node> nodes = new HashSet<>();
 
             for (int i : cluster) {
                 nodes.add(variables.get(i));
@@ -1284,7 +1141,7 @@ public class FindTwoFactorClusters {
     }
 
     private Set<Integer> unionPure(Set<List<Integer>> pureClusters) {
-        Set<Integer> unionPure = new HashSet<Integer>();
+        Set<Integer> unionPure = new HashSet<>();
 
         for (List<Integer> cluster : pureClusters) {
             unionPure.addAll(cluster);
@@ -1296,17 +1153,8 @@ public class FindTwoFactorClusters {
     private void log(String s, boolean toLog) {
         if (toLog) {
             TetradLogger.getInstance().log("info", s);
+//            System.out.println(s);
         }
-
-        System.out.println(s);
-    }
-
-    public boolean isSignificanceCalculated() {
-        return significanceCalculated;
-    }
-
-    public void setSignificanceCalculated(boolean significanceCalculated) {
-        this.significanceCalculated = significanceCalculated;
     }
 }
 

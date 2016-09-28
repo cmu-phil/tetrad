@@ -52,6 +52,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     private double percent = .75;
     private boolean fdr = true;
     private final ArrayList<RecursivePartialCorrelation> recursivePartialCorrelation;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -59,7 +60,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         this.dataSets = dataSets;
         this.variables = dataSets.get(0).getVariables();
 
-        data = new ArrayList<TetradMatrix>();
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
+        data = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             dataSet = DataUtils.center(dataSet);
@@ -67,19 +72,19 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             data.add(_data);
         }
 
-        ncov = new ArrayList<TetradMatrix>();
+        ncov = new ArrayList<>();
         for (TetradMatrix d : this.data) ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
 
         setAlpha(alpha);
         rows = new int[dataSets.get(0).getNumRows()];
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
 
-        variablesMap = new HashMap<Node, Integer>();
+        variablesMap = new HashMap<>();
         for (int i = 0; i < variables.size(); i++) {
             variablesMap.put(variables.get(i), i);
         }
 
-        this.recursivePartialCorrelation = new ArrayList<RecursivePartialCorrelation>();
+        this.recursivePartialCorrelation = new ArrayList<>();
         for (TetradMatrix covMatrix : ncov) {
             recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix));
         }
@@ -100,7 +105,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         int sampleSize = data.get(0).rows();
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < ncov.size(); m++) {
             TetradMatrix _ncov = ncov.get(m).getSelection(all, all);
@@ -130,18 +135,20 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         this.pValue = pValues.get(index);
 
 //        if (this.pValue == 0) {
-//            System.out.println("Zero pvalue "+ SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+//            System.out.println("Zero pvalue "+ SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
 //        }
 
         boolean independent = this.pValue > _cutoff;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -214,7 +221,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -232,17 +239,17 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @throws UnsupportedOperationException
      */
     public DataSet getData() {
-        return DataUtils.concatenateData(dataSets);
+        return DataUtils.concatenate(dataSets);
     }
 
     public ICovarianceMatrix getCov() {
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenateData(dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(dataSets));
     }
 
     @Override
@@ -258,6 +265,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return ncov;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     /**
@@ -282,6 +294,14 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     public void setFdr(boolean fdr) {
         this.fdr = fdr;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

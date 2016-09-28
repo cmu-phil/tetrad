@@ -1,0 +1,1298 @@
+<html>
+<head>
+    <title>Genetic Simulation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body>
+<table width="100%" border="1" bgcolor="maroon">
+    <tr>
+        <td><h2><font color="white">&nbspGenetic Simulation -Version 1.0-</font></h2></td>
+        <td align=right><font color="white"><B>By: Richard Scheines and Joe Ramsey</B>
+        </font></td>
+    </tr>
+</table>
+<table width="99%" border="1" cellspacing="5" cellpadding="5">
+    <tr>
+        <td colspan="3">
+            <table width="75%" border="1" cellspacing="5" cellpadding="5">
+                <tr>
+                    <td><b><font color="#996644"><u>Table of Conents</u><b><em><u><a name="top"></a></u></em></b></font></b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><b><font color="#996644"> <a style="color:#996633; text-decoration:none" href="#link1">1.
+                                The General Model</a></font></b></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><font color="#996644"><b><a style="color:#996633; text-decoration:none" href="#link2">2.
+                                Specifying the Graph</a></b></font></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><font color="#996644"><b> <a style="color:#996633; text-decoration:none" href="#link3">3.
+                                Specifying the Parametric Model</a></b></font></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><b><font color="#996644"><a style="color:#996633; text-decoration:none" href="#link4">4.
+                                Specifying the Instantiated Model</a></font></b></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><b><font color="#996644"><a style="color:#996633; text-decoration:none" href="#link5">5.
+                                Initializing the Cells</a></font></b></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><b><font color="#996644"><a style="color:#996633; text-decoration:none" href="#link6">6.
+                                Running a Simulation</a></font></b></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><font color="#996644"><b><a style="color:#996633; text-decoration:none" href="#link7">7.
+                                Aggregation and Measurement Error</a></b></font></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <blockquote>
+                            <p><font color="#996644"><b><a style="color:#996633; text-decoration:none" href="#link8">8.
+                                References</a></b></font></p>
+                        </blockquote>
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><b><font color="#996644"><a name="#link1"></a>1. The General
+            Model</font></b></td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>1.1 An Introduction</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Consider a discrete time series involving N individuals, each
+            with M variables V1 &#133; Vm. For example, Figure 1 represents a time series
+            for three variables, each measured at 5 times.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_1.jpg"></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td><b>Figure 1: Causal Graph for 5 Times</b></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3">If we assume that the process modelled is stable over time,
+            then we can represent the causal structure of the series with a <b>Repeating</b>
+            <b>Graph</b> that includes the smallest fragment of the series that repeats.
+            The number of temporal slices in the repeating graph is the longest lag
+            of direct influence plus one. For example, the repeating graph in Figure
+            3*, which represents the series in Figure 1, needs three temporal slices
+            to represent a repeating sequence, because V2 has a direct effect on V3
+            with a temporal lag of two.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" height="73">
+            <blockquote>
+                <p>* We connect all pairs of variables at the beginning of the repeating
+                    sequence with a double-headed arrow to represent an unconstrained causal
+                    connection, so that d-separation applied to this graph does not entail
+                    that these variables are independent, contrary to the fact that later
+                    versions of the same variable are causally connected in the repeating
+                    graph.</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_2.jpg"></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td><B>Figure 2: Repeating Graph</B></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3">In order to simulate data from this class of models, we need
+            to express each variable (or its probability distribution) at an arbitrary
+            &quot;current time&quot; as a function of its direct causes. To represent
+            the set of direct causes for each variable, we construct an <b>update graph</b>.
+            For example, the update graph in Figure 5 expresses the causal information
+            needed to simulate the time series represented in Figure 1 and Figure 3.
+            The update graph consists of the M variables repeated in temporal slices
+            from lag = mlag (most remote direct influence) to lag=0 (current time),
+            but includes only edges that are into variables at lag = 0, that is, it
+            includes only edges that represent <i>direct influences into the current
+                time. </i></td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_3.jpg"></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td><B>Figure 3: Update Graph </B></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3">The time lag i in an update graph is indexed by &quot;:Li&quot;.
+            Thus, variable V1 at the current time (lag of 0) in an update graph is V1:L0,
+            and the same variable two time slices in the past V1:L2. The constant mlag
+            is the maximum lag of direct influence.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">To simulate data in Tetrad 4, you must specify an update graph
+            and then interpret it as a parametric model. There are 4 choices of parametric
+            models, where in each either i) the value of each variable at the current
+            time is a function of its causal parents and an error term, or ii) the probability
+            distribution of the variable is a function of its causal parents. Given
+            an instantiation of the chosen parametric model, and the assumption that
+            the causal relations remain constant over time for each individual, values
+            for N individuals (cells) over T times can be simulated to produce a data
+            cube that is:
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><b>N (individuals) x M (variables) x
+                T (times).</b></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Although the cube has three dimensions, we will store it in
+            the standard two, by repeating M columns for each time slice, as so:
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_4.jpg"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><B>Figure 4: Data Cube </B></td>
+    </tr>
+    <tr>
+        <td colspan="3">The simulation to produce these data is run in two stages:
+            an &quot;initialization&quot; phase and an &quot;update&quot; phase. The
+            initialization phase must assign values for each individual for at least
+            as many times as the maximum lag in the time series model, i.e, from time
+            t = 1 until time t = mlag. After time � mlag, values can be assigned to
+            variables for a given individual using the given instantiation of the parametric
+            model that interprets the update graph.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Data collection regimes for protein expression involve tissues
+            that contain thousands of cells, not all of which behave strictly identically
+            and not all of which can be measured in isolation.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Since current technology cannot perfectly measure the levels,
+            even relatively, of gene (or mRNA) expression, or levels of protein synthesis
+            in cells, we also allow the user to specify a measurement model that aggregates
+            cells by dish and models measurement error.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">In what follows, we explain how to specify the graph, choose
+            a parametric model to interpret the graph, instantiate the parameters of
+            the model, pick an initialization routine, and finally specify the measurement
+            model.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" height="18">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>1.2 Starting the Program</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">The overall simulation specification begins by loading Tetrad-4,
+            which is a Java application that can be downloaded from: http://www.phil.cmu.edu/tetrad/.
+            The download will write a .jar file to your disk. 1) Make sure version 1.3
+            or higher of the Java SDK (or JRE) is installed. If it is not - go to
+            http://java.sun.com/j2se/1.3/jre/index.html
+            to download it. 2) On a Windows machine, double clicking the jar file should
+            start the program. If it doesn't, you need to modify the File Type mapping
+            for the .jar extension so that the &quot;open&quot; action is &quot;javaw
+            -jar %1&quot;. If you don&#146;t know how to do this, either find someone
+            who does, or take the command line option, which is: 3) In any case, the
+            jar can be run on all machines (Linux included) by typing &quot;java -jar
+            &lt;path-to-filename.jar&gt;&quot; at the command line.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_5.jpg" alt="TETRAD 4 on Start-up"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><B>Figure 5: Tetrad 4 on Start-up </B></td>
+    </tr>
+    <tr>
+        <td colspan="3">When the program opens, it will display the empty workbench
+            we show in Figure 8. In order to generate data, you need to specify a graph,
+            a parametric model (PM), an instantiation of this model (IM), and connect
+            them all to a Data modelNode. These objects can be deposited on the workbench
+            by clicking on their icon in the left and clicking where you want them located
+            on the workbench, and then by clicking on the &quot;Flow-Charter&quot; icon
+            on the left and then dragging from one modelNode to another to connect them.
+            The skeleton for a simulation looks like Figure 9.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_6.jpg" alt="Simulation Session"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><B>Figure 6: Simulation Session </B></td>
+    </tr>
+    <tr>
+        <td colspan="3">To fully specify each piece of the simulation, you need to
+            double-click on each modelNode, beginning with the graph and moving down to the
+            PM and then to the IM. We cover each in turn.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>2. Specifying the Graph<a name="#link2"></a></b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">After double-clicking on the graph modelNode - you will be given
+            a choice (Figure 11) of whether you want to specify a general graph or an
+            update graph, with the default an update graph.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_7.jpg" alt="Specifying a Graph"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><B>Figure 7 </B></td>
+    </tr>
+    <tr>
+        <td colspan="3" height="37">The Regular graph allows you to specify a Causal
+            Graph interpretable as a Bayes Net or Structural Equation Model. An update
+            graph allows you to specify a specialized structure for genetic simulations.
+            Choose Update graph.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">You will then be prompted to specify the graph manually or
+            randomly, with randomly the default.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>2.1 Manual Graph Specification</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>1) User Specifies M, the number of variables <br>
+                    (range: 1 to 500, default = 5)</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>2) User Specifies mlag <br>
+                    (range: 1 to 5, default = 1)</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>3) Default graph is drawn for user in graph drawing window with arrow
+                    from each Vi:L1 to Vi:L0, for mlag = 2 and M = 5</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_8.jpg"></td>
+    </tr>
+    <tr>
+        <td><b>Figure 8</b></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>4) User completes graph manually, that is, they add edges from variables
+                    at lag &gt; 0 into variables at lag = 0. No other edges are allowed
+                    in this representation of the series.</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>2.2 Random Graph Specification</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>1) User Specifies M, the number of variables in each individual <br>
+                    (range: 1 to 500, default = 5)</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>2) User Specifies mlag <br>
+                    (range: 1 to 5, default = 1)</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>3) User chooses and sets the value of exactly one of:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;a) constant indegree ci (range: 0 to M*mlag,
+                    default = 2)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;b) max indegree mxi (range: 0 to M*mlag, default
+                    = 2)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;c) mean indegree mni (range: 0 to M, default
+                    = 2)</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>a) constant indegree - choose parents(Vi) by putting a uniform distribution
+                    over the possible parents of Vi (that is, all variables earlier in time)
+                    and drawing without replacement until |parents(Vi)| = ci </p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>b) max indegree - for each variable in the set of possible parents
+                    of Vi ,include it in parents(Vi) if a random draw from a uniform [0,1]
+                    is greater than cutoff = 1/|possible parents of V-i|, until either the
+                    possible parents of Vi are exhaused, or |parents(Vi)| = mxi whichever
+                    is first.</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>c) mean indegree - for each variable Vi, decide for each variable in
+                    the set of possible parents of Vi to include it in parents(Vi) if a
+                    random draw from a uniform [0,1] is greater than cutoff = 1/|possible
+                    parents of V-i|, until the possible parents of Vi are exhaused. </p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>3. Specifying the Parametric Model<a name="#link3"></a></b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">You must now interpret the graph as a parametric model. To
+            begin this, double-click on the PM modelNode in the session editor (Figure 9).
+            When you are finished, just close the PM editor window.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">If you have specified an update graph, then you will be given
+            four choices (Figure 14) of parametric model families, each of which we
+            describe below.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_9.jpg"></td>
+    </tr>
+    <tr>
+        <td><b>Figure 9 </b></td>
+    </tr>
+    <tr>
+        <td colspan="3">These families are not exclusive, but each has advantages.</td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>3.1 Glass Updating</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">In both Glass and General Updating parametric models, the
+            current value of each variable Vi:L0 is set by a function with the following
+            general form.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center">Update Function: Vi:L0 = Vi:L1 + rate[-Vi:L1
+                + Fi(parents(Vi:L0)/Vi:L1 )] + ei
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">where: 0 &lt; rate &pound; 1, and ei is an &quot;error&quot;
+            term drawn from a given probability distribution (discussed below), all
+            variables are continuous, and Fi is a function specified by the user. The
+            difference between Glass and General updating models involves only the form
+            of the functions Fi.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>3.1.1 Preliminary Binary Projection</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Even though the variables in this parametric model class are
+            continuous, Glass functions take boolean valued inputs, so some pre-processing
+            is necessary. The inputs to the function Fi are the members of the set P
+            = {parents(Vi:L0)/Vi:L1}, that is, the parents of Vi:L0 except for Vi:L1,
+            which is already in the updating function. The idea behind Glass functions
+            is to simplify the input to whether a given gene is expressing at &#147;high&#148;
+            or &#147;low&#148; levels. We map each Vp &#140; P to 0 (low, that is, below
+            its average expression level of 0) or 1 (high, that is, above 0). We do
+            this with the following binary projection BP:
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center">BP: For each Vp &#140; P, let Vp* = 1
+                if Vp &gt; 0, and 0 otherwise.
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Simulated values in for variables Vi will range mostly over
+            the interval [-2.0, 2.0] and will oscillate above and below 0.0. Since raw
+            microarray data is typically given as a ratio of microarray spot brightness
+            to average spot intensity, where this ratio typically ranges from near 0.0
+            up to about 10.0, with averages around 1.0, it is useful to think of the
+            simulated data as loglinear with respect to raw data&#151;viz., log(x) of
+            each intensity ratio x is recorded in the simulation in place of the intensity
+            ratio x.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>3.1.2 The Function Table for Fi</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Since genetic regulators either inhibit or activate their
+            targets, Edwards and Glass (2000, p.3) set the range of Fi to {-1,1}. To
+            specify a particular Fi, construct a truth-table with 1 column for each
+            Vp &#140; P and one for the output of F-i. Thus the truth table will have
+            2|P| rows. For example, if P = {V3:L1, V5:L2}, then the function table for
+            Fi is:
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <table width="40%" border="1" cellspacing="2" cellpadding="2">
+                <tr>
+                    <td width="35%">
+                        <div align="center">V3:L1*</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">V5:L2*</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center">F</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%" height="19">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="34%" height="19">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="31%" height="19">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Filling in the Fi column in this function table specifies
+            the particular instantiation of Fi used in the update function for variable
+            Vi, thus this step is left to the Instantiated Model specification below.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">By picking the Glass Updating parametric family, you are committing
+            yourself to the class of models parametrized by the update function above
+            and Glass functions for the Fi.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3" height="16"><font color="#996644"><b>3.2 General Updating</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Again, in both Glass and General Updating parametric models,
+            the current value of each variable Vi:0 is set by a function with the following
+            general form.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>Update Function: Vi:L0 = Vi:L1 + rate[-Vi:L1 + Fi(parents(Vi:L0)/Vi:L1
+                    )] + ei</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">where: 0 &lt; rate &pound; 1, and ei is an &quot;error&quot;
+            term drawn from a given probability distribution (discussed below), all
+            variables are continuous, and Fi is a function specified by the user. The
+            difference between Glass and General updating models involves only the form
+            of the functions Fi. In General Updating parametric models, the user is
+            free to specify any function for the Fi, not just Glass functions. Here
+            we will use Tianjiao's GAM specifier to allow the user to specify, for each
+            i, the function Fi.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" height="17">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#FFFFFF"><font color="#996644"><b>3.3 GRN GAM</b></font></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">In this parametric family, the variables are continuous and
+            the update function is slightly more general than the ones used in 3.1 and
+            3.2.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center">Update Function: Vi:L0 = Gi[parents(Vi:L0)]
+                + ei
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">GAM stands for general additive model, so the only constraint
+            on this parametric model is that the G-i are additive functions. The particular
+            instantiaions of Gi for each i are fixed when you specify the instantiated
+            model (IM). Here we will use Tianjiao's GAM specifier to allow the user
+            to specify, for each i, the function Gi.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>3.4 BN SEM</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">In this parametric family, the variables are discrete and
+            the causal system is just interpreted as a standard discrete Bayes Network,
+            that is, the update function is just a conditional probability table.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center">Update Function: P(Vi:L0) = Gi[parents(Vi:L0)]</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">At the parametric level, you need to specify the number of
+            categories for each variable, as well as the value of each category. This
+            is identical to the Bayes Net parametric model in general Tetrad 4 models.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3" height="19"><b><font color="#996644">4. Specifying the Instantiated
+            Model<a name="#link4"></a></font></b></td>
+    </tr>
+    <tr>
+        <td colspan="3" height="44">Once the parametric model has been specified,
+            you need only specfiy values for the parameters in the corresponding instantiated
+            model (IM). To do this, double-click on the IM modelNode in the session workbench.
+            Close the IM editor to finish. Since the parameters depend on the PM chosen,
+            we cover each of the above classes in turn.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>4.1 Glass Updating</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">The free parameters of a Glass Updating model are:</td>
+    </tr>
+    <tr>
+        <td colspan="3" height="49">
+            <ul>
+                <li>the rate</li>
+                <li> the distributions over the error terms ei</li>
+                <li> the Boolean functions Fi</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">The error distributions are all assumed to be pairwise indedpendent,
+            and normal with mean 0 and standard deviation SD(ei). The rate and error
+            distributions default as follows.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b><font color="#000000">Parameter Defaults</font></b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>Rate = .1<br>
+                    ei ~ N(0,.05) </p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">The range of Fi is {-1,1}. The number of possible functions
+            for each Fi is , where P is the set of parents of Vi. For example, if P
+            = {V3:L1, V5:L2}, then the uninstantiated function table for Fi is:
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <table width="40%" border="1" cellspacing="2" cellpadding="2">
+                <tr>
+                    <td width="35%">
+                        <div align="center">V3:L1*</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">V5:L2*</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center">F</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="34%">
+                        <div align="center">0</div>
+                    </td>
+                    <td width="31%">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="35%" height="19">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="34%" height="19">
+                        <div align="center">1</div>
+                    </td>
+                    <td width="31%" height="19">
+                        <div align="center"></div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">which can be filled out in 16 different ways. If P contains
+            5 parents, then there are 32 rows in Fi and there are 232 different ways
+            you can instantiate Fi. Thus, we give you a choice of filling in all Fi
+            randomly or manually, with randomly the default.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><b><font color="#000000">Randomly:</font></b></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <ul>
+                <li>Draw Fi from: (p(Fi = 1) = .5, and p(Fi = -1) = .5, but</li>
+                <li>Ensure all inputs to Fi are non-trivial, that is, for each input Pk,
+                    insist that at least one pair of rows in the function table exist that
+                    are i) identical on all inputs besides Pk, ii) different on Pk, and
+                    different on the output Fi.
+                </li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Manually: </b>Allow user to assign the value of Fi in each
+            row manually.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>4.2 General Updating Models</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Same as Glass Updating, but use Tianjiao's GAM interface for
+            specifying the functions Gi.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>4.3 GRN GAM</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Here we will use Tianjiao's GAM specifier to allow the user
+            to specify, for each i, the function Gi, and specify the error distributions
+            as above.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>4.4 BN SEM</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Same as Tetrad 4 Bayes Net instantiated model specifier</td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><b><font color="#996644">5. Initializing the Cells<a name="link5"></a></font></b></td>
+    </tr>
+    <tr>
+        <td colspan="3">Given the full parametric model and its instantiation, and
+            assuming that the same model is used for each individual cells, then values
+            for N individuals over T times can be simulated in two stages: an &quot;initialization&quot;
+            phase and an &quot;update&quot; phase. The initialization phase must assign
+            values for all the variables (genes) in each individual for time step 1.
+            After this, the update function specified above can be used to assign values
+            to variables for a given individual, with the caveat that if mlag &gt; 1,
+            then not all the &#147;parents&#148; of a variable in time 2 will exist.
+            In that case the update function will simply use the latest value of that
+            variable that does exist as input.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Biologically, cells from the same tissue can be starved of
+            nutrients, or manipulated in some other way and all brought into roughly
+            the same state, that is, synchronized. They can then be shocked, e.g., exposed
+            to nutrients, and let run.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Further, many genes in a cell are considered &#147;housekeeping
+            genes,&#148; which express protein at some basal rate stably over time.
+            In this version of the simulator we allow the user to choose among two methods
+            for initializing values: synchronized or random.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>5.1 Synchronized Initialization</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <ol>
+                <li>For each gene Vi in cell 1 <br>
+                    a. if Vi is a housekeeping gene, that is, its only parent in the update
+                    graph is itself, then let Vi:1 = 0<br>
+                    b. else draw Vi from a standard normal distribution, i.e, N(0,1).<br>
+                    <br>
+                </li>
+                <li>Duplicate cell 1 N times, where N is the total number of individual
+                    cells.
+                </li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>5.2 Random Initialization</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <ol>
+                <li>For each gene Vi in each cell, <br>
+                    a. if Vi is a housekeeping gene, that is, its only parent in the update
+                    graph is itself, then let Vi:1 = 0, <br>
+                    b. else draw Vi:1 from a standard normal distribution, i.e, N(0,1)
+                </li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><b><font color="#996644">6. Running a Simulation<a name="link6"></a></font></b></td>
+    </tr>
+    <tr>
+        <td colspan="3">To initiate a data generation process, double click on the
+            red-die on the arrow from an IM modelNode to a Data modelNode (Figure 16). The program
+            will only produce data if it has all the info it needs, otherwise it will
+            prompt you.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_10.jpg" alt="Starting a Simulation">
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 10: Starting a Simulation Run </b></td>
+    </tr>
+    <tr>
+        <td colspan="3">The simulation will initialize the cells as specified above,
+            and then generate as many time steps as desired. Not all time steps generated
+            need to be stored, however. The updating process might happen at quite a
+            different pace than data recording, and for inference this might matter.
+            The simulator thus requires you to specify the first time step you want
+            to store, and how often you want to store data.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><p>Simulation Run Parameters:<br>
+            Thus the parameters you must set, with their defaults in brackets, are
+            as follows.</p>
+            <ol>
+                <li> Number of individual cells = N [100,000]</li>
+                <li>Total time steps generated = T [4]</li>
+                <li>First time step stored = TSstart [1]</li>
+                <li>Interval for storage (step size ) = step [1]</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>7. Aggregation and Measurement Error<a name="link7"></a></b></font>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>7.1 Aggregation by Dish</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">So far, we have modelled the progression of gene activity
+            over time for individual cells. We cannot currently obtain biological data
+            on this level, however. In microarray experiments, thousands (or millions)
+            of cells are grown in each of several dishes. For example, Figure 18 shows
+            two dishes with a million cells each.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_11.jpg" alt="Aggregation by Dish">
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 11: Aggregation by Dish </b></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Initial Dish to Dish Differences</b></td>
+    </tr>
+    <tr>
+        <td colspan="3">Although they are intentionally minimized, small variations
+            in nutrient or temperature make dish to dish variations inevitable, even
+            at the beginning of an experiment.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">To simulate these differences, we prompt the user for how
+            much variation in expression levels we can expect between dishes (Figure
+            20). Let that quantity be the standard deviation of expression level difference
+            due to the dish, which we will call sd(DV), with default at 10%.
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_12.jpg" alt="Dish-to-Dish Variation Parameter"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 12: Dish-to-Dish Variation Parameter</b></td>
+    </tr>
+    <tr>
+        <td colspan="3">For each dish Dj, we draw Dev(Dj) from a normal distribution
+            with mean 100 and standard deviation = sd(DV), that is, N(100, sd(DV)).
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><br>
+            We then adjust the <i>initial*</i> expression levels in all genes in all
+            the cells in dish Dj by Dev(Dj).
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">For each dish Dj<br> &nbsp;&nbsp;&nbsp;&nbsp;For each cell
+            Ck in Dj, <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For each
+            gene Gi in Ck at time 1 (Vi:1),<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Let
+            Gi = Dev(Dj) % of Gi
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Dishes and Time</b></td>
+    </tr>
+    <tr>
+        <td colspan="3">In the usual studies, although several dishes might begin
+            an experiment in a relatively &#147;synchronized&#148; state, each dish
+            must be &#147;frozen&#148; before it can be processed for measurement, and
+            thus we cannot use the same dish to measure cells at two different time
+            points in the experiment. To measure two time points, we take a sample from
+            one dish at time1 1and a sample from a different dish at time 2, e.g., Figure
+            22.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"> We discussed how we initialize the cells in section 5 above.</td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_13.jpg" alt="Time and Dishes"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 13:Time and Dishes </b></td>
+    </tr>
+    <tr>
+        <td colspan="3">If the goal is to compare the expression levels of a particular
+            gene at two different times to see if they substantially differ, then this
+            constraint forces us to compare the level of a sample from one dish against
+            a sample from another. This constraint will NOT be imposed by the simulator,
+            but rather by the data analyst after data is generated and stored.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>7.2 Measurement Error</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">After a dish is &#147;frozen&#148; at a time, its RNA is extracted.
+            From this RNA, several samples can be drawn and each &#147;measured&#148;
+            by exposing it to a microarray chip (chips can be re-used) and then digitally
+            converting pixel intensities to gene expression levels (Figure 24).
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_14.jpg" alt="Measurement Error"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 14: Measurement Error</b></td>
+    </tr>
+    <tr>
+        <td colspan="3">Chips can be reused approximately four times. Samples from
+            the same dish might vary slightly, chips definitely vary, the same chip
+            functions differently from one use to another, and the pixel digitization
+            routine might include error as well. Each &#147;measurement&#148; therefore,
+            has five sources of potential error:
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <blockquote>
+                <p>1. dish,<br>
+                    2. sample, <br>
+                    3. chip, <br>
+                    4. re-use of a chip, and<br>
+                    5. pixel digitization</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">We discussed how we will model the dish variability above.
+            In this version of the simulator, we will NOT model dish to dish variability
+            beyond initialization. To model the other sources of measurement error,
+            we will proceed as follows.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">After initializing the cells in an experiment, and adding
+            dish to dish variabiltiy, we will have N cells partitioned into D dishes.
+            After we run the experiment, in which each cell obeys the same causal laws
+            but updates independently of each other, each cell has an expression level
+            at each of t times.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>After Running the Experiment </b></td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_15.jpg" alt="Gene Levels Before Measurement Error"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 15: Gene Levels Before Measurement Error </b></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>After RNA Extraction </b></td>
+    </tr>
+    <tr>
+        <td colspan="3" height="41">Next, we model the RNA extraction process for
+            each dish by aggregating all the cells in a dish, averaging the expression
+            levels for each gene, and recording an average expression level for each
+            gene in each dish at each time (Figure 27):
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_16.jpg" alt="After RNA Extraction"></td>
+    </tr>
+    <tr>
+        <td><b>Figure 16: After RNA Extraction</b></td>
+    </tr>
+    <tr>
+        <td colspan="3" height="29">Next, we model the RNA extraction process for
+            each dish by aggregating all the cells in a dish, averaging the expression
+            levels for each gene, and recording an average expression level for each
+            gene in each dish at each time (Figure 27):
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">pic of nasty formula pg17</td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Adding Measurement Error</b></td>
+    </tr>
+    <tr>
+        <td colspan="3"><br>
+            There remain 4 sources of measurement error: sample, chip to chip, chip
+            re-use, and pixel digitization error. In this version of the simulator -
+            we will NOT model chip re-use variability. We treat each of the other as
+            additive normal error with mean 0 and standard deviation = s.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Although we could just as easily treat 3 additive twoCycleErrors as
+            one - for conceptual transparency we keep them separate.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">Let Sample to Sample Variability error = es ~ N(0, sS)</td>
+    </tr>
+    <tr>
+        <td colspan="3">Let Chip to Chip error = ec ~ N(0, sc)</td>
+    </tr>
+    <tr>
+        <td colspan="3">Let Pixel digitization error = epd ~ N(0, spd)</td>
+    </tr>
+    <tr>
+        <td colspan="3">Thus for each sample s taken from a dish d and measured, new
+            vavalues of es , ec , and epd are drawn, and the average expression level
+            for each gene Vi at time t is
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center">Ms[Vi:t(d)] = Vi:t(d) + es + ec + epd</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">If we draw 4 samples from each dish, and don&#146;t re-use
+            any chips, then our final data table would look as follows:
+        </td>
+    </tr>
+    <tr>
+        <td><img src="Images/Gene_Pics/figure_17.jpg" alt="After Measurement Error"></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Figure 17: After Measurement Error</b></td>
+    </tr>
+    <tr>
+        <td colspan="3"><b>Measurement Error Parameters</b></td>
+    </tr>
+    <tr>
+        <td colspan="3">The parameters the user must specify for the measurement error
+            model, with defaults in brackets, are:
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" height="60"><p>1. Dish to Dish variability = sd(DV) [10]<br>
+            2. Number of samples per dish = S [4]<br>
+            3. Sample to Sample Variability sS, [.025]<br>
+            4. Chip to Chip Variability sc, [.1]<br>
+            5. Pixel Digitization spd, [.025]</p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p align="center"><font color="#996644"><b><em><u><a href="#top">Return
+            to Top</a></u></em></b></font></p></td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3"><font color="#996644"><b>8. References<a name="link8"></a></b></font></td>
+    </tr>
+    <tr>
+        <td colspan="3">Edwards, R., &amp; Glass L. (2000). Combinatorial explosion
+            in model gene networks., Chaos, V. 10, N. 3, September., pp. 1-14.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div align="center"><font color="#996644"><b><em><u><a href="#top">Return
+                to Top</a></u></em></b></font></div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+</table>
+<h2>&nbsp;</h2>
+</body>
+</html>

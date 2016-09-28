@@ -21,12 +21,11 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.calculator.CalculatorParams;
 import edu.cmu.tetrad.calculator.expression.*;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
@@ -39,7 +38,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Editor to use for the calculator.
@@ -52,7 +50,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * The calculator's params.
      */
-    private CalculatorParams params;
+    private Parameters params;
 
 
     /**
@@ -64,7 +62,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * List of all editors.
      */
-    private List<ExpressionEditor> editors = new LinkedList<ExpressionEditor>();
+    private final List<ExpressionEditor> editors = new LinkedList<>();
 
 
     /**
@@ -116,9 +114,10 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
     /**
      * Sets the calculator's params.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (CalculatorParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
 
@@ -223,14 +222,17 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
             }
         }
 
-        Preferences.userRoot().put("calculator_equations", buf.toString());
+        params.set("calculator_equations", buf.toString());
 
         if (params != null) {
-            this.params.resetEquations();
+            List<String> _equations = new ArrayList<>();
 
             for (Equation eq : equations) {
-                this.params.addEquation(eq.getUnparsedExpression());
+                _equations.add(eq.getUnparsedExpression());
+//                this.params.addEquation(eq.getUnparsedExpression());
             }
+
+            this.params.set("equations", _equations);
         }
 
         return true;
@@ -245,7 +247,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * the parsed equations are returned.
      */
     private List<Equation> parseEquations() {
-        List<Equation> equations = new ArrayList<Equation>();
+        List<Equation> equations = new ArrayList<>();
         for (ExpressionEditor editor : editors) {
             try {
                 System.out.println(editor.getEquation());
@@ -408,11 +410,12 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         String[] displayEquations;
 
         if (params != null) {
-            int size = params.getEquations().size();
-            displayEquations = params.getEquations().toArray(new String[size]);
+            List<String> equations = (List<String>) params.get("equations", new ArrayList<String>());
+            int size = equations.size();
+            displayEquations = equations.toArray(new String[size]);
         }
         else {
-            String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
+            String _displayEquations = (String) params.get("calculator_equations", "");
             displayEquations = _displayEquations.split("///");
         }
 

@@ -26,15 +26,12 @@ import edu.cmu.tetrad.graph.SemGraph;
 import nu.xom.Attribute;
 import nu.xom.Element;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mattheweasterday
- * Date: May 30, 2004
- * Time: 11:36:30 AM
- * <p>
  * This class converts a SemIm into xml.
+ * @author Matt Easterday
  */
 public class SemXmlRenderer {
 
@@ -58,24 +55,24 @@ public class SemXmlRenderer {
         Element variablesElement = new Element(SemXmlConstants.SEM_VARIABLES);
         Element variable;
         Node measuredNode, latentNode;
-        for (Iterator measuredNodes = semIm.getSemPm().getMeasuredNodes().iterator(); measuredNodes.hasNext(); ) {
-            measuredNode = (Node) measuredNodes.next();
+        for (Node node1 : semIm.getSemPm().getMeasuredNodes()) {
+            measuredNode = node1;
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, measuredNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "no"));
-            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, new Double(semIm.getMean(measuredNode)).toString()));
-            variable.addAttribute(new Attribute(SemXmlConstants.X, new Integer(measuredNode.getCenterX()).toString()));
-            variable.addAttribute(new Attribute(SemXmlConstants.Y, new Integer(measuredNode.getCenterY()).toString()));
+            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, Double.toString(semIm.getMean(measuredNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(measuredNode.getCenterX())));
+            variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(measuredNode.getCenterY())));
             variablesElement.appendChild(variable);
         }
-        for (Iterator latentNodes = semIm.getSemPm().getLatentNodes().iterator(); latentNodes.hasNext(); ) {
-            latentNode = (Node) latentNodes.next();
+        for (Node node : semIm.getSemPm().getLatentNodes()) {
+            latentNode = node;
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, latentNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "yes"));
-            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, new Double(semIm.getMean(latentNode)).toString()));
-            variable.addAttribute(new Attribute(SemXmlConstants.X, new Integer(latentNode.getCenterX()).toString()));
-            variable.addAttribute(new Attribute(SemXmlConstants.Y, new Integer(latentNode.getCenterY()).toString()));
+            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, Double.toString(semIm.getMean(latentNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(latentNode.getCenterX())));
+            variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(latentNode.getCenterY())));
             variablesElement.appendChild(variable);
         }
         return variablesElement;
@@ -86,14 +83,14 @@ public class SemXmlRenderer {
         Parameter param;
         Element edge;
 
-        for (Iterator parameters = semIm.getSemPm().getParameters().iterator(); parameters.hasNext(); ) {
-            param = (Parameter) parameters.next();
+        for (Parameter parameter : semIm.getSemPm().getParameters()) {
+            param = parameter;
             if (param.getType() == ParamType.COEF) {
                 edge = new Element(SemXmlConstants.EDGE);
                 edge.addAttribute(new Attribute(SemXmlConstants.CAUSE_NODE, param.getNodeA().getName()));
                 edge.addAttribute(new Attribute(SemXmlConstants.EFFECT_NODE, param.getNodeB().getName()));
-                edge.addAttribute(new Attribute(SemXmlConstants.VALUE, new Double(semIm.getParamValue(param)).toString()));
-                edge.addAttribute(new Attribute(SemXmlConstants.FIXED, new Boolean(param.isFixed()).toString()));
+                edge.addAttribute(new Attribute(SemXmlConstants.VALUE, Double.toString(semIm.getParamValue(param))));
+                edge.addAttribute(new Attribute(SemXmlConstants.FIXED, Boolean.valueOf(param.isFixed()).toString()));
                 edgesElement.appendChild(edge);
             }
         }
@@ -112,15 +109,14 @@ public class SemXmlRenderer {
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
             normal.addAttribute(new Attribute(SemXmlConstants.MEAN, "0.0"));
-            normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, new Double(semIm.getParamValue(node, node)).toString()));
+            normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, Double.toString(semIm.getParamValue(node, node))));
             marginalErrorElement.appendChild(normal);
         }
         return marginalErrorElement;
     }
 
     private static List<Node> getExogenousNodes(SemGraph graph) {
-        Set<Node> a = new TreeSet<Node>();
-        List<Node> exogenousNodes = new ArrayList<Node>();
+        List<Node> exogenousNodes = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
             exogenousNodes.add(graph.getExogenous(node));
@@ -135,13 +131,13 @@ public class SemXmlRenderer {
         Element normal;
         Parameter param;
 
-        for (Iterator parameters = semIm.getSemPm().getParameters().iterator(); parameters.hasNext(); ) {
-            param = (Parameter) parameters.next();
+        for (Parameter parameter : semIm.getSemPm().getParameters()) {
+            param = parameter;
             if (param.getType() == ParamType.COVAR) {
                 normal = new Element(SemXmlConstants.NORMAL);
                 normal.addAttribute(new Attribute(SemXmlConstants.NODE_1, param.getNodeA().getName()));
                 normal.addAttribute(new Attribute(SemXmlConstants.NODE_2, param.getNodeB().getName()));
-                normal.addAttribute(new Attribute(SemXmlConstants.COVARIANCE, new Double(param.getStartingValue()).toString()));
+                normal.addAttribute(new Attribute(SemXmlConstants.COVARIANCE, Double.toString(param.getStartingValue())));
                 jointErrorElement.appendChild(normal);
             }
         }

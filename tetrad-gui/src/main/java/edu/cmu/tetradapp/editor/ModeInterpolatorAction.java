@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class ModeInterpolatorAction extends AbstractAction {
+final class ModeInterpolatorAction extends AbstractAction {
 
     /**
      * The data editor.                         -

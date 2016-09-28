@@ -41,8 +41,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class AllPathsAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
+class AllPathsAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
@@ -85,8 +85,11 @@ public class AllPathsAction extends AbstractAction implements ClipboardOwner {
 
         new WatchedProcess(owner) {
             public void watch() {
+                if (isCanceled()) return;
+
                 for (int i = 0; i < graph.getNodes().size(); i++) {
                     for (int j = 0; j < graph.getNodes().size(); j++) {
+
                         Node node1 = graph.getNodes().get(i);
                         Node node2 = graph.getNodes().get(j);
 

@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.data.DiscretizationSpec;
 
-public interface DiscretizationEditor {
+interface DiscretizationEditor {
     DiscretizationSpec getDiscretizationSpec();
 }
 

@@ -29,24 +29,24 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Tyler Gibson
  */
 public interface ExpressionSignature extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
 
     /**
      * @return the sigature as a string.
      */
-    public String getSignature();
+    String getSignature();
 
     /**
      * @return the number o f arguments.
      */
-    public int getNumberOfArguments();
+    int getNumberOfArguments();
 
 
     /**
      * @return the argument type at the given index.
      */
-    public String getArgument(int index);
+    String getArgument(int index);
 
 }
 

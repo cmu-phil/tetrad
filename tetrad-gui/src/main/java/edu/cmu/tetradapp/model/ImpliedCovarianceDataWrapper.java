@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -45,7 +46,7 @@ public class ImpliedCovarianceDataWrapper extends DataWrapper implements Session
 
     //==============================CONSTRUCTORS=============================//
 
-    public ImpliedCovarianceDataWrapper(SemEstimatorWrapper wrapper) {
+    public ImpliedCovarianceDataWrapper(SemEstimatorWrapper wrapper, Parameters params) {
 //        int sampleSize = params.getSampleSize();
 //        boolean latentDataSaved = params.isIncludeLatents();
         SemEstimator semEstimator = wrapper.getSemEstimator();
@@ -72,11 +73,10 @@ public class ImpliedCovarianceDataWrapper extends DataWrapper implements Session
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new ImpliedCovarianceDataWrapper(SemEstimatorWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

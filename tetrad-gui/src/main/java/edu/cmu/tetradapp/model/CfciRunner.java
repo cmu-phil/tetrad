@@ -22,11 +22,13 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Cfci;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -43,14 +45,14 @@ public class CfciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public CfciRunner(DataWrapper dataWrapper, FciSearchParams params) {
+    public CfciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CfciRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     /**
@@ -58,44 +60,42 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CfciRunner(DataWrapper dataWrapper,FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(DataWrapper dataWrapper,Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
     
-    public CfciRunner(Graph graph, FciSearchParams params) {
+    public CfciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     
-    public CfciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
+    public CfciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public CfciRunner(DagWrapper dagWrapper, FciSearchParams params) {
+    public CfciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CfciRunner(SemGraphWrapper dagWrapper, FciSearchParams params) {
+    public CfciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CfciRunner(IndependenceFactsModel model, FciSearchParams params) {
+    public CfciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public CfciRunner(IndependenceFactsModel model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static CfciRunner serializableInstance() {
-        return new CfciRunner(Dag.serializableInstance(),
-                FciSearchParams.serializableInstance());
+        return new CfciRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -105,14 +105,14 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        SearchParams searchParams = getParams();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        Parameters searchParams = getParams();
 
-        IndTestParams indTestParams = searchParams.getIndTestParams();
+        Parameters params = searchParams;
 
         Cfci cfci = new Cfci(getIndependenceTest());
         cfci.setKnowledge(knowledge);
-        cfci.setDepth(indTestParams.getDepth());
+        cfci.setDepth(params.getInt("depth", -1));
         Graph graph = cfci.search();
 
         if (getSourceGraph() != null) {
@@ -135,16 +135,16 @@ public class CfciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
-            testType = _params.getIndTestType();
+        if (getParams() instanceof Parameters) {
+            Parameters _params = params;
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
         else {
-            FciSearchParams _params = (FciSearchParams) params;
-            testType = _params.getIndTestType();
+            Parameters _params = params;
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);
@@ -158,7 +158,7 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
         names.add("Ambiguous Triples");
@@ -167,10 +167,9 @@ public class CfciRunner extends AbstractAlgorithmRunner
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     * @param node
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
@@ -179,6 +178,10 @@ public class CfciRunner extends AbstractAlgorithmRunner
     }
 
 
+    @Override
+    public String getAlgorithmName() {
+        return "CFCI";
+    }
 }
 
 

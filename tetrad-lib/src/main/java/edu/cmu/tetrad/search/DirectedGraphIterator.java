@@ -38,20 +38,20 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DirectedGraphIterator {
-    private List<Graph> graphs = new ArrayList<Graph>();
+    private List<Graph> graphs = new ArrayList<>();
     private int index = -1;
 
 
     /**
-     * The given graphs must be a graphs. If it does not consist entirely of directed and undirected edges and if it is
-     * not acyclic, it is rejected.
+     * The given graphs must be a pattern. If it does not consist entirely of directed and
+     * undirected edges and if it is not acyclic, it is rejected.
      *
      * @throws IllegalArgumentException if the graphs is not a graphs.
      */
     public DirectedGraphIterator(Graph graph) {
         graph = new EdgeListGraph(graph);
 //        graph = DataGraphUtils.undirectedGraph(graph);
-        List<Edge> undirectedEdges = new ArrayList<Edge>();
+        List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
             if (Edges.isUndirectedEdge(edge)) {

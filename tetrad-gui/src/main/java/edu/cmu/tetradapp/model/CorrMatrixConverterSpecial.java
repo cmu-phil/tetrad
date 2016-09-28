@@ -34,7 +34,7 @@ public class CorrMatrixConverterSpecial extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public CorrMatrixConverterSpecial(DataWrapper wrapper) {
+    private CorrMatrixConverterSpecial(DataWrapper wrapper) {
         ICovarianceMatrix covMatrix;
 
         if (wrapper.getSelectedDataModel() instanceof CorrelationMatrix) {
@@ -69,13 +69,10 @@ public class CorrMatrixConverterSpecial extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new CorrMatrixConverterSpecial(wrapper);
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 }
 

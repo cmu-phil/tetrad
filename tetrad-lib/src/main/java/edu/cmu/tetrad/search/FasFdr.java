@@ -35,12 +35,12 @@ import java.util.*;
 import static java.lang.Math.sqrt;
 
 /**
- * Implements the "fast adjacency search" used in several causal algorithms in this package. In the fast adjacency
+ * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
  * search, at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S, where S is a subset
  * of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency search performs this
  * procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
- * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
+ * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * <p>
  * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff
@@ -212,7 +212,7 @@ public class FasFdr implements IFas {
     }
 
     private Map<Node, Set<Node>> emptyGraph(List<Node> nodes) {
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
         for (Node node : nodes) {
             adjacencies.put(node, new TreeSet<Node>());
@@ -227,12 +227,12 @@ public class FasFdr implements IFas {
             removed = false;
 
             for (Node x : nodes) {
-                List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
                 for (Node y : adjx) {
                     if (!adjacencies.get(x).contains(y)) continue;
-                    List<Node> adjy = new ArrayList<Node>(adjacencies.get(y));
-                    List<Node> adj = new ArrayList<Node>(adjx);
+                    List<Node> adjy = new ArrayList<>(adjacencies.get(y));
+                    List<Node> adj = new ArrayList<>(adjx);
                     for (Node node : adjy) if (!adj.contains(node)) adj.add(node);
                     removed = removed || searchICov(adj, test, adjacencies, false);
                 }
@@ -242,7 +242,7 @@ public class FasFdr implements IFas {
 
 
     private Map<Node, Set<Node>> completeGraph(List<Node> nodes) {
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             adjacencies.put(nodes.get(i), new HashSet<Node>());
@@ -268,7 +268,7 @@ public class FasFdr implements IFas {
             removed = false;
 
             for (Node x : nodes) {
-                List<Node> adj = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> adj = new ArrayList<>(adjacencies.get(x));
                 adj.add(x);
                 removed = removed || searchICov(adj, test, adjacencies, false);
             }
@@ -277,10 +277,10 @@ public class FasFdr implements IFas {
 
 
     private Map<Node, Set<Node>> copy(Map<Node, Set<Node>> adjacencies) {
-        Map<Node, Set<Node>> copy = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> copy = new HashMap<>();
 
         for (Node node : adjacencies.keySet()) {
-            copy.put(node, new HashSet<Node>(adjacencies.get(node)));
+            copy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
         return copy;
@@ -305,10 +305,10 @@ public class FasFdr implements IFas {
 //        List<Node> nodes = graph.getNodes();
 //
 //        Map<Node, Set<Node>> _adjacencies = copy(adjacencies);
-//        test.setAlpha(alpha);
+//        test.setParameter1(alpha);
 //        searchICov(nodes, test, adjacencies);
-//        double cutoff = StatUtils.fdr(test.getAlpha(), pValueList, false);
-//        test.setAlpha(cutoff);
+//        double cutoff = StatUtils.fdr(test.getParameter1(), pValueList, false);
+//        test.setParameter1(cutoff);
 //        adjacencies = _adjacencies;
 //        searchICov(nodes, test, adjacencies);
 //
@@ -319,26 +319,26 @@ public class FasFdr implements IFas {
 ////            adjacencies.put(node, new TreeSet<Node>());
 ////        }
 ////
-////        test.setAlpha(alpha);
+////        test.setParameter1(alpha);
 ////
 ////        searchAtDepth0(nodes, test, adjacencies);
 ////
-////        cutoff = StatUtils.fdr(test.getAlpha(), pValueList, false);
+////        cutoff = StatUtils.fdr(test.getParameter1(), pValueList, false);
 ////
-////        test.setAlpha(cutoff);
+////        test.setParameter1(cutoff);
 ////
 ////        searchAtDepth0(nodes, test, adjacencies);
 //
 //        for (int d = 0; d <= _depth; d++) {
 //            boolean more;
 //
-//            test.setAlpha(alpha);
+//            test.setParameter1(alpha);
 //
 //            searchAtDepth(nodes, test, adjacencies, d);
 //
-//            cutoff = StatUtils.fdr(test.getAlpha(), pValueList, false);
+//            cutoff = StatUtils.fdr(test.getParameter1(), pValueList, false);
 //
-//            test.setAlpha(cutoff);
+//            test.setParameter1(cutoff);
 //
 //            more = searchAtDepth(nodes, test, adjacencies, d);
 //
@@ -407,7 +407,7 @@ public class FasFdr implements IFas {
 
                 if (addDependencies) {
                     if (independent) {
-                        List<Node> theRest = new ArrayList<Node>();
+                        List<Node> theRest = new ArrayList<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -422,7 +422,7 @@ public class FasFdr implements IFas {
                         if (verbose) {
                             out.println(SearchLogUtils.independenceFactMsg(x, y, theRest, test.getPValue()));
 //                            out.println(x + " _||_ " + y + " | the rest" + " p = " +
-//                                    nf.format(test.getPValue()));
+//                                    nf.format(test.getScore()));
                         }
 
                         removed = true;
@@ -432,14 +432,14 @@ public class FasFdr implements IFas {
 
 //                    if (verbose) {
 //                        out.println(SearchLogUtils.dependenceFactMsg(x, y, empty) + " p = " +
-//                                nf.format(test.getPValue()));
+//                                nf.format(test.getScore()));
 //                    }
                     }
                 } else {
                     if (independent) {
                         if (!adjacencies.get(x).contains(y)) continue;
 
-                        List<Node> theRest = new ArrayList<Node>();
+                        List<Node> theRest = new ArrayList<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -471,7 +471,7 @@ public class FasFdr implements IFas {
 
             Node x = nodes.get(i);
 
-//            if (missingCol(test.getData(), x)) {
+//            if (missingCol(test.getContinuousData(), x)) {
 //                continue;
 //            }
 
@@ -479,7 +479,7 @@ public class FasFdr implements IFas {
 
                 Node y = nodes.get(j);
 
-//                if (missingCol(test.getData(), y)) {
+//                if (missingCol(test.getContinuousData(), y)) {
 //                    continue;
 //                }
 
@@ -528,22 +528,7 @@ public class FasFdr implements IFas {
 
     // Returns true just in case there are no defined values in the column.
     private boolean missingCol(DataModel data, Node x) {
-        return false; // TODO revert.
-
-//        if (data instanceof DataSet) {
-//            DataSet dataSet = (DataSet) data;
-//            int j = dataSet.getColumn(dataSet.getVariable(x.getName()));
-//
-//            for (int i = 0; i < dataSet.getNumRows(); i++) {
-//                if (!Double.isNaN(dataSet.getDouble(i, j))) {
-//                    return false;
-//                }
-//            }
-//
-//            return true;
-//        }
-//
-//        return false;
+        return false;
     }
 
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
@@ -553,7 +538,7 @@ public class FasFdr implements IFas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -587,11 +572,11 @@ public class FasFdr implements IFas {
         for (Node x : nodes) {
             if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
 
-            List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, knowledge);
 
@@ -629,7 +614,7 @@ public class FasFdr implements IFas {
 //                        else {
 //                            if (verbose) {
 //                                out.println("Dependence: " + SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-//                                        nf.format(test.getPValue()));
+//                                        nf.format(test.getScore()));
 //                            }
 //                        }
 
@@ -646,7 +631,7 @@ public class FasFdr implements IFas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {

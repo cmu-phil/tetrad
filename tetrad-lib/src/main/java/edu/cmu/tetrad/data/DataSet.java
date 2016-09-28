@@ -37,7 +37,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public interface DataSet extends KnowledgeTransferable, DataModel, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Adds the given variable to the data set.
@@ -80,10 +80,10 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void ensureRows(int rows);
 
-    /**
-     * @return the case multiplier for the given case.
-     */
-    int getMultiplier(int caseNumber);
+//    /**
+//     * @return the case multiplier for the given case.
+//     */
+//    int getMultiplier(int caseNumber);
 
     /**
      * @return the column index of the given variable.
@@ -176,10 +176,10 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     List<Node> getVariables();
 
-    /**
-     * @return true if case multipliers are being used in this data set.
-     */
-    boolean isMulipliersCollapsed();
+//    /**
+//     * @return true if case multipliers are being used in this data set.
+//     */
+//    boolean isMulipliersCollapsed();
 
     /**
      * @return true if this is a continuous data set--that is, if it contains at
@@ -224,11 +224,11 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void removeRows(int[] selectedRows);
 
-    /**
-     * Sets the case multiplier for the given case to the given number (must be
-     * >= 1).
-     */
-    void setMultiplier(int caseNumber, int multiplier);
+//    /**
+//     * Sets the case multiplier for the given case to the given number (must be
+//     * >= 1).
+//     */
+//    void setMultiplier(int caseNumber, int multiplier);
 
     /**
      * Sets the case ID fo the given case numnber to the given value.
@@ -305,17 +305,6 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     String toString();
 
     /**
-     * @return true iff this variable is set to accomodate new categories
-     * encountered.
-     */
-    boolean isNewCategoriesAccommodated();
-
-    /**
-     * Sets whether this variable should accomodate new categories encountered.
-     */
-    void setNewCategoriesAccommodated(boolean newCategoriesAccomodated);
-
-    /**
      * The number formatter used to print out continuous values.
      */
     void setNumberFormat(NumberFormat nf);
@@ -343,7 +332,7 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     /**
      * Equals
      */
-    public boolean equals(Object o);
+    boolean equals(Object o);
 
     DataSet copy();
 

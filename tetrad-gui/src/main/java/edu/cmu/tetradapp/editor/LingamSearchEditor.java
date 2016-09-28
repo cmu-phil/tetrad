@@ -23,12 +23,16 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.IGesRunner;
+import edu.cmu.tetradapp.model.KnowledgeEditable;
+import edu.cmu.tetradapp.model.LingamRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -42,14 +46,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
 public class LingamSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, DoNotScroll {
-
-    private JTabbedPane tabbedPane;
 
     //=========================CONSTRUCTORS============================//
 
@@ -79,7 +81,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -98,7 +100,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Result", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
@@ -128,8 +130,8 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
         Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Prune Factor "));
-        LingamParams params = (LingamParams) getAlgorithmRunner().getParams();
-        double pruneFactor = params.getPruneFactor();
+        Parameters params = getAlgorithmRunner().getParams();
+        double pruneFactor = params.getDouble("pruneFactor", 1.0);
         DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 
         field.setFilter(new DoubleTextField.Filter() {
@@ -165,7 +167,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
             Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
@@ -191,8 +193,8 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
 
     private void setPruneFactor(double value) {
-        LingamParams params = (LingamParams) getAlgorithmRunner().getParams();
-        params.setPruneFactor(value);
+        Parameters params = getAlgorithmRunner().getParams();
+        params.set("pruneFactor", value);
     }
 
     protected void doPostExecutionSteps() {
@@ -235,8 +237,8 @@ public class LingamSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
 
@@ -249,11 +251,11 @@ public class LingamSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//

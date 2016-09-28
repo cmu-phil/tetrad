@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BayesDataParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -30,7 +29,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for simulating new datasets from a Bayes net.
@@ -42,7 +40,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     /**
      * The objects storing values of parameters needed to simulate data.
      */
-    private BayesDataParams params;
+    private Parameters params;
 
     /**
      * Blank constructor.
@@ -53,9 +51,10 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     /**
      * Sets the parameter-storing object. This is a separate method because
      * a blank constructor is needed.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (BayesDataParams) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     /**
@@ -70,11 +69,11 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      */
     public void setup() {
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getSampleSize(), 8);
+        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setSampleSize(value);
+                    getParams().set("sampleSize", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -83,12 +82,12 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
             }
         });
 
-        IntTextField numDataSetsField = new IntTextField(getParams().getNumDataSets(), 8);
+        IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
 
         numDataSetsField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setNumDataSets(value);
+                    getParams().set("numDataSets", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -100,16 +99,14 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
 
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-//                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
+//                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-                getParams().isLatentDataSaved());
+                getParams().getBoolean("latentDataSaved", false));
 
         latentDataSaved.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.setLatentDataSaved(checkBox.isSelected());
-                Preferences.userRoot().putBoolean("latentDataSaved",
-                        checkBox.isSelected());
+                params.set("latentDataSaved", checkBox.isSelected());
             }
         });
 
@@ -148,10 +145,8 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     /**
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
      */
-    private synchronized BayesDataParams getParams() {
+    private synchronized Parameters getParams() {
 
         // Unused.
         //        String ret = (this.getMappings == null)
