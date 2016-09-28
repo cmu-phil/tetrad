@@ -44,15 +44,17 @@ import java.util.concurrent.RecursiveTask;
  */
 public final class GCcd implements GraphSearch {
     private IndependenceTest independenceTest;
+    private Score score;
     private int depth = -1;
     private IKnowledge knowledge;
     private List<Node> nodes;
     private boolean applyR1 = true;
     private boolean verbose;
 
-    public GCcd(IndependenceTest test) {
+    public GCcd(IndependenceTest test, Score score) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
+        this.score = score;
         this.nodes = test.getVariables();
     }
 
@@ -69,7 +71,7 @@ public final class GCcd implements GraphSearch {
     public Graph search() {
         Map<Triple, List<Node>> supSepsets = new HashMap<>();
 
-        Fgs fgs = new Fgs(new SemBicScore(independenceTest.getCov()));
+        Fgs fgs = new Fgs(score);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(false);
@@ -89,26 +91,23 @@ public final class GCcd implements GraphSearch {
             }
         }
 
-//        FasStableConcurrent fas = new FasStableConcurrent(independenceTest);
-//        Graph psi = fas.search();
-
         psi.reorientAllWith(Endpoint.CIRCLE);
 
         SepsetProducer sepsets = new SepsetsMinScore(psi, independenceTest, -1);
 
         addColliders(psi);
 
-        orientR1(psi);
+        orientAwayFromArrow(psi);
 
-        stepC(psi, sepsets, null);
-        stepD(psi, sepsets, supSepsets, null);
+        stepC(psi, sepsets);
+        stepD(psi, sepsets, supSepsets);
         if (stepE(supSepsets, psi)) return psi;
         stepF(psi, sepsets, supSepsets);
 
         return psi;
     }
 
-    private void orientR1(Graph graph) {
+    private void orientAwayFromArrow(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             Node n1 = edge.getNode1();
             Node n2 = edge.getNode2();
@@ -116,9 +115,9 @@ public final class GCcd implements GraphSearch {
             edge = graph.getEdge(n1, n2);
 
             if (edge.pointsTowards(n1)) {
-                orientR1(n2, n1, graph);
+                orientAwayFromArrow(n2, n1, graph);
             } else if (edge.pointsTowards(n2)) {
-                orientR1(n1, n2, graph);
+                orientAwayFromArrow(n1, n2, graph);
             }
         }
     }
@@ -303,7 +302,7 @@ public final class GCcd implements GraphSearch {
         }
     }
 
-    private void stepC(Graph psi, SepsetProducer sepsets, SepsetMap sepsetsFromFas) {
+    private void stepC(Graph psi, SepsetProducer sepsets) {
         TetradLogger.getInstance().log("info", "\nStep C");
 
         EDGE:
@@ -345,7 +344,7 @@ public final class GCcd implements GraphSearch {
                 if (!sepsets.isIndependent(a, x, sepsets.getSepset(a, y))) {
                     psi.removeEdge(x, y);
                     psi.addDirectedEdge(y, x);
-                    orientR1(y, x, psi);
+                    orientAwayFromArrow(y, x, psi);
                     break;
                 }
             }
@@ -361,173 +360,104 @@ public final class GCcd implements GraphSearch {
         return false;
     }
 
-    private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets, SepsetMap fasSepsets) {
-        TetradLogger.getInstance().log("info", "\nStep D");
-
+    private void stepD(Graph psi, SepsetProducer sepsets, final Map<Triple, List<Node>> supSepsets) {
         Map<Node, List<Node>> local = new HashMap<>();
 
         for (Node node : psi.getNodes()) {
             local.put(node, local(psi, node));
         }
 
-        int m = 1;
+        class Task extends RecursiveTask<Boolean> {
+            private Graph psi;
+            private SepsetProducer sepsets;
+            private Map<Triple, List<Node>> supSepsets;
+            private Map<Node, List<Node>> local;
+            private Node b;
+            private int from;
+            private int to;
+            private int chunk = 20;
 
-        //maxCountLocalMinusSep is the largest cardinality of all sets of the
-        //form Loacl(psi,A)\(SepSet<A,C> union {B,C})
-        while (maxCountLocalMinusSep(psi, sepsets, local) >= m) {
-            for (Node b : nodes) {
-                List<Node> adj = psi.getAdjacentNodes(b);
-
-                if (adj.size() < 2) continue;
-
-                ChoiceGenerator gen1 = new ChoiceGenerator(adj.size(), 2);
-                int[] choice1;
-
-                while ((choice1 = gen1.next()) != null) {
-                    Node a = adj.get(choice1[0]);
-                    Node c = adj.get(choice1[1]);
-
-                    if (psi.isAdjacentTo(a, c)) {
-                        continue;
-                    }
-
-                    if (b == c || b == a) {
-                        continue;
-                    }
-
-                    // This should never happen..
-                    if (supSepsets.get(new Triple(a, b, c)) != null) {
-                        continue;
-                    }
-
-                    // A-->B<--C
-                    if (!psi.isDefCollider(a, b, c)) {
-                        continue;
-                    }
-
-                    //Compute the number of elements (count)
-                    //in Local(psi,A)\(sepset<A,C> union {B,C})
-                    Set<Node> localMinusSep = countLocalMinusSep(sepsets, local, a, b, c);
-
-                    int count = localMinusSep.size();
-
-                    if (count < m) {
-                        continue; //If not >= m skip to next triple.
-                    }
-
-                    //Compute the set T (setT) with m elements which is a subset of
-                    //Local(psi,A)\(sepset<A,C> union {B,C})
-                    Object[] v = new Object[count];
-                    for (int i = 0; i < count; i++) {
-                        v[i] = (localMinusSep.toArray())[i];
-                    }
-
-                    ChoiceGenerator generator = new ChoiceGenerator(count, m);
-                    int[] choice;
-
-                    while ((choice = generator.next()) != null) {
-                        Set<Node> setT = new LinkedHashSet<>();
-                        for (int i = 0; i < m; i++) {
-                            setT.add((Node) v[choice[i]]);
-                        }
-
-                        setT.add(b);
-                        List<Node> sepset = sepsets.getSepset(a, c);
-                        setT.addAll(sepset);
-
-                        List<Node> listT = new ArrayList<>(setT);
-
-                        //Note:  B is a collider between A and C (see above).
-                        //If anode and cnode are d-separated given T union
-                        //sep[a][c] union {bnode} create a dotted underline triple
-                        //<A,B,C> and record T union sepset<A,C> union {B} in
-                        //supsepset<A,B,C> and in supsepset<C,B,A>
-
-                        if (independenceTest.isIndependent(a, c, listT)) {
-                            supSepsets.put(new Triple(a, b, c), listT);
-
-                            psi.addDottedUnderlineTriple(a, b, c);
-                            TetradLogger.getInstance().log("underlines", "Adding dotted underline: " +
-                                    new Triple(a, b, c));
-
-                            break;
-                        }
-                    }
-                }
+            public Task(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets,
+                        Map<Node, List<Node>> local, int from, int to) {
+                this.psi = psi;
+                this.sepsets = sepsets;
+                this.supSepsets = supSepsets;
+                this.local = local;
+                this.from = from;
+                this.to = to;
             }
 
-            m++;
-        }
-    }
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        Node b = nodes.get(i);
+                        stepDDoNode(psi, sepsets, supSepsets, local, b);
+                    }
 
-    /**
-     * Computes and returns the size (cardinality) of the largest set of the form Local(psi,A)\(SepSet<A,C> union {B,C})
-     * where B is a collider between A and C and where A and C are not adjacent.  A, B and C should not be a dotted
-     * underline triple.
-     */
-    private static int maxCountLocalMinusSep(Graph psi, SepsetProducer sep,
-                                             Map<Node, List<Node>> loc) {
-        List<Node> nodes = psi.getNodes();
-        int maxCount = -1;
+                    return true;
+                } else {
+                    int mid = (to + from) / 2;
 
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = psi.getAdjacentNodes(b);
+                    Task left = new Task(psi, sepsets, supSepsets, local, from, mid);
+                    Task right = new Task(psi, sepsets, supSepsets, local, mid, to);
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
+                    left.fork();
+                    right.compute();
+                    left.join();
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (psi.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                // Want B to be a collider between A and C but not for
-                //A, B, and C to be an underline triple.
-                if (psi.isUnderlineTriple(a, b, c)) {
-                    continue;
-                }
-
-                //Is B a collider between A and C?
-                if (!psi.isDefCollider(a, b, c)) {
-                    continue;
-                }
-
-                Set<Node> localMinusSep = countLocalMinusSep(sep, loc, a, b, c);
-                int count = localMinusSep.size();
-
-                if (count > maxCount) {
-                    maxCount = count;
+                    return true;
                 }
             }
         }
 
-        return maxCount;
+        Task task = new Task(psi, sepsets, supSepsets, local, 0, nodes.size());
+
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
     }
 
-    /**
-     * For a given GaSearchGraph psi and for a given set of sepsets, each of which is associated with a pair of vertices
-     * A and C, computes and returns the set Local(psi,A)\(SepSet<A,C> union {B,C}).
-     */
-    private static Set<Node> countLocalMinusSep(SepsetProducer sepset,
-                                                Map<Node, List<Node>> local, Node anode,
-                                                Node bnode, Node cnode) {
-        Set<Node> localMinusSep = new HashSet<>();
-        localMinusSep.addAll(local.get(anode));
-        List<Node> sepset1 = sepset.getSepset(anode, cnode);
-        localMinusSep.removeAll(sepset1);
-        localMinusSep.remove(bnode);
-        localMinusSep.remove(cnode);
+    private void stepDDoNode(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets,
+                             Map<Node, List<Node>> local, Node b) {
+        List<Node> adj = psi.getAdjacentNodes(b);
 
-        return localMinusSep;
+        if (adj.size() < 2) {
+            return;
+        }
+
+        ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> _adj = GraphUtils.asList(choice, adj);
+            Node a = _adj.get(0);
+            Node c = _adj.get(1);
+
+            if (!psi.isDefCollider(a, b, c)) continue;
+
+            List<Node> S = sepsets.getSepset(a, c);
+            if (S == null) continue;
+            ArrayList<Node> TT = new ArrayList<>(local.get(a));
+            TT.removeAll(S);
+            TT.remove(b);
+            TT.remove(c);
+
+            DepthChoiceGenerator gen2 = new DepthChoiceGenerator(TT.size(), -1);
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                Set<Node> T = GraphUtils.asSet(choice2, TT);
+                Set<Node> B = new HashSet<>(T);
+                B.addAll(S);
+                B.add(b);
+                List<Node> C = new ArrayList<>(B);
+
+                if (sepsets.isIndependent(a, c, C)) {
+                    psi.addDottedUnderlineTriple(a, b, c);
+                    supSepsets.put(new Triple(a, b, c), C);
+                }
+            }
+        }
     }
-
 
     private boolean stepE(Map<Triple, List<Node>> supSepset, Graph psi) {
         TetradLogger.getInstance().log("info", "\nStep E");
@@ -568,7 +498,7 @@ public final class GCcd implements GraphSearch {
                     // Or orient Bo-oD or B-oD as B->D...
                     psi.removeEdge(b, d);
                     psi.addDirectedEdge(b, d);
-                    orientR1(b, d, psi);
+                    orientAwayFromArrow(b, d, psi);
                 }
 
             }
@@ -599,14 +529,13 @@ public final class GCcd implements GraphSearch {
                     // Or orient Bo-oD or B-oD as B->D...
                     psi.removeEdge(b, d);
                     psi.addDirectedEdge(b, d);
-                    orientR1(b, d, psi);
+                    orientAwayFromArrow(b, d, psi);
                 }
             }
         }
 
         return false;
     }
-
 
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets) {
         for (Triple triple : psi.getDottedUnderlines()) {
@@ -651,52 +580,36 @@ public final class GCcd implements GraphSearch {
                 if (!sepsets.isIndependent(a, c, listSupSepUnionD)) {
                     psi.removeEdge(b, d);
                     psi.addDirectedEdge(b, d);
-                    orientR1(b, d, psi);
+                    orientAwayFromArrow(b, d, psi);
                 }
             }
         }
     }
 
-    private List<Node> local(Graph psi, Node z) {
-        List<Node> local = new ArrayList<>();
+    private List<Node> local(Graph psi, Node x) {
+        Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
 
-        //Is X p-adjacent to v in psi?
-        for (Node x : nodes) {
-            if (x == z) {
-                continue;
-            }
-
-            if (psi.isAdjacentTo(z, x)) {
-                local.add(x);
-            }
-
-            //or is there a collider between X and v in psi?
-            for (Node y : nodes) {
-                if (y == z || y == x) {
-                    continue;
-                }
-
+        for (Node y : new HashSet<>(nodes)) {
+            for (Node z : psi.getAdjacentNodes(y)) {
                 if (psi.isDefCollider(x, y, z)) {
-                    if (!local.contains(x)) {
-                        local.add(x);
-                    }
+                    nodes.add(z);
                 }
             }
         }
 
-        return local;
+        return new ArrayList<>(nodes);
     }
 
-    private void orientR1(Node a, Node b, Graph graph) {
+    private void orientAwayFromArrow(Node a, Node b, Graph graph) {
         if (!isApplyR1()) return;
 
         for (Node c : graph.getAdjacentNodes(b)) {
             if (c == a) continue;
-            orientR1Visit(a, b, c, graph);
+            orientAwayFromArrowVisit(a, b, c, graph);
         }
     }
 
-    private boolean orientR1Visit(Node a, Node b, Node c, Graph graph) {
+    private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
         if (!Edges.isNondirectedEdge(graph.getEdge(b, c))) {
             return false;
         }
@@ -718,7 +631,7 @@ public final class GCcd implements GraphSearch {
 
             Edge bc = graph.getEdge(b, c);
 
-            if (!orientR1Visit(b, c, d, graph)) {
+            if (!orientAwayFromArrowVisit(b, c, d, graph)) {
                 graph.removeEdge(b, c);
                 graph.addEdge(bc);
             }

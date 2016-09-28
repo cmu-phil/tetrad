@@ -53,24 +53,24 @@ public class SepsetsMinScore implements SepsetProducer {
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public List<Node> getSepset(Node i, Node k) {
-        return getMaxSepset(i, k);
+        return getMinSepset(i, k);
     }
 
     /**
      * Assumes i--j--k is an unshielded triple.
      */
     public boolean isCollider(Node i, Node j, Node k) {
-        return !getMaxSepset(i, k).contains(j);
+        return !getMinSepset(i, k).contains(j);
     }
 
     /**
      * Assumes i--j--k is an unshielded triple.
      */
     public boolean isNoncollider(Node i, Node j, Node k) {
-        return getMaxSepset(i, k).contains(j);
+        return getMinSepset(i, k).contains(j);
     }
 
-    private List<Node> getMaxSepset(Node i, Node k) {
+    private List<Node> getMinSepset(Node i, Node k) {
         double _p = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
 
@@ -85,14 +85,15 @@ public class SepsetsMinScore implements SepsetProducer {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adji);
+                    List<Node> v2 = GraphUtils.asList(choice, adji);
 
-                    getIndependenceTest().isIndependent(i, k, v);
-                    double p = getIndependenceTest().getPValue();
+                    getIndependenceTest().isIndependent(i, k, v2);
+                    double p2 = getIndependenceTest().getScore();
+                    System.out.println("2 " + p2);
 
-                    if (p < _p) {
-                        _p = p;
-                        _v = v;
+                    if (p2 < _p) {
+                        _p = p2;
+                        _v = v2;
                     }
                 }
             }
@@ -102,14 +103,15 @@ public class SepsetsMinScore implements SepsetProducer {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adjk);
+                    List<Node> v2 = GraphUtils.asList(choice, adjk);
 
-                    getIndependenceTest().isIndependent(i, k, v);
-                    double p = getIndependenceTest().getPValue();
+                    getIndependenceTest().isIndependent(i, k, v2);
+                    double p2 = getIndependenceTest().getScore();
+                    System.out.println("1 " + p2);
 
-                    if (p < _p) {
-                        _p = p;
-                        _v = v;
+                    if (p2 < _p) {
+                        _p = p2;
+                        _v = v2;
                     }
                 }
             }

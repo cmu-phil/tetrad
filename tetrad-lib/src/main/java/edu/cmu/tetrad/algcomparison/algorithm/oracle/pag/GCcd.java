@@ -20,17 +20,20 @@ import java.util.List;
 public class GCcd implements Algorithm {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GCcd(IndependenceWrapper test) {
+    public GCcd(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
+        this.score = score;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
         IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
-        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(test);
+        Score score = this.score.getScore(continuousDataSet, parameters);
+        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(test, score);
         search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
 

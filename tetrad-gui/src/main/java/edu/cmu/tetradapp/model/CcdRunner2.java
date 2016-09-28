@@ -170,7 +170,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
         if (model instanceof Graph) {
             IndependenceTest test = new IndTestDSep((Graph) model);
-            ccd = new GCcd(test);
+            Score score = new GraphScore((Graph) model);
+            ccd = new GCcd(test, score);
             ccd.setVerbose(true);
         } else {
 
@@ -186,7 +187,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    ccd = new GCcd(test);
+                    ccd = new GCcd(test, gesScore);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -204,7 +205,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestScore(gesScore);
-                ccd = new GCcd(test);
+                ccd = new GCcd(test, gesScore);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -229,7 +230,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     IndependenceTest test = new IndTestScore(fgsScore);
-                    ccd = new GCcd(test);
+                    ccd = new GCcd(test, fgsScore);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
