@@ -11,7 +11,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -20,6 +20,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
@@ -48,10 +49,14 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
 
+        Object obj = parameters.get("printStream");
+        if (obj instanceof PrintStream) {
+            search.setOut((PrintStream) obj);
+        }
+
 //        if (initial != null) {
 //            search.setInitialGraph(initial);
 //        }
-
         return search.search();
     }
 
@@ -76,6 +81,7 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
         parameters.add("verbose");
+        parameters.add("printStream");
         return parameters;
     }
 

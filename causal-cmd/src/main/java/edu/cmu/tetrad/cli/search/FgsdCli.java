@@ -23,6 +23,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.cli.AbstractAlgorithmCli;
 import edu.cmu.tetrad.cli.AlgorithmType;
+import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.LimitDiscreteCategory;
@@ -41,7 +42,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -154,7 +154,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
         options.add(new Option(null, "structure-prior", true, createDescription(param.get(ParamAttrs.STRUCTURE_PRIOR))));
         options.add(new Option(null, "sample-prior", true, createDescription(param.get(ParamAttrs.SAMPLE_PRIOR))));
         options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
-        options.add(new Option(null, "faithfulness-assumed", true, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
+        options.add(new Option(null, "faithfulness-assumed", false, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
         options.add(new Option(null, "skip-unique-var-name", false, "Skip check for unique variable names."));
         options.add(new Option(null, "skip-category-limit", false, "Skip 'limit number of categories' check."));
 

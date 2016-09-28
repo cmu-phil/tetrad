@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.validation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -37,6 +38,7 @@ public class TabularContinuousDataTest {
     /**
      * Test of validate method, of class TabularContinuousData.
      */
+    @Ignore
     @Test
     public void testValidate() {
         System.out.println("validate");

@@ -23,6 +23,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.cli.AbstractAlgorithmCli;
 import edu.cmu.tetrad.cli.AlgorithmType;
+import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.NonZeroVariance;
@@ -41,7 +42,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -52,7 +52,7 @@ import edu.cmu.tetrad.cli.ParamAttrs;
 public class FgscCli extends AbstractAlgorithmCli {
 
     protected double penaltyDiscount;
-    protected int maxInDegree;
+    protected int maxDegree;
     protected boolean faithfulnessAssumed;
 
     protected boolean skipUniqueVarName;
@@ -71,7 +71,7 @@ public class FgscCli extends AbstractAlgorithmCli {
     @Override
     public void printParameterInfos(Formatter fmt) {
         fmt.format("penalty discount = %f%n", penaltyDiscount);
-        fmt.format("max indegree = %d%n", maxInDegree);
+        fmt.format("max degree = %d%n", maxDegree);
         fmt.format("faithfulness assumed = %s%n", faithfulnessAssumed);
     }
 
@@ -79,7 +79,7 @@ public class FgscCli extends AbstractAlgorithmCli {
     public Parameters getParameters() {
         Parameters parameters = new Parameters();
         parameters.set(ParamAttrs.PENALTY_DISCOUNT, penaltyDiscount);
-        parameters.set(ParamAttrs.MAX_INDEGREE, maxInDegree);
+        parameters.set(ParamAttrs.MAX_DEGREE, maxDegree);
         parameters.set(ParamAttrs.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
         parameters.set(ParamAttrs.VERBOSE, verbose);
 
@@ -133,7 +133,7 @@ public class FgscCli extends AbstractAlgorithmCli {
         ParamDescriptions param = ParamDescriptions.instance();
 
         penaltyDiscount = Args.getDoubleMin(cmd.getOptionValue("penalty-discount", String.valueOf(param.get(ParamAttrs.PENALTY_DISCOUNT).getDefaultValue())), 0);
-        maxInDegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttrs.MAX_INDEGREE).getDefaultValue())), -1);
+        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(param.get(ParamAttrs.MAX_DEGREE).getDefaultValue())), -1);
         faithfulnessAssumed = !cmd.hasOption("faithfulness-assumed");
         skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
         skipZeroVariance = cmd.hasOption("skip-non-zero-variance");
@@ -150,8 +150,8 @@ public class FgscCli extends AbstractAlgorithmCli {
 
         List<Option> options = new LinkedList<>();
         options.add(new Option(null, "penalty-discount", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
-        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
-        options.add(new Option(null, "faithfulness-assumed", true, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
+        options.add(new Option(null, "max-degree", true, createDescription(param.get(ParamAttrs.MAX_DEGREE))));
+        options.add(new Option(null, "faithfulness-assumed", false, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
         options.add(new Option(null, "skip-unique-var-name", false, "Skip check for unique variable names."));
         options.add(new Option(null, "skip-non-zero-variance", false, "Skip check for zero variance variables."));
 

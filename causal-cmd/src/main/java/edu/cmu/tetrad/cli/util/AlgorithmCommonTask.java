@@ -46,20 +46,6 @@ public class AlgorithmCommonTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCommonTask.class);
 
-    public static void writeOutResult(String heading, String runInfo, Graph graph, Path outputFile) {
-        String fileName = outputFile.getFileName().toString();
-        String task = "writing out result file " + fileName;
-        logStartTask(task);
-        try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            writer.println(heading);
-            writer.println(runInfo);
-            writer.println(graph.toString());
-        } catch (IOException exception) {
-            logFailedTask(task, exception);
-        }
-        logEndTask(task);
-    }
-
     public static void writeOutJson(String graphId, Graph graph, Path outputFile) {
         String fileName = outputFile.getFileName().toString();
         String task = "writing out Json file " + fileName;
