@@ -454,6 +454,7 @@ public final class GCcd implements GraphSearch {
                 if (sepsets.isIndependent(a, c, C)) {
                     psi.addDottedUnderlineTriple(a, b, c);
                     supSepsets.put(new Triple(a, b, c), C);
+                    break;
                 }
             }
         }

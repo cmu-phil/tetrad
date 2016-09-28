@@ -77,7 +77,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -169,7 +169,7 @@ public class PerformanceTests {
             LargeSemSimulator simulator = new LargeSemSimulator(graph);
             simulator.setOut(out);
 
-            DataSet data = simulator.simulateDataAcyclic(numCases);
+            DataSet data = simulator.simulateDataFixPoint(numCases);
 
             out1.println(data);
 
@@ -199,7 +199,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -279,7 +279,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -357,7 +357,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -441,7 +441,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -525,7 +525,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -615,7 +615,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -711,7 +711,7 @@ public class PerformanceTests {
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
         simulator.setCoefRange(coefLow, coefHigh);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
         data = DataUtils.restrictToMeasured(data);
 
@@ -850,7 +850,7 @@ public class PerformanceTests {
                 simulator.setVerbose(false);
                 simulator.setOut(out);
 
-                DataSet data = simulator.simulateDataAcyclic(numCases);
+                DataSet data = simulator.simulateDataFixPoint(numCases);
 
                 System.out.println("Finishing simulation");
 
@@ -1093,7 +1093,7 @@ public class PerformanceTests {
             simulator.setVerbose(false);
             simulator.setOut(out);
 
-            DataSet data = simulator.simulateDataAcyclic(numCases);
+            DataSet data = simulator.simulateDataFixPoint(numCases);
 
             System.out.println("Finishing simulation");
 
@@ -1361,7 +1361,7 @@ public class PerformanceTests {
             simulator.setCoefRange(.5, 1.5);
             simulator.setVarRange(1, 3);
 
-            DataSet data = simulator.simulateDataAcyclic(numCases);
+            DataSet data = simulator.simulateDataFixPoint(numCases);
 
             data = DataUtils.restrictToMeasured(data);
 

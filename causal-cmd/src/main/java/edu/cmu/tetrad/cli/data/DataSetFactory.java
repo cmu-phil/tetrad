@@ -34,7 +34,7 @@ public class DataSetFactory {
         LargeSemSimulator simulator = new LargeSemSimulator(graph);
         simulator.setOut(System.out);
 
-        return simulator.simulateDataAcyclic(numOfCases);
+        return simulator.simulateDataFixPoint(numOfCases);
     }
 
 }
