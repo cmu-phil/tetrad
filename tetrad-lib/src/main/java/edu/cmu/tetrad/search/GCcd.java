@@ -501,7 +501,6 @@ public final class GCcd implements GraphSearch {
                     psi.addDirectedEdge(b, d);
                     orientAwayFromArrow(b, d, psi);
                 }
-
             }
 
             for (Node d : aAdj) {
