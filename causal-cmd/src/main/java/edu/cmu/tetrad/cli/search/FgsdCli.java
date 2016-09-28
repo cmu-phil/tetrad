@@ -55,7 +55,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     protected double structurePrior;
     protected double samplePrior;
-    protected int maxInDegree;
+    protected int maxDegree;
     protected boolean faithfulnessAssumed;
 
     protected boolean skipUniqueVarName;
@@ -75,7 +75,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
     public void printParameterInfos(Formatter fmt) {
         fmt.format("sample prior = %f%n", samplePrior);
         fmt.format("structure prior = %f%n", structurePrior);
-        fmt.format("max indegree = %d%n", maxInDegree);
+        fmt.format("max degree = %d%n", maxDegree);
         fmt.format("faithfulness assumed = %s%n", faithfulnessAssumed);
     }
 
@@ -84,7 +84,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
         Parameters parameters = new Parameters();
         parameters.set(ParamAttrs.SAMPLE_PRIOR, samplePrior);
         parameters.set(ParamAttrs.STRUCTURE_PRIOR, structurePrior);
-        parameters.set(ParamAttrs.MAX_INDEGREE, maxInDegree);
+        parameters.set(ParamAttrs.MAX_DEGREE, maxDegree);
         parameters.set(ParamAttrs.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
         parameters.set(ParamAttrs.VERBOSE, verbose);
 
@@ -135,7 +135,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
         structurePrior = Args.getDouble(cmd.getOptionValue("structure-prior", String.valueOf(param.get(ParamAttrs.STRUCTURE_PRIOR).getDefaultValue())));
         samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", String.valueOf(param.get(ParamAttrs.SAMPLE_PRIOR).getDefaultValue())));
-        maxInDegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttrs.MAX_INDEGREE).getDefaultValue())), -1);
+        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(param.get(ParamAttrs.MAX_DEGREE).getDefaultValue())), -1);
         faithfulnessAssumed = !cmd.hasOption("faithfulness-assumed");
         skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
         skipCategoryLimit = cmd.hasOption("skip-category-limit");
@@ -153,7 +153,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
         List<Option> options = new LinkedList<>();
         options.add(new Option(null, "structure-prior", true, createDescription(param.get(ParamAttrs.STRUCTURE_PRIOR))));
         options.add(new Option(null, "sample-prior", true, createDescription(param.get(ParamAttrs.SAMPLE_PRIOR))));
-        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
+        options.add(new Option(null, "max-degree", true, createDescription(param.get(ParamAttrs.MAX_DEGREE))));
         options.add(new Option(null, "faithfulness-assumed", false, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
         options.add(new Option(null, "skip-unique-var-name", false, "Skip check for unique variable names."));
         options.add(new Option(null, "skip-category-limit", false, "Skip 'limit number of categories' check."));
