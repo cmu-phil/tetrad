@@ -18,22 +18,19 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
-
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models,"
- * JMLR 2016.
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * for Latent Variable Models," JMLR 2016.
  *
  * @author Juan Miguel Ogarrio
  * @author ps7z
@@ -84,17 +81,16 @@ public final class GFci implements GraphSearch {
     private long elapsedTime;
 
     //============================CONSTRUCTORS============================//
-
     public GFci(IndependenceTest test, Score score) {
-        if (score == null) throw new NullPointerException();
+        if (score == null) {
+            throw new NullPointerException();
+        }
         this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
     }
 
     //========================PUBLIC METHODS==========================//
-
-
     public Graph search() {
         long time1 = System.currentTimeMillis();
 
@@ -111,6 +107,7 @@ public final class GFci implements GraphSearch {
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         fgs.setMaxDegree(maxIndegree);
+        fgs.setOut(out);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
@@ -141,6 +138,8 @@ public final class GFci implements GraphSearch {
         modifiedR0(fgsGraph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setOut(out);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -228,30 +227,34 @@ public final class GFci implements GraphSearch {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
+     * @return true if Zhang's complete rule set should be used, false if only
+     * R1-R4 (the rule set of the original FCI) should be used. False by
+     * default.
      */
     public boolean isCompleteRuleSetUsed() {
         return completeRuleSetUsed;
     }
 
     /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set
+     * should be used, false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
+     * @return the maximum length of any discriminating path, or -1 of
+     * unlimited.
      */
     public int getMaxPathLength() {
         return maxPathLength;
     }
 
     /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxPathLength the maximum length of any discriminating path, or -1
+     * if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -308,20 +311,18 @@ public final class GFci implements GraphSearch {
     }
 
     //===========================================PRIVATE METHODS=======================================//
-
     /**
      * Orients according to background knowledge
      */
     private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext();) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
             Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
             Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
 
             if (from == null || to == null) {
                 continue;
@@ -337,7 +338,7 @@ public final class GFci implements GraphSearch {
             logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext();) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
@@ -361,7 +362,3 @@ public final class GFci implements GraphSearch {
     }
 
 }
-
-
-
-

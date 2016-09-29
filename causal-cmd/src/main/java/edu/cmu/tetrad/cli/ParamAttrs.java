@@ -53,4 +53,6 @@ public interface ParamAttrs {
     public static final String MEASUREMENT_VARIANCE = "measurementVariance";
     public static final String VERBOSE = "verbose";
 
+    public static final String PRINT_STREAM = "printStream";
+
 }
