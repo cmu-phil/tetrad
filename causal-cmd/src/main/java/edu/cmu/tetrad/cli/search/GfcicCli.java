@@ -156,7 +156,7 @@ public class GfcicCli extends AbstractAlgorithmCli {
         options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
         options.add(new Option(null, "penalty-discount", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
         options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
-        options.add(new Option(null, "faithfulness-assumed", true, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
+        options.add(new Option(null, "faithfulness-assumed", false, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
         options.add(new Option(null, "skip-unique-var-name", false, "Skip check for unique variable names."));
         options.add(new Option(null, "skip-non-zero-variance", false, "Skip check for zero variance variables."));
 
