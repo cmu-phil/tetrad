@@ -69,7 +69,7 @@ public final class GCcd implements GraphSearch {
      * underlines of the PAG.
      */
     public Graph search() {
-        Map<Triple, List<Node>> supSepsets = new HashMap<>();
+        Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(verbose);
@@ -101,7 +101,12 @@ public final class GCcd implements GraphSearch {
 
         stepC(psi, sepsets);
         stepD(psi, sepsets, supSepsets);
-        if (stepE(supSepsets, psi)) return psi;
+
+        if (nodes.size() < 4) {
+            return psi;
+        }
+
+        stepE(supSepsets, psi);
         stepF(psi, sepsets, supSepsets);
 
         return psi;
@@ -180,7 +185,7 @@ public final class GCcd implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNode(graph, colliders, noncolliders, nodes.get(i));
+                        doNodeCollider(graph, colliders, noncolliders, nodes.get(i));
                     }
 
                     return true;
@@ -236,7 +241,7 @@ public final class GCcd implements GraphSearch {
         }
     }
 
-    private void doNode(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
+    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
@@ -290,7 +295,7 @@ public final class GCcd implements GraphSearch {
             }
 
             if (S == null) {
-                throw new NullPointerException();
+                continue;
             }
 
             // S actually has to be non-null here, but the compiler doesn't know that.
@@ -302,7 +307,8 @@ public final class GCcd implements GraphSearch {
         }
     }
 
-    private void stepC(Graph psi, SepsetProducer sepsets) {
+    private void
+    stepC(Graph psi, SepsetProducer sepsets) {
         TetradLogger.getInstance().log("info", "\nStep C");
 
         EDGE:
@@ -341,7 +347,15 @@ public final class GCcd implements GraphSearch {
                 }
 
                 //...X is not in sepset<A, Y>...
-                if (!sepsets.isIndependent(a, x, sepsets.getSepset(a, y))) {
+                List<Node> sepset = sepsets.getSepset(a, y);
+
+                if (sepset == null) {
+                    continue;
+                }
+
+                if (sepset.contains(x)) continue;
+
+                if (!sepsets.isIndependent(a, x, sepset)) {
                     psi.removeEdge(x, y);
                     psi.addDirectedEdge(y, x);
                     orientAwayFromArrow(y, x, psi);
@@ -360,7 +374,7 @@ public final class GCcd implements GraphSearch {
         return false;
     }
 
-    private void stepD(Graph psi, SepsetProducer sepsets, final Map<Triple, List<Node>> supSepsets) {
+    private void stepD(Graph psi, SepsetProducer sepsets, final Map<Triple, Set<Node>> supSepsets) {
         Map<Node, List<Node>> local = new HashMap<>();
 
         for (Node node : psi.getNodes()) {
@@ -370,14 +384,14 @@ public final class GCcd implements GraphSearch {
         class Task extends RecursiveTask<Boolean> {
             private Graph psi;
             private SepsetProducer sepsets;
-            private Map<Triple, List<Node>> supSepsets;
+            private Map<Triple, Set<Node>> supSepsets;
             private Map<Node, List<Node>> local;
             private Node b;
             private int from;
             private int to;
             private int chunk = 20;
 
-            public Task(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets,
+            public Task(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
                         Map<Node, List<Node>> local, int from, int to) {
                 this.psi = psi;
                 this.sepsets = sepsets;
@@ -391,8 +405,7 @@ public final class GCcd implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        Node b = nodes.get(i);
-                        stepDDoNode(psi, sepsets, supSepsets, local, b);
+                        doNodeStepD(psi, sepsets, supSepsets, local, nodes.get(i));
                     }
 
                     return true;
@@ -416,7 +429,7 @@ public final class GCcd implements GraphSearch {
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
     }
 
-    private void stepDDoNode(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets,
+    private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
                              Map<Node, List<Node>> local, Node b) {
         List<Node> adj = psi.getAdjacentNodes(b);
 
@@ -449,37 +462,34 @@ public final class GCcd implements GraphSearch {
                 Set<Node> B = new HashSet<>(T);
                 B.addAll(S);
                 B.add(b);
-                List<Node> C = new ArrayList<>(B);
 
-                if (sepsets.isIndependent(a, c, C)) {
+                if (sepsets.isIndependent(a, c, new ArrayList<Node>(B))) {
                     psi.addDottedUnderlineTriple(a, b, c);
-                    supSepsets.put(new Triple(a, b, c), C);
+                    supSepsets.put(new Triple(a, b, c), B);
                     break;
                 }
             }
         }
     }
 
-    private boolean stepE(Map<Triple, List<Node>> supSepset, Graph psi) {
+    private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
         TetradLogger.getInstance().log("info", "\nStep E");
-
-        if (nodes.size() < 4) {
-            return true;
-        }
 
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
             Node b = triple.getY();
+            Node c = triple.getZ();
 
             List<Node> aAdj = psi.getAdjacentNodes(a);
 
             for (Node d : aAdj) {
                 if (d == b) continue;
 
+                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
+                    continue;
+                }
+
                 if (supSepset.get(triple).contains(d)) {
-                    if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                        continue;
-                    }
 
                     // Orient B*-oD as B*-D
                     psi.setEndpoint(b, d, Endpoint.TAIL);
@@ -488,12 +498,8 @@ public final class GCcd implements GraphSearch {
                         continue;
                     }
 
-                    if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                        continue;
-                    }
-
                     if (wouldCreateBadCollider(b, d, psi)) {
-                        return false;
+                        continue;
                     }
 
                     // Or orient Bo-oD or B-oD as B->D...
@@ -503,13 +509,16 @@ public final class GCcd implements GraphSearch {
                 }
             }
 
-            for (Node d : aAdj) {
+            List<Node> cAdj = psi.getAdjacentNodes(c);
+
+            for (Node d : cAdj) {
                 if (d == b) continue;
 
+                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
+                    continue;
+                }
+
                 if (supSepset.get(triple).contains(d)) {
-                    if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                        continue;
-                    }
 
                     // Orient B*-oD as B*-D
                     psi.setEndpoint(b, d, Endpoint.TAIL);
@@ -518,12 +527,8 @@ public final class GCcd implements GraphSearch {
                         continue;
                     }
 
-                    if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                        continue;
-                    }
-
                     if (wouldCreateBadCollider(b, d, psi)) {
-                        return false;
+                        continue;
                     }
 
                     // Or orient Bo-oD or B-oD as B->D...
@@ -533,11 +538,9 @@ public final class GCcd implements GraphSearch {
                 }
             }
         }
-
-        return false;
     }
 
-    private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets) {
+    private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
             Node b = triple.getY();
@@ -592,7 +595,9 @@ public final class GCcd implements GraphSearch {
         for (Node y : new HashSet<>(nodes)) {
             for (Node z : psi.getAdjacentNodes(y)) {
                 if (psi.isDefCollider(x, y, z)) {
-                    nodes.add(z);
+                    if (z != x) {
+                        nodes.add(z);
+                    }
                 }
             }
         }

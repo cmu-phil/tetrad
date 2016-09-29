@@ -86,6 +86,9 @@ public final class LargeSemSimulator {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
 
+        List<Node> causalOrdering = graph.getCausalOrdering();
+        this.tierIndices = new int[causalOrdering.size()];
+        for (int i = 0; i < tierIndices.length; i++) tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
     }
 
     public LargeSemSimulator(Graph graph, List<Node> nodes, int[] tierIndices) {
