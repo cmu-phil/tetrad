@@ -134,7 +134,7 @@ public class TestPc {
         _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
         _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
 
-//        System.out.println(pattern);
+        System.out.println(pattern);
 
         assertEquals(pattern, _true);
     }

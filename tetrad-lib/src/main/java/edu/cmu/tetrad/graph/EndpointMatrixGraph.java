@@ -706,6 +706,16 @@ public class EndpointMatrixGraph implements Graph {
         return !isDConnectedTo(x, y, z);
     }
 
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
+
     private static class Pair {
         private Node x;
         private Node y;

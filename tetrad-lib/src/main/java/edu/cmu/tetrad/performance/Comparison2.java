@@ -276,7 +276,7 @@ public class Comparison2 {
                         sub2[i] = tierSize + i;
                     }
                     do {
-                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+                        dataSet = sim.simulateDataFixPoint(params.getSampleSize());
 //                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
 //                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 
@@ -299,7 +299,7 @@ public class Comparison2 {
                         System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
                         System.out.println("Made " + (attempt-1) + " attempts to get stable matrix.");
                         sim.setCoefRange(0.15, 0.3);
-                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+                        dataSet = sim.simulateDataFixPoint(params.getSampleSize());
                     } else System.out.println("Coefficient matrix is stable.");
                 }
 

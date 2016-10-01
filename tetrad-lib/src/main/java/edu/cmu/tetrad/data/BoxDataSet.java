@@ -300,7 +300,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
         }
 
-        throw new IllegalArgumentException("Not a row/col in this data set.");
+        throw new IllegalArgumentException("Not a row/col in this data set: " + row + ", " + col);
     }
 
     /**
@@ -1015,7 +1015,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * dataset.
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
-     * @see #isMulipliersCollapsed()
      */
     public final TetradMatrix getDoubleData() {
         TetradMatrix copy = new TetradMatrix(dataBox.numRows(), dataBox.numCols());

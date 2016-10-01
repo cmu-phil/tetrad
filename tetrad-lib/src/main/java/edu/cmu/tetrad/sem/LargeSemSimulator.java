@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.calculator.expression.Context;
+import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 //import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -71,27 +73,22 @@ public final class LargeSemSimulator {
     private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
     private int[] tierIndices;
     private boolean verbose = false;
+    private boolean alreadySetUp = false;
 
 
     //=============================CONSTRUCTORS============================//
 
     public LargeSemSimulator(Graph graph) {
-        List<Node> nodes = graph.getCausalOrdering();
-        int[] tierIndices = new int[nodes.size()];
-        for (int j = 0; j < nodes.size(); j++) {
-            tierIndices[j] = j;
-        }
-
         this.graph = graph;
-        this.variableNodes = nodes;
-        this.tierIndices = tierIndices;
+        this.variableNodes = graph.getNodes();
 
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
 
-        int size = variableNodes.size();
-        setupModel(size);
+        List<Node> causalOrdering = graph.getCausalOrdering();
+        this.tierIndices = new int[causalOrdering.size()];
+        for (int i = 0; i < tierIndices.length; i++) tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
     }
 
     public LargeSemSimulator(Graph graph, List<Node> nodes, int[] tierIndices) {
@@ -99,16 +96,13 @@ public final class LargeSemSimulator {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.graph = graph;
+        this.graph = GraphUtils.replaceNodes(graph, nodes);
         this.variableNodes = nodes;
         this.tierIndices = tierIndices;
 
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
-
-        int size = variableNodes.size();
-        setupModel(size);
     }
 
     /**
@@ -119,6 +113,14 @@ public final class LargeSemSimulator {
      * various values--could be improved).
      */
     public DataSet simulateDataAcyclic1(int sampleSize) {
+        if (tierIndices == null) {
+            List<Node> nodes = graph.getNodes();
+            tierIndices = new int[nodes.size()];
+            for (int j = 0; j < nodes.size(); j++) {
+                tierIndices[j] = j;
+            }
+        }
+
         int size = variableNodes.size();
         setupModel(size);
 
@@ -146,6 +148,14 @@ public final class LargeSemSimulator {
 
     // Trying again to parallelize simulateDataAcyclic.
     public DataSet simulateDataAcyclic2(int sampleSize) {
+        if (tierIndices == null) {
+            List<Node> nodes = graph.getNodes();
+            tierIndices = new int[nodes.size()];
+            for (int j = 0; j < nodes.size(); j++) {
+                tierIndices[j] = j;
+            }
+        }
+
         int size = variableNodes.size();
         setupModel(size);
 
@@ -234,7 +244,15 @@ public final class LargeSemSimulator {
         return new BoxDataSet(new DoubleDataBox(all), variableNodes);
     }
 
-    public DataSet simulateDataAcyclic(int sampleSize) {
+    public DataSet simulateDataAcyclic3(int sampleSize) {
+        if (tierIndices == null) {
+            List<Node> nodes = graph.getNodes();
+            tierIndices = new int[nodes.size()];
+            for (int j = 0; j < nodes.size(); j++) {
+                tierIndices[j] = j;
+            }
+        }
+
         int size = variableNodes.size();
         setupModel(size);
 
@@ -287,7 +305,7 @@ public final class LargeSemSimulator {
             }
         }
 
-        if(graph instanceof TimeLagGraph){
+        if (graph instanceof TimeLagGraph) {
             sampleSize += 200;
         }
 
@@ -297,10 +315,10 @@ public final class LargeSemSimulator {
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
 
-        if(graph instanceof TimeLagGraph){
-            int [] rem = new int[200];
-            for (int i=0;i <200;++i){
-                rem[i]=i;
+        if (graph instanceof TimeLagGraph) {
+            int[] rem = new int[200];
+            for (int i = 0; i < 200; ++i) {
+                rem[i] = i;
             }
             BoxDataSet dat = new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
             dat.removeRows(rem);
@@ -308,6 +326,65 @@ public final class LargeSemSimulator {
         }
         return new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
     }
+
+    /**
+     * Can be cyclic.
+     */
+    public DataSet simulateDataFixPoint(int sampleSize) {
+        int size = variableNodes.size();
+        setupModel(size);
+
+        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
+
+        double[] errors = new double[variableNodes.size()];
+        double[] t1 = new double[variableNodes.size()];
+        double[] t2 = new double[variableNodes.size()];
+        double delta = 1e-10;
+        double[][] all = new double[variableNodes.size()][sampleSize];
+
+        // Do the simulation.
+        for (int row = 0; row < sampleSize; row++) {
+            for (int j = 0; j < t1.length; j++) {
+                errors[j] = normal.sample() * sqrt(errorVars[j]);
+            }
+
+            W:
+            while (true) {
+                for (int j = 0; j < t1.length; j++) {
+                    t2[j] = errors[j];
+                    for (int k = 0; k < parents[j].length; k++) {
+                        t2[j] += t1[parents[j][k]] * coefs[j][k];
+                    }
+                }
+
+                for (int j = 0; j < t1.length; j++) {
+                    if (Math.abs(t2[j] - t1[j]) > delta) {
+                        double[] t3 = t1;
+                        t1 = t2;
+                        t2 = t3;
+                        continue W;
+                    }
+                }
+
+                break;
+            }
+
+            for (int j = 0; j < t2.length; j++) {
+                all[j][row] = t2[j];
+            }
+        }
+
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : getVariableNodes()) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
+        }
+
+        return new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+    }
+
 
     private void setupModel(int size) {
         Map<Node, Integer> nodesHash = new HashedMap<>();
@@ -391,6 +468,8 @@ public final class LargeSemSimulator {
             this.errorVars[i] = errorCovarDist.nextRandom();
             this.means[i] = meanDist.nextRandom();
         }
+
+        alreadySetUp = true;
     }
 
     public TetradAlgebra getAlgebra() {
@@ -450,7 +529,7 @@ public final class LargeSemSimulator {
     // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
@@ -466,15 +545,15 @@ public final class LargeSemSimulator {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -489,8 +568,8 @@ public final class LargeSemSimulator {
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -533,15 +612,16 @@ public final class LargeSemSimulator {
         List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
-        return(pairList);
+        return (pairList);
     }
 
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
+
     public IKnowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
@@ -552,11 +632,11 @@ public final class LargeSemSimulator {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -592,7 +672,7 @@ public final class LargeSemSimulator {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName())-getLag(o2.getName());
+                    return getLag(o1.getName()) - getLag(o2.getName());
                 }
             }
         });
@@ -602,11 +682,11 @@ public final class LargeSemSimulator {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
 //                laglist.add(lag);
             }
@@ -632,7 +712,7 @@ public final class LargeSemSimulator {
 //        if(s.indexOf(':')== -1) return s;
 //        String tmp = s.substring(0,s.indexOf(':')-1);
 //        return tmp;
-        return s.substring(0,1);
+        return s.substring(0, 1);
     }
 
     public static int getIndex(String s) {
@@ -648,8 +728,8 @@ public final class LargeSemSimulator {
     }
 
     public static int getLag(String s) {
-        if(s.indexOf(':')== -1) return 0;
-        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        if (s.indexOf(':') == -1) return 0;
+        String tmp = s.substring(s.indexOf(':') + 1, s.length());
         return (Integer.parseInt(tmp));
     }
 

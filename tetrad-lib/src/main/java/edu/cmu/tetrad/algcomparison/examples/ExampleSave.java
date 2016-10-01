@@ -36,9 +36,9 @@ public class ExampleSave {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 2);
+        parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 2, 4, 6);
+        parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 100, 500, 1000);
 
         Simulation simulation = new SemSimulation(new RandomForward());

@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestChiSquare;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -18,8 +19,8 @@ public class ChiSquare implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        return new IndTestChiSquare(DataUtils.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

@@ -70,7 +70,7 @@ public class Comparison {
                 }
 
                 LargeSemSimulator sim = new LargeSemSimulator(trueDag);
-                dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+                dataSet = sim.simulateDataFixPoint(params.getSampleSize());
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
                 List<Node> nodes = new ArrayList<>();
 

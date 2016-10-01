@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -79,7 +77,7 @@ public class TestGFci {
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
         simulator.setCoefRange(.5, 1.5);
         simulator.setVarRange(1, 3);
-        data = simulator.simulateDataAcyclic(sampleSize);
+        data = simulator.simulateDataFixPoint(sampleSize);
         data = DataUtils.restrictToMeasured(data);
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
@@ -226,7 +224,7 @@ public class TestGFci {
 
         LargeSemSimulator semSimulator = new LargeSemSimulator(g);
 
-        DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
+        DataSet data = semSimulator.simulateDataFixPoint(sampleSize);
 
         data = DataUtils.restrictToMeasured(data);
 

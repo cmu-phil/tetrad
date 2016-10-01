@@ -10,7 +10,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.pitt.csb.mgm.MGM;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +20,10 @@ import java.util.List;
 public class Glasso implements Algorithm {
     static final long serialVersionUID = 23L;
 
-    public Graph search(DataSet ds, Parameters parameters) {
+    public Graph search(DataModel ds, Parameters parameters) {
 
-        DoubleMatrix2D cov = new DenseDoubleMatrix2D(ds.getCovarianceMatrix().toArray());
+        DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
+                .getCovarianceMatrix().toArray());
 
         edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
         glasso.setMaxit((int) parameters.getInt("maxit"));

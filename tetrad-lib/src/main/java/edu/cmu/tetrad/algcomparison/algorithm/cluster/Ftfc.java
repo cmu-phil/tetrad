@@ -24,8 +24,8 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     public Ftfc() {}
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
         double alpha = parameters.getDouble("alpha");
 
         boolean gap = parameters.getBoolean("useGap", true);

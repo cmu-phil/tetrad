@@ -1,13 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -27,8 +23,8 @@ public class Wfgs implements Algorithm {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.WFgs search = new edu.cmu.tetrad.search.WFgs(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        edu.cmu.tetrad.search.WFgs search = new edu.cmu.tetrad.search.WFgs(DataUtils.getContinuousDataSet(dataSet));
         return search.search();
     }
 

@@ -93,7 +93,7 @@ public class TestFgs {
 
         LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
         simulator.setOut(out);
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFixPoint(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
@@ -365,8 +365,10 @@ public class TestFgs {
 
         Parameters parameters = new Parameters();
 
-        parameters.set("numMeasures", 1000);
+        parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.8);
         parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
@@ -386,6 +388,10 @@ public class TestFgs {
         simulation.createData(parameters);
 
         DataSet dataSet = simulation.getDataSet(0);
+
+        System.out.println(dataSet);
+
+
         Graph trueGraph = simulation.getTrueGraph(0);
 
 //        trueGraph = SearchGraphUtils.patternForDag(trueGraph);
@@ -727,7 +733,7 @@ public class TestFgs {
 
         LargeSemSimulator semSimulator = new LargeSemSimulator(dag);
 
-        DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
+        DataSet data = semSimulator.simulateDataFixPoint(sampleSize);
 
         data = DataUtils.restrictToMeasured(data);
 

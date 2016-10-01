@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -24,7 +25,7 @@ public interface ScoreWrapper extends HasParameters, TetradSerializable {
      * @param parameters The paramters of the test.
      * @return True iff independence holds.
      */
-    Score getScore(DataSet dataSet, Parameters parameters);
+    Score getScore(DataModel dataSet, Parameters parameters);
 
     /**
      * Returns a short of this independence test.

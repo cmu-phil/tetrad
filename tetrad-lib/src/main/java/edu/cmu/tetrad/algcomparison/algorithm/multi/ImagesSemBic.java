@@ -45,8 +45,8 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        return search(Collections.singletonList(dataSet), parameters);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override

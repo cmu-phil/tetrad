@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
@@ -19,8 +20,8 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
     static final long serialVersionUID = 23L;
 
     @Override
-    public Score getScore(DataSet dataSet, Parameters parameters) {
-        return new ConditionalGaussianScore(dataSet);
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        return new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet));
     }
 
     @Override

@@ -1,17 +1,13 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -24,8 +20,10 @@ public class LargeSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
+    private RandomGraph randomGraph;
 
     public LargeSemSimulation(RandomGraph graph) {
+        this.randomGraph = graph;
     }
 
     @Override
@@ -35,7 +33,7 @@ public class LargeSemSimulation implements Simulation {
         List<Node> vars = new ArrayList<>();
 
         String numVars = "numMeasures";
-        int numEdges = (int) (parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2.0);
+//        int numEdges = (int) (parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2.0);
 
         for (int i = 0; i < parameters.getInt(numVars, 10); i++) {
             vars.add(new ContinuousVariable("X" + (i + 1)));
@@ -43,28 +41,38 @@ public class LargeSemSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
-        Graph graph = randomGraph(vars, numEdges);
+        Graph graph = randomGraph.createGraph(parameters);
+        graph = GraphUtils.replaceNodes(graph, vars);
+//        Graph graph = randomGraph(vars, numEdges);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean("differentGraphs") && i > 0) {
-                graph = randomGraph(vars, numEdges);
+                graph = randomGraph.createGraph(parameters);
+                graph = GraphUtils.replaceNodes(graph, vars);
+//                graph = randomGraph(vars, numEdges);
             }
 
             graphs.add(graph);
 
-            edu.cmu.tetrad.sem.LargeSemSimulator simulator = new LargeSemSimulator(graph);
-            DataSet dataSet = simulator.simulateDataAcyclic(numCases);
+            int[] tiers = new int[graph.getNodes().size()];
+            for (int j = 0; j < tiers.length; j++) tiers[j] = j;
+
+            edu.cmu.tetrad.sem.LargeSemSimulator simulator = new LargeSemSimulator(graph, vars, tiers);
+            simulator.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
+            simulator.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
+            simulator.setVerbose(parameters.getBoolean("verbose"));
+            DataSet dataSet = simulator.simulateDataFixPoint(numCases);
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
     }
 
-    private Graph randomGraph(List<Node> vars, int numEdges) {
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges,
-                    30, 15, 15, false, true);
-    }
+//    private Graph randomGraph(List<Node> vars, int numEdges) {
+//        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges,
+//                30, 15, 15, false, true);
+//    }
 
     @Override
     public DataSet getDataSet(int index) {
@@ -87,6 +95,11 @@ public class LargeSemSimulation implements Simulation {
 
         parameters.add("numMeasures");
         parameters.add("avgDegree");
+        parameters.add("coefLow");
+        parameters.add("coefHigh");
+        parameters.add("varLow");
+        parameters.add("varHigh");
+        parameters.add("verbose");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");

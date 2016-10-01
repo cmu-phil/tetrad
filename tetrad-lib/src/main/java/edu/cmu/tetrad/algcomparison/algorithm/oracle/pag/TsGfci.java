@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,27 +29,10 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.test = type;
     }
 
-//    public TsGfci(IndependenceWrapper type, Algorithm initialGraph) {
-//        this.test = type;
-//        this.initialGraph = initialGraph;
-//    }
-
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-//        Graph initial = null;
-//
-//        if (initialGraph != null) {
-//            initial = initialGraph.search(dataSet, parameters);
-//        }
-
+    public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters));
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
-
         search.setKnowledge(knowledge);
-
         return search.search();
     }
 
