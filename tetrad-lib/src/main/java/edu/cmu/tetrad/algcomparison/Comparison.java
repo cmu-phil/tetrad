@@ -347,9 +347,11 @@ public class Comparison {
         File dir;
         int i = 0;
 
-        do {
-            dir = new File(dir0, "Simulation" + (++i));
-        } while (dir.exists());
+        dir = new File(dir0, "save");
+//
+//        do {
+//            dir = new File(dir0, "Simulation" + (++i));
+//        } while (dir.exists());
 
 //        if (dir.exists()) {
 //            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),

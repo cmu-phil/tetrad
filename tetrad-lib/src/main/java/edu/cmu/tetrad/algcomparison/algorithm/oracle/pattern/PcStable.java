@@ -60,7 +60,7 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "PCS (\"Peter and Clark\" Stable) using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
+        return "PC-Stable (\"Peter and Clark\" Stable) using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
