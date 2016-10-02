@@ -388,10 +388,6 @@ public class TestFgs {
         simulation.createData(parameters);
 
         DataSet dataSet = simulation.getDataSet(0);
-
-        System.out.println(dataSet);
-
-
         Graph trueGraph = simulation.getTrueGraph(0);
 
 //        trueGraph = SearchGraphUtils.patternForDag(trueGraph);
@@ -403,16 +399,19 @@ public class TestFgs {
 
         Graph fgsGraph = fgs.search(dataSet, parameters);
 
-        List<Node> nodes = trueGraph.getNodes();
-
-        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgsGraph, nodes, test);
-        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgsGraph, nodes, test);
+        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgsGraph, test);
+        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgsGraph, test);
 
     }
 
     private void clarkTestForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
-                                   Graph pattern, List<Node> nodes, IndependenceWrapper test) {
+                                   Graph pattern, IndependenceWrapper test) {
         parameters.set("alpha", alpha);
+
+        List<Node> nodes = dataSet.getVariables();
+
+        trueGraph = GraphUtils.replaceNodes(trueGraph, nodes);
+        pattern = GraphUtils.replaceNodes(pattern, nodes);
 
         IndependenceTest _test = test.getTest(dataSet, parameters);
 

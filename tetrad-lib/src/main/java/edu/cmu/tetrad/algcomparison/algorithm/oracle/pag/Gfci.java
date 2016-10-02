@@ -38,6 +38,7 @@ public class Gfci implements Algorithm, HasKnowledge {
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
 
         Object obj = parameters.get("printStream");
+
         if (obj instanceof PrintStream) {
             search.setOut((PrintStream) obj);
         }
