@@ -382,7 +382,8 @@ public final class LargeSemSimulator {
             continuousVars.add(var);
         }
 
-        return new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        return DataUtils.restrictToMeasured(boxDataSet);
     }
 
 

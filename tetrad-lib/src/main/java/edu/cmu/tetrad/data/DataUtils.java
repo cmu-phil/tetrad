@@ -987,14 +987,17 @@ public final class DataUtils {
 
     public static DataSet restrictToMeasured(DataSet fullDataSet) {
         List<Node> measuredVars = new ArrayList<>();
+        List<Node> latentVars = new ArrayList<>();
 
         for (Node node : fullDataSet.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 measuredVars.add(node);
+            } else {
+                latentVars.add(node);
             }
         }
 
-        return fullDataSet.subsetColumns(measuredVars);
+        return latentVars.isEmpty() ? fullDataSet : fullDataSet.subsetColumns(measuredVars);
     }
 
     public static TetradMatrix cov2(TetradMatrix data) {
