@@ -54,7 +54,7 @@ public class LatestClient {
            }
 
            try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-               HttpGet request = new HttpGet(BASE_URL + softwareName);
+               HttpGet request = new HttpGet(BASE_URL + "/latest/version/latest?softwareName=" + softwareName + "&softwareVersion=" + version);
                request.addHeader("content-type", "application/json");
                HttpResponse result = httpClient.execute(request);
                String json = EntityUtils.toString(result.getEntity(), "UTF-8");
@@ -65,10 +65,10 @@ public class LatestClient {
                SoftwareVersion softwareVersion = gson.fromJson(json, SoftwareVersion.class);
 
                if (softwareVersion.getSoftwareVersion().equalsIgnoreCase(version)) {
-                   latestResult = String.format("Running version %s which is the latest version.", version);
+                   latestResult = String.format("Running version %s which is the latest version.  To disable checking use the skip-latest switch.", version);
                    return true;
                } else {
-                   latestResult = String.format("Running version %s but the latest version is %s available.", version, softwareVersion.getSoftwareVersion());
+                   latestResult = String.format("Running version %s but the latest version is %s.  To disable checking use the skip-latest switch.", version, softwareVersion.getSoftwareVersion());
                    return false;
                }
 
@@ -76,7 +76,7 @@ public class LatestClient {
            } catch (Exception ex) {
 
                LOGGER.error("Could not contact server for latest version", ex);
-               latestResult = String.format("Running version %s but unable to contact version server.", version);
+               latestResult = String.format("Running version %s but unable to contact version server.  To disable checking use the skip-latest switch.", version);
                return false;
 
            }
