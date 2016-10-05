@@ -36,13 +36,12 @@ public class GCcd implements Algorithm {
         edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(test, score);
         search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
-
         return search.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return graph;
     }
 
     @Override

@@ -73,6 +73,20 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private GraphWrapper() {
     }
 
+    public GraphWrapper(GraphSource graphSource, Parameters parameters) {
+        if (graphSource instanceof  Simulation) {
+            Simulation simulation = (Simulation) graphSource;
+            this.graphs = simulation.getGraphs();
+            this.numModels = graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            setGraph(new EdgeListGraph(graphSource.getGraph()));
+        }
+
+        log();
+    }
+
     public GraphWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");

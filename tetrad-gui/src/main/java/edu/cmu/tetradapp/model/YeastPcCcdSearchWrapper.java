@@ -264,7 +264,7 @@ public class YeastPcCcdSearchWrapper {
         //CcdSearchV ccd = new CcdSearchV(new IndTestCramerT(cds, alpha), bk);
         //CcdSearchVAC ccd = new CcdSearchVAC(new IndTestCramerT(cds, alpha), bk);
         IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
-        Ccd ccd = new Ccd(indTestCramerT, bk);
+        Ccd ccd = new Ccd(indTestCramerT);
         Graph ccdModel = ccd.search();
         int falsePositives = 0;
         int falseNegatives = 0;

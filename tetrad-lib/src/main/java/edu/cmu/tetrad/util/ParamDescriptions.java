@@ -115,6 +115,7 @@ public class ParamDescriptions {
 
 //        put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
         put("applyR1", new ParamDescription("Yes if the orient away from arrow should be applied", false));
+        put("probCycle", new ParamDescription("The probability of adding a cycle to the graph", 1.0, 0.0, 1.0));
     }
 
     public static ParamDescriptions instance() {

@@ -48,7 +48,7 @@ public final class GCcd implements GraphSearch {
     private int depth = -1;
     private IKnowledge knowledge;
     private List<Node> nodes;
-    private boolean applyR1 = true;
+    private boolean applyR1 = false;
     private boolean verbose;
 
     public GCcd(IndependenceTest test, Score score) {
@@ -71,6 +71,7 @@ public final class GCcd implements GraphSearch {
     public Graph search() {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
+        // Step A
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
@@ -95,17 +96,9 @@ public final class GCcd implements GraphSearch {
 
         SepsetProducer sepsets = new SepsetsMinScore(psi, independenceTest, -1);
 
-        addColliders(psi);
-
-        orientAwayFromArrow(psi);
-
+        stepB(psi);
         stepC(psi, sepsets);
         stepD(psi, sepsets, supSepsets);
-
-        if (nodes.size() < 4) {
-            return psi;
-        }
-
         stepE(supSepsets, psi);
         stepF(psi, sepsets, supSepsets);
 
@@ -156,11 +149,11 @@ public final class GCcd implements GraphSearch {
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private void addColliders(Graph graph) {
+    private void stepB(Graph psi) {
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
         final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
 
-        List<Node> nodes = graph.getNodes();
+        List<Node> nodes = psi.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
             private final Map<Triple, Double> colliders;
@@ -169,12 +162,12 @@ public final class GCcd implements GraphSearch {
             private int to;
             private int chunk = 20;
             private List<Node> nodes;
-            private Graph graph;
+            private Graph psi;
 
             public Task(List<Node> nodes, Graph graph, Map<Triple, Double> colliders,
                         Map<Triple, Double> noncolliders, int from, int to) {
                 this.nodes = nodes;
-                this.graph = graph;
+                this.psi = graph;
                 this.from = from;
                 this.to = to;
                 this.colliders = colliders;
@@ -185,15 +178,15 @@ public final class GCcd implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNodeCollider(graph, colliders, noncolliders, nodes.get(i));
+                        doNodeCollider(psi, colliders, noncolliders, nodes.get(i));
                     }
 
                     return true;
                 } else {
                     int mid = (to + from) / 2;
 
-                    Task left = new Task(nodes, graph, colliders, noncolliders, from, mid);
-                    Task right = new Task(nodes, graph, colliders, noncolliders, mid, to);
+                    Task left = new Task(nodes, psi, colliders, noncolliders, from, mid);
+                    Task right = new Task(nodes, psi, colliders, noncolliders, mid, to);
 
                     left.fork();
                     right.compute();
@@ -204,7 +197,7 @@ public final class GCcd implements GraphSearch {
             }
         }
 
-        Task task = new Task(nodes, graph, colliders, noncolliders, 0, nodes.size());
+        Task task = new Task(nodes, psi, colliders, noncolliders, 0, nodes.size());
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
@@ -215,7 +208,7 @@ public final class GCcd implements GraphSearch {
 
             @Override
             public int compare(Triple o1, Triple o2) {
-                return -Double.compare(colliders.get(o1), colliders.get(o1));
+                return -Double.compare(colliders.get(o2), colliders.get(o1));
             }
         });
 
@@ -224,11 +217,11 @@ public final class GCcd implements GraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                graph.removeEdge(a, b);
-                graph.removeEdge(c, b);
-                graph.addDirectedEdge(a, b);
-                graph.addDirectedEdge(c, b);
+            if (!(psi.getEndpoint(b, a) == Endpoint.ARROW || psi.getEndpoint(b, c) == Endpoint.ARROW)) {
+                psi.removeEdge(a, b);
+                psi.removeEdge(c, b);
+                psi.addDirectedEdge(a, b);
+                psi.addDirectedEdge(c, b);
             }
         }
 
@@ -237,12 +230,14 @@ public final class GCcd implements GraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            graph.addUnderlineTriple(a, b, c);
+            psi.addUnderlineTriple(a, b, c);
         }
+
+        orientAwayFromArrow(psi);
     }
 
-    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+    private void doNodeCollider(Graph psi, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
+        List<Node> adjacentNodes = psi.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -256,11 +251,11 @@ public final class GCcd implements GraphSearch {
             Node c = adjacentNodes.get(combination[1]);
 
             // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
+            if (psi.isAdjacentTo(a, c)) {
                 continue;
             }
 
-            List<Node> adja = graph.getAdjacentNodes(a);
+            List<Node> adja = psi.getAdjacentNodes(a);
             double score = Double.POSITIVE_INFINITY;
             List<Node> S = null;
 
@@ -278,7 +273,7 @@ public final class GCcd implements GraphSearch {
                 }
             }
 
-            List<Node> adjc = graph.getAdjacentNodes(c);
+            List<Node> adjc = psi.getAdjacentNodes(c);
 
             DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
             int[] comb3;
@@ -294,11 +289,11 @@ public final class GCcd implements GraphSearch {
                 }
             }
 
+            // This could happen if there are undefined values and such.
             if (S == null) {
                 continue;
             }
 
-            // S actually has to be non-null here, but the compiler doesn't know that.
             if (S.contains(b)) {
                 noncolliders.put(new Triple(a, b, c), score);
             } else {
@@ -307,8 +302,7 @@ public final class GCcd implements GraphSearch {
         }
     }
 
-    private void
-    stepC(Graph psi, SepsetProducer sepsets) {
+    private void stepC(Graph psi, SepsetProducer sepsets) {
         TetradLogger.getInstance().log("info", "\nStep C");
 
         EDGE:
@@ -322,7 +316,8 @@ public final class GCcd implements GraphSearch {
             List<Node> adjy = psi.getAdjacentNodes(y);
 
             for (Node node : adjx) {
-                if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
+                if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
+                        && psi.isUnderlineTriple(y, x, node)) {
                     continue EDGE;
                 }
             }
@@ -386,7 +381,6 @@ public final class GCcd implements GraphSearch {
             private SepsetProducer sepsets;
             private Map<Triple, Set<Node>> supSepsets;
             private Map<Node, List<Node>> local;
-            private Node b;
             private int from;
             private int to;
             private int chunk = 20;
@@ -463,7 +457,7 @@ public final class GCcd implements GraphSearch {
                 B.addAll(S);
                 B.add(b);
 
-                if (sepsets.isIndependent(a, c, new ArrayList<Node>(B))) {
+                if (sepsets.isIndependent(a, c, new ArrayList<>(B))) {
                     psi.addDottedUnderlineTriple(a, b, c);
                     supSepsets.put(new Triple(a, b, c), B);
                     break;

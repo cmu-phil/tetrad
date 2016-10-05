@@ -384,7 +384,7 @@ public final class GraphEditor extends JPanel
                         if (addCycles) {
                             int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
                             int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
-                            graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges);
+                            graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                         }
 
                         getWorkbench().setGraph(graph1);

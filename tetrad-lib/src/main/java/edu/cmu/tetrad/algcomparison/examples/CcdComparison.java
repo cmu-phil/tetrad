@@ -23,7 +23,12 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Ccd;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GCcd;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStable;
+import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -44,13 +49,15 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class PcMaxComparison {
+public class CcdComparison {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 1000);
+        parameters.set("numMeasures", 100, 500, 1000);
         parameters.set("avgDegree", 2, 4);
+        parameters.set("maxDegree", 6);
+        parameters.set("probCycle", 0.5);
         parameters.set("sampleSize", 1000);
 
         // Can leave the simulation parameters out since
@@ -58,53 +65,49 @@ public class PcMaxComparison {
         parameters.set("depth", -1);
         parameters.set("alpha", 0.001);
         parameters.set("penaltyDiscount", 4);
-//        parameters.set("standardize", true);
-//        parameters.set("measurementVariance", 0, .01, .1, .2, .3, .4, .5);//, 1);
         parameters.set("verbose", false);
+
+        parameters.set("coefLow", 0.4);
+        parameters.set("coefHigh", 0.6);
+        parameters.set("applyR1", true);
 
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn("avgDegree"));
-//        statistics.add(new ParameterColumn("sampleSize"));
-//        statistics.add(new ParameterColumn("measurementVariance"));
+        statistics.add(new ParameterColumn("numMeasures"));
+        statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new PercentBidirectedEdges());
-        statistics.add(new PercentAmbiguous());
+        statistics.add(new NodesInCyclesPrecision());
+        statistics.add(new NodesInCyclesRecall());
         statistics.add(new ElapsedTime());
 
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
-        statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 0.5);
-        statistics.setWeight("BID", 0.5);
+
+        statistics.setWeight("NICP", 1.0);
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new PcMax(new FisherZ()));
-        algorithms.add(new Fgs(new SemBicScore()));
+        algorithms.add(new Ccd(new FisherZ()));
+        algorithms.add(new GCcd(new FisherZ(), new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
-        comparison.setShowUtilities(true);
+        comparison.setShowSimulationIndices(false);
+        comparison.setShowUtilities(false);
         comparison.setSortByUtility(false);
-        comparison.setTabDelimitedTables(true);
+        comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(false);
         comparison.setParallelized(false);
 
         Simulations simulations = new Simulations();
-        Simulation simulation = new LargeSemSimulation(new RandomForward());
+        Simulation simulation = new LargeSemSimulation(new Cyclic());
         simulations.add(simulation);
 
 //        comparison.saveToFiles("pcmax_comparison", simulation, parameters);
-        comparison.compareFromSimulations("pcmax_comparison", simulations, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("ccd_comparison", simulations, algorithms, statistics, parameters);
+
     }
 }
 

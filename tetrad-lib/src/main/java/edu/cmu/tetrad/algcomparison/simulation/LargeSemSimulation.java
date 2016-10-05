@@ -47,10 +47,11 @@ public class LargeSemSimulation implements Simulation {
             int[] tiers = new int[graph.getNodes().size()];
             for (int j = 0; j < tiers.length; j++) tiers[j] = j;
 
-            edu.cmu.tetrad.sem.LargeSemSimulator simulator = new LargeSemSimulator(graph);
+            edu.cmu.tetrad.sem.LargeSemSimulator simulator = new LargeSemSimulator(graph, graph.getNodes(), tiers);
             simulator.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
             simulator.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
             simulator.setVerbose(parameters.getBoolean("verbose"));
+
             DataSet dataSet = simulator.simulateDataFixPoint(numCases);
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
