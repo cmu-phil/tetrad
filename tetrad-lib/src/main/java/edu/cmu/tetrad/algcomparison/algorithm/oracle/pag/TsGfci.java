@@ -18,7 +18,7 @@ import java.util.List;
  * tsFCI.
  *
  * @author jdramsey
- * @author dmalinsky
+ * @author Daniel Malinsky
  */
 public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;

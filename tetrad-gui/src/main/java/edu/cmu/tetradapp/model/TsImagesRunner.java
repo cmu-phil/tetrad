@@ -40,7 +40,7 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
  *
  * @author Ricardo Silva
- * @author dmalinsky
+ * @author Daniel Malinsky
  */
 
 public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,

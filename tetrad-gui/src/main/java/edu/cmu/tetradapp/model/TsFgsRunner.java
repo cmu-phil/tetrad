@@ -44,6 +44,7 @@ import java.util.Map;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
  *
  * @author Ricardo Silva
+ * @author Daniel Malinsky
  */
 
 public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,

@@ -45,6 +45,7 @@ import java.util.Collections;
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey
  * @author Choh-Man Teng
+ * @author Daniel Malinsky
  */
 public final class TsDagToPag {
 

@@ -14,10 +14,10 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
- * tsFCI.
+ * tsIMaGES.
  *
  * @author jdramsey
- * @author dmalinsky
+ * @author Daniel Malinsky
  */
 public class TsImages implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
