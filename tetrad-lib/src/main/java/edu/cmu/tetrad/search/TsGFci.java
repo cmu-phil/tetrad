@@ -125,32 +125,13 @@ public final class TsGFci implements GraphSearch {
     /**
      * Constructs a new GFCI search for the given independence test and background knowledge.
      */
-    public TsGFci(IndependenceTest independenceTest) {
-        if (independenceTest == null || knowledge == null) {
+    public TsGFci(IndependenceTest test, Score score) {
+        if (score == null) {
             throw new NullPointerException();
         }
-
-        if (independenceTest instanceof IndTestDSep) {
-            this.dag = ((IndTestDSep) independenceTest).getGraph();
-        }
-
-        this.independenceTest = independenceTest;
-        this.variables = independenceTest.getVariables();
-        buildIndexing(variables);
-    }
-
-    public TsGFci(Score score) {
-        if (score == null) throw new NullPointerException();
-        this.score = score;
-
-        if (score instanceof GraphScore) {
-            this.dag = ((GraphScore) score).getDag();
-        }
-
         this.sampleSize = score.getSampleSize();
-        this.independenceTest = new IndTestScore(score);
-        this.variables = score.getVariables();
-        buildIndexing(variables);
+        this.score = score;
+        this.independenceTest = test;
     }
 
     //========================PUBLIC METHODS==========================//
@@ -161,7 +142,7 @@ public final class TsGFci implements GraphSearch {
 
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        logger.log("info", "Starting FCI algorithm.");
+        logger.log("info", "Starting tsGFCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         this.graph = new EdgeListGraphSingleConnections(nodes);
