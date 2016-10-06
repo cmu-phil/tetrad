@@ -57,7 +57,7 @@ public class Nlo {
 
             for (Node adj : adjNodes) {
 
-                List<Node> z = new ArrayList<Node>();
+                List<Node> z = new ArrayList<>();
                 z.add(adj);
 
                 double[] r = cci.residuals(name(node), names(z));
@@ -241,7 +241,7 @@ public class Nlo {
             List<Node> adjNodes = graph.getAdjacentNodes(node);
 
             for (Node a : adjNodes) {
-                List<Node> adj2 = new ArrayList<Node>(adjNodes);
+                List<Node> adj2 = new ArrayList<>(adjNodes);
                 adj2.remove(a);
 
                 double[] r = cci.residuals(name(node), names(adj2));
@@ -306,7 +306,7 @@ public class Nlo {
         graph = GraphUtils.undirectedGraph(graph);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
-        Map<Node, List<Node>> cond = new HashMap<Node, List<Node>>();
+        Map<Node, List<Node>> cond = new HashMap<>();
 
         for (Node Y : graph.getNodes()) {
             System.out.println("Y = " + Y);
@@ -318,7 +318,7 @@ public class Nlo {
             DepthChoiceGenerator gen = new DepthChoiceGenerator(adjNodes.size(), 6);
             int[] choice;
 
-            List<Node> parents = new ArrayList<Node>();
+            List<Node> parents = new ArrayList<>();
 
             while ((choice = gen.next()) != null) {
                 List<Node> W = GraphUtils.asList(choice, adjNodes);
@@ -389,7 +389,7 @@ public class Nlo {
             DepthChoiceGenerator gen = new DepthChoiceGenerator(adjX.size(), 4);
             int[] choice;
 
-            List<Node> parents = new ArrayList<Node>();
+            List<Node> parents = new ArrayList<>();
 
             while ((choice = gen.next()) != null) {
                 List<Node> W = GraphUtils.asList(choice, adjX);
@@ -452,8 +452,8 @@ public class Nlo {
         graph = GraphUtils.undirectedGraph(graph);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
-        Map<Node, List<Node>> cond = new HashMap<Node, List<Node>>();
-        Map<Node, List<Double>> pVal = new HashMap<Node, List<Double>>();
+        Map<Node, List<Node>> cond = new HashMap<>();
+        Map<Node, List<Double>> pVal = new HashMap<>();
 
         for (Node Y : graph.getNodes()) {
             System.out.println("Y = " + Y);
@@ -507,8 +507,8 @@ public class Nlo {
         List<Node> X = graph.getNodes();
         int d = X.size();
 
-        Set<Integer> S = new HashSet<Integer>();
-        List<Integer> sigma = new ArrayList<Integer>();
+        Set<Integer> S = new HashSet<>();
+        List<Integer> sigma = new ArrayList<>();
         for (int i = 0; i < d; i++) S.add(i);
         for (int i = 0; i < d; i++) sigma.add(-1);
 
@@ -562,14 +562,14 @@ public class Nlo {
         System.out.println("Sigma = " + sigma);
 //        graph.fullyConnect(Endpoint.TAIL);
 
-        Map<Node, List<Node>> parents = new HashMap<Node, List<Node>>();
+        Map<Node, List<Node>> parents = new HashMap<>();
 
         for (int j = d - 1; j >= 0; j--) {
             int i = sigma.get(j);
 
             if (i == -1) continue;
 
-            List<Integer> pa = new ArrayList<Integer>();
+            List<Integer> pa = new ArrayList<>();
 
             for (int k = 0; k < j; k++) {
                 int e = sigma.get(k);
@@ -579,7 +579,7 @@ public class Nlo {
                 pa.add(e);
             }
 
-            for (int _pa : new ArrayList<Integer>(pa)) {
+            for (int _pa : new ArrayList<>(pa)) {
                 if (!graph.isAdjacentTo(X.get(_pa), X.get(i))) pa.remove(new Integer(_pa));
             }
 
@@ -598,7 +598,7 @@ public class Nlo {
 //                }
 //            }
 
-            List<Node> _parents = new ArrayList<Node>();
+            List<Node> _parents = new ArrayList<>();
 
             for (int h : pa) {
                 _parents.add(X.get(h));
@@ -652,7 +652,7 @@ public class Nlo {
         while (iterator.hasNext()) {
             Graph g = iterator.next();
 
-            List<double[]> residuals = new ArrayList<double[]>();
+            List<double[]> residuals = new ArrayList<>();
 
             for (Node node : g.getNodes()) {
                 double[] r = cci.residuals(name(node), names(g.getParents(node)));
@@ -681,7 +681,7 @@ public class Nlo {
     }
 
     private List<String> names(List<Node> nodes) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (Node node : nodes) names.add(name(node));
         return names;
     }

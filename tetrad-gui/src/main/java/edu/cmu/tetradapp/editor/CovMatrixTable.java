@@ -43,7 +43,7 @@ class CovMatrixTable extends AbstractTableModel {
     /**
      * The wrapped CovarianceMatrix.
      */
-    private ICovarianceMatrix covMatrix;
+    private final ICovarianceMatrix covMatrix;
 
     /**
      * The matrix being edited. Since covariance matrices must be positive
@@ -60,7 +60,7 @@ class CovMatrixTable extends AbstractTableModel {
     /**
      * Fires property change events.
      */
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Constructs a new DisplayTableModel to wrap the given covMatrix.

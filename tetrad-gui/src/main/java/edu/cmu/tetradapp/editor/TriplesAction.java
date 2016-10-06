@@ -46,9 +46,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class TriplesAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
-    private TripleClassifier classifier;
+class TriplesAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
+    private final TripleClassifier classifier;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
@@ -163,7 +163,7 @@ public class TriplesAction extends AbstractAction implements ClipboardOwner {
 
 
     private List<Node> asList(Triple triple) {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<>();
         list.add(triple.getX());
         list.add(triple.getY());
         list.add(triple.getZ());

@@ -22,12 +22,14 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -44,157 +46,22 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     static final long serialVersionUID = 23L;
 
     private String name;
-    private KnowledgeParams params;
+    private Parameters params;
     private KnowledgeBoxInput knowledgeBoxInput;
-    private List<String> varNames = new ArrayList<String>();
+    private List<String> varNames = new ArrayList<>();
+    private List<Node> variables = new ArrayList<>();
+    private List<String> variableNames = new ArrayList<>();
+    private final Graph sourceGraph = new EdgeListGraph();
+    private IKnowledge knowledge = new Knowledge2();
 
-    /**
-     * @serial
-     * @deprecated
-     */
-    private IKnowledge knowledge;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-//    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<Node>();
-    private List<String> variableNames = new ArrayList<String>();
-    private Graph sourceGraph = new EdgeListGraph();
-
-    public KnowledgeBoxModel(BayesPmWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(GraphWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(StandardizedSemImWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(SemImWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(SemPmWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(DataWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(TimeLagGraphWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(GeneralizedSemImWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(BayesImWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(SemGraphWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(GeneralizedSemPmWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(DagWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(DirichletBayesImWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(BuildPureClustersRunner wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(PurifyRunner wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(LofsRunner wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(MeasurementModelWrapper wrapper, KnowledgeParams params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input, KnowledgeParams params) {
-        this(params, input);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2, KnowledgeParams params) {
-        this(params, input1, input2);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeParams params) {
-        this(params, input1, input2, input3);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4,
-                             KnowledgeBoxInput input5, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4, input5);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4,
-                             KnowledgeBoxInput input5, KnowledgeBoxInput input6, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4, input5, input6);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4,
-                             KnowledgeBoxInput input5, KnowledgeBoxInput input6,
-                             KnowledgeBoxInput input7, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4, input5, input6, input7);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4,
-                             KnowledgeBoxInput input5, KnowledgeBoxInput input6,
-                             KnowledgeBoxInput input7, KnowledgeBoxInput input8, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4, input5, input6, input7, input8);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4,
-                             KnowledgeBoxInput input5, KnowledgeBoxInput input6,
-                             KnowledgeBoxInput input7, KnowledgeBoxInput input8,
-                             KnowledgeBoxInput input9, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4, input5, input6, input7, input8, input9);
-    }
-
-    public KnowledgeBoxModel(KnowledgeBoxInput input1, KnowledgeBoxInput input2,
-                             KnowledgeBoxInput input3, KnowledgeBoxInput input4,
-                             KnowledgeBoxInput input5, KnowledgeBoxInput input6,
-                             KnowledgeBoxInput input7, KnowledgeBoxInput input8,
-                             KnowledgeBoxInput input9, KnowledgeBoxInput input10, KnowledgeParams params) {
-        this(params, input1, input2, input3, input4, input5, input6, input7, input8, input9, input10);
+    public KnowledgeBoxModel(GeneralAlgorithmRunner runner) {
+        this.knowledge = runner.getKnowledge();
     }
 
     /**
      * Constructor from dataWrapper edge
      */
-    public KnowledgeBoxModel(KnowledgeParams params, KnowledgeBoxInput...inputs) {
+    public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -205,37 +72,22 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             }
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<Node>();
-        SortedSet<String> variableNames = new TreeSet<String>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
         for (KnowledgeBoxInput input : inputs) {
             variableNodes.addAll(input.getVariables());
             variableNames.addAll(input.getVariableNames());
         }
 
-        this.variables = new ArrayList<Node>(variableNodes);
-        this.variableNames = new ArrayList<String>(variableNames);
+        this.variables = new ArrayList<>(variableNodes);
+        this.variableNames = new ArrayList<>(variableNames);
 
         this.params = params;
         this.setKnowledgeBoxInput(this);
 
-//        if (this.knowledgeBoxInput == null) {
-//            /**
-//             * @serial
-//             * @deprecated
-//             */
-//            this.knowledgeBoxInput = new Knowledge2BoxInput() {
-//                static final long serialVersionUID = 23L;
-//                public Graph getSourceGraph() {return new EdgeListGraph();}
-//                public List<Node> getVariables() {return new ArrayList<Node>();}
-//                public List<String> getVariableNames() {return new ArrayList<String>();}
-//                public void setName(String name) {}
-//                public String getNode() {return "";}
-//            };
-//        }
-
-        if (params.getKnowledge().isEmpty()) {
-            freshenKnowledgeIfEmpty(params);
+        if (knowledge.isEmpty()) {
+            freshenKnowledgeIfEmpty();
         }
 
         TetradLogger.getInstance().log("info", "Knowledge");
@@ -244,17 +96,17 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
-        if (!params.getKnowledge().isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", params.getKnowledge().toString());
+        if (!knowledge.isEmpty()) {
+            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
         }
     }
 
-    private void freshenKnowledgeIfEmpty(KnowledgeParams params) {
-        if (params.getKnowledge().isEmpty()) {
-            createKnowledge(params.getKnowledge());
+    private void freshenKnowledgeIfEmpty() {
+        if (knowledge.isEmpty()) {
+            createKnowledge(knowledge);
             varNames = new ArrayList<>();
 
-            for (String varName : getKnowledgeBoxInput().getVariableNames()) {
+            for (String varName : knowledgeBoxInput.getVariableNames()) {
                 if (!varName.startsWith("E_")) {
                     varNames.add(varName);
                 }
@@ -268,7 +120,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
      * @see TetradSerializableUtils
      */
     public static KnowledgeBoxModel serializableInstance() {
-        return new KnowledgeBoxModel(new KnowledgeParams(), GraphWrapper.serializableInstance());
+        return new KnowledgeBoxModel(new KnowledgeBoxInput[] {GraphWrapper.serializableInstance()}, new Parameters());
     }
 
     private IKnowledge createKnowledge(IKnowledge knowledge) {
@@ -277,10 +129,6 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             knowledge.addVariable(varName);
         }
         return knowledge;
-    }
-
-    public IKnowledge getKnowledge() {
-        return params.getKnowledge();
     }
 
     public String getName() {
@@ -300,18 +148,23 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        params.setKnowledge(knowledge);
+        if (knowledge == null) throw new NullPointerException();
+        this.knowledge = knowledge;
         TetradLogger.getInstance().log("knowledge", knowledge.toString());
+    }
+
+    public IKnowledge getKnowledge() {
+        return knowledge;
     }
 
     public void setName(String name) {
         this.name = name;
-	}
+    }
 
     public void resetParams(Object params) {
-        this.params = (KnowledgeParams) params;
-        freshenKnowledgeIfEmpty(this.params);
-        TetradLogger.getInstance().log("knowledge", this.params.getKnowledge().toString());
+        this.params = (Parameters) params;
+        freshenKnowledgeIfEmpty();
+        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
     public Object getResettableParams() {
@@ -326,16 +179,11 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return variableNames;
     }
 
-    public KnowledgeBoxInput getKnowledgeBoxInput() {
-        if (knowledgeBoxInput == null) {
-            return this;
-        }
-        else {
-            return knowledgeBoxInput;
-        }
+    KnowledgeBoxInput getKnowledgeBoxInput() {
+        return knowledgeBoxInput;
     }
 
-    public void setKnowledgeBoxInput(KnowledgeBoxInput knowledgeBoxInput) {
+    void setKnowledgeBoxInput(KnowledgeBoxInput knowledgeBoxInput) {
         this.knowledgeBoxInput = knowledgeBoxInput;
     }
 }

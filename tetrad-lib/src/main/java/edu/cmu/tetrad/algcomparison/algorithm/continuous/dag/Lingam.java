@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -15,6 +15,8 @@ import java.util.List;
  * @author jdramsey
  */
 public class Lingam implements Algorithm {
+    static final long serialVersionUID = 23L;
+
     public Graph search(DataSet dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
         return lingam.search(dataSet);

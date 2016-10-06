@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Data</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Editing Knowledge</font></h2></td>
+  </tr>
+</table>
+<p>Background knowledge (or &quot;knowledge&quot; for short) is a set of specifiable constraints used in a variety of searches that can be associated either with search objects or, for convenience sake, with data objects. Background knowledge can be used by search procedures <font color="#000000"> to narrow down the search and return a more informative output is making use of background knowledge provided by the user. There are three main types of background knowledge that can be used by Tetrad:</font></p>
+<ul>
+  <li><font color="#000000">forbidden edges: a given pair of variables that cannot be directly connected in some direction or any, independently of what the data say.</font></li>
+  <li><font color="#000000">required edges: a given pair of variable that has to be connected in some direction or another, independently of what the data say.</font></li>
+  <li><font color="#000000">temporal tiers: informs which variables precede others in a temporal order, as a way to decide the direction of a causal arrow where the algorithm is not able to infer.</font></li>
+</ul>
+<p><font color="#000000">Tools for manipulating knowledge are located in the Knowledge menu of components that are associated with background knowledge. Consider a PC search over variables X1, X2, X3, X4, and X5. The search editor will be initially blank, like so, and will have a Knowledge menu with several tools in it:</font></p>
+<p><font color="#000000"><img src="../images/editing_knowledge1.gif" width="631" height="600"></font></p>
+<p><font color="#000000">If you select &quot;Edit Knowledge,&quot; you will se an editor that looks like this:</font></p>
+<p><font color="#000000"><img src="../images/editing_knowledge2.gif" width="636" height="627">]</font></p>
+<p><font color="#000000">There are three tabs--the &quot;Tiers&quot; tab (showing), the &quot;Edges&quot; tab, and the &quot;Text&quot; tab. The &quot;Tiers&quot; tab let you specify temporal tiers; you simply drag and drop the variables in the tiers you want, increasing or decreasing the number of tabs as needed. If V1 is in tier m and V2 is in tier n, where m &lt; n, then the edge V2--&gt;V1 will be forbidden. Let's say you drag X1 and X2 to Tier 1, drag X3 and X4 to Tier 2, and drag X5 to Tier 3:</font></p>
+<p><font color="#000000"><img src="../images/editing_knowledge3.gif" width="635" height="630"></font></p>
+<p>To see the specific edges that are forbidden by this specification of tiers, click on &quot;Edges&quot;:</p>
+<p><img src="../images/editing_knowledge4.gif" width="636" height="629"> </p>
+<p>The edges shown in gray are forbidden. You may add required edges to this view by clicking &quot;Add Required,&quot; clicking on the &quot;from&quot; node for the edge you want to add, and dragging to the &quot;to&quot; node. Here is the same knowledge with two required edges added (shown in green):</p>
+<p><img src="../images/editing_knowledge5.gif" width="638" height="630"> </p>
+<p>Finally, you may view the edited knowledge in a format consistent with Tetrad 3 by clicking on Text:</p>
+<p><img src="../images/editing_knowledge6.gif" width="635" height="631"></p>
+<p>If you click &quot;Save,&quot; this knowledge will be saved and used in the next search.</p>
+<p>If you select &quot;Save Knowledge&quot; from the Knowledge menu, you will be able to save knowledge out to a file in the form shown in the &quot;Text&quot; tab, above. If you select &quot;Load Knowledge,&quot; you will be able to load knowledge from a file in the form shown in the &quot;Text&quot; tab, above.</p>
+<p>The remaining items in the Knowledge menu are used to help ove knowledge from one box to another. </p>
+<p>The remaining items in the Knowledge menu are used to help move knowledge around from component to component. If you select &quot;Copy Knowledge,&quot; the current knowledge will be copied to the system clipboard. If you select paste knowledge, the knowledge stored on the clipboard will be copied into the current box. <br>
+</p>
+<h3>How Knowledge is Used</h3>
+<p>Knowledge is used when searches are done to forbid or required edges. Forbidden edges are not permitted to appear in the final graph; required edges must appear in the final graph. How this is accomplished varies from algorithm to algorithm; to see how it's done in a specific algorithm, see the manual page for that algorithm. </p>
+<p>Temporal tiers provide a mechanism to forbid edges systematically in layered groups. Edges from any later tier to any earlier tier are forbidden. This provides a convenient way to give knowledge about temporal ordering to a search algorithm. The above knowledge would be sensible to provide if, for example, we knew that X1 and X2 preceded X3 and X4, and X3 and X4 peceded X5. By simply placing the variables in these tiers, all of the necessary forbidden edges are generated automatically. Variables in the box marked &quot;Not in tier&quot; <font color="#000000"> do not carry any temporal constraint with respect to any other variable.</font></p>
+<p>&nbsp; </p>
+</body>
+</html>

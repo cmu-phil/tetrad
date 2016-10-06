@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class VariableSubsetterWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public VariableSubsetterWrapper(DataWrapper wrapper) {
+    private VariableSubsetterWrapper(DataWrapper wrapper) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
         DataSet selection =

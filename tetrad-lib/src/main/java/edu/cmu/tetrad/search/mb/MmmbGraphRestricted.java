@@ -99,8 +99,8 @@ public final class MmmbGraphRestricted implements MbSearch {
         this.symmetric = symmetric;
         this.graph = graph;
 
-        pc = new HashMap<Node, List<Node>>();
-        trimmed = new HashSet<Node>();
+        pc = new HashMap<>();
+        trimmed = new HashSet<>();
     }
 
     //=============================PUBLIC METHODS=========================//
@@ -116,8 +116,8 @@ public final class MmmbGraphRestricted implements MbSearch {
         numIndTests = 0;
         long time = System.currentTimeMillis();
 
-        pc = new HashMap<Node, List<Node>>();
-        trimmed = new HashSet<Node>();
+        pc = new HashMap<>();
+        trimmed = new HashSet<>();
 
         Node target = getVariableForName(targetName);
         List<Node> nodes = mmmb(target);
@@ -135,9 +135,9 @@ public final class MmmbGraphRestricted implements MbSearch {
 
     private List<Node> mmmb(Node t) {
         // MB <- {}
-        Set<Node> mb = new HashSet<Node>();
+        Set<Node> mb = new HashSet<>();
 
-        Set<Node> _pcpc = new HashSet<Node>();
+        Set<Node> _pcpc = new HashSet<>();
 
         for (Node node : getPc(t)) {
             List<Node> f = getPc(node);
@@ -145,13 +145,13 @@ public final class MmmbGraphRestricted implements MbSearch {
             _pcpc.addAll(f);
         }
 
-        List<Node> pcpc = new LinkedList<Node>(_pcpc);
+        List<Node> pcpc = new LinkedList<>(_pcpc);
 
-        Set<Node> currentMb = new HashSet<Node>(getPc(t));
+        Set<Node> currentMb = new HashSet<>(getPc(t));
         currentMb.addAll(pcpc);
         currentMb.remove(t);
 
-        HashSet<Node> diff = new HashSet<Node>(currentMb);
+        HashSet<Node> diff = new HashSet<>(currentMb);
         diff.removeAll(getPc(t));
         diff.remove(t);
 
@@ -165,7 +165,7 @@ public final class MmmbGraphRestricted implements MbSearch {
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                List<Node> _s = new LinkedList<Node>();
+                List<Node> _s = new LinkedList<>();
 
                 for (int index : choice) {
                     _s.add(pcpc.get(index));
@@ -185,7 +185,7 @@ public final class MmmbGraphRestricted implements MbSearch {
             }
 
             // y_set <- {y in PC(t) : x in PC(y)}
-            Set<Node> ySet = new HashSet<Node>();
+            Set<Node> ySet = new HashSet<>();
             for (Node y : getPc(t)) {
                 if (this.pc.get(y).contains(x)) {
                     ySet.add(y);
@@ -196,7 +196,7 @@ public final class MmmbGraphRestricted implements MbSearch {
             for (Node y : ySet) {
                 if (x == y) continue;
 
-                List<Node> _s = new LinkedList<Node>(s);
+                List<Node> _s = new LinkedList<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
@@ -209,16 +209,16 @@ public final class MmmbGraphRestricted implements MbSearch {
         }
 
         mb.addAll(getPc(t));
-        return new LinkedList<Node>(mb);
+        return new LinkedList<>(mb);
     }
 
     private List<Node> mmpc(Node t) {
-        List<Node> pc = new LinkedList<Node>();
+        List<Node> pc = new LinkedList<>();
         boolean pcIncreased = true;
 
         // First optimization: Don't consider adding again variables that have
         // already been found independent of t.
-        List<Node> indepOfT = new LinkedList<Node>();
+        List<Node> indepOfT = new LinkedList<>();
 
         // Phase 1
         while (pcIncreased) {
@@ -269,7 +269,7 @@ public final class MmmbGraphRestricted implements MbSearch {
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
     private void trimPc(Node t) {
-        for (Node x : new LinkedList<Node>(pc.get(t))) {
+        for (Node x : new LinkedList<>(pc.get(t))) {
             if (!pc.containsKey(x)) {
                 pc.put(x, mmpc(x));
             }
@@ -316,7 +316,7 @@ public final class MmmbGraphRestricted implements MbSearch {
 
     private List<Node> minAssoc(Node x, Node target, List<Node> pc) {
         double assoc = 1.0;
-        List<Node> set = new LinkedList<Node>();
+        List<Node> set = new LinkedList<>();
 
         if (pc.contains(x)) throw new IllegalArgumentException();
         if (pc.contains(target)) throw new IllegalArgumentException();
@@ -327,7 +327,7 @@ public final class MmmbGraphRestricted implements MbSearch {
         int[] choice;
 
         while ((choice = generator.next()) != null) {
-            List<Node> s = new LinkedList<Node>();
+            List<Node> s = new LinkedList<>();
 
             for (int index : choice) {
                 s.add(pc.get(index));
@@ -351,8 +351,8 @@ public final class MmmbGraphRestricted implements MbSearch {
     }
 
     private void backwardsConditioning(List<Node> pc, Node target) {
-        for (Node x : new LinkedList<Node>(pc)) {
-            List<Node> _pc = new LinkedList<Node>(pc);
+        for (Node x : new LinkedList<>(pc)) {
+            List<Node> _pc = new LinkedList<>(pc);
             _pc.remove(x);
             _pc.remove(target);
 

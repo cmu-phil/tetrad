@@ -21,15 +21,14 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.MimParams;
-import edu.cmu.tetradapp.model.PurifyParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -49,7 +48,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameter wrapper being viewed.
      */
-    private PurifyParams params;
+    private Parameters params;
     private Object[] parentModels;
     private JButton editClusters;
 
@@ -59,12 +58,12 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     public PurifyParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (PurifyParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -72,12 +71,12 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        DoubleTextField alphaField = new DoubleTextField(params.getAlpha(), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (Exception e) {
@@ -88,13 +87,13 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 
         final TestType[] descriptions = TestType.getTestDescriptions();
         JComboBox testSelector = new JComboBox(descriptions);
-        testSelector.setSelectedItem(params.getTetradTestType());
+        testSelector.setSelectedItem(params.get("tetradTestType", TestType.TETRAD_WISHART));
 
         testSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JComboBox combo = (JComboBox) e.getSource();
                 TestType testType = (TestType) combo.getSelectedItem();
-                getParams().setTetradTestType(testType);
+                getParams().set("tetradTestType", testType);
             }
         });
 
@@ -129,7 +128,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
             b.add(b3);
         }
         else {
-            this.params.setTetradTestType(TestType.DISCRETE_LRT);
+            this.params.set("tetradTestType", TestType.DISCRETE_LRT);
         }
 
         setLayout(new BorderLayout());
@@ -140,7 +139,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
         return false;
     }
 
-    private boolean setVarNames(Object[] parentModels, PurifyParams params) {
+    private boolean setVarNames(Object[] parentModels, Parameters params) {
         DataModel dataModel = null;
 
         for (Object parentModel : parentModels) {
@@ -169,7 +168,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 //            }
         }
 
-        getParams().setVarNames(params.getVarNames());
+        getParams().set("varNames", params.get("varNames", null));
         return discreteModel;
     }
 
@@ -179,7 +178,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
      */
     private void openClusterEditor() {
         ClusterEditor clusterEditor = new ClusterEditor(
-                getParams().getClusters(), getParams().getVarNames());
+                (Clusters) getParams().get("clusters", null), (java.util.List<String>) getParams().get("varNames", null));
 
         JOptionPane.showMessageDialog(editClusters, clusterEditor);
 
@@ -189,7 +188,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 //        window.setVisible(true);
     }
 
-    private MimParams getParams() {
+    private Parameters getParams() {
         return this.params;
     }
 }

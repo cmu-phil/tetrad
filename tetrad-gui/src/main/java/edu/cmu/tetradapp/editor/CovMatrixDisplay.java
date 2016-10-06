@@ -42,7 +42,7 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
     private final CovMatrixJTable covMatrixJTable;
     private final JLabel label;
     private final JButton restoreButton;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Construct a new JTable for the given CovarianceMatrix.

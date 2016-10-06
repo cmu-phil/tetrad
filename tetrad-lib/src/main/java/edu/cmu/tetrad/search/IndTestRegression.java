@@ -169,7 +169,7 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
         regressors.add(dataSet.getVariable(yVar.getName()));
 
         for (Node zVar : zList) {
@@ -269,7 +269,7 @@ public final class IndTestRegression implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
 
         for (Node variable : variables) {
             variableNames.add(variable.getName());

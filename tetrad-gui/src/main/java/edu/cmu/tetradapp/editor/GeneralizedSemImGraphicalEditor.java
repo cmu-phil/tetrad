@@ -50,7 +50,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     /**
      * The SemPm being edited.
      */
-    private GeneralizedSemIm semIm;
+    private final GeneralizedSemIm semIm;
 
     /**
      * Workbench for the graphical editor.
@@ -60,7 +60,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     /**
      * The set of launched editors--or rather, the nodes for the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
@@ -190,8 +190,8 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     private final static class NodeMouseListener extends MouseAdapter {
-        private Node node;
-        private GeneralizedSemImGraphicalEditor editor;
+        private final Node node;
+        private final GeneralizedSemImGraphicalEditor editor;
 
         public NodeMouseListener(Node node, GeneralizedSemImGraphicalEditor editor) {
             this.node = node;

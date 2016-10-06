@@ -22,14 +22,10 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FactorAnalysis;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -55,7 +51,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FactorAnalysisRunner(DataWrapper dataWrapper, PcSearchParams pc) {
+    private FactorAnalysisRunner(DataWrapper dataWrapper, Parameters pc) {
         super(dataWrapper, pc, null);
     }
 
@@ -65,8 +61,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * @see TetradSerializableUtils
      */
     public static FactorAnalysisRunner serializableInstance() {
-        return new FactorAnalysisRunner(DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new FactorAnalysisRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -179,11 +174,11 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         return output;
     }
 
-    public TetradMatrix getRotatedSolution() {
+    private TetradMatrix getRotatedSolution() {
         return rotatedSolution;
     }
 
-    public double getThreshold() {
+    private double getThreshold() {
         return threshold;
     }
 }

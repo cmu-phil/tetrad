@@ -51,7 +51,7 @@ public final class BffBeam implements Bff {
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
-    private Set<GraphWithPValue> significantModels = new LinkedHashSet<GraphWithPValue>();
+    private Set<GraphWithPValue> significantModels = new LinkedHashSet<>();
     private Graph trueModel;
     private SemIm originalSemIm;
     private SemIm newSemIm;
@@ -132,7 +132,7 @@ public final class BffBeam implements Bff {
 
         double initialScore = scoreGraph(bestGraph).getScore();
 
-        Map<Graph, Double> S = new HashMap<Graph, Double>();
+        Map<Graph, Double> S = new HashMap<>();
         S.put(bestGraph, initialScore);
 //        Set<Graph> P = new HashSet<Graph>();
 //        P.add(bestGraph);
@@ -142,8 +142,8 @@ public final class BffBeam implements Bff {
         while (changed) {
             changed = false;
 
-            for (Graph s : new HashMap<Graph, Double>(S).keySet()) {
-                List<Move> moves = new ArrayList<Move>();
+            for (Graph s : new HashMap<>(S).keySet()) {
+                List<Move> moves = new ArrayList<>();
                 moves.addAll(getAddMoves(s));
 //                moves.addAll(getRemoveMoves(s));
                 moves.addAll(getRedirectMoves(s));
@@ -207,7 +207,7 @@ public final class BffBeam implements Bff {
         Score score1 = scoreGraph(getGraph());
         int initialDof = score1.getDof();
 
-        Map<Graph, Integer> S = new LinkedHashMap<Graph, Integer>();
+        Map<Graph, Integer> S = new LinkedHashMap<>();
         S.put(bestGraph, initialDof);
         boolean changed = true;
         boolean switched = false;
@@ -215,10 +215,10 @@ public final class BffBeam implements Bff {
         while (changed) {
             changed = false;
 
-            Map<Graph, Integer> SPrime = new LinkedHashMap<Graph, Integer>(S);
+            Map<Graph, Integer> SPrime = new LinkedHashMap<>(S);
 
             for (Graph s : SPrime.keySet()) {
-                List<Move> moves = new ArrayList<Move>();
+                List<Move> moves = new ArrayList<>();
                 moves.addAll(getAddMoves(s));
                 moves.addAll(getRedirectMoves(s));
 
@@ -471,7 +471,7 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getAddMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         // Add moves:
         List<Node> nodes = graph.getNodes();
@@ -506,10 +506,10 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getRemoveMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         // Remove moves:
-        List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
         Collections.sort(edges);
 
         for (Edge edge : edges) {
@@ -527,10 +527,10 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getRedirectMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         // Reverse moves:
-        List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
         Collections.sort(edges);
 
         for (Edge edge : edges) {
@@ -557,7 +557,7 @@ public final class BffBeam implements Bff {
     private List<Move> getAddColliderMoves(Graph graph) {
 //         Make collider moves:
 
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         for (Node b : graph.getNodes()) {
             if (graph.getAdjacentNodes(b).isEmpty()) {
@@ -595,7 +595,7 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getSwapMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         for (Node b : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(b);
@@ -625,7 +625,7 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getRemoveTriangleMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         for (Node b : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(b);
@@ -661,7 +661,7 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getRemoveColliderMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
+        List<Move> moves = new ArrayList<>();
 
         for (Node b : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(b);
@@ -690,8 +690,8 @@ public final class BffBeam implements Bff {
     }
 
     private List<Move> getDoubleRemoveMoves(Graph graph) {
-        List<Move> moves = new ArrayList<Move>();
-        List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+        List<Move> moves = new ArrayList<>();
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
 
         // Remove moves:
         for (int i = 0; i < edges.size(); i++) {

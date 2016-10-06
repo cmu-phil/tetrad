@@ -48,6 +48,14 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //=============================CONSTRUCTORS============================//
 
+    public SemUpdaterWrapper(SemEstimatorWrapper wrapper) {
+        if (wrapper == null) {
+            throw new NullPointerException();
+        }
+        this.semUpdater = new SemUpdater(wrapper.getEstimatedSemIm());
+
+    }
+
     public SemUpdaterWrapper(SemImWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();

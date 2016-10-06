@@ -21,13 +21,13 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -40,9 +40,7 @@ class RandomMimParamsEditor extends JPanel {
      * Constructs a dialog to edit the given workbench randomization
      * parameters.
      */
-    public RandomMimParamsEditor() {
-        final Preferences preferences = Preferences.userRoot();
-
+    public RandomMimParamsEditor(final Parameters parameters) {
         final JComboBox<String> numFactors = new JComboBox<>();
 
         numFactors.addItem("1");
@@ -52,31 +50,31 @@ class RandomMimParamsEditor extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (numFactors.getSelectedItem().equals("1")) {
-                    preferences.putInt("randomMimNumFactors", 1);
+                    parameters.set("randomMimNumFactors", 1);
                 }
                 else if (numFactors.getSelectedItem().equals("2")) {
-                    preferences.putInt("randomMimNumFactors", 2);
+                    parameters.set("randomMimNumFactors", 2);
                 }
             }
         });
 
-        numFactors.setSelectedItem(Integer.toString(preferences.getInt("randomMimNumFactors", 1)));
+        numFactors.setSelectedItem(Integer.toString(parameters.getInt("randomMimNumFactors", 1)));
 
         numFactors.setMaximumSize(numFactors.getPreferredSize());
 
         final IntTextField numStructuralEdges = new IntTextField(
-                preferences.getInt("numStructuralEdges", 3), 4);
+                parameters.getInt("numStructuralEdges", 3), 4);
         numStructuralEdges.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    int n = preferences.getInt("numStructuralNodes", 3);
+                    int n = parameters.getInt("numStructuralNodes", 3);
                     int maxNumLatentEdges = n * (n - 1) / 2;
 
                     if (value > maxNumLatentEdges) {
                         value = maxNumLatentEdges;
                     }
 
-                    preferences.putInt("numStructuralEdges", value);
+                    parameters.set("numStructuralEdges", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -85,7 +83,7 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         IntTextField numStructuralNodes = new IntTextField(
-                preferences.getInt("numStructuralNodes", 3), 4);
+                parameters.getInt("numStructuralNodes", 3), 4);
         numStructuralNodes.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
@@ -95,7 +93,7 @@ class RandomMimParamsEditor extends JPanel {
                                         "nodes Must be greater than 0: " + value);
                     }
 
-                    preferences.putInt("numStructuralNodes", value);
+                    parameters.set("numStructuralNodes", value);
                     numStructuralEdges.setValue(numStructuralEdges.getValue());
                     return value;
                 } catch (Exception e) {
@@ -107,7 +105,7 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         IntTextField numMeasurementsPerLatent = new IntTextField(
-                preferences.getInt("measurementModelDegree", 1), 4);
+                parameters.getInt("measurementModelDegree", 1), 4);
         numMeasurementsPerLatent.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
@@ -115,7 +113,7 @@ class RandomMimParamsEditor extends JPanel {
                         throw new IllegalArgumentException();
                     }
 
-                    preferences.putInt("measurementModelDegree", value);
+                    parameters.set("measurementModelDegree", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -124,7 +122,7 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         IntTextField numLatentMeasuredImpureParents = new IntTextField(
-                preferences.getInt("latentMeasuredImpureParents", 0), 4);
+                parameters.getInt("latentMeasuredImpureParents", 0), 4);
         numLatentMeasuredImpureParents.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
@@ -132,7 +130,7 @@ class RandomMimParamsEditor extends JPanel {
                         throw new IllegalArgumentException();
                     }
 
-                    preferences.putInt("latentMeasuredImpureParents", value);
+                    parameters.set("latentMeasuredImpureParents", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -141,7 +139,7 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
-                preferences.getInt("measuredMeasuredImpureParents", 0), 4);
+                parameters.getInt("measuredMeasuredImpureParents", 0), 4);
         numMeasuredMeasuredImpureParents.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
@@ -149,7 +147,7 @@ class RandomMimParamsEditor extends JPanel {
                         throw new IllegalArgumentException();
                     }
 
-                    preferences.putInt("measuredMeasuredImpureParents", value);
+                    parameters.set("measuredMeasuredImpureParents", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -158,7 +156,7 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
-                preferences.getInt("measuredMeasuredImpureAssociations", 0),
+                parameters.getInt("measuredMeasuredImpureAssociations", 0),
                 4);
         numMeasuredMeasuredImpureAssociations.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
@@ -167,7 +165,7 @@ class RandomMimParamsEditor extends JPanel {
                         throw new IllegalArgumentException();
                     }
 
-                    preferences.putInt("measuredMeasuredImpureAssociations",
+                    parameters.set("measuredMeasuredImpureAssociations",
                             value);
                     return value;
                 } catch (Exception e) {

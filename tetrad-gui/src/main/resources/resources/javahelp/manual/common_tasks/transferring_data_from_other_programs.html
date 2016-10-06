@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Loading Data</font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>You can import any tab delimited data . The data file needs a one line header:<br>
+  <br>
+For data for continuous variables, which must be numeric the header line is:<br>
+/continuous <br>
+<br>
+For data for discrete variables, which can be alphanumeric, the header line is:<br>
+/discrete<br>
+<br>
+For a lower triangular covariance or correlation matrix, the header is:<br>
+/covariance<br>
+<br>
+You must also include a row with the names of the variables in the appropriate order for the data file or covariance matrix.<br>
+  <br>
+For example, if you write a EXCEL file:with the names of variables in the first row, and save it as a text file, for example:<br>
+  <br>
+/continuous<br>
+X1&nbsp;&nbsp;&nbsp; X2&nbsp;&nbsp;&nbsp; X3<br>
+4&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; 1<br>
+2&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp;&nbsp; 0.09<br>
+<br>
+and in the File menu above the Tetrad data sheet click ":Load." Any previous data is erased and you see:<br>
+  <br>
+  <br>
+  <img
+ src="../images/Uimportcopy.jpg" alt="" width="265" height="144" style="width: 265px; height: 144px;"><br>
+  <br>
+</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>Note that the variable names occur in the correct place at the top of each column. <span style="font-weight: bold;">It is essential that the first row of the data file you wish to import</span> <span style="font-weight: bold;">contain the variable names, tab delimited. Also, do not include empty spaces between rows. <br>
+            <br>
+            </span>A data file does not require that any other boxes have flowgraph edges directed into it. A standalone Data box can be used to import an external data file. <br>
+            <br>
+      A data file can be saved by opening the "File" tab and clicking "Save." It can be reloaded just as can any imported file.<br>
+      <br>
+      Inside a Tetrad data sheet you can use the mouse to select individual cells, rows or columns. (To select more than one column or row, hold down the shift key). Then, by opening the Edit tab, you can copy, delete or insert cells, rows and columns. For example, you can select the X2 column in the picture above, copy it, select a new empty column, and paste a copy of the selected column in the new column.<br>
+            <br>
+      The Manip tab in the Tetrad data sheet permits simple manipulations of the data. Other data manipulations use the Manipulate Data box.<br>
+            <br>
+      1. Continuous data can be projected to a set of discrete values. For example if you select all of the colunms in a data sheet<br>
+    </td>
+  </tr>
+</table>
+<p></p>
+</body>
+</html>

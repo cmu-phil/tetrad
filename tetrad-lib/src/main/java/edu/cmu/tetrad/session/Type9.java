@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 
@@ -30,14 +31,14 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 public class Type9 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
-    public Type9(Type6 model1) {
+    public Type9(Type6 model1, Parameters parameters) {
     }
 
-    public Type9(Type7 model1, Type8 model2) {
+    public Type9(Type7 model1, Type8 model2, Parameters parameters) {
     }
 
     public static Type9 serializableInstance() {
-        return new Type9(Type6.serializableInstance());
+        return new Type9(Type6.serializableInstance(), new Parameters());
     }
 
     /**

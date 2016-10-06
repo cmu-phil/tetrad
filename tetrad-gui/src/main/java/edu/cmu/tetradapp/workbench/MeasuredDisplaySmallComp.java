@@ -55,7 +55,7 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
     /**
      * @return the shape of the component.
      */
-    public Shape getShape() {
+    private Shape getShape() {
         return new Ellipse2D.Double(0, 0, getPreferredSize().width - 1,
                 getPreferredSize().height - 1);
 //        return new RoundRectangle2D.Double(0, 0, getPreferredSize().width - 1,
@@ -103,7 +103,7 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
         return new Dimension(30, 30);
     }
 
-    public boolean isSelected() {
+    private boolean isSelected() {
         return selected;
     }
 }

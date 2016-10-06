@@ -28,12 +28,11 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -58,7 +57,7 @@ public abstract class AbstractAlgorithmRunner
      *
      * @serial Cannot be null.
      */
-    private SearchParams params;
+    private Parameters params;
 
     /**
      * Keeps a reference to the dataModel source that has been provided
@@ -67,13 +66,6 @@ public abstract class AbstractAlgorithmRunner
      * @serial Can be null.
      */
     private transient DataModel dataModel;
-
-    /**
-     * Retains a reference to the data model list.
-     *
-     * @deprecated
-     */
-    private transient DataModelList dataModelList;
 
     /**
      * Keeps a reference to the source graph, if there is one.
@@ -100,7 +92,7 @@ public abstract class AbstractAlgorithmRunner
      */
     private List<Graph> graphs = null;
     private Map<String, String> allParamSettings;
-    protected Map<String, String> paramSettings = new LinkedHashMap<>();
+    final Map<String, String> paramSettings = new LinkedHashMap<>();
 
     //===========================CONSTRUCTORS===========================//
 
@@ -112,7 +104,7 @@ public abstract class AbstractAlgorithmRunner
      * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
-                                   SearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -133,13 +125,12 @@ public abstract class AbstractAlgorithmRunner
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
-            getParams().setKnowledge(dataWrapper.getKnowledge());
+            getParams().set("knowledge", dataWrapper.getKnowledge());
         } else {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
-        new IndTestChooser().adjustIndTestParams(dataSource, params);
     }
 
     /**
@@ -150,7 +141,7 @@ public abstract class AbstractAlgorithmRunner
      * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
-                                   SearchParams params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -167,17 +158,17 @@ public abstract class AbstractAlgorithmRunner
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
-            getParams().setKnowledge(dataWrapper.getKnowledge());
+            getParams().set("knowledge", dataWrapper.getKnowledge());
         } else {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
-        getParams().setIndependenceFacts(facts.getFacts());
+
+        getParams().set("independenceFacts", facts.getFacts());
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
-        new IndTestChooser().adjustIndTestParams(dataSource, params);
     }
 
-    public AbstractAlgorithmRunner(DataWrapper dataWrapper, SearchParams params) {
+    public AbstractAlgorithmRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -198,50 +189,48 @@ public abstract class AbstractAlgorithmRunner
 
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
-        new IndTestChooser().adjustIndTestParams(dataSource, params);
     }
 
     /**
      * Constucts a wrapper for the given graph.
      */
-    public AbstractAlgorithmRunner(Graph sourceGraph, SearchParams params) {
+    public AbstractAlgorithmRunner(Graph sourceGraph, Parameters params) {
         if (sourceGraph == null) {
             throw new NullPointerException(
                     "Source graph must not be null.");
         }
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
         this.params = params;
         List<String> names = measuredNames(sourceGraph);
         transferVarNamesToParams(names);
-        new IndTestChooser().adjustIndTestParams(sourceGraph, params);
         this.sourceGraph = sourceGraph;
     }
 
-    public AbstractAlgorithmRunner(Graph graph, SearchParams params,
+    public AbstractAlgorithmRunner(Graph graph, Parameters params,
                                    KnowledgeBoxModel knowledgeBoxModel) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
     }
 
-    public AbstractAlgorithmRunner(SearchParams params, Graph... graphs) {
+    public AbstractAlgorithmRunner(Parameters params, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
     }
 
-    public AbstractAlgorithmRunner(SearchParams params, KnowledgeBoxModel knowledgeBoxModel, Graph... graphs) {
+    public AbstractAlgorithmRunner(Parameters params, KnowledgeBoxModel knowledgeBoxModel, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
     }
 
     public AbstractAlgorithmRunner(IndependenceFactsModel model,
-                                   SearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (model == null) {
             throw new NullPointerException();
         }
@@ -254,23 +243,22 @@ public abstract class AbstractAlgorithmRunner
         DataModel dataSource = model.getFacts();
 
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
-        new IndTestChooser().adjustIndTestParams(dataSource, params);
         this.dataModel = dataSource;
     }
 
-    public AbstractAlgorithmRunner(Graph graph, SearchParams params,
+    public AbstractAlgorithmRunner(Graph graph, Parameters params,
                                    KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
         if (facts != null) {
-            getParams().setIndependenceFacts(facts);
+            getParams().set("independenceFacts", facts);
         }
     }
 
@@ -326,7 +314,7 @@ public abstract class AbstractAlgorithmRunner
         }
     }
 
-    public final DataModelList getDataModelList() {
+    final DataModelList getDataModelList() {
         if (dataWrapper == null) return null;
         return dataWrapper.getDataModelList();
     }
@@ -335,7 +323,7 @@ public abstract class AbstractAlgorithmRunner
         this.resultGraph = resultGraph;
     }
 
-    public final SearchParams getParams() {
+    public final Parameters getParams() {
         return this.params;
     }
 
@@ -344,7 +332,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public void resetParams(Object params) {
-        this.params = (SearchParams) params;
+        this.params = (Parameters) params;
     }
 
     //===========================PRIVATE METHODS==========================//
@@ -353,7 +341,7 @@ public abstract class AbstractAlgorithmRunner
      * Find the dataModel model. (If it's a list, take the one that's
      * selected.)
      */
-    public DataModel getSelectedDataModel(DataWrapper dataWrapper) {
+    private DataModel getSelectedDataModel(DataWrapper dataWrapper) {
         DataModelList dataModelList = dataWrapper.getDataModelList();
 
         if (dataModelList.size() > 1) {
@@ -388,7 +376,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     private List<String> measuredNames(Graph graph) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 names.add(node.getName());
@@ -398,7 +386,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     private void transferVarNamesToParams(List names) {
-        getParams().setVarNames(names);
+        getParams().set("varNames", names);
     }
 
     /**

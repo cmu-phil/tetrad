@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.Evidence;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -159,8 +158,7 @@ public class  UpdatedBayesImWizardObs extends JPanel {
                         }
 
                         Node tetradNode = graphNode.getModelNode();
-                        updaterWrapper.getParams().setVariable((DiscreteVariable)
-                                (updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode)));
+                        updaterWrapper.getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
                     }
                 }
             }

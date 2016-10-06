@@ -36,15 +36,11 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey
  */
-public class RandomDagScaleFreeEditor extends JPanel {
-    private IntTextField numNodesField;
-    private IntTextField numLatentsField;
+class RandomDagScaleFreeEditor extends JPanel {
+    private final IntTextField numNodesField;
+    private final IntTextField numLatentsField;
 
-    private DoubleTextField scaleFreeAlphaField;
-    private DoubleTextField scaleFreeBetaField;
-    private DoubleTextField scaleFreeGammaField;
-    private DoubleTextField scaleFreeDeltaInField;
-    private DoubleTextField scaleFreeDeltaOutField;
+    private final DoubleTextField scaleFreeGammaField;
 
     /**
      * Constructs a dialog to edit the given workbench randomization
@@ -59,11 +55,11 @@ public class RandomDagScaleFreeEditor extends JPanel {
 
         NumberFormat nf = new DecimalFormat("0.00");
 
-        scaleFreeAlphaField = new DoubleTextField(getScaleFreeAlpha(), 4, nf);
-        scaleFreeBetaField = new DoubleTextField(getScaleFreeBeta(), 4, nf);
+        DoubleTextField scaleFreeAlphaField = new DoubleTextField(getScaleFreeAlpha(), 4, nf);
+        DoubleTextField scaleFreeBetaField = new DoubleTextField(getScaleFreeBeta(), 4, nf);
         scaleFreeGammaField = new DoubleTextField(getScaleFreeGamma(), 4, nf);
-        scaleFreeDeltaInField = new DoubleTextField(getScaleFreeDeltaIn(), 4, nf);
-        scaleFreeDeltaOutField = new DoubleTextField(getScaleFreeDeltaOut(), 4, nf);
+        DoubleTextField scaleFreeDeltaInField = new DoubleTextField(getScaleFreeDeltaIn(), 4, nf);
+        DoubleTextField scaleFreeDeltaOutField = new DoubleTextField(getScaleFreeDeltaOut(), 4, nf);
 
         // set up text and ties them to the parameters object being edited.
         numNodesField.setFilter(new IntTextField.Filter() {
@@ -201,7 +197,7 @@ public class RandomDagScaleFreeEditor extends JPanel {
         add(d, BorderLayout.CENTER);
     }
 
-    public void setGamma() {
+    private void setGamma() {
         scaleFreeGammaField.setValue(getScaleFreeGamma());
     }
 
@@ -209,7 +205,7 @@ public class RandomDagScaleFreeEditor extends JPanel {
         return getNumMeasuredNodes() + getNumLatents();
     }
 
-    public int getNumMeasuredNodes() {
+    private int getNumMeasuredNodes() {
         return Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
     }
 
@@ -255,7 +251,7 @@ public class RandomDagScaleFreeEditor extends JPanel {
         return Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
     }
 
-    public void setScaleFreeAlpha(double scaleFreeAlpha) {
+    private void setScaleFreeAlpha(double scaleFreeAlpha) {
         Preferences.userRoot().putDouble("scaleFreeAlpha", scaleFreeAlpha);
     }
 
@@ -263,11 +259,11 @@ public class RandomDagScaleFreeEditor extends JPanel {
         return Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
     }
 
-    public void setScaleFreeBeta(double scaleFreeBeta) {
+    private void setScaleFreeBeta(double scaleFreeBeta) {
         Preferences.userRoot().putDouble("scaleFreeBeta", scaleFreeBeta);
     }
 
-    public double getScaleFreeGamma() {
+    private double getScaleFreeGamma() {
         return 1.0 - getScaleFreeAlpha() - getScaleFreeBeta();
     }
 
@@ -275,7 +271,7 @@ public class RandomDagScaleFreeEditor extends JPanel {
         return Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
     }
 
-    public void setScaleFreeDeltaIn(double scaleFreeDeltaIn) {
+    private void setScaleFreeDeltaIn(double scaleFreeDeltaIn) {
         Preferences.userRoot().putDouble("scaleFreeDeltaIn", scaleFreeDeltaIn);
     }
 
@@ -283,7 +279,7 @@ public class RandomDagScaleFreeEditor extends JPanel {
         return Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
     }
 
-    public void setScaleFreeDeltaOut(double scaleFreeDeltaOut) {
+    private void setScaleFreeDeltaOut(double scaleFreeDeltaOut) {
         Preferences.userRoot().putDouble("scaleFreeDeltaOut", scaleFreeDeltaOut);
     }
 }

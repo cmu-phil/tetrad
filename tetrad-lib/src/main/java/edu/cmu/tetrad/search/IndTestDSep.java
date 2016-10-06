@@ -80,7 +80,7 @@ public class IndTestDSep implements IndependenceTest {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        List<Node> _vars = new ArrayList<Node>();
+        List<Node> _vars = new ArrayList<>();
 
         for (Node var : vars) {
             Node _var = getVariable(var.getName());
@@ -108,7 +108,7 @@ public class IndTestDSep implements IndependenceTest {
         if (keepLatents) {
             return graph.getNodes();
         } else {
-            List<Node> observedVars = new ArrayList<Node>();
+            List<Node> observedVars = new ArrayList<>();
 
             for (Node node : graph.getNodes()) {
                 if (node.getNodeType() == NodeType.MEASURED) {
@@ -231,7 +231,7 @@ public class IndTestDSep implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> nodes = _observedVars;
-        List<String> nodeNames = new ArrayList<String>();
+        List<String> nodeNames = new ArrayList<>();
         for (Node var : nodes) {
             nodeNames.add(var.getName());
         }
@@ -301,7 +301,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     public void startRecordingFacts() {
-        this.facts = new HashSet<IndependenceFact>();
+        this.facts = new HashSet<>();
     }
 
     public HashSet<IndependenceFact> getFacts() {

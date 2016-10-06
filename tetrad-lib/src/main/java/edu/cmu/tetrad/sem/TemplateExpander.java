@@ -148,7 +148,7 @@ public class TemplateExpander {
 
     private String replaceLists(String operator, GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        List<String> templateOperators = new ArrayList<String>();
+        List<String> templateOperators = new ArrayList<>();
         templateOperators.add("TSUM");
         templateOperators.add("TPROD");
         templateOperators.add("tsum");
@@ -193,7 +193,7 @@ public class TemplateExpander {
                 }
             }
 
-            List<Node> parents = new ArrayList<Node>();
+            List<Node> parents = new ArrayList<>();
 
             if (semPm != null && node != null) {
                 parents = semPm.getParents(node);
@@ -264,7 +264,7 @@ public class TemplateExpander {
         while (found) {
             found = false;
 
-            List<Character> operatorList = new ArrayList<Character>();
+            List<Character> operatorList = new ArrayList<>();
             int first = 0;
             int last = 0;
 

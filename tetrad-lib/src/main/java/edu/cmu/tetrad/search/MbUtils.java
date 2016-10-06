@@ -46,7 +46,7 @@ public class MbUtils {
             List<Node> pc = graph.getAdjacentNodes(target);
             List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
 
-            Set<Node> parentsOfChildren = new HashSet<Node>();
+            Set<Node> parentsOfChildren = new HashSet<>();
 
             for (Node v : children) {
                 for (Node w : graph.getAdjacentNodes(v)) {
@@ -69,7 +69,7 @@ public class MbUtils {
                 }
             }
 
-            Set<Node> allRelevantNodes = new HashSet<Node>();
+            Set<Node> allRelevantNodes = new HashSet<>();
             allRelevantNodes.add(target);
             allRelevantNodes.addAll(pc);
             allRelevantNodes.addAll(parentsOfChildren);
@@ -79,7 +79,7 @@ public class MbUtils {
 
             graph.removeNodes(irrelevantNodes);
         } else {
-            List<Node> pc = new LinkedList<Node>();
+            List<Node> pc = new LinkedList<>();
 
             for (Node node : graph.getAdjacentNodes(target)) {
                 if (graph.isDirectedFromTo(target, node) ||
@@ -89,7 +89,7 @@ public class MbUtils {
                 }
             }
 
-            List<Node> children = new LinkedList<Node>();
+            List<Node> children = new LinkedList<>();
 
             for (Node v : graph.getAdjacentNodes(target)) {
                 if (children.contains(v)) {
@@ -101,7 +101,7 @@ public class MbUtils {
                 }
             }
 
-            Set<Node> parentsOfChildren = new HashSet<Node>();
+            Set<Node> parentsOfChildren = new HashSet<>();
 
             for (Node v : children) {
                 for (Node w : graph.getAdjacentNodes(v)) {
@@ -122,7 +122,7 @@ public class MbUtils {
                 }
             }
 
-            Set<Node> allRelevantNodes = new HashSet<Node>();
+            Set<Node> allRelevantNodes = new HashSet<>();
             allRelevantNodes.add(target);
             allRelevantNodes.addAll(pc);
             allRelevantNodes.addAll(parentsOfChildren);
@@ -164,7 +164,7 @@ public class MbUtils {
     public static void trimEdgesAmongParentsOfChildren(Graph graph,
                                                        Node target) {
         List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
-        Set<Node> parents = new HashSet<Node>();
+        Set<Node> parents = new HashSet<>();
 
         for (Node aChildren : children) {
             parents.addAll(graph.getParents(aChildren));
@@ -172,7 +172,7 @@ public class MbUtils {
 
         parents.remove(target);
         parents.removeAll(graph.getAdjacentNodes(target));
-        List<Node> parentsOfChildren = new ArrayList<Node>(parents);
+        List<Node> parentsOfChildren = new ArrayList<>(parents);
 
         if (parentsOfChildren.size() >= 2) {
             ChoiceGenerator cg =
@@ -231,19 +231,19 @@ public class MbUtils {
             throw new IllegalArgumentException("Distance must be >= 1.");
         }
 
-        Set<Node> nodes = new HashSet<Node>();
+        Set<Node> nodes = new HashSet<>();
         nodes.add(target);
-        Set<Node> tier = new HashSet<Node>(nodes);
+        Set<Node> tier = new HashSet<>(nodes);
 
         for (int i = 0; i < distance; i++) {
-            Set<Node> adjacents = new HashSet<Node>();
+            Set<Node> adjacents = new HashSet<>();
 
             for (Node aTier : tier) {
                 adjacents.addAll(graph.getAdjacentNodes(aTier));
             }
 
             nodes.addAll(adjacents);
-            tier = new HashSet<Node>(adjacents);
+            tier = new HashSet<>(adjacents);
         }
         return nodes;
     }
@@ -258,7 +258,7 @@ public class MbUtils {
                                              boolean orientBidirectedEdges,
                                              IndependenceTest test, int depth,
                                              Node target) {
-        return new LinkedList<Graph>(listMbDags(new EdgeListGraph(mbPattern),
+        return new LinkedList<>(listMbDags(new EdgeListGraph(mbPattern),
                 orientBidirectedEdges, test, depth, target));
     }
 
@@ -270,7 +270,7 @@ public class MbUtils {
                                          boolean orientBidirectedEdges,
                                          IndependenceTest test, int depth,
                                          Node target) {
-        Set<Graph> dags = new HashSet<Graph>();
+        Set<Graph> dags = new HashSet<>();
         Graph graph = new EdgeListGraph(mbPattern);
         doAbbreviatedMbOrientation(graph, test, depth, target);
         Set<Edge> edges = graph.getEdges();
@@ -307,7 +307,7 @@ public class MbUtils {
     }
 
     public static Graph getOneMbDag(Graph mbPattern) {
-        PatternToDag search = new PatternToDag(new Pattern(mbPattern));
+        PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(mbPattern));
         return search.patternToDagMeek();
     }
 

@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class ExtraCategoryAction extends AbstractAction {
+final class ExtraCategoryAction extends AbstractAction {
 
     /**
      * The data editor.                         -

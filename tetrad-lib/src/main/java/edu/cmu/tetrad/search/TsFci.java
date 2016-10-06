@@ -70,7 +70,7 @@ public final class TsFci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     private IndependenceTest independenceTest;
 
@@ -144,7 +144,7 @@ public final class TsFci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<Node>();
+        Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -249,7 +249,7 @@ public final class TsFci implements GraphSearch {
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setDepth(getPossibleDsepDepth());
+//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());
@@ -371,7 +371,7 @@ public final class TsFci implements GraphSearch {
     //===========================PRIVATE METHODS=========================//
 
     private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<Node, Integer>();
+        this.hashIndices = new ConcurrentHashMap<>();
         for (Node node : nodes) {
             this.hashIndices.put(node, variables.indexOf(node));
         }

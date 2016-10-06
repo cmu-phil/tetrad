@@ -99,9 +99,9 @@ public class Mimbuild2 {
     //=================================== PUBLIC METHODS =========================================//
 
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
-        List<String> _latentNames = new ArrayList<String>(latentNames);
+        List<String> _latentNames = new ArrayList<>(latentNames);
 
-        List<String> allVarNames = new ArrayList<String>();
+        List<String> allVarNames = new ArrayList<>();
 
         for (List<Node> cluster : clustering) {
             for (Node node : cluster) allVarNames.add(node.getName());
@@ -109,10 +109,10 @@ public class Mimbuild2 {
 
         measuresCov = measuresCov.getSubmatrix(allVarNames);
 
-        List<List<Node>> _clustering = new ArrayList<List<Node>>();
+        List<List<Node>> _clustering = new ArrayList<>();
 
         for (List<Node> cluster : clustering) {
-            List<Node> _cluster = new ArrayList<Node>();
+            List<Node> _cluster = new ArrayList<>();
 
             for (Node node : cluster) {
                 _cluster.add(measuresCov.getVariable(node.getName()));
@@ -149,7 +149,7 @@ public class Mimbuild2 {
 
 //        try {
 //            Ges search = new Ges(latentscov);
-//            search.setPenaltyDiscount(penaltyDiscount);
+//            search.setAlpha(penaltyDiscount);
 //            search.setKnowledge(knowledge);
 //            graph = search.search();
 //        } catch (Exception e) {
@@ -190,7 +190,7 @@ public class Mimbuild2 {
     }
 
     public List<String> getLatentNames(List<Node> latents) {
-        List<String> latentNames = new ArrayList<String>();
+        List<String> latentNames = new ArrayList<>();
 
         for (Node node : latents) {
             latentNames.add(node.getName());
@@ -248,7 +248,7 @@ public class Mimbuild2 {
     //=================================== PRIVATE METHODS =========================================//
 
     private List<Node> defineLatents(List<String> names) {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : names) {
             Node node = new GraphNode(name);
@@ -260,7 +260,7 @@ public class Mimbuild2 {
     }
 
     private void removeSmallClusters(List<Node> latents, List<List<Node>> clustering, int minimumSize) {
-        for (int i = new ArrayList<Node>(latents).size() - 1; i >= 0; i--) {
+        for (int i = new ArrayList<>(latents).size() - 1; i >= 0; i--) {
             if (clustering.get(i).size() < minimumSize) {
                 clustering.remove(clustering.get(i));
                 latents.remove(latents.get(i));
@@ -618,7 +618,7 @@ public class Mimbuild2 {
         private final TetradMatrix latentscov;
         private final int numParams;
         private final double[] delta;
-        private final List<Integer> aboveZero = new ArrayList<Integer>();
+        private final List<Integer> aboveZero = new ArrayList<>();
 
         public Function2(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings, TetradMatrix latentscov,
                          double[] delta, int numNonMeasureVarianceParams) {
@@ -682,7 +682,7 @@ public class Mimbuild2 {
         private final TetradMatrix latentscov;
         private final int numParams;
         private final double[] delta;
-        private final List<Integer> aboveZero = new ArrayList<Integer>();
+        private final List<Integer> aboveZero = new ArrayList<>();
 
         public Function3(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings, TetradMatrix latentscov,
                          double[] delta, int numParams) {
@@ -727,7 +727,7 @@ public class Mimbuild2 {
         private final TetradMatrix latentscov;
         private final int numParams;
         private final double[] delta;
-        private final List<Integer> aboveZero = new ArrayList<Integer>();
+        private final List<Integer> aboveZero = new ArrayList<>();
 
         public Function4(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings, TetradMatrix latentscov,
                          double[] delta) {

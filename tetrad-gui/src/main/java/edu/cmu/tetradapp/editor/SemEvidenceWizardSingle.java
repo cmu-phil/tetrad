@@ -41,7 +41,7 @@ import java.awt.event.ActionListener;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-public class SemEvidenceWizardSingle extends JPanel {
+class SemEvidenceWizardSingle extends JPanel {
     private SemUpdater bayesUpdater;
     private GraphWorkbench workbench;
     private final SemEvidenceEditor evidenceEditor;
@@ -62,7 +62,7 @@ public class SemEvidenceWizardSingle extends JPanel {
             throw new NullPointerException();
         }
 
-        Node node = (Node) workbench.getGraph().getNodes().get(0);
+        Node node = workbench.getGraph().getNodes().get(0);
         workbench.deselectAll();
         workbench.selectNode(node);
 

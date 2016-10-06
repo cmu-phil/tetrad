@@ -207,7 +207,7 @@ public final class VcpcAlt implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     /**
@@ -215,7 +215,7 @@ public final class VcpcAlt implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
-        return new HashSet<Triple>(colliderTriples);
+        return new HashSet<>(colliderTriples);
     }
 
     /**
@@ -223,7 +223,7 @@ public final class VcpcAlt implements GraphSearch {
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<Triple>(noncolliderTriples);
+        return new HashSet<>(noncolliderTriples);
     }
 
     /**
@@ -231,7 +231,7 @@ public final class VcpcAlt implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {
-        return new HashSet<Triple>(allTriples);
+        return new HashSet<>(allTriples);
     }
 
     /**
@@ -254,13 +254,13 @@ public final class VcpcAlt implements GraphSearch {
     public Graph search() {
         this.logger.log("info", "Starting VCCPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
         Vcfas fas = new Vcfas(getIndependenceTest());
-        definitelyNonadjacencies = new HashSet<Edge>();
-        markovInAllPatterns = new HashSet<Node>();
+        definitelyNonadjacencies = new HashSet<>();
+        markovInAllPatterns = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariables());
 
@@ -316,9 +316,9 @@ public final class VcpcAlt implements GraphSearch {
             dims[i] = 2;
         }
 
-        List<Graph> patterns = new ArrayList<Graph>();
-        Map<Graph, List<Triple>> newColliders = new IdentityHashMap<Graph, List<Triple>>();
-        Map<Graph, List<Triple>> newNonColliders = new IdentityHashMap<Graph, List<Triple>>();
+        List<Graph> patterns = new ArrayList<>();
+        Map<Graph, List<Triple>> newColliders = new IdentityHashMap<>();
+        Map<Graph, List<Triple>> newNonColliders = new IdentityHashMap<>();
 
 //      Using combination generator to generate a list of combinations of ambiguous triples dismabiguated into colliders
 //      and non-colliders. The combinations are added as graphs to the list patterns. The graphs are then subject to
@@ -359,14 +359,14 @@ public final class VcpcAlt implements GraphSearch {
             patterns.add(_graph);
         }
 
-        List<Graph> _patterns = new ArrayList<Graph>(patterns);
+        List<Graph> _patterns = new ArrayList<>(patterns);
 
 
         ///    Takes patterns and runs them through basic constraints to ensure consistent patterns (e.g. no cycles, no bidirected edges).
 
         GRAPH:
 
-        for (Graph graph : new ArrayList<Graph>(patterns)) {
+        for (Graph graph : new ArrayList<>(patterns)) {
 //            _graph = new EdgeListGraph(graph);
 
 //            System.out.println("graph = " + graph + " in keyset? " + newColliders.containsKey(graph));
@@ -469,12 +469,12 @@ public final class VcpcAlt implements GraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            for (Graph _graph : new ArrayList<Graph>(patterns)) {
+            for (Graph _graph : new ArrayList<>(patterns)) {
 
-                List<Node> boundaryX = new ArrayList<Node>(boundary(x, _graph));
-                List<Node> boundaryY = new ArrayList<Node>(boundary(y, _graph));
-                List<Node> futureX = new ArrayList<Node>(future(x, _graph));
-                List<Node> futureY = new ArrayList<Node>(future(y, _graph));
+                List<Node> boundaryX = new ArrayList<>(boundary(x, _graph));
+                List<Node> boundaryY = new ArrayList<>(boundary(y, _graph));
+                List<Node> futureX = new ArrayList<>(future(x, _graph));
+                List<Node> futureY = new ArrayList<>(future(y, _graph));
 
                 if (y == x) {
                     continue;
@@ -674,8 +674,8 @@ public final class VcpcAlt implements GraphSearch {
         Node x = node;
 
 //        for (Node x : graph.getNodes()) {
-        List<Node> future = new ArrayList<Node>(future(x, graph));
-        List<Node> boundary = new ArrayList<Node>(boundary(x, graph));
+        List<Node> future = new ArrayList<>(future(x, graph));
+        List<Node> boundary = new ArrayList<>(boundary(x, graph));
 
         for (Node y : graph.getNodes()) {
             if (y == x) {
@@ -699,7 +699,7 @@ public final class VcpcAlt implements GraphSearch {
 
     //    For a node x, adds nodes y such that either y-x or y->x to the boundary of x
     private Set<Node> boundary(Node x, Graph graph) {
-        Set<Node> boundary = new HashSet<Node>();
+        Set<Node> boundary = new HashSet<>();
         List<Node> adj = graph.getAdjacentNodes(x);
         for (Node y : adj) {
             if (graph.isParentOf(y, x) || Edges.isUndirectedEdge(graph.getEdge(x, y))) {
@@ -711,8 +711,8 @@ public final class VcpcAlt implements GraphSearch {
 
     //      For a node x, adds nodes y such that either x->..->y or x-..-..->..->y to the future of x
     private Set<Node> future(Node x, Graph graph) {
-        Set<Node> futureNodes = new HashSet<Node>();
-        LinkedList path = new LinkedList<Node>();
+        Set<Node> futureNodes = new HashSet<>();
+        LinkedList path = new LinkedList<>();
         futureNodeVisit(graph, x, path, futureNodes);
         if (futureNodes.contains(x)) {
             futureNodes.remove(x);
@@ -809,9 +809,9 @@ public final class VcpcAlt implements GraphSearch {
 
 //        System.out.println("orientUnshieldedTriples 1");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node y : nodes) {
@@ -870,9 +870,9 @@ public final class VcpcAlt implements GraphSearch {
 
 //        System.out.println("orientUnshieldedTriples 1");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node _y : nodes) {

@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -191,7 +192,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
     }
 
@@ -268,17 +269,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
-            MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
+            Parameters params = getAlgorithmRunner().getParams();
             JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
             preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
-            preventCycles.setSelected(params.isAggressivelyPreventCycles());
+            preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
 
             preventCycles.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JCheckBox box = (JCheckBox) e.getSource();
-                    MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
-                    params.setAggressivelyPreventCycles(box.isSelected());
+                    Parameters params = getAlgorithmRunner().getParams();
+                    params.set("aggressivelyPreventCycles", box.isSelected());
                 }
             });
 
@@ -319,7 +320,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-        Graph resultGraph = getAlgorithmRunner().getResultGraph();
+        Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
 
@@ -381,7 +382,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
+            Graph pattern = new EdgeListGraphSingleConnections(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
             Graph dag = ptd.patternToDagMeek();
 
@@ -467,7 +468,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     private String reportIfDiscrete(Graph dag, DataSet dataSet) {
         List vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -484,7 +485,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -591,7 +592,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getResultGraph();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -632,7 +633,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -712,8 +713,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        Parameters params = getAlgorithmRunner().getParams();
+        return (List<String>) params.get("varNames", null);
     }
 
     private void addMixedTestMenuItems(JMenu test) {
@@ -736,11 +737,11 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
@@ -761,55 +762,51 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        return getIndTestParamBox(getAlgorithmRunner().getParams());
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FgsIndTestParams) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
-                IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
-                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
-                return new FgsIndTestParamsEditor(params, gesRunner.getType());
+                return new FgsIndTestParamsEditor(params, ((IFgsRunner) getAlgorithmRunner()).getType());
             }
         }
 
-        if (indTestParams instanceof LagIndTestParams) {
+        if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(
-                    (LagIndTestParams) indTestParams);
+                     params);
         }
 
-        if (indTestParams instanceof GraphIndTestParams) {
-            return new IndTestParamsEditor((GraphIndTestParams) indTestParams);
+        if (params instanceof Parameters) {
+            return new IndTestParamsEditor(params);
         }
 
-        if (indTestParams instanceof DiscDetIndepParams) {
+        if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(
-                    (DiscDetIndepParams) indTestParams);
+                    params);
         }
 
-        if (indTestParams instanceof PcIndTestParams) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((PcIndTestParams) indTestParams);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((PcIndTestParams) indTestParams);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
-            return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
+            return new PcIndTestParamsEditor(params);
         }
 
-        return new IndTestParamsEditor(indTestParams);
+        return new IndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

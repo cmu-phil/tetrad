@@ -295,7 +295,7 @@ public final class TestCellTable {
         this.table = new CellTable(dims);
 
 //        // Add data to table.
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X1", 2));
         variables.add(new DiscreteVariable("X2", 2));
         variables.add(new DiscreteVariable("X3", 2));

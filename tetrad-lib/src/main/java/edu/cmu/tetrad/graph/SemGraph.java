@@ -112,41 +112,8 @@ public final class SemGraph implements Graph, TetradSerializable {
             this.showErrorTerms = ((SemGraph) graph).showErrorTerms;
         } else if (graph instanceof TimeLagGraph) {
             this.graph = new TimeLagGraph((TimeLagGraph) graph);
-
-//            setShowErrorTerms(true);
-
-//            this.errorNodes = new HashMap<Node, Node>();
-
-//            for (Node node : graph.getNodes()) {
-//                addErrorNode(node);
-//            }
-
-//            for (Node node : graph.getNodes()) {
-//                addNode(node);
-//            }
-//
-//            setGraphConstraintsChecked(false);
-//
-//            for (Edge edge : graph.getEdges()) {
-//                if (Edges.isDirectedEdge(edge)) {
-//                    addEdge(edge);
-//                }
-//                else if (Edges.isBidirectedEdge(edge)) {
-//                    Node node1 = edge.getNode1();
-//                    Node node2 = edge.getNode2();
-//
-//                    addBidirectedEdge(getExogenous(node1), getExogenous(node2));
-//                }
-//                else {
-//                    throw new IllegalArgumentException("A SEM graph may contain " +
-//                            "only directed and bidirected edges: " + edge);
-//                }
-//            }
-//
-//            setGraphConstraintsChecked(true);
         } else {
             this.graph = new EdgeListGraph(graph.getNodes());
-            setGraphConstraintsChecked(false);
 
             for (Node node : this.graph.getNodes()) {
                 addErrorNode(node);
@@ -169,8 +136,6 @@ public final class SemGraph implements Graph, TetradSerializable {
             }
 
             setShowErrorTerms(false);
-
-            setGraphConstraintsChecked(true);
         }
 
         for (Edge edge : graph.getEdges()) {
@@ -596,18 +561,6 @@ public final class SemGraph implements Graph, TetradSerializable {
         return getGraph().getNumEdges(node);
     }
 
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
-    }
-
     public boolean removeEdge(Edge edge) {
         if (!getGraph().containsEdge(edge)) {
             throw new IllegalArgumentException(
@@ -740,6 +693,11 @@ public final class SemGraph implements Graph, TetradSerializable {
         return getGraph().getIndegree(node);
     }
 
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
+    }
+
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
@@ -803,10 +761,6 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     public String toString() {
         return getGraph().toString();
-    }
-
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        throw new UnsupportedOperationException();
     }
 
 

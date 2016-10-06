@@ -71,12 +71,12 @@ final class RangeEditor extends JComponent {
     /**
      * Used to keep track of which compoent has focus.
      */
-    private final LinkedList<JTextField> focusTraveralOrder = new LinkedList<JTextField>();
+    private final LinkedList<JTextField> focusTraveralOrder = new LinkedList<>();
 
     /**
      * Label map.
      */
-    private final Map<Object, Integer> labels = new HashMap<Object, Integer>();
+    private final Map<Object, Integer> labels = new HashMap<>();
 
 
     /**

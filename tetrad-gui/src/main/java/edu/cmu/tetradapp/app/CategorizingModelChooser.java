@@ -82,6 +82,12 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
     public Class getSelectedModel() {
         TreePath path = this.tree.getSelectionPath();
+
+        if (path == null) {
+            throw new NullPointerException("I had a problem figuring out the models for this box given the parents. Maybe\n" +
+                    "the parents are wrong, or maybe this isn't the box you were intending to use.");
+        }
+
         Object selected = path.getLastPathComponent();
         if (selected instanceof ModelWrapper) {
             return ((ModelWrapper) selected).model;
@@ -213,8 +219,8 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
      */
     private static class ModelWrapper {
 
-        private String name;
-        private Class model;
+        private final String name;
+        private final Class model;
 
         public ModelWrapper(String name, Class model) {
             this.name = name;
@@ -264,9 +270,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         private static final String ROOT = "Root";
 
-        private Map<String, List<ModelWrapper>> map = new HashMap<String, List<ModelWrapper>>();
+        private final Map<String, List<ModelWrapper>> map = new HashMap<>();
 
-        private List<String> categories = new LinkedList<String>();
+        private final List<String> categories = new LinkedList<>();
 
         public ChooserTreeModel(List<SessionNodeModelConfig> configs) {
             for (SessionNodeModelConfig config : configs) {
@@ -285,7 +291,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
                 
                 List<ModelWrapper> models = map.get(category);
                 if (models == null) {
-                    models = new LinkedList<ModelWrapper>();
+                    models = new LinkedList<>();
                     map.put(category, models);
                 }
                 models.add(new ModelWrapper(config.getName(), config.getModel()));

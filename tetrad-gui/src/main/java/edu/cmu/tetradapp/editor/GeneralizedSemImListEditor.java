@@ -53,28 +53,18 @@ class GeneralizedSemImListEditor extends JPanel {
     /**
      * The SemPm being edited.
      */
-    private GeneralizedSemIm semIm;
+    private final GeneralizedSemIm semIm;
 
-
-    /**
-     * This delay needs to be restored when the component is hidden.
-     */
-    private int savedTooltipDelay;
-
-    /**
-     * The PM being edited.
-     */
-    private GeneralizedSemPm semPm;
 
     /**
      * The set of launched editors--or rather, the nodes for the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
     /**
      * The box containing all of the formulas.
      */
-    private Box formulasBox;
+    private final Box formulasBox;
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
@@ -84,7 +74,10 @@ class GeneralizedSemImListEditor extends JPanel {
 
         this.semIm = semIm;
         this.launchedEditors = launchedEditors;
-        this.semPm = semIm.getSemPm();
+        /*
+      The PM being edited.
+     */
+        GeneralizedSemPm semPm = semIm.getSemPm();
         setLayout(new BorderLayout());
         formulasBox = Box.createVerticalBox();
         refreshLabels();
@@ -96,7 +89,7 @@ class GeneralizedSemImListEditor extends JPanel {
 
     //========================PUBLIC PROTECTED METHODS======================//
 
-    public JComponent refreshLabels() {
+    private JComponent refreshLabels() {
         formulasBox.removeAll();
 
         for (Node node : semIm().getSemPm().getVariableNodes()) {
@@ -199,18 +192,6 @@ class GeneralizedSemImListEditor extends JPanel {
     private GeneralizedSemIm semIm() {
         return this.semIm;
     }
-
-    private Graph graph() {
-        return semIm().getSemPm().getGraph();
-    }
-
-    private void setSavedTooltipDelay(int savedTooltipDelay) {
-        this.savedTooltipDelay = savedTooltipDelay;
-    }
-
-    //=======================PRIVATE INNER CLASSES==========================//
-
-
 }
 
 

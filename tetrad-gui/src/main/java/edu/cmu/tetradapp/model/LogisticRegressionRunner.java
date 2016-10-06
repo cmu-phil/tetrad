@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -41,48 +42,24 @@ import java.util.*;
  *
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
-public class LogisticRegressionRunner implements AlgorithmRunner {
+public class LogisticRegressionRunner implements AlgorithmRunner, RegressionModel {
     static final long serialVersionUID = 23L;
 
-    /**
-     * @serial Can be null.
-     */
     private String name;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private LogisticRegressionParams params;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private String targetName;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private DataSet dataSet;
-
-    /**
-     * @serial Can be null.
-     */
+    private Parameters params;
+    private String targetName = null;
+    private List<String> regressorNames = new ArrayList<>();
+    private List<DataSet> dataSets;
     private String report;
-
-    /**
-     * @serial Can be null.
-     */
     private Graph outGraph;
-
-
-    /**
-     *@serial Can be null.
-     */
     private LogisticRegression.Result result;
+    private double alpha = 0.001;
 
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
-    private double[] coefficients;
-    private Map<String, String> allParamsSettings;
+    private List<String> variableNames;
 
     //=========================CONSTRUCTORS===============================//
 
@@ -92,7 +69,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * containing either a DataSet or a DataSet as its selected model.
      */
     public LogisticRegressionRunner(DataWrapper dataWrapper,
-                                    LogisticRegressionParams params) {
+                                    Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -101,17 +78,33 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
             throw new NullPointerException();
         }
 
-        DataModel dataModel = dataWrapper.getSelectedDataModel();
+        if (dataWrapper instanceof Simulation) {
+            Simulation simulation = (Simulation) dataWrapper;
+            DataModelList dataModelList = dataWrapper.getDataModelList();
+            this.dataSets = new ArrayList<>();
 
-        if (!(dataModel instanceof DataSet)) {
-            throw new IllegalArgumentException("Data set must be tabular.");
+            for (DataModel dataModel : dataModelList) {
+                dataSets.add((DataSet) dataModel);
+            }
+
+            this.numModels = dataModelList.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            DataModel dataModel = dataWrapper.getSelectedDataModel();
+
+            if (!(dataModel instanceof DataSet)) {
+                throw new IllegalArgumentException("Data set must be tabular.");
+            }
+
+            setDataSet((DataSet) dataModel);
         }
 
-        DataSet dataSet = (DataSet) dataModel;
-
         this.params = params;
-        this.targetName = params.getTargetName();
-        this.dataSet = dataSet;
+
+        this.variableNames = getDataModel().getVariableNames();
+        this.targetName = null;
+        this.regressorNames = new ArrayList<>();
 
         TetradLogger.getInstance().log("info", "Linear Regression");
 
@@ -128,7 +121,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * @see TetradSerializableUtils
      */
     public static LogisticRegressionRunner serializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         ContinuousVariable var1 = new ContinuousVariable("X");
         ContinuousVariable var2 = new ContinuousVariable("Y");
 
@@ -145,37 +138,28 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         DataWrapper dataWrapper = new DataWrapper(dataSet);
-        return new LogisticRegressionRunner(dataWrapper,
-                LogisticRegressionParams.serializableInstance());
+        return new LogisticRegressionRunner(dataWrapper, new Parameters());
     }
 
     //===========================PUBLIC METHODS============================//
 
     public DataModel getDataModel() {
-        return this.dataSet;
+        return dataSets.get(getModelIndex());
     }
-
-    public void setParams(LogisticRegressionParams params) {
-        this.params = params;
-    }
-
 
     /**
      * @return the alpha or -1.0 if the params aren't set.
      */
-    public double getAlpha(){
-        if(this.params != null){
-            return this.params.getAlpha();
-        }
-        return -1.0;
+    public double getAlpha() {
+        return alpha;//this.params.getDouble("alpha", 0.001);
     }
 
 
-    public LogisticRegression.Result getResult(){
+    public LogisticRegression.Result getResult() {
         return this.result;
     }
 
-    public SearchParams getParams() {
+    public Parameters getParams() {
         return params;
     }
 
@@ -198,63 +182,40 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * implemented in the extending class.
      */
     public void execute() {
-
-        if (params.getRegressorNames().length == 0 ||
-                params.getTargetName() == null) {
+        if (regressorNames == null || regressorNames.isEmpty() || targetName == null) {
             report = "Response and predictor variables not set.";
             outGraph = new EdgeListGraph();
             return;
         }
 
-        if (Arrays.asList(params.getRegressorNames()).contains(
-                params.getTargetName())) {
-            report = "Response ar must not be a predictor.";
+        if (regressorNames.contains(targetName)) {
+            report = "Response must not be a predictor.";
             outGraph = new EdgeListGraph();
             return;
         }
 
-        //Regression regression = new Regression();
-        //String targetName = ((RegressionParams) getParams()).getTargetName();
-        String targetName = params.getTargetName();
-        double alpha = params.getAlpha();
-
-        DataSet regressorsDataSet = dataSet.copy();
+        DataSet regressorsDataSet = dataSets.get(getModelIndex()).copy();
         Node target = regressorsDataSet.getVariable(targetName);
-        int targetIndex = dataSet.getVariables().indexOf(target);
         regressorsDataSet.removeColumn(target);
 
-        Object[] namesObj = (regressorsDataSet.getVariableNames()).toArray();
-        String[] names = new String[namesObj.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = (String) namesObj[i];
-        }
+        List<String> names = regressorsDataSet.getVariableNames();
 
         //Get the list of regressors selected by the user
-        String[] regressorNames = params.getRegressorNames();
-        List regressorNamesList = Arrays.asList(regressorNames);
-
-        List<Node> regressorNodes = new ArrayList<Node>();
+        List<Node> regressorNodes = new ArrayList<>();
 
         for (String s : regressorNames) {
-            regressorNodes.add(dataSet.getVariable(s));
+            regressorNodes.add(dataSets.get(getModelIndex()).getVariable(s));
         }
 
         //If the user selected none, use them all
-        if (regressorNames.length > 0) {
+        if (regressorNames.size() > 0) {
             for (String name1 : names) {
                 Node regressorVar = regressorsDataSet.getVariable(name1);
-                if (!regressorNamesList.contains(regressorVar.getName())) {
+                if (!regressorNames.contains(regressorVar.getName())) {
                     regressorsDataSet.removeColumn(regressorVar);
                 }
             }
         }
-        else {
-            regressorNames = names;  //All names except the targetColumn
-        }
-
-        //double[][] regressorsT = regressorsDataSet.getDoubleData();
-        //int ncases = regressorsT.length;
-        //int nvars = regressorsT[0].length;
 
         int ncases = regressorsDataSet.getNumRows();
         int nvars = regressorsDataSet.getNumColumns();
@@ -263,26 +224,14 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
         for (int i = 0; i < nvars; i++) {
             for (int j = 0; j < ncases; j++) {
-                //regressors[i][j] = regressorsT[j][i];
                 regressors[i][j] = regressorsDataSet.getDouble(j, i);
             }
         }
 
-        //targetColumn is the array storing the values of the targetColumn targetColumn
-        int[] targetColumn = new int[ncases];
-
-        for (int j = 0; j < ncases; j++) {
-            targetColumn[j] = (int) dataSet.getDouble(j, targetIndex);
-        }
-
-        LogisticRegression logRegression = new LogisticRegression(dataSet);
+        LogisticRegression logRegression = new LogisticRegression(dataSets.get(getModelIndex()));
         logRegression.setAlpha(alpha);
 
-        LogisticRegression.Result result = logRegression.regress((DiscreteVariable) target, regressorNodes);
-//        this.report = logRegression.getReport();
-        this.result = result;
-        coefficients = result.getCoefs();
-//        outGraph = logRegression.getOutGraph();
+        this.result = logRegression.regress((DiscreteVariable) target, regressorNodes);
     }
 
     public boolean supportsKnowledge() {
@@ -294,7 +243,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
     }
 
     public void setInitialGraph(Graph graph) {
-        return;
     }
 
     public Graph getInitialGraph() {
@@ -306,20 +254,32 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return "Logistic-Regression";
     }
 
-    public String getReport() {
-        return report;
-    }
-
-    public double[] getCoefficients() {
-        return coefficients;
-    }
-
     public Graph getOutGraph() {
         return outGraph;
     }
 
+    @Override
+    public List<String> getVariableNames() {
+        return variableNames;
+    }
+
+    @Override
+    public List<String> getRegressorNames() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void setRegressorName(List<String> predictors) {
+        this.regressorNames = predictors;
+    }
+
     public String getTargetName() {
         return targetName;
+    }
+
+    @Override
+    public void setTargetName(String target) {
+        this.targetName = target;
     }
 
     /**
@@ -338,20 +298,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        /*
-        if (targetName == null) {
-            throw new NullPointerException();
-        }
-        */
-
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
     }
 
     public String getName() {
@@ -370,17 +316,17 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
+     * @param node The node that the classifications are for. All triple from adjacencies to this
+     *             node to adjacencies to this node through the given node will be considered.
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
-     * @param node The node that the classifications are for. All triple from adjacencies to this
-     * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     @Override
@@ -392,11 +338,37 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamsSettings = paramSettings;
+//        Map<String, String> allParamsSettings = paramSettings;
     }
 
     @Override
     public Map<String, String> getAllParamSettings() {
+        return null;
+    }
+
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
+
+    public void setDataSet(DataSet dataSet) {
+        dataSets = new ArrayList<>();
+        dataSets.add(dataSet);
+    }
+
+    @Override
+    public List<Graph> getGraphs() {
         return null;
     }
 }

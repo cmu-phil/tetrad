@@ -40,7 +40,7 @@ obligatory serializableInstance() static constructor that generates a simple
 instance of that class for test purposes. Again, see any class in TS for an
 example, and read the javadoc for serializableInstance(). The reason this
 strategy generalizes is that the serialization algorithm is recursive, so if all
-serializable fields of an object serialize and deserialize properly the object
+serializable fields of an nodes serialize and deserialize properly the nodes
 will serialize and deserialize properly as well. By checking classes in TS for
 this property, all possible sessions are by implication checked.
 
@@ -50,10 +50,10 @@ archives directory from previous published versions. Whenever unit
 tests are run, these archives are unzipped, and all of the serialized objects they
 contain are deserialized. If it's ever the case that a class has been renamed or
 moved, or a field test for a field by name 'n' has been changed to an incompatible
-test (or anything else that would prevent bare deserialization of an object from
+test (or anything else that would prevent bare deserialization of an nodes from
 finishing), an exception will be thrown with a descriptive message. The only way
 an old session might not deserialize with the current version of Tetrad if this test
-passes is if some object it contains is incompatible with some check that's
+passes is if some nodes it contains is incompatible with some check that's
 included in the readObject() method, so it's important that objects be self
 consistent in this sense.
 

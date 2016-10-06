@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class JsonGraph {
     public String name;
-    public ArrayList<JsonNode> nodes = new ArrayList<JsonNode>();
+    public ArrayList<JsonNode> nodes = new ArrayList<>();
     public ArrayList<JsonEdgeSet> edgeSets = new ArrayList<>();
 
 }

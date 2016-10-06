@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -41,7 +42,7 @@ public class TimeSeriesWrapper2 extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public TimeSeriesWrapper2(DataWrapper data, TimeSeriesParams params) {
+    public TimeSeriesWrapper2(DataWrapper data, Parameters params) {
         DataModelList dataSets = data.getDataModelList();
         DataModelList timeSeriesDataSets = new DataModelList();
 
@@ -51,7 +52,7 @@ public class TimeSeriesWrapper2 extends DataWrapper {
             }
 
             DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.createLagDataWithIndex(dataSet, params.getNumOfTimeLags());
+            DataSet timeSeries = TimeSeriesUtils.createLagDataWithIndex(dataSet, params.getInt("numTimeLags", 1));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -77,8 +78,7 @@ public class TimeSeriesWrapper2 extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new TimeSeriesWrapper2(DataWrapper.serializableInstance(),
-                TimeSeriesParams.serializableInstance());
+        return new TimeSeriesWrapper2(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //=============================== Private Methods =========================//

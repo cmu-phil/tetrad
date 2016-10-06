@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AbstractAlgorithmRunner;
 
 import javax.swing.*;
@@ -63,79 +63,32 @@ final class SessionUtils {
         String[][] parentCombinations =
                 SessionUtils.possibleParentCombinations(modelClass);
 
-        Box b = Box.createVerticalBox();
+        StringBuilder b = new StringBuilder();
+        b.append("<html>");
+        b.append("The combinations of parent models you can use for ").append(modelConfig.getName()).append(" are:");
 
-        if (onlyModel) {
-            Box b1 = Box.createHorizontalBox();
-            b1.add(new JLabel(
-                    "There is only one module you can build at this point."));
-            b1.add(Box.createHorizontalGlue());
-            b.add(b1);
-            b.add(Box.createVerticalStrut(14));
-        }
+        for (int i = 0; i < parentCombinations.length; i++) {
+            String[] parentCombination = parentCombinations[i];
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel(
-                "Permissible parents (or parent combinations) for \"" +
-                        modelConfig.getName() + "\" are:"));
-
-        b2.add(Box.createHorizontalStrut(20));
-        b2.add(Box.createHorizontalGlue());
-
-        b.add(b2);
-        b.add(Box.createVerticalStrut(10));
-
-        for (String[] parentCombination : parentCombinations) {
-            Box b3 = Box.createHorizontalBox();
-            b3.add(Box.createHorizontalStrut(20));
-            b3.add(new JLabel("\u2022 "));
+            b.append("\n  " + (i + 1) + ". ");
 
             if (parentCombination.length == 0) {
-                JLabel label = new JLabel("--No Inputs--");
-                label.setFont(new Font("Dialog", Font.ITALIC, 14));
-                b3.add(label);
+                b.append("No inputs");
             } else {
                 for (int j = 0; j < parentCombination.length; j++) {
-                    b3.add(new JLabel(parentCombination[j]));
+                    b.append(parentCombination[j]);
 
                     if (j < parentCombination.length - 1) {
-                        b3.add(new JLabel(" + "));
+                        b.append(" + ");
                     }
                 }
             }
-
-            b3.add(Box.createHorizontalStrut(20));
-            b3.add(Box.createHorizontalGlue());
-            b.add(b3);
         }
 
-        b.add(Box.createVerticalStrut(14));
-
-//        Box b5 = Box.createHorizontalBox();
-////        b5.add(new JLabel("For an explanation for \"" + descrip + ",\"" +
-////                " click here-->"));
-//        b5.add(Box.createHorizontalGlue());
-//        JButton button2 = new JButton("Launch Help for " + modelConfig.getNode());
-//
-//        button2.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                launchHelpForName(modelConfig.getHelpIdentifier(), modelConfig.getNode());
-//            }                              
-//        });
-//
-//        b5.add(button2);
-//        b.add(b5);
-
-        b.add(Box.createVerticalStrut(14));
-
-        JScrollPane scroll = new JScrollPane(b);
-        scroll.setBorder(null);
-
-        int messageType =
-                warning ? JOptionPane.WARNING_MESSAGE :
+        int messageType =  warning ? JOptionPane.INFORMATION_MESSAGE :
                         JOptionPane.INFORMATION_MESSAGE;
 
-        JOptionPane.showMessageDialog(centeringComp, scroll,
+        JOptionPane.showMessageDialog(centeringComp, b.toString(),
                 "Information on \"" + modelConfig.getName() + "\"", messageType);
     }
 
@@ -144,8 +97,8 @@ final class SessionUtils {
      * given model class. The item at [i][j] is the jth parent model description
      * of the ith parent model combination.
      */
-    public static String[][] possibleParentCombinations(Class modelClass) {
-        List<List<String>> parentCombinations = new LinkedList<List<String>>();
+    private static String[][] possibleParentCombinations(Class modelClass) {
+        List<List<String>> parentCombinations = new LinkedList<>();
 
         Constructor[] constructors = modelClass.getConstructors();
         boolean foundNull = false;
@@ -159,7 +112,7 @@ final class SessionUtils {
                 Class parameterType = (Class) j.next();
 
                 if (!(SessionModel.class.isAssignableFrom(parameterType) ||
-                        (Params.class.isAssignableFrom(parameterType)))) {
+                        (Parameters.class.isAssignableFrom(parameterType)))) {
                     continue PARENT_SET;
                 }
 
@@ -175,7 +128,7 @@ final class SessionUtils {
                 continue;
             }
 
-            List<String> combination = new LinkedList<String>();
+            List<String> combination = new LinkedList<>();
 
             for (Object parameterType1 : parameterTypes) {
                 Class parameterType = (Class) parameterType1;

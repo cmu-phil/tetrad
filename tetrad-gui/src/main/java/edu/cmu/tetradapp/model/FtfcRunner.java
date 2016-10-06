@@ -21,17 +21,18 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.ClusterUtils;
+import edu.cmu.tetrad.search.FindTwoFactorClusters;
+import edu.cmu.tetrad.search.MimUtils;
+import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.rmi.MarshalledObject;
@@ -58,21 +59,21 @@ public class FtfcRunner extends AbstractMimRunner
     //============================CONSTRUCTORS============================//
 
     public FtfcRunner(DataWrapper dataWrapper,
-                      FtfcParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                      Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
     public FtfcRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                      FtfcParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                      Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public FtfcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                      FtfcParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                      Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
 
@@ -80,8 +81,7 @@ public class FtfcRunner extends AbstractMimRunner
      * Generates a simple exemplar of this class to test serialization.
      */
     public static FtfcRunner serializableInstance() {
-        return new FtfcRunner(DataWrapper.serializableInstance(),
-                FtfcParams.serializableInstance());
+        return new FtfcRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -95,21 +95,21 @@ public class FtfcRunner extends AbstractMimRunner
 
         FindTwoFactorClusters ftfc;
         Object source = getData();
-        TestType tetradTestType = getParams().getTetradTestType();
+        TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
         if (tetradTestType == null || (!(tetradTestType == TestType.TETRAD_DELTA ||
                 tetradTestType == TestType.TETRAD_WISHART))) {
             tetradTestType = TestType.TETRAD_DELTA;
-            getParams().setTetradTestType(tetradTestType);
+            getParams().set("tetradTestType", tetradTestType);
         }
 
-        FindTwoFactorClusters.Algorithm algorithm = ((FtfcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
+        FindTwoFactorClusters.Algorithm algorithm = (FindTwoFactorClusters.Algorithm) getParams().get("ftfcAlgorithm", FindTwoFactorClusters.Algorithm.GAP);
 
         if (source instanceof DataSet) {
-            ftfc = new FindTwoFactorClusters((DataSet) source, algorithm, getParams().getAlpha());
+            ftfc = new FindTwoFactorClusters((DataSet) source, algorithm, getParams().getDouble("alpha", 0.001));
             ftfc.setVerbose(true);
             searchGraph = ftfc.search();
         } else if (source instanceof CovarianceMatrix) {
-            ftfc = new FindTwoFactorClusters((CovarianceMatrix) source, algorithm, getParams().getAlpha());
+            ftfc = new FindTwoFactorClusters((CovarianceMatrix) source, algorithm, getParams().getDouble("alpha", 0.001));
             ftfc.setVerbose(true);
             searchGraph = ftfc.search();
         } else {

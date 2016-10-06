@@ -1,63 +1,60 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.TimeLagGraph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradMatrix;
 
-import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * @author jdramsey
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
+    static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
-    private Graph graph;
-    private List<DataSet> dataSets;
+    private List<Graph> graphs = new ArrayList<>();
+    private List<DataSet> dataSets = new ArrayList<>();
     private IKnowledge knowledge;
 
     public TimeSeriesSemSimulation(RandomGraph randomGraph) {
+        if (randomGraph == null) throw new NullPointerException();
         this.randomGraph = randomGraph;
     }
 
     @Override
     public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
-        this.graph = randomGraph.createGraph(parameters);
-        this.graph = TimeSeriesUtils.GraphToLagGraph(graph);
+        Graph graph = randomGraph.createGraph(parameters);
+        graph = TimeSeriesUtils.GraphToLagGraph(graph);
+        topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
-//        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-//                parameters.getInt("numMeasures"),
-//                parameters.getInt("numLatents"),
-//                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-//                parameters.getInt("maxDegree"),
-//                parameters.getInt("maxIndegree"),
-//                parameters.getInt("maxOutdegree"),
-//                parameters.getInt("connected") == 1);
-
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-//            SemPm pm = new SemPm(graph);
-//            SemImInitializationParams params = new SemImInitializationParams();
-//            params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
-//            SemIm im = new SemIm(pm);
-//            dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
+            if (parameters.getBoolean("differentGraphs") && i > 0) {
+                graph = randomGraph.createGraph(parameters);
+                graph = TimeSeriesUtils.GraphToLagGraph(graph);
+                topToBottomLayout((TimeLagGraph) graph);
+            }
+
+            graphs.add(graph);
 
             LargeSemSimulator sim = new LargeSemSimulator(graph);
-            if(parameters.getDouble("coefHigh") > 0.80) {
+            if (parameters.getDouble("coefHigh") > 0.80) {
                 System.out.println("Coefficients have been set (perhaps by default) too " +
                         "high for stationary time series.");
                 System.out.println("Setting coefficient range to [0.20,0.60].");
@@ -68,7 +65,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             int tierSize = parameters.getInt("numMeasures") + parameters.getInt("numLatents"); //params.getNumVars();
             int[] sub = new int[tierSize];
             int[] sub2 = new int[tierSize];
-            for(int j = 0; j < tierSize; j++){
+            for (int j = 0; j < tierSize; j++) {
                 sub[j] = j;
                 sub2[j] = tierSize + j;
             }
@@ -83,15 +80,16 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
                 TetradMatrix A1 = Gamma0.inverse().times(Gamma1);
 
                 isStableTetradMatrix = TimeSeriesUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
-//                System.out.println("isStableTetradMatrix? : " + isStableTetradMatrix);
                 attempt++;
-            } while ((!isStableTetradMatrix) && attempt<=5);
-            if (!isStableTetradMatrix){
+            } while ((!isStableTetradMatrix) && attempt <= 5);
+            if (!isStableTetradMatrix) {
                 System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
-                System.out.println("Made " + (attempt-1) + " attempts to get stable matrix.");
+                System.out.println("Made " + (attempt - 1) + " attempts to get stable matrix.");
                 sim.setCoefRange(0.15, 0.3);
                 dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize"));//params.getSampleSize());
             } //else System.out.println("Coefficient matrix is stable.");
+
+            dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
     }
@@ -102,8 +100,8 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public Graph getTrueGraph() {
-        return graph;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
@@ -114,15 +112,14 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
+
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
+        }
+
         parameters.add("numRuns");
+        parameters.add("differentGraphs");
         parameters.add("sampleSize");
-        parameters.add("variance");
         return parameters;
     }
 
@@ -145,4 +142,41 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+    public static void topToBottomLayout(TimeLagGraph graph) {
+
+        int xStart = 65;
+        int yStart = 50;
+        int xSpace = 100;
+        int ySpace = 100;
+        List<Node> lag0Nodes = graph.getLag0Nodes();
+
+        Collections.sort(lag0Nodes, new Comparator<Node>() {
+            public int compare(Node o1, Node o2) {
+                return o1.getCenterX() - o2.getCenterX();
+            }
+        });
+
+        int x = xStart - xSpace;
+
+        for (Node node : lag0Nodes) {
+            x += xSpace;
+            int y = yStart - ySpace;
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
+
+            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
+                y += ySpace;
+                Node _node = graph.getNode(id.getName(), lag);
+
+                if (_node == null) {
+                    System.out.println("Couldn't find " + _node);
+                    continue;
+                }
+
+                _node.setCenterX(x);
+                _node.setCenterY(y);
+            }
+        }
+    }
+
 }

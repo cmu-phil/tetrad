@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.calculator.Transformation;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.HasCalculatorParams;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -42,7 +42,7 @@ import java.util.prefs.Preferences;
  *
  * @author Tyler Gibson
  */
-public class CalculatorAction extends AbstractAction {
+class CalculatorAction extends AbstractAction {
 
 
     /**
@@ -59,7 +59,7 @@ public class CalculatorAction extends AbstractAction {
     /**
      * Constructs the calculator action given the data wrapper to operate on.
      */
-    public CalculatorAction(DataWrapper wrapper) {
+    private CalculatorAction(DataWrapper wrapper) {
         super("Calculator ...");
         if(wrapper == null){
             throw new NullPointerException("DataWrapper was null.");
@@ -83,7 +83,7 @@ public class CalculatorAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         final CalculatorEditor editor = new CalculatorEditor();
 
-        Params params = wrapper.getParams();
+        Parameters params = wrapper.getParams();
 
         if (params instanceof HasCalculatorParams) {
             params = ((HasCalculatorParams)params).getCalculatorParams();
@@ -110,7 +110,7 @@ public class CalculatorAction extends AbstractAction {
                 }
 
                 if(editor.finalizeEdit()) {
-                    List<String> equations = new ArrayList<String>();
+                    List<String> equations = new ArrayList<>();
                     String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
                     String[] displayEquations = _displayEquations.split("///");
 

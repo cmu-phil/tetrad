@@ -44,6 +44,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import edu.cmu.tetrad.search.FgsOld;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -175,7 +177,7 @@ public class FgsDiscrete {
             }
 
             if (isSerializeJson) {
-                writeOutJson(graph,Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
+                writeOutJson(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
             }
 
         } catch (IOException exception) {
@@ -237,7 +239,7 @@ public class FgsDiscrete {
         score.setSamplePrior(samplePrior);
         score.setStructurePrior(structurePrior);
 
-        Fgs fgs = new Fgs(score);
+        FgsOld fgs = new FgsOld(score);
         fgs.setParallelism(numOfThreads);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
@@ -268,8 +270,8 @@ public class FgsDiscrete {
         fmt.format("Dataset:%n");
         fmt.format("file = %s%n", dataFile.getFileName());
         fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
-        fmt.format("cases read in = %s%n", dataSet.getNumColumns());
-        fmt.format("variables read in = %s%n", dataSet.getNumRows());
+        fmt.format("cases read in = %s%n", dataSet.getNumRows());
+        fmt.format("variables read in = %s%n", dataSet.getNumColumns());
         fmt.format("%n");
 
         if (excludedVariableFile != null || knowledgeFile != null) {

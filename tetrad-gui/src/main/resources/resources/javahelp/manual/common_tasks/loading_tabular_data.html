@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Loading Data</font></h2>
+    </td>
+  </tr>
+</table>
+
+<h3><br>
+Tabular Data</h3>
+<p>The basic file format for tabular data in Tetrad is a standard whitespace, tab-delimited, or comma-delimited listing of variables and data, where padding spaces are ignored. So, for instance (showing tabs as &quot;\t&quot;),</p>
+<blockquote>
+  <p>X1 \t X2 \t X3 \t X4 \t X5</p>
+</blockquote>
+<p>is interpreted as a list of five variables names, &quot;X1&quot;, &quot;X2&quot;, &quot;X3&quot;, &quot;X4&quot;, and &quot;X4&quot;; the spaces are ignored. If tabs or commas are used to delimit values, then missing values may be represented by consecutive tabs (or commas) with nothing but spaces in between. For example, </p>
+<blockquote>
+  <p>1.2\t\t1.4\t\t\t1.5</p>
+</blockquote>
+<p>or</p>
+<blockquote>
+  <p>1.2,,1.4,,, 1.5</p>
+</blockquote>
+<p>would be read as 1.2, followed by a missing value, followed by 1.4, followed by two missing values, followed by 1.5. If only spaces are used to delimit values, then missing values must be denoted using asterisks (&quot;*&quot;), as follows:</p>
+<blockquote>
+  <p>1.2 * 1.4 * * 1.5</p>
+</blockquote>
+<p>Asterisks may always be used to denote missing values--e.g.,</p>
+<blockquote>
+  <p>1.2\t * \t 1.4 \t * \t * \t 1.5</p>
+</blockquote>
+<p>but allowing them to be specified by consecutive tabs or commas makes it easier to read some data sets.</p>
+<p>When reading tabular data, Tetrad expects either rectangular continuous data sets or rectangular discrete data sets. Since data sets may in some cases be quite large, Tetrad does not try to guess as to which type of data set you are trying to load, unless you explicitly tell it which type it is by including &quot;/continuousdata&quot; or &quot;/discretedata&quot; at the top of the file, before the list of variable names.</p>
+<p>Reading continuous data from a file is fairly straightforward. Reading discrete data, by contrast, can be a bit tricky. The difficulty is getting the details of the discrete variables right. Tetrad currently assumes that all discrete variables are nominal, sidestepping the problem of distinguishing between nominal and ordinal variables. Also, most of the time the categories for a variable can simply be read off of the column of values itself. Tetrad assumes that if the values in a column are non-negative integers, the categories for the variable for that column should be &quot;0&quot;, &quot;1&quot;, ..., &quot;m&quot;, where &quot;m&quot; is the literal for the maximum integer in the column. So most of the time if you reading in integral data, Tetrad will get the categories for your variables correct for those variables as well. However, once in a while data needs to be read in whose variables don't satisfy these constraints. There are two basic problems:</p>
+<ol>
+  <li>The variable for a column might be integral even if it shouldn't be interpreted as having categories 0, 1, ..., m for maximal m in the column. Or, </li>
+  <li> The variable for a column might have categories that aren't attested anywhere in the column.</li>
+</ol>
+<p>To solve these problems, for discrete data, a header section is allows in which variables are defined.</p>
+<p><br>
+  <br>
+    <br>
+</p>
+<p>&nbsp;</p>
+<p>You can import any tab delimited data . The data file needs a one line header:<br>
+  <br>
+For data for continuous variables, which must be numeric the header line is:<br>
+/continuous <br>
+<br>
+For data for discrete variables, which can be alphanumeric, the header line is:<br>
+/discrete<br>
+<br>
+For a lower triangular covariance or correlation matrix, the header is:<br>
+/covariance<br>
+<br>
+You must also include a row with the names of the variables in the appropriate order for the data file or covariance matrix.<br>
+  <br>
+For example, if you write a EXCEL file:with the names of variables in the first row, and save it as a text file, for example:<br>
+  <br>
+/continuous<br>
+X1&nbsp;&nbsp;&nbsp; X2&nbsp;&nbsp;&nbsp; X3<br>
+4&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; 1<br>
+2&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp;&nbsp; 0.09<br>
+<br>
+and in the File menu above the Tetrad data sheet click ":Load." Any previous data is erased and you see:<br>
+  <br>
+  <br>
+  <img
+ src="../images/Uimportcopy.jpg" alt="" width="265" height="144" style="width: 265px; height: 144px;"><br>
+  <br>
+</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>Note that the variable names occur in the correct place at the top of each column. <span style="font-weight: bold;">It is essential that the first row of the data file you wish to import</span> <span style="font-weight: bold;">contain the variable names, tab delimited. Also, do not include empty spaces between rows. <br>
+            <br>
+            </span>A data file does not require that any other boxes have flowgraph edges directed into it. A standalone Data box can be used to import an external data file. <br>
+            <br>
+      A data file can be saved by opening the "File" tab and clicking "Save." It can be reloaded just as can any imported file.<br>
+      <br>
+      Inside a Tetrad data sheet you can use the mouse to select individual cells, rows or columns. (To select more than one column or row, hold down the shift key). Then, by opening the Edit tab, you can copy, delete or insert cells, rows and columns. For example, you can select the X2 column in the picture above, copy it, select a new empty column, and paste a copy of the selected column in the new column.<br>
+            <br>
+      The Manip tab in the Tetrad data sheet permits simple manipulations of the data. Other data manipulations use the Manipulate Data box.<br>
+            <br>
+      1. Continuous data can be projected to a set of discrete values. For example if you select all of the colunms in a data sheet<br>
+    </td>
+  </tr>
+</table>
+<p></p>
+</body>
+</html>

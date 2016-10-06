@@ -50,10 +50,18 @@ public class TestDagInPatternIterator {
         }
 
         RandomUtil.getInstance().setSeed(342233L);
-        Dag dag = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
-                3, 3, false, true));
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
+                3, 3, false, true);
+        Graph p = new EdgeListGraphSingleConnections(graph);
 
-        Graph pattern = SearchGraphUtils.patternFromDag(dag);
+        Dag dag = new Dag(graph);
+
+
+
+        Graph pattern = SearchGraphUtils.patternFromDag(graph);
+
+        System.out.println(pattern);
+
 
         DagInPatternIterator iterator = new DagInPatternIterator(pattern);
         int count = 0;
@@ -162,7 +170,7 @@ public class TestDagInPatternIterator {
     public void test5() {
         RandomUtil.getInstance().setSeed(34828384L);
 
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));

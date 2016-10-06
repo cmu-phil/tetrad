@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Handling Missing Data </font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>Missing data is represented in both the tabular and covariance data editors by an asterisk (&quot;*&quot;). There are three ways to create missing data values in a data set:</p>
+<ul>
+  <li>In the Data Editor, replace the relevant entries with asterisks, by hand.</li>
+  <li>When loading data, load data that contains missing values.</li>
+  <li>From the Tools menu in the Data Editor, select &quot;Inject Missing Values Randomly.&quot;</li>
+</ul>
+<p>The first way explicitly declares that a particular datum is missing. The second way  reflects missing data as represented in a data file. The third way automatically adds missing data at random in a data file, usually as a test of how an algorithm performs under conditions of missing data.</p>
+<p>Usually it is a good idea to remove or impute missing data before handing it over to an algorithm. With tabular data, one has the option of removing cases containing missing values from a data file, by selecting Tools--&gt;Missing Values--&gt;Remove Cases with Missing Values. Selecting instead Tools--&gt;MissingValues--&gt;Replace Missing Values with Column Mode will replace missing values with the mode of the column. This will work for either continuous or discrete data. Similarly for Tools--&gt;MissingValues--&gt;Replace Missing Values with Column Mean, although this operates only on continuous columns. Also, Tools-&gt;Missing values--&gt;Replace Missing Values with Extra Category works on discrete variables only and addes an extra category to each indicating where the missing values were.</p>
+<p>Tools--&gt;Missing values--&gt;Replace Missing Values with Regression Predictions imputes missing values using a regression model, as follows. First, in a copy of the data set, missing values are imputed using means. Then for each missing value, the column of that missing value is regressed onto the remaining columns in the data set, and the predicted value for the case of the missing value using values from the data set copy replaces the missing value. </p>
+<p>If an algorithm is handed data with missing values and does not have a means to deal with it sensibly, a message is posted asking the use to remove or impute the missing data first. Some algorithm configurations do have sensible means to deal with missing data, in which case the data is used. For instance, any algorithm taking a Chi Square or G Square independence test as oracle can sensibly ignore rows of variables being compared that contain missing values. For fine control over handling of missing data, it is best, however, to impute missing data first.</p>
+<p>Algorithms that can handle missing data include:</p>
+<ul>
+  <li>Any search algorithm using Chi Square or G Square as an conditional independence oracle.</li>
+  <li>ML Bayes Updater</li>
+  <li>Dirichlet Bayes updater</li>
+  <li>EM Bayes Updater   </li>
+</ul>
+<p>Any other algorithm that takes data as an input will display an error message if the data contains missing values. </p>
+</body>
+</html>

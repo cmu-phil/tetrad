@@ -27,10 +27,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -39,16 +42,16 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -59,34 +62,85 @@ import java.util.Map;
  */
 public final class DagEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
-    private final GraphWorkbench workbench;
+    private GraphWorkbench workbench;
     private DagWrapper dagWrapper;
+    private Parameters parameters;
 
     public DagEditor(DagWrapper graphWrapper) {
-        this(graphWrapper.getDag());
-        this.dagWrapper = graphWrapper;
-    }
-
-    public DagEditor(Dag dag) {
-        setPreferredSize(new Dimension(550, 450));
         setLayout(new BorderLayout());
+        this.dagWrapper = graphWrapper;
+        this.parameters = graphWrapper.getParameters();
 
-        this.workbench = new GraphWorkbench(dag);
+        editGraph(graphWrapper.getGraph());
 
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
+        this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if ("graph".equals(evt.getPropertyName())) {
-                    if (getDagWrapper() != null) {
-                        getDagWrapper().setDag((Dag) evt.getNewValue());
+                String propertyName = evt.getPropertyName();
+
+                if ("graph".equals(propertyName)) {
+                    Graph _graph = (Graph) evt.getNewValue();
+
+                    if (getWorkbench() != null && getDagWrapper() != null) {
+                        getDagWrapper().setGraph(_graph);
                     }
                 }
             }
         });
 
-        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
-        JMenuBar menuBar = createGraphMenuBar();
+        int numModels = dagWrapper.getNumModels();
 
-        add(new JScrollPane(getWorkbench()), BorderLayout.CENTER);
+        System.out.println("numModels = " + numModels);
+
+        if (numModels > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
+
+            for (int i = 0; i < numModels; i++) {
+                comp.addItem(i + 1);
+            }
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dagWrapper.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    editGraph(dagWrapper.getGraph());
+                    validate();
+                }
+            });
+
+            comp.setMaximumSize(comp.getPreferredSize());
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("Using model"));
+            b.add(comp);
+            b.add(new JLabel("from "));
+            b.add(new JLabel(dagWrapper.getModelSourceName()));
+            b.add(Box.createHorizontalGlue());
+
+            add(b, BorderLayout.NORTH);
+        }
+
+        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("graph".equals(evt.getPropertyName())) {
+                    dagWrapper.setGraph((Graph) evt.getNewValue());
+                } else if ("modelChanged".equals(evt.getPropertyName())) {
+                    firePropertyChange("modelChanged", null, null);
+                }
+            }
+        });
+
+        validate();
+    }
+
+    private void editGraph(Graph graph) {
+        this.workbench = new GraphWorkbench(graph);
+        GraphToolbar toolbar = new GraphToolbar(getWorkbench());
+        JMenuBar menuBar = createGraphMenuBar();
+        JScrollPane scroll = new JScrollPane();
+        scroll.setPreferredSize(new Dimension(450, 450));
+        scroll.setViewportView(getWorkbench());
+
+        add(scroll, BorderLayout.CENTER);
         add(toolbar, BorderLayout.WEST);
         add(menuBar, BorderLayout.NORTH);
 
@@ -99,32 +153,9 @@ public final class DagEditor extends JPanel
         b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 
         add(b, BorderLayout.SOUTH);
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("dag".equals(propertyName)) {
-                    Dag _graph = (Dag) evt.getNewValue();
-
-                    if (getWorkbench() != null) {
-                        getDagWrapper().setDag(_graph);
-                    }
-                }
-            }
-        });
-
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-
-                if ("modelChanged".equals(propertyName)) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
-                            evt.getNewValue());
-                }
-            }
-        });
+        validate();
     }
+
 
     /**
      * Sets the name of this editor.
@@ -156,7 +187,7 @@ public final class DagEditor extends JPanel
         List<Component> selectedComponents =
                 getWorkbench().getSelectedComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Object comp : selectedComponents) {
             if (comp instanceof DisplayNode) {
@@ -274,23 +305,6 @@ public final class DagEditor extends JPanel
         return edit;
     }
 
-//    /**
-//     * Creates the "file" menu, which allows the user to load, save, and post
-//     * workbench models.
-//     *
-//     * @return this menu.
-//     */
-//    private JMenu createFileMenu() {
-//        JMenu file = new JMenu("File");
-//
-//        file.add(new LoadGraph(this, "Load Graph..."));
-//        file.add(new SaveGraph(this, "Save Graph..."));
-////        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-//        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-//
-//        return file;
-//    }
-
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
@@ -301,80 +315,46 @@ public final class DagEditor extends JPanel
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
 
-        JMenuItem randomDag = new JMenuItem("Random DAG");
-        graph.add(randomDag);
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
+        graph.add(randomGraph);
 
-        randomDag.addActionListener(new ActionListener() {
+        randomGraph.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), false);
+                final GraphParamsEditor editor = new GraphParamsEditor();
+                editor.setParams(parameters);
 
-                int ret = JOptionPane.showConfirmDialog(
-                        DagEditor.this, editor,
-                        "Edit Random DAG Parameters",
-                        JOptionPane.PLAIN_MESSAGE);
+                EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
+                        "Done", false, DagEditor.this);
 
-                if (ret == JOptionPane.OK_OPTION) {
-                    Graph dag = new EdgeListGraph();
-                    int numTrials = 0;
+                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                editorWindow.pack();
+                editorWindow.setVisible(true);
 
-                    if (editor.isRandomForward()) {
-                        dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, false, true);
-                        GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
-                        HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-                        GraphUtils.arrangeByLayout(dag, layout);
-                    } else if (editor.isUniformlySelected()) {
-                        if (getGraph().getNumNodes() == editor.getNumNodes()) {
-                            HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
 
-                            dag = GraphUtils.randomGraph(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
-                            GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
-                            GraphUtils.arrangeByLayout(dag, layout);
-                        } else {
-                            List<Node> nodes = new ArrayList<Node>();
+                editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                    public void internalFrameClosed(InternalFrameEvent e1) {
+                        EditorWindow window = (EditorWindow) e1.getSource();
 
-                            for (int i = 0; i < editor.getNumNodes(); i++) {
-                                nodes.add(new ContinuousVariable("X" + (i + 1)));
-                            }
-
-                            dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
-                                    editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
+                        if (window.isCanceled()) {
+                            return;
                         }
-                    } else if (editor.isChooseFixed()) {
-                        do {
-                            if (getGraph().getNumNodes() == editor.getNumNodes()) {
-                                HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
 
-                                dag = GraphUtils.randomGraph(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, editor.isConnected());
+                        RandomUtil.getInstance().setSeed(new Date().getTime());
+                        Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
 
+                        boolean addCycles = parameters.getBoolean("randomAddCycles", false);
 
-                                GraphUtils.arrangeByLayout(dag, layout);
-                            } else {
-                                List<Node> nodes = new ArrayList<Node>();
+                        if (addCycles) {
+                            int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
+                            int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
+                            graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges);
+                        }
 
-                                for (int i = 0; i < editor.getNumNodes(); i++) {
-                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
-                                }
-
-                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
-                                        30, 15, 15, editor.isConnected());
-                            }
-                        } while (dag.getNumEdges() < editor.getMaxEdges());
+                        getWorkbench().setGraph(graph1);
                     }
-
-                    getWorkbench().setGraph(dag);
-                    firePropertyChange("modelChanged", null, null);
-                }
+                });
             }
         });
-
-//        graph.addSeparator();
-//        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
-//        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
-
-//        graph.addSeparator();
-//        IndependenceFactsAction action = new IndependenceFactsAction(
-//                JOptionUtils.centeringComp(), this, "D Separation Facts...");
-//        graph.add(action);
 
         return graph;
     }

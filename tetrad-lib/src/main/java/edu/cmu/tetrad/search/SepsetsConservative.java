@@ -119,8 +119,8 @@ public class SepsetsConservative implements SepsetProducer {
     public List<List<List<Node>>> getSepsetsLists(Node x, Node y, Node z,
                                                   IndependenceTest test, int depth,
                                                   boolean verbose) {
-        List<List<Node>> sepsetsContainingY = new ArrayList<List<Node>>();
-        List<List<Node>> sepsetsNotContainingY = new ArrayList<List<Node>>();
+        List<List<Node>> sepsetsContainingY = new ArrayList<>();
+        List<List<Node>> sepsetsNotContainingY = new ArrayList<>();
 
         List<Node> _nodes = graph.getAdjacentNodes(x);
         _nodes.remove(z);
@@ -179,7 +179,7 @@ public class SepsetsConservative implements SepsetProducer {
             }
         }
 
-        List<List<List<Node>>> ret = new ArrayList<List<List<Node>>>();
+        List<List<List<Node>>> ret = new ArrayList<>();
         ret.add(sepsetsContainingY);
         ret.add(sepsetsNotContainingY);
 

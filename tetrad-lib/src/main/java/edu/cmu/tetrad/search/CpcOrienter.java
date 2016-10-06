@@ -147,7 +147,7 @@ public final class CpcOrienter implements Reorienter {
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     public Set<Triple> getColliderTriples() {
@@ -165,10 +165,10 @@ public final class CpcOrienter implements Reorienter {
         TetradLogger.getInstance().log("info", "Starting CPC algorithm.");
         TetradLogger.getInstance().log("info", "Independence test = " + independenceTest + ".");
         long startTime = System.currentTimeMillis();
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -279,9 +279,9 @@ public final class CpcOrienter implements Reorienter {
                                          IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
             List<Node> adjacentNodes = graph.getAdjacentNodes(y);
@@ -339,10 +339,10 @@ public final class CpcOrienter implements Reorienter {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<Node>(this.graph.getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(this.graph.getAdjacentNodes(x));
         __nodes.remove(z);
 
-        List<Node> _nodes = new LinkedList<Node>(__nodes);
+        List<Node> _nodes = new LinkedList<>(__nodes);
         TetradLogger.getInstance().log("adjacencies",
                 "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -369,10 +369,10 @@ public final class CpcOrienter implements Reorienter {
             }
         }
 
-        __nodes = new HashSet<Node>(this.graph.getAdjacentNodes(z));
+        __nodes = new HashSet<>(this.graph.getAdjacentNodes(z));
         __nodes.remove(x);
 
-        _nodes = new LinkedList<Node>(__nodes);
+        _nodes = new LinkedList<>(__nodes);
         TetradLogger.getInstance().log("adjacencies",
                 "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -427,7 +427,7 @@ public final class CpcOrienter implements Reorienter {
     }
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<>();
 
         for (int i : indices) {
             list.add(nodes.get(i));

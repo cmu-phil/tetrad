@@ -73,7 +73,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         System.out.println("# data sets = " + dataSets.size());
         this.dataSets = dataSets;
 
-        regressions = new ArrayList<Regression>();
+        regressions = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             DataSet _dataSet = new BoxDataSet(new DoubleDataBox(dataSet.getDoubleData().toArray()),
@@ -88,7 +88,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         this.variables = dataSets.get(0).getVariables();
 
-        List<DataSet> dataSets2 = new ArrayList<DataSet>();
+        List<DataSet> dataSets2 = new ArrayList<>();
 
         for (int i = 0; i < dataSets.size(); i++) {
             DataSet dataSet = ColtDataSet.makeContinuousData(variables, dataSets.get(i).getDoubleData());
@@ -122,8 +122,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         double[] residualsX = residuals(x, z);
         double[] residualsY = residuals(y, z);
 
-        List<Double> residualsXFiltered = new ArrayList<Double>();
-        List<Double> residualsYFiltered = new ArrayList<Double>();
+        List<Double> residualsXFiltered = new ArrayList<>();
+        List<Double> residualsYFiltered = new ArrayList<>();
 
         // This is the way of dealing with missing values; residuals are only correlated
         // for data sets in which both residuals exist.
@@ -183,11 +183,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
 
     private double[] residuals(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<Double>();
+        List<Double> _residuals = new ArrayList<>();
 
         Node target = dataSets.get(0).getVariable(node.getName());
 
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : parents) {
             Node variable = dataSets.get(0).getVariable(_regressor.getName());
@@ -298,7 +298,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -321,7 +321,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     @Override
     public ICovarianceMatrix getCov() {
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));

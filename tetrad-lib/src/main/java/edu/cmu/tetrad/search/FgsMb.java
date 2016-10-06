@@ -1564,7 +1564,7 @@ public final class FgsMb {
     }
 
     public Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
-        Map<Edge, Double> logBayesFactors = new HashMap<Edge, Double>();
+        Map<Edge, Double> logBayesFactors = new HashMap<>();
         double withEdge = scoreDag(dag);
 
         for (Edge edge : dag.getEdges()) {

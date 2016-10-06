@@ -21,13 +21,11 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -51,19 +49,19 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
 // ============================CONSTRUCTORS============================//
 
-    // public LingamPatternRunner(DataWrapper dataWrapper, PcSearchParams
+    // public LingamPatternRunner(DataWrapper dataWrapper, Parameters
     // params) {
     // super(dataWrapper, params);
     // }
 
     public LofsRunner(GraphWrapper graphWrapper,
-                      DataWrapper dataWrapper, PcSearchParams params) {
+                      DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = graphWrapper.getGraph();
     }
 
     public LofsRunner(GraphWrapper graphWrapper,
-                      DataWrapper dataWrapper, PcSearchParams params,
+                      DataWrapper dataWrapper, Parameters params,
                       KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = graphWrapper.getGraph();
@@ -72,7 +70,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LofsRunner(GraphSource graphWrapper, PcSearchParams params,
+    public LofsRunner(GraphSource graphWrapper, Parameters params,
                       KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
@@ -80,109 +78,109 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LofsRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public LofsRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcStableRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcStableRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FasRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FasRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, GraphWrapper graph) {
+                      Parameters params, GraphWrapper graph) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
         this.trueGraph = graph.getGraph();
     }
 
     public LofsRunner(CcdRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CcdRunner2 wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                      PcSearchParams params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                      GraphWrapper graphWrapper, PcSearchParams params) {
+                      GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
         this.trueGraph = graphWrapper.getGraph();
@@ -203,8 +201,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance(), KnowledgeBoxModel
-                .serializableInstance());
+                new Parameters(), KnowledgeBoxModel.serializableInstance());
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -236,8 +233,8 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -251,13 +248,13 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph lingamPatternEdgeVote(DataModelList dataSets, Graph pattern) {
-        List<Graph> lingamPatternGraphs = new ArrayList<Graph>();
+        List<Graph> lingamPatternGraphs = new ArrayList<>();
 
         // Images plus lingam orientation on multiple subjects.
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
             LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-            lingamPattern.setAlpha(getParams().getIndTestParams().getAlpha());
+            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
             Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
@@ -295,24 +292,24 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph applyLofs(DataModelList dataSets, Graph pattern) {
-        final PcSearchParams params = (PcSearchParams) getParams();
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        final Parameters params = getParams();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataModel dataModel : dataSets) {
             _dataSets.add((DataSet) dataModel);
         }
 
         Lofs2 lofs = new Lofs2(pattern, _dataSets);
-        lofs.setAlpha(getParams().getIndTestParams().getAlpha());
-        lofs.setRule(params.getRule());
-        lofs.setOrientStrongerDirection(params.isOrientStrongerDirection());
-        lofs.setEdgeCorrected(params.isMeanCenterResiduals());
-        lofs.setR2Orient2Cycles(params.isR2Orient2Cycles());
-        lofs.setScore(params.getScore());
-        lofs.setEpsilon(params.getEpsilon());
-        lofs.setZeta(params.getZeta());
-        lofs.setSelfLoopStrength(params.getSelfLoopStrength());
-        lofs.setKnowledge(params.getKnowledge());
+        lofs.setAlpha(getParams().getDouble("alpha", 0.001));
+        lofs.setRule((Lofs2.Rule) params.get("rule", Lofs2.Rule.R3));
+        lofs.setOrientStrongerDirection(params.getBoolean("orientStrongerDirection", true));
+        lofs.setEdgeCorrected(params.getBoolean("meanCenterResiduals", false));
+        lofs.setR2Orient2Cycles(params.getBoolean("r2Orient2Cycles", false));
+        lofs.setScore((Lofs.Score) params.get("score", Lofs.Score.andersonDarling));
+        lofs.setEpsilon(params.getDouble("epsilon", .1));
+        lofs.setZeta(params.getDouble("zeta", 1));
+        lofs.setSelfLoopStrength(params.getDouble("selfLoopStrength", 0.0));
+        lofs.setKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
 
         return lofs.orient();
     }
@@ -325,7 +322,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         return names;
@@ -335,7 +332,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
@@ -348,7 +345,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -369,7 +366,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }
@@ -386,7 +383,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 

@@ -1,0 +1,8 @@
+
+Update graph:
+
+Gene1	<-- 	Gene1:1
+Gene2	<-- 	Gene1:1	Gene2:1	Gene4:1
+Gene3	<-- 	Gene3:1
+Gene4	<-- 	Gene3:1	Gene4:1	Gene5:1
+Gene5	<-- 	Gene1:1	Gene5:1

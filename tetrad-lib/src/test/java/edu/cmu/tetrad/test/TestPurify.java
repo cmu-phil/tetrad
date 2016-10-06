@@ -120,9 +120,9 @@ public class TestPurify {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        List<List<Node>> partition = new ArrayList<List<Node>>();
+        List<List<Node>> partition = new ArrayList<>();
 
-        List<Node> cluster1 = new ArrayList<Node>();
+        List<Node> cluster1 = new ArrayList<>();
         cluster1.add(x1);
         cluster1.add(x2);
         cluster1.add(x3);
@@ -130,14 +130,14 @@ public class TestPurify {
         cluster1.add(x4b);
         cluster1.add(x5);
 
-        List<Node> cluster2 = new ArrayList<Node>();
+        List<Node> cluster2 = new ArrayList<>();
         cluster2.add(x5);
         cluster2.add(x6);
         cluster2.add(x7);
         cluster2.add(x8);
         cluster2.add(x8b);
 
-        List<Node> cluster3 = new ArrayList<Node>();
+        List<Node> cluster3 = new ArrayList<>();
         cluster3.add(x9);
         cluster3.add(x10);
         cluster3.add(x11);
@@ -225,16 +225,16 @@ public class TestPurify {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(3000, false);
 
-        List<List<Node>> partition = new ArrayList<List<Node>>();
+        List<List<Node>> partition = new ArrayList<>();
 
-        List<Node> cluster1 = new ArrayList<Node>();
+        List<Node> cluster1 = new ArrayList<>();
         cluster1.add(x1);
         cluster1.add(x2);
         cluster1.add(x3);
         cluster1.add(x4);
         cluster1.add(x5);
 
-        List<Node> cluster2 = new ArrayList<Node>();
+        List<Node> cluster2 = new ArrayList<>();
         cluster2.add(x7);
         cluster2.add(x8);
         cluster2.add(x9);
@@ -266,7 +266,7 @@ public class TestPurify {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) latents.add(node);
@@ -274,7 +274,7 @@ public class TestPurify {
 
         Graph structuralGraph = graph.subgraph(latents);
 
-        List<List<Node>> clustering = new ArrayList<List<Node>>();
+        List<List<Node>> clustering = new ArrayList<>();
 
         for (Node node : latents) {
             List<Node> adj = graph.getAdjacentNodes(node);
@@ -288,7 +288,7 @@ public class TestPurify {
         IPurify purify = new PurifyTetradBased2(test);
 
         List<List<Node>> purifiedClustering = purify.purify(clustering);
-        List<String> latentsNames = new ArrayList<String>();
+        List<String> latentsNames = new ArrayList<>();
 
         for (int i = 0; i < latents.size(); i++) {
             latentsNames.add(latents.get(i).getName());
@@ -298,7 +298,7 @@ public class TestPurify {
         mimbuild.setAlpha(0.0001);
         Graph _graph = mimbuild.search(purifiedClustering, latentsNames, new CovarianceMatrix(data));
 
-        List<Node> _latents = new ArrayList<Node>();
+        List<Node> _latents = new ArrayList<>();
 
         for (Node node : _graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) _latents.add(node);

@@ -16,9 +16,10 @@ import java.util.*;
 public class WGfci implements GraphSearch {
 
     private List<Node> searchVariables;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
+    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private GFci gfci;
-    private double penaltyDiscount;
+    private double alpha;
+    private IndependenceTest test;
     private SemBicScore score;
 
     public WGfci(DataSet data) {
@@ -38,9 +39,10 @@ public class WGfci implements GraphSearch {
 
         System.out.println("Cov matrix made.");
 
-        SemBicScore score = new SemBicScore(covariances);
-        this.score = score;
-        this.gfci = new GFci(score);
+        test = new IndTestFisherZ(covariances, 0.001);
+        this.score = new SemBicScore(covariances);
+        score.setPenaltyDiscount(4);
+        this.gfci = new GFci(test, score);
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -48,7 +50,7 @@ public class WGfci implements GraphSearch {
             return Collections.singletonList(node);
         }
 
-        List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
 
         List<Node> variables = new ArrayList<>();
 
@@ -74,7 +76,7 @@ public class WGfci implements GraphSearch {
     }
 
     public Graph search() {
-        score.setPenaltyDiscount(penaltyDiscount);
+        test.setAlpha(alpha);
         Graph g = gfci.search();
 
         Graph out = new EdgeListGraph(searchVariables);
@@ -119,7 +121,7 @@ public class WGfci implements GraphSearch {
         return 0;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 }

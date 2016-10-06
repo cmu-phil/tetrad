@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Loading Data</font></h2>
+    </td>
+  </tr>
+</table>
+
+<p><br> 
+  <br>
+To load data in Tetrad, first place a Data Box on the main workspace, </p>
+<p><img src="../images/data_standatalone_highlight.gif" width="68" height="66"></p>
+<p>double click it, select &quot;Data Box,&quot; and then in the Data Editor that appears, select &quot;Load Data...&quot; from the File menu.</p>
+<p><img src="../images/loading_data1.gif" width="250" height="167"></p>
+<p>In the file dialog that appears, select the file you want to load, click &quot;Open.&quot; The file will be shown in the next dialog.</p>
+<p><img src="../images/loading_data2.gif" width="675" height="501"></p>
+<p>If it's not already selected for you, select the type of file you are trying to load (&quot;Data Type&quot;). A prototype for that type of file will be shown on the left; your file will be shown on the right. If it looks correct, click &quot;Import Data.&quot; You data will be loaded into the Data Editor, and if you click &quot;Save&quot; will be saved as part of your session. </p>
+<p><img src="../images/loading_data3.gif" width="618" height="490"> <br>
+  <br> 
+  This general procedure will work for any type of data Tetrad uses, so long as the file format of the data is correct. These file formats differ, depending on the type of data (continuous data, discrete data, covariance/correlation matrix). Here are links to explanations for the formats for each of these:</p>
+<ol>
+  <li>To see how to format a continuous or discrete tabular data file, see <a href="loading_tabular_data.html">Loading Continuous Data.</a></li>
+  <li>To see how to format a file containing covariance or correlation matrix data, see <a href="loading_covariance_matrices.html">Loading Covariance Matrices</a>.</li>
+</ol>
+<p>Currently, there is no reason to load time series data into Tetrad, since there are no search or estimation procedures that operate only on this type of data. There is a specialized simulator for Boolean Glass data, which produces time series data. This data can be saved and used in other programs. </p>
+<p>&nbsp;</p>
+<p>You can import any tab delimited data . The data file needs a one line header:<br>
+  <br>
+For data for continuous variables, which must be numeric the header line is:<br>
+/continuous <br>
+<br>
+For data for discrete variables, which can be alphanumeric, the header line is:<br>
+/discrete<br>
+<br>
+For a lower triangular covariance or correlation matrix, the header is:<br>
+/covariance<br>
+<br>
+You must also include a row with the names of the variables in the appropriate order for the data file or covariance matrix.<br>
+  <br>
+For example, if you write a EXCEL file:with the names of variables in the first row, and save it as a text file, for example:<br>
+  <br>
+/continuous<br>
+X1&nbsp;&nbsp;&nbsp; X2&nbsp;&nbsp;&nbsp; X3<br>
+4&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; 1<br>
+2&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp;&nbsp; 0.09<br>
+<br>
+and in the File menu above the Tetrad data sheet click ":Load." Any previous data is erased and you see:<br>
+  <br>
+  <br>
+  <img
+ src="../images/Uimportcopy.jpg" alt="" width="265" height="144" style="width: 265px; height: 144px;"><br>
+  <br>
+</p>
+<table width="100%" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>Note that the variable names occur in the correct place at the top of each column. <span style="font-weight: bold;">It is essential that the first row of the data file you wish to import</span> <span style="font-weight: bold;">contain the variable names, tab delimited. Also, do not include empty spaces between rows. <br>
+            <br>
+            </span>A data file does not require that any other boxes have flowgraph edges directed into it. A standalone Data box can be used to import an external data file. <br>
+            <br>
+      A data file can be saved by opening the "File" tab and clicking "Save." It can be reloaded just as can any imported file.<br>
+      <br>
+      Inside a Tetrad data sheet you can use the mouse to select individual cells, rows or columns. (To select more than one column or row, hold down the shift key). Then, by opening the Edit tab, you can copy, delete or insert cells, rows and columns. For example, you can select the X2 column in the picture above, copy it, select a new empty column, and paste a copy of the selected column in the new column.<br>
+            <br>
+      The Manip tab in the Tetrad data sheet permits simple manipulations of the data. Other data manipulations use the Manipulate Data box.<br>
+            <br>
+      1. Continuous data can be projected to a set of discrete values. For example if you select all of the colunms in a data sheet<br>
+    </td>
+  </tr>
+</table>
+<p></p>
+</body>
+</html>

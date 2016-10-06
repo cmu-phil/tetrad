@@ -27,7 +27,7 @@ package edu.cmu.tetradapp.model;
  * @author Joseph Ramsey
  * @deprecated
  */
-public class TFciRunner {
+class TFciRunner {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS================================//

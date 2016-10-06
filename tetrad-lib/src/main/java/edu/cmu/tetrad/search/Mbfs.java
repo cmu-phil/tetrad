@@ -200,10 +200,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
     public Graph search(Node target) {
         long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
         if (target == null) {
             throw new IllegalArgumentException(
@@ -232,7 +232,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         // remove it by conditioning on nodes adjacent to v2. Once an edge
         // is removed, it should not be re-added to the graph.
         // jdramsey 8/6/04
-        this.a = new HashSet<Node>();
+        this.a = new HashSet<>();
 
         // Step 1. Get associates for the target.
         logger.log("info", "BEGINNING step 1 (prune target).");
@@ -265,7 +265,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     continue;
                 }
 
-                List _a = new LinkedList<Node>(a);
+                List _a = new LinkedList<>(a);
                 _a.retainAll(graph.getAdjacentNodes(w));
                 if (_a.size() > 1) continue;
 
@@ -310,7 +310,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
 
-        List<Node> _visited = new LinkedList<Node>(getA());
+        List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(knowledge, graph, getTest(), getDepth(), _visited);
 
         MeekRules meekRules = new MeekRules();
@@ -360,10 +360,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
@@ -383,7 +383,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         // remove it by conditioning on nodes adjacent to v2. Once an edge
         // is removed, it should not be re-added to the graph.
         // jdramsey 8/6/04
-        this.a = new HashSet<Node>();
+        this.a = new HashSet<>();
         this.variables = test.getVariables();
 
         Node target = variables.get(0);
@@ -419,7 +419,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     /**
@@ -601,12 +601,12 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
         // Otherwise, try removing all other edges adjacent node node. Return
         // true if more edges could be removed at the next depth.
-        List<Node> a = new LinkedList<Node>(graph.getAdjacentNodes(node));
+        List<Node> a = new LinkedList<>(graph.getAdjacentNodes(node));
 
         NEXT_EDGE:
         for (Node y : a) {
             List<Node> adjNode =
-                    new LinkedList<Node>(graph.getAdjacentNodes(node));
+                    new LinkedList<>(graph.getAdjacentNodes(node));
             adjNode.remove(y);
             adjNode = possibleParents(node, adjNode);
 
@@ -722,9 +722,9 @@ public final class Mbfs implements MbSearch, GraphSearch {
                                          IndependenceTest test, int depth, List<Node> nodes) {
         logger.log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         if (nodes == null) {
             nodes = graph.getNodes();
@@ -780,10 +780,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<Node>(graph.getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(graph.getAdjacentNodes(x));
         __nodes.remove(z);
 
-        List<Node> _nodes = new LinkedList<Node>(__nodes);
+        List<Node> _nodes = new LinkedList<>(__nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -808,10 +808,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
             }
         }
 
-        __nodes = new HashSet<Node>(graph.getAdjacentNodes(z));
+        __nodes = new HashSet<>(graph.getAdjacentNodes(z));
         __nodes.remove(x);
 
-        _nodes = new LinkedList<Node>(__nodes);
+        _nodes = new LinkedList<>(__nodes);
 
         _depth = depth;
         if (_depth == -1) {
@@ -863,7 +863,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @return The revised list of nodes--i.e. the possible parents among adjx, according to knowledge.
      */
     private List<Node> possibleParents(Node node, List<Node> adjNode) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = node.getName();
 
         for (Node z : adjNode) {
@@ -888,7 +888,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<>();
 
         for (int i : indices) {
             list.add(nodes.get(i));

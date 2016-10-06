@@ -198,7 +198,7 @@ Cpc implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     /**
@@ -206,7 +206,7 @@ Cpc implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
-        return new HashSet<Triple>(colliderTriples);
+        return new HashSet<>(colliderTriples);
     }
 
     /**
@@ -214,7 +214,7 @@ Cpc implements GraphSearch {
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<Triple>(noncolliderTriples);
+        return new HashSet<>(noncolliderTriples);
     }
 
     /**
@@ -222,11 +222,11 @@ Cpc implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {
-        return new HashSet<Triple>(allTriples);
+        return new HashSet<>(allTriples);
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<Edge>();
+        Set<Edge> adjacencies = new HashSet<>();
         for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
@@ -238,7 +238,7 @@ Cpc implements GraphSearch {
         Set<Edge> nonAdjacencies = complete.getEdges();
         Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<Edge>(nonAdjacencies);
+        return new HashSet<>(nonAdjacencies);
     }
 
     /**
@@ -256,10 +256,10 @@ Cpc implements GraphSearch {
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.allTriples = new HashSet<Triple>();
-        this.ambiguousTriples = new HashSet<Triple>();
-        this.colliderTriples = new HashSet<Triple>();
-        this.noncolliderTriples = new HashSet<Triple>();
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariables());
 
@@ -314,7 +314,7 @@ Cpc implements GraphSearch {
         // Remove ambiguities whose status have been determined.
         Set<Triple> ambiguities = graph.getAmbiguousTriples();
 
-        for (Triple triple : new HashSet<Triple>(ambiguities)) {
+        for (Triple triple : new HashSet<>(ambiguities)) {
             final Node x = triple.getX();
             final Node y = triple.getY();
             final Node z = triple.getZ();
@@ -396,9 +396,9 @@ Cpc implements GraphSearch {
     private void orientUnshieldedTriples(IKnowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node y : nodes) {
@@ -509,7 +509,7 @@ Cpc implements GraphSearch {
     private List<List<Node>> getSepsets(Node i, Node k, Graph g) {
         List<Node> adji = g.getAdjacentNodes(i);
         List<Node> adjk = g.getAdjacentNodes(k);
-        List<List<Node>> sepsets = new ArrayList<List<Node>>();
+        List<List<Node>> sepsets = new ArrayList<>();
 
         for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {

@@ -37,8 +37,8 @@ import java.util.List;
  */
 public final class RegressionInterpolator implements DataFilter {
     public DataSet filter(DataSet dataSet) {
-        DataSet d1 = new ColtDataSet((ColtDataSet) dataSet);
-        DataSet d2 = new ColtDataSet((ColtDataSet) dataSet);
+        DataSet d1 = dataSet.copy();
+        DataSet d2 = dataSet.copy();
         d2 = new MeanInterpolator().filter(d2);
 
         // Copy out columns and names from mean-interpolated d2 to feed to
@@ -70,7 +70,7 @@ public final class RegressionInterpolator implements DataFilter {
 //            double[][] regressors = new double[numVars - 1][numCases];
             String[] regressorNames = new String[numVars - 1];
 
-            List<Node> _regressors = new ArrayList<Node>();
+            List<Node> _regressors = new ArrayList<>();
 
             int k = -1;
 

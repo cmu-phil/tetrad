@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 
@@ -35,12 +36,12 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
      * arguments of the same type. There is in principle no way to decide which
      * argument should be passed in which position.
      */
-    public Type5(Type1 model1, Type1 model2) {
+    public Type5(Type1 model1, Type1 model2, Parameters parameters) {
     }
 
     public static Type5 serializableInstance() {
         return new Type5(Type1.serializableInstance(),
-                Type1.serializableInstance());
+                Type1.serializableInstance(), new Parameters());
     }
 
     public boolean equals(Object o) {

@@ -54,14 +54,9 @@ public class BayesEstimatorEditor extends JPanel {
     private BayesEstimatorEditorWizard wizard;
 
     /**
-     * Formats numbers.
-     */
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    private BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
+    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
@@ -92,6 +87,10 @@ public class BayesEstimatorEditor extends JPanel {
         buf.append("\nP-value = ").append(properties.getLikelihoodRatioP(graph));
 //        buf.append("\nP-value = ").append(properties.getVuongP());
         buf.append("\nDf = ").append(properties.getDof());
+        /*
+      Formats numbers.
+     */
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ")
                 .append(nf.format(properties.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(properties.getBic()));

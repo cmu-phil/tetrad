@@ -56,7 +56,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -110,7 +110,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc pc = new Pc(test);
-        pc.setVerbose(true);
+        pc.setVerbose(false);
         pc.setDepth(depth);
 //        pcStable.setOut(out);
 
@@ -228,7 +228,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc pcStable = new Pc(test);
-//        pcStable.setVerbose(true);
+//        pcStable.setVerbose(false);
         pcStable.setDepth(depth);
 //        pcStable.setOut(out);
 
@@ -272,7 +272,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -326,7 +326,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Cpc cpc = new Cpc(test);
-        cpc.setVerbose(true);
+        cpc.setVerbose(false);
         cpc.setDepth(depth);
 //        pcStable.setOut(out);
 
@@ -407,7 +407,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         CpcStable cpcStable = new CpcStable(test);
-        cpcStable.setVerbose(true);
+        cpcStable.setVerbose(false);
         cpcStable.setDepth(depth);
         cpcStable.setOut(out);
 
@@ -446,7 +446,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -498,7 +498,7 @@ public class PerformanceTests {
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
 
         Fci fci = new Fci(independenceTest);
-        fci.setVerbose(true);
+        fci.setVerbose(false);
         fci.setDepth(depth);
         fci.setMaxPathLength(2);
 //        fci.setTrueDag(truePag);
@@ -539,7 +539,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -585,15 +585,14 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
-//        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+        IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
 //        GFci fci = new GFci(independenceTest);
-////
+
         SemBicScore score = new SemBicScore(cov);
-        score.setPenaltyDiscount(4);
-        GFci fci = new GFci(score);
+        score.setPenaltyDiscount(penaltyDiscount);
+        GFci fci = new GFci(independenceTest, score);
 
         fci.setVerbose(false);
-        fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
         fci.setMaxIndegree(depth);
         fci.setFaithfulnessAssumed(false);
@@ -639,7 +638,7 @@ public class PerformanceTests {
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
         List<Double> degrees = new ArrayList<>();
-        List<Long> elapsedTimes = new ArrayList<Long>();
+        List<Long> elapsedTimes = new ArrayList<>();
 
         if (continuous) {
             init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
@@ -700,7 +699,7 @@ public class PerformanceTests {
 
             if (continuous) {
                 LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
-                simulator.setVerbose(true);
+                simulator.setVerbose(false);
                 simulator.setOut(out);
 
                 DataSet data = simulator.simulateDataAcyclic(numCases);
@@ -732,8 +731,8 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs2 fgs = new Fgs2(score);
-//                fgs.setVerbose(true);
+                Fgs fgs = new Fgs(score);
+//                fgs.setVerbose(false);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
@@ -775,8 +774,8 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs2 fgs = new Fgs2(score);
-//                fgs.setVerbose(true);
+                Fgs fgs = new Fgs(score);
+//                fgs.setVerbose(false);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
@@ -895,7 +894,7 @@ public class PerformanceTests {
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
         List<Double> degrees = new ArrayList<>();
-        List<Long> elapsedTimes = new ArrayList<Long>();
+        List<Long> elapsedTimes = new ArrayList<>();
 
         System.out.println("Making dag");
 
@@ -943,7 +942,7 @@ public class PerformanceTests {
             vars = dag.getNodes();
 
             LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
-            simulator.setVerbose(true);
+            simulator.setVerbose(false);
             simulator.setOut(out);
 
             DataSet data = simulator.simulateDataAcyclic(numCases);
@@ -974,7 +973,7 @@ public class PerformanceTests {
             System.out.println("\nStarting FGS-MB");
 
             fgs = new FgsMb2(score);
-            fgs.setVerbose(true);
+            fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
 //            fgs.setHeuristicSpeedup(faithfulness);
@@ -1019,7 +1018,7 @@ public class PerformanceTests {
             long time4 = System.currentTimeMillis();
 
             fgs = new FgsMb2(score);
-            fgs.setVerbose(true);
+            fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
 //            fgs.setHeuristicSpeedup(faithfulness);
@@ -1179,9 +1178,9 @@ public class PerformanceTests {
         out.println();
 
         List<GraphUtils.GraphComparison> ffciCounts = new ArrayList<>();
-        List<double[]> ffciArrowStats = new ArrayList<double[]>();
-        List<double[]> ffciTailStats = new ArrayList<double[]>();
-        List<Long> ffciElapsedTimes = new ArrayList<Long>();
+        List<double[]> ffciArrowStats = new ArrayList<>();
+        List<double[]> ffciTailStats = new ArrayList<>();
+        List<Long> ffciElapsedTimes = new ArrayList<>();
 
         for (int run = 0; run < numRuns; run++) {
 
@@ -1189,7 +1188,7 @@ public class PerformanceTests {
 
             System.out.println("Making list of vars");
 
-            List<Node> vars = new ArrayList<Node>();
+            List<Node> vars = new ArrayList<>();
 
             for (int i = 0; i < numVars; i++) {
                 vars.add(new ContinuousVariable("X" + (i + 1)));
@@ -1228,6 +1227,8 @@ public class PerformanceTests {
 
             // Independence test.
             final IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+            final SemBicScore score = new SemBicScore(cov);
+            score.setPenaltyDiscount(penaltyDiscount);
 
             Graph estPag;
             long elapsed;
@@ -1238,10 +1239,9 @@ public class PerformanceTests {
             long ta1 = System.currentTimeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            GFci fci = new GFci(independenceTest);
+            GFci fci = new GFci(independenceTest, score);
 //            TFci fci = new TFci(independenceTest);
 //            fci.setVerbose(false);
-            fci.setPenaltyDiscount(penaltyDiscount);
             fci.setMaxIndegree(depth);
             fci.setMaxPathLength(maxPathLength);
 //            fci.setPossibleDsepSearchDone(possibleDsepDone);
@@ -1373,7 +1373,7 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(1429287454751L);
 //        RandomUtil.getInstance().setSeed(1429309942146L);
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -1546,7 +1546,7 @@ public class PerformanceTests {
 //
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
-//            GFci.setPenaltyDiscount(penaltyDiscount);
+//            GFci.setAlpha(penaltyDiscount);
 //            GFci.setMaxIndegree(depth);
 //            GFci.setMaxPathLength(maxPathLength);
 //            GFci.setPossibleDsepSearchDone(true);
@@ -1643,7 +1643,7 @@ public class PerformanceTests {
     private Graph makeDag(int numVars, double edgeFactor) {
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -2273,6 +2273,8 @@ public class PerformanceTests {
 //        }
 
         System.out.println("Finish");
+
+//        performanceTests.testFgsComparisonContinuous(1000, 2, 1000, 1);
     }
 }
 

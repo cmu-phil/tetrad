@@ -42,14 +42,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedExpressionParameterizer extends JComponent {
-    private Node errorNode;
-    private String expressionString;
+class GeneralizedExpressionParameterizer extends JComponent {
     private Node node;
-    private Set<String> otherVariables;
-    private JLabel referencedParametersLabel;
     private GeneralizedSemPm semPm;
-    private GeneralizedSemIm semIm;
 
     private Map<String, Double> substitutedValues;
     private JTextArea resultTextPane;
@@ -68,26 +63,26 @@ public class GeneralizedExpressionParameterizer extends JComponent {
         }
 
         this.semPm = semIm.getSemPm();
-        this.semIm = semIm;
+        GeneralizedSemIm semIm1 = semIm;
         this.node = node;
 
-        errorNode = this.semPm.getErrorNode(node);
-        expressionString = this.semPm.getNodeExpressionString(node);
+        Node errorNode = this.semPm.getErrorNode(node);
+        String expressionString1 = this.semPm.getNodeExpressionString(node);
 
-        this.otherVariables = new LinkedHashSet<String>();
+        Set<String> otherVariables = new LinkedHashSet<>();
 
         for (Node _node : this.semPm.getNodes()) {
             if (this.semPm.getParents(node).contains(_node)) {
                 continue;
             }
 
-            this.otherVariables.add(_node.getName());
+            otherVariables.add(_node.getName());
         }
 
-        ExpressionParser parser = new ExpressionParser(this.otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
 
         try {
-            parser.parseExpression(expressionString);
+            parser.parseExpression(expressionString1);
         } catch (ParseException e) {
             throw new RuntimeException("Cannot parser the stored expression.", e);
         }
@@ -97,7 +92,7 @@ public class GeneralizedExpressionParameterizer extends JComponent {
         String expressionString = semPm.getNodeExpressionString(node);
         final Set<String> referencedParameters = semPm.getReferencedParameters(node);
 
-        substitutedValues = new HashMap<String, Double>();
+        substitutedValues = new HashMap<>();
 
         for (String parameter : referencedParameters) {
             substitutedValues.put(parameter, semIm.getParameterValue(parameter));
@@ -132,7 +127,7 @@ public class GeneralizedExpressionParameterizer extends JComponent {
 
         if ("".equals(parameterString)) parameterString = "--NONE--";
 
-        referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
+        JLabel referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
         b2.add(referencedParametersLabel);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
@@ -200,13 +195,13 @@ public class GeneralizedExpressionParameterizer extends JComponent {
     }
 
     private String parameterString(ExpressionParser parser) {
-        Set<String> parameters = new LinkedHashSet<String>(parser.getParameters());
+        Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
         for (Node _node : semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
-        List<String> parametersList = new ArrayList<String>(parameters);
+        List<String> parametersList = new ArrayList<>(parameters);
         StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < parametersList.size(); i++) {

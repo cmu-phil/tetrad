@@ -23,56 +23,50 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
- *
  * @author Michael Freenor
  */
 public class EdgeWeightComparison implements SessionModel {
     static final long serialVersionUID = 23L;
 
     private String name;
-    private SemIm reference;
-    private SemIm target;
+    private final SemIm reference;
+    private final SemIm target;
 
-    public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target)
-    {
+    public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getEstimatedSemIm();
         this.target = target.getEstimatedSemIm();
     }
 
-    public EdgeWeightComparison(SemImWrapper reference, SemEstimatorWrapper target)
-    {
+    public EdgeWeightComparison(SemImWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getEstimatedSemIm();
     }
 
-    public EdgeWeightComparison(SemImWrapper reference, SemImWrapper target)
-    {
+    public EdgeWeightComparison(SemImWrapper reference, SemImWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getSemIm();
     }
 
-    public String getDisplayString()
-    {
+    public String getDisplayString() {
         String displayString = "";
 
         SemIm ref = reference;
         TetradMatrix referenceMatrix = ref.getEdgeCoef();
         TetradMatrix targetMatrix = target.getEdgeCoef();
 
-        if(targetMatrix.columns() != referenceMatrix.columns() || targetMatrix.rows() != referenceMatrix.rows())
+        if (targetMatrix.columns() != referenceMatrix.columns() || targetMatrix.rows() != referenceMatrix.rows())
             return "The SEM IM's you selected don't have the same number of variables!  No comparison is possible here.";
 
         double score = 0;
-        for(int i = 0; i < ref.getEdgeCoef().rows(); i++)
-        {
-            for(int j = 0; j < ref.getEdgeCoef().columns(); j++)
-            {
+        for (int i = 0; i < ref.getEdgeCoef().rows(); i++) {
+            for (int j = 0; j < ref.getEdgeCoef().columns(); j++) {
                 score += (targetMatrix.get(i, j) - referenceMatrix.get(i, j))
-                            * (targetMatrix.get(i, j) - referenceMatrix.get(i, j));    
+                        * (targetMatrix.get(i, j) - referenceMatrix.get(i, j));
             }
         }
         displayString += "Scheines Score: " + score + "\n\n";
@@ -80,13 +74,11 @@ public class EdgeWeightComparison implements SessionModel {
         return displayString;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
@@ -96,9 +88,8 @@ public class EdgeWeightComparison implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static EdgeWeightComparison serializableInstance() {
-        return new EdgeWeightComparison(SemImWrapper.serializableInstance(),
-                SemImWrapper.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 }
 

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.io.DataReader;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.FgsOld;
 import edu.cmu.tetrad.search.SemBicScore;
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
@@ -100,7 +101,6 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
         MAIN_OPTIONS.addOption(null, "json", false, "Create JSON output.");
 
-
         // output
         MAIN_OPTIONS.addOption("o", "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name of output files.");
@@ -141,12 +141,12 @@ public class FgsCli {
         parseArgs(args);
 
         System.out.println("================================================================================");
-        System.out.printf("FGS Discrete (%s)%n", DateTime.printNow());
+        System.out.printf("FGS (%s)%n", DateTime.printNow());
         System.out.println("================================================================================");
 
         String argInfo = createArgsInfo();
         System.out.println(argInfo);
-        LOGGER.info("=== Starting FGS Discrete: " + Args.toString(args, ' '));
+        LOGGER.info("=== Starting FGS: " + Args.toString(args, ' '));
         LOGGER.info(argInfo.trim().replaceAll("\n", ",").replaceAll(" = ", "="));
 
         Set<String> excludedVariables = (excludedVariableFile == null) ? Collections.EMPTY_SET : getExcludedVariables();
@@ -174,7 +174,7 @@ public class FgsCli {
             }
 
             if (isSerializeJson) {
-                writeOutJson(graph,Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
+                writeOutJson(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
             }
 
         } catch (IOException exception) {
@@ -238,7 +238,7 @@ public class FgsCli {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
 
-        Fgs fgs = new Fgs(score);
+        FgsOld fgs = new FgsOld(score);
         fgs.setOut(writer);
         fgs.setDepth(depth);
         fgs.setIgnoreLinearDependent(ignoreLinearDependence);
@@ -270,8 +270,8 @@ public class FgsCli {
         fmt.format("Dataset:%n");
         fmt.format("file = %s%n", dataFile.getFileName());
         fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
-        fmt.format("cases read in = %s%n", dataSet.getNumColumns());
-        fmt.format("variables read in = %s%n", dataSet.getNumRows());
+        fmt.format("cases read in = %s%n", dataSet.getNumRows());
+        fmt.format("variables read in = %s%n", dataSet.getNumColumns());
         fmt.format("%n");
 
         if (excludedVariableFile != null || knowledgeFile != null) {

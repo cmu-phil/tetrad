@@ -21,13 +21,13 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaSextadTest;
 import edu.cmu.tetrad.search.IntSextad;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.junit.Test;
@@ -76,7 +76,7 @@ public class TestDeltaSextadTest {
         IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
         IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
 
-        List<IntSextad> sextads = new ArrayList<IntSextad>();
+        List<IntSextad> sextads = new ArrayList<>();
 
         sextads.add(t1);
         sextads.add(t2);
@@ -162,10 +162,10 @@ public class TestDeltaSextadTest {
         int p = 6;
 
         Graph g = new EdgeListGraph();
-        List<List<Node>> varClusters = new ArrayList<List<Node>>();
-        List<List<Node>> latents = new ArrayList<List<Node>>();
+        List<List<Node>> varClusters = new ArrayList<>();
+        List<List<Node>> latents = new ArrayList<>();
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int y = 0; y < c; y++) {
             varClusters.add(new ArrayList<Node>());
@@ -183,7 +183,7 @@ public class TestDeltaSextadTest {
             }
         }
 
-        List<Node> l = new ArrayList<Node>();
+        List<Node> l = new ArrayList<>();
 
         int f = 0;
 
@@ -215,7 +215,7 @@ public class TestDeltaSextadTest {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        List<Integer> indices = new ArrayList<Integer>();
+        List<Integer> indices = new ArrayList<>();
         indices.add(0);
         indices.add(1);
         indices.add(2);
@@ -257,7 +257,7 @@ public class TestDeltaSextadTest {
         l1.setNodeType(NodeType.LATENT);
         l2.setNodeType(NodeType.LATENT);
 
-        List<Node> measures = new ArrayList<Node>();
+        List<Node> measures = new ArrayList<>();
         int numMeasures = 8;
 
         for (int i = 0; i < numMeasures; i++) {
@@ -275,7 +275,7 @@ public class TestDeltaSextadTest {
 
         SemPm pm = new SemPm(graph);
 
-        SemImInitializationParams params = new SemImInitializationParams();
+        Parameters params = new Parameters();
 //        params.setCoefRange(0.3, 0.8);
 
         return new SemIm(pm, params);

@@ -26,9 +26,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pcs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStable;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
@@ -48,10 +48,12 @@ public class ExampleCompareFromFiles {
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
-        parameters.put("alpha", 1e-4);
+        parameters.set("alpha", 1e-4);
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("avgDegree"));
+        statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -68,19 +70,21 @@ public class ExampleCompareFromFiles {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new Pcs(new FisherZ()));
+        algorithms.add(new PcStable(new FisherZ()));
         algorithms.add(new Cpcs(new FisherZ()));
 
-        new Comparison().compareAlgorithms("comparison/save1",
-                "comparison/Comparison.txt",
-                algorithms, statistics, parameters);
+        Comparison comparison = new Comparison();
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
+        comparison.setSortByUtility(true);
+        comparison.setShowUtilities(true);
+        comparison.setParallelized(true);
+
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 

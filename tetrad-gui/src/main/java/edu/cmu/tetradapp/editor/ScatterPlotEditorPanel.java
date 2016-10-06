@@ -36,23 +36,25 @@ import java.util.Vector;
  *
  * @author Michael Freenor
  */
-public class ScatterPlotEditorPanel extends JPanel {
+class ScatterPlotEditorPanel extends JPanel {
 
 
     /**
      * Combo box of all the variables.
      */
-    public JComboBox yVariableBox, xVariableBox, newCondBox;
+    private final JComboBox yVariableBox;
+    private final JComboBox xVariableBox;
+    public final JComboBox newCondBox;
 
     /**
      * The dataset being viewed.
      */
-    public DataSet dataSet;
+    public final DataSet dataSet;
 
-    public ScatterPlotOld scatterPlot;
+    private ScatterPlotOld scatterPlot;
 
     Vector boxes; //check boxes that activate the use of conditional variables
-    JCheckBox regressionBox; //check box that enables the drawing of the regression line
+    private final JCheckBox regressionBox; //check box that enables the drawing of the regression line
     Vector granularity; //text fields containing the resolution of our conditional variables
     Vector slideLabels; //displays information about the conditional variables used, such as the interval being used
     Vector scrollers;  //the actual thumb-scrollers used to adjust the conditional variables
@@ -107,7 +109,7 @@ public class ScatterPlotEditorPanel extends JPanel {
         this.add(buildEditArea(dataSet));
     }
 
-    public void changeScatterPlot(ScatterPlotOld scatterPlot) {
+    private void changeScatterPlot(ScatterPlotOld scatterPlot) {
         this.scatterPlot = scatterPlot;
         // fire event
         this.firePropertyChange("histogramChange", null, scatterPlot);
@@ -260,8 +262,8 @@ public class ScatterPlotEditorPanel extends JPanel {
 
 class SliderListener implements AdjustmentListener
 {
-    ScatterPlotEditorPanel sp;
-    int index;
+    private final ScatterPlotEditorPanel sp;
+    private final int index;
 
     public SliderListener(ScatterPlotEditorPanel sp, int index)
     {
@@ -281,8 +283,8 @@ class SliderListener implements AdjustmentListener
 
 class GranularityListener implements FocusListener, ActionListener
 {
-    ScatterPlotEditorPanel sp;
-    int index;
+    private final ScatterPlotEditorPanel sp;
+    private final int index;
 
     public GranularityListener(ScatterPlotEditorPanel sp, int index)
     {
@@ -312,7 +314,7 @@ class GranularityListener implements FocusListener, ActionListener
 
 class ScatterListener implements ActionListener
 {
-    ScatterPlotEditorPanel sp;
+    private final ScatterPlotEditorPanel sp;
 
     public ScatterListener(ScatterPlotEditorPanel sp)
     {
@@ -332,8 +334,8 @@ class ScatterListener implements ActionListener
  */
 class AddVariableListener implements ActionListener
 {
-    ScatterPlotEditorPanel sp;
-    Box main;
+    private final ScatterPlotEditorPanel sp;
+    private final Box main;
 
     public AddVariableListener(Box main, ScatterPlotEditorPanel sp)
     {
@@ -421,10 +423,10 @@ class AddVariableListener implements ActionListener
 
 class RemovalListener implements ActionListener
 {
-    JComponent container;
-    JComponent contained[];
-    int index;
-    ScatterPlotEditorPanel sp;
+    private final JComponent container;
+    private final JComponent[] contained;
+    private final int index;
+    private final ScatterPlotEditorPanel sp;
 
     public RemovalListener(ScatterPlotEditorPanel sp, JComponent container, JComponent[] contained, int index)
     {

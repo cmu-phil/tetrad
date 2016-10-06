@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class BayesEstimatorEditorWizard extends JPanel {
+final class BayesEstimatorEditorWizard extends JPanel {
     private BayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;
@@ -204,7 +204,7 @@ public final class BayesEstimatorEditorWizard extends JPanel {
         editingTable.grabFocus();
     }
 
-    public BayesIm getBayesIm() {
+    private BayesIm getBayesIm() {
         return bayesIm;
     }
 

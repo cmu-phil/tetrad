@@ -46,7 +46,7 @@ public final class TestCovarianceMatrix {
     public void testConstruction() {
         RandomUtil.getInstance().setSeed(4828384834L);
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < 5; i++) {
             ContinuousVariable var = new ContinuousVariable("X" + i);

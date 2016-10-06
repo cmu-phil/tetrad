@@ -48,13 +48,13 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class IndependenceFactsAction extends AbstractAction {
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     private Component centeringComp;
     private LinkedList<String> vars;
     private JTextField textField;
     private IndTestProducer indTestProducer;
-    private List<Result> results = new ArrayList<Result>();
+    private final List<Result> results = new ArrayList<>();
     private AbstractTableModel tableModel;
     private IndependenceTest independenceTest;
     private int sortDir;
@@ -78,7 +78,7 @@ public class IndependenceFactsAction extends AbstractAction {
 
         this.centeringComp = comp;
         this.indTestProducer = indTestProducer;
-        this.vars = new LinkedList<String>();
+        this.vars = new LinkedList<>();
         this.textField = new JTextField(40);
         this.textField.setEditable(false);
         this.textField.setFont(new Font("Serif", Font.BOLD, 14));
@@ -94,7 +94,7 @@ public class IndependenceFactsAction extends AbstractAction {
      */
     public void actionPerformed(ActionEvent e) {
         this.independenceTest = getIndTestProducer().getIndependenceTest();
-        final List<String> varNames = new ArrayList<String>();
+        final List<String> varNames = new ArrayList<>();
         varNames.add("VAR");
         varNames.addAll(getDataVars());
         varNames.add("?");
@@ -521,7 +521,7 @@ public class IndependenceFactsAction extends AbstractAction {
         }
 
         int resultIndex = -1;
-        Set<Set<String>> alreadySeen = new HashSet<Set<String>>();
+        Set<Set<String>> alreadySeen = new HashSet<>();
 
         int xIndex = dataVars.indexOf(vars.get(0));
         int yIndex = dataVars.indexOf(vars.get(1));
@@ -553,7 +553,7 @@ public class IndependenceFactsAction extends AbstractAction {
                     continue;
                 }
 
-                Set<String> seen = new HashSet<String>();
+                Set<String> seen = new HashSet<>();
                 seen.add(_x);
                 seen.add(_y);
 
@@ -568,7 +568,7 @@ public class IndependenceFactsAction extends AbstractAction {
                     continue;
                 }
 
-                List<String> unspecifiedVars = new ArrayList<String>(dataVars);
+                List<String> unspecifiedVars = new ArrayList<>(dataVars);
                 unspecifiedVars.remove(_x);
                 unspecifiedVars.remove(_y);
 
@@ -586,7 +586,7 @@ public class IndependenceFactsAction extends AbstractAction {
                     int[] choice2;
 
                     while ((choice2 = gen2.next()) != null) {
-                        List<Node> z = new ArrayList<Node>();
+                        List<Node> z = new ArrayList<>();
 
                         for (int i = 0; i < minQuestionMark; i++) {
                             String _z = getVars().get(i + 2);
@@ -653,12 +653,12 @@ public class IndependenceFactsAction extends AbstractAction {
             INDEPENDENT, DEPENDENT, UNDETERMINED
         }
 
-        private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        private int index;
-        private String fact;
-        private Type indep;
-        private double pValue;
+        private final int index;
+        private final String fact;
+        private final Type indep;
+        private final double pValue;
 
         public Result(int index, String fact, Type indep, double pValue) {
             this.index = index;

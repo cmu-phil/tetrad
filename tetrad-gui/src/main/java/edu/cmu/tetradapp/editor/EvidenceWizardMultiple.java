@@ -47,7 +47,7 @@ import java.util.List;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-public class EvidenceWizardMultiple extends JPanel {
+class EvidenceWizardMultiple extends JPanel {
     private UpdaterWrapper updaterWrapper;
     private GraphWorkbench workbench;
     private final EvidenceEditor evidenceEditor;
@@ -91,7 +91,7 @@ public class EvidenceWizardMultiple extends JPanel {
         add(b0);
         add(Box.createVerticalStrut(10));
         evidenceEditor = new EvidenceEditor(updaterWrapper.getBayesUpdater().getEvidence());
-        getUpdaterWrapper().getParams().setEvidence(evidenceEditor.getEvidence());
+        getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
         add(evidenceEditor);
         add(Box.createVerticalStrut(10));
 
@@ -115,7 +115,7 @@ public class EvidenceWizardMultiple extends JPanel {
                 BayesIm manipulatedIm = getUpdaterWrapper()
                         .getBayesUpdater().getManipulatedBayesIm();
 
-                List<Node> selectedNodes = new LinkedList<Node>();
+                List<Node> selectedNodes = new LinkedList<>();
 
                 for (DisplayNode selectedGraphNode : selectedGraphNodes) {
                     Node tetradNode = selectedGraphNode.getModelNode();

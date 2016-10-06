@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
-import edu.cmu.tetradapp.model.FtfcIndTestParams;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -38,19 +38,19 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  */
 class FtfcIndTestParamsEditor extends JComponent {
-    private FtfcIndTestParams FtfcParams;
+    private final Parameters FtfcParams;
 
-    public FtfcIndTestParamsEditor(FtfcIndTestParams paramsPureClusters) {
+    public FtfcIndTestParamsEditor(Parameters paramsPureClusters) {
         this.FtfcParams = paramsPureClusters;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -62,14 +62,14 @@ class FtfcIndTestParamsEditor extends JComponent {
         algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.SAG);
         algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.GAP);
 
-        FindTwoFactorClusters.Algorithm algorithmType = getParams().getAlgorithm();
+        FindTwoFactorClusters.Algorithm algorithmType = (FindTwoFactorClusters.Algorithm) getParams().get("ftfcAlgorithm", FindTwoFactorClusters.Algorithm.GAP);
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 FindTwoFactorClusters.Algorithm index = (FindTwoFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().setAlgorithm(index);
+                    getParams().set("ftfcAlgorithm", index);
                 }
             }
         });
@@ -91,7 +91,7 @@ class FtfcIndTestParamsEditor extends JComponent {
         add(Box.createHorizontalGlue());
     }
 
-    private FtfcIndTestParams getParams() {
+    private Parameters getParams() {
         return this.FtfcParams;
     }
 

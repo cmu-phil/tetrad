@@ -91,7 +91,7 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * The preset strings that will be used.
      */
-    private String[][] presetStrings = new String[][]{{"Low", "High"},
+    private final String[][] presetStrings = new String[][]{{"Low", "High"},
             {"Low", "Medium", "High"}, {"On", "Off"}, {"Yes", "No"}};
 
     /**
@@ -102,7 +102,7 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * ?
      */
-    private Map<Object, Integer> labels = new HashMap<Object, Integer>();
+    private final Map<Object, Integer> labels = new HashMap<>();
 
     /**
      * ?
@@ -425,7 +425,7 @@ final class BayesPmEditorWizard extends JPanel {
         return selectedItem;
     }
 
-    public boolean isEditingMeasuredVariablesAllowed() {
+    private boolean isEditingMeasuredVariablesAllowed() {
         return editingMeasuredVariablesAllowed;
     }
 
@@ -440,7 +440,7 @@ final class BayesPmEditorWizard extends JPanel {
         }
     }
 
-    public boolean isEditingLatentVariablesAllowed() {
+    private boolean isEditingLatentVariablesAllowed() {
         return editingLatentVariablesAllowed;
     }
 
@@ -462,7 +462,7 @@ final class BayesPmEditorWizard extends JPanel {
         private BayesPm bayesPm;
         private Node node;
         private StringTextField[] categoryFields;
-        private LinkedList focusTraveralOrder = new LinkedList();
+        private final LinkedList focusTraveralOrder = new LinkedList();
 
 
         public CategoryEditor(BayesPm bayesPm, Node node) {
@@ -672,7 +672,7 @@ final class BayesPmEditorWizard extends JPanel {
      * The actionPerformed method is still abstract.
      */
     abstract static class IndexedAction extends AbstractAction {
-        private int index;
+        private final int index;
 
         public IndexedAction(String name, int index) {
             super(name);

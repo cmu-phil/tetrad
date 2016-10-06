@@ -22,8 +22,10 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -40,14 +42,14 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public TsFciRunner2(DataWrapper dataWrapper, GFciSearchParams params) {
+    public TsFciRunner2(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TsFciRunner2(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     /**
@@ -55,32 +57,32 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public TsFciRunner2(DataWrapper dataWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner2(Graph graph, FciSearchParams params) {
+    private TsFciRunner2(Graph graph, Parameters params) {
         super(graph, params);
     }
 
 
-    public TsFciRunner2(GraphWrapper graphWrapper, GFciSearchParams params) {
+    public TsFciRunner2(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsFciRunner2(DagWrapper dagWrapper, GFciSearchParams params) {
+    public TsFciRunner2(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsFciRunner2(SemGraphWrapper dagWrapper, GFciSearchParams params) {
+    public TsFciRunner2(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsFciRunner2(IndependenceFactsModel model, GFciSearchParams params) {
+    public TsFciRunner2(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public TsFciRunner2(IndependenceFactsModel model, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -91,7 +93,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      */
     public static TsFciRunner2 serializableInstance() {
         return new TsFciRunner2(Dag.serializableInstance(),
-                FciSearchParams.serializableInstance());
+                new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -101,31 +103,29 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        SearchParams searchParams = getParams();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        Parameters searchParams = getParams();
 
-        GFciIndTestParams indTestParams = (GFciIndTestParams) searchParams.getIndTestParams();
+        Parameters params = searchParams;
 
         Graph graph;
 
-        if (getIndependenceTest() instanceof  IndTestDSep) {
-            final DagToPag dagToPag = new DagToPag(((IndTestDSep) getIndependenceTest()).getGraph());
-            dagToPag.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
+        IndependenceTest independenceTest = getIndependenceTest();
+        Score score = new ScoredIndTest(independenceTest);
+
+        if (independenceTest instanceof  IndTestDSep) {
+            final DagToPag dagToPag = new DagToPag(((IndTestDSep) independenceTest).getGraph());
+            dagToPag.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
             graph = dagToPag.convert();
         }
         else {
-            GFci fci = new GFci(getIndependenceTest());
+            GFci fci = new GFci(independenceTest, score);
             fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
-            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            //fci.setDepth(indTestParams.getDepth());
-            double penaltyDiscount = indTestParams.getPenaltyDiscount();
-
-            fci.setPenaltyDiscount(penaltyDiscount);
-            fci.setSamplePrior(indTestParams.getSamplePrior());
-            fci.setStructurePrior(indTestParams.getStructurePrior());
+            fci.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
+            fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
+            fci.setMaxIndegree(params.getInt("maxIndegree"));
             fci.setCompleteRuleSetUsed(false);
-            fci.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+            fci.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
             graph = fci.search();
         }
 
@@ -149,16 +149,16 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
-            testType = _params.getIndTestType();
+        if (getParams() instanceof Parameters) {
+            Parameters _params = params;
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
         else {
-            GFciSearchParams _params = (GFciSearchParams) params;
-            testType = _params.getIndTestType();
+            Parameters _params = params;
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);
@@ -172,7 +172,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
         names.add("Ambiguous Triples");
@@ -183,7 +183,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));

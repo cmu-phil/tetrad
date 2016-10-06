@@ -21,17 +21,18 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.ClusterUtils;
+import edu.cmu.tetrad.search.FindOneFactorClusters;
+import edu.cmu.tetrad.search.MimUtils;
+import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.rmi.MarshalledObject;
@@ -58,21 +59,21 @@ public class FofcRunner extends AbstractMimRunner
     //============================CONSTRUCTORS============================//
 
     public FofcRunner(DataWrapper dataWrapper,
-                                   FofcParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
     public FofcRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   FofcParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public FofcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   FofcParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
 
@@ -81,7 +82,7 @@ public class FofcRunner extends AbstractMimRunner
      */
     public static FofcRunner serializableInstance() {
         return new FofcRunner(DataWrapper.serializableInstance(),
-                FofcParams.serializableInstance());
+                new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -95,20 +96,21 @@ public class FofcRunner extends AbstractMimRunner
 
         FindOneFactorClusters fofc;
         Object source = getData();
-        TestType tetradTestType = getParams().getTetradTestType();
+        TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
         if (tetradTestType == null || (!(tetradTestType == TestType.TETRAD_DELTA ||
                 tetradTestType == TestType.TETRAD_WISHART))) {
             tetradTestType = TestType.TETRAD_DELTA;
-            getParams().setTetradTestType(tetradTestType);
+            getParams().set("tetradTestType", tetradTestType);
         }
 
-        FindOneFactorClusters.Algorithm algorithm = ((FofcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
+        FindOneFactorClusters.Algorithm algorithm = (FindOneFactorClusters.Algorithm) getParams().get("fofcAlgorithm",
+                FindOneFactorClusters.Algorithm.GAP);
 
         if (source instanceof DataSet) {
-            fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm, getParams().getAlpha());
+            fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm, getParams().getDouble("alpha", 0.001));
             searchGraph = fofc.search();
         } else if (source instanceof CovarianceMatrix) {
-            fofc = new FindOneFactorClusters((CovarianceMatrix) source, tetradTestType, algorithm, getParams().getAlpha());
+            fofc = new FindOneFactorClusters((CovarianceMatrix) source, tetradTestType, algorithm, getParams().getDouble("alpha", 0.001));
             searchGraph = fofc.search();
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");

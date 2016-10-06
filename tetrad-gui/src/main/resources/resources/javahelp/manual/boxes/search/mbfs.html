@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <title>Search Algorithms: PC</title>
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+    <tbody>
+    <tr>
+        <td><h2><font color="#ffffff">Search Algorithms: MBFS</font></h2></td>
+    </tr>
+    </tbody>
+</table>
+<p><font color="#000000">The MBFS search (Markov blanket fan Search) is designed to search for Markov blanket DAGs of
+    target variables in datasets, under the assumptions of the PC algorithm--i.e., that the true causal graph over the
+    variables in the dataset does not contain any cycles, that there are no hidden common causes between variables in
+    the dataset, and that no relationship between variables in the dataset is deterministic. The Markov blanket of a
+    variable t is the smallest set S of variables out of a set of variables V such that t _||_ y | S for every y in V \
+    (S U {t}). The Markov blanket DAG of t is the restriction of the entire causal graph over V to the variables in {t}
+    U S. </font></p>
+<p>MBF operates by asking a conditional independence oracle to make judgements about the independence of pairs of
+    variables (e.g., X, Z) conditional on sets of variables (e.g., {Y}). Conditional indepedence tests are available for
+    datasets that consist either entirely of continuous variables or entirely of discrete variables; hence, datasets of
+    these types can be used as input to the algorithm. (As a way of getting one's head around how the algorithm should
+    behave in the ideal, when independence tests always give correct answers, one may also use a DAG as an input to the
+    algorithm, in which case graphical d-separation will be substituted for an actual independence test.) </p>
+<p>In the case where a continuous dataset is used as input, the available conditional independence tests assume that the
+    direct causal influence of any variable on any other is linear and that the distribution of each variable is
+    Normal. </p>
+<p><font color="#000000">Some of the above assumptions are not testable using observational data. They should come
+    from prior knowledge or partial experiments.</font></p>
+<p>Like PC, MBF returns a <em>pattern</em>, in this case containing: </p>
+<p>(a) The target T, the true parents and children of T, and the true parents of the children of T.</p>
+<p>(b) All edges among T, true parents of T, true children of T, and true parents of children of T. Some of these edges
+    may not be oriented as --&gt;.</p>
+<p>(c) Possibly some extra nodes and edges to account for the possibility that if some edges T---v were actually
+    oriented as T--&gt;v, these nodes and adjacencies would be required in the MB DAG of T.</p>
+<p>(d) No nodes or adjacencies or --&gt; edges that do no belong in some MB DAG consistent with independence facts
+    supplied by (2).</p>
+<p>There may also be some bidirected &lt;-&gt; edges in G_out if the independence information from (2), above, is
+    inconsistent. These &lt;-&gt; edges may either be left in the final graph or oriented as if they were directed
+    edges.</p>
+</body>
+</html>

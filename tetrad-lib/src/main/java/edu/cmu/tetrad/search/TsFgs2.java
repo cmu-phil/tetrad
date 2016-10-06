@@ -507,7 +507,7 @@ public final class TsFgs2 implements GraphSearch, GraphScorer {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxIndegree = score.getMaxIndegree();
+        this.maxIndegree = score.getMaxDegree();
     }
 
     final int[] count = new int[1];
@@ -1877,7 +1877,7 @@ public final class TsFgs2 implements GraphSearch, GraphScorer {
     }
 
     public Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
-        Map<Edge, Double> logBayesFactors = new HashMap<Edge, Double>();
+        Map<Edge, Double> logBayesFactors = new HashMap<>();
         double withEdge = scoreDag(dag);
 
         for (Edge edge : dag.getEdges()) {
@@ -1928,7 +1928,7 @@ public final class TsFgs2 implements GraphSearch, GraphScorer {
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if(x.getName().equals("time") || y.getName().equals("time")){
-            return new ArrayList<List<Node>>();
+            return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
@@ -2007,7 +2007,7 @@ public final class TsFgs2 implements GraphSearch, GraphScorer {
             }
         }
 
-        List<List<Node>> pairList = new ArrayList<List<Node>>();
+        List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
         return(pairList);

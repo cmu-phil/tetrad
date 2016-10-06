@@ -219,13 +219,6 @@ public class EndpointMatrixGraph implements Graph {
     //===============================PUBLIC METHODS========================//
 
     /**
-     * Throws UnsupportedOperationException.
-     */
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Adds a directed edge to the graph from node A to node B.
      *
      * @param node1 the "from" node.
@@ -534,6 +527,11 @@ public class EndpointMatrixGraph implements Graph {
      */
     public int getIndegree(Node node) {
         return getParents(node).size();
+    }
+
+    @Override
+    public int getDegree(Node node) {
+        return 0;
     }
 
     /**
@@ -1378,27 +1376,6 @@ public class EndpointMatrixGraph implements Graph {
      */
     public int getNumEdges(Node node) {
         return getEdges(node).size();
-    }
-
-    /**
-     * Throws unsupported operation exception.
-     */
-    public List<GraphConstraint> getGraphConstraints() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throws unsupported operation exception.
-     */
-    public boolean isGraphConstraintsChecked() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throws unsupported operation exception.
-     */
-    public void setGraphConstraintsChecked(boolean checked) {
-        throw new UnsupportedOperationException();
     }
 
     public List<Node> getNodes() {

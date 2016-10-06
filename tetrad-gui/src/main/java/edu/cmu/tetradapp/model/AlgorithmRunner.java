@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.TripleClassifier;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All
@@ -37,9 +38,9 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
  *
  * @author Joseph Ramsey
  */
-public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, TripleClassifier,
-        SimulationParamsSource {
-    static final long serialVersionUID = 23L;
+public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
+        TripleClassifier, SimulationParamsSource, MultipleGraphSource {
+    long serialVersionUID = 23L;
 
     /**
      * @return the data used to execute this algorithm. Might possibly be a
@@ -50,19 +51,13 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, 
     /**
      * @return the search parameters for this algorithm.
      */
-    SearchParams getParams();
+    Parameters getParams();
 
     /**
      * @return the graph from which data was originally generated, if such a
      * graph is available. Otherwise, returns null.
      */
     Graph getSourceGraph();
-
-    /**
-     * @return the graph that results from executing the algorithm, if the
-     * algorithm has been successfully executed.
-     */
-    Graph getResultGraph();
 
     /**
      * Executes the algorithm.

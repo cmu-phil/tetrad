@@ -27,6 +27,7 @@ import edu.cmu.tetrad.bayes.FactoredBayesStructuralEM;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -65,8 +66,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
     //===============================CONSTRUCTORS============================//
 
-    public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper) {
+    private StructEmBayesSearchRunner(DataWrapper dataWrapper,
+                                      BayesPmWrapper bayesPmWrapper) {
         if (dataWrapper == null) {
             throw new NullPointerException(
                     "BayesDataWrapper must not be null.");
@@ -83,13 +84,13 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         log();
     }
 
-    public StructEmBayesSearchRunner(BayesDataWrapper dataWrapper,
+    public StructEmBayesSearchRunner(Simulation simulation,
             BayesPmWrapper bayesPmWrapper) {
-        this((DataWrapper) dataWrapper, bayesPmWrapper);
+        this((DataWrapper) simulation, bayesPmWrapper);
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, StructEmBayesSearchParams params) {
+            BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -111,7 +112,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
         try {
             this.estimatedBayesIm =
-                    estimator.maximization(params.getTolerance());
+                    estimator.maximization(params.getDouble("tolerance", 0.0001));
 
         }
         catch (IllegalArgumentException e) {
@@ -122,7 +123,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesImWrapper bayesImWrapper, StructEmBayesSearchParams params) {
+            BayesImWrapper bayesImWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -146,7 +147,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
         try {
             this.estimatedBayesIm =
-                    estimator.maximization(params.getTolerance());
+                    estimator.maximization(params.getDouble("tolerance", 0.0001));
         }
         catch (IllegalArgumentException e) {
             throw new RuntimeException(

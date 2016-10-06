@@ -92,9 +92,9 @@ public class BDeScore implements LocalDiscreteScore {
 
             int rowIndex = getRowIndex(dims, values);
 
-            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
-                n_ijk[rowIndex][childValue]++;
-            }
+//            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
+            n_ijk[rowIndex][childValue]++;
+//            }
         }
 
         // Row sums.
@@ -217,7 +217,7 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public int getMaxIndegree() {
+    public int getMaxDegree() {
         return 1000;
     }
 }

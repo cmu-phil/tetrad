@@ -38,7 +38,7 @@ import java.util.Arrays;
  *
  * @author Michael Freenor
  */
-public class DescriptiveStats {
+class DescriptiveStats {
 
     /**
      * Constructs a readable table of normality test results
@@ -58,7 +58,7 @@ public class DescriptiveStats {
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 data[i] = dataSet.getDouble(i, col);
-            };
+            }
         }
         else {
             try {
@@ -68,7 +68,6 @@ public class DescriptiveStats {
                     int value = Integer.parseInt(category);
                     data[i] = value;
                 }
-                ;
             } catch (NumberFormatException e) {
                 return "Not a numerical discrete column.";
             }
@@ -103,7 +102,7 @@ public class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
-    public static double[] median(double[] data)
+    private static double[] median(double[] data)
     {
         Arrays.sort(data);
 
@@ -142,7 +141,7 @@ public class DescriptiveStats {
         return new Normal(mean, sd, new MersenneTwister());
     }
 
-    public static double standardErrorMean(double stdDev, double sampleSize)
+    private static double standardErrorMean(double stdDev, double sampleSize)
     {
         return stdDev / (Math.sqrt(sampleSize));
     }
@@ -153,7 +152,7 @@ public class DescriptiveStats {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
 
-    public static double[] normalParams(double[] data)
+    private static double[] normalParams(double[] data)
     {
         double mean = 0.0;
         double sd = 0.0;

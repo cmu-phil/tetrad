@@ -35,7 +35,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Joseph Ramsey
  */
-public final class SubsetDiscreteVariablesAction extends AbstractAction {
+final class SubsetDiscreteVariablesAction extends AbstractAction {
 
     /**
      * The data editor.                         -

@@ -29,7 +29,7 @@ import java.awt.*;
 /**
  * Interface for a workbench model.
  */
-public interface WorkbenchModel {
+interface WorkbenchModel {
     /**
      * @return a new model node of type GraphNode.
      */

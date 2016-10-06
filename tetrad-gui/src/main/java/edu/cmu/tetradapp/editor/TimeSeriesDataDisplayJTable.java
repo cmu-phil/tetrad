@@ -83,17 +83,17 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     /**
      * The DataSet being displayed.
      */
-    private TimeSeriesData dataSet;
+    private final TimeSeriesData dataSet;
 
     /**
      * The number of columns in the data set.
      */
-    private int colCount;
+    private final int colCount;
 
     /**
      * The number of rows in the data set.
      */
-    private int maxRowCount;
+    private final int maxRowCount;
 
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -118,7 +118,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
         }
 
         if (col < colCount + 1) {
-            return (String) dataSet.getVariableNames().get(col - 1);
+            return dataSet.getVariableNames().get(col - 1);
         }
         else {
             return null;

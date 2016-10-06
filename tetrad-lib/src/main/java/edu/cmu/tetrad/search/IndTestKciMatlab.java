@@ -96,7 +96,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
 //        _data = data.transpose().toArray();
         _data = data.toArray();
 
-        nodeMap = new HashMap<Node, Integer>();
+        nodeMap = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodeMap.put(nodes.get(i), i);
@@ -211,7 +211,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }

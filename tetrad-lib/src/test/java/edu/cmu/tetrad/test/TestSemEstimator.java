@@ -141,7 +141,7 @@ public class TestSemEstimator {
 
     @Test
     public void testOptimizer2() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -164,7 +164,7 @@ public class TestSemEstimator {
 
     @Test
     public void testOptimizer3() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));

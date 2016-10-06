@@ -3,10 +3,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BdeuScoreImages;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -18,12 +17,14 @@ import java.util.List;
 /**
  * Wraps the IMaGES algorithm for continuous variables.
  * </p>
- * Requires that the parameter 'randomSelection' be set to indicate how many
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
  * @author jdramsey
  */
-public class ImagesBDeu implements MultiDataSetAlgorithm {
+public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
+    static final long serialVersionUID = 23L;
+    private IKnowledge knowledge = new Knowledge2();
 
     public ImagesBDeu() {
     }
@@ -36,8 +37,9 @@ public class ImagesBDeu implements MultiDataSetAlgorithm {
             dataModels.add(dataSet);
         }
 
-        edu.cmu.tetrad.search.Fgs2 search = new edu.cmu.tetrad.search.Fgs2(new BdeuScoreImages(dataModels));
+        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(new BdeuScoreImages(dataModels));
         search.setFaithfulnessAssumed(true);
+        search.setKnowledge(knowledge);
 
         return search.search();
     }
@@ -65,7 +67,17 @@ public class ImagesBDeu implements MultiDataSetAlgorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Fgs(new BdeuScore()).getParameters();
-        parameters.add("randomSelection");
+        parameters.add("randomSelectionSize");
         return parameters;
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

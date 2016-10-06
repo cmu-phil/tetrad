@@ -49,7 +49,7 @@ public final class TestSearchGraph {
      */
     @Test
     public void testDSeparation() {
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 7; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -67,7 +67,7 @@ public final class TestSearchGraph {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                List<Node> theRest = new ArrayList<Node>(nodes);
+                List<Node> theRest = new ArrayList<>(nodes);
                 theRest.remove(x);
                 theRest.remove(y);
 
@@ -75,7 +75,7 @@ public final class TestSearchGraph {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> z = new LinkedList<Node>();
+                    List<Node> z = new LinkedList<>();
 
                     for (int k = 0; k < choice.length; k++) {
                         z.add(theRest.get(choice[k]));
@@ -96,7 +96,7 @@ public final class TestSearchGraph {
      */
     @Test
     public void testDSeparation2() {
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 7; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -114,7 +114,7 @@ public final class TestSearchGraph {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                List<Node> theRest = new ArrayList<Node>(nodes);
+                List<Node> theRest = new ArrayList<>(nodes);
 //                theRest.remove(x);
 //                theRest.remove(y);
 
@@ -122,7 +122,7 @@ public final class TestSearchGraph {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> z = new LinkedList<Node>();
+                    List<Node> z = new LinkedList<>();
 
                     for (int k = 0; k < choice.length; k++) {
                         z.add(theRest.get(choice[k]));
@@ -166,7 +166,7 @@ public final class TestSearchGraph {
     }
 
     public void rtestDSeparation4() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -184,7 +184,7 @@ public final class TestSearchGraph {
         Fas fas = new Fas(test);
         start = System.currentTimeMillis();
         fci.setDepth(depth);
-        fci.setVerbose(true);
+        fci.setVerbose(false);
         fci.search(fas, fas.getNodes());
         stop = System.currentTimeMillis();
 
@@ -215,7 +215,7 @@ public final class TestSearchGraph {
         Node _x = graph.getNode(x);
         Node _y = graph.getNode(y);
 
-        List<Node> _z = new ArrayList<Node>();
+        List<Node> _z = new ArrayList<>();
 
         for (String name : z) {
             _z.add(graph.getNode(name));
@@ -241,8 +241,8 @@ public final class TestSearchGraph {
 
         Graph graph = weightedRandomGraph(250, 400);
 
-        List<Integer> degreeCounts = new ArrayList<Integer>();
-        Map<Integer, Integer> degreeCount = new HashMap<Integer, Integer>();
+        List<Integer> degreeCounts = new ArrayList<>();
+        Map<Integer, Integer> degreeCount = new HashMap<>();
 
         for (Node node : graph.getNodes()) {
             int degree = graph.getNumEdges(node);
@@ -258,7 +258,7 @@ public final class TestSearchGraph {
 
         Collections.sort(degreeCounts);
         System.out.println(degreeCounts);
-        List<Integer> _degrees = new ArrayList<Integer>(degreeCount.keySet());
+        List<Integer> _degrees = new ArrayList<>(degreeCount.keySet());
         Collections.sort(_degrees);
 
         for (int i : _degrees) {
@@ -274,7 +274,7 @@ public final class TestSearchGraph {
     }
 
     public static Graph erdosRenyiGraph(int n, int e) {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
 
         Graph graph = new EdgeListGraph(nodes);
@@ -302,7 +302,7 @@ public final class TestSearchGraph {
     }
 
     public static Graph weightedRandomGraph(int n, int e) {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
 
         Graph graph = new EdgeListGraph(nodes);
@@ -361,8 +361,8 @@ public final class TestSearchGraph {
     }
 
     private static int shortestPath(Node n1, Node n2, Graph g) {
-        Queue<Node> Q = new ArrayDeque<Node>();
-        Map<Node, Node> V = new HashMap<Node, Node>();
+        Queue<Node> Q = new ArrayDeque<>();
+        Map<Node, Node> V = new HashMap<>();
 
         Q.offer(n1);
         V.put(n1, null);

@@ -16,12 +16,14 @@ import java.util.*;
 public class WFgs implements GraphSearch {
 
     private List<Node> searchVariables;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
-    private Fgs2 fgs;
+    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    private Fgs fgs;
     private double penaltyDiscount;
     private SemBicScore score;
 
     public WFgs(DataSet data) {
+        if (data == null) throw new NullPointerException("Data was not provided.");
+
         this.searchVariables = data.getVariables();
         DataSet internalData = data.copy();
 
@@ -40,7 +42,7 @@ public class WFgs implements GraphSearch {
 
         SemBicScore score = new SemBicScore(covariances);
         this.score = score;
-        this.fgs = new Fgs2(score);
+        this.fgs = new Fgs(score);
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -48,7 +50,7 @@ public class WFgs implements GraphSearch {
             return Collections.singletonList(node);
         }
 
-        List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
 
         List<Node> variables = new ArrayList<>();
 

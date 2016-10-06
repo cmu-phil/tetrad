@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Scores: BDeu</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Types of Algorithms</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p> This interface supports algorithms of different types, as follows.
+</p>
+<ul>
+    <li>Pattern algorithm. This type of algorithms generates an equivalencle class of
+    directed acyclic graphs (DAGs), encoded as a set os adjacencies over the variables
+    of the search, some of which (but not all) are given a direction. All DAGs in the
+    equivalence class share the same adjacencies, but some directions are not given
+    in the output. To obtain each DAG in the equivalence class, pick an edge that's
+    not oriented and orient it. Then apply the orient rules given in Meek, ??. Then
+    in the new graph, pick another edge that's not oriented, and do the same. Once
+    all edge have been oriented either by choice or by implication, the resulting
+    DAG will be a member of the equivelence class. All members of the equivalence
+    class can be obtained in this way by different choices of orientation, and they
+    are all statistically equivalence if the data are from a linear, Gaussian model
+    or the algorithm uses only conditional independence information as data.
+    For pattern algorithms, it is assumed that there are no latent common causes
+    in the model--that is, there can be latents, but there cannot be structures of
+    the following form: X<-L->Y, where X and Y are measured and L is not.</li>
+    <li>PAG (Partial Ancestral Graph) algorithm. This is the class of equivalence
+    classes of graphs one obtains if one assumes latent common causes (as above)
+    might exist, one knows not where, and the algorithms uses only conditional
+    information as data (or the data are distributed as linear, Gaussian). The
+    definition of a PAG is given in Spirtes et al., 2000. An edge between X and Y
+    implies that X and Y are dependent conditional on all subsets of other
+    measured variables. And arrow at Y, X*->Y, where * means any endpoint, implies
+    that Y is not an ancestor of X. A tail at X, X--*Y, implies that X is an
+    ancestor of Y. Arrows at both endpoint, X<->Y, imply that there is a latent
+    common cause of X and Y. Tails at both endpoints, X---Y, imply that there is
+    selection bias for X and Y. A circle at either endpoint, say, Xo->Y, means
+    that the endpoint in question may be either an arrow or a tail.</li>
+    <li>DAG algorithm. In the last many years at this point, algorithms have been
+    developed appealing to non-Gaussianity or nonlinearity, that are able to
+    distinguish between DAGs in a pattern or PAG and in many cases pick which
+    one corresponds to the truth. Our representation of such algorithms in Tetrad
+    is still fairly meager, but we hope to improve.</li>
+    <li>Markov blanket. One question that's often been raised is to find the Markov
+    blanket of a target variable in a data set--that is, a minimal set of variables
+    conditional on which all other variables are independent of the target.
+    Under faithfulness, for DAG models, there can be just one, although if faithfulness
+    fails to hold, there can be many. This is a well studied problem. A related
+    problem is to find the graphical structure over the variables in the
+    Markov blanke, taken together with the target variables. We give some
+    algorihtms that address this issue; many more exist in the literature.</li>
+    <li>Undirected Graph. In some cases, what one wants is an undirected graph over
+    the variables. We give one such algorithms, FAS, which yields the skeleton
+    of a pattern over measured variables. For FAS, parents X and Z for X->Y<-X
+    where X and Z are not adjacent are not married--that is, there is not adjacency
+    X--Z in the output. For other algorithms, there is such adjacency; these output
+    what's known as a Markov random field--that is, the undirected skeleton of a
+    DAG model in which all parents are married.</li>
+    <li>Pairwise. One thing one can do with an undirected graph, if the data are
+    non-Gaussian or nonlinear, is to orient the edges pairwise. Not that pattern
+    algorithms and PAG algorithms cannot do this. For instance, if the true model
+    is X->Y->Z, the pattern for this will be X--Y--Z, indicating that the true model
+    is X->Y->Z or X<-Y<-Z or X<-Y->Z, but not indicating which one it is. This is
+    the best that one can do if the data are linear and Gaussian. If, however, the
+    assumptions of linearity and Gaussianit prove false, it may be possible to
+    figure out which one of those models it correct. Under the right conditions,
+    it may be possible to orient just a single edge, X--Y, say, as either X->Y
+    or X<-Y. We refer to algorithms that do this as pairwise orientation algrorithms
+    and include several options. Many more options exist.</li>
+</ul>
+</body>
+</html>

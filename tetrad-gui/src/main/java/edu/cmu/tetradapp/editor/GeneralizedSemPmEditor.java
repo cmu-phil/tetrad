@@ -85,7 +85,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
      * A common map of nodes to launched editors so that they can all be closed when this editor
      * is closed.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<Object, EditorWindow>();
+    private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
 
     public GeneralizedSemPmEditor(final GeneralizedSemPmWrapper wrapper) {

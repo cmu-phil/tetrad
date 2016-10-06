@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Generating Random DAGs</font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>In various contexts, you will be given the opportunity to generate a random DAG. The algorithm for generating random DAGs in Tetrad is a Markov chain algorithm due to Malancon, Dutour, and Philippe, which selects a random DAG uniformly from the set of DAGs that satisfy a given list of parameters, which you may tweak.</p>
+<p>For instance, here is the dialog that comes up when you construct a new DAG in a Graph box: </p>
+<p><img src="../images/graph2structureeditor.gif" width="282" height="323"><br>
+    <br>
+If you select &quot;A random DAG&quot; in this dialog, you will need to specify seven parameters (or accept the defaults). The parameters are as follows:</p>
+<ol>
+  <li>Number nodes - that is, the total number of nodes (measured plus latent) in the graph.</li>
+  <li>Number of latent nodes - the number of nodes that should be made latent (see).</li>
+  <li>Maximum number of edges - The number of edges in the randomly generated graph will not exceed this. In most cases, this will be the number of edges in the graph, but if other parameters are too constraining, the number of edges may be less than this.</li>
+  <li>Maximum indegree - The number of edges into any given node will not exceed this.</li>
+  <li>Maximum outdegree - The number of edges out of any given node will not exceed this.</li>
+  <li>Maximum degree - The total number of edges connected to any given node will not exceed this.</li>
+  <li>Connected - &quot;Yes&quot; or &quot;No,&quot; depending on whether the entire DAG should be connected or not. A graph is connected if for every pair of nodes X, Y in the graph, there is an undirected path from X to Y. </li>
+</ol>
+<p>For the combination of parameters in the above dialog, the following random DAG might be generated:</p>
+<p><img src="../images/graph2editorwindow.gif" width="565" height="544"> </p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</body>
+</html>

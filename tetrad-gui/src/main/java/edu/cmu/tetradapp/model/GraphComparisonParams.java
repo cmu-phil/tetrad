@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.ExecutionRestarter;
 import edu.cmu.tetrad.session.SessionAdapter;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class GraphComparisonParams extends SessionAdapter
-        implements Params, ExecutionRestarter {
+        implements ExecutionRestarter {
     static final long serialVersionUID = 23L;
 
     /**
@@ -89,7 +88,7 @@ public class GraphComparisonParams extends SessionAdapter
     /**
      * Constructs a getMappings object with no file set.
      */
-    public GraphComparisonParams() {
+    private GraphComparisonParams() {
         newExecution();
     }
 
@@ -125,7 +124,7 @@ public class GraphComparisonParams extends SessionAdapter
 //        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
 //        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         variables.add(adjCorrect);
         variables.add(adjFn);
         variables.add(adjFp);

@@ -203,8 +203,8 @@ public class PcPattern implements GraphSearch {
     }
 
     private void enumerateTriples() {
-        this.unshieldedColliders = new HashSet<Triple>();
-        this.unshieldedNoncolliders = new HashSet<Triple>();
+        this.unshieldedColliders = new HashSet<>();
+        this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(y);
@@ -343,7 +343,7 @@ public class PcPattern implements GraphSearch {
 //        System.out.println("EDGES " + graph.getEdges(node1));
 
 
-        for (Edge edge : new LinkedList<Edge>(graph.getEdges(node1))) {
+        for (Edge edge : new LinkedList<>(graph.getEdges(node1))) {
             Node child = Edges.traverse(node1, edge);
 //            System.out.println("edge = " + edge + "child = " + child + ", node2 = " + node2);
 
@@ -410,7 +410,7 @@ public class PcPattern implements GraphSearch {
     }
 
     private void orientSomeCollider(LinkedList<Node> path, Graph graph) {
-        LinkedList<Node> _path = new LinkedList<Node>(path);
+        LinkedList<Node> _path = new LinkedList<>(path);
         _path.add(_path.get(0));
 
         double storedP = Double.POSITIVE_INFINITY;

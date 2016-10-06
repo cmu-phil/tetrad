@@ -14,6 +14,8 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public class MathewsCorrAdj implements Statistic {
+    static final long serialVersionUID = 23L;
+
     @Override
     public String getAbbreviation() {
         return "McAdj";

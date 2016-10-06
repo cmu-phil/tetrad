@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetradapp.model.IonParams;
 import edu.cmu.tetradapp.model.IonRunner;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -45,15 +44,15 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class IonDisplay extends JPanel implements GraphEditable {
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
     private List<Graph> storedGraphs;
-    private List<Integer> indices;
-    private JSpinner spinner;
-    private JLabel totalLabel;
+    private final List<Integer> indices;
+    private final JSpinner spinner;
+    private final JLabel totalLabel;
 
     public IonDisplay(final List<Graph> storedGraphs, final IonRunner runner) {
         this.storedGraphs = storedGraphs;
-        int graphIndex = ((IonParams)runner.getParams()).getGraphIndex();
+        int graphIndex = runner.getParams().getInt("graphIndex", 1);
 
         if (storedGraphs.size() == 0) {
             workbench = new GraphWorkbench();
@@ -72,13 +71,13 @@ public class IonDisplay extends JPanel implements GraphEditable {
                 workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
                 firePropertyChange("modelChanged", null, null);
                 runner.setResultGraph(workbench.getGraph());
-                ((IonParams)runner.getParams()).setGraphIndex(index - 1);
+                runner.getParams().set("graphIndex", index - 1);
             }
         });
 
         if (graphIndex >= indices.size()) {
             graphIndex = 0;
-            ((IonParams) runner.getParams()).setGraphIndex(0);
+            runner.getParams().set("graphIndex", 0);
         }
 
         if (indices.size() > 0) {
@@ -148,7 +147,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
     }
 
     private List<Integer> getAllIndices(List<Graph> storedGraphs) {
-        List<Integer> indices = new ArrayList<Integer>();
+        List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.size(); i++) {
             indices.add(i);
@@ -160,7 +159,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {
@@ -204,7 +203,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
         workbench.setGraph(graph);
     }
 
-    public List<Graph> getStoredGraphs() {
+    private List<Graph> getStoredGraphs() {
         return storedGraphs;
     }
 }

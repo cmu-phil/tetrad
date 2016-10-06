@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,6 +15,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemBicScore implements ScoreWrapper {
+    static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {
@@ -36,7 +37,9 @@ public class SemBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        return Collections.singletonList("penaltyDiscount");
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
+        return parameters;
     }
 
 }

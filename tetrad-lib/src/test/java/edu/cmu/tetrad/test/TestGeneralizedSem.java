@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -440,9 +441,11 @@ public class TestGeneralizedSem {
 
         SemPm spm = new SemPm(graph);
 
-        SemImInitializationParams params = new SemImInitializationParams();
-        params.setCoefRange(0.5, 1.5);
-        params.setVarRange(1, 3);
+        Parameters params = new Parameters();
+        params.set("coefLow", 0.5);
+        params.set("coefHigh", 1.5);
+        params.set("varLow", 1);
+        params.set("varHigh", 3);
 
         SemIm sim = new SemIm(spm, params);
 

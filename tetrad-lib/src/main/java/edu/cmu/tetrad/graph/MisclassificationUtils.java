@@ -43,7 +43,7 @@ public class MisclassificationUtils {
     }
 
     public static Set<Edge> convertNodes(Set<Edge> edges, List<Node> newVariables) {
-        Set<Edge> newEdges = new HashSet<Edge>();
+        Set<Edge> newEdges = new HashSet<>();
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
         for (Edge edge : edges) {

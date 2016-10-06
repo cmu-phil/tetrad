@@ -38,7 +38,7 @@ import java.util.Set;
 public final class MimUtils {
 
     public static Clusters convertToClusters(Graph clusterGraph) {
-        List<Node> measuredVariables = new ArrayList<Node>();
+        List<Node> measuredVariables = new ArrayList<>();
 
         for (Node node : clusterGraph.getNodes()) {
             if (node.getNodeType() != NodeType.LATENT) {
@@ -52,10 +52,10 @@ public final class MimUtils {
     public static List<List<Node>> convertToClusters2(Graph clusterGraph) {
         Clusters clusters = convertToClusters(clusterGraph);
 
-        List<List<Node>> _clusters = new ArrayList<List<Node>>();
+        List<List<Node>> _clusters = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
-            List<Node> cluster = new ArrayList<Node>();
+            List<Node> cluster = new ArrayList<>();
             List<String> cluster1 = clusters.getCluster(i);
 
             for (int j = 0; j < cluster1.size(); j++) {
@@ -74,7 +74,7 @@ public final class MimUtils {
      * that , Li-->Wj. Returns a Clusters object mapping i to Wj. The name for cluster i is set to Li.
      */
     public static Clusters convertToClusters(Graph clusterGraph, List<Node> measuredVariables) {
-        List<String> latents = new ArrayList<String>();
+        List<String> latents = new ArrayList<>();
         Clusters clusters = new Clusters();
         clusterGraph = GraphUtils.replaceNodes(clusterGraph, measuredVariables);
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Why Doesn't TETRAD?</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td> <h2><font color="#FFFFFF">Why Doesn't Tetrad...?</font></h2></td>
+  </tr>
+</table>
+
+  
+<h3>Provide descriptive statistics?</h3>
+<p> - Because those statistics can easily be obtained in Excel or Matlab</p>
+<h3><br>
+  Transform variables, e.g., by taking logs</h3>
+<p> - Because this can be done in common commercial packages</p>
+<h3><br>
+  Do linear regression analysis?</h3>
+<p> - Same answer.</p>
+<h3><br>
+  Use logistic regression or log-linear models?</h3>
+<p> - These regression procedures could be valuable in estimating parameters in 
+  Bayes nets, but they require a sound search procedure for selecting interaction 
+  terms, and we haven't solved that yet.</p>
+<h3><br>
+  Do factor analysis?</h3>
+<p> - Probably it should. For many problems, however, the latent variable search 
+  procedure in Tetrad is preferable.</p>
+<h3><br>
+  Deal with non-Normal distributions for continuous variables?</h3>
+<p> -Relevant statistics are available only for Normal, Multinomial and Conditional 
+  Gaussian distribution families; the last should be included. </p>
+<h3><br>
+  Provide all of the models consistent with search output, instead of "patterns," 
+  PAGs" etc.</h3>
+<p>- The models corresponding to a pattern could and perhaps should be provided, 
+  but their an infinite number of models consistent with a PAG, and your computer 
+  is finite.</p>
+<h3><br>
+  Provide Bayesain search procedures when there may be latent variables?</h3>
+<p> - No consistent, computationally feasible, general algoirithms are known.</p>
+<h3><br>
+  Provide search procedures for cyclic (non-recursive) models with latent variables</h3>
+<p> - No consistent search procedures are known.</p>
+<h3><br>
+  Provide search procedures for time series?</h3>
+<p> - Bayes net search procedures can in principle be used for time series, but 
+  no practical, consistent, general search procedures are known. The search algorithms 
+  in Tetrad can be used to search for "simultaneous" causal relations after&nbsp; 
+  regression on lags. </p>
+<h3><br>
+  Provide provide search procedures to find a common model or models for two or 
+  more separate data sets?</h3>
+<p>- If the variables in one data set are a subset of those in the other data
+  set, a common model can be sought with the present version of Tetrad. If the 
+  data sets have entirely distinct variable sets, no principled search procedure
+  for a common model is possible. If the data sets contain some common and some
+  distinct variables, a sometimes useful principled search is possible, but adequate 
+  algorithms have not yet been developed.</p>
+</body>
+</html>

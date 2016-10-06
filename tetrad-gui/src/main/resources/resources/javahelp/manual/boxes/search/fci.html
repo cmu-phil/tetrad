@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Search Algorithms: FCI</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tbody>
+    <tr>
+      <td>
+      <h2><font color="#ffffff">Search Algorithms: FCI</font></h2>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>The FCI algorithm is designed to search for causal explanations of observational or mixed observational and experimental data in which is may be assumed that the true causal graph is acyclic, but there may be unrecorded (hidden, latent) common causes of variables in the data set, or in which there may be sample selection bias. Sample selection bias occurs when the values of two or more recorded variables influence the probability that a unit is sampled. (It is also assumed that no relationship between variables in the data is deterministic--see PCD.) </p>
+<p>The algorithm operates by asking a conditional independence oracle to make judgements about the independence of pairs of variables (e.g., X, Z) conditional on sets of variables (e.g., {Y}). Conditional indepedence tests are available for datasets that consist either entirely of continuous variables or entirely of discrete variables; hence, datasets of these types can be used as input to the algorithm. As a way of getting one's head around how the algorithm should behave in the ideal, when independence tests always give correct answers, one may also use a DAG as an input to the algorithm, in which case graphical d-separation will be substituted for an actual independence test. </p>
+<p>In the case where a continuous dataset is used as input, the available conditional independence tests assume that the direct causal influence of any variable on any other is linear and that the distribution of each variable is Normal. </p>
+<p><font color="#000000">Some of the above assumptions are not testable using observational data. They should come from prior knowledge or partial experiments.</font><br>
+  <br>
+FCI is operated by the user exactly as is PC. The differences are in
+the interpretation of the output. The output of FCI is a <span
+ style="font-style: italic;">partial ancestral graph (PAG). </span>It gives
+partial information about which variables are or are not drect or
+indirect causes and effects of other variables. <br>
+<br>
+An edge between two variables in the output, however the ends of the
+edge are marked, indicates that there is a causal pathway--a direct
+cause in one direction or the other or a common cause--connecting the
+two variables,<span style="font-style: italic;"> that does not contain
+any other observed variable. It does not necessarily mean that in the
+true causal graph, the connected variables have a direct causal
+connection.&nbsp; An edge of any kind between two measured variables
+implies that the variables are not independent conditional on any set
+of measured variables.<br>
+</span><br>
+If there is a edge from X to Y that is unmarked--a tail of an arrow--
+then X is a cause of Y.&nbsp; X may not, however, be a <span
+ style="font-style: italic;">direct </span>cause of Y.<br>
+<br>
+If there is an edge from X to Y that has an arrowhead directed into Y,
+then Y is not a cause--not an ancestor--of X.<br>
+<br>
+If there is an edge with two arrowheads connecting X and Y, then there
+is an unrecorded common cause of X and Y<br>
+<br>
+If an edge end&nbsp; is marked with an "o" the algorithm cannot
+determine whether there should or should not be an arrowhead at that
+edge end.<br>
+<br>
+<br>
+Here is pseudocode for the implementation of the FCI algorithm used in Tetrad:</p>
+<pre>
+Given: Independence test I over variables v1,...,vn.
+
+
+Step A:
+
+
+Form new empty PAG G with variables from I. Fully connect G using 
+unoriented (o-o) edges.
+
+
+Step B:
+
+
+Run a Fast Adjacency Search on G using I.
+
+
+Step C:
+
+
+Orient colliders in G, as follows:
+
+For all nodes B:
+ For each pair of nodes A,C adjacent to B:
+   If A and C are not adjacent:
+      If A and C are d-connected conditional on B:
+         Orient A-->B<--C as a collider.
+
+Step D:
+
+Form a Sepset matrix using a possible d-sep search.
+Then reorient all edges as unoriented.
+
+Step CI C:
+
+Orient unshielded triples, as follows:
+
+For all nodes B:
+ For each pair of nodes A,C adjacent to B:
+    If A and C are not adjacent:
+       If A and C are d-connected conditional on B:
+          Orient A-->B<--C as a collider.
+       Else:
+         Do nothing (effectively marking A---B---C as a noncollider)
+
+Step CI D:
+
+Apply orientation rules until no more orientations are possible.
+
+Rules to use: double triangle, discriminating paths, away from collider, away 
+from ancestor, away from cycle.
+
+Definitions of Orientation Rules:
+
+Double triangle rule:
+
+If D*-oB, A*->B<-**C and A**-**D**-**C is a noncollider, then D**->B.
+
+For all nodes B:
+ possible A: nodes into B with arrow
+ possible C: nodes into B with arrow
+ possible D: nodes into B with circle
+
+ For all possible D:
+    For all possible A:
+       For all possible C:
+          If A != C and required conditions hold:
+             Orient D*->B.
+
+
+Discriminating paths rule:
+
+The triangles that must be oriented this way (won't be done by another rule) 
+all look like the ones below, where the dots are a collider path from L to A 
+with each modelNode on the path (except L) a parent of C.
+
+             B
+
+            xo           x is either an arrowhead or a circle
+
+           /  \
+
+          v    v
+    L....A --> C
+
+
+
+For all nodes B
+ possible A: nodes out from B with arrow and into B with arrow or circle.
+ possible C: nodes out from B with arrow and into B with circle.
+
+ For all possible A:
+    For all possible C:
+       If A is a parent of C:
+          Find a collider path back from A.
+          If path found and if path endpoint is d-sep from C conditional on B:
+             Set C<--B.
+          else,
+             Set A<->B and B<->C.
+
+
+Away from collider rule:
+
+If A*->Bo-oC and not A*-**C, then orient A**->B-->C. (Orient either circle 
+if present, don't need both.)
+
+
+Away from ancestor rule:
+
+If A*-oC and either A-->B*->C or A*->B-->C, then orient A*->C.
+
+
+Away from cycle rule:
+
+If Ao->C and A-->B-->C, then orient A-->C.
+
+
+Pseudocode for FCI:
+
+Given: Independence test I over variables v1,...,vn.
+
+Step A:
+
+Form new empty PAG G with variables from I. Fully connect G using 
+unoriented (o-o) edges.
+
+Step B:
+
+Run a Fast Adjacency Search on G using I.
+
+Step C:
+
+Orient colliders in G, as follows:
+
+For all nodes B:
+ For each pair of nodes A,C adjacent to B:
+   If A and C are not adjacent:
+      If A and C are d-connected conditional on B:
+         Orient A-->B<--C as a collider.
+
+Step D:
+
+Form a Sepset matrix using a possible d-sep search.
+Then reorient all edges as unoriented.
+
+Step CI C:
+
+Orient unshielded triples, as follows:
+
+For all nodes B:
+ For each pair of nodes A,C adjacent to B:
+    If A and C are not adjacent:
+       If A and C are d-connected conditional on B:
+          Orient A-->B<--C as a collider.
+       Else:
+         Do nothing (effectively marking A---B---C as a noncollider)
+
+Step CI D:
+
+Apply orientation rules until no more orientations are possible.
+
+Rules to use: double triangle, discriminating paths, away from collider, 
+away from ancestor, away from cycle.
+
+
+Definitions of Orientation Rules:
+
+Double triangle rule:
+
+If D*-oB, A*->B<-**C and A**-**D**-**C is a noncollider, then D**->B.
+
+For all nodes B:
+ possible A: nodes into B with arrow
+ possible C: nodes into B with arrow
+ possible D: nodes into B with circle
+
+ For all possible D:
+    For all possible A:
+       For all possible C:
+          If A != C and required conditions hold:
+             Orient D*->B.
+
+
+Discriminating paths rule:
+
+The triangles that must be oriented this way (won't be done by another rule) all 
+look like the ones below, where the dots are a collider path from L to A with each 
+modelNode on the path (except L) a parent of C.
+
+             B
+
+            xo           x is either an arrowhead or a circle
+
+           /  \
+
+          v    v
+
+    L....A --> C
+
+
+
+For all nodes B
+ possible A: nodes out from B with arrow and into B with arrow or circle.
+ possible C: nodes out from B with arrow and into B with circle.
+
+ For all possible A:
+    For all possible C:
+       If A is a parent of C:
+          Find a collider path back from A.
+          If path found and if path endpoint is d-sep from C conditional on B:
+             Set C<--B.
+          else,
+             Set A<->B and B<->C.
+
+
+Away from collider rule:
+
+If A*->Bo-oC and not A*-**C, then orient A**->B-->C. (Orient either circle if 
+present, don't need both.)
+
+Away from ancestor rule:
+
+If A*-oC and either A-->B*->C or A*->B-->C, then orient A*->C.
+
+Away from cycle rule:
+
+If Ao->C and A-->B-->C, then orient A-->C. 
+</pre>
+<p><em>Note: Zhang (2006) supplies an orientation rule set for FCI that is both arrow-complete and tail-complete; this is not currently implemented</em>. </p>
+</body>
+</html>

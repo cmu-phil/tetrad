@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr>
+    <td height="28">
+      <h2><font color="#FFFFFF">Defining Discrete Variables </font></h2>
+    </td>
+  </tr>
+</table>
+
+<p>Discrete variables in Tetrad may be described as follows. </p>
+<ol>
+  <li>They are assumed to be nominal--that is, the order of categories doesn't matter for searches and estimations.</li>
+  <li>When trying to decide whether two variables by same name are equal, their categories are idenfied by name.</li>
+  <li>When sending data to algorithms, categories are identified by index only.</li>
+</ol>
+<p>Some comments. For point (1), it is clearly a simplification to assume that all discrete variables are nominal, and it clearly in some cases leads to a loss of information, since if you knew the categories for some variable carried ordinal information you might be able to use  tests of conditional independence that took advantage of this information. For reasons of speed and flexibility, we've stayed with the nominal independence tests.</p>
+<p>For point (2), the problem is that a variable &quot;X&quot; can be defined in two different boxes--say, two different Bayes Parametric Model boxes or a Bayes Parametric Model box and and a Data box. It's possible that the two variables have the same number of categories (in fact, when doing estimations, this is desirable) but that in the one case the categories are &lt;High, Medium, Low&gt; while in the other case the categories are &lt;Low, Medium, High&gt;. In this case, the mapping of categories should be High--&gt;High, Medium--&gt;Medium, Low--&gt;Low and not High--&gt;Low, Medium--&gt;Medium, Low--&gt;High. That is, the categories should be identified by <em>name</em>.</p>
+<p>However, as regards point (3), it is extremely inefficient, especially in Java, to force algorithms over discrete variables to deal with names of categories; algorithms need to deal with <em>indices of categories</em>. So when sending a column of data with variable X, with categories &lt;High, Medium, Low&gt; to an estimator, the estimator only knows that there are three categories for X, at indices 0, 1, and 2, respectively. It doesn't know about the names of the categories.</p>
+<p>Points (2) and (3) are reconciled in Tetrad using a &quot;bulletin board&quot; system.  The first time a list of categories is encountered, it is posted on a &quot;bulletin board.&quot; After that, if that same list of categories is encountered again, but in some permuted order, the version from the &quot;bulletin board&quot; is retrieved and used instead. So any particular list of categories can only appear in one order in Tetrad. (This does not imply that the variables are ordinal; algorithms still interpret these variables as nominal, in that they employ statisitical tests that do not take advantage of ordinality.)</p>
+<p>You can see the effects of &quot;bulletin board&quot; system, for example, in the following situations:</p>
+<ul>
+  <li>If you've specified a Bayes Parametric Model and then read data in from a file for the same variables, the order of the categories for the data will be the same as order of categories in your Bayes PM. Estimations, taking Bayes PM's and discrete data sets as parents will work smoothly.</li>
+  <li>If you create a Bayes PM with variable X, with categories &lt;Low, High&gt;, and later create another Bayes PM with variable X with categories &lt;High, Low&gt;, the order of categories in the second case will be adjusted to &lt;Low, High&gt;.</li>
+</ul>
+<p>&nbsp;</p>
+</body>
+</html>

@@ -91,7 +91,7 @@ public class ExtractMarkovBlanketWrapper extends GraphWrapper{
         Box box = Box.createVerticalBox();
         List<Node> nodes = graph.getNodes();
 
-        List<String> nodeNames = new ArrayList<String>();
+        List<String> nodeNames = new ArrayList<>();
 
         for (Node node : nodes) {
             nodeNames.add(node.getName());

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 
@@ -36,14 +36,15 @@ public class ExampleSave {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 100);
-        parameters.put("avgDegree", 4);
-        parameters.put("sampleSize", 100, 500, 1000);
+        parameters.set("numRuns", 2);
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 2, 4, 6);
+        parameters.set("sampleSize", 100, 500, 1000);
 
         Simulation simulation = new SemSimulation(new RandomForward());
-        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
-                parameters);
+        Comparison comparison = new Comparison();
+        comparison.setShowAlgorithmIndices(true);
+        comparison.saveToFiles("comparison", simulation, parameters);
     }
 }
 

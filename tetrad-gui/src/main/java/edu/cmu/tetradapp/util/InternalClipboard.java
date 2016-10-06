@@ -31,7 +31,7 @@ import java.awt.datatransfer.Clipboard;
  * @author Joseph Ramsey
  */
 public class InternalClipboard extends Clipboard {
-    private static InternalClipboard ourInstance = new InternalClipboard();
+    private static final InternalClipboard ourInstance = new InternalClipboard();
 
     public static InternalClipboard getInstance() {
         return ourInstance;

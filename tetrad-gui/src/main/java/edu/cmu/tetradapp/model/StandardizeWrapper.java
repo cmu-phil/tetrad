@@ -42,7 +42,7 @@ public class StandardizeWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public StandardizeWrapper(DataWrapper data) {
+    private StandardizeWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

@@ -22,8 +22,12 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -54,223 +58,34 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
     //============================CONSTRUCTORS============================//
 
-    public ImagesRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+    public ImagesRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper, FgsParams params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+    public ImagesRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+    public ImagesRunner(DataWrapper[] dataWrappers, GraphWrapper graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+    public ImagesRunner(DataWrapper[] dataWrappers, GraphWrapper graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2
-                ),
-                params, null);
-        type = computeType();
-
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     DataWrapper dataWrapper9,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(DataWrapper dataWrapper1,
-                     DataWrapper dataWrapper2,
-                     DataWrapper dataWrapper3,
-                     DataWrapper dataWrapper4,
-                     DataWrapper dataWrapper5,
-                     DataWrapper dataWrapper6,
-                     DataWrapper dataWrapper7,
-                     DataWrapper dataWrapper8,
-                     DataWrapper dataWrapper9,
-                     DataWrapper dataWrapper10,
-                     FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9,
-                        dataWrapper10
-                ),
-                params, null);
-
-        type = computeType();
-    }
-
-    public ImagesRunner(GraphWrapper graphWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public ImagesRunner(GraphWrapper graphWrapper, FgsParams params) {
+    public ImagesRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
         type = computeType();
     }
@@ -280,9 +95,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
      *
      * @see TetradSerializableUtils
      */
-    public static ImagesRunner serializableInstance() {
-        return new ImagesRunner(DataWrapper.serializableInstance(),
-                FgsParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -305,7 +119,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsParams params = (FgsParams) getParams();
+        Parameters params = getParams();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -315,11 +129,11 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
-                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+                gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
                 fgs = new Fgs(gesScore);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
-                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
+                double samplePrior = getParams().getDouble("samplePrior", 1);
+                double structurePrior = getParams().getDouble("structurePrior", 1);
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -329,7 +143,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             }
         } else if (model instanceof ICovarianceMatrix) {
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
-            gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+            gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
             fgs = new Fgs(gesScore);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
@@ -346,13 +160,10 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 //                        "as input. For multiple data sets as input, use IMaGES.");
 //            }
 
-            FgsParams FgsParams = (FgsParams) getParams();
-            FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
-
             if (allContinuous(list)) {
-                double penalty = ((FgsParams) getParams()).getComplexityPenalty();
+                double penalty = getParams().getDouble("penaltyDiscount", 4);
 
-                if (indTestParams.isFirstNontriangular()) {
+                if (params.getBoolean("firstNontriangular", false)) {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     fgs = new Fgs(fgsScore);
@@ -362,14 +173,14 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                     fgs = new Fgs(fgsScore);
                 }
             } else if (allDiscrete(list)) {
-                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
-                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
+                double structurePrior = getParams().getDouble("structurePrior", 1);
+                double samplePrior = getParams().getDouble("samplePrior", 1);
 
                 BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                 fgsScore.setSamplePrior(samplePrior);
                 fgsScore.setStructurePrior(structurePrior);
 
-                if (indTestParams.isFirstNontriangular()) {
+                if (params.getBoolean("firstNontriangular", false)) {
                     fgs = new Fgs(fgsScore);
                 } else {
                     fgs = new Fgs(fgsScore);
@@ -381,16 +192,16 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             System.out.println("No viable input.");
         }
 
-        fgs.setKnowledge(getParams().getKnowledge());
-        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+        fgs.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         fgs.setVerbose(true);
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -416,7 +227,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    public FgsRunner.Type computeType() {
+    private FgsRunner.Type computeType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -504,14 +315,14 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new ArrayList<List<Triple>>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -520,7 +331,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -541,7 +352,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

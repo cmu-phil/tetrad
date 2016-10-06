@@ -26,8 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -41,11 +40,11 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 100);
-        parameters.put("avgDegree", 4);
-        parameters.put("sampleSize", 500);
-        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 4, 6);
+        parameters.set("sampleSize", 500);
+        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
@@ -63,22 +62,26 @@ public class ExampleCompareSimulation {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
-        algorithms.add(new Pcs(new FisherZ()));
-        algorithms.add(new Cpcs(new FisherZ()));
+//        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
+//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new Cpcs(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
         simulations.add(new SemSimulation(new RandomForward()));
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
-                simulations, algorithms, statistics, parameters);
+        Comparison comparison = new Comparison();
+
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
+        comparison.setSortByUtility(true);
+        comparison.setShowUtilities(true);
+        comparison.setParallelized(true);
+
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 }
 

@@ -68,8 +68,8 @@ public class IndTestSepset implements IndependenceTest {
         }
 
         this.sepset = sepset;
-        this.nodesToVariables = new HashMap<Node, Node>();
-        this.variablesToNodes = new HashMap<Node, Node>();
+        this.nodesToVariables = new HashMap<>();
+        this.variablesToNodes = new HashMap<>();
 
         for (Node node : nodes) {
             this.nodesToVariables.put(node, node);
@@ -101,7 +101,7 @@ public class IndTestSepset implements IndependenceTest {
      * @return the list of observed nodes in the given graph.
      */
     private List<Node> calcObservedVars(List<Node> nodes) {
-        List<Node> observedVars = new ArrayList<Node>();
+        List<Node> observedVars = new ArrayList<>();
 
         for (Node node : nodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -196,7 +196,7 @@ public class IndTestSepset implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> nodes = getVariables();
-        List<String> nodeNames = new ArrayList<String>();
+        List<String> nodeNames = new ArrayList<>();
         for (Node var : nodes) {
             nodeNames.add(var.getName());
         }

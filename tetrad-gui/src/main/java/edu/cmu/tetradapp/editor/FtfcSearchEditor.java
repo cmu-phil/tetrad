@@ -25,9 +25,11 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetradapp.model.FtfcRunner;
+import edu.cmu.tetradapp.model.MimRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -80,7 +82,7 @@ public class FtfcSearchEditor extends JPanel {
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
     /**
      * The label for the result graph workbench.
@@ -92,7 +94,6 @@ public class FtfcSearchEditor extends JPanel {
      */
     private JScrollPane workbenchScroll;
     private JPanel displayPanel;
-    private GraphWorkbench structureWorkbench;
 
     //============================CONSTRUCTORS===========================//
 
@@ -174,10 +175,9 @@ public class FtfcSearchEditor extends JPanel {
                 setErrorMessage(null);
 
                 try {
-//                    mimRunner.getParams().setClusters(clusterEditor.getClusters());
+//                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     CharArrayWriter writer1 = new CharArrayWriter();
                     PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
@@ -233,8 +233,7 @@ public class FtfcSearchEditor extends JPanel {
 
                 try {
                     sleep(delay);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     return;
                 }
 
@@ -281,8 +280,7 @@ public class FtfcSearchEditor extends JPanel {
                 while (thread().isAlive()) {
                     try {
                         sleep(200);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
                     }
                 }
@@ -350,7 +348,7 @@ public class FtfcSearchEditor extends JPanel {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -359,7 +357,7 @@ public class FtfcSearchEditor extends JPanel {
         }
 
         if (getMimRunner().getClusters() != null) {
-            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
+            ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
@@ -393,7 +391,7 @@ public class FtfcSearchEditor extends JPanel {
 
         Graph sourceGraph = getMimRunner().getSourceGraph();
         Graph latestWorkbenchGraph =
-                getMimRunner().getParams().getSourceGraph();
+                (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
@@ -445,7 +443,7 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     public Graph getLatestWorkbenchGraph() {
-        Graph graph = getMimRunner().getParams().getSourceGraph();
+        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -462,14 +460,12 @@ public class FtfcSearchEditor extends JPanel {
         }
 
         try {
-            Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
-            getMimRunner().getParams().setSourceGraph(graph);
-        }
-        catch (IOException e) {
-            getMimRunner().getParams().setSourceGraph(null);
-        }
-        catch (ClassNotFoundException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
+            getMimRunner().getParams().set("sourceGraph", graph);
+        } catch (IOException e) {
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
+        } catch (ClassNotFoundException e) {
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
@@ -485,29 +481,22 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        MimParams params = getMimRunner().getParams();
-        MimIndTestParams indTestParams = params.getMimIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Parameters params = getMimRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(MimIndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Parameters params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FtfcIndTestParams) {
-            MimRunner runner = getMimRunner();
-            FtfcIndTestParams params =  (FtfcIndTestParams) indTestParams;
-            params.setVarNames(runner.getParams().getVarNames());
-            return new FtfcIndTestParamsEditor(params);
-        }
-
-        throw new IllegalArgumentException(
-                "Unrecognized IndTestParams: " + indTestParams.getClass());
+        MimRunner runner = getMimRunner();
+        params.set("varNames", runner.getParams().get("varNames", null));
+        return new FtfcIndTestParamsEditor(params);
     }
 }
 

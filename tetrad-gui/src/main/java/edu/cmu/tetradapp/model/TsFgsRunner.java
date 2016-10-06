@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -60,211 +61,31 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
     //============================CONSTRUCTORS============================//
 
-    public TsFgsRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+    public TsFgsRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper, FgsParams params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+    public TsFgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
-//        if (graph == dataWrapper) throw new IllegalArgumentException();
+    public TsFgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+    public TsFgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       DataWrapper dataWrapper8,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       DataWrapper dataWrapper8,
-                       DataWrapper dataWrapper9,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(DataWrapper dataWrapper1,
-                       DataWrapper dataWrapper2,
-                       DataWrapper dataWrapper3,
-                       DataWrapper dataWrapper4,
-                       DataWrapper dataWrapper5,
-                       DataWrapper dataWrapper6,
-                       DataWrapper dataWrapper7,
-                       DataWrapper dataWrapper8,
-                       DataWrapper dataWrapper9,
-                       DataWrapper dataWrapper10,
-                       FgsParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9,
-                        dataWrapper10
-                ),
-                params, null);
-
-    }
-
-    public TsFgsRunner(GraphWrapper graphWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFgsRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public TsFgsRunner(GraphWrapper graphWrapper, FgsParams params) {
+    public TsFgsRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -273,9 +94,8 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
      *
      * @see TetradSerializableUtils
      */
-    public static TsFgsRunner serializableInstance() {
-        return new TsFgsRunner(DataWrapper.serializableInstance(),
-                FgsParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -300,15 +120,15 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsParams params = (FgsParams) getParams();
+        Parameters params = getParams();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             fgs = new TsFgs2(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
+            fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             fgs.setVerbose(true);
         } else {
-            double penaltyDiscount = params.getComplexityPenalty();
+            double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
             if (model instanceof DataSet) {
                 DataSet dataSet = (DataSet) model;
@@ -322,8 +142,8 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                     System.out.println("Score done");
                     fgs = new TsFgs2(gesScore);
                 } else if (dataSet.isDiscrete()) {
-                    double samplePrior = ((FgsParams) getParams()).getSamplePrior();
-                    double structurePrior = ((FgsParams) getParams()).getStructurePrior();
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
@@ -354,13 +174,10 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
-                FgsParams FgsParams = (FgsParams) getParams();
-                FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
-
                 if (allContinuous(list)) {
-                    double penalty = ((FgsParams) getParams()).getComplexityPenalty();
+                    double penalty = getParams().getDouble("penaltyDiscount", 4);
 
-                    if (indTestParams.isFirstNontriangular()) {
+                    if (params.getBoolean("firstNontriangular", false)) {
                         SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                         fgsScore.setPenaltyDiscount(penalty);
                         fgs = new TsFgs2(fgsScore);
@@ -370,14 +187,14 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         fgs = new TsFgs2(fgsScore);
                     }
                 } else if (allDiscrete(list)) {
-                    double structurePrior = ((FgsParams) getParams()).getStructurePrior();
-                    double samplePrior = ((FgsParams) getParams()).getSamplePrior();
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
 
                     BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                     fgsScore.setSamplePrior(samplePrior);
                     fgsScore.setStructurePrior(structurePrior);
 
-                    if (indTestParams.isFirstNontriangular()) {
+                    if (params.getBoolean("firstNontriangular", false)) {
                         fgs = new TsFgs2(fgsScore);
                     } else {
                         fgs = new TsFgs2(fgsScore);
@@ -391,17 +208,17 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
         }
 
         fgs.setInitialGraph(initialGraph);
-        fgs.setKnowledge(getParams().getKnowledge());
-        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fgs.setVerbose(true);
-//        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+//        fgs.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
 //        * there is no setHeuristicSpeedup option in Fgs2 and so likewise TsFgs2. *
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -521,14 +338,14 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new ArrayList<List<Triple>>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -537,15 +354,15 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        FgsParams params = (FgsParams) getParams();
-        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getComplexityPenalty()));
+        Parameters params = getParams();
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return paramSettings;
     }
 
@@ -566,7 +383,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

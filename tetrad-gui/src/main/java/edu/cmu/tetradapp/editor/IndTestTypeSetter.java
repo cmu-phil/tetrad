@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.IndTestType;
  *
  * @author Joseph Ramsey
  */
-public interface IndTestTypeSetter {
+interface IndTestTypeSetter {
     void setTestType(IndTestType testType);
     IndTestType getTestType();
     DataModel getDataModel();

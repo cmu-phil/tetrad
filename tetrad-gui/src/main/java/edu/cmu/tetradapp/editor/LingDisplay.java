@@ -46,12 +46,12 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class LingDisplay extends JPanel implements GraphEditable {
-    private GraphWorkbench workbench;
-    private JComboBox subsetCombo;
+    private final GraphWorkbench workbench;
+    private final JComboBox subsetCombo;
     private Ling.StoredGraphs storedGraphs;
-    private List<Integer> subsetIndices;
-    private JSpinner spinner;
-    private JLabel totalLabel;
+    private final List<Integer> subsetIndices;
+    private final JSpinner spinner;
+    private final JLabel totalLabel;
 
     public LingDisplay(final Ling.StoredGraphs storedGraphs) {
         this.storedGraphs = storedGraphs;
@@ -200,7 +200,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
     }
 
     private List<Integer> getAllIndices(Ling.StoredGraphs storedGraphs) {
-        List<Integer> indices = new ArrayList<Integer>();
+        List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
             indices.add(i);
@@ -210,7 +210,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
     }
 
     private List<Integer> getStableIndices(Ling.StoredGraphs storedGraphs) {
-        List<Integer> indices = new ArrayList<Integer>();
+        List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
             if (storedGraphs.isStable(i)) {
@@ -222,7 +222,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
     }
 
     private List<Integer> getUnstableIndices(Ling.StoredGraphs storedGraphs) {
-        List<Integer> indices = new ArrayList<Integer>();
+        List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
             if (!storedGraphs.isStable(i)) {
@@ -238,7 +238,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {
@@ -301,8 +301,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
 //
 //        return menuBar;
 //    }
-
-    public Ling.StoredGraphs getStoredGraphs() {
+    private Ling.StoredGraphs getStoredGraphs() {
         return storedGraphs;
     }
 }

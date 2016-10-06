@@ -245,7 +245,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @param graph The graph that this workbench will display.
      */
-    public AbstractWorkbench(Graph graph) {
+    protected AbstractWorkbench(Graph graph) {
         setGraph(graph);
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
@@ -268,8 +268,8 @@ public abstract class AbstractWorkbench extends JComponent
      */
     public final void deleteSelectedObjects() {
         Component[] components = getComponents();
-        List<DisplayNode> graphNodes = new ArrayList<DisplayNode>();
-        List<IDisplayEdge> graphEdges = new ArrayList<IDisplayEdge>();
+        List<DisplayNode> graphNodes = new ArrayList<>();
+        List<IDisplayEdge> graphEdges = new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {
@@ -349,7 +349,7 @@ public abstract class AbstractWorkbench extends JComponent
      * @return the currently selected nodes as a list.
      */
     public final List<DisplayNode> getSelectedNodes() {
-        List<DisplayNode> selectedNodes = new ArrayList<DisplayNode>();
+        List<DisplayNode> selectedNodes = new ArrayList<>();
         Component[] components = getComponents();
 
         for (Component comp : components) {
@@ -384,7 +384,7 @@ public abstract class AbstractWorkbench extends JComponent
      * @return the currently selected nodes as a vector.
      */
     public final List<Component> getSelectedComponents() {
-        List<Component> selectedComponents = new ArrayList<Component>();
+        List<Component> selectedComponents = new ArrayList<>();
         Component[] components = getComponents();
 
         for (Component comp : components) {
@@ -409,7 +409,7 @@ public abstract class AbstractWorkbench extends JComponent
         return (Edge) getDisplayToModel().get(displayEdge);
     }
 
-    public boolean isAllowMultipleNodeSelection() {
+    private boolean isAllowMultipleNodeSelection() {
         return allowMultipleSelection;
     }
 
@@ -419,7 +419,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @return Ibid.
      */
-    public boolean isAllowDoubleClickActions() {
+    private boolean isAllowDoubleClickActions() {
         return allowDoubleClickActions;
     }
 
@@ -428,7 +428,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @return Ibid.
      */
-    public boolean isAllowNodeDragging() {
+    private boolean isAllowNodeDragging() {
         return allowNodeDragging;
     }
 
@@ -437,7 +437,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @return Ibid.
      */
-    public boolean isAllowNodeEdgeSelection() {
+    private boolean isAllowNodeEdgeSelection() {
         return allowNodeEdgeSelection;
     }
 
@@ -446,7 +446,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @return Ibid.
      */
-    public boolean isAllowEdgeReorientation() {
+    private boolean isAllowEdgeReorientation() {
         return allowEdgeReorientations;
     }
 
@@ -706,7 +706,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @param maxX the maximum x value (Must be greater than or equal to 100).
      */
-    public final void setMaxX(int maxX) {
+    private void setMaxX(int maxX) {
         if (maxX < 100) {
             throw new IllegalArgumentException();
         }
@@ -768,7 +768,7 @@ public abstract class AbstractWorkbench extends JComponent
      * Selects all and only those edges that are connecting selected nodes.
      * Should be called after every time the node selection is changed.
      */
-    public final void selectConnectingEdges(List<DisplayNode> displayNodes) {
+    private void selectConnectingEdges(List<DisplayNode> displayNodes) {
         if (!isAllowNodeEdgeSelection()) {
             return;
         }
@@ -833,7 +833,7 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @param maxY the maximum Y value (Must be greater than or equal to 100).
      */
-    public final void setMaxY(int maxY) {
+    private void setMaxY(int maxY) {
         if (maxY < 100) {
             throw new IllegalArgumentException();
         }
@@ -963,8 +963,8 @@ public abstract class AbstractWorkbench extends JComponent
         }
 
         this.graph = graph;
-        this.modelEdgesToDisplay = new HashMap<Edge, Object>();
-        this.modelNodesToDisplay = new HashMap<Node, Object>();
+        this.modelEdgesToDisplay = new HashMap<>();
+        this.modelNodesToDisplay = new HashMap<>();
         this.displayToModel = new HashMap();
         this.displayToLabels = new HashMap();
 
@@ -1427,7 +1427,7 @@ public abstract class AbstractWorkbench extends JComponent
      */
     private void fireNodeSelection() {
         Component[] components = getComponents();
-        List<Node> selection = new LinkedList<Node>();
+        List<Node> selection = new LinkedList<>();
 
         for (Component component : components) {
             if (component instanceof DisplayNode) {
@@ -1680,7 +1680,7 @@ public abstract class AbstractWorkbench extends JComponent
         Shape rubberShape = rubberband.getShape();
         Point rubberLoc = rubberband.getLocation();
         Component[] components = getComponents();
-        List<DisplayNode> selectedNodes = new ArrayList<DisplayNode>();
+        List<DisplayNode> selectedNodes = new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {
@@ -1838,6 +1838,8 @@ public abstract class AbstractWorkbench extends JComponent
                     Preferences.userRoot().putBoolean("experimental", true);
                 }
             }
+
+            deselectAll();
         }
     }
 
@@ -2267,14 +2269,14 @@ public abstract class AbstractWorkbench extends JComponent
         return mouseDragging;
     }
 
-    public void setMouseDragging(boolean mouseDragging) {
+    private void setMouseDragging(boolean mouseDragging) {
         this.mouseDragging = mouseDragging;
     }
 
     /**
      * True if the user is allowed to add measured variables.
      */
-    public boolean isAddMeasuredVarsAllowed() {
+    private boolean isAddMeasuredVarsAllowed() {
         return addMeasuredVarsAllowed;
     }
 
@@ -2288,7 +2290,7 @@ public abstract class AbstractWorkbench extends JComponent
     /**
      * @return true if the user is allowed to edit existing meausred variables.
      */
-    public boolean isEditExistingMeasuredVarsAllowed() {
+    boolean isEditExistingMeasuredVarsAllowed() {
         return editExistingMeasuredVarsAllowed;
     }
 
@@ -2302,7 +2304,7 @@ public abstract class AbstractWorkbench extends JComponent
     /**
      * @return true iff the user is allowed to delete variables.
      */
-    public boolean isDeleteVariablesAllowed() {
+    private boolean isDeleteVariablesAllowed() {
         return deleteVariablesAllowed;
     }
 
@@ -2593,8 +2595,8 @@ public abstract class AbstractWorkbench extends JComponent
      * (e.g. a node changes its name.)
      */
     private void reconstiteMaps() {
-        modelEdgesToDisplay = new HashMap<Edge, Object>(getModelEdgesToDisplay());
-        modelNodesToDisplay = new HashMap<Node, Object>(getModelNodesToDisplay());
+        modelEdgesToDisplay = new HashMap<>(getModelEdgesToDisplay());
+        modelNodesToDisplay = new HashMap<>(getModelNodesToDisplay());
         displayToModel = new HashMap(displayToModel);
         displayToLabels = new HashMap(displayToLabels);
     }
@@ -2603,19 +2605,19 @@ public abstract class AbstractWorkbench extends JComponent
         return trackedEdge;
     }
 
-    public boolean isNodeEdgeErrorsReported() {
+    private boolean isNodeEdgeErrorsReported() {
         return nodeEdgeErrorsReported;
     }
 
-    public void setNodeEdgeErrorsReported(boolean nodeEdgeErrorsReported) {
+    protected void setNodeEdgeErrorsReported(boolean nodeEdgeErrorsReported) {
         this.nodeEdgeErrorsReported = nodeEdgeErrorsReported;
     }
 
-    public boolean isRightClickPopupAllowed() {
+    private boolean isRightClickPopupAllowed() {
         return rightClickPopupAllowed;
     }
 
-    public void setRightClickPopupAllowed(boolean rightClickPopupAllowed) {
+    protected void setRightClickPopupAllowed(boolean rightClickPopupAllowed) {
         this.rightClickPopupAllowed = rightClickPopupAllowed;
     }
 

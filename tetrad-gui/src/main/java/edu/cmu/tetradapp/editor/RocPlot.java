@@ -35,7 +35,7 @@ import java.text.NumberFormat;
  *
  * @author Frank Wimbely, Joseph Ramsey
  */
-public class RocPlot extends JPanel implements PropertyChangeListener {
+class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
      * The stored size of this component.
@@ -45,22 +45,22 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     /**
      * The background color of this component.
      */
-    private Color backgroundColor = Color.WHITE;
+    private final Color backgroundColor = Color.WHITE;
 
     /**
      * Color the axes are drawn in for graphs.
      */
-    private Color boundaryColor = Color.DARK_GRAY;
+    private final Color boundaryColor = Color.DARK_GRAY;
 
     /**
      * Color the title is drawn in.
      */
-    private Color titleColor = Color.DARK_GRAY;
+    private final Color titleColor = Color.DARK_GRAY;
 
     /**
      * Color the plot is drawn in.
      */
-    private Color plotColor = Color.BLUE;
+    private final Color plotColor = Color.BLUE;
 
     /**
      * The rectangle within which the graph is to be plotted.
@@ -78,49 +78,34 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     private String title = "ROC Plot";
 
     /**
-     * The x axis label.
-     */
-    private String xLabel = "False Positive Fraction";
-
-    /**
-     * The y axis laabel.
-     */
-    private String yLabel = "True Positive Fraction";
-
-    /**
-     * The font used non-bold text.
-     */
-    private Font font = new Font("Serif", Font.PLAIN, 12);
-
-    /**
      * The font used for bold text.
      */
-    private Font fontBold = new Font("Serif", Font.BOLD, 12);
+    private final Font fontBold = new Font("Serif", Font.BOLD, 12);
 
     /**
      * The font used for titles.
      */
-    private Font titleFont = new Font("Serif", Font.BOLD, 18);
+    private final Font titleFont = new Font("Serif", Font.BOLD, 18);
 
     /**
      * The font metrics for the title font.
      */
-    private FontMetrics titleFm;
+    private final FontMetrics titleFm;
 
     /**
      * The font metrics of the non-bold font.
      */
-    private FontMetrics fm;
+    private final FontMetrics fm;
 
     /**
      * The data defining the ROC curve
      */
-    private double[][] points;
+    private final double[][] points;
 
     /**
      * A String to be printed on the plot.
      */
-    private String info;
+    private final String info;
 
     /**
      * Constructs a power graph using the given model.  The argument points
@@ -130,6 +115,10 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     public RocPlot(double[][] points, String title, String info) {
         this.points = points;
         this.info = info;
+        /*
+      The font used non-bold text.
+     */
+        Font font = new Font("Serif", Font.PLAIN, 12);
         fm = getFontMetrics(font);
         titleFm = getFontMetrics(titleFont);
         setFont(font);
@@ -313,6 +302,10 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     private void drawXLabel(Graphics g) {
         g.setFont(fontBold);
         Rectangle plotRect = getPlotRect();
+        /*
+      The x axis label.
+     */
+        String xLabel = "False Positive Fraction";
         int stringWidth = fm.stringWidth(xLabel);
 
         // where to begin drawing (the rotated image)
@@ -331,6 +324,10 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
         double theta = -Math.PI / 2;
 
         Rectangle plotRect = getPlotRect();
+        /*
+      The y axis laabel.
+     */
+        String yLabel = "True Positive Fraction";
         int stringWidth = fm.stringWidth(yLabel);
 
         // where to begin drawing (the rotated image)

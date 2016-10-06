@@ -319,7 +319,7 @@ public class Pc implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<Edge>();
+        Set<Edge> adjacencies = new HashSet<>();
         for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
@@ -331,7 +331,7 @@ public class Pc implements GraphSearch {
         Set<Edge> nonAdjacencies = complete.getEdges();
         Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<Edge>(nonAdjacencies);
+        return new HashSet<>(nonAdjacencies);
     }
 
     //===============================PRIVATE METHODS=======================//

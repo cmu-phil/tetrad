@@ -1,16 +1,13 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SemBicScoreImages;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Wrapper for Fisher Z test.
@@ -18,12 +15,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemBicTest implements IndependenceWrapper {
+    static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        List<DataModel> dataModels = new ArrayList<>();
-        dataModels.add(dataSet);
-        return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha"));
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        return new IndTestScore(score);
     }
 
     @Override
@@ -38,7 +36,8 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        return Collections.singletonList("alpha");
+        List<String> params = new ArrayList<>();
+        params.add("penaltyDiscount");
+        return params;
     }
-
 }

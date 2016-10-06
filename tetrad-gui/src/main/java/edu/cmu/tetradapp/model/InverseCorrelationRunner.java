@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.InverseCorrelation;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.List;
@@ -47,8 +48,8 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public InverseCorrelationRunner(DataWrapper dataWrapper) {
-        super(dataWrapper, new GlassoSearchParams(), null);
+    private InverseCorrelationRunner(DataWrapper dataWrapper) {
+        super(dataWrapper, new Parameters(), null);
     }
 
     /**
@@ -68,9 +69,9 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
         if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
 
-            GlassoSearchParams params = (GlassoSearchParams) getParams();
+            Parameters params = getParams();
 
-            InverseCorrelation search = new InverseCorrelation(dataSet, params.getThr());
+            InverseCorrelation search = new InverseCorrelation(dataSet, params.getDouble("thr", 1e-4));
             Graph graph = search.search();
 
             setResultGraph(graph);

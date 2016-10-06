@@ -187,7 +187,7 @@ public class GraphNodeMeasured extends DisplayNode {
         doDoubleClickAction(null);
     }
 
-    public boolean isEditExitingMeasuredVarsAllowed() {
+    private boolean isEditExitingMeasuredVarsAllowed() {
         return editExitingMeasuredVarsAllowed;
     }
 

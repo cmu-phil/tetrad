@@ -47,22 +47,22 @@ public class Ion {
     /**
      * The input PAGs being to be intergrated, possibly FCI outputs.
      */
-    private List<Graph> input = new ArrayList<Graph>();
+    private List<Graph> input = new ArrayList<>();
 
     /**
      * The output PAGs over all variables consistent with the input PAGs
      */
-    private List<Graph> output = new ArrayList<Graph>();
+    private List<Graph> output = new ArrayList<>();
 
     /**
      * All the variables being integrated from the input PAGs
      */
-    private List<String> variables = new ArrayList<String>();
+    private List<String> variables = new ArrayList<>();
 
     /**
      * Definite noncolliders
      */
-    private Set<Triple> definiteNoncolliders = new HashSet<Triple>();
+    private Set<Triple> definiteNoncolliders = new HashSet<>();
 
     /**
      * separations and associations found in the input PAGs
@@ -74,12 +74,12 @@ public class Ion {
      * tracks changes for final orientations orientation methods
      */
     private boolean changeFlag = true;
-    private Set<Graph> discrimGraphs = new HashSet<Graph>();
-    private Set<Graph> finalResult = new HashSet<Graph>();
+    private Set<Graph> discrimGraphs = new HashSet<>();
+    private Set<Graph> finalResult = new HashSet<>();
 
     // running runtime and time and size information for hitting sets
-    private List<Integer> recGraphs = new ArrayList<Integer>();
-    private List<Double> recHitTimes = new ArrayList<Double>();
+    private List<Integer> recGraphs = new ArrayList<>();
+    private List<Double> recHitTimes = new ArrayList<>();
     private double runtime;
 
     // maximum memory usage
@@ -142,7 +142,7 @@ public class Ion {
         /*
          * Step 1 - Create the empty graph
          */
-        List<Node> varNodes = new ArrayList<Node>();
+        List<Node> varNodes = new ArrayList<>();
         for (String varName : variables) {
             varNodes.add(new GraphNode(varName));
         }
@@ -168,7 +168,7 @@ public class Ion {
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
          */
         steps = System.currentTimeMillis();
-        Queue<Graph> searchPags = new LinkedList<Graph>();
+        Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
         // get d-separations and d-connections
@@ -176,8 +176,8 @@ public class Ion {
         this.separations = sepAndAssoc.get(0);
         this.associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
-        Queue<Graph> step3Pags = new LinkedList<Graph>();
-        Set<Graph> reject = new HashSet<Graph>();
+        Queue<Graph> step3Pags = new LinkedList<>();
+        Set<Graph> reject = new HashSet<>();
         // if no d-separations, nothing left to search
         if (separations.isEmpty()) {
             // makes orientations preventing definite noncolliders from becoming colliders
@@ -217,7 +217,7 @@ public class Ion {
                     Graph pag = searchPags.poll();
                     // Part 3.a - finds possibly d-connecting undirectedPaths between each pair of nodes
                     // known to be d-separated
-                    List<PossibleDConnectingPath> dConnections = new ArrayList<PossibleDConnectingPath>();
+                    List<PossibleDConnectingPath> dConnections = new ArrayList<>();
                     // checks to see if looping over adjacencies
                     if (adjacencySearch) {
                         for (Collection<Node> conditions : fact.getZ()) {
@@ -251,19 +251,19 @@ public class Ion {
                         continue;
                     }
                     // maps conditioning sets to list of possibly d-connecting undirectedPaths
-                    paths = new HashMap<Collection<Node>, List<PossibleDConnectingPath>>();
+                    paths = new HashMap<>();
                     for (PossibleDConnectingPath path : dConnections) {
                         List<PossibleDConnectingPath> p = paths.get(path.getConditions());
                         if (p == null) {
-                            p = new LinkedList<PossibleDConnectingPath>();
+                            p = new LinkedList<>();
                         }
                         p.add(path);
                         paths.put(path.getConditions(), p);
                     }
                     // Part 3.b - finds minimal graphical changes to block possibly d-connecting undirectedPaths
-                    List<Set<GraphChange>> possibleChanges = new ArrayList<Set<GraphChange>>();
+                    List<Set<GraphChange>> possibleChanges = new ArrayList<>();
                     for (Set<GraphChange> changes : findChanges(paths)) {
-                        Set<GraphChange> newChanges = new HashSet<GraphChange>();
+                        Set<GraphChange> newChanges = new HashSet<>();
                         for (GraphChange gc : changes) {
                             boolean okay = true;
                             for (Triple collider : gc.getColliders()) {
@@ -305,7 +305,7 @@ public class Ion {
                         for (Edge edge : gc.getRemoves()) {
                             Node node1 = edge.getNode1();
                             Node node2 = edge.getNode2();
-                            Set<Triple> triples = new HashSet<Triple>();
+                            Set<Triple> triples = new HashSet<>();
                             triples.addAll(gc.getColliders());
                             triples.addAll(gc.getNoncolliders());
                             if (triples.size() != (gc.getColliders().size() + gc.getNoncolliders().size())) {
@@ -407,10 +407,10 @@ public class Ion {
          */
         steps = System.currentTimeMillis();
         Map<Edge, Boolean> necEdges;
-        Set<Graph> outputPags = new HashSet<Graph>();
+        Set<Graph> outputPags = new HashSet<>();
         while (!step3Pags.isEmpty()) {
             Graph pag = step3Pags.poll();
-            necEdges = new HashMap<Edge, Boolean>();
+            necEdges = new HashMap<>();
             // Step 4.a - if x and y are known to be unconditionally associated and there is
             // exactly one trek between them, mark each edge on that trek as necessary and
             // make the tiples on the trek definite noncolliders
@@ -425,7 +425,7 @@ public class Ion {
                         List<List<Node>> treks = treks(pag, fact.x, fact.y);
                         if (treks.size() == 1) {
                             List<Node> trek = treks.get(0);
-                            List<Triple> triples = new ArrayList<Triple>();
+                            List<Triple> triples = new ArrayList<>();
                             for (int i = 1; i < trek.size(); i++) {
                                 // marks each edge in trek as necessary
                                 necEdges.put(pag.getEdge(trek.get(i - 1), trek.get(i)), true);
@@ -480,16 +480,16 @@ public class Ion {
          * those that do not predict false d-separations
          */
         steps = System.currentTimeMillis();
-        Set<Graph> outputSet = new HashSet<Graph>();
+        Set<Graph> outputSet = new HashSet<>();
         for (Graph pag : outputPags) {
-            Set<Triple> unshieldedPossibleColliders = new HashSet<Triple>();
+            Set<Triple> unshieldedPossibleColliders = new HashSet<>();
             for (Triple triple : getPossibleTriples(pag)) {
                 if (!pag.isAdjacentTo(triple.getX(), triple.getZ())) {
                     unshieldedPossibleColliders.add(triple);
                 }
             }
 
-            PowerSet<Triple> pset = new PowerSet<Triple>(unshieldedPossibleColliders);
+            PowerSet<Triple> pset = new PowerSet<>(unshieldedPossibleColliders);
             for (Set<Triple> set : pset) {
                 Graph newGraph = new EdgeListGraph(pag);
                 for (Triple triple : set) {
@@ -500,7 +500,7 @@ public class Ion {
             }
             for (Graph outputPag : finalResult) {
                 if (!predictsFalseIndependence(associations, outputPag)) {
-                    Set<Triple> underlineTriples = new HashSet<Triple>(outputPag.getUnderLines());
+                    Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
                     for (Triple triple : underlineTriples) {
                         outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                     }
@@ -530,7 +530,7 @@ public class Ion {
                 longesthit = i;
             }
         }
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(Double.toString(runtime));
         list.add(Double.toString(totalhit));
         list.add(Double.toString(longesthit));
@@ -557,7 +557,7 @@ public class Ion {
                 largestit = i;
             }
         }
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         list.add(totalit);
         list.add(largestit);
         list.add(averageit);
@@ -616,7 +616,7 @@ public class Ion {
      * Generates NodePairs of all possible pairs of nodes from given list of nodes.
      */
     private List<NodePair> allNodePairs(List<Node> nodes) {
-        List<NodePair> nodePairs = new ArrayList<NodePair>();
+        List<NodePair> nodePairs = new ArrayList<>();
         for (int j = 0; j < nodes.size() - 1; j++) {
             for (int k = j + 1; k < nodes.size(); k++) {
                 nodePairs.add(new NodePair(nodes.get(j), nodes.get(k)));
@@ -629,7 +629,7 @@ public class Ion {
      * Finds all node pairs that are not adjacent in an input graph
      */
     private Set<NodePair> nonadjacencies(Graph graph) {
-        Set<NodePair> nonadjacencies = new HashSet<NodePair>();
+        Set<NodePair> nonadjacencies = new HashSet<>();
         for (Graph inputPag : input) {
             for (NodePair pair : allNodePairs(inputPag.getNodes())) {
                 if (!inputPag.isAdjacentTo(pair.getFirst(), pair.getSecond())) {
@@ -694,7 +694,7 @@ public class Ion {
      */
 
     private Set<Triple> getAllTriples(Graph graph) {
-        Set<Triple> triples = new HashSet<Triple>();
+        Set<Triple> triples = new HashSet<>();
         for (Node node : graph.getNodes()) {
             List<Node> adjNodes = graph.getAdjacentNodes(node);
             for (int i = 0; i < adjNodes.size() - 1; i++) {
@@ -712,9 +712,9 @@ public class Ion {
      */
 
     private List<NodePair> nonIntersection(Graph graph) {
-        List<Set<String>> varsets = new ArrayList<Set<String>>();
+        List<Set<String>> varsets = new ArrayList<>();
         for (Graph inputPag : input) {
-            Set<String> varset = new HashSet<String>();
+            Set<String> varset = new HashSet<>();
             for (Node node : inputPag.getNodes()) {
                 varset.add(node.getName());
             }
@@ -743,15 +743,15 @@ public class Ion {
      * Finds the association or seperation sets for every pair of nodes.
      */
     private List<Set<IonIndependenceFacts>> findSepAndAssoc(Graph graph) {
-        Set<IonIndependenceFacts> separations = new HashSet<IonIndependenceFacts>();
-        Set<IonIndependenceFacts> associations = new HashSet<IonIndependenceFacts>();
+        Set<IonIndependenceFacts> separations = new HashSet<>();
+        Set<IonIndependenceFacts> associations = new HashSet<>();
         List<NodePair> allNodes = allNodePairs(graph.getNodes());
 
         for (NodePair pair : allNodes) {
             Node x = pair.getFirst();
             Node y = pair.getSecond();
 
-            List<Node> variables = new ArrayList<Node>(graph.getNodes());
+            List<Node> variables = new ArrayList<>(graph.getNodes());
             variables.remove(x);
             variables.remove(y);
 
@@ -767,18 +767,18 @@ public class Ion {
                     if (containsAll(pag, subset, pair)) {
                         Node pagX = pag.getNode(x.getName());
                         Node pagY = pag.getNode(y.getName());
-                        ArrayList<Node> pagSubset = new ArrayList<Node>();
+                        ArrayList<Node> pagSubset = new ArrayList<>();
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.isDSeparatedFrom(pagX, pagY, new ArrayList<Node>(pagSubset))) {
+                        if (pag.isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
-                                indep.addMoreZ(new ArrayList<Node>(subset));
+                                indep.addMoreZ(new ArrayList<>(subset));
                             }
                         } else {
                             addAssoc = true;
-                            assoc.addMoreZ(new ArrayList<Node>(subset));
+                            assoc.addMoreZ(new ArrayList<>(subset));
                         }
                     }
                 }
@@ -788,7 +788,7 @@ public class Ion {
 
         }
 
-        List<Set<IonIndependenceFacts>> facts = new ArrayList<Set<IonIndependenceFacts>>(2);
+        List<Set<IonIndependenceFacts>> facts = new ArrayList<>(2);
         facts.add(0, separations);
         facts.add(1, associations);
         return facts;
@@ -827,7 +827,7 @@ public class Ion {
      * @return all the triples in the graph that can be either oriented as a collider or non-collider.
      */
     private Set<Triple> getPossibleTriples(Graph pag) {
-        Set<Triple> possibleTriples = new HashSet<Triple>();
+        Set<Triple> possibleTriples = new HashSet<>();
         for (Triple triple : getAllTriples(pag)) {
             if (pag.isAdjacentTo(triple.getX(), triple.getY()) && pag.isAdjacentTo(triple.getY(), triple.getZ())
                     && !pag.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
@@ -844,7 +844,7 @@ public class Ion {
      * possible GraphChanges which could be used to block said undirectedPaths
      */
     private List<Set<GraphChange>> findChanges(Map<Collection<Node>, List<PossibleDConnectingPath>> paths) {
-        List<Set<GraphChange>> pagChanges = new ArrayList<Set<GraphChange>>();
+        List<Set<GraphChange>> pagChanges = new ArrayList<>();
 
         Set<Map.Entry<Collection<Node>, List<PossibleDConnectingPath>>> entries = paths.entrySet();
         /* Loop through each entry, ie each conditioned set of variables. */
@@ -856,10 +856,10 @@ public class Ion {
             for (PossibleDConnectingPath possible : dConnecting) {
                 List<Node> possPath = possible.getPath();
                 /* Created with 2*# of undirectedPaths as appoximation. might have to increase size once */
-                Set<GraphChange> pathChanges = new HashSet<GraphChange>(2 * possPath.size());
+                Set<GraphChange> pathChanges = new HashSet<>(2 * possPath.size());
 
                 /* find those conditions which are not along the path (used in colider) */
-                List<Node> outsidePath = new ArrayList<Node>(conditions.size());
+                List<Node> outsidePath = new ArrayList<>(conditions.size());
                 for (Node condition : conditions) {
                     if (!possPath.contains(condition))
                         outsidePath.add(condition);
@@ -931,7 +931,7 @@ public class Ion {
 
                             /* list of possible decendant undirectedPaths */
 
-                            List<PossibleDConnectingPath> decendantPaths = new ArrayList<PossibleDConnectingPath>();
+                            List<PossibleDConnectingPath> decendantPaths = new ArrayList<>();
                             decendantPaths
                                     = PossibleDConnectingPath.findDConnectingPaths
                                     (possible.getPag(), current, outside, new ArrayList<Node>());
@@ -950,7 +950,7 @@ public class Ion {
                                 /* walk down path checking orientation (path may already
                                  * imply non-decendency) and creating changes if need be*/
                                 boolean impliesDecendant = true;
-                                Set<GraphChange> colideChanges = new HashSet<GraphChange>();
+                                Set<GraphChange> colideChanges = new HashSet<>();
                                 for (int j = 0; j < decendantPath.size() - 1; j++) {
                                     Node from = decendantPath.get(j);
                                     // chaneges from +1
@@ -990,14 +990,14 @@ public class Ion {
      */
     private List<Graph> possRemove(Graph pag, Map<Edge, Boolean> necEdges) {
         // list of edges that can be removed
-        List<Edge> remEdges = new ArrayList<Edge>();
+        List<Edge> remEdges = new ArrayList<>();
         for (Edge remEdge : necEdges.keySet()) {
             if (!necEdges.get(remEdge))
                 remEdges.add(remEdge);
         }
         // powerset of edges that can be removed
-        PowerSet<Edge> pset = new PowerSet<Edge>(remEdges);
-        List<Graph> possRemove = new ArrayList<Graph>();
+        PowerSet<Edge> pset = new PowerSet<>(remEdges);
+        List<Graph> possRemove = new ArrayList<>();
         // for each set of edges in the powerset remove edges from graph and add to PossRemove
         for (Set<Edge> set : pset) {
             Graph newPag = new EdgeListGraph(pag);
@@ -1015,7 +1015,7 @@ public class Ion {
 
     private void doFinalOrientation(Graph graph) {
         discrimGraphs.clear();
-        Set<Graph> currentDiscrimGraphs = new HashSet<Graph>();
+        Set<Graph> currentDiscrimGraphs = new HashSet<>();
         currentDiscrimGraphs.add(graph);
         while (changeFlag) {
             changeFlag = false;
@@ -1050,8 +1050,8 @@ public class Ion {
             List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
 
             //possible A's and C's are those with arrows into B
-            List<Node> possA = new LinkedList<Node>(intoBArrows);
-            List<Node> possC = new LinkedList<Node>(intoBArrows);
+            List<Node> possA = new LinkedList<>(intoBArrows);
+            List<Node> possC = new LinkedList<>(intoBArrows);
 
             //possible D's are those with circles into B
             for (Node D : intoBCircles) {
@@ -1248,11 +1248,11 @@ public class Ion {
             List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
 
             //keep arrows and circles
-            List<Node> possA = new LinkedList<Node>(possAandC);
+            List<Node> possA = new LinkedList<>(possAandC);
             possA.removeAll(graph.getNodesInTo(b, Endpoint.TAIL));
 
             //keep only circles
-            List<Node> possC = new LinkedList<Node>(possAandC);
+            List<Node> possC = new LinkedList<>(possAandC);
             possC.retainAll(graph.getNodesInTo(b, Endpoint.CIRCLE));
 
             for (Node a : possA) {
@@ -1261,7 +1261,7 @@ public class Ion {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     if (reachablePathFindOrient(graph, a, b, c, reachable)) {
                         return true;
@@ -1279,10 +1279,10 @@ public class Ion {
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
                                             LinkedList<Node> reachable) {
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -1347,7 +1347,7 @@ public class Ion {
     }
 
     private Set<Graph> removeMoreSpecific(Set<Graph> outputPags) {
-        Set<Graph> moreSpecific = new HashSet<Graph>();
+        Set<Graph> moreSpecific = new HashSet<>();
         // checks for and removes PAGs tht are more specific, same skeleton and orientations
         // except for one or more arrows or tails where another graph has circles, than other
         // pags in the output graphs that may be produced from the edge removes in step 4
@@ -1510,13 +1510,13 @@ public class Ion {
          */
 
         public Iterator<Set<E>> iterator() {
-            return new PowerSetIterator<E>(this);
+            return new PowerSetIterator<>(this);
         }
 
         class PowerSetIterator<InE> implements Iterator<Set<InE>> {
             PowerSet<InE> powerSet;
-            List<InE> canonicalOrder = new ArrayList<InE>();
-            List<InE> mask = new ArrayList<InE>();
+            List<InE> canonicalOrder = new ArrayList<>();
+            List<InE> mask = new ArrayList<>();
             boolean hasNext = true;
 
             PowerSetIterator(PowerSet<InE> powerSet) {
@@ -1563,7 +1563,7 @@ public class Ion {
 
             public Set<InE> next() {
 
-                Set<InE> result = new HashSet<InE>();
+                Set<InE> result = new HashSet<>();
                 result.addAll(mask);
                 result.remove(null);
 
@@ -1580,7 +1580,7 @@ public class Ion {
     }
 
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
-        List<List<Node>> paths = new LinkedList<List<Node>>();
+        List<List<Node>> paths = new LinkedList<>();
         treks(graph, node1, node2, new LinkedList<Node>(), paths);
         return paths;
     }
@@ -1612,7 +1612,7 @@ public class Ion {
             }
 
             if (next == node2) {
-                LinkedList<Node> _path = new LinkedList<Node>(path);
+                LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
                 paths.add(_path);
                 continue;

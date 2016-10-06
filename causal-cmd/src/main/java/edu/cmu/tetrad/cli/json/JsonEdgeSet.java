@@ -13,5 +13,5 @@ import java.util.ArrayList;
 
 public class JsonEdgeSet {
     public String name;
-    public ArrayList<JsonEdge> edges = new ArrayList<JsonEdge>() ;
+    public ArrayList<JsonEdge> edges = new ArrayList<>() ;
 }

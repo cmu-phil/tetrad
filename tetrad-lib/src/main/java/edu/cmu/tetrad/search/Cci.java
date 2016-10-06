@@ -100,7 +100,7 @@ public final class Cci {
         this.cutoff = StatUtils.getZForAlpha(alpha);
         this.data = data;
 
-        indices = new HashMap<String, Integer>();
+        indices = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indices.put(variables.get(i), i);
@@ -184,7 +184,7 @@ public final class Cci {
         double[] _x = new double[x.length];
         double[] _y = new double[x.length];
 
-        List<Double> scores = new ArrayList<Double>();
+        List<Double> scores = new ArrayList<>();
 
         for (int m = 0; m < getNumFunctions(); m++) {
             for (int n = 0; n < getNumFunctions(); n++) {
@@ -420,7 +420,7 @@ public final class Cci {
     // False discovery rate, assuming non-negative correlations.
     private double fdr(double alpha, List<Double> pValues, boolean pSorted) {
         if (!pSorted) {
-            pValues = new ArrayList<Double>(pValues);
+            pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
         }
 

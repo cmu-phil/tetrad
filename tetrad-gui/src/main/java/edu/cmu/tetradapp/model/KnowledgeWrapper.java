@@ -35,10 +35,10 @@ import java.util.List;
 public class KnowledgeWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
     private String name;
-    private List<IKnowledge> knowledgeList;
+    private final List<IKnowledge> knowledgeList;
 
-    public KnowledgeWrapper() {
-        this.knowledgeList = new ArrayList<IKnowledge>();
+    private KnowledgeWrapper() {
+        this.knowledgeList = new ArrayList<>();
         this.knowledgeList.add(new Knowledge2());
     }
 

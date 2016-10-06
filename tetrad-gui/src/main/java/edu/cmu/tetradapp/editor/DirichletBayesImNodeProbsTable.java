@@ -50,7 +50,7 @@ import java.util.Arrays;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DirichletBayesImNodeProbsTable extends JTable {
+class DirichletBayesImNodeProbsTable extends JTable {
     private int focusRow = 0;
     private int focusCol = 0;
     private int lastX;

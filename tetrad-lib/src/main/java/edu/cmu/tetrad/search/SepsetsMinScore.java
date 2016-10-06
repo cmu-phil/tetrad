@@ -76,9 +76,9 @@ public class SepsetsMinScore implements SepsetProducer {
                 independenceTest.isIndependent(i, k, v);
                 double _score = independenceTest.getScore();
 
-                if (_score < score) {
+                if (/*_score < 0 && */_score < score) {
                     score = _score;
-                    this.p = independenceTest.getPValue();
+                    this.p = independenceTest.getScore();
                     _v = v;
                 }
             }
@@ -99,9 +99,9 @@ public class SepsetsMinScore implements SepsetProducer {
                 getIndependenceTest().isIndependent(i, k, v);
                 double _score = getIndependenceTest().getScore();
 
-                if (_score < 0 && _score < score) {
+                if (/*_score < 0 && */_score < score) {
                     score = _score;
-                    this.p = independenceTest.getPValue();
+                    this.p = independenceTest.getScore();
                     _v = v;
                 }
             }
@@ -117,7 +117,7 @@ public class SepsetsMinScore implements SepsetProducer {
                 getIndependenceTest().isIndependent(i, k, v);
                 double _score = getIndependenceTest().getScore();
 
-                if (_score < 0 && _score < score) {
+                if (/*_score < 0 &&*/ _score < score) {
                     score = _score;
                     this.p = independenceTest.getPValue();
                     _v = v;

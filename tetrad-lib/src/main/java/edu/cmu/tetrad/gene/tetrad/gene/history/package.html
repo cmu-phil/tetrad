@@ -1,0 +1,39 @@
+<HTML>
+<HEAD><title>edu.cmu.tetrad.gene.history</title></HEAD>
+
+<BODY bgcolor="#FFFFFF">
+<P> Implements a time-series simulation engine suitable for time-series gene
+    expression
+    studies. The simulation engine is constructed as follows. First, an update
+    graph
+    is constructed using the LagGraph class. An update graph is a time series
+    graph
+    where causal edges go from variables (called factors here to avoid
+    ambiguity)
+    at previous time lags >= 1 to the current time lag == 0. This update graph
+    is
+    then used to construct an update function--that is, a function that is
+    capable
+    of taking a history of time series coltData and generating the next step by way
+    of simulation. Once the update graph has been constructed, a compatible
+    history
+    nodes is constructed using it. A history nodes maintains internally a
+    history
+    array--ie a 2D array (m factors x n + 1 time lags, where n is the maximum
+    lag
+    of the update graph) of coltData. The history nodes is capable of updating this
+    array to the next step. Simulation can then be done by repeatedly calling
+    the
+    update() method on this history nodes.. </P>
+
+<P>
+    <I>Note.</I>The word "factor" is used instead of "variable" in the package
+    to avoid confusion. It's possible in a time series graph to
+    consider each variable at a given time lag (or even at a given
+    time step) as a variable in its own right. Therefore, the
+    word "factor" is used to indicate a variable which is not
+    considered at a time lag or time step but rather as stable
+    through time.
+</P>
+</BODY>
+</HTML>

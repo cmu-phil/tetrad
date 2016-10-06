@@ -1,0 +1,818 @@
+<html>
+
+
+<head>
+
+
+    <title>GeneticSimulator</title>
+
+
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+
+<body>
+<table width="99%" border="1" bgcolor="maroon">
+    <tr>
+        <td><h2><font color="white">Simulating Genetic Regulatory Networks</font></h2></td>
+    </tr>
+</table>
+<p><font color="#996633"><b><a><font color="#000000">Version
+    1.2<br>
+    Richard Scheines and Joseph Ramsey</font></a></b></font></p>
+<p><font color="#000000"><b><a href="#General">The
+    General Model</a></b></font></p>
+<ol>
+    <li><font color="#000000"><b><a href="#Times">Time
+        Series Graphs</a></b></font></li>
+    <li><font color="#000000"><b><a href="#Lag">Lag
+        Graphs </a></b></font></li>
+    <li><font color="#000000"><b><a href="#Sim">Simulation
+        Theory</a></b></font></li>
+</ol>
+<p><font color="#000000"><b><a href="#Prog">Tetrad
+    4</a></b></font></p>
+<ol>
+    <li><font color="#000000"><b><a href="#Spec">Specifying
+        the Graph</a></b></font></li>
+    <li><font color="#000000"><b><a href="#SpecPara">Specifying
+        the Parametric Model</a></b></font></li>
+    <li><font color="#000000"><b><a href="#SpecInst">Specifying
+        the Instantiated Model</a></b></font></li>
+    <li><font color="#000000"><b><a href="#Init">Initializing
+        the Cells</a></b></font></li>
+    <li><font color="#000000"><b><a href="#AggMeas">Aggregation
+        and Measurement Error</a></b></font></li>
+    <li><font color="#000000"><b><a href="#Run">Running
+        a Simulation</a></b></font></li>
+</ol>
+<p><font color="#000000"><b><a href="#Glossary">Glossary
+    of Terms<br>
+</a><a href="#Ref">References</a></b></font>
+    <font color="#000000"><br>
+    </font></p>
+<p><font color="#000000"><b><a name="General"></a><br>
+    The General Model</b></font></p>
+<p><font color="#000000">To simulate data in Tetrad 4, you must specify a <a href="#Lag_Graph"
+                                                                             style="color:#996633; text-decoration:none">Lag
+    graph</a> and then interpret it as a parametric model. There are 4 choices of
+    <a href="#PN">parametric models</a>,
+    where in each either i) the value of each variable at the current time is a
+    function of its causal parents and an error term, or ii) the probability distribution
+    of the variable is a function of its causal parents. </font></p>
+<p><font color="#000000"><b>Understanding the General Model</b></font></p>
+<p><font color="#000000">Consider a discrete time series involving N individuals,
+    each with M variables G1 through Gm. For example, Figure 11 represents a time
+    series for three variables, each measured at 5 times. </font></p>
+<p><font color="#000000"><img src="images/genetics/causal5x.gif" width="443" height="451" align="center"></font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><a name="Times"> </a> <br>
+    Understanding Time Series Graphs</b></font></p>
+<p><font color="#000000">If we assume that the process modelled is stable over
+    time, then we can represent the causal structure of the series with a <a href="#time_series"
+                                                                             style="color:#996633; text-decoration:none">time
+        series graph</a> that includes the smallest fragment of the series that repeats.
+    The number of temporal slices in the time series graph is the longest lag of
+    direct influence plus one. For example, the time series graph in Figure 33,
+    which represents the series in Figure 11, needs three temporal slices to represent
+    a repeating sequence, because G2 has a direct effect on G3 with a temporal lag
+    of two.</font></p>
+<p><font color="#000000"><img src="images/genetics/timeseries.gif" width="495" height="336" align="center"></font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><a name="Lag"> </a><br>
+    Understanding Lag Graphs</b></font></p>
+<p><font color="#000000">In order to simulate data from this class of models,
+    we need to express each variable (or its probability distribution) at an arbitrary
+    "current time" as a function of its direct causes. To represent only the set
+    of direct causes for each variable, we construct a <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
+        graph</a>. For example, the <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
+        graph</a> in Figure 55 expresses the causal information needed to simulate the
+    time series represented in Figure 11 and Figure 33. The <a href="#Lag_Graph"
+                                                               style="color:#996633; text-decoration:none">Lag
+        graph</a> consists of the 3 variables repeated in temporal slices from lag =
+    mlag (most remote direct influence) to lag=0 (current time), but includes <b>only
+        edges that are into variables at lag = 0,</b> that is, it includes<b> only edges
+        that represent direct influences into the current time.</b></font></p>
+<p><font color="#000000"><img src="images/genetics/laggraph.gif" width="622" height="298" align="center"></font></p>
+<p>&nbsp; </p>
+<p><font color="#000000"><b>Note:</b> We connect all pairs of variables at the
+    beginning of the repeating sequence with a double-headed arrow to represent
+    an unconstrained causal connection, so that d-separation applied to this graph
+    does not entail that these variables are independent, contrary to the fact that
+    later versions of the same variable are causally connected in the time series
+    graph </font></p>
+<p><font color="#000000">The time lag i in a <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
+    graph</a> is indexed by ":Li". Thus, variable G1 at the current time (lag of
+    0) in an Lag graph is G1:L0, and the same variable two time slices in the past
+    G1:L2. The constant mlag is the maximum lag of direct influence. </font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><a name="Sim"> </a><br>
+    Undertanding the Data Generated</b></font></p>
+<p><font color="#000000">To simulate data in Tetrad 4, you must specify a <a href="#Lag_Graph"
+                                                                             style="color:#996633; text-decoration:none">Lag
+    graph</a> and then interpret it as a parametric model. There are 4 choices of
+    parametric models, where in each either i) the value of each variable at the
+    current time is a function of its causal parents and an error term, or ii) the
+    probability distribution of the variable is a function of its causal parents.
+    Given an instantiation of the chosen parametric model, and the assumption that
+    the causal relations remain constant over time for each individual, values for
+    N individuals (cells) over T times can be simulated to produce a data cube that
+    is: </font></p>
+<blockquote>
+    <p><font color="#000000">N (individuals) x M (variables) x T (times).</font></p>
+</blockquote>
+<p><font color="#000000"><br>
+    <br>
+    Although the cube has three dimensions, we will store it in the standard two,
+    by repeating M columns for each time slice, as so:</font></p>
+<p><font color="#000000"><img src="images/genetics/datacube.gif" width="728" height="262" align="center"></font></p>
+<p><font color="#000000">The simulation to produce these data is run in two stages:
+    an <a href="#init" style="color:#996633; text-decoration:none">"initialization"
+        phase</a> and an "update" phase. The initialization phase must assign values
+    for each individual for at least as many times as the <a href="#Max_lag"
+                                                             style="color:#996633; text-decoration:none">maximum
+        lag</a> in the time series model, i.e, from time t = 1 until time t = mlag.
+    After time � mlag, values can be assigned to variables for a given individual
+    using the given instantiation of the parametric model that interprets the <a href="#Lag_Graph"
+                                                                                 style="color:#996633; text-decoration:none">Lag
+        graph</a>. <br>
+    <br>
+    Data collection regimes for protein expression involve tissues that contain
+    thousands of cells, not all of which behave strictly identically and not all
+    of which can be measured in isolation. <br>
+    <br>
+    Since current technology cannot perfectly measure the levels, even relatively,
+    of gene (or mRNA) expression, or levels of protein synthesis in cells, we also
+    allow the user to specify a measurement model that aggregates cells by dish
+    and models measurement error.</font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><a name="Prog"> </a><br>
+    Using Tetrad: Setting Up the Program</b> </font></p>
+<p><font color="#000000"><br>
+    This section will explain how to specify the graph, choose a parametric model
+    to interpret the graph, instantiate the parameters of the model, pick an initialization
+    routine, and finally specify the measurement model. </font></p>
+<p><font color="#000000"><br>
+    <img src="images/genetics/SimSession.gif" height="450" width="516"></font></p>
+<p><font color="#000000">When the program opens, it will display the empty workbench.
+    In order to generate data, you need to specify a graph, a <a href="#PN" style="color:#996633; text-decoration:none">parametric
+        model (PM)</a>, an <a href="#IM" style="color:#996633; text-decoration:none">instantiation
+        of this model (IM)</a>, and connect them all to a Data modelNode. These objects can
+    be deposited on the workbench by clicking on their icon in the left and clicking
+    where you want them located on the workbench, and then by clicking on the "Flow-Charter"
+    icon on the left and then dragging from one modelNode to another to connect them.
+    The skeleton for a simulation looks like Figure 9. </font></p>
+<blockquote>
+    <p><font color="#000000"><img src="images/genetics/selectLag.gif" height="108" width="240"></font></p>
+</blockquote>
+<p><font color="#000000">After double-clicking on the graph modelNode - you will be
+    given a choice (Figure 11) of whether you want to specify a regular graph or
+    a <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag graph</a>.
+</font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><a name="Spec"> </a></b></font><font color="#000000"><b><br>
+    Specifying The Graph</b> </font></p>
+<p><font color="#000000">You will then be prompted for whether you want to specify
+    the graph manually or randomly, with manually the default.</font></p>
+<p><font color="#000000"><b>2.1 Manual Graph Specification</b> </font></p>
+<ol>
+    <li><font color="#000000"> User Specifies M, the number of variables <br>
+        (range: 1 to 500, default = 5)<br>
+        <br>
+    </font></li>
+    <li><font color="#000000"> User Specifies mlag <br>
+        (range: 1 to 5, default = 1)<br>
+        <br>
+    </font></li>
+    <li><font color="#000000"> A default Lag graph is drawn for user in the graph
+        drawing window with an arrow from each Gi:L1 to Gi:L0, e.g., with defaults:
+        mlag = 1 and M = 5 (Figure 13)<br>
+        <img src="images/genetics/defaultLagGraph.gif" height=238 width=365> <br>
+        <br>
+    </font></li>
+    <li><font color="#000000">User completes the <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
+        graph</a> manually, that is, they add edges from variables at lag > 0 into
+        variables at lag = 0. No other edges are allowed in this representation of
+        the series.</font></li>
+</ol>
+<p><font color="#000000"><b>2.2 Random Graph Specification</b> </font></p>
+<p><font color="#000000">If you choose Random Graph Specification, you will be
+    confronted with the dialogue box in Figure 15, which asks you to set four parameters.<br>
+    <br>
+    <img src="images/genetics/randPara.gif" height=250 width=400> </font></p>
+<ol>
+    <li><font color="#000000"> ) User Specifies M, the number of variables in each
+        individual <br>
+        (range: 1 to 500, default = 5)<br>
+        <br>
+    </font></li>
+    <li><font color="#000000"> User Specifies mlag <br>
+        (range: 1 to 5, default = 1) <br>
+        <br>
+    </font></li>
+    <li><font color="#000000"> User chooses and sets the value of exactly one of:<br>
+        <br>
+        a) constant indegree ci (range: 0 to M*mlag, default = 2) <br>
+        b) max indegree mxi (range: 0 to M*mlag, default = 2) <br>
+        c) mean indegree mni (range: 0 to M, default = 2) <br>
+        <br>
+        a) constant indegree - choose parents(Gi) by putting a uniform distribution
+        over the possible parents of Gi (that is, all variables earlier in time) and
+        drawing without replacement until |parents(Gi)| = ci <br>
+        b) max indegree - for each variable in the set of possible parents of Gi ,include
+        it in parents(Gi) if a random draw from a uniform [0,1] is greater than cutoff
+        = 1/|possible parents of Gi|, until either the possible parents of Gi are
+        exhaused, or |parents(Gi)| = mxi whichever is first. <br>
+        c) mean indegree - for each variable Gi, decide for each variable in the set
+        of possible parents of Gi to include it in parents(Gi) if a random draw from
+        a uniform [0,1] is greater than cutoff = 1/|possible parents of Gi|, until
+        the possible parents of Gi are exhaused. <br>
+        <br>
+    </font></li>
+    <li><font color="#000000">User chooses the approximate percent of unregulated
+        genes. A gene is "unregulated" if its value at a time does not depend on any
+        other gene besides itself at a previous time. <br>
+        (range: 0-100), default = 10) </font></li>
+</ol>
+<p><font color="#000000"><b>2.3 Output and Storage</b> </font></p>
+<p><font color="#000000">If the graph involves a managable number of vertices
+    (<30), then the graph editor represents it pictorially, allowing you to edit
+    the graph by adding or taking away edges. For example, in Figure 17 we show
+    a Lag graph with five genes and a maxlag = 2 after adding a few other regulating
+    connections. <br>
+    <br>
+    <img src="images/genetics/LagWith5.gif" height=419 width=523><br>
+    Figure 17: Lag Graph with 5 Genes and Mlag=2 <br>
+    <br>
+    If the number of genes is large, e.g. 5,000, then representing the <a href="#Lag_Graph"
+                                                                          style="color:#996633; text-decoration:none">Lag
+        graph</a> pictorially is a waste. In that case we change to a textual representation
+    in which each gene is given a row, and the genes that regulate (cause) it are
+    listed on its row. For example, Figure 19 shows the top 20 or so lines of a
+    <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag graph</a>
+    with 500 variables. In this representation, Gene 5 (G005) is regulated by itself
+    one time step back (G005:1) and by Gene 461 two time steps back (G461:2). This
+    representation can be saved as a text file to disk and then processed by software
+    of your choice.</font></p>
+<p><font color="#000000"> <img src="images/genetics/LagText.gif" height=420 width=429><br>
+    Figure 19: Large Lag Graph Represented Textually</font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><a name="SpecPara"> </a><br>
+    Specifying the Parametric Model</b><br>
+    <br>
+    Having specified the <a href="#Lag_Graph" style="color:#996633; text-decoration:none">Lag
+        graph</a>, you must now intrepret the graph as a parametric model. <em>Currently,
+        only one type of parametric model is implemented-- the &quot;Boolean Glass Gene
+        Parametric Model.&quot; When you double-click the PM modelNode at this, point, that
+        type of parametric model will automatically be chosen for you.</em></font></p>
+<p><em>Eventually, four types of parametric models will be implemented, as follows:</em></p>
+<ol>
+    <li><em><font color="#000000"><a href="#BoolGlass" ; style="color:#996633; text-decoration:none">Boolean
+        Glass Gene Parametric Model</a> </font></em></li>
+    <li><em><font color="#000000"><a href="#GenGlass" ; style="color:#996633; text-decoration:none">General
+        Glass Gene Parametric Model</a></font></em></li>
+    <li><em><font color="#000000"><a href="#GAM" ; style="color:#996633; text-decoration:none">General
+        Additive Model Gene Parametric Model </a></font></em></li>
+    <li><em><font color="#000000"><a href="#BNSEM" ; style="color:#996633; text-decoration:none">Bayes
+        Net Standard Error Model</a> </font></em></li>
+</ol>
+<p><font color="#000000"><em>These families are not exclusive, but each has advantages.</em></font>
+</p>
+<p><font color="#000000"><a name="BoolGlass"> </a><b><br>
+    3.1 <a href="#BGGPM" style="color:#996633; text-decoration:none">Glass Updating</a></b></font>
+    - Implemented.</p>
+<p><font color="#000000">In both Glass (Edwards & Glass, 2000) and General Updating
+    parametric models, the value of each gene Gi at the current time (a lag of 0)
+    Gi:L0 is set by a function with the following general form:<br>
+    <img src="images/genetics/updateForm1.gif" height=37 width=583><br>
+    <br>
+    where: <img src="images/genetics/errorForm1.gif" height=19 width=117> is an
+    "error" term drawn from a given probability distribution (discussed below),
+    all variables are continuous, and Fi is a function specified by the user. The
+    difference between Glass and General updating models involves only the form
+    of the functions Fi.</font></p>
+<p><font color="#000000"> <br>
+    3.1.1 Preliminary Binary Projection<br>
+    <Br>
+    Even though the variables in this parametric model class are continuous, Glass
+    functions take boolean valued inputs, so some pre-processing is necessary. The
+    inputs to the function Fi are the members of the set P = {parents(Gi:L0)/Gi:L1},
+    that is, the parents of Gi:L0 except for Gi:L1, which is already in the updating
+    function. The idea behind Glass functions is to simplify the input to whether
+    a given gene is expressing at "high" or "low" levels. We map each Gp � P to
+    0 (low, that is, below its average expression level of 0) or 1 (high, that is,
+    above 0). We do this with the following binary projection <b>BP:</b><br>
+    <img src="images/genetics/BPform.gif" height=35 width=407> <br>
+    <br>
+    Simulated values in for variables Gi will range mostly over the interval [-2.0,
+    2.0] and will oscillate above and below 0.0. Since raw microarray data is typically
+    given as a ratio of microarray spot brightness to average spot intensity, where
+    this ratio typically ranges from near 0.0 up to about 10.0, with averages around
+    1.0, it is useful to think of the simulated data as loglinear with respect to
+    raw data-viz., log(x) of each intensity ratio x is recorded in the simulation
+    in place of the intensity ratio x.<br>
+    <Br>
+    Note: We thank Stuart Kauffmann for pointing us to the Glass model. </font></p>
+<p><font color="#000000">3.1.2 The Function Table for Fi<br>
+    <br>
+    Since genetic regulators either inhibit or activate their targets, <a style="color:#996633; text-decoration:none"
+                                                                          href="#Edwards">Edwards
+        and Glass (2000, p.3)</a> set the range of Fi to {-1,1}. To specify a particular
+    Fi, construct a truth-table with 1 column for each <img src="images/genetics/truthForm1.gif" height=20 width=50>
+    and one for the output of Fi. Thus the truth table will have 2 to the power
+    of P rows. For example, if P = {G3:L1, G5:L2}, then the function table for Fi
+    is:<br>
+    <br>
+</font> <font color="#000000"><img src="images/genetics/functionTable1.gif" height=98 width=188>
+</font></p>
+<p><font color="#000000">Filling in the Fi column in this function table specifies
+    the particular instantiation of Fi used in the update function for variable
+    Gi, thus this step is left to the Instantiated Model specification below.<bR>
+    <br>
+    By picking the Glass Updating parametric family, you are committing yourself
+    to the class of models parametrized by the update function above and Glass functions
+    for the Fi. <br>
+</font></p>
+<p><font color="#000000"><a name="GenGlass"> </a><br>
+    <b><em>3.2 <a href="#GGGPM" style="color:#996633; text-decoration:none">General
+        Updating</a></em></b><em> - Unimplemented.<br>
+        <br>
+        Again, in both Glass and General Updating parametric models, the current value
+        of each variable Gi:0 is set by a function with the following general form.<br>
+        <img src="images/genetics/updateForm2.gif" height=38 width=591><br>
+        <Br>
+        where: <img valign="center" src="images/genetics/genError1.gif" height=22 width=165>is
+        an "error" term drawn from a given probability distribution (discussed below),
+        all variables are continuous, and Fi is a function specified by the user. The
+        difference between Glass and General updating models involves only the form
+        of the functions Fi. In General Updating parametric models, the user is free
+        to specify any function for the Fi, not just Glass functions. Here we will use
+        Tianjiao's GAM specifier to allow the user to specify, for each i, the function
+        Fi. </em></font></p>
+<p><font color="#000000"><a name="GAM"> </a><br>
+    <b><em>3.3 <a href="#GAM_def" style="color:#996633; text-decoration:none">GRN
+        GAM</a></em></b> <em>- Unimplemented.<br>
+        <br>
+        In this parametric family, the variables are continuous and the update function
+        is slightly more general than the ones used in 3.1 and 3.2.<br>
+        <img src="images/genetics/updateForm3.gif" height=33 width=365> <br>
+        <Br>
+        GAM stands for general additive model, so the only constraint on this parametric
+        model is that the Gi are additive functions. The particular instantiaions of
+        Fi for each i are fixed when you specify the instantiated model (IM). Here we
+        will use Tianjiao's GAM specifier to allow the user to specify, for each i,
+        the function Gi. </em></font></p>
+<p><font color="#000000"><br>
+    <a name="BNSEM"> </a><b><br>
+        <em>3.4 <a href="#BMSTM" style="color:#996633; text-decoration:none">BN SEM</a></em></b>
+    <em> - Unimplemented.<br>
+        <br>
+        In this parametric family, the variables are discrete and the causal system
+        is just interpreted as a standard discrete Bayes Network, that is, the update
+        function is just a conditional probability table. &lt;br&gt;<br>
+        <img src="images/genetics/updateForm4.gif" height=32 width=344> <br>
+        <Br>
+        At the parametric level, you need to specify the number of categories for each
+        variable, as well as the value of each category. This is identical to the Bayes
+        Net parametric model in general Tetrad 4 models. </em></font></p>
+<p><font color="#000000"><b><a name="SpecInst"> </a><br>
+    Specifying the Instantiated Model</b><br>
+    <br>
+    Once the parametric model has been specified, you need only specfiy values for
+    the parameters in the corresponding <a href="#IM" style="color:#996633; text-decoration:none">instantiated
+        model (IM)</a>. To do this, double-click on the IM modelNode in the session workbench.
+    Close the IM editor to finish. Since the parameters depend on the PM chosen,
+    we cover each of the above classes in turn.</font><font color="#000000"><br>
+    <br>
+    <b>4.1 Glass Updating</b> <br>
+    <br>
+    Recall that the <a href="#update" style="color:#996633; text-decoration:none">update
+        function</a> used in Glass model is:<br>
+    <img src="images/genetics/updateForm1.gif" height=37 width=583> <br>
+    <Br>
+    The free parameters for a Glass model are thus: </font></p>
+<ul>
+    <li><font color="#000000">the rate parameters rate1 and rate 2</font></li>
+    <li><font color="#000000">the distributions over the error terms Ei</font></li>
+    <li><font color="#000000">the Boolean functions F1</font></li>
+</ul>
+<font color="#000000">The error distributions are all assumed to be pairwise indedpendent,
+    and normal with mean 0 and standard deviation SD(Ei). <br>
+    <br>
+    <u>Parameter Defaults</u> <br>
+    Rate 1 = .1<br>
+    Rate 2 = .5<br>
+    Ei ~ N(0,.05) </font>
+<p><font color="#000000">By the structure of the Glass function, an unregulated
+    gene (no other genes besides itself affecting it) will have an equilbirum value
+    of 0. Rate 1 determines how quickly such genes return to equilbrium. If Rate
+    1 is set = .1, for example (its default), then in each time step a gene with
+    no regulators will return 1/10th of the way toward 0, whatever its previous
+    value, before noise. Rate2 governs the influence of other regulators. The Glass
+    functions Fi output +1 (promoting expression) or -1 (inhibiting expression).
+    If Rate 2 is set = .5, then in one time step the contribution to a gene is either
+    +.5 or -.5.<br>
+    <Br>
+    The error terms are meant to simulate random biological error in the process
+    of gene expression. We give a default of mean 0 and standard deviation = .05.<br>
+    <br>
+    The range of Fi is {-1,1}. The number of possible functions for each Fi is <img src="images/genetics/2_2.gif"
+                                                                                    height=36 width=39>,
+    where P is the set of parents of Gi. For example, if P = {G3:L1, G5:L2}, then
+    the uninstantiated function table for Fi is:<br>
+    <Br>
+    <img src="images/genetics/Gchart.gif" height=116 width=220><br>
+    <Br>
+    which can be filled out in 16 different ways. If P contains 5 parents, then
+    there are 32 rows in Fi and there are 2^32 different ways you can instantiate
+    Fi. Thus, we give you a choice of filling in all Fi randomly or manually, with
+    randomly the default. </font></p>
+<p><font color="#000000"><br>
+    <b>Randomly:</b> </font></p>
+<ul>
+    <li><font color="#000000">Draw Fi from: (p(Fi = 1+) = .5, and p(Fi = -1) = .5,
+        but</font></li>
+    <li><font color="#000000">Ensure all inputs to Fi are non-trivial, that is,
+        for each input Pk, insist that at least one pair of rows in the function table
+        exist that are<br>
+        i) identical on all inputs besides Pk, <Br>
+        ii) different on Pk, and different on the output Fi.</font></li>
+</ul>
+<font color="#000000"><br>
+    <b>Manually:</b> Allow the user to assign the value of Fi in each row manually.<br>
+    <br>
+    The window that appears in Tetrad 4 in which you set the parameters for a Boolean
+    Glass Function IM is shown in Figure 23. The defaults for the rate parameters
+    appear on the bottom of the screen. The opening view is of the Boolean function
+    for gene G1, but any gene's function can be selected. In , the function regulating
+    G1 promotes G1 in all cases except when both G2 one time lag back and G3 one time
+    lag back are both expressing above their mean, in which case G1 is inhibited.
+    Boolean functions can be manually edited by clicking in the appropriate Fcn. Value
+    box and replacing the value with +1 or -1.<br>
+    <img src="images/genetics/GlassPara.gif" height=598 width=596><br>
+    <Br>
+    The standard deviation of the error distributions can be changed by selecting
+    the "Errors" tab, and then editing the default of .05 to whatever value you prefer.</font>
+<p><font color="#000000"><b><a name="Init"> </a><br>
+    5. Initializing the Cells</b><br>
+    <br>
+    Given the full parametric model and its instantiation, and assuming that the
+    same model is used for each individual cell, then values for N individuals over
+    T times can be simulated in two stages: an "initialization" phase and an "update"
+    phase. The initialization phase must assign values for all the genes in each
+    individual for time step 1. After this, the update function specified above
+    can be used to assign values to variables for a given individual, with the caveat
+    that if mlag > 1, then not all the "parents" of a variable in time 2 will exist.
+    In that case the update function will simply use the latest value of that variable
+    that does exist as input.<br>
+    <br>
+    Biologically, cells from the same tissue can be starved of nutrients, or manipulated
+    in some other way and all brought into roughly the same state, that is, synchronized.
+    They can then be shocked, e.g., exposed to nutrients, and let run. <br>
+    <Br>
+    Further, many genes in a cell are considered "housekeeping genes," which express
+    protein at some basal rate stably over time. In this version of the simulator
+    we allow the user to choose among two methods for initializing values: synchronized
+    or random. </font></p>
+<p><font color="#000000"><br>
+    <b>5.1 Synchronized Initialization</b> <br>
+</font></p>
+<ol>
+    <li><font color="#000000">For each gene Gi in cell 1,<br>
+    </font></li>
+    <blockquote><font color="#000000"> a. if Gi is a housekeeping gene, that is,
+        its only parent in the Lag graph is itself, then let Gi:1 = 0,<br>
+        b. else draw Gi from a standard normal distribution, i.e, N(0,1) </font></blockquote>
+    <li><font color="#000000">Duplicate cell 1 N times, where N is the total number
+        of individual cells.</font></li>
+</ol>
+<p><font color="#000000"><b>5.2 Random Initialization</b> <br>
+</font></p>
+<ol>
+    <li><font color="#000000">For each gene Gi in each cell, <br>
+    </font></li>
+    <blockquote><font color="#000000"> a. if Gi is a housekeeping gene, that is,
+        its only parent in the Lag graph is itself, then let Gi:1 = 0, <br>
+        b. else draw Gi:1 from a standard normal distribution, i.e, N(0,1) </font></blockquote>
+</ol>
+<p>&nbsp;</p>
+<p><font color="#000000"><a name="AggMeas"> </a><b> <br>
+    Aggregation and Measurement Error</b><br>
+    <br>
+    <b>6.1 Aggregation by Dish</b> <br>
+    <br>
+    So far, we have modelled the progression of gene activity over time for individual
+    cells. We cannot currently obtain biological data on this level, however. In
+    microarray experiments, thousands (or millions) of cells are grown in each of
+    several dishes. For example, Figure 26 shows two dishes with a million cells
+    each. <br>
+    <img src="images/genetics/dish.gif" height=319 width=539><br>
+    <Br>
+    A microarray experiment involves at least the following sequence of steps to
+    begin the experiment: </font></p>
+<ol>
+    <li><font color="#000000">Separate single cell culture into dishes </font></li>
+    <li><font color="#000000">Grow cells in dishes</font></li>
+    <li><font color="#000000">Synchronize Cells</font></li>
+    <li><font color="#000000">Expose dishes to treatment</font></li>
+</ol>
+<p><font color="#000000"><u>Initial Dish to Dish Differences</u> <br>
+    <br>
+    Although they are intentionally minimized, small variations in nutrient or temperature
+    make dish to dish variations inevitable, even at the beginning of an experiment.
+    <br>
+    <Br>
+    To simulate these differences, we need to specify how much variation in expression
+    levels we can expect between dishes. Let that quantity be the <i>standard deviation
+        of expression level difference due to the dish,</i> which we will call sd(DV),
+    with default at 10%. <Br>
+    <Br>
+    For each dish Dj, we draw Dev(Dj) from a normal distribution with mean 100 and
+    standard deviation = sd(DV), that is, N(100, sd(DV)). <br>
+    <BR>
+    We then adjust the initial^3 expression levels in all genes in all the cells
+    in dish Dj by Dev(Dj): <br>
+    <Br>
+    For each dish Dj </font></p>
+<blockquote><font color="#000000"> For each cell Ck in Dj, </font></blockquote>
+<blockquote>
+    <blockquote><font color="#000000"> For each gene Gi in Ck at time 1 (Gi:1),
+    </font><font color="black">
+        <blockquote>
+            <p><font color="#000000">Let Gi = Dev(Dj) % of Gi </font></p>
+        </blockquote>
+    </font></blockquote>
+</blockquote>
+<p><font color="#000000"><u>Dishes and Time</u><br>
+    <br>
+    In the usual studies, although several dishes might begin an experiment in a
+    relatively "synchronized" state, each dish must be "frozen" before it can be
+    processed for measurement, and thus we cannot use the same dish to measure cells
+    at two different time points in the experiment. To measure two time points,
+    we take a sample from one dish at time 1 and a sample from a different dish
+    at time 2, e.g., Figure 29. <Br>
+    <BR>
+    <img src="images/genetics/time_dish.gif" height=575 width=462><br>
+    <br>
+    If the goal is to compare the expression levels of a particular gene at two
+    different times to see if they substantially differ, then this constraint forces
+    us to compare the level of a sample from one dish against a sample from another.
+    This constraint will NOT be imposed by the simulator, but rather by the data
+    analyst after data is generated and stored.</font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><b><br>
+    <BR>
+    6.2 Measurement Error</b><br>
+    <br>
+    After a dish is "frozen" at a time, its RNA is extracted. From this RNA, several
+    samples can be drawn and each "measured" by exposing it to a microarray chip
+    (chips can be re-used) and then digitally converting pixel intensities to gene
+    expression levels (Figure 31). <br>
+    <Br>
+    <img src="images/genetics/Meas_error.gif" height=538 width=568><br>
+    <br>
+    <Br>
+    Chips can be reused approximately four times. Samples from the same dish might
+    vary slightly, chips definitely vary, the same chip functions differently from
+    one use to another, and the pixel digitization routine might include error as
+    well. Each "measurement" therefore, has five sources of potential error: <br>
+    <br>
+</font></p>
+<ol>
+    <li><font color="#000000">dish,</font></li>
+    <li><font color="#000000">sample,</font></li>
+    <li><font color="#000000">chip,</font></li>
+    <li><font color="#000000">re-use of a chip, and</font></li>
+    <li><font color="#000000">pixel digitization</font></li>
+</ol>
+<p><font color="#000000"><br>
+    We discussed how we will model the dish variability above. In this version of
+    the simulator, we will NOT model dish to dish variability beyond initialization.
+    To model the other sources of measurement error, we will proceed as follows.<br>
+    <br>
+    After initializing the cells in an experiment, and adding dish to dish variabiltiy,
+    we will have N cells partitioned into D dishes. After we run the experiment,
+    in which each cell obeys the same causal laws but updates independently of each
+    other, each cell has an expression level at each of t times. </font></p>
+<p><font color="#000000"><u>After Running the Experiment</u><br>
+    <br>
+    <img src="images/genetics/before.gif" height=241 width=661> <br>
+    <Br>
+    We call this the Raw data from the experiment.<br>
+    <br>
+    <u>After RNA Extraction </u><br>
+    <Br>
+    Next, we model the RNA extraction process for each dish by aggregating all the
+    cells in a dish, averaging the expression levels for each gene, and recording
+    an average expression level for each gene in each dish at each time (Figure
+    34):<br>
+    <br>
+    <img src="images/genetics/after.gif" height=376 width=662></font></p>
+<p>&nbsp; </p>
+<p><font color="#000000">The average expression level for a gene Gi at time t
+    in a dish d, is:<br>
+    <img src="images/genetics/equation.gif" height=78 width=154> </font></p>
+<p><font color="#000000"><Br>
+    <u>Adding Measurement Error</u> There remain 4 sources of measurement error:
+    sample, chip to chip, chip re-use, and pixel digitization error. In this version
+    of the simulator - we will NOT model chip re-use variability. We treat each
+    of the other as additive normal error with mean 0 and standard deviation <img src="images/genetics/sigma.gif"
+                                                                                  height=17 width=30>
+    <br>
+    <Br>
+    Let Sample to Sample Variability error <img src="images/genetics/sample_sig.gif" height=25 width=103><br>
+    <br>
+    Let Chip to Chip error <img src="images/genetics/chip_sig.gif" height=25 width=104><br>
+    <br>
+    Pixel digitization error <img src="images/genetics/pixel_sig.gif" height=28 width=115><br>
+    <br>
+    For each sample s taken from a dish d and measured, new values of <img src="images/genetics/EsEc.gif" height=19
+                                                                           width=60>
+    are drawn. For each gene in each sample, a new value of <img src="images/genetics/Epd.gif" height=18 width=22>
+    is drawn. Thus the average measured expression level for each gene Gi at time
+    t is:<br>
+    <br>
+    <img src="images/genetics/meas_exp.gif" height=36 width=286><br>
+    <Br>
+    If we draw 4 samples from each dish, and don't re-use any chips, then our final
+    data table would look as follows:<br>
+    <Br>
+    <img src="images/genetics/after_meas.gif" height=307 width=583><br>
+    <br>
+    We call this the <b>Measurement Data.</b><br>
+    To summarize, the parameters the user must specify for the measurement error
+    model, with defaults in brackets are:<br>
+    <Br>
+</font></p>
+<ol>
+    <li><font color="#000000"><a href="#dish_to_dish" style="color:#996633; text-decoration:none">Dish
+        to Dish variability</a> = sd(DV) [10]</font></li>
+    <li><font color="#000000">Number of samples per dish = S [4]</font></li>
+    <li><font color="#000000">Sample to Sample Variability <img src="images/genetics/sample_sig.gif" height=25
+                                                                width=103>S,
+        [.025]</font></li>
+    <li><font color="#000000"><a href="#chip_to_chip" style="color:#996633; text-decoration:none">Chip
+        to Chip Variability</a> <img src="images/genetics/sample_sig.gif" height=25 width=103>c,
+        [.1]</font></li>
+    <li><font color="#000000">Pixel Digitization <img src="images/genetics/sample_sig.gif" height=25 width=103>pd,
+        [.025]</font></li>
+</ol>
+<p><font color="#000000"><b><a name="Run"> </a><br>
+    Running a Simulation</b><br>
+    <br>
+    To initiate a data generation process, double click on the red-die on the arrow
+    from an IM modelNode to a Data modelNode (). The program will only produce data if it
+    has all the info it needs, otherwise it will prompt you. <br>
+    <br>
+    <img src="images/genetics/startSim.gif" height=299 width=468><br>
+    <br>
+    <u>Simulation Run Parameters:</u><br>
+    <br>
+    After clicking the red die, a dialogue box comes up showing the parameters you
+    must specify, along with their default values (Figure 38).<br>
+    <BR>
+    <img src="images/genetics/SimPara.gif" height=494 width=508><br>
+    <Br>
+    We discussed the measurement model parameters in section 6. For the Simulation
+    Parameters, the number of dishes defaults to 1 and the number of cells per dish
+    to 100,000. The number of time steps generated defaults at 4, and the user has
+    the option of when to start storing data (default at time step 1). The user
+    can also choose how often to store data, with the default every step. <br>
+    <Br>
+    Finally, because there are often thousands of cells and thousands of genes in
+    each cell, many simulations will involve millions of gene expression levels
+    at each time. Call this the raw data. The measured, as opposed to raw data,
+    involves only a few samples from each dish, each of which contains as many measurements
+    as there are genes. Since storing the raw data is expensive relative to the
+    aggregated data with measurement error - we give the user a choice as to whether
+    to store raw data, with the default = no. If the user chooses to store raw data,
+    both data sets will be contained in the data nodes on the workbench in Tetrad.
+</font></p>
+<p>&nbsp;</p>
+<p><font color="#000000"><a name="Glossary"></a> <b>Glossary</b> </font></p>
+<dl>
+    <dt><font color="#000000"><a name="BN"></a>Bayes Network </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="chip"></a>chip </font>
+    <dd><font color="#000000">A micro-array <br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="chip_to_chip"></a>chip to chip variability
+    </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="dish_to_dish"></a>dish to dish variability
+    </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="edge"></a>edge </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="error_term"></a>error term </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="GAM_def"></a>Generally Adititve Model (GAM)
+    </font>
+    <dd><font color="#000000">This model outputs an additive function that is not
+        alwasys linear.<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="init"></a>Initialization </font>
+    <dd><font color="#000000">Synchonized: all copies of orginial </font>
+    <dd><font color="#000000">Random: Different levels of gene expression <br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="IM"></a>Instantiated Model (IM) </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="Lag_Graph"></a>Lag Graph </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="Max_lag"></a>Maximum Lag </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="meas_data"></a>Measurement Data </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="PN"></a>Parametric Model (PM) </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="pixel_dish"></a>Pixel Dish </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="rate_para"></a>Rate Parameters </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="raw_data"></a>Raw Data </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="reg_graph"></a>Regular Graph </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="regulation"></a>Regulation </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="sample_to_sample"></a>Sample to Sample variability
+    </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="SEM"></a>SEM </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="BGGPM"></a>Boolean Glass Gene Parametric
+        Model </font>
+    <dd><font color="#000000"><br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="GGGPM"></a>General Glass Gene Parametric
+        Model </font>
+    <dd><font color="#000000"><br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="GAMGPM"></a>General Additive Model Gene Parametric
+        Model </font>
+    <dd><font color="#000000"><br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="BMSTM"></a>Bayes Net Standard Error Model
+    </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="time_series"></a>Time Series Graph </font>
+    <dd><font color="#000000">definition<br>
+        <br>
+    </font>
+    <dt><font color="#000000"><a name="update"></a>Update Function </font>
+    <dd><font color="#000000">Defines how influence is transmitted to gene in current
+        time, can include variables from past times<br>
+        <br>
+    </font>
+    <dt>&nbsp;</dt>
+</dl>
+<p><font color="#000000"><a name="Glossary"></a> <b>References</b> </font></p>
+<blockquote><font color="#000000"><a name="Edwards"> </a>Edwards, R., & Glass
+    L. (2000). Combinatorial explosion in model gene networks., Chaos, V. 10, N.
+    3, September., pp. 1-14.</font></blockquote>
+</body>
+
+
+</html>

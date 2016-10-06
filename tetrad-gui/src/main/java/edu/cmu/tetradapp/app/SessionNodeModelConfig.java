@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 
 import javax.swing.*;
@@ -73,10 +72,10 @@ public interface SessionNodeModelConfig {
     JPanel getEditorInstance(Object[] arguments);
 
 
-    /**
-     * @return a newly created instance of the parameters for this model.
-     */
-    Params getParametersInstance();
+//    /**
+//     * @return a newly created instance of the parameters for this model.
+//     */
+//    Parameters getParametersInstance();
 
 
     /**

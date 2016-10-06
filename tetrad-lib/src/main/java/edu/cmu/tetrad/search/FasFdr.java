@@ -212,7 +212,7 @@ public class FasFdr implements IFas {
     }
 
     private Map<Node, Set<Node>> emptyGraph(List<Node> nodes) {
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
         for (Node node : nodes) {
             adjacencies.put(node, new TreeSet<Node>());
@@ -227,12 +227,12 @@ public class FasFdr implements IFas {
             removed = false;
 
             for (Node x : nodes) {
-                List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
                 for (Node y : adjx) {
                     if (!adjacencies.get(x).contains(y)) continue;
-                    List<Node> adjy = new ArrayList<Node>(adjacencies.get(y));
-                    List<Node> adj = new ArrayList<Node>(adjx);
+                    List<Node> adjy = new ArrayList<>(adjacencies.get(y));
+                    List<Node> adj = new ArrayList<>(adjx);
                     for (Node node : adjy) if (!adj.contains(node)) adj.add(node);
                     removed = removed || searchICov(adj, test, adjacencies, false);
                 }
@@ -242,7 +242,7 @@ public class FasFdr implements IFas {
 
 
     private Map<Node, Set<Node>> completeGraph(List<Node> nodes) {
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             adjacencies.put(nodes.get(i), new HashSet<Node>());
@@ -268,7 +268,7 @@ public class FasFdr implements IFas {
             removed = false;
 
             for (Node x : nodes) {
-                List<Node> adj = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> adj = new ArrayList<>(adjacencies.get(x));
                 adj.add(x);
                 removed = removed || searchICov(adj, test, adjacencies, false);
             }
@@ -277,10 +277,10 @@ public class FasFdr implements IFas {
 
 
     private Map<Node, Set<Node>> copy(Map<Node, Set<Node>> adjacencies) {
-        Map<Node, Set<Node>> copy = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> copy = new HashMap<>();
 
         for (Node node : adjacencies.keySet()) {
-            copy.put(node, new HashSet<Node>(adjacencies.get(node)));
+            copy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
         return copy;
@@ -407,7 +407,7 @@ public class FasFdr implements IFas {
 
                 if (addDependencies) {
                     if (independent) {
-                        List<Node> theRest = new ArrayList<Node>();
+                        List<Node> theRest = new ArrayList<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -439,7 +439,7 @@ public class FasFdr implements IFas {
                     if (independent) {
                         if (!adjacencies.get(x).contains(y)) continue;
 
-                        List<Node> theRest = new ArrayList<Node>();
+                        List<Node> theRest = new ArrayList<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -538,7 +538,7 @@ public class FasFdr implements IFas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -572,11 +572,11 @@ public class FasFdr implements IFas {
         for (Node x : nodes) {
             if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
 
-            List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, knowledge);
 
@@ -631,7 +631,7 @@ public class FasFdr implements IFas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {

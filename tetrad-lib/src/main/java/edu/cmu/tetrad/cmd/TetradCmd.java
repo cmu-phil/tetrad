@@ -553,7 +553,7 @@ public final class TetradCmd {
             throw new RuntimeException("numEdges must be an integer.");
         }
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < _numNodes; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));

@@ -165,7 +165,7 @@ public class Fasts implements IFas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -215,7 +215,7 @@ public class Fasts implements IFas {
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -402,7 +402,7 @@ public class Fasts implements IFas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -437,7 +437,7 @@ public class Fasts implements IFas {
                 if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
             }
 
-            List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
@@ -498,7 +498,7 @@ public class Fasts implements IFas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {
@@ -682,7 +682,7 @@ public class Fasts implements IFas {
     private List<List<Node>> returnSimilarPairs(final IndependenceTest test, Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if(x.getName().equals("time") || y.getName().equals("time")){
-            return new ArrayList<List<Node>>();
+            return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
@@ -761,7 +761,7 @@ public class Fasts implements IFas {
             }
         }
 
-        List<List<Node>> pairList = new ArrayList<List<Node>>();
+        List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
         return(pairList);

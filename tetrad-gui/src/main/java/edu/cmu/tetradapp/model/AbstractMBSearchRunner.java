@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -48,14 +49,12 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      */
     private DataSet dataModel;
 
-
     /**
      * The variables in the markov blanket.
      *
      * @serial may be null.
      */
     private List<Node> variables;
-
 
     /**
      * The source data model.
@@ -69,10 +68,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      *
      * @serial not null.
      */
-    private MbSearchParams params;
-
-
-
+    private Parameters params;
 
     /**
      * The name of the search algorithm
@@ -81,14 +77,13 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      */
     private String searchName;
 
-
     /**
      * Conctructs the abstract search runner.
      *
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
      */
-    public AbstractMBSearchRunner(DataModel source, MbSearchParams params) {
+    AbstractMBSearchRunner(DataModel source, Parameters params) {
         super(castData(source));
         if (source == null) {
             throw new NullPointerException("The source data was null.");
@@ -104,7 +99,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * @return the parameters for the search.
      */
-    public MbSearchParams getParams() {
+    public Parameters getParams() {
         return this.params;
     }
 
@@ -154,7 +149,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Makes sure the data is not empty.
      */
-    protected void validate() {
+    void validate() {
         if (this.source.getNumColumns() == 0 || this.source.getNumRows() == 0) {
             throw new IllegalStateException("Cannot run algorithm on an empty data set.");
         }
@@ -164,11 +159,11 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Sets the results of the search.
      */
-    protected void setSearchResults(List<Node> nodes) {
+    void setSearchResults(List<Node> nodes) {
         if (nodes == null) {
             throw new NullPointerException("nodes were null.");
         }
-        this.variables = new ArrayList<Node>(nodes);
+        this.variables = new ArrayList<>(nodes);
         if (nodes.isEmpty()) {
             this.dataModel = new ColtDataSet(source.getNumRows(), nodes);
         } else {
@@ -182,37 +177,37 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @return an appropriate independence test given the type of data set and values
      * in the params.
      */
-    protected IndependenceTest getIndependenceTest() {
-        IndTestType type = params.getIndTestType();
+    IndependenceTest getIndependenceTest() {
+        IndTestType type = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
 //            if (IndTestType.CORRELATION_T == type) {
 //                return new IndTestCramerT(this.source, params.getParameter1());
 //            }
             if (IndTestType.FISHER_Z == type) {
-                return new IndTestFisherZ(this.source, params.getAlpha());
+                return new IndTestFisherZ(this.source, params.getDouble("alpha", 0.001));
             }
             if (IndTestType.FISHER_ZD == type) {
-                return new IndTestFisherZGeneralizedInverse(this.source, params.getAlpha());
+                return new IndTestFisherZGeneralizedInverse(this.source, params.getDouble("alpha", 0.001));
             }
             if (IndTestType.FISHER_Z_BOOTSTRAP == type) {
-                return new IndTestFisherZBootstrap(this.source, params.getAlpha(), 15, this.source.getNumRows() / 2);
+                return new IndTestFisherZBootstrap(this.source, params.getDouble("alpha", 0.001), 15, this.source.getNumRows() / 2);
             }
             if (IndTestType.LINEAR_REGRESSION == type) {
-                return new IndTestRegression(this.source, params.getAlpha());
+                return new IndTestRegression(this.source, params.getDouble("alpha", 0.001));
             } else {
-                params.setIndTestType(IndTestType.FISHER_Z);
-                return new IndTestFisherZ(this.source, params.getAlpha());
+                params.set("indTestType", IndTestType.FISHER_Z);
+                return new IndTestFisherZ(this.source, params.getDouble("alpha", 0.001));
             }
         }
         if (this.source.isDiscrete()) {
             if (IndTestType.G_SQUARE == type) {
-                return new IndTestGSquare(this.source, params.getAlpha());
+                return new IndTestGSquare(this.source, params.getDouble("alpha", 0.001));
             }
             if (IndTestType.CHI_SQUARE == type) {
-                return new IndTestChiSquare(this.source, params.getAlpha());
+                return new IndTestChiSquare(this.source, params.getDouble("alpha", 0.001));
             } else {
-                params.setIndTestType(IndTestType.CHI_SQUARE);
-                return new IndTestChiSquare(this.source, params.getAlpha());
+                params.set("indTestType", IndTestType.CHI_SQUARE);
+                return new IndTestChiSquare(this.source, params.getDouble("alpha", 0.001));
             }
         }
 

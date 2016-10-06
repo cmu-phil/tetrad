@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map
+        PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+        "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<map version="2.0">
+
+    <!-- Top Level -->
+    <mapID target="tetrad_overview" url="manual/tetrad_overview.html"/>
+    <mapID target="manual" url="manual/manual.html"/>
+    <mapID target="why_doesnt_tetrad" url="manual/why_doesnt_tetrad.html"/>
+    <mapID target="references" url="manual/references.html"/>
+    <mapID target="for_further_help" url="manual/for_further_help.html"/>
+    <mapID target="under_construction" url="manual/under_construction.html"/>
+
+    <!-- Main Workspace  -->
+
+    <mapID target="main_workspace_explained" url="manual/main_workspace/main_workspace_explained.html"/>
+    <mapID target="tetrad_menubar" url="manual/main_workspace/tetrad_menubar.html"/>
+    <mapID target="tetrad_toolbar" url="manual/main_workspace/tetrad_toolbar.html"/>
+    <mapID target="tetrad_versioning" url="manual/main_workspace/tetrad_versioning.html"/>
+    <mapID target="how_to_build_a_session" url="manual/main_workspace/how_to_build_a_session.html"/>
+
+    <!-- Boxes -->
+    <mapID target="each_box_explained" url="manual/boxes/each_box_explained.html"/>
+    <mapID target="graph_box" url="manual/boxes/graph/graph_box.html"/>
+    <mapID target="pm_box" url="manual/boxes/pm/pm_box.html"/>
+    <mapID target="im_box" url="manual/boxes/im/im_box.html"/>
+    <mapID target="data_box" url="manual/boxes/data/data_box.html"/>
+    <mapID target="manipulated_data_box" url="manual/boxes/manipulated_data/manipulated_data_box.html"/>
+    <mapID target="estimate_box" url="manual/boxes/estimate/estimate_box.html"/>
+    <mapID target="update_box" url="manual/boxes/update/update_box.html"/>
+    <mapID target="search_box" url="manual/boxes/search/search_box.html"/>
+    <mapID target="regression_box" url="manual/boxes/regression/regression_box.html"/>
+    <mapID target="classify_box" url="manual/boxes/classify/classify_box.html"/>
+    <mapID target="compare_box" url="manual/boxes/compare/compare_box.html"/>
+
+    <!-- Overall -->
+    <mapID target="saving_pasting_cutting" url="manual/saving.html"/>
+
+    <!-- Tools -->
+    <mapID target="simulation_studies" url="manual/simulation.html"/>
+    <mapID target="measurement_models" url="manual/measurestructural.html"/>
+
+    <!--     Individual session models.-->
+    <mapID target="each_module_explained" url="manual/boxes/each_module_explained.html"/>
+    <mapID target="graph_dag" url="manual/boxes/graph/dag.html"/>
+    <mapID target="graph_dag#possible_parents" url="manual/boxes/graph/dag.html#possible_parents"/>
+    <mapID target="graph_general" url="manual/boxes/graph/general_graph.html"/>
+    <mapID target="graph_general#possible_parents" url="manual/boxes/graph/general_graph.html#possible_parents"/>
+    <mapID target="graph_sem" url="manual/boxes/graph/sem_graph.html"/>
+    <mapID target="graph_sem#possible_parents" url="manual/boxes/graph/sem_graph.html#possible_parents"/>
+    <mapID target="graph_time" url="manual/boxes/graph/time_graph.html"/>
+
+    <mapID target="pm_bayes" url="manual/boxes/pm/bayes_pm.html"/>
+    <mapID target="pm_sem" url="manual/boxes/pm/sem_pm.html"/>
+    <mapID target="bayes_im" url="manual/boxes/im/bayes_im.html"/>
+    <mapID target="dirichlet_bayes_im" url="manual/boxes/im/dirichlet_bayes_im.html"/>
+    <mapID target="sem_im" url="manual/boxes/im/sem_im.html"/>
+    <mapID target="glass_im" url="manual/boxes/im/glass_im.html"/>
+
+    <mapID target="data_set_list" url="manual/boxes/data/data_set_list.html"/>
+
+    <mapID target="mode_interpolator" url="manual/index.html"/>
+    <mapID target="extra_category_interpolator" url="manual/index.html"/>
+    <mapID target="case_expander" url="manual/index.html"/>
+    <mapID target="correlation_matrix_converter" url="manual/index.html"/>
+    <mapID target="bootstrap_sampler" url="manual/index.html"/>
+
+    <mapID target="ml_bayes_estimator" url="manual/boxes/estimate/ml_bayes_estimator.html"/>
+    <mapID target="sem_estimator" url="manual/boxes/estimate/sem_estimator.html"/>
+    <mapID target="dirichlet_estimator" url="manual/boxes/estimate/dirichlet_estimator.html"/>
+    <mapID target="em_bayes_estimator" url="manual/boxes/estimate/dirichlet_estimator.html"/>
+
+    <mapID target="approximate_updater" url="manual/boxes/update/approximate_updater.html"/>
+    <mapID target="row_summing_updater" url="manual/boxes/update/row_summing_updater.html"/>
+    <mapID target="cpt_updater" url="manual/boxes/update/cpt_invariant_updater.html"/>
+
+    <mapID target="multiple_linear_regression" url="manual/boxes/regression/multiple_linear_regression.html"/>
+    <mapID target="logistic_regression" url="manual/boxes/regression/logistic_regression.html"/>
+
+    <mapID target="types_of_algorithms" url="manual/boxes/search/types_of_algorithms.html"/>
+
+    <mapID target="bpc" url="manual/boxes/search/bpc.html"/>
+    <mapID target="ccd" url="manual/boxes/search/ccd.html"/>
+    <mapID target="cfci" url="manual/boxes/search/cfci.html"/>
+    <mapID target="cpc" url="manual/boxes/search/cpc.html"/>
+    <mapID target="cpcs" url="manual/boxes/search/cpcs.html"/>
+    <mapID target="eb" url="manual/boxes/search/eb.html"/>
+    <mapID target="fas" url="manual/boxes/search/fas.html"/>
+    <mapID target="fci" url="manual/boxes/search/fci.html"/>
+    <mapID target="fgs" url="manual/boxes/search/fgs.html"/>
+    <mapID target="fgsmb" url="manual/boxes/search/fgsmb.html"/>
+    <mapID target="gccd" url="manual/boxes/search/gccd.html"/>
+    <mapID target="gfci" url="manual/boxes/search/gfci.html"/>
+    <mapID target="glasso" url="manual/boxes/search/glasso.html"/>
+    <mapID target="images" url="manual/boxes/search/images.html"/>
+    <mapID target="lingam" url="manual/boxes/search/lingam.html"/>
+    <mapID target="mbfs" url="manual/boxes/search/mbfs.html"/>
+    <mapID target="mgm" url="manual/boxes/search/mgm.html"/>
+    <mapID target="mimbuild" url="manual/boxes/search/mimbuild.html"/>
+    <mapID target="pc" url="manual/boxes/search/pc.html"/>
+    <mapID target="pcd" url="manual/boxes/search/pcd.html"/>
+    <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
+    <mapID target="pcmax" url="manual/boxes/search/pcmax.html"/>
+    <mapID target="pcmaxlocal" url="manual/boxes/search/pcmaxlocal.html"/>
+    <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
+    <mapID target="pcstable" url="manual/boxes/search/pcs.html"/>
+    <mapID target="purify" url="manual/boxes/search/purify.html"/>
+    <mapID target="r1" url="manual/boxes/search/r1.html"/>
+    <mapID target="r2" url="manual/boxes/search/r2.html"/>
+    <mapID target="r3" url="manual/boxes/search/r3.html"/>
+    <mapID target="r4" url="manual/boxes/search/r4.html"/>
+    <mapID target="rfci" url="manual/boxes/search/rfci.html"/>
+    <mapID target="rskew" url="manual/boxes/search/rskew.html"/>
+    <mapID target="rskewe" url="manual/boxes/search/rskewe.html"/>
+    <mapID target="skew" url="manual/boxes/search/skew.html"/>
+    <mapID target="skewe" url="manual/boxes/search/skewe.html"/>
+    <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
+    <mapID target="tsfci" url="manual/boxes/search/tsfci.html"/>
+    <mapID target="tsgfci" url="manual/boxes/search/tsgfci.html"/>
+    <mapID target="tsimages" url="manual/boxes/search/tsimages.html"/>
+    <mapID target="wfgs" url="manual/boxes/search/wfgs.html"/>
+
+
+    <mapID target="bdeu" url="manual/boxes/search/bdeu.html"/>
+    <mapID target="conditional_gaussian_bic" url="manual/boxes/search/conditional_gaussian_bic.html"/>
+    <mapID target="discrete_bic" url="manual/boxes/search/discrete_bic.html"/>
+    <mapID target="sem_bic" url="manual/boxes/search/sem_bic.html"/>
+    <mapID target="conditional_correlation" url="manual/boxes/search/conditional_correlation.html"/>
+    <mapID target="chisquare" url="manual/boxes/search/chisquare.html"/>
+    <mapID target="gsquare" url="manual/boxes/search/gsquare.html"/>
+    <mapID target="conditional_gaussian_lrt" url="manual/boxes/search/conditional_gaussian_lrt.html"/>
+    <mapID target="conditional_correlation" url="manual/boxes/search/conditional_correlation.html"/>
+    <mapID target="fisher_z" url="manual/boxes/search/fisher_z.html"/>
+    <mapID target="d_separation" url="manual/boxes/search/d_separation.html"/>
+
+    <!-- Common Tasks -->
+    <mapID target="common_tasks" url="manual/common_tasks/common_tasks.html"/>
+
+    <mapID target="copying_and_pasting" url="manual/common_tasks/copying_and_pasting.html"/>
+    <mapID target="defining_discrete_variables" url="manual/common_tasks/defining_discrete_variables.html"/>
+    <mapID target="destroying_models" url="manual/common_tasks/destroying_models.html"/>
+    <mapID target="discretizing_data" url="manual/common_tasks/discretizing_data.html"/>
+    <mapID target="editing_knowledge" url="manual/common_tasks/editing_knowledge.html"/>
+    <mapID target="editing_node_properties" url="manual/common_tasks/editing_node_properties.html"/>
+    <mapID target="exiting_tetrad" url="manual/common_tasks/exiting_tetrad.html"/>
+    <mapID target="generating_random_dags" url="manual/common_tasks/generating_random_dags.html"/>
+    <mapID target="handling_missing_data" url="manual/common_tasks/handling_missing_data.html"/>    
+    <mapID target="opening_sessions" url="manual/common_tasks/opening_sessions.html"/>
+    <mapID target="saving_screenshots" url="manual/common_tasks/saving_screenshots.html"/>
+    <mapID target="saving_sessions" url="manual/common_tasks/saving_sessions.html"/>
+    <mapID target="selecting_groups_of_nodes" url="manual/common_tasks/selecting_groups_of_nodes.html"/>
+    <mapID target="using_popup_menus" url="manual/common_tasks/using_popup_menus.html"/>
+    <mapID target="using_templates" url="manual/common_tasks/using_templates.html"/>
+
+    <!-- Definitions -->
+    <mapID target="definitions" url="manual/definitions/definitions.html"/>
+    <mapID target="measurement_structural_graph" url="manual/definitions/measurement_structural_graph.html"/>
+    <mapID target="measured_latent_variables" url="manual/definitions/measured_latent_variables.html"/>
+    <mapID target="tetrad_graph_types" url="manual/definitions/tetrad_graph_types.html"/>
+
+</map>

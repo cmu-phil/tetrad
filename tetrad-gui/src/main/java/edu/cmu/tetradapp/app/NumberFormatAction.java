@@ -52,7 +52,7 @@ final class NumberFormatAction extends AbstractAction
     /**
      * This is a class field because it's accessed from multiple places.
      */
-    private JTextField formatField = new JTextField(
+    private final JTextField formatField = new JTextField(
             Preferences.userRoot().get("numberFormat", "0.0000"));
 
     //========================CONSTRUCTOR=============================//
@@ -285,7 +285,7 @@ final class NumberFormatAction extends AbstractAction
      * @throws RuntimeException if the getModel format string cannot be
      * accepted by DecimalFormat.
      */
-    public NumberFormat getNumberFormat() throws IllegalStateException {
+    private NumberFormat getNumberFormat() throws IllegalStateException {
         return new DecimalFormat(getFormatString());
     }
 
@@ -295,7 +295,7 @@ final class NumberFormatAction extends AbstractAction
      * @throws RuntimeException if the stored format string cannot be
      * accepted by DecimalFormat.
      */
-    public String getFormatString() throws RuntimeException {
+    private String getFormatString() throws RuntimeException {
         String format = formatField.getText();
 
         try {

@@ -326,17 +326,24 @@ public final class GraphUtils {
 
         final Graph dag = new EdgeListGraphSingleConnections(nodes);
 
+
+        if (connected) {
+            for (int i = 0; i < nodes.size() - 1; i++) {
+                dag.addDirectedEdge(nodes.get(i), nodes.get(i + 1));
+            }
+        }
+
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
 
 //        Collections.shuffle(nodes2);
         int trials = 0;
         boolean added = false;
 
-        for (int i = 0; i < numEdges; i++) {
+        for (int i = dag.getNumEdges() - 1; i < numEdges - 1; i++) {
 
-            if ((i + 1) % 1000 == 0) {
-                System.out.println("# edges = " + (i + 1));
-            }
+//            if ((i + 1) % 1000 == 0) {
+//                System.out.println("# edges = " + (i + 1));
+//            }
 
             int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
             int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
@@ -392,7 +399,10 @@ public final class GraphUtils {
                 continue;
             }
 
-            dag.addDirectedEdge(n1, n2);
+            if (!dag.isAdjacentTo(n1, n2)) {
+                dag.addDirectedEdge(n1, n2);
+            }
+
             added = true;
         }
 
@@ -420,6 +430,9 @@ public final class GraphUtils {
     private static Graph scaleFreeGraph(List<Node> _nodes, int numLatentConfounders,
             double alpha, double beta,
             double delta_in, double delta_out) {
+
+        if (alpha + beta >= 1) throw new IllegalArgumentException("For the Bollobas et al. algorithm," +
+                "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
 
 //        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
 //                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
@@ -1708,7 +1721,7 @@ public final class GraphUtils {
         Graph reference = new EdgeListGraph(newVariables);
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
-        for (Edge edge : originalGraph.getEdges()) {
+            for (Edge edge : originalGraph.getEdges()) {
             Node node1 = reference.getNode(edge.getNode1().getName());
             Node node2 = reference.getNode(edge.getNode2().getName());
 
@@ -2670,7 +2683,6 @@ public final class GraphUtils {
 
         while (!Q.isEmpty()) {
             Node t = Q.remove();
-//            if (t == to) return true;
 
             for (Node u : G.getAdjacentNodes(t)) {
                 Edge edge = G.getEdge(t, u);
@@ -2847,7 +2859,6 @@ public final class GraphUtils {
         }
 
         List<Node> found = new LinkedList<>();
-        Collections.shuffle(found);
         List<Node> notFound = new ArrayList<>(graph.getNodes());
 
         for (Iterator<Node> i = notFound.iterator(); i.hasNext();) {
@@ -2856,11 +2867,16 @@ public final class GraphUtils {
             }
         }
 
+        List<Node> allNodes = new ArrayList<>(notFound);
+
         while (!notFound.isEmpty()) {
             for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
                 Node node = it.next();
 
-                if (found.containsAll(graph.getParents(node))) {
+                List<Node> parents = graph.getParents(node);
+                parents.retainAll(allNodes);
+
+                if (found.containsAll(parents)) {
                     found.add(node);
                     it.remove();
                 }
@@ -4010,7 +4026,7 @@ public final class GraphUtils {
 
     // Depth first.
     public static boolean isDConnectedTo2(Node x, Node y, List<Node> z, Graph graph) {
-        LinkedList<Node> path = new LinkedList<Node>();
+        LinkedList<Node> path = new LinkedList<>();
 
         path.add(x);
 
@@ -4069,14 +4085,14 @@ public final class GraphUtils {
     }
 
     private static Set<Node> reachableDConnectedNodes(Node x, List<Node> z, Graph graph) {
-        Set<Node> R = new HashSet<Node>();
+        Set<Node> R = new HashSet<>();
         R.add(x);
 
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<OrderedPair<Node>>();
-        Set<OrderedPair<Node>> V = new HashSet<OrderedPair<Node>>();
+        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+        Set<OrderedPair<Node>> V = new HashSet<>();
 
         for (Node node : graph.getAdjacentNodes(x)) {
-            OrderedPair<Node> edge = new OrderedPair<Node>(x, node);
+            OrderedPair<Node> edge = new OrderedPair<>(x, node);
             Q.offer(edge);
             V.add(edge);
             R.add(node);
@@ -4097,7 +4113,7 @@ public final class GraphUtils {
                 }
                 R.add(c);
 
-                OrderedPair<Node> u = new OrderedPair<Node>(b, c);
+                OrderedPair<Node> u = new OrderedPair<>(b, c);
                 if (V.contains(u)) {
                     continue;
                 }

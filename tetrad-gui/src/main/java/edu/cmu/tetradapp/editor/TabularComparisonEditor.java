@@ -1,7 +1,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
 
 import javax.swing.*;
@@ -16,32 +18,52 @@ public class TabularComparisonEditor extends JPanel {
 
     public TabularComparisonEditor(TabularComparison comparison) {
         this.comparison = comparison;
-
-        buildGui();
+        setup();
     }
 
-    private void buildGui() {
+    private void setup() {
+        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
+        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+
+        pane.addTab("Comparison", getTableDisplay());
+
+        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+
+        for (int i = 0; i < referenceGraphs.size(); i++) {
+            JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+            pane3.add("Target Graph", new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i))).getWorkbench());
+            pane3.add("True Graph", new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i))).getWorkbench());
+            pane2.add("" + (i + 1), pane3);
+        }
+
+        pane.addTab("Graphs", pane2);
+
+        add(pane);
+    }
+
+
+    private Box getTableDisplay() {
 
         DataSet dataSet = comparison.getDataSet();
 
-        TextTable table1 = getTextTable(dataSet, new int[]{0, 1, 2, 3, 4, 5}, new DecimalFormat("0"));
-        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9, 10}, new DecimalFormat("0.00"));
-//        TextTable table3 = getTextTable(dataSet, new int[]{10}, new DecimalFormat("0.00"));
+        TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder b0 = new StringBuilder();
+        String trueGraphAndTarget = "Target graphs from " + comparison.getTargetName()
+                + "\nTrue graphs from " + comparison.getReferenceName();
+        b0.append(trueGraphAndTarget + "\n\n");
+        b0.append(table.toString());
+
         Map<String, String> allParamsSettings = comparison.getAllParamSettings();
 
         if (allParamsSettings != null) {
             for (String key : allParamsSettings.keySet()) {
-                builder.append(key).append(" = ").append(allParamsSettings.get(key)).append("\n");
+                b0.append(key).append(" = ").append(allParamsSettings.get(key)).append("\n");
             }
         }
 
         JTextArea area = new JTextArea(
-                "\n" + builder.toString()
-                + "\n" + table1.toString()
-                + "\n\n" + table2.toString()
-//                + "\n\n" + table3.toString()
+                b0.toString()
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
@@ -63,16 +85,16 @@ public class TabularComparisonEditor extends JPanel {
 
 //        setPreferredSize(new Dimension(700,400));
 
-        add(b);
+        return b;
     }
 
-    private TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
-        TextTable table  = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
+    private TextTable getTextTable(DataSet dataSet, NumberFormat nf) {
+        TextTable table = new TextTable(dataSet.getNumRows() + 2, dataSet.getNumColumns() + 1);
 
         table.setToken(0, 0, "Run #");
 
-        for (int j = 0; j < columns.length; j++) {
-            table.setToken(0, j + 1, dataSet.getVariable(columns[j]).getName());
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            table.setToken(0, j + 1, dataSet.getVariable(j).getName());
         }
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -80,18 +102,18 @@ public class TabularComparisonEditor extends JPanel {
         }
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < columns.length; j++) {
-                table.setToken(i + 1, j + 1, nf.format(dataSet.getDouble(i, columns[j])));
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                table.setToken(i + 1, j + 1, nf.format(dataSet.getDouble(i, j)));
             }
         }
 
         NumberFormat nf2 = new DecimalFormat("0.00");
 
-        for (int j = 0; j < columns.length; j++) {
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
             double sum = 0.0;
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                sum += dataSet.getDouble(i, columns[j]);
+                sum += dataSet.getDouble(i, j);
             }
 
             double avg = sum / dataSet.getNumRows();

@@ -40,12 +40,12 @@ import java.util.List;
 public class LagWorkbench extends AbstractWorkbench {
 
     //=================PUBLIC STATIC FINAL FIELDS=========================//
-    public static final int MEASURED_NODE = 0;
-    public static final int LATENT_NODE = 1;
-    public static final int DIRECTED_EDGE = 0;
-    public static final int NONDIRECTED_EDGE = 2;
-    public static final int PARTIALLY_ORIENTED_EDGE = 3;
-    public static final int BIDIRECTED_EDGE = 4;
+    private static final int MEASURED_NODE = 0;
+    private static final int LATENT_NODE = 1;
+    private static final int DIRECTED_EDGE = 0;
+    private static final int NONDIRECTED_EDGE = 2;
+    private static final int PARTIALLY_ORIENTED_EDGE = 3;
+    private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
     private int nodeType = MEASURED_NODE;
@@ -64,7 +64,7 @@ public class LagWorkbench extends AbstractWorkbench {
     /**
      * Constructs a new workbench workbench for the given workbench model.
      */
-    public LagWorkbench(Graph graph) {
+    private LagWorkbench(Graph graph) {
         super(graph);
         setRightClickPopupAllowed(true);
     }
@@ -249,7 +249,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    public String nextVariableName(String base) {
+    private String nextVariableName(String base) {
 
         // Variable names should start with "1."
         int i = 0;

@@ -49,7 +49,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class UpdatedSemImWizard extends JPanel {
+final class UpdatedSemImWizard extends JPanel {
     private SemEvidence evidence;
     private GraphWorkbench workbench;
     private SemUpdater semUpdater;

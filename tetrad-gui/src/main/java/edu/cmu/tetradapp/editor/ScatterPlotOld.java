@@ -175,7 +175,7 @@ public class ScatterPlotOld {
         return yData;
     }
 
-    public void setyData(double[] yData) {
+    private void setyData(double[] yData) {
         this.yData = yData;
     }
 
@@ -183,11 +183,11 @@ public class ScatterPlotOld {
         return xData;
     }
 
-    public void setxData(double[] xData) {
+    private void setxData(double[] xData) {
         this.xData = xData;
     }
 
-    public void setDataSet(DataSet dataSet) {
+    private void setDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -224,11 +224,11 @@ public class ScatterPlotOld {
         this.drawRegLine = drawRegLine;
     }
 
-    public ContinuousVariable getyVariable() {
+    private ContinuousVariable getyVariable() {
         return yVariable;
     }
 
-    public void setyVariable(ContinuousVariable yVariable) {
+    private void setyVariable(ContinuousVariable yVariable) {
         this.yVariable = yVariable;
     }
 }

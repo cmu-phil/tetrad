@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td height="28"> 
+      <h2><font color="#FFFFFF">General Graphs</font></h2></td>
+  </tr>
+</table>
+
+<p>The &quot;general graph&quot; editor can construct graphs where the edges have endpoints of three different types: null(-), arrow (-&gt;), and circle (-o). For constructing graphs for the purposes of building models, the circle endpoint is not used; it is included because the outputs of some search algorithms use it, and these output graphs sometimes need to be edited. See <a href="../../graph/advise_tetrad_graph_types.html">Tetrad Graph Types</a> for more details. </p>
+<p>Time series graphs are treated separately only because they have a regular temporal structure that can be represented directly; in principle, they can be considered examples of general graphs as well. </p>
+<p>To construct a general graph, place a Graph box on the workbench (see <a href="../../graph/graphs.html">Graphs</a>), double click the Graph box, choose &quot;General Graph&quot; from the menu, and click &quot;OK.&quot; You will see the following dialog.</p>
+<p><img src="../../images/graph1structureeditor.gif" width="283" height="328"><br>
+  <br>
+If you select &quot;Created manually&quot; and click &quot;OK,&quot; a blank graph editor window is opened. If you select &quot;A random DAG,&quot; you will need to fill in parameters to generate a random DAG. See <a href="../../graph/generating_random_dags.html">Generating Random DAGs</a> for more information. This DAG will be treated like a general graph, so that if you edit it you will be able add edges to it that aren't directed edges (--&gt;) and you will be able to construct cycles. </p>
+<p>You may at this point add variables and edges to the graph, or remove them if they're already there. To add a measured variable to the graph, click &quot;Add Variable&quot; and then click in the white workbench area where you want the measured variable to be located. To add a latent variable to the graph, click &quot;Add Latent&quot; and then click in the white workbench area where you want the latent variable to be located. The names of an added variable will be the first name in the sequence X1, X2, ..., that's not already in the graph. These names may be changed; see <a href="../../graph/advise_editing_node_properties.html">Editing Node Properties</a> for details. </p>
+<p>To remove a variable from the graph, click on the variable you want to delete to select it and then press the delete key. If you remove a node from the graph, all of the edges attached to it will be removed as well. </p>
+<p>To add an edge to the graph, click the type of edge you want to add, click and hold the mouse button down over the variable you want to edge to be from, and then drag the mouse to the variable you want the edge to be to. There are four types of edges you may add: directed (--&gt;), undirected (---), unoriented (o-o), and bidirected (o-&gt;). Cycles are permitted. </p>
+<p>To remove an edge from the graph, click on the edge you want to remove to select it and then press the delete key. </p>
+<p>If all you want to do is turn edges that aren't directed into directed edges or change the directions of directed edges, there is a shortcut way to do this. Simply click on the endpoint of the edge you want the arrow to be on, and the edge will change direction for you. Other edge orientation shortchuts are also available. See <a href="../../graph/edge_orientation_shortchuts.html">Edge Orientation Shortcuts</a>.</p>
+<p>A sample graph might look like this, after adding five variables and six edges: </p>
+<p><img src="../../images/generalgrapheditorwindow.gif" width="563" height="481"> </p>
+<p>Once you have made a graph, you may rearrange the nodes by clicking and dragging; the edges will follow along so that the structure of the graph remains the same. If you would like to move a whole section of nodes to another location, draw a &quot;rubberband&quot; around them and click on any one to move them. See <a href="../../common_tasks/selecting_groups_of_nodes.html">Selecting Groups of Nodes</a> for details. If you would like to change the name of a variable, or change whether the variable is latent or measured, double click the variable, edit its properties, and click &quot;OK.&quot; See <a href="../../graph/advise_editing_node_properties.html">Editing Node Properties</a> for details. </p>
+<p>When you click &quot;Save,&quot; the graph editor window will close, and the contents will be saved in memory. If you click &quot;Cancel,&quot; the changes you made while editing will be disgarded, and the state of the graph before editing will remain unchanged. You may change the graph you made at any time by reopening the Graph box and adding or remove variables or edges or rearranging variables.</p>
+<p>If you right click on the Graph box, a popup menu will appear with several options. See <a href="../../graph/popups.html">Popup Menus </a> for more detail.</p>
+<p>&nbsp;</p>
+<h3>Important Points</h3>
+<ol>
+  <li>The "Unoriented" and "Half-Oriented"&nbsp; buttons are for creating theoretical graphical objects of various kinds. Do not use these buttons for ordinary modeling. Currently, none of the statistical procedures in the program work for graphs with such edges.&nbsp; </li>
+  <li>If you create a model with a latent variable, if you later use the model to generate data, values for the latent variables will not be shown. See <a href="../../graph/measured_vs_latent.html">Measured Vs. Latent Variables</a>.</li>
+  <li>If you have introduced any boxes that depend on a Graph box, changing the graph will alter the contents of all boxes downstream in the flowchart from the Graph box. Often it is easier to simply create a new Graph box in the same main workspace window--there is no limit to how many graph or other boxes you can have at the same time. See<a href="../../graph/advise_flowchart_dependencies.html"> Flowchart Dependencies</a>.</li>
+</ol>
+<p>&nbsp;</p>
+<h3>Menus</h3>
+<ol>
+  <li>The menu at the top of the Graph window has two options, "File" and "Edit".&nbsp; "Edit" currently does nothing. "File" gives three options: You can save a graph in a file-- but there is no point because we have not yet implemented a facility to paste the saved graph into a new window. You can introduce the ALARM network,&nbsp; a fairly complex graph standardly used as a test for search algorithms, and you can save any graph you create as an image file that can be introduced into text documents, e.g., into Microsoft World. </li>
+</ol>
+<p>&nbsp;</p>
+<h3><a name="possible_parents"></a>Possible Parents for &quot;General Graph&quot; </h3>
+<p>A &quot;General Graph&quot; model can be self-standing, as described above. However, it can also be made a child of a number of other models of a variety of different box types. Usually what this does is to make a copy in the &quot;General Graph&quot; box of a preexisting graph in the parent model, which is often a convenient thing to be able to do. The following models all have graphs that, if they exist, can be copied into a &quot;General Graph&quot; model:</p>
+<ol>
+  <li>All graph models.</li>
+  <li>All search models. </li>
+  <li>All parametric models.</li>
+  <li>All instantiated models.</li>
+  <li>All updater models.</li>
+</ol>
+<p>In certain special cases, making a &quot;General Graph&quot; model a child of another model has a specialized behavior. If you make a &quot;General Graph&quot; model a child of a Data box model, the effect is to create a graph with all of the variables in the data set but no edges, as illustrated below.</p>
+<p><img src="../../images/dag_from_data.gif" width="537" height="534"></p>
+<p>&nbsp;</p>
+</body>
+</html>

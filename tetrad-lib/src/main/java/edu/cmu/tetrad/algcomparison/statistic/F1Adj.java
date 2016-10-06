@@ -13,6 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author Joseh Ramsey
  */
 public class F1Adj implements Statistic {
+    static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

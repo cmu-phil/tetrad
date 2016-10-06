@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.CyclicGraphParams;
-import edu.cmu.tetradapp.model.GraphParams;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -32,7 +30,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -40,7 +37,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class GraphParamsEditor extends JPanel implements ParameterEditor {
-    private GraphParams params = new GraphParams();
+    private Parameters params = new Parameters();
 
     /**
      * Constructs a dialog to edit the given workbench randomization
@@ -49,12 +46,13 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     public GraphParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (GraphParams) params;
+        this.params = params;
+        setup();
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -62,70 +60,70 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        boolean cyclicAllowed = params instanceof CyclicGraphParams;
-        final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed);
-        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor();
+        boolean cyclicAllowed = params.getBoolean("cyclicAllowed", false);
+        final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, params);
+        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(params);
         final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
 
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        JRadioButton manual = new JRadioButton(
-                "An empty graph (to be constructed manually).");
-        JRadioButton random = new JRadioButton("A random graph.");
-        ButtonGroup group = new ButtonGroup();
-        group.add(manual);
-        group.add(random);
+//        JRadioButton manual = new JRadioButton(
+//                "An empty graph (to be constructed manually).");
+//        JRadioButton random = new JRadioButton("A random graph.");
+//        ButtonGroup group = new ButtonGroup();
+//        group.add(manual);
+//        group.add(random);
 
-        if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
-            manual.setSelected(true);
-            randomDagEditor.setEnabled(false);
-        }
-        else {
-            random.setSelected(true);
-            randomDagEditor.setEnabled(true);
-        }
+//        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+//            manual.setSelected(true);
+//            randomDagEditor.setEnabled(false);
+//        }
+//        else {
+//            random.setSelected(true);
+//            randomDagEditor.setEnabled(true);
+//        }
 
-        manual.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JRadioButton button = (JRadioButton) e.getSource();
-
-                if (button.isSelected()) {
-                    Preferences.userRoot().putInt("newGraphInitializationMode", GraphParams.MANUAL);
-                    randomDagEditor.setEnabled(false);
-                }
-            }
-        });
-
-        random.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JRadioButton button = (JRadioButton) e.getSource();
-
-                if (button.isSelected()) {
-                    Preferences.userRoot().putInt("newGraphInitializationMode", GraphParams.RANDOM);
-                    randomDagEditor.setEnabled(true);
-                }
-            }
-        });
+//        manual.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JRadioButton button = (JRadioButton) e.getSource();
+//
+//                if (button.isSelected()) {
+//                    params.set("newGraphInitializationMode", "manual");
+//                    randomDagEditor.setEnabled(false);
+//                }
+//            }
+//        });
+//
+//        random.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JRadioButton button = (JRadioButton) e.getSource();
+//
+//                if (button.isSelected()) {
+//                    params.set("newGraphInitializationMode", "random");
+//                    randomDagEditor.setEnabled(true);
+//                }
+//            }
+//        });
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createVerticalBox();
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(new JLabel("Make new graph:"));
-        b3.add(Box.createHorizontalGlue());
-        b2.add(b3);
-        b1.add(Box.createVerticalStrut(5));
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(new JLabel("Make new graph:"));
+//        b3.add(Box.createHorizontalGlue());
+//        b2.add(b3);
+//        b1.add(Box.createVerticalStrut(5));
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(manual);
-        b4.add(Box.createHorizontalGlue());
-        b2.add(b4);
-
-        Box b5 = Box.createHorizontalBox();
-        b5.add(random);
-        b5.add(Box.createHorizontalGlue());
-        b2.add(b5);
+//        Box b4 = Box.createHorizontalBox();
+//        b4.add(manual);
+//        b4.add(Box.createHorizontalGlue());
+//        b2.add(b4);
+//
+//        Box b5 = Box.createHorizontalBox();
+//        b5.add(random);
+//        b5.add(Box.createHorizontalGlue());
+//        b2.add(b5);
 
         b2.setBorder(new TitledBorder(""));
         b1.add(b2);
@@ -136,7 +134,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        final String type = Preferences.userRoot().get("randomGraphType", "Uniform");
+        final String type = params.getString("randomGraphType", "Uniform");
 
         if (type.equals("Uniform")) {
             tabs.setSelectedIndex(0);
@@ -154,13 +152,13 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
                 JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
                 if (pane.getSelectedIndex() == 0) {
-                    Preferences.userRoot().put("randomGraphType", "Uniform");
+                    params.set("randomGraphType", "Uniform");
                 }
                 else if (pane.getSelectedIndex() == 1) {
-                    Preferences.userRoot().put("randomGraphType", "Mim");
+                    params.set("randomGraphType", "Mim");
                 }
                 else if (pane.getSelectedIndex() == 2) {
-                    Preferences.userRoot().put("randomGraphType", "ScaleFree");
+                    params.set("randomGraphType", "ScaleFree");
                 }
             }
         });
@@ -179,14 +177,6 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 
     public boolean mustBeShown() {
         return false;
-    }
-
-    /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
-     */
-    private synchronized GraphParams getParams() {
-        return this.params;
     }
 }
 

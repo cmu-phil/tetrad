@@ -54,7 +54,7 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
 
     //=============================CONSTRUCTORS==========================//
 
-    public CompletedPatternWrapper(Graph graph) {
+    private CompletedPatternWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }

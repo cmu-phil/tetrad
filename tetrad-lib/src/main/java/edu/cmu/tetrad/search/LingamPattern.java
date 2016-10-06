@@ -115,7 +115,7 @@ public class LingamPattern {
 
         // Check that all the daga and the data contain the same variables.
 
-        List<Score> scores = new ArrayList<Score>();
+        List<Score> scores = new ArrayList<>();
 
         for (Graph dag : dags) {
             scores.add(getScore(dag, data, variables));
@@ -210,7 +210,7 @@ public class LingamPattern {
             Node _target = nodes.get(i);
             List<Node> _regressors = dag.getParents(_target);
             Node target = getVariable(variables, _target.getName());
-            List<Node> regressors = new ArrayList<Node>();
+            List<Node> regressors = new ArrayList<>();
 
             for (Node _regressor : _regressors) {
                 Node variable = getVariable(variables, _regressor.getName());

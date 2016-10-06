@@ -107,7 +107,10 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextUniform(double low, double high) {
-        return new UniformRealDistribution(randomGenerator, low, high).sample();
+        if (low == high) return low;
+        else {
+            return new UniformRealDistribution(randomGenerator, low, high).sample();
+        }
     }
 
     /**
@@ -120,7 +123,8 @@ public class RandomUtil {
             throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
         }
 
-        return (normal.sample() - mean) / sd;
+        double sample = normal.sample();
+        return (sample - mean) * sd;
 
 //        return new NormalDistribution(randomGenerator, mean, sd).sample();
     }
@@ -252,6 +256,10 @@ public class RandomUtil {
 
     public RandomGenerator getRandomGenerator() {
         return randomGenerator;
+    }
+
+    public long nextLong() {
+        return randomGenerator.nextLong();
     }
 }
 

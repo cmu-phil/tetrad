@@ -57,7 +57,7 @@ public class TestIndependenceFact {
 
         assertNotEquals(fact1, fact3);
 
-        List<IndependenceFact> facts = new ArrayList<IndependenceFact>();
+        List<IndependenceFact> facts = new ArrayList<>();
 
         facts.add(fact1);
 

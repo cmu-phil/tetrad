@@ -141,7 +141,7 @@ public final class BayesUpdaterClassifier
         this.bayesIm = bayesIm;
         this.testData = testData;
         this.percentCorrect = Double.NaN;
-        this.bayesImVars = new LinkedList<Node>(bayesIm.getVariables());
+        this.bayesImVars = new LinkedList<>(bayesIm.getVariables());
     }
 
     /**

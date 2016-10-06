@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -36,7 +37,6 @@ import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the
@@ -61,21 +61,21 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
 
     public BuildPureClustersRunner(DataWrapper dataWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+                                   Parameters pureClustersParams) {
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
 
@@ -86,7 +86,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
     public static BuildPureClustersRunner serializableInstance() {
         return new BuildPureClustersRunner(DataWrapper.serializableInstance(),
-                BuildPureClustersParams.serializableInstance());
+                new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -96,9 +96,9 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * implemented in the extending class.
      */
     public void execute() {
-        boolean rKey = Preferences.userRoot().getBoolean("BPCrDown", false);
+        boolean rKey = getParams().getBoolean("BPCrDown", false);
 
-        BpcAlgorithmType algorithm = ((BuildPureClustersIndTestParams) getParams().getMimIndTestParams()).getAlgorithmType();
+        BpcAlgorithmType algorithm = (BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS);
 
         Graph searchGraph;
 
@@ -107,14 +107,14 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             Object source = getData();
 
             if (source instanceof DataSet) {
-                washdown = new Washdown((DataSet) source, getParams().getAlpha());
+                washdown = new Washdown((DataSet) source, getParams().getDouble("alpha", 0.001));
             } else {
-                washdown = new Washdown((CovarianceMatrix) source, getParams().getAlpha());
+                washdown = new Washdown((CovarianceMatrix) source, getParams().getDouble("alpha", 0.001));
             }
 
             searchGraph = washdown.search();
         } else {
-            TestType tetradTestType = getParams().getTetradTestType();
+            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
 
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
@@ -124,11 +124,11 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                     bpc = new BpcTetradPurifyWashdown(
                             (DataSet) source,
                             tetradTestType,
-                            getParams().getAlpha());
+                            getParams().getDouble("alpha", 0.001));
 
                 } else {
                     bpc = new BpcTetradPurifyWashdown((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
+                            tetradTestType, getParams().getDouble("alpha", 0.001));
 
                 }
 
@@ -137,17 +137,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 BuildPureClusters bpc;
                 DataModel source = getData();
 
-                TestType testType = getParams().getTetradTestType();
+                TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
                 TestType purifyType = TestType.TETRAD_BASED;
 
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,
-                            getParams().getAlpha(),
+                            getParams().getDouble("alpha", 0.001),
                             testType,
                             purifyType);
                 } else if (source instanceof DataSet) {
                     bpc = new BuildPureClusters(
-                            (DataSet) source, getParams().getAlpha(),
+                            (DataSet) source, getParams().getDouble("alpha", 0.001),
                             testType,
                             purifyType);
                 } else {
@@ -165,10 +165,10 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 ////                    bpc = new FindOneFactorClusters(
 ////                            (DataSet) source,
 ////                            tetradTestType,
-////                            getParams().getParameter1());
+////                            getParameters().getParameter1());
 ////                } else {
 ////                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
-////                            tetradTestType, getParams().getParameter1());
+////                            tetradTestType, getParameters().getParameter1());
 ////                }
 ////
 ////                searchGraph = bpc.search();
@@ -181,17 +181,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    bpc = new FindOneFactorClusters2(
 //                            (DataSet) source,
 //                            tetradTestType, sag,
-//                            getParams().getParameter1());
+//                            getParameters().getParameter1());
 //
 ////                    bpc = new FindTwoFactorClusters4(
 ////                            (DataSet) source,
-////                            getParams().getParameter1());
+////                            getParameters().getParameter1());
 //                } else {
 //                    bpc = new FindOneFactorClusters2((ICovarianceMatrix) source,
-//                            tetradTestType, sag, getParams().getParameter1());
+//                            tetradTestType, sag, getParameters().getParameter1());
 ////
 ////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-////                            getParams().getParameter1());
+////                            getParameters().getParameter1());
 //                }
 //
 //                searchGraph = bpc.search();
@@ -205,17 +205,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    bpc = new FindTwoFactorClusters2(
 //                            (DataSet) source,
 //                            tetradTestType,
-//                            getParams().getParameter1());
+//                            getParameters().getParameter1());
 //
 ////                    bpc = new FindTwoFactorClusters4(
 ////                            (DataSet) source,
-////                            getParams().getParameter1());
+////                            getParameters().getParameter1());
 //                } else {
 //                    bpc = new FindTwoFactorClusters2((ICovarianceMatrix) source,
-//                            tetradTestType, getParams().getParameter1());
+//                            tetradTestType, getParameters().getParameter1());
 ////
 ////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-////                            getParams().getParameter1());
+////                            getParameters().getParameter1());
 //                }
 //
 //                searchGraph = bpc.search();
@@ -279,7 +279,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         try
 
         {
-            Graph graph = new MarshalledObject<Graph>(searchGraph).get();
+            Graph graph = new MarshalledObject<>(searchGraph).get();
             GraphUtils.circleLayout(graph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
@@ -300,7 +300,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             children.removeAll(ReidentifyVariables.getLatents(searchGraph));
 
             for (int i = 0; i < partition.size(); i++) {
-                if (new HashSet<Node>(partition.get(i)).equals(new HashSet<Node>(children))) {
+                if (new HashSet<>(partition.get(i)).equals(new HashSet<>(children))) {
                     node.setName(variableNames.get(i));
                 }
             }
@@ -533,7 +533,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);

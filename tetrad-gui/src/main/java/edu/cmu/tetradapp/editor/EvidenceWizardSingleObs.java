@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -47,7 +46,7 @@ import java.awt.event.ActionListener;
 // same as EvidenceWizardSingle.java except that here EvidenceEditorObs
 // is called instead of EvidenceEditor
 //
-public class EvidenceWizardSingleObs extends JPanel {
+class EvidenceWizardSingleObs extends JPanel {
     private UpdaterWrapper updaterWrapper;
     private GraphWorkbench workbench;
     private final EvidenceEditorObs evidenceEditor;
@@ -92,7 +91,7 @@ public class EvidenceWizardSingleObs extends JPanel {
         add(Box.createVerticalStrut(10));
 
         evidenceEditor = new EvidenceEditorObs(updaterWrapper.getBayesUpdater().getEvidence());
-        getUpdaterWrapper().getParams().setEvidence(evidenceEditor.getEvidence());
+        getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
         add(evidenceEditor);
         add(Box.createVerticalStrut(10));
 
@@ -116,9 +115,8 @@ public class EvidenceWizardSingleObs extends JPanel {
                 Node tetradNode = graphNode.getModelNode();
                 String selectedNodeName = tetradNode.getName();
 
-                getUpdaterWrapper().getParams().setEvidence(evidenceEditor.getEvidence());
-                getUpdaterWrapper().getParams().setVariable((DiscreteVariable)
-                        (updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode)));
+                getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
+                getUpdaterWrapper().getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
                 getUpdaterWrapper().getBayesUpdater().setEvidence(evidenceEditor.getEvidence());
 
 

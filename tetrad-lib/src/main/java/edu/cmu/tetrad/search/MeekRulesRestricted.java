@@ -56,13 +56,13 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     /**
      * The logger to use.
      */
-    private ArrayList<OrderedPair<Edge>> changedEdges = new ArrayList<OrderedPair<Edge>>();
-    private Set<Node> visitedNodes = new HashSet<Node>();
+    private ArrayList<OrderedPair<Edge>> changedEdges = new ArrayList<>();
+    private Set<Node> visitedNodes = new HashSet<>();
 
-    private Queue<Node> rule1Queue = new LinkedList<Node>();
-    private Queue<Node> rule2Queue = new LinkedList<Node>();
-    private Queue<Node> rule3Queue = new LinkedList<Node>();
-    private Queue<Node> rule4Queue = new LinkedList<Node>();
+    private Queue<Node> rule1Queue = new LinkedList<>();
+    private Queue<Node> rule2Queue = new LinkedList<>();
+    private Queue<Node> rule3Queue = new LinkedList<>();
+    private Queue<Node> rule4Queue = new LinkedList<>();
     private boolean orientInPlace = false;
 
     // Restricted to these nodes.
@@ -80,11 +80,11 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     //======================== Public Methods ========================//
 
     public void orientImplied(Graph graph) {
-        this.nodes = new HashSet<Node>(graph.getNodes());
+        this.nodes = new HashSet<>(graph.getNodes());
         visitedNodes.addAll(nodes);
 
         TetradLogger.getInstance().log("impliedOrientations", "Starting Orientation Step D.");
-        changedEdges = new ArrayList<OrderedPair<Edge>>();
+        changedEdges = new ArrayList<>();
         orientUsingMeekRulesLocally(knowledge, graph);
         TetradLogger.getInstance().log("impliedOrientations", "Finishing Orientation Step D.");
 
@@ -96,7 +96,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         visitedNodes.addAll(nodes);
 
         TetradLogger.getInstance().log("impliedOrientations", "Starting Orientation Step D.");
-        changedEdges = new ArrayList<OrderedPair<Edge>>();
+        changedEdges = new ArrayList<>();
         orientUsingMeekRulesLocally(knowledge, graph);
         TetradLogger.getInstance().log("impliedOrientations", "Finishing Orientation Step D.");
 
@@ -331,7 +331,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         }
 
         for (Node b : adjacentNodes) {
-            List<Node> otherAdjacents = new LinkedList<Node>(adjacentNodes);
+            List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
             otherAdjacents.remove(b);
 
             if (!graph.isUndirectedFromTo(a, b)) {
@@ -402,7 +402,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                 continue;
             }
 
-            List<Node> otherAdjacents = new LinkedList<Node>(adjacentNodes);
+            List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
             otherAdjacents.remove(d);
 
             ChoiceGenerator cg = new ChoiceGenerator(otherAdjacents.size(), 2);
@@ -471,7 +471,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         graph.removeEdge(before);
         graph.addEdge(after);
 
-        changedEdges.add(new OrderedPair<Edge>(before, after));
+        changedEdges.add(new OrderedPair<>(before, after));
 
         return after;
     }

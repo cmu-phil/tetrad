@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.mb.HitonMb;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -49,33 +50,33 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public HitonRunner(DataWrapper dataWrapper, MbSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    private HitonRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(Graph graph, MbSearchParams params) {
+    public HitonRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(GraphWrapper dagWrapper, MbSearchParams params) {
+    public HitonRunner(GraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(DagWrapper dagWrapper, MbSearchParams params) {
+    public HitonRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     public HitonRunner(SemGraphWrapper dagWrapper,
-                             BasicSearchParams params) {
+                             Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
@@ -86,7 +87,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      */
     public static HitonRunner serializableInstance() {
         return new HitonRunner(DataWrapper.serializableInstance(),
-                MbSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Parameters(), KnowledgeBoxModel.serializableInstance());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -96,16 +97,16 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((MbSearchParams) getParams()).getDepth();
+        int pcDepth = getParams().getInt("depth", -1);
         HitonMb search =
                 new HitonMb(getIndependenceTest(), pcDepth, false);
-//        SearchParams params = getParams();
-//        if (params instanceof MeekSearchParams) {
-//            search.setAggressivelyPreventCycles(((MeekSearchParams) params).isAggressivelyPreventCycles());
+//        Parameters params = getParameters();
+//        if (params instanceof Parameters) {
+//            search.setAggressivelyPreventCycles(((Parameters) params).isAggressivelyPreventCycles());
 //        }
-//        Knowledge knowledge = getParams().getKnowledge();
+//        Knowledge knowledge = getParameters().getKnowledge();
 //        search.setKnowledge(knowledge);
-        String targetName = ((MbSearchParams) getParams()).getTargetName();
+        String targetName = getParams().getString("targetName", null);
         List<Node> nodes = search.findMb(targetName);
 
         Graph graph = new EdgeListGraph();
@@ -131,8 +132,8 @@ public class HitonRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        MbSearchParams params = (MbSearchParams) getParams();
-        IndTestType testType = params.getIndTestType();
+        Parameters params = getParams();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
@@ -162,7 +163,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -172,7 +173,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {

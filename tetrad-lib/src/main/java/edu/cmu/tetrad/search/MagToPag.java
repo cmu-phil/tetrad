@@ -58,7 +58,7 @@ public final class MagToPag {
      */
     private Graph graph;
 
-    /*
+    /**
      * The background knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
@@ -66,7 +66,7 @@ public final class MagToPag {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.

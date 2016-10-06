@@ -47,20 +47,20 @@ public class GraphChange {
      * Default constructor, holds no changes.
      */
     public GraphChange() {
-        removes = new ArrayList<Edge>();
-        colliders = new ArrayList<Triple>();
-        nonColliders = new ArrayList<Triple>();
-        orients = new ArrayList<NodePair>();
+        removes = new ArrayList<>();
+        colliders = new ArrayList<>();
+        nonColliders = new ArrayList<>();
+        orients = new ArrayList<>();
     }
 
     /**
      * Copy constructor.
      */
     public GraphChange(GraphChange source) {
-        removes = new ArrayList<Edge>(source.removes);
-        colliders = new ArrayList<Triple>(source.colliders);
-        nonColliders = new ArrayList<Triple>(source.nonColliders);
-        orients = new ArrayList<NodePair>(source.orients);
+        removes = new ArrayList<>(source.removes);
+        colliders = new ArrayList<>(source.colliders);
+        nonColliders = new ArrayList<>(source.nonColliders);
+        orients = new ArrayList<>(source.orients);
     }
 
 
@@ -274,7 +274,7 @@ public class GraphChange {
      * /** creates OrderedNodePairs out of given List. For use in consistent and applyTo
      */
     private Collection<OrderedNodePair> makePairs(List<Triple> input) {
-        HashSet<OrderedNodePair> outputPairs = new HashSet<OrderedNodePair>();
+        HashSet<OrderedNodePair> outputPairs = new HashSet<>();
         for (Triple trip : input) {
             Node y = trip.getY();
             outputPairs.add(new OrderedNodePair(trip.getX(), y));
@@ -287,7 +287,7 @@ public class GraphChange {
      * Creates a List of OrderedNodePairs from a datastructure of NodePairs.
      */
     private Collection<OrderedNodePair> pairToOrdered(List<NodePair> orig) {
-        List<OrderedNodePair> ordered = new ArrayList<OrderedNodePair>(orig.size());
+        List<OrderedNodePair> ordered = new ArrayList<>(orig.size());
 
         for (NodePair p : orig) {
             ordered.add(new OrderedNodePair(p.getFirst(), p.getSecond()));

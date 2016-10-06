@@ -80,7 +80,7 @@ public class Lingam {
 
     private EstimateResult estimate(TetradMatrix X) {
         FastIca fastIca = new FastIca(X, 20);
-        fastIca.setVerbose(true);
+        fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
         fastIca.setTolerance(1e-20);
@@ -296,7 +296,7 @@ public class Lingam {
     }
 
     private LinkedList<Entry> getEntries(TetradMatrix mat) {
-        LinkedList<Entry> entries = new LinkedList<Entry>();
+        LinkedList<Entry> entries = new LinkedList<>();
 
         for (int i = 0; i < mat.rows(); i++) {
             for (int j = 0; j < mat.columns(); j++) {
@@ -336,8 +336,8 @@ public class Lingam {
     }
 
     public int[] algorithmB(TetradMatrix mat) {
-        List<Integer> removedIndices = new ArrayList<Integer>();
-        List<Integer> permutation = new ArrayList<Integer>();
+        List<Integer> removedIndices = new ArrayList<>();
+        List<Integer> permutation = new ArrayList<>();
 
         while (removedIndices.size() < mat.rows()) {
             int allZerosRow = -1;
@@ -390,7 +390,7 @@ public class Lingam {
             throw new IllegalArgumentException("Execting a permutation.");
         }
 
-        Set<Integer> set = new LinkedHashSet<Integer>();
+        Set<Integer> set = new LinkedHashSet<>();
 
         for (int i = 0; i < k.length; i++) {
             if (k[i] >= k.length) {
@@ -411,7 +411,7 @@ public class Lingam {
         int rows = X.rows();
         int piecesize = (int) Math.floor(cols / npieces);
 
-        List<TetradMatrix> bpieces = new ArrayList<TetradMatrix>();
+        List<TetradMatrix> bpieces = new ArrayList<>();
 //        List<Vector> diststdpieces = new ArrayList<Vector>();
 //        List<Vector> cpieces = new ArrayList<Vector>();
 

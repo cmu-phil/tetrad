@@ -21,18 +21,23 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.ISemIm;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,18 +47,23 @@ import java.util.List;
  */
 public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
+    private List<SemIm> semIms;
 
     /**
      * @serial Can be null.
      */
     private String name;
 
-    /**
-     * @serial Cannot be null.
-     */
-    private final SemIm semIm;
+
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     //============================CONSTRUCTORS==========================//
+
+    public SemImWrapper(SemIm semIm) {
+        setSemIm(semIm);
+    }
 
     public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
         if (semEstWrapper == null) {
@@ -63,45 +73,70 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
 
         try {
-            this.semIm = (SemIm) new MarshalledObject(oldSemIm).get();
+            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
         }
         catch (Exception e) {
             throw new RuntimeException("SemIm could not be deep cloned.", e);
         }
-
-        log(semIm);
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, SemImParams params) {
+    public SemImWrapper(Simulation simulation) {
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (_simulation instanceof LargeSemSimulation) {
+            throw new IllegalArgumentException("Large SEM simulations cannot be represented " +
+                    "using a SEM PM or IM box, sorry.");
+        }
+
+        if (!(_simulation instanceof SemSimulation)) {
+            throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
+        }
+
+        semIms = ((SemSimulation) _simulation).getSemIms();
+
+        if (semIms == null) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        this.numModels = simulation.getDataModelList().size();
+        this.modelIndex = 0;
+        this.modelSourceName = simulation.getName();
+    }
+
+    public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        semIm = new SemIm(semPmWrapper.getSemPm(), params.getSemImInitializionParams());
-
-        log(semIm);
+        setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
     }
 
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        SemImParams params) {
+                        Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         SemPm semPm = new SemPm(semPmWrapper.getSemPm());
         SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
-        if (!params.isRetainPreviousValues()) {
-            this.semIm = new SemIm(semPm, params.getSemImInitializionParams());
+        if (!params.getBoolean("retainPreviousValues", false)) {
+            setSemIm(new SemIm(semPm, params));
         } else {
-            this.semIm = new SemIm(semPm, oldSemIm, params.getSemImInitializionParams());
+            setSemIm(new SemIm(semPm, oldSemIm, params));
         }
-
-        log(semIm);
     }
 
     public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
@@ -109,9 +144,16 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        this.semIm =
-                new SemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
-        log(semIm);
+        setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
+    }
+
+    private void setSemIm(SemIm updatedSemIm) {
+        semIms = new ArrayList<>();
+        semIms.add(new SemIm(updatedSemIm));
+
+        for (int i = 0; i < semIms.size(); i++) {
+            log(i, semIms.get(i));
+        }
     }
 
     public SemImWrapper(SemImWrapper semImWrapper) {
@@ -119,14 +161,12 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        this.semIm = new SemIm(semImWrapper.getSemIm());
-        log(semIm);
+        setSemIm(semImWrapper.getSemIm());
     }
 
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();
-        this.semIm = new SemIm(oldSemIm);
-        log(semIm);
+        setSemIm(oldSemIm);
     }
 
     /**
@@ -137,18 +177,18 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     public static SemImWrapper serializableInstance() {
         return new SemImWrapper(SemPmWrapper.serializableInstance(),
                 new SemImWrapper(SemPmWrapper.serializableInstance(),
-                        SemImParams.serializableInstance()), new SemImParams());
+                        new Parameters()), new Parameters());
     }
 
     //===========================PUBLIC METHODS=========================//
 
     public SemIm getSemIm() {
-        return this.semIm;
+        return this.semIms.get(getModelIndex());
     }
 
 
     public Graph getGraph() {
-        return semIm.getSemPm().getGraph();
+        return getSemIm().getSemPm().getGraph();
     }
 
     public String getName() {
@@ -161,9 +201,10 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     //======================== Private methods =======================//
 
-    private void log(SemIm im) {
+    private void log(int i, SemIm pm) {
         TetradLogger.getInstance().log("info", "Linear SEM IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().log("info", "IM # " + (i + 1));
+        TetradLogger.getInstance().log("im", pm.toString());
     }
 
     /**
@@ -182,10 +223,6 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (semIm == null) {
-            throw new NullPointerException();
-        }
     }
 
 	public Graph getSourceGraph() {
@@ -204,6 +241,21 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 		return getGraph().getNodes();
 	}
 
+    public int getNumModels() {
+        return numModels;
+    }
+
+    public int getModelIndex() {
+        return modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return modelSourceName;
+    }
+
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+    }
 }
 
 

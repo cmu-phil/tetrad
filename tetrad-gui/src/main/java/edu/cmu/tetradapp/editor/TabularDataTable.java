@@ -45,18 +45,6 @@ class TabularDataTable extends AbstractTableModel {
     private DataSet dataSet;
 
     /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingRows = 2;
-
-    /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingCols = 2;
-
-    /**
      * True iff category names for discrete variables should be shown.
      */
     private boolean categoryNamesShown = true;
@@ -64,7 +52,7 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * Fires property change events.
      */
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -112,15 +100,16 @@ class TabularDataTable extends AbstractTableModel {
         int columnIndex = col - getNumLeadingCols();
         int rowIndex = row - 2;
 
-        if (col == 1) {
-            if (row == 1) {
-                return "MULT";
-            }
-            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
-                return dataSet.getMultiplier(rowIndex);
-            }
-        }
-        else if (col >= getNumLeadingCols() &&
+//        if (col == 1) {
+//            if (row == 1) {
+//                return "MULT";
+//            }
+//            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
+//                return dataSet.getMultiplier(rowIndex);
+//            }
+//        }
+//        else
+        if (col >= getNumLeadingCols() &&
                 col < dataSet.getNumColumns() + getNumLeadingCols()) {
             Node variable = dataSet.getVariable(columnIndex);
 
@@ -176,18 +165,19 @@ class TabularDataTable extends AbstractTableModel {
         if (col == 0) {
             throw new IllegalArgumentException("Bad col index: " + col);
         }
-        if (col == 1) {
-            if (row >= 2) {
-                try {
-                    int multiplier = new Integer((String) value);
-                    dataSet.setMultiplier(row - 2, multiplier);
-                }
-                catch (Exception e) {
-                    dataSet.setMultiplier(row - 2, 1);
-                }
-            }
-        }
-        else if (col >= getNumLeadingCols() &&
+//        if (col == 1) {
+//            if (row >= 2) {
+//                try {
+//                    int multiplier = new Integer((String) value);
+//                    dataSet.setMultiplier(row - 2, multiplier);
+//                }
+//                catch (Exception e) {
+//                    dataSet.setMultiplier(row - 2, 1);
+//                }
+//            }
+//        }
+//        else
+        if (col >= getNumLeadingCols() &&
                 col < dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
                 setColumnName(col, value);
@@ -382,10 +372,20 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     private int getNumLeadingRows() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingRows = 2;
         return numLeadingRows;
     }
 
     private int getNumLeadingCols() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingCols = 1;
         return numLeadingCols;
     }
 

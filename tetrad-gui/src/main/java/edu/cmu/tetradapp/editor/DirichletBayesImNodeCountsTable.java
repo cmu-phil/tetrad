@@ -45,7 +45,7 @@ import java.beans.PropertyChangeSupport;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DirichletBayesImNodeCountsTable extends JTable {
+class DirichletBayesImNodeCountsTable extends JTable {
     private int focusRow = 0;
     private int focusCol = 0;
     private int lastX;

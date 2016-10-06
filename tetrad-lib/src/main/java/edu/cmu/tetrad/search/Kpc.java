@@ -389,8 +389,8 @@ public class Kpc implements GraphSearch {
     //===============================PRIVATE METHODS=======================//
 
     private void enumerateTriples() {
-        this.unshieldedColliders = new HashSet<Triple>();
-        this.unshieldedNoncolliders = new HashSet<Triple>();
+        this.unshieldedColliders = new HashSet<>();
+        this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(y);

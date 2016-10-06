@@ -21,8 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
@@ -65,7 +67,35 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
 
     //==============================CONSTRUCTORS==========================//
 
-    private GeneralizedSemPmWrapper(Graph graph) {
+    public GeneralizedSemPmWrapper(Simulation simulation) {
+        GeneralizedSemPm semPm = null;
+
+        if (simulation == null) {
+            throw new NullPointerException("The Simulation box does not contain a simulation.");
+        }
+
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+
+        if (_simulation == null) {
+            throw new NullPointerException("No data sets have been simulated.");
+        }
+
+        if (!(_simulation instanceof GeneralSemSimulation)) {
+            throw new IllegalArgumentException("That was not a Generalized SEM simulation.");
+        }
+
+        List<GeneralizedSemIm> ims = ((GeneralSemSimulation) _simulation).getIms();
+
+        if (ims == null || ims.size() == 0) {
+            throw new NullPointerException("It looks like you have not done a simulation.");
+        }
+
+        semPm = ims.get(0).getGeneralizedSemPm();
+
+        this.semPm = semPm;
+    }
+
+    public GeneralizedSemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -84,7 +114,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         log(semPm);
     }
 
-    private GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
+    public GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
         this(graph);
 
         // We can keep the old expression if the node exists in the old pm and all of the node expressions
@@ -95,7 +125,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
             this.semPm.setErrorsTemplate(oldPm.getErrorsTemplate());
 
             for (Node node : semPm.getNodes()) {
-                Set<String> parents = new HashSet<String>();
+                Set<String> parents = new HashSet<>();
 
                 for (Node parent : semPm.getParents(node)) {
                     parents.add(parent.getName());
@@ -104,7 +134,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
                 Node _node = oldPm.getNode(node.getName());
 
                 Set<Node> oldReferencedNodes = oldPm.getReferencedNodes(_node);
-                Set<String> oldReferencedNames = new HashSet<String>();
+                Set<String> oldReferencedNames = new HashSet<>();
 
                 for (Node node2 : oldReferencedNodes) {
                     oldReferencedNames.add(node2.getName());
@@ -177,7 +207,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
         }
     }
 
-    private void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
+    public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
         Set<String> parameters = semPm.getReferencedParameters(node);
 
         for (String parameter : parameters) {
@@ -197,7 +227,11 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(GraphWrapper graphWrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper) {
+        this(new EdgeListGraph(graphWrapper.getGraph()));
+    }
+
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
@@ -205,23 +239,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(DagWrapper dagWrapper) {
-        this(new EdgeListGraph(dagWrapper.getDag()));
-    }
-
-    /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public GeneralizedSemPmWrapper(SemGraphWrapper semGraphWrapper) {
-        this(semGraphWrapper.getSemGraph());
-    }
-
-    /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
-     */
-    public GeneralizedSemPmWrapper(GraphWrapper graphWrapper, GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
     }
 
@@ -288,7 +306,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
     }
 
     public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
-        this(new EdgeListGraph(wrapper.getResultGraph()));
+        this(new EdgeListGraph(wrapper.getGraph()));
     }
 
     /**

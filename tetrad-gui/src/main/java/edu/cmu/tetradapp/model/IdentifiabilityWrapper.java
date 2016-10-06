@@ -25,10 +25,7 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -61,11 +58,11 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
-    private UpdaterParams params;
+    private Parameters params;
 
     //=============================CONSTRUCTORS============================//
 
-    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, UpdaterParams params) {
+    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -74,7 +71,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 /*
-    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, UpdaterParams params) {
+    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -82,7 +79,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
-    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, UpdaterParams params) {
+    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -91,7 +88,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
-    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, UpdaterParams params) {
+    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -107,7 +104,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      */
     public static IdentifiabilityWrapper serializableInstance() {
         return new IdentifiabilityWrapper(
-                BayesImWrapperObs.serializableInstance(), new UpdaterParams());
+                BayesImWrapperObs.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//
@@ -126,19 +123,19 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //===============================PRIVATE METHODS======================//
 
-    private void setup(BayesIm bayesIm, UpdaterParams params) {
+    private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
-        if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
+        if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
             bayesUpdater = new Identifiability(bayesIm);
         }
         else {
             bayesUpdater = new Identifiability(bayesIm,
-                    params.getEvidence());
+                    (Evidence) params.get("evidence", null));
         }
 
 
-        Node node = getParams().getVariable();
+        Node node = (Node) getParams().get("variable", null);
 		
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -152,7 +149,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
             TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
             TetradLogger.getInstance().log("details", "\nEvidence:");
-            Evidence evidence = getParams().getEvidence();
+            Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
             for (int i = 0; i < proposition.getNumVariables(); i++) {
@@ -205,7 +202,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         }
     }
 
-    public UpdaterParams getParams() {
+    public Parameters getParams() {
         return params;
     }
 }

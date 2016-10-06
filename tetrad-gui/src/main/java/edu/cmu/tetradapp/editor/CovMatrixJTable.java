@@ -247,10 +247,10 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
 }
 
 class CovCellRenderer extends DefaultTableCellRenderer {
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean positiveDefinite = true;
     private ICovarianceMatrix covMatrix;
-    private Color selectedColor = new Color(204, 204, 255);
+    private final Color selectedColor = new Color(204, 204, 255);
 
     public CovCellRenderer(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
@@ -353,8 +353,8 @@ class CovCellRenderer extends DefaultTableCellRenderer {
 }
 
 class CovCellEditor extends DefaultCellEditor {
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private JTextField textField;
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final JTextField textField;
 
     /**
      * Constructs a new number cell editor.

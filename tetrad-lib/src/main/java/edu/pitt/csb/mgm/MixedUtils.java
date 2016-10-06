@@ -82,7 +82,7 @@ public class MixedUtils {
 
     //Converts a Dataset with both ContinuousVariables and DiscreteVariables to only ContinuousVariables
     public static DataSet makeContinuousData(DataSet dsMix) {
-        ArrayList<Node> contVars = new ArrayList<Node>();
+        ArrayList<Node> contVars = new ArrayList<>();
         for(Node n: dsMix.getVariables()){
             if(n instanceof DiscreteVariable){
                 ContinuousVariable nc = new ContinuousVariable(n.getName());
@@ -98,7 +98,7 @@ public class MixedUtils {
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, "Disc"> in nodeDists
     public static DataSet makeMixedData(DataSet dsCont,  Map<String, String> nodeDists, int numCategories) {
-        ArrayList<Node> mixVars = new ArrayList<Node>();
+        ArrayList<Node> mixVars = new ArrayList<>();
         for(Node n: dsCont.getVariables()){
             if(nodeDists.get(n.getName()).equals("Disc")){
                 DiscreteVariable nd = new DiscreteVariable(n.getName(), numCategories);
@@ -114,7 +114,7 @@ public class MixedUtils {
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, x> with x > 0, num categories set to x
     public static DataSet makeMixedData(DataSet dsCont,  Map<String, Integer> nodeDists) {
-        ArrayList<Node> mixVars = new ArrayList<Node>();
+        ArrayList<Node> mixVars = new ArrayList<>();
         for(Node n: dsCont.getVariables()){
             int nC = nodeDists.get(n.getName());
             if(nC>0){
@@ -164,7 +164,7 @@ public class MixedUtils {
 
     //Takes a mixed dataset and returns only data corresponding to ContinuousVariables in order
     public static DataSet getContinousData(DataSet ds){
-        ArrayList<Node> contVars = new ArrayList<Node>();
+        ArrayList<Node> contVars = new ArrayList<>();
         for(Node n: ds.getVariables()){
             if(n instanceof ContinuousVariable)
                 contVars.add(n);
@@ -174,7 +174,7 @@ public class MixedUtils {
 
     //Takes a mixed dataset and returns only data corresponding to DiscreteVariables in order
     public static DataSet getDiscreteData(DataSet ds){
-        ArrayList<Node> discVars = new ArrayList<Node>();
+        ArrayList<Node> discVars = new ArrayList<>();
         for(Node n: ds.getVariables()){
             if(n instanceof DiscreteVariable)
                 discVars.add(n);
@@ -566,7 +566,7 @@ public class MixedUtils {
     //randomly permute an array of doubles
     public static double[] arrayPermute(double[] a){
         double[] out = new double[a.length];
-        List<Double> l = new ArrayList<Double>(a.length);
+        List<Double> l = new ArrayList<>(a.length);
         for(int i =0; i < a.length; i++){
             l.add(i, a[i]);
         }
@@ -580,7 +580,7 @@ public class MixedUtils {
     //randomly permute array of ints
     public static int[] arrayPermute(int[] a){
         int[] out = new int[a.length];
-        List<Integer> l = new ArrayList<Integer>(a.length);
+        List<Integer> l = new ArrayList<>(a.length);
         for(int i =0; i < a.length; i++){
             l.add(i, a[i]);
         }
@@ -694,7 +694,7 @@ public class MixedUtils {
 
     //assumes Graphs have properly assigned variable types
     public static int[][] allEdgeStats(Graph pT, Graph pE){
-        HashMap<String, String> nd = new HashMap<String, String>();
+        HashMap<String, String> nd = new HashMap<>();
 
         //Estimated graph more likely to have correct node types...
         for(Node n : pE.getNodes()){
@@ -895,7 +895,7 @@ public class MixedUtils {
         DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
 
         // map node names in order of appearance
-        HashMap<Node, Integer> map = new HashMap<Node, Integer>();
+        HashMap<Node, Integer> map = new HashMap<>();
         int i = 0;
         for (Node node : graph.getNodes()) {
             map.put(node, i);
@@ -931,7 +931,7 @@ public class MixedUtils {
         DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
 
         // map node names in order of appearance
-        HashMap<Node, Integer> map = new HashMap<Node, Integer>();
+        HashMap<Node, Integer> map = new HashMap<>();
         int i = 0;
         for (Node node : graph.getNodes()) {
             map.put(node, i);

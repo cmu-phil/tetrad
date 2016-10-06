@@ -1576,14 +1576,14 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LogNormalExpressionDescriptor() {
-            super("Log Normal", "LogNormal", Position.PREFIX, false);
+            super("LogNormal", "LogNormal", Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
-            if (expressions.length != 1) {
-                throw new ExpressionInitializationException("Exp must have one argument.");
+            if (expressions.length != 2) {
+                throw new ExpressionInitializationException("Exp must have two arguments.");
             }
 
             return new AbstractExpression("LogNormal", Position.PREFIX, expressions) {

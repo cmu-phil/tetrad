@@ -381,7 +381,7 @@ final class ClusterRenderer extends JPanel {
         /**
          * Supported dataflavors--only one.
          */
-        private DataFlavor[] dataFlavors = new DataFlavor[]{
+        private final DataFlavor[] dataFlavors = new DataFlavor[]{
                 new DataFlavor(ListSelection.class, "String List Selection")};
 
         /**

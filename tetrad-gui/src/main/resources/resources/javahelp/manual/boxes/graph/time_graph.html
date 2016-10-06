@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Graph</title>
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+  <tr> 
+    <td height="28"> 
+      <h2><font color="#FFFFFF">Time Series Graphs </font></h2></td>
+  </tr>
+</table>
+<p><br>
+  If instead of "Regular Graph" you click on "Time Series Graph" you will obtain 
+  a quite different window in which you can introduce variables named "Gene n". 
+  Currently the Time Series Graphs have very limited use for generating simulated 
+  data. Currently only a single dependency function is implemented, a generalization
+  of the Glass model of gene expression.<br>
+  <br>
+  <img src="../../images/Utime.jpg" width="595" height="584"><br>
+  <br>
+  As soon as you introduce a variable, an edge appears directed from that variable 
+  into itself&nbsp; with a number 1 attached.&nbsp; That is because you are seeing 
+  a compact representation of a time series, in which the structure in the Directed 
+  Graph window is repeated over and over. The number attached to an edge<br>
+  indicates the time delay (in steps of arbitrary time measure) for the infljuence 
+  represented by the directed edge to occur. <br>
+  <br>
+  You can add and delete variables, change their names, add and delete directed 
+  edges, and change the time delays (by double clicking on a number).<br>
+  Unlike with "Regular" graphs, a time series directed graph can have two or more 
+  edges between variables, so long each such edge has a different number. These 
+  multiple edges represent influences with different time delays. <br>
+  <br>
+  . You can see a graphical depiction of&nbsp; the time series itself by clicking 
+  on "Repeating Graph":<br>
+  <br>
+  <br>
+  <img src="../../images/Uexpsanded.jpg" width="754" height="636"><br>
+  <br>
+  <br>
+  This representation of the time series graph that comes up&nbsp; is sometimes 
+  a bit messy. Clicking on the :"Clean Up" tool button cleans it up a bit. <br>
+  <br>
+  There are 3 buttons on the top menu of the "Repeating Graph": Lag Graph, Hybrid 
+  Graph and Repeating Graph.<br>
+  <br>
+  Lag graph shows only the repeating structure. Hybrid Graph, which is often the 
+  most revealing, shows one instance of the repeating structure highlighted and 
+  other repetitions dimmed. Repeating Graph shows a long series of repetitions 
+  all highlighted. The picture above is of a Hybrid graph. The graphical<br>
+  structures are the same in all three choices; only the display is different.<br>
+  <br>
+  You can make the same sorts of changes in the Repeating Graph window that you 
+  can make in the Directed Graph window.<br>
+  <br>
+  The Table View will show which variables each variable depends on, and the lags.<br>
+  <br>
+  The File menu is currently useless..<br>
+</p>
+</body>
+</html>

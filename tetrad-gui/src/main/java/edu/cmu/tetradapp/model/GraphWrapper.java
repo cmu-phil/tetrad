@@ -25,22 +25,23 @@ import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
-import java.util.prefs.Preferences;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to
@@ -49,8 +50,11 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
-        SimulationParamsSource {
+        SimulationParamsSource, GraphSettable, MultipleGraphSource {
     static final long serialVersionUID = 23L;
+    private int numModels = 1;
+    private int modelIndex = 0;
+    private String modelSourceName = null;
 
     /**
      * @serial Can be null.
@@ -60,16 +64,20 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     /**
      * @serial Cannot be null.
      */
-    private Graph graph;
+    private List<Graph> graphs;
     private Map<String, String> allParamSettings;
+    private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
+
+    private GraphWrapper() {
+    }
 
     public GraphWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
-        this.graph = graph;
+        setGraph(graph);
         log();
     }
 
@@ -80,52 +88,69 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.graph = graph;
+        setGraph(graph);
     }
 
-    // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public GraphWrapper(GraphParams params) {
-        if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
-            this.graph = new EdgeListGraph();
-        } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
-            Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
-
-            boolean addCycles = Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
-
-            if (addCycles) {
-                int newGraphNumMeasuredNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
-                int newGraphNumEdges = Preferences.userRoot().getInt("newGraphNumEdges", 3);
-                graph = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes ,newGraphNumEdges);
-            }
-//            GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
-
-            this.graph = graph;
-        }
+    public GraphWrapper(Parameters parameters) {
+        this.parameters = parameters;
+        setGraph(new EdgeListGraph());
         log();
     }
 
-    public GraphWrapper(GraphSource graphSource) {
-        if (getGraph() != null) {
-            this.graph = new EdgeListGraph(getGraph());
-        } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
-                GraphParams.MANUAL) == GraphParams.RANDOM) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
-            edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
+    public GraphWrapper(GraphSource graphSource, Parameters parameters) {
+        if (graphSource instanceof  Simulation) {
+            Simulation simulation = (Simulation) graphSource;
+            this.graphs = simulation.getGraphs();
+            this.numModels = graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            setGraph(new EdgeListGraph(graphSource.getGraph()));
         }
 
-        Graph graph = graphSource.getGraph();
-        if (graph != null) {
-            try {
-                this.graph = new EdgeListGraph(graph);
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.graph = new EdgeListGraph();
-            }
-        } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
-            this.graph = new EdgeListGraph();
+        log();
+    }
+
+
+    public GraphWrapper(DataWrapper wrapper) {
+        if (wrapper instanceof  Simulation) {
+            Simulation simulation = (Simulation) wrapper;
+            this.graphs = simulation.getGraphs();
+            this.numModels = graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
+        } else {
+            setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
+        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+    }
+
+    public GraphWrapper(GeneralizedSemImWrapper wrapper) {
+        this(getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
+        if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
+            throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
+        }
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static GraphWrapper serializableInstance() {
+        return new GraphWrapper(Dag.serializableInstance());
+    }
+
+    //==============================PUBLIC METHODS======================//
+
+    public Graph getGraph() {
+        return graphs.get(getModelIndex());
+    }
+
+    public void setGraph(Graph graph) {
+        graphs = new ArrayList<>();
+        graphs.add(graph);
         log();
     }
 
@@ -133,21 +158,90 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         return true;
     }
 
-
-    public GraphWrapper(DataWrapper wrapper) {
-        this(new EdgeListGraph(wrapper.getVariables()));
-        GraphUtils.circleLayout(graph, 200, 200, 150);
+    @Override
+    public IndependenceTest getIndependenceTest() {
+        return new IndTestDSep(getGraph());
     }
 
-    public GraphWrapper(GeneralizedSemImWrapper wrapper) {
-        this(getStrongestInfluenceGraph(wrapper.getSemIm()));
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
+
+    public Graph getResultGraph() {
+        return getGraph();
+    }
+
+    public List<String> getVariableNames() {
+        return getGraph().getNodeNames();
+    }
+
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
+        if (getGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    //==========================PRIVATE METaHODS===========================//
+
+    private static String findParameter(Expression expression, String name) {
+        List<Expression> expressions = expression.getExpressions();
+
+        if (expression.getToken().equals("*")) {
+            Expression expression1 = expressions.get(1);
+            VariableExpression varExpr = (VariableExpression) expression1;
+
+            if (varExpr.getVariable().equals(name)) {
+                Expression expression2 = expressions.get(0);
+                VariableExpression constExpr = (VariableExpression) expression2;
+                return constExpr.getVariable();
+            }
+        }
+
+        for (Expression _expression : expressions) {
+            String param = findParameter(_expression, name);
+
+            if (param != null) {
+                return param;
+            }
+        }
+
+        return null;
     }
 
     private static Graph getStrongestInfluenceGraph(GeneralizedSemIm im) {
         GeneralizedSemPm pm = im.getGeneralizedSemPm();
         Graph imGraph = im.getGeneralizedSemPm().getGraph();
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (Node node : imGraph.getNodes()) {
             if (!(node.getNodeType() == NodeType.ERROR)) {
@@ -198,53 +292,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         return graph2;
     }
 
-    private static String findParameter(Expression expression, String name) {
-        List<Expression> expressions = expression.getExpressions();
-
-        if (expression.getToken().equals("*")) {
-            Expression expression1 = expressions.get(1);
-            VariableExpression varExpr = (VariableExpression) expression1;
-
-            if (varExpr.getVariable().equals(name)) {
-                Expression expression2 = expressions.get(0);
-                VariableExpression constExpr = (VariableExpression) expression2;
-                return constExpr.getVariable();
-            }
-        }
-
-        for (Expression _expression : expressions) {
-            String param = findParameter(_expression, name);
-
-            if (param != null) {
-                return param;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static GraphWrapper serializableInstance() {
-        return new GraphWrapper(Dag.serializableInstance());
-    }
-
-    //==============================PUBLIC METHODS======================//
-
-    public Graph getGraph() {
-        return graph;
-    }
-
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-        log();
-    }
-
-    //==========================PRIVATE METaHODS===========================//
-
     private void log() {
         TetradLogger.getInstance().log("info", "General Graph");
         TetradLogger.getInstance().log("graph", "" + getGraph());
@@ -268,53 +315,25 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         s.defaultReadObject();
     }
 
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(getGraph());
+    public int getNumModels() {
+        return numModels;
     }
 
-    public String getName() {
-        return name;
+    public int getModelIndex() {
+        return modelIndex;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getModelSourceName() {
+        return modelSourceName;
     }
 
-    public Graph getSourceGraph() {
-        return graph;
-    }
-
-    public Graph getResultGraph() {
-        return graph;
-    }
-
-    public List<String> getVariableNames() {
-
-        return graph.getNodeNames();
-    }
-
-    public List<Node> getVariables() {
-        return graph.getNodes();
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
     }
 
     @Override
-    public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("# Vars", Integer.toString(graph.getNumNodes()));
-        paramSettings.put("# Edges", Integer.toString(graph.getNumEdges()));
-        if (graph.existsDirectedCycle()) paramSettings.put("Cyclic", null);
-        return paramSettings;
-    }
-
-    @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
-    }
-
-    @Override
-    public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+    public List<Graph> getGraphs() {
+        return graphs;
     }
 }
 

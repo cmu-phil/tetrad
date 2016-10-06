@@ -37,7 +37,7 @@ import java.util.Set;
 class RunSimulationAction extends AbstractAction {
 
 
-    private SessionEditorNode sessionEditorNode;
+    private final SessionEditorNode sessionEditorNode;
 
     /**
      * Constructs a new action to open sessions.

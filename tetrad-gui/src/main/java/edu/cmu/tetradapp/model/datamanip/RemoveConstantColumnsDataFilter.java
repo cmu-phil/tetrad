@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Tyler Gibson
  */
-public class RemoveConstantColumnsDataFilter implements DataFilter {
+class RemoveConstantColumnsDataFilter implements DataFilter {
 
 
     /**
@@ -49,7 +49,7 @@ public class RemoveConstantColumnsDataFilter implements DataFilter {
 
 
     public static List<Node> getNodes(List<NodeWrapper> wrappers) {
-        List<Node> nodes = new ArrayList<Node>(wrappers.size());
+        List<Node> nodes = new ArrayList<>(wrappers.size());
         for (NodeWrapper wrapper : wrappers) {
             nodes.add(wrapper.node);
         }
@@ -63,8 +63,8 @@ public class RemoveConstantColumnsDataFilter implements DataFilter {
      * up again (which is slow)
      */
     public static class NodeWrapper {
-        private int column;
-        private Node node;
+        private final int column;
+        private final Node node;
 
         public NodeWrapper(int column, Node node) {
             this.column = column;

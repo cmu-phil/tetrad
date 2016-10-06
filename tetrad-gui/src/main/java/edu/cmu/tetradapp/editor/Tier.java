@@ -38,11 +38,11 @@ import java.util.List;
  */
 class Tier extends JPanel {
 
-    private TierList knowList;    //knowlist constraint is contained in
-    private int num;
-    private String[] tierNames;
-    private JPanel view = new JPanel();
-    private JScrollPane jsp;
+    private final TierList knowList;    //knowlist constraint is contained in
+    private final int num;
+    private final String[] tierNames;
+    private final JPanel view = new JPanel();
+    private final JScrollPane jsp;
     private static IKnowledge know;
 
     /**
@@ -131,7 +131,7 @@ class Tier extends JPanel {
         add(new JLabel("Unspecified"));
         add(jsp);
 
-        List<String> vNames = new LinkedList<String>(varNames);
+        List<String> vNames = new LinkedList<>(varNames);
 
         System.out.println("edit unspecified list");
         System.out.println("vNames Contains: " + vNames);

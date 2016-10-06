@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.ManipulatingBayesUpdater;
-import edu.cmu.tetrad.bayes.UpdaterParams;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Stuff the GUI needs to know. Wrapped so that the GUI can access the params.
@@ -34,7 +34,7 @@ public interface UpdaterWrapper {
     /**
      * Makes the params object accessible to the GUI.
      */
-    UpdaterParams getParams();
+    Parameters getParams();
 
     ManipulatingBayesUpdater getBayesUpdater();
 }

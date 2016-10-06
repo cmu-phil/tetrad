@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class MbPatternDisplay extends JPanel {
+class MbPatternDisplay extends JPanel {
 
     public MbPatternDisplay(final Mbfs search) {
         final List dags = MbUtils.generateMbDags(search.resultGraph(), false,

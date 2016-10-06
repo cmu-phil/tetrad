@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -116,7 +117,7 @@ public class DirichletEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, DirichletEstimatorParams params) {
+            BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -140,7 +141,7 @@ public class DirichletEstimatorWrapper implements SessionModel, GraphSource {
         DirichletBayesIm dirichletBayesIm =
                 DirichletBayesIm.symmetricDirichletIm(
                         bayesPmWrapper.getBayesPm(),
-                        params.getSymmetricAlpha());
+                        params.getDouble("symmetricAlpha", 1.0));
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");

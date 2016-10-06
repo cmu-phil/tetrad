@@ -48,7 +48,6 @@ public class TimeLagGraph implements Graph {
     private int maxLag = 1;
     private int numInitialLags = 1;
     private List<Node> lag0Nodes = new ArrayList<>();
-//    private IKnowledge knowledge;
 
     public TimeLagGraph() {
     }
@@ -66,31 +65,12 @@ public class TimeLagGraph implements Graph {
         });
     }
 
-//    public TimeLagGraph(Graph graph) {
-//        //this.graph = new EdgeListGraph(graph);
-//        //this.lag0Nodes = graph.getNodes();
-//
-//        List<Node> Nodes = graph.getNodes();
-//        for(Node node : Nodes){
-//            this.graph.addNode(node);
-//        }
-//
-//        //need to add edges?
-//
-//        this.graph.addPropertyChangeListener(new PropertyChangeListener() {
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                getPcs().firePropertyChange(evt);
-//            }
-//        });
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static TimeLagGraph serializableInstance() {
         return new TimeLagGraph();
     }
-
 
     /**
      * Nodes may be added into the getModel time step only. That is, node.getLag() must be 0.
@@ -101,7 +81,6 @@ public class TimeLagGraph implements Graph {
 
         if (id.getLag() != 0) {
             node = node.like(id.getName());
-//            throw new IllegalArgumentException("Nodes may be added into the getModel time step only.");
         }
 
         boolean added = getGraph().addNode(node);
@@ -252,8 +231,6 @@ public class TimeLagGraph implements Graph {
 
                     if (getNodeId(tail).getLag() > maxLag) {
                         getGraph().removeEdge(edge);
-//                        throw new IllegalArgumentException("This edge has lag greater than the new maxLag: " + edge +
-//                                " Please remove first.");
                     }
                 }
             }
@@ -411,10 +388,6 @@ public class TimeLagGraph implements Graph {
         return getGraph().toString() + "\n" + lag0Nodes;
     }
 
-    public boolean addGraphConstraint(GraphConstraint gc) {
-        return getGraph().addGraphConstraint(gc);
-    }
-
     public boolean addDirectedEdge(Node node1, Node node2) {
         return graph.addDirectedEdge(node1, node2);
     }
@@ -501,6 +474,11 @@ public class TimeLagGraph implements Graph {
 
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
+    }
+
+    @Override
+    public int getDegree(Node node) {
+        return getGraph().getDegree(node);
     }
 
     public int getOutdegree(Node node) {
@@ -750,18 +728,6 @@ public class TimeLagGraph implements Graph {
 
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
-    }
-
-    public List<GraphConstraint> getGraphConstraints() {
-        return getGraph().getGraphConstraints();
-    }
-
-    public boolean isGraphConstraintsChecked() {
-        return getGraph().isGraphConstraintsChecked();
-    }
-
-    public void setGraphConstraintsChecked(boolean checked) {
-        getGraph().setGraphConstraintsChecked(checked);
     }
 
     public Graph subgraph(List<Node> nodes) {

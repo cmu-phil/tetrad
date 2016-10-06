@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
+import edu.cmu.tetradapp.util.FinalizingEditor;
 
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
@@ -80,6 +81,8 @@ public class EditorWindow extends JInternalFrame
         doSetup(editor, cancellable);
 
         this.centeringComp = centeringComp;
+
+        setClosable(false);
     }
 
     @Override
@@ -128,7 +131,7 @@ public class EditorWindow extends JInternalFrame
         b.add(Box.createHorizontalStrut(5));
 
         if (cancellable) {
-            b.add(cancelButton);                                             
+            b.add(cancelButton);
         }
 
         b.add(Box.createHorizontalGlue());
@@ -145,8 +148,7 @@ public class EditorWindow extends JInternalFrame
             JScrollPane scroll = new JScrollPane(b0);
             scroll.setPreferredSize(new Dimension(width, height));
             getContentPane().add(scroll);
-        }
-        else {
+        } else {
             getContentPane().add(b0);
         }
 
@@ -173,7 +175,7 @@ public class EditorWindow extends JInternalFrame
         return canceled;
     }
 
-    public JComponent getEditor() {
+    private JComponent getEditor() {
         return editor;
     }
 
@@ -181,13 +183,18 @@ public class EditorWindow extends JInternalFrame
         return centeringComp;
     }
 
-    class OkListener implements ActionListener {
+    private class OkListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            closeDialog();
+            if (editor instanceof FinalizingEditor) {
+                boolean ok = ((FinalizingEditor) editor).finalizeEditor();
+                if (ok) closeDialog();
+            } else {
+                closeDialog();
+            }
         }
     }
 
-    class CancelListener implements ActionListener {
+    private class CancelListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             canceled = true;
             closeDialog();
