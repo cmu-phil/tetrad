@@ -56,6 +56,7 @@ import java.util.concurrent.RecursiveTask;
  * of parameters and their values.
  *
  * @author jdramsey
+ * @author Daniel Malinsky
  */
 public class Comparison {
     private boolean[] graphTypeUsed;
