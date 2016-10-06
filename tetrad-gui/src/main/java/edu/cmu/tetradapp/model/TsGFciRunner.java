@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -178,7 +179,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            gfci = new TsGFci(gesScore);
+            IndependenceTest test = new IndTestDSep((Graph) model);
+            gfci = new TsGFci(test, gesScore);
             gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             gfci.setVerbose(true);
         } else {
@@ -193,7 +195,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    gfci = new TsGFci(gesScore);
+                    IndependenceTest test = new IndTestDSep((Graph) model);
+                    gfci = new TsGFci(test, gesScore);
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (dataSet.isDiscrete()) {
@@ -211,7 +214,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                gfci = new TsGFci(gesScore);
+                IndependenceTest test = new IndTestDSep((Graph) model);
+                gfci = new TsGFci(test, gesScore);
                 gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
@@ -236,7 +240,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    gfci = new TsGFci(fgsScore);
+                    IndependenceTest test = new IndTestDSep((Graph) model);
+                    gfci = new TsGFci(test, fgsScore);
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (allDiscrete(list)) {

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -38,7 +39,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             dataModels.add(dataSet);
         }
 
-        edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new SemBicScoreImages(dataModels));
+        edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new IndTestScore(new SemBicScoreImages(dataModels)), new SemBicScoreImages(dataModels));
         search.setFaithfulnessAssumed(true);
         search.setKnowledge(knowledge);
 
