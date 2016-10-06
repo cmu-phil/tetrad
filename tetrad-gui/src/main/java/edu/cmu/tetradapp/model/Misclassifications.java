@@ -251,17 +251,17 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             targetGraphs.set(i,GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
         }
 
-        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
-            throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
-        }
-
-        if (model1 instanceof GeneralAlgorithmRunner) {
-            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
-            this.algorithm = generalAlgorithmRunner.getAlgorithm();
-        } else if (model2 instanceof GeneralAlgorithmRunner) {
-            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
-            this.algorithm = generalAlgorithmRunner.getAlgorithm();
-        }
+//        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
+//            throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
+//        }
+//
+//        if (model1 instanceof GeneralAlgorithmRunner) {
+//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
+//            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+//        } else if (model2 instanceof GeneralAlgorithmRunner) {
+//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
+//            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+//        }
 
         if (algorithm != null) {
             for (int i = 0; i < referenceGraphs.size(); i++) {

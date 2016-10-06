@@ -651,7 +651,7 @@ public class Jcpc implements GraphSearch {
         List<Node> nodes = graph.getNodes();
         Set<Node> colliderNodes = new HashSet<Node>();
 
-        SepsetsMinScore sepsetProducer = new SepsetsMinScore(graph, test, null, -1);
+        SepsetProducer sepsetProducer = new SepsetsMinScore(graph, test, -1);
 
         for (Node y : nodes) {
             orientCollidersAboutNode(graph, test, depth, knowledge, colliderNodes, y, sepsetProducer);

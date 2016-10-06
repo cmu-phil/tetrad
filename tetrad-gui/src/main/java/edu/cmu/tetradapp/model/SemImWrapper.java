@@ -26,9 +26,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.ISemIm;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -36,7 +34,6 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class SemImWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
     private List<SemIm> semIms;
 
@@ -64,21 +61,21 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     public SemImWrapper(SemIm semIm) {
         setSemIm(semIm);
     }
-
-    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
-        if (semEstWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
-
-        try {
-            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
-        }
-        catch (Exception e) {
-            throw new RuntimeException("SemIm could not be deep cloned.", e);
-        }
-    }
+//
+//    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
+//        if (semEstWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
+//
+//        try {
+//            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
+//        }
+//        catch (Exception e) {
+//            throw new RuntimeException("SemIm could not be deep cloned.", e);
+//        }
+//    }
 
     public SemImWrapper(Simulation simulation) {
         if (simulation == null) {
@@ -119,33 +116,33 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        Parameters params) {
-        if (semPmWrapper == null) {
-            throw new NullPointerException("SemPmWrapper must not be null.");
-        }
+//    public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
+//                        Parameters params) {
+//        if (semPmWrapper == null) {
+//            throw new NullPointerException("SemPmWrapper must not be null.");
+//        }
+//
+//        if (params == null) {
+//            throw new NullPointerException("Parameters must not be null.");
+//        }
+//
+//        SemPm semPm = new SemPm(semPmWrapper.getSemPm());
+//        SemIm oldSemIm = oldSemImWrapper.getSemIm();
+//
+//        if (!params.getBoolean("retainPreviousValues", false)) {
+//            setSemIm(new SemIm(semPm, params));
+//        } else {
+//            setSemIm(new SemIm(semPm, oldSemIm, params));
+//        }
+//    }
 
-        if (params == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-
-        SemPm semPm = new SemPm(semPmWrapper.getSemPm());
-        SemIm oldSemIm = oldSemImWrapper.getSemIm();
-
-        if (!params.getBoolean("retainPreviousValues", false)) {
-            setSemIm(new SemIm(semPm, params));
-        } else {
-            setSemIm(new SemIm(semPm, oldSemIm, params));
-        }
-    }
-
-    public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
-        if (semUpdaterWrapper == null) {
-            throw new NullPointerException("SemPmWrapper must not be null.");
-        }
-
-        setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
-    }
+//    public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
+//        if (semUpdaterWrapper == null) {
+//            throw new NullPointerException("SemPmWrapper must not be null.");
+//        }
+//
+//        setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
+//    }
 
     private void setSemIm(SemIm updatedSemIm) {
         semIms = new ArrayList<>();
@@ -156,13 +153,13 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         }
     }
 
-    public SemImWrapper(SemImWrapper semImWrapper) {
-        if (semImWrapper == null) {
-            throw new NullPointerException("SemPmWrapper must not be null.");
-        }
-
-        setSemIm(semImWrapper.getSemIm());
-    }
+//    public SemImWrapper(SemImWrapper semImWrapper) {
+//        if (semImWrapper == null) {
+//            throw new NullPointerException("SemPmWrapper must not be null.");
+//        }
+//
+//        setSemIm(semImWrapper.getSemIm());
+//    }
 
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();
@@ -174,10 +171,11 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      *
      * @see TetradSerializableUtils
      */
-    public static SemImWrapper serializableInstance() {
-        return new SemImWrapper(SemPmWrapper.serializableInstance(),
-                new SemImWrapper(SemPmWrapper.serializableInstance(),
-                        new Parameters()), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new SemImWrapper(SemPmWrapper.serializableInstance(),
+//                new SemImWrapper(SemPmWrapper.serializableInstance(),
+//                        new Parameters()), new Parameters());
     }
 
     //===========================PUBLIC METHODS=========================//

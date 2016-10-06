@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.gene.tetrad.gene.history.PreviousStepOnly;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
@@ -84,8 +85,9 @@ public class StandardizedSemImWrapper implements SessionModel, GraphSource, Know
      *
      * @see TetradSerializableUtils
      */
-    public static StandardizedSemImWrapper serializableInstance() {
-        return new StandardizedSemImWrapper(SemImWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+//        return new StandardizedSemImWrapper(SemImWrapper.serializableInstance());
     }
 
     //===========================PUBLIC METHODS=========================//

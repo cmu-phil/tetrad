@@ -98,13 +98,11 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         }
 
         boolean cyclic = getGraph().existsDirectedCycle();
-//        List<Node> cycle = GraphUtils.directedCycle(graph);
 
         JTextArea textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(300, 300));
 
-//        textArea.append("Graph Properties for " + workbench.getNode());
         textArea.append("\nNumber of nodes: " + String.valueOf(getGraph().getNumNodes()));
         textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
         textArea.append("\nNumber of edges: " + String.valueOf(getGraph().getNumEdges()));
@@ -116,11 +114,6 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         textArea.append("\nMax outdegree: " + String.valueOf(maxOutdegree));
         textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
         textArea.append("\n" + (cyclic ? "Cyclic": "Acyclic"));
-
-//        if (cyclic) {
-//            textArea.append("\nExample cycle: " + cycle.toString());
-//        }
-
 
         Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
@@ -135,9 +128,6 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
                 "Graph Properties", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
-
-//        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
-//                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
     /**

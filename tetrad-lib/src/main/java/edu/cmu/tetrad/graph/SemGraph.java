@@ -958,6 +958,16 @@ public final class SemGraph implements Graph, TetradSerializable {
             }
         }
     }
+
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
 }
 
 

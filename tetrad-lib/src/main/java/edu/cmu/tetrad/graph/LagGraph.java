@@ -457,6 +457,16 @@ public class LagGraph implements Graph {
     public void setGraph(Dag graph) {
         this.graph = graph;
     }
+
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
 }
 
 

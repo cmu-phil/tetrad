@@ -115,7 +115,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
         b.add(b1);
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Cluster Assignments:"));
+        b2.add(new JLabel("search_for_structure_over_latents Assignments:"));
         b2.add(Box.createHorizontalGlue());
         b2.add(editClusters);
         b.add(b2);

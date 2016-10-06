@@ -678,6 +678,16 @@ public final class Dag implements Graph {
     private Graph getGraph() {
         return graph;
     }
+
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
 }
 
 

@@ -5,10 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -38,20 +35,13 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        Graph initial = null;
+    public Graph search(DataModel dataSet, Parameters parameters) {
 
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
-
-        edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(test.getTest(dataSet, parameters),
-                score.getScore(dataSet, parameters));
+        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
+        edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
+                test.getTest(continuousDataSet, parameters),
+                score.getScore(continuousDataSet, parameters));
         search.setKnowledge(knowledge);
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
 
         return search.search();
     }

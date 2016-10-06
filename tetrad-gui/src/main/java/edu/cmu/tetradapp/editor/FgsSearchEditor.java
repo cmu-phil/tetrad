@@ -70,27 +70,27 @@ public class FgsSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given FgsRunner.
      */
     public FgsSearchEditor(FgsRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public FgsSearchEditor(WFgsRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public FgsSearchEditor(FgsMbRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public FgsSearchEditor(ImagesRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public FgsSearchEditor(TsFgsRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     public FgsSearchEditor(TsImagesRunner runner) {
-        super(runner, "Result Pattern");
+        super(runner, "Result forbid_latent_common_causes");
     }
 
     //=============================== Public Methods ==================================//
@@ -268,7 +268,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
         add(getToolbar(), BorderLayout.WEST);
 
         tabbedPane = new JTabbedPane();
-        tabbedPane.add("Pattern", gesDisplay());
+        tabbedPane.add("forbid_latent_common_causes", gesDisplay());
 
         add(tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
@@ -377,9 +377,9 @@ public class FgsSearchEditor extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        final JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");

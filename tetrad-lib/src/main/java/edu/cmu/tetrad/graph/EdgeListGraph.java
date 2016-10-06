@@ -42,7 +42,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  * @author Erin Korber additions summer 2004
  * @see edu.cmu.tetrad.graph.Endpoint
  */
-public class EdgeListGraph implements Graph {
+public class EdgeListGraph implements Graph, TripleClassifier {
     static final long serialVersionUID = 23L;
 
     /**
@@ -1933,6 +1933,28 @@ public class EdgeListGraph implements Graph {
         node.setName(newName);
         namesHash.put(newName, node);
     }
+
+    /**
+     * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
+     */
+    public List<String> getTriplesClassificationTypes() {
+        List<String> names = new ArrayList<>();
+        names.add("Underlines");
+        names.add("Dotted Underlines");
+        return names;
+    }
+
+    /**
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
+     * node.
+     */
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, this));
+        triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, this));
+        return triplesList;
+    }
+
 }
 
 

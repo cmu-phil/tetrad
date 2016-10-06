@@ -57,8 +57,8 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static InverseCorrelationRunner serializableInstance() {
-        return new InverseCorrelationRunner(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

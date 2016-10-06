@@ -88,8 +88,8 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      *
      * @see TetradSerializableUtils
      */
-    public static LingamRunner serializableInstance() {
-        return new LingamRunner(DataWrapper.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //============================PUBLIC METHODS==========================//

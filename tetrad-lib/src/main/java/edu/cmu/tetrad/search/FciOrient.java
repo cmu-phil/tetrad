@@ -18,31 +18,30 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-
+import java.io.PrintStream;
 import java.util.*;
 
-
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm
+ * (found in FCI.java) with Jiji Zhang's Augmented FCI rules (found in sec. 4.1
+ * of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * This class is based off a copy of FCI.java taken from the repository on
+ * 2008/12/16, revision 7306. The extension is done by extending
+ * doFinalOrientation() with methods for Zhang's rules R5-R10 which implements
+ * the augmented search. (By a remark of Zhang's, the rule applications can be
+ * staged in this way.)
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
@@ -61,7 +60,8 @@ public final class FciOrient {
     private boolean changeFlag = true;
 
     /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
+     * flag for complete rule set, true if should use complete rule set, false
+     * otherwise.
      */
     private boolean completeRuleSetUsed = false;
 
@@ -71,7 +71,8 @@ public final class FciOrient {
     private boolean possibleDsepSearchDone = true;
 
     /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     * The maximum length for any discriminating path. -1 if unlimited;
+     * otherwise, a positive integer.
      */
     private int maxPathLength = -1;
 
@@ -79,6 +80,9 @@ public final class FciOrient {
      * The logger to use.
      */
     private TetradLogger logger = TetradLogger.getInstance();
+
+    // The print stream that output is directed to.
+    private PrintStream out = System.out;
 
     /**
      * True iff verbose output should be printed.
@@ -90,9 +94,9 @@ public final class FciOrient {
     private boolean skipDiscriminatingPathRule;
 
     //============================CONSTRUCTORS============================//
-
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructs a new FCI search for the given independence test and
+     * background knowledge.
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
@@ -100,14 +104,13 @@ public final class FciOrient {
         if (sepsets instanceof SepsetsGreedy) {
             SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
             this.dag = _sepsets.getDag();
-        } else if (sepsets instanceof  DagSepsets) {
+        } else if (sepsets instanceof DagSepsets) {
             DagSepsets _sepsets = (DagSepsets) sepsets;
             this.dag = _sepsets.getDag();
         }
     }
 
     //========================PUBLIC METHODS==========================//
-
     public Graph orient(Graph graph) {
 
         logger.log("info", "Starting FCI algorithm.");
@@ -115,9 +118,8 @@ public final class FciOrient {
         ruleR0(graph);
 
         if (verbose) {
-            System.out.println("R0");
+            out.println("R0");
         }
-
 
         // Step CI D. (Zhang's step F4.)
         doFinalOrientation(graph);
@@ -150,30 +152,30 @@ public final class FciOrient {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
+     * @return true if Zhang's complete rule set should be used, false if only
+     * R1-R4 (the rule set of the original FCI) should be used. False by
+     * default.
      */
     public boolean isCompleteRuleSetUsed() {
         return completeRuleSetUsed;
     }
 
     /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set
+     * should be used, false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     //===========================PRIVATE METHODS=========================//
-
     private List<Node> getSepset(Node i, Node k) {
         return this.sepsets.getSepset(i, k);
     }
 
-
     /**
-     * Orients colliders in the graph.  (FCI Step C)
+     * Orients colliders in the graph. (FCI Step C)
      * <p>
      * Zhang's step F3, rule R0.
      */
@@ -219,7 +221,7 @@ public final class FciOrient {
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                     if (verbose) {
                         logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        System.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
                         String location = "R0";
 
                         printWrongColliderMessage(a, b, c, location, graph);
@@ -231,10 +233,9 @@ public final class FciOrient {
 
     private void printWrongColliderMessage(Node a, Node b, Node c, String location, Graph graph) {
         if (truePag != null && graph.isDefCollider(a, b, c) && !truePag.isDefCollider(a, b, c)) {
-            System.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
+            out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
-
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
@@ -265,7 +266,7 @@ public final class FciOrient {
             }
 
             if (verbose) {
-                System.out.println("Epoch");
+                out.println("Epoch");
             }
         }
     }
@@ -286,7 +287,7 @@ public final class FciOrient {
             }
 
             if (verbose) {
-                System.out.println("Epoch");
+                out.println("Epoch");
             }
         }
 
@@ -317,7 +318,6 @@ public final class FciOrient {
 
     //Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
-
     public void rulesR1R2cycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
 
@@ -362,7 +362,7 @@ public final class FciOrient {
 
             if (verbose) {
                 logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
-                System.out.println(SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+                out.println(SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
             }
         }
     }
@@ -374,13 +374,12 @@ public final class FciOrient {
     //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
-        if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+        if ((graph.isAdjacentTo(a, c))
+                && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
-            if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
-                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
-                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
-                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+            if ((graph.getEndpoint(a, b) == Endpoint.ARROW)
+                    && (graph.getEndpoint(b, c) == Endpoint.ARROW) && ((graph.getEndpoint(b, a) == Endpoint.TAIL)
+                    || (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
                 if (!isArrowpointAllowed(a, c, graph)) {
                     return;
@@ -390,7 +389,7 @@ public final class FciOrient {
 
                 if (verbose) {
                     logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
-                    System.out.println(SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+                    out.println(SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
                 }
 
                 changeFlag = true;
@@ -432,9 +431,9 @@ public final class FciOrient {
 //            }
 //        }
 //    }
-
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
+     * Implements the double-triangle orientation rule, which states that if
+     * D*-oB, A*->B<-*C and A*-oDo-*C, then
      * D*->B.
      * <p>
      * This is Zhang's rule R3.
@@ -463,8 +462,8 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (!graph.isAdjacentTo(A, D) ||
-                            !graph.isAdjacentTo(C, D)) {
+                    if (!graph.isAdjacentTo(A, D)
+                            || !graph.isAdjacentTo(C, D)) {
                         continue;
                     }
 
@@ -488,7 +487,7 @@ public final class FciOrient {
 
                     if (verbose) {
                         logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
-                        System.out.println(SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+                        out.println(SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
                     }
 
                     changeFlag = true;
@@ -497,9 +496,8 @@ public final class FciOrient {
         }
     }
 
-
 //    public void ruleR4(Graph graph) {
-//        System.out.println("Starting DDP");
+//        out.println("Starting DDP");
 //
 ////        if (false) {
 ////
@@ -511,12 +509,12 @@ public final class FciOrient {
 ////            ruleR4B(graph);
 ////        }
 //
-//        System.out.println("Finishing DDP");
+//        out.println("Finishing DDP");
 //    }
-
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
+     * The triangles that must be oriented this way (won't be done by another
+     * rule) all look like the ones below, where the dots are a collider path
+     * from L to A with each node on the path (except L) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
@@ -551,7 +549,7 @@ public final class FciOrient {
                     reachable.add(a);
 
                     if (verbose) {
-                        System.out.println("Found pattern " + a + " " + b + " " + c);
+                        out.println("Found pattern " + a + " " + b + " " + c);
                         reachablePathFind(a, b, c, reachable, graph);
                     }
                 }
@@ -560,12 +558,13 @@ public final class FciOrient {
     }
 
     /**
-     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
-     * a DDP consists of colliders that are parents of c.
+     * a method to search "back from a" to find a DDP. It is called with a
+     * reachability list (first consisting only of a). This is breadth-first,
+     * utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p>
+     * The body of a DDP consists of colliders that are parents of c.
      */
     private void reachablePathFind(Node a, Node b, Node c,
-                                   LinkedList<Node> reachable, Graph graph) {
+            LinkedList<Node> reachable, Graph graph) {
 //        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
 //        // path containing the nodes in the traiangle
 //        next.put(a, b);
@@ -627,21 +626,23 @@ public final class FciOrient {
     }
 
     /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
-     * arguments.
+     * Orients the edges inside the definte discriminating path triangle. Takes
+     * the left endpoint, and a,b,c as arguments.
      */
     private void doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
 
         List<Node> sepset = getSepset(d, c);
 
-        if (sepset == null) return;
+        if (sepset == null) {
+            return;
+        }
 
         if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
             if (verbose) {
                 logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-                System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+                out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
             changeFlag = true;
@@ -662,9 +663,9 @@ public final class FciOrient {
     }
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like
-     * the ones below, where the dots are a collider path from L to A with each node on the path
-     * (except L) a parent of C.
+     * The triangles that must be oriented this way (won't be done by another
+     * rule) all look like the ones below, where the dots are a collider path
+     * from L to A with each node on the path (except L) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
@@ -676,7 +677,9 @@ public final class FciOrient {
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     public void ruleR4B(Graph graph) {
-        if (skipDiscriminatingPathRule) return;
+        if (skipDiscriminatingPathRule) {
+            return;
+        }
 
         List<Node> nodes = graph.getNodes();
 
@@ -704,9 +707,10 @@ public final class FciOrient {
     }
 
     /**
-     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
-     * a DDP consists of colliders that are parents of c.
+     * a method to search "back from a" to find a DDP. It is called with a
+     * reachability list (first consisting only of a). This is breadth-first,
+     * utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p>
+     * The body of a DDP consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<Node>();
@@ -730,13 +734,17 @@ public final class FciOrient {
             if (e == null || e == t) {
                 e = t;
                 distance++;
-                if (distance > 0 && distance > (maxPathLength == -1 ? 1000 : maxPathLength)) return;
+                if (distance > 0 && distance > (maxPathLength == -1 ? 1000 : maxPathLength)) {
+                    return;
+                }
             }
 
             final List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
             for (Node d : nodesInTo) {
-                if (V.contains(d)) continue;
+                if (V.contains(d)) {
+                    continue;
+                }
 
                 previous.put(d, t);
                 Node p = previous.get(t);
@@ -762,8 +770,8 @@ public final class FciOrient {
     }
 
     /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
-     * arguments.
+     * Orients the edges inside the definte discriminating path triangle. Takes
+     * the left endpoint, and a,b,c as arguments.
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
         if (dag != null) {
@@ -805,12 +813,12 @@ public final class FciOrient {
             List<Node> sepset = getSepsets().getSepset(d, c);
 
             if (verbose) {
-                System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
+                out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
             }
 
             if (sepset == null) {
                 if (verbose) {
-                    System.out.println("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
+                    out.println("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
                 }
                 return false;
             }
@@ -819,14 +827,13 @@ public final class FciOrient {
         }
 
 //        printDdp(d, path, a, b, c, graph);
-
         if (ind) {
 //            if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
             if (verbose) {
                 logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-                System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+                out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
             changeFlag = true;
@@ -845,7 +852,7 @@ public final class FciOrient {
 
             if (verbose) {
                 logger.log("impliedOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
-                System.out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+                out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
             }
 
             changeFlag = true;
@@ -862,7 +869,7 @@ public final class FciOrient {
         nodes.add(c);
 
         if (verbose) {
-            System.out.println("DDP subgraph = " + graph.subgraph(nodes));
+            out.println("DDP subgraph = " + graph.subgraph(nodes));
         }
     }
 
@@ -883,8 +890,10 @@ public final class FciOrient {
     }
 
     /**
-     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u =
-     * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB,
+     * if there is an uncovered circle path u =
+     * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B
+     * and orient every edge on u undirected.
      */
     public void ruleR5(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -893,19 +902,27 @@ public final class FciOrient {
             List<Node> adjacents = graph.getNodesInTo(a, Endpoint.CIRCLE);
 
             for (Node b : adjacents) {
-                if (!(graph.getEndpoint(a, b) == Endpoint.CIRCLE)) continue;
+                if (!(graph.getEndpoint(a, b) == Endpoint.CIRCLE)) {
+                    continue;
+                }
                 // We know Ao-oB.
 
                 List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b, graph);
 
                 for (List<Node> u : ucCirclePaths) {
-                    if (u.size() < 3) continue;
+                    if (u.size() < 3) {
+                        continue;
+                    }
 
                     Node c = u.get(1);
                     Node d = u.get(u.size() - 2);
 
-                    if (graph.isAdjacentTo(a, d)) continue;
-                    if (graph.isAdjacentTo(b, c)) continue;
+                    if (graph.isAdjacentTo(a, d)) {
+                        continue;
+                    }
+                    if (graph.isAdjacentTo(b, c)) {
+                        continue;
+                    }
                     // We know u is as required: R5 applies!
 
                     logger.log("colliderOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
@@ -920,8 +937,9 @@ public final class FciOrient {
     }
 
     /**
-     * Implements Zhang's rules R6 and R7, applies them over the graph once. Orient single tails. R6: If A---Bo-*C then
-     * A---B--*C. R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
+     * Implements Zhang's rules R6 and R7, applies them over the graph once.
+     * Orient single tails. R6: If A---Bo-*C then A---B--*C. R7: If A--oBo-*C
+     * and A,C nonadjacent, then A--oB--*C
      */
     public void ruleR6R7(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -929,7 +947,9 @@ public final class FciOrient {
         for (Node b : nodes) {
             List<Node> adjacents = graph.getAdjacentNodes(b);
 
-            if (adjacents.size() < 2) continue;
+            if (adjacents.size() < 2) {
+                continue;
+            }
 
             ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
 
@@ -937,10 +957,16 @@ public final class FciOrient {
                 Node a = adjacents.get(choice[0]);
                 Node c = adjacents.get(choice[1]);
 
-                if (graph.isAdjacentTo(a, c)) continue;
+                if (graph.isAdjacentTo(a, c)) {
+                    continue;
+                }
 
-                if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) continue;
-                if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) continue;
+                if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
+                    continue;
+                }
+                if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) {
+                    continue;
+                }
                 // We know A--*Bo-*C.
 
                 if (graph.getEndpoint(a, b) == Endpoint.TAIL) {
@@ -968,8 +994,9 @@ public final class FciOrient {
     }
 
     /**
-     * Implements Zhang's rules R8, R9, R10, applies them over the graph once. Orient arrow tails. I.e., tries R8, R9,
-     * and R10 in that sequence on each Ao->C in the graph.
+     * Implements Zhang's rules R8, R9, R10, applies them over the graph once.
+     * Orient arrow tails. I.e., tries R8, R9, and R10 in that sequence on each
+     * Ao->C in the graph.
      */
     public void rulesR8R9R10(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -978,7 +1005,9 @@ public final class FciOrient {
             List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
             for (Node a : intoCArrows) {
-                if (!(graph.getEndpoint(c, a) == Endpoint.CIRCLE)) continue;
+                if (!(graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
+                    continue;
+                }
                 // We know Ao->C.
 
                 // Try each of R8, R9, R10 in that order, stopping ASAP.
@@ -997,8 +1026,8 @@ public final class FciOrient {
     /**
      * Orients every edge on a path as undirected (i.e. A---B).
      * <p>
-     * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
-     * A PATH.
+     * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF
+     * PASSED AN ARBITRARY LIST OF NODES THAT IS NOT A PATH.
      *
      * @param path The path to orient as all tails.
      */
@@ -1016,13 +1045,15 @@ public final class FciOrient {
     }
 
     /**
-     * Gets a list of every uncovered partially directed path between two nodes in the graph.
+     * Gets a list of every uncovered partially directed path between two nodes
+     * in the graph.
      * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
      * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
+     * @return A list of uncovered partially directed undirectedPaths from n1 to
+     * n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
         List<List<Node>> ucPdPaths = new LinkedList<List<Node>>();
@@ -1039,25 +1070,28 @@ public final class FciOrient {
     }
 
     /**
-     * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
+     * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the
+     * graph.
      * <p>
      * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
      * <p>
      * Probably extremely slow.
      *
-     * @param curr      The getModel node to test for addition.
-     * @param soFar     The getModel partially built-up path.
-     * @param end       The node to finish the undirectedPaths at.
+     * @param curr The getModel node to test for addition.
+     * @param soFar The getModel partially built-up path.
+     * @param end The node to finish the undirectedPaths at.
      * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
      */
     private void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
-                                 List<List<Node>> ucPdPaths, Graph graph) {
+            List<List<Node>> ucPdPaths, Graph graph) {
 
-        if (soFar.contains(curr)) return;
+        if (soFar.contains(curr)) {
+            return;
+        }
 
         Node prev = soFar.get(soFar.size() - 1);
-        if (graph.getEndpoint(prev, curr) == Endpoint.TAIL ||
-                graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
+        if (graph.getEndpoint(prev, curr) == Endpoint.TAIL
+                || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
             return; // Adding curr would make soFar not p.d.
         } else if (soFar.size() >= 2) {
             Node prev2 = soFar.get(soFar.size() - 2);
@@ -1083,8 +1117,9 @@ public final class FciOrient {
     }
 
     /**
-     * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
-     * partially directed undirectedPaths and only keeping the circle undirectedPaths.
+     * Gets a list of every uncovered circle path between two nodes in the graph
+     * by iterating through the uncovered partially directed undirectedPaths and
+     * only keeping the circle undirectedPaths.
      * <p>
      * Probably extremely slow.
      *
@@ -1101,8 +1136,12 @@ public final class FciOrient {
                 Node j = path.get(i);
                 Node sj = path.get(i + 1);
 
-                if (!(graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) break;
-                if (!(graph.getEndpoint(sj, j) == Endpoint.CIRCLE)) break;
+                if (!(graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) {
+                    break;
+                }
+                if (!(graph.getEndpoint(sj, j) == Endpoint.CIRCLE)) {
+                    break;
+                }
                 // This edge is OK, it's all circles.
 
                 if (i == path.size() - 2) {
@@ -1116,7 +1155,8 @@ public final class FciOrient {
     }
 
     /**
-     * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are
+     * assumed to be such that Ao->C.
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
@@ -1131,15 +1171,25 @@ public final class FciOrient {
 
         for (Node b : intoCArrows) {
             // We have B*->C.
-            if (!graph.isAdjacentTo(a, b)) continue;
-            if (!graph.isAdjacentTo(b, c)) continue;
+            if (!graph.isAdjacentTo(a, b)) {
+                continue;
+            }
+            if (!graph.isAdjacentTo(b, c)) {
+                continue;
+            }
 
             // We have A*-*B*->C.
-            if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) continue;
-            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) continue;
+            if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
+                continue;
+            }
+            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+                continue;
+            }
             // We have A--*B-->C.
 
-            if (graph.getEndpoint(a, b) == Endpoint.TAIL) continue;
+            if (graph.getEndpoint(a, b) == Endpoint.TAIL) {
+                continue;
+            }
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
             logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
@@ -1153,11 +1203,13 @@ public final class FciOrient {
     }
 
     /**
-     * Tries to apply Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Tries to apply Zhang's rule R9 to a pair of nodes A and C which are
+     * assumed to be such that Ao->C.
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R9: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that C,B nonadjacent, then A-->C.
+     * R9: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that
+     * C,B nonadjacent, then A-->C.
      *
      * @param a The node A.
      * @param c The node C.
@@ -1168,8 +1220,12 @@ public final class FciOrient {
 
         for (List<Node> u : ucPdPsToC) {
             Node b = u.get(1);
-            if (graph.isAdjacentTo(b, c)) continue;
-            if (b == c) continue;
+            if (graph.isAdjacentTo(b, c)) {
+                continue;
+            }
+            if (b == c) {
+                continue;
+            }
             // We know u is as required: R9 applies!
 
             logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R9", graph.getEdge(c, a)));
@@ -1183,12 +1239,14 @@ public final class FciOrient {
     }
 
     /**
-     * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
+     * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are
+     * assumed to be such that Ao->C.
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
-     * u2=<A,N,...,D> with M != N and M,N nonadjacent then A-->C.
+     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B>
+     * and an uncovered p.d. path u2=
+     * <A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *
      * @param a The node A.
      * @param c The node C.
@@ -1198,15 +1256,23 @@ public final class FciOrient {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
-            if (b == a) continue;
+            if (b == a) {
+                continue;
+            }
 
-            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) continue;
+            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+                continue;
+            }
             // We know Ao->C and B-->C.
 
             for (Node d : intoCArrows) {
-                if (d == a || d == b) continue;
+                if (d == a || d == b) {
+                    continue;
+                }
 
-                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
+                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) {
+                    continue;
+                }
                 // We know Ao->C and B-->C<--D.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
@@ -1216,8 +1282,12 @@ public final class FciOrient {
                     for (List<Node> u2 : ucPdPsToD) {
                         Node n = u2.get(1);
 
-                        if (m.equals(n)) continue;
-                        if (graph.isAdjacentTo(m, n)) continue;
+                        if (m.equals(n)) {
+                            continue;
+                        }
+                        if (graph.isAdjacentTo(m, n)) {
+                            continue;
+                        }
                         // We know B,D,u1,u2 as required: R10 applies!
 
                         logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R10", graph.getEdge(c, a)));
@@ -1239,14 +1309,13 @@ public final class FciOrient {
     private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it
+                = bk.forbiddenEdgesIterator(); it.hasNext();) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
             Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
             Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
 
             if (from == null || to == null) {
                 continue;
@@ -1263,8 +1332,8 @@ public final class FciOrient {
             logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it
+                = bk.requiredEdgesIterator(); it.hasNext();) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
@@ -1288,9 +1357,9 @@ public final class FciOrient {
         logger.log("info", "Finishing BK Orientation.");
     }
 
-
     /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
+     * Helper method. Appears to check if an arrowpoint is permitted by
+     * background knowledge.
      *
      * @param x The possible other node.
      * @param y The possible point node.
@@ -1307,11 +1376,15 @@ public final class FciOrient {
 
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
 //            return true;
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
+            if (!knowledge.isForbidden(x.getName(), y.getName())) {
+                return true;
+            }
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
+            if (!knowledge.isForbidden(x.getName(), y.getName())) {
+                return true;
+            }
         }
 
         return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
@@ -1326,14 +1399,16 @@ public final class FciOrient {
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
+     * @return the maximum length of any discriminating path, or -1 of
+     * unlimited.
      */
     public int getMaxPathLength() {
         return maxPathLength;
     }
 
     /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxPathLength the maximum length of any discriminating path, or -1
+     * if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -1379,8 +1454,13 @@ public final class FciOrient {
     public void skipDiscriminatingPathRule(boolean skip) {
         this.skipDiscriminatingPathRule = skip;
     }
+
+    public PrintStream getOut() {
+        return out;
+    }
+
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
 }
-
-
-
-

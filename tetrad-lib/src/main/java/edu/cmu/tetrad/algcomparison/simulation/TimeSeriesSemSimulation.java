@@ -71,7 +71,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             }
             DataSet dataSet;
             do {
-                dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize")); //params.getSampleSize());
+                dataSet = sim.simulateDataFixPoint(parameters.getInt("sampleSize")); //params.getSampleSize());
 
                 TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
                 TetradMatrix B = coefMat.getSelection(sub, sub);
@@ -86,7 +86,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
                 System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
                 System.out.println("Made " + (attempt - 1) + " attempts to get stable matrix.");
                 sim.setCoefRange(0.15, 0.3);
-                dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize"));//params.getSampleSize());
+                dataSet = sim.simulateDataFixPoint(parameters.getInt("sampleSize"));//params.getSampleSize());
             } //else System.out.println("Coefficient matrix is stable.");
 
             dataSet.setName("" + (i + 1));

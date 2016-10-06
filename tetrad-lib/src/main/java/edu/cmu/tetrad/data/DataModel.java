@@ -52,6 +52,12 @@ public interface DataModel
      * Renders the data model as as String.
      */
     String toString();
+
+    boolean isContinuous();
+
+    boolean isDiscrete();
+
+    boolean isMixed();
 }
 
 

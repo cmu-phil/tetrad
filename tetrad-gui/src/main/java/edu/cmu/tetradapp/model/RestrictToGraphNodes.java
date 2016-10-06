@@ -58,10 +58,8 @@ public class RestrictToGraphNodes extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        DataWrapper wrapper =
-                new DataWrapper(DataUtils.continuousSerializableInstance());
-        return new CorrMatrixConverter(wrapper, new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     private DataModel restrictToGraphNodes(DataModel dataModel, Graph graph) {

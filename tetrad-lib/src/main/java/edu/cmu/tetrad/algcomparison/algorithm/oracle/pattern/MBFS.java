@@ -3,16 +3,15 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
 
@@ -32,16 +31,17 @@ public class MBFS implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        IndependenceTest test = this.test.getTest(dataSet, parameters);
         edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(
-                test.getTest(dataSet, parameters),
+                test,
                 parameters.getInt("depth")
         );
 
         search.setKnowledge(knowledge);
 
         this.targetName = parameters.getString("targetName");
-        Node target = dataSet.getVariable(targetName);
+        Node target = test.getVariable(targetName);
         return search.search(target);
     }
 

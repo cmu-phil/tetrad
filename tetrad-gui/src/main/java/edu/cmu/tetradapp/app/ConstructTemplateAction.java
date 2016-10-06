@@ -49,11 +49,11 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
+            "Simulate from a given graph, then search",
+            "Simulate, search, then compare",
             "Load data and search",
             "Search then estimate",
             "Search, estimate, then update",
-            "Simulate, search, then compare",
-            "Simulate from a given graph, then search",
     };
 
     /**
@@ -108,19 +108,31 @@ final class ConstructTemplateAction extends AbstractAction {
         int leftX = getLeftX();
 
         if (this.templateName.equals(getTemplateNames()[0])) {
-            searchFromLoadedOrSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[1])) {
-            estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[2])) {
-            estimateThenUpdateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[3])) {
-            searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[4])) {
             simulateDataFixedIM(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[1])) {
+            searchFromSimulatedDataWithCompare(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[2])) {
+            searchFromLoadedOrSimulatedData(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[3])) {
+            estimateFromSimulatedData(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[4])) {
+            estimateThenUpdateUsingSearchResult(leftX);
         } else {
             throw new IllegalStateException(
                     "Unrecognized template name: " + this.templateName);
         }
+    }
+
+    public void addChild(SessionEditorNode thisNode, String type) {
+        String name = nextName(type);
+        addNode(type, name, thisNode.getX() + 100, thisNode.getY() + 100);
+        addEdge(thisNode.getName(), name);
+    }
+
+    public void addParent(SessionEditorNode thisNode, String type) {
+        String name = nextName(type);
+        addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
+        addEdge(name, thisNode.getName());
     }
 
     //=============================PRIVATE METHODS========================//

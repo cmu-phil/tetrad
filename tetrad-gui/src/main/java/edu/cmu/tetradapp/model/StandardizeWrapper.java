@@ -62,8 +62,8 @@ public class StandardizeWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static StandardizeWrapper serializableInstance() {
-        return new StandardizeWrapper(DataWrapper.serializableInstance());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================== Private Methods =========================//

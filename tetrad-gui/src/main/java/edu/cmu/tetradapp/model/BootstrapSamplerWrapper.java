@@ -84,9 +84,8 @@ public class BootstrapSamplerWrapper extends DataWrapper {
      *
      * @see TetradSerializableUtils
      */
-    public static DataWrapper serializableInstance() {
-        return new BootstrapSamplerWrapper(DataWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //=============================PUBLIC METHODS=========================//

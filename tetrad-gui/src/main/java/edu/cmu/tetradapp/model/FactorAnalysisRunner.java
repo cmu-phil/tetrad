@@ -60,8 +60,8 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      *
      * @see TetradSerializableUtils
      */
-    public static FactorAnalysisRunner serializableInstance() {
-        return new FactorAnalysisRunner(DataWrapper.serializableInstance(), new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

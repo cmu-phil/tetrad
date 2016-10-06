@@ -80,9 +80,8 @@ public class FofcRunner extends AbstractMimRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static FofcRunner serializableInstance() {
-        return new FofcRunner(DataWrapper.serializableInstance(),
-                new Parameters());
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

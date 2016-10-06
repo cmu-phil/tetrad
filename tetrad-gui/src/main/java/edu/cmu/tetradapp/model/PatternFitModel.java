@@ -24,16 +24,16 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesEstimator;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.sem.SemEstimator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -103,9 +103,23 @@ public final class PatternFitModel implements SessionModel {
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
                 Graph dag = SearchGraphUtils.dagFromPattern(graphs.get(0));
-                SemPm pm = new SemPm(dag);
-                semPms.add(pm);
-                semIms.add(estimate(dataSet, pm));
+
+                try {
+                    SemPm pm = new SemPm(dag);
+                    semPms.add(pm);
+                    semIms.add(estimate(dataSet, pm));
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                    Graph mag = SearchGraphUtils.pagToMag(graphs.get(0));
+//                    Ricf.RicfResult result = estimatePag(dataSet, mag);
+
+                    SemGraph graph = new SemGraph(mag);
+                    graph.setShowErrorTerms(false);
+                    SemPm pm = new SemPm(graph);
+                    semPms.add(pm);
+                    semIms.add(estimatePag(dataSet, pm));
+                }
             }
         }
     }
@@ -152,6 +166,32 @@ public final class PatternFitModel implements SessionModel {
 
         try {
             SemEstimator estimator = new SemEstimator(dataSet, semPm);
+            return estimator.estimate();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Value assignments between Bayes PM " +
+                    "and discrete data set do not match.");
+        }
+    }
+
+    private SemIm estimatePag(DataSet dataSet, SemPm pm) {
+        SemGraph graph = pm.getGraph();
+
+        for (Object o : graph.getNodes()) {
+            Node node = (Node) o;
+            if (node.getNodeType() == NodeType.LATENT) {
+                throw new IllegalArgumentException("Estimation of Bayes IM's " +
+                        "with latents is not supported.");
+            }
+        }
+
+        if (DataUtils.containsMissingValue(dataSet)) {
+            throw new IllegalArgumentException("Please remove or impute missing values.");
+        }
+
+        try {
+            SemOptimizer optimizer = new SemOptimizerRicf();
+            SemEstimator estimator = new SemEstimator(dataSet, pm, optimizer);
             return estimator.estimate();
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();

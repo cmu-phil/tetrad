@@ -109,7 +109,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Pattern", workbenchScroll(resultLabel));
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
         add(tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
@@ -466,16 +466,16 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         }
 
         JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
-        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
+        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
         graph.addSeparator();
 
         graph.add(meekOrient);

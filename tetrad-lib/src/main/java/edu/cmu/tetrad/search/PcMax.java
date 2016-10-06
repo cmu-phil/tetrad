@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -246,7 +247,7 @@ public class PcMax implements GraphSearch {
     }
 
     private void addColliders(Graph graph) {
-        final Map<Triple, Double> scores = new HashMap<>();
+        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
 

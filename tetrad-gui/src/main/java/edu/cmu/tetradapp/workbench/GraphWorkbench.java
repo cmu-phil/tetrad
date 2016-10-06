@@ -22,11 +22,13 @@
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.TripleClassifier;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +38,7 @@ import java.util.List;
  * @author Willie Wheeler
  * @see AbstractWorkbench
  */
-public class GraphWorkbench extends AbstractWorkbench {
+public class GraphWorkbench extends AbstractWorkbench implements TripleClassifier {
 
     //=================PUBLIC STATIC FINAL FIELDS=========================//
     public static final int MEASURED_NODE = 0;
@@ -391,6 +393,28 @@ public class GraphWorkbench extends AbstractWorkbench {
             }
         }
         return false;
+    }
+
+    /**
+     * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
+     */
+    public List<String> getTriplesClassificationTypes() {
+        List<String> names = new ArrayList<>();
+        names.add("Underlines");
+        names.add("Dotted Underlines");
+        return names;
+    }
+
+    /**
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
+     * node.
+     */
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        Graph graph = getGraph();
+        triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
+        triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
+        return triplesList;
     }
 }
 

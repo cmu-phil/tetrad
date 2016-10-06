@@ -4,15 +4,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
-
+import edu.cmu.tetrad.util.Parameters;
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -21,6 +18,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Gfci implements Algorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -31,11 +29,20 @@ public class Gfci implements Algorithm, HasKnowledge {
         this.score = score;
     }
 
-    public Graph search(DataSet dataSet, Parameters parameters) {
+    @Override
+    public Graph search(DataModel dataSet, Parameters parameters) {
         GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
         search.setMaxIndegree(parameters.getInt("maxIndegree"));
         search.setKnowledge(knowledge);
-        search.setFaithfulnessAssumed(true);
+        search.setVerbose(parameters.getBoolean("verbose"));
+        search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+
+        Object obj = parameters.get("printStream");
+
+        if (obj instanceof PrintStream) {
+            search.setOut((PrintStream) obj);
+        }
+
         return search.search();
     }
 
@@ -44,6 +51,7 @@ public class Gfci implements Algorithm, HasKnowledge {
         return new DagToPag(graph).convert();
     }
 
+    @Override
     public String getDescription() {
         return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription();
     }
@@ -59,6 +67,7 @@ public class Gfci implements Algorithm, HasKnowledge {
         parameters.addAll(score.getParameters());
         parameters.add("faithfulnessAssumed");
         parameters.add("maxIndegree");
+        parameters.add("printStream");
         return parameters;
     }
 
@@ -71,4 +80,5 @@ public class Gfci implements Algorithm, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
 }

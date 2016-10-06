@@ -131,7 +131,7 @@ final class ClusterRenderer extends JPanel {
             //
             //String s = clusters.getClusterName(cluster);
             //if (s == null) {
-            //    s = "Cluster " + (cluster + 1);
+            //    s = "search_for_structure_over_latents " + (cluster + 1);
             //}
             //
             //JLabel label = new JLabel(s);
