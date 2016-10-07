@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * @author jdramsey
+ * @author Daniel Malinsky
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     static final long serialVersionUID = 23L;

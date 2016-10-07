@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey
  * @author Choh-Man Teng
+ * @author Daniel Malinsky
  */
 public final class TsFci implements GraphSearch {
 

@@ -569,7 +569,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
                 break;
             case TsGFCI:
-                algorithm = new TsGfci(independenceWrapper);
+                algorithm = new TsGfci(independenceWrapper, scoreWrapper);
                 break;
             case TsImages:
                 algorithm = new TsImagesSemBic();
