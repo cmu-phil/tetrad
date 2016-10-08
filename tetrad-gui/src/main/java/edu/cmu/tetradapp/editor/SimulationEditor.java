@@ -107,9 +107,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         tabbedPane.setPreferredSize(new Dimension(900, 600));
 
         final String[] graphItems = new String[]{
-                "Random Foward",
-                "Cyclic",
-                "Scale Free",
+                "Random Foward DAG",
+                "Scale Free DAG",
+                "Cyclic, constructed from small loops",
                 "Random One Factor MIM",
                 "Random Two Factor MIM"
         };
@@ -381,9 +381,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             if (graphItem.equals(graphItems[0])) {
                 randomGraph = new RandomForward();
             } else if (graphItem.equals(graphItems[1])) {
-                randomGraph = new Cyclic();
-            } else if (graphItem.equals(graphItems[2])) {
                 randomGraph = new ScaleFree();
+            } else if (graphItem.equals(graphItems[2])) {
+                randomGraph = new Cyclic();
             } else if (graphItem.equals(graphItems[3])) {
                 randomGraph = new RandomSingleFactorMim();
             } else if (graphItem.equals(graphItems[4])) {
@@ -407,8 +407,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[1])) {
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+//                } else if (simulationItem.equals(simulationItems[2])) {
+//                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
+                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
                     simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[4])) {
@@ -434,16 +436,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 } else if (simulationItem.equals(simulationItems[1])) {
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
-                    simulation.setSimulation(new LargeSemSimulation(randomGraph), simulation.getParams());
+//                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
+//                } else if (simulationItem.equals(simulationItems[3])) {
+                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
+                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[6])) {
+                } else if (simulationItem.equals(simulationItems[5])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[7])) {
+                } else if (simulationItem.equals(simulationItems[6])) {
                     simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
                     simulation.setFixedGraph(true);
                 } else {
@@ -489,7 +491,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulationItems = new String[]{
                         "Bayes net",
                         "Structural Equation Model",
-                        "Structural Equation Model, discretizing some variables",
+//                        "Structural Equation Model, discretizing some variables",
+                        "Linear Fisher Model",
                         "General Structural Equation Model Special",
                         "Lee & Hastie",
                         "Time Series"
@@ -498,8 +501,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulationItems = new String[]{
                         "Bayes net",
                         "Structural Equation Model",
-                        "Large SEM Simulation",
-                        "Structural Equation Model, discretizing some variables",
+//                        "Structural Equation Model, discretizing some variables",
+                        "Linear Fisher Model",
                         "General Structural Equation Model Special",
                         "Lee & Hastie",
                         "Time Series",

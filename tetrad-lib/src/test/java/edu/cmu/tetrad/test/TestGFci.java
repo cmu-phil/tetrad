@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LinearSimulations;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -74,10 +74,10 @@ public class TestGFci {
 
         DataSet data;
 
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LinearSimulations simulator = new LinearSimulations(dag);
         simulator.setCoefRange(.5, 1.5);
         simulator.setVarRange(1, 3);
-        data = simulator.simulateDataFixPoint(sampleSize);
+        data = simulator.simulateDataFisher(sampleSize);
         data = DataUtils.restrictToMeasured(data);
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
@@ -222,9 +222,9 @@ public class TestGFci {
 
         Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
-        LargeSemSimulator semSimulator = new LargeSemSimulator(g);
+        LinearSimulations semSimulator = new LinearSimulations(g);
 
-        DataSet data = semSimulator.simulateDataFixPoint(sampleSize);
+        DataSet data = semSimulator.simulateDataFisher(sampleSize);
 
         data = DataUtils.restrictToMeasured(data);
 

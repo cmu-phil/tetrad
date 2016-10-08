@@ -78,23 +78,22 @@ public final class GCcd implements GraphSearch {
         fgs.setFaithfulnessAssumed(false);
         Graph psi = fgs.search();
 
-        SepsetProducer sepsets0 = new SepsetsGreedy(new EdgeListGraphSingleConnections(psi),
-                independenceTest, null, -1);
+//        SepsetProducer sepsets0 = new SepsetsGreedy(new EdgeListGraphSingleConnections(psi),
+//                independenceTest, null, -1);
+        SepsetProducer sepsets = new SepsetsMinScore(psi, independenceTest, -1);
 
         for (Edge edge : psi.getEdges()) {
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
             if (psi.isAdjacentTo(a, c)) {
-                if (sepsets0.getSepset(a, c) != null) {
+                if (sepsets.getSepset(a, c) != null) {
                     psi.removeEdge(a, c);
                 }
             }
         }
 
         psi.reorientAllWith(Endpoint.CIRCLE);
-
-        SepsetProducer sepsets = new SepsetsMinScore(psi, independenceTest, -1);
 
         stepB(psi);
         stepC(psi, sepsets);
@@ -267,7 +266,7 @@ public final class GCcd implements GraphSearch {
                 independenceTest.isIndependent(a, c, s);
                 double _score = independenceTest.getScore();
 
-                if (_score < score) {
+                if (_score < score && _score < 0) {
                     score = _score;
                     S = s;
                 }
@@ -283,7 +282,7 @@ public final class GCcd implements GraphSearch {
                 independenceTest.isIndependent(c, a, s);
                 double _score = independenceTest.getScore();
 
-                if (_score < score) {
+                if (_score < score && _score < 0) {
                     score = _score;
                     S = s;
                 }

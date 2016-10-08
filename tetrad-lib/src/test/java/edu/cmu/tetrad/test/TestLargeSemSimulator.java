@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LinearSimulations;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -47,8 +47,8 @@ public class TestLargeSemSimulator {
 
         Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);
 
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
-        DataSet dataset = simulator.simulateDataFixPoint(1000);
+        LinearSimulations simulator = new LinearSimulations(graph);
+        DataSet dataset = simulator.simulateDataFisher(1000);
 
         assertEquals(1000, dataset.getNumRows());
     }

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LinearSimulations;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
@@ -74,10 +74,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LinearSimulations simulator = new LinearSimulations(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -166,10 +166,10 @@ public class PerformanceTests {
             out.println("Graph done");
 
             System.out.println("Starting simulation");
-            LargeSemSimulator simulator = new LargeSemSimulator(graph);
+            LinearSimulations simulator = new LinearSimulations(graph);
             simulator.setOut(out);
 
-            DataSet data = simulator.simulateDataFixPoint(numCases);
+            DataSet data = simulator.simulateDataFisher(numCases);
 
             out1.println(data);
 
@@ -196,10 +196,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LinearSimulations simulator = new LinearSimulations(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -276,10 +276,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LinearSimulations simulator = new LinearSimulations(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -354,10 +354,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LinearSimulations simulator = new LinearSimulations(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -438,10 +438,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LinearSimulations simulator = new LinearSimulations(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -522,10 +522,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LinearSimulations simulator = new LinearSimulations(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -612,10 +612,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LinearSimulations simulator = new LinearSimulations(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -708,10 +708,10 @@ public class PerformanceTests {
 
         System.out.println("Starting simulation");
 
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LinearSimulations simulator = new LinearSimulations(dag);
         simulator.setCoefRange(coefLow, coefHigh);
 
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         data = DataUtils.restrictToMeasured(data);
 
@@ -846,11 +846,11 @@ public class PerformanceTests {
             long elapsed;
 
             if (continuous) {
-                LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+                LinearSimulations simulator = new LinearSimulations(dag, vars, tiers);
                 simulator.setVerbose(false);
                 simulator.setOut(out);
 
-                DataSet data = simulator.simulateDataFixPoint(numCases);
+                DataSet data = simulator.simulateDataFisher(numCases);
 
                 System.out.println("Finishing simulation");
 
@@ -1089,11 +1089,11 @@ public class PerformanceTests {
 
             vars = dag.getNodes();
 
-            LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+            LinearSimulations simulator = new LinearSimulations(dag, vars, tiers);
             simulator.setVerbose(false);
             simulator.setOut(out);
 
-            DataSet data = simulator.simulateDataFixPoint(numCases);
+            DataSet data = simulator.simulateDataFisher(numCases);
 
             System.out.println("Finishing simulation");
 
@@ -1357,11 +1357,11 @@ public class PerformanceTests {
             // Data.
             System.out.println("Starting simulation");
 
-            LargeSemSimulator simulator = new LargeSemSimulator(dag);
+            LinearSimulations simulator = new LinearSimulations(dag);
             simulator.setCoefRange(.5, 1.5);
             simulator.setVarRange(1, 3);
 
-            DataSet data = simulator.simulateDataFixPoint(numCases);
+            DataSet data = simulator.simulateDataFisher(numCases);
 
             data = DataUtils.restrictToMeasured(data);
 

@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LinearSimulations;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
@@ -69,8 +69,8 @@ public class Comparison {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                LargeSemSimulator sim = new LargeSemSimulator(trueDag);
-                dataSet = sim.simulateDataFixPoint(params.getSampleSize());
+                LinearSimulations sim = new LinearSimulations(trueDag);
+                dataSet = sim.simulateDataFisher(params.getSampleSize());
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
                 List<Node> nodes = new ArrayList<>();
 

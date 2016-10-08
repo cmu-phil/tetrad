@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -91,9 +91,9 @@ public class TestFgs {
             causalOrdering[i] = i;
         }
 
-        LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
+        LinearSimulations simulator = new LinearSimulations(dag, vars, causalOrdering);
         simulator.setOut(out);
-        DataSet data = simulator.simulateDataFixPoint(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
@@ -361,7 +361,7 @@ public class TestFgs {
     public void clarkTest() {
         RandomGraph randomGraph = new RandomForward();
 
-        Simulation simulation = new LargeSemSimulation(randomGraph);
+        Simulation simulation = new LinearFisherModel(randomGraph);
 
         Parameters parameters = new Parameters();
 
@@ -730,9 +730,9 @@ public class TestFgs {
 
         Graph dag = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
-        LargeSemSimulator semSimulator = new LargeSemSimulator(dag);
+        LinearSimulations semSimulator = new LinearSimulations(dag);
 
-        DataSet data = semSimulator.simulateDataFixPoint(sampleSize);
+        DataSet data = semSimulator.simulateDataFisher(sampleSize);
 
         data = DataUtils.restrictToMeasured(data);
 

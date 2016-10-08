@@ -90,7 +90,7 @@ public class SepsetsMinScore implements SepsetProducer {
                     getIndependenceTest().isIndependent(i, k, v2);
                     double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p) {
+                    if (p2 < _p && p2 < 0) {
                         _p = p2;
                         _v = v2;
                     }
@@ -107,7 +107,7 @@ public class SepsetsMinScore implements SepsetProducer {
                     getIndependenceTest().isIndependent(i, k, v2);
                     double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p) {
+                    if (p2 < _p && p2 < 0) {
                         _p = p2;
                         _v = v2;
                     }

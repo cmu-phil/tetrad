@@ -19,7 +19,7 @@
 package edu.cmu.tetrad.cli.simulation.data;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.SimulationType;
@@ -100,7 +100,7 @@ public class SemRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public Simulation getSimulation() {
-        return new LargeSemSimulation(new RandomForward());
+        return new LinearFisherModel(new RandomForward());
     }
 
     @Override

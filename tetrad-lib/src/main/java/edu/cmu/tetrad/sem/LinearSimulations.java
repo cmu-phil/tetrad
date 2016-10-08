@@ -21,14 +21,9 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.calculator.expression.Context;
-import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-//import edu.cmu.tetrad.search.TimeSeriesUtils;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradAlgebra;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
@@ -38,10 +33,8 @@ import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.sqrt;
 
 /**
@@ -50,18 +43,13 @@ import static java.lang.Math.sqrt;
  *
  * @author Joseph Ramsey
  */
-public final class LargeSemSimulator {
+public final class LinearSimulations {
     static final long serialVersionUID = 23L;
 
     private int[][] parents;
     private double[][] coefs;
     private double[] errorVars;
     private double[] means;
-    private int maxThreads = 80;//Runtime.getRuntime().availableProcessors() * 5;
-
-    /**
-     * Used for some linear algebra calculations.
-     */
     private transient TetradAlgebra algebra;
     private List<Node> variableNodes;
     private Graph graph;
@@ -70,15 +58,13 @@ public final class LargeSemSimulator {
     private double varLow = 1.0;
     private double varHigh = 3.0;
     private PrintStream out = System.out;
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
     private int[] tierIndices;
     private boolean verbose = false;
-    private boolean alreadySetUp = false;
-
+    long seed = new Date().getTime();
 
     //=============================CONSTRUCTORS============================//
 
-    public LargeSemSimulator(Graph graph) {
+    public LinearSimulations(Graph graph) {
         this.graph = graph;
         this.variableNodes = graph.getNodes();
 
@@ -91,7 +77,7 @@ public final class LargeSemSimulator {
         for (int i = 0; i < tierIndices.length; i++) tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
     }
 
-    public LargeSemSimulator(Graph graph, List<Node> nodes, int[] tierIndices) {
+    public LinearSimulations(Graph graph, List<Node> nodes, int[] tierIndices) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -110,141 +96,10 @@ public final class LargeSemSimulator {
      * percolating this information down through the SEM, assuming it is
      * acyclic. Works, but will hang for cyclic models, and is very slow for
      * large numbers of variables (probably due to the heavyweight lookups of
-     * various values--could be improved).
+     * various values--could be improved). The model must be acyclic, or else
+     * this will spin.
      */
-    public DataSet simulateDataAcyclic1(int sampleSize) {
-        if (tierIndices == null) {
-            List<Node> nodes = graph.getNodes();
-            tierIndices = new int[nodes.size()];
-            for (int j = 0; j < nodes.size(); j++) {
-                tierIndices[j] = j;
-            }
-        }
-
-        int size = variableNodes.size();
-        setupModel(size);
-
-//        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
-
-        for (int row = 0; row < sampleSize; row++) {
-            for (int col : tierIndices) {
-                double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
-
-                for (int j = 0; j < parents[col].length; j++) {
-                    value += dataSet.getDouble(row, parents[col][j]) * coefs[col][j];
-                }
-
-                value += means[col];
-                dataSet.setDouble(row, col, value);
-            }
-        }
-
-        return dataSet;
-    }
-
-    long seed = new Date().getTime();
-
-
-    // Trying again to parallelize simulateDataAcyclic.
-    public DataSet simulateDataAcyclic2(int sampleSize) {
-        if (tierIndices == null) {
-            List<Node> nodes = graph.getNodes();
-            tierIndices = new int[nodes.size()];
-            for (int j = 0; j < nodes.size(); j++) {
-                tierIndices[j] = j;
-            }
-        }
-
-        int size = variableNodes.size();
-        setupModel(size);
-
-        class SimulateRowTask extends RecursiveTask<double[]> {
-            private final int i;
-
-            public SimulateRowTask(int i) {
-                this.i = i;
-            }
-
-            @Override
-            protected double[] compute() {
-                NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);//sqrt(errorVars[col]));
-                normal.sample();
-
-                if (verbose && (i + 1) % 50 == 0)
-                    System.out.println("Simulating " + (i + 1));
-
-                double[] _row = new double[tierIndices.length];
-
-                for (int col : tierIndices) {
-                    double value = normal.sample() * sqrt(errorVars[col]);
-
-//                    double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
-
-                    for (int j = 0; j < parents[col].length; j++) {
-                        value += _row[parents[col][j]] * coefs[col][j];
-                    }
-
-                    value += means[col];
-
-                    _row[col] = value;
-                }
-
-                return _row;
-            }
-        }
-
-        class SimulateTask extends RecursiveTask<double[][]> {
-
-            private final int numRows;
-
-            public SimulateTask(int numRows) {
-                this.numRows = numRows;
-            }
-
-            @Override
-            protected double[][] compute() {
-                Queue<SimulateRowTask> tasks = new ArrayDeque<>();
-                List<double[]> rows = new ArrayList<>();
-
-                for (int i = 0; i < numRows; i++) {
-                    SimulateRowTask task = new SimulateRowTask(i);
-                    tasks.add(task);
-                    task.fork();
-
-                    for (SimulateRowTask _task : new ArrayList<>(tasks)) {
-                        if (_task.isDone()) {
-                            rows.add(_task.join());
-                            tasks.remove(_task);
-                        }
-                    }
-
-                    if (tasks.size() >= maxThreads) {
-                        SimulateRowTask _task = tasks.poll();
-                        rows.add(_task.join());
-                    }
-                }
-
-                for (SimulateRowTask task : tasks) {
-                    rows.add(task.join());
-                }
-
-                double[][] ret = new double[rows.size()][];
-
-                for (int i = 0; i < ret.length; i++) {
-                    ret[i] = rows.get(i);
-                }
-
-                return ret;
-            }
-        }
-
-        double[][] all = ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(sampleSize));
-
-        return new BoxDataSet(new DoubleDataBox(all), variableNodes);
-    }
-
-    public DataSet simulateDataAcyclic3(int sampleSize) {
+    public DataSet simulateDataRecursive(int sampleSize) {
         if (tierIndices == null) {
             List<Node> nodes = graph.getNodes();
             tierIndices = new int[nodes.size()];
@@ -324,13 +179,93 @@ public final class LargeSemSimulator {
             dat.removeRows(rem);
             return dat;
         }
+
         return new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
     }
 
     /**
-     * Can be cyclic.
+     * Simulates data using the model X = (I - B)Y^-1 * e. Errors are uncorrelated.
+     * @param sampleSize The nubmer of samples to draw.
      */
-    public DataSet simulateDataFixPoint(int sampleSize) {
+    public DataSet simulateDataReducedForm(int sampleSize) {
+        if (sampleSize < 1) throw new IllegalArgumentException(
+                "Sample size must be >= 1: " + sampleSize);
+
+        int size = variableNodes.size();
+        setupModel(size);
+
+        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
+
+        TetradMatrix B = new TetradMatrix(getCoefficientMatrix());
+        TetradMatrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+
+        double[][] all = new double[variableNodes.size()][sampleSize];
+
+        for (int row = 0; row < sampleSize; row++) {
+            TetradVector e = new TetradVector(B.rows());
+
+            for (int j = 0; j < e.size(); j++) {
+                e.set(j, normal.sample() * sqrt(errorVars[j]));
+            }
+
+            TetradVector x = iMinusBInv.times(e);
+
+            for (int j = 0; j < x.size(); j++) {
+                all[j][row] = x.get(j);
+            }
+        }
+
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : getVariableNodes()) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
+        }
+
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        return DataUtils.restrictToMeasured(boxDataSet);
+    }
+
+    /**
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
+     * applied every so many steps. A data point is recorded before each shock is
+     * administered. If convergence happens before that number of steps has been reached,
+     * a data point is recorded and a new shock immediately applied. The model may be
+     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
+     * though this is not checked. Uses an interval between shocks of 50 and a convergence
+     * threshold of 1e-5.
+     *
+     * @param sampleSize            The number of samples to be drawn. Must be a positive
+     *                              integer.
+     */
+    public DataSet simulateDataFisher(int sampleSize) {
+        return simulateDataFisher(sampleSize, 50, 1e-5);
+    }
+
+    /**
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
+     * applied every so many steps. A data point is recorded before each shock is
+     * administered. If convergence happens before that number of steps has been reached,
+     * a data point is recorded and a new shock immediately applied. The model may be
+     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
+     * though this is not checked.
+     *
+     * @param sampleSize            The number of samples to be drawn. Must be a positive
+     *                              integer.
+     * @param intervalBetweenShocks External shock is applied every this many steps.
+     *                              Must be positive integer.
+     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     *                              Must be a positive real number.
+     */
+    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks, double epsilon) {
+        if (sampleSize < 1) throw new IllegalArgumentException(
+                "Sample size must be >= 1: " + sampleSize);
+        if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
+                "Interval between shocks must be >= 1: " + intervalBetweenShocks);
+        if (epsilon <= 0.0) throw new IllegalArgumentException(
+                "Epsilon must be > 0: " + epsilon);
+
         int size = variableNodes.size();
         setupModel(size);
 
@@ -339,7 +274,6 @@ public final class LargeSemSimulator {
         double[] errors = new double[variableNodes.size()];
         double[] t1 = new double[variableNodes.size()];
         double[] t2 = new double[variableNodes.size()];
-        double delta = 1e-10;
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         // Do the simulation.
@@ -348,8 +282,7 @@ public final class LargeSemSimulator {
                 errors[j] = normal.sample() * sqrt(errorVars[j]);
             }
 
-            W:
-            while (true) {
+            for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
                     t2[j] = errors[j];
                     for (int k = 0; k < parents[j].length; k++) {
@@ -357,16 +290,22 @@ public final class LargeSemSimulator {
                     }
                 }
 
+                boolean converged = true;
+
                 for (int j = 0; j < t1.length; j++) {
-                    if (Math.abs(t2[j] - t1[j]) > delta) {
-                        double[] t3 = t1;
-                        t1 = t2;
-                        t2 = t3;
-                        continue W;
+                    if (Math.abs(t2[j] - t1[j]) > epsilon) {
+                        converged = false;
+                        break;
                     }
                 }
 
-                break;
+                if (converged) {
+                    break;
+                }
+
+                double[] t3 = t1;
+                t1 = t2;
+                t2 = t3;
             }
 
             for (int j = 0; j < t2.length; j++) {
@@ -385,7 +324,6 @@ public final class LargeSemSimulator {
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
         return DataUtils.restrictToMeasured(boxDataSet);
     }
-
 
     private void setupModel(int size) {
         Map<Node, Integer> nodesHash = new HashedMap<>();
@@ -469,8 +407,6 @@ public final class LargeSemSimulator {
             this.errorVars[i] = errorCovarDist.nextRandom();
             this.means[i] = meanDist.nextRandom();
         }
-
-        alreadySetUp = true;
     }
 
     public TetradAlgebra getAlgebra() {
@@ -625,7 +561,7 @@ public final class LargeSemSimulator {
 
     public IKnowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
-        int numLags = 1; // need to fix this!
+        int numLags; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         IKnowledge knowledge = new Knowledge2();

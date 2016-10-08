@@ -1,36 +1,34 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LinearSimulations;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author jdramsey
  */
-public class LargeSemSimulation implements Simulation {
+public class LinearFisherModel implements Simulation {
     static final long serialVersionUID = 23L;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private RandomGraph randomGraph;
+    private List<Node> shuffledOrder;
 
-    public LargeSemSimulation(RandomGraph graph) {
+    public LinearFisherModel(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
     @Override
     public void createData(Parameters parameters) {
-        int numCases = parameters.getInt("sampleSize");
-
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
         Graph graph = randomGraph.createGraph(parameters);
@@ -47,13 +45,41 @@ public class LargeSemSimulation implements Simulation {
             int[] tiers = new int[graph.getNodes().size()];
             for (int j = 0; j < tiers.length; j++) tiers[j] = j;
 
-            edu.cmu.tetrad.sem.LargeSemSimulator simulator = new LargeSemSimulator(graph, graph.getNodes(), tiers);
-            simulator.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
-            simulator.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
+            LinearSimulations simulator = new LinearSimulations(
+                    graph, graph.getNodes(), tiers);
+            simulator.setCoefRange(
+                    parameters.getDouble("coefLow"),
+                    parameters.getDouble("coefHigh"));
+            simulator.setVarRange(
+                    parameters.getDouble("varLow"),
+                    parameters.getDouble("varHigh"));
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
-            DataSet dataSet = simulator.simulateDataFixPoint(numCases);
+            DataSet dataSet = simulator.simulateDataFisher(
+                    parameters.getInt("sampleSize"),
+                    parameters.getInt("intervalBetweenShocks"),
+                    parameters.getDouble("fisherEpsilon"));
             dataSet.setName("" + (i + 1));
+
+            if (parameters.getDouble("percentDiscrete") > 0.0) {
+                if (this.shuffledOrder == null) {
+                    List<Node> shuffledNodes = new ArrayList<>(dataSet.getVariables());
+                    Collections.shuffle(shuffledNodes);
+                    this.shuffledOrder = shuffledNodes;
+                }
+
+                Discretizer discretizer = new Discretizer(dataSet);
+
+                for (int k = 0; k < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; k++) {
+                    discretizer.equalIntervals(dataSet.getVariable(shuffledOrder.get(k).getName()),
+                            parameters.getInt("numCategories"));
+                }
+
+                String name = dataSet.getName();
+                dataSet = discretizer.discretize();
+                dataSet.setName(name);
+            }
+
             dataSets.add(dataSet);
         }
     }
@@ -83,8 +109,12 @@ public class LargeSemSimulation implements Simulation {
         parameters.add("varHigh");
         parameters.add("verbose");
         parameters.add("numRuns");
+        parameters.add("percentDiscrete");
+        parameters.add("numCategories");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
+        parameters.add("intervalBetweenShocks");
+        parameters.add("fisherEpsilon");
         return parameters;
     }
 

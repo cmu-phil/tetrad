@@ -25,14 +25,10 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Ccd;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GCcd;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStable;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -102,7 +98,7 @@ public class CcdComparison {
         comparison.setParallelized(false);
 
         Simulations simulations = new Simulations();
-        Simulation simulation = new LargeSemSimulation(new Cyclic());
+        Simulation simulation = new LinearFisherModel(new Cyclic());
         simulations.add(simulation);
 
 //        comparison.saveToFiles("pcmax_comparison", simulation, parameters);
