@@ -100,7 +100,7 @@ public class Version implements TetradSerializable {
         Matcher matcher4 = pattern4.matcher(spec);
 
         Pattern pattern5 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)\\.(\\d*)");
-        Matcher matcher5 = pattern4.matcher(spec);
+        Matcher matcher5 = pattern5.matcher(spec);
 
         if (matcher2.matches()) {
             this.majorVersion = Integer.parseInt(matcher2.group(1));
@@ -116,12 +116,12 @@ public class Version implements TetradSerializable {
             this.majorVersion = Integer.parseInt(matcher4.group(1));
             this.minorVersion = Integer.parseInt(matcher4.group(2));
             this.minorSubversion = Integer.parseInt(matcher4.group(3));
-            this.incrementalRelease = 9999999;
+            this.incrementalRelease = 0;
         } else if (matcher5.matches()) {
             this.majorVersion = Integer.parseInt(matcher5.group(1));
             this.minorVersion = Integer.parseInt(matcher5.group(2));
             this.minorSubversion = Integer.parseInt(matcher5.group(3));
-            this.incrementalRelease = Integer.parseInt(matcher5.group(4) + matcher5.group(5));
+            this.incrementalRelease = Integer.parseInt(matcher5.group(4));
         } else {
             throw new IllegalArgumentException("Version should be either of the " +
                     "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);

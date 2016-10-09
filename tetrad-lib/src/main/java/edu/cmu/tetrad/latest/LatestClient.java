@@ -65,10 +65,10 @@ public class LatestClient {
                SoftwareVersion softwareVersion = gson.fromJson(json, SoftwareVersion.class);
 
                if (softwareVersion.getSoftwareVersion().equalsIgnoreCase(version)) {
-                   latestResult = String.format("Running version %s which is the latest version.  To disable checking use the skip-latest switch.", version);
+                   latestResult = String.format("Running version %s which is the latest version.  To disable checking use the skip-latest option.", version);
                    return true;
                } else {
-                   latestResult = String.format("Running version %s but the latest version is %s.  To disable checking use the skip-latest switch.", version, softwareVersion.getSoftwareVersion());
+                   latestResult = String.format("Running version %s but the latest version is %s.  To disable checking use the skip-latest option.", version, softwareVersion.getSoftwareVersion());
                    return false;
                }
 
@@ -76,7 +76,7 @@ public class LatestClient {
            } catch (Exception ex) {
 
                LOGGER.error("Could not contact server for latest version", ex);
-               latestResult = String.format("Running version %s but unable to contact version server.  To disable checking use the skip-latest switch.", version);
+               latestResult = String.format("Running version %s but unable to contact latest version server.  To disable checking use the skip-latest option.", version);
                return false;
 
            }
