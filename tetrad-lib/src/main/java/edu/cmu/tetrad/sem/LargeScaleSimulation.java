@@ -43,7 +43,7 @@ import static java.lang.Math.sqrt;
  *
  * @author Joseph Ramsey
  */
-public final class LinearSimulations {
+public final class LargeScaleSimulation {
     static final long serialVersionUID = 23L;
 
     private int[][] parents;
@@ -61,10 +61,11 @@ public final class LinearSimulations {
     private int[] tierIndices;
     private boolean verbose = false;
     long seed = new Date().getTime();
+    private boolean alreadySetUp = false;
 
     //=============================CONSTRUCTORS============================//
 
-    public LinearSimulations(Graph graph) {
+    public LargeScaleSimulation(Graph graph) {
         this.graph = graph;
         this.variableNodes = graph.getNodes();
 
@@ -77,7 +78,7 @@ public final class LinearSimulations {
         for (int i = 0; i < tierIndices.length; i++) tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
     }
 
-    public LinearSimulations(Graph graph, List<Node> nodes, int[] tierIndices) {
+    public LargeScaleSimulation(Graph graph, List<Node> nodes, int[] tierIndices) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -185,6 +186,7 @@ public final class LinearSimulations {
 
     /**
      * Simulates data using the model X = (I - B)Y^-1 * e. Errors are uncorrelated.
+     *
      * @param sampleSize The nubmer of samples to draw.
      */
     public DataSet simulateDataReducedForm(int sampleSize) {
@@ -234,13 +236,13 @@ public final class LinearSimulations {
      * a data point is recorded and a new shock immediately applied. The model may be
      * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
      * though this is not checked. Uses an interval between shocks of 50 and a convergence
-     * threshold of 1e-5.
+     * threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
-     * @param sampleSize            The number of samples to be drawn. Must be a positive
-     *                              integer.
+     * @param sampleSize The number of samples to be drawn. Must be a positive
+     *                   integer.
      */
     public DataSet simulateDataFisher(int sampleSize) {
-        return simulateDataFisher(sampleSize, 50, 1e-5);
+        return simulateDataFisher(getUncorrelatedGaussianShocks(sampleSize), 50, 1e-5);
     }
 
     /**
@@ -251,40 +253,35 @@ public final class LinearSimulations {
      * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
      * though this is not checked.
      *
-     * @param sampleSize            The number of samples to be drawn. Must be a positive
-     *                              integer.
+     * @param shocks                A matrix of shocks. The value at shocks[i][j] is the shock
+     *                              for the i'th time step, for the j'th variables.
      * @param intervalBetweenShocks External shock is applied every this many steps.
      *                              Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
-     *                              Must be a positive real number.
      */
-    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks, double epsilon) {
-        if (sampleSize < 1) throw new IllegalArgumentException(
-                "Sample size must be >= 1: " + sampleSize);
+    public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
         if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
                 "Interval between shocks must be >= 1: " + intervalBetweenShocks);
         if (epsilon <= 0.0) throw new IllegalArgumentException(
                 "Epsilon must be > 0: " + epsilon);
 
         int size = variableNodes.size();
+        if (shocks[0].length != size) {
+            throw new IllegalArgumentException("The number of columns in the shocks matrix does not equal " +
+                    "the number of variables.");
+        }
+
         setupModel(size);
 
-        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
-
-        double[] errors = new double[variableNodes.size()];
         double[] t1 = new double[variableNodes.size()];
         double[] t2 = new double[variableNodes.size()];
-        double[][] all = new double[variableNodes.size()][sampleSize];
+        double[][] all = new double[variableNodes.size()][shocks.length];
 
         // Do the simulation.
-        for (int row = 0; row < sampleSize; row++) {
-            for (int j = 0; j < t1.length; j++) {
-                errors[j] = normal.sample() * sqrt(errorVars[j]);
-            }
-
+        for (int row = 0; row < shocks.length; row++) {
             for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
-                    t2[j] = errors[j];
+                    t2[j] = shocks[row][j];
                     for (int k = 0; k < parents[j].length; k++) {
                         t2[j] += t1[parents[j][k]] * coefs[j][k];
                     }
@@ -299,17 +296,17 @@ public final class LinearSimulations {
                     }
                 }
 
-                if (converged) {
-                    break;
-                }
-
                 double[] t3 = t1;
                 t1 = t2;
                 t2 = t3;
+
+                if (converged) {
+                    break;
+                }
             }
 
-            for (int j = 0; j < t2.length; j++) {
-                all[j][row] = t2[j];
+            for (int j = 0; j < t1.length; j++) {
+                all[j][row] = t1[j];
             }
         }
 
@@ -326,6 +323,8 @@ public final class LinearSimulations {
     }
 
     private void setupModel(int size) {
+        if (alreadySetUp) return;
+
         Map<Node, Integer> nodesHash = new HashedMap<>();
 
         for (int i = 0; i < variableNodes.size(); i++) {
@@ -407,6 +406,8 @@ public final class LinearSimulations {
             this.errorVars[i] = errorCovarDist.nextRandom();
             this.means[i] = meanDist.nextRandom();
         }
+
+        alreadySetUp = true;
     }
 
     public TetradAlgebra getAlgebra() {
@@ -670,6 +671,43 @@ public final class LinearSimulations {
         return (Integer.parseInt(tmp));
     }
 
+    public double[][] getUncorrelatedGaussianShocks(int sampleSize) {
+        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
+
+        int numVars = variableNodes.size();
+        setupModel(numVars);
+
+        double[][] shocks = new double[sampleSize][numVars];
+
+        for (int i = 0; i < sampleSize; i++) {
+            for (int j = 0; j < numVars; j++) {
+                shocks[i][j] = normal.sample() * sqrt(errorVars[j]);
+            }
+        }
+
+        return shocks;
+    }
+
+    public double[][] getSoCalledPoissonShocks(int sampleSize) {
+        int numVars = variableNodes.size();
+        setupModel(numVars);
+
+        double[][] shocks = new double[sampleSize][numVars];
+
+        for (int j = 0; j < numVars; j++) {
+            int v = 0;
+
+            for (int i = 0; i < sampleSize; i++) {
+                if (RandomUtil.getInstance().nextDouble() < 0.3) {
+                    v = 1 - v;
+                }
+
+                shocks[i][j] = v + RandomUtil.getInstance().nextNormal(0, 0.1);
+            }
+        }
+
+        return shocks;
+    }
 }
 
 

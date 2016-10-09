@@ -26,7 +26,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LinearSimulations;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -166,7 +166,7 @@ public class PerformanceTests {
             out.println("Graph done");
 
             System.out.println("Starting simulation");
-            LinearSimulations simulator = new LinearSimulations(graph);
+            LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
             simulator.setOut(out);
 
             DataSet data = simulator.simulateDataFisher(numCases);
@@ -196,7 +196,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(dag);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -276,7 +276,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(dag);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -354,7 +354,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(dag);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -438,7 +438,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -522,7 +522,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -612,7 +612,7 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LinearSimulations simulator = new LinearSimulations(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -708,7 +708,7 @@ public class PerformanceTests {
 
         System.out.println("Starting simulation");
 
-        LinearSimulations simulator = new LinearSimulations(dag);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
         simulator.setCoefRange(coefLow, coefHigh);
 
         DataSet data = simulator.simulateDataFisher(numCases);
@@ -846,7 +846,7 @@ public class PerformanceTests {
             long elapsed;
 
             if (continuous) {
-                LinearSimulations simulator = new LinearSimulations(dag, vars, tiers);
+                LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, tiers);
                 simulator.setVerbose(false);
                 simulator.setOut(out);
 
@@ -1089,7 +1089,7 @@ public class PerformanceTests {
 
             vars = dag.getNodes();
 
-            LinearSimulations simulator = new LinearSimulations(dag, vars, tiers);
+            LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, tiers);
             simulator.setVerbose(false);
             simulator.setOut(out);
 
@@ -1357,7 +1357,7 @@ public class PerformanceTests {
             // Data.
             System.out.println("Starting simulation");
 
-            LinearSimulations simulator = new LinearSimulations(dag);
+            LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
             simulator.setCoefRange(.5, 1.5);
             simulator.setVarRange(1, 3);
 

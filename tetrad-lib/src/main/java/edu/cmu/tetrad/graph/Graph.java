@@ -640,6 +640,8 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     void removeTriplesNotInGraph();
 
     List<Node> getSepset(Node n1, Node n2);
+
+    void setNodes(List<Node> nodes);
 }
 
 

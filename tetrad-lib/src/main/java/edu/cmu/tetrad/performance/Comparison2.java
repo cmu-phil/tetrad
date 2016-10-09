@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LinearSimulations;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -241,7 +241,7 @@ public class Comparison2 {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                LinearSimulations sim = new LinearSimulations(trueDag);
+                LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
 
                 /** added 6.08.16 for tsFCI **/
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {

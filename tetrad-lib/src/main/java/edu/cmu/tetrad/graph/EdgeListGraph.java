@@ -684,6 +684,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return GraphUtils.getSepset(x, y, this);
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        if (nodes.size() != this.nodes.size()) {
+            throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables " +
+                    "you are trying to set.");
+        }
+
+        this.nodes = nodes;
+    }
+
     protected Set<Node> zAncestors(List<Node> z) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();

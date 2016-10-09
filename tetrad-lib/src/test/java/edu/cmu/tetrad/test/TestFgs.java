@@ -91,7 +91,7 @@ public class TestFgs {
             causalOrdering[i] = i;
         }
 
-        LinearSimulations simulator = new LinearSimulations(dag, vars, causalOrdering);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
         simulator.setOut(out);
         DataSet data = simulator.simulateDataFisher(numCases);
 
@@ -730,7 +730,7 @@ public class TestFgs {
 
         Graph dag = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
-        LinearSimulations semSimulator = new LinearSimulations(dag);
+        LargeScaleSimulation semSimulator = new LargeScaleSimulation(dag);
 
         DataSet data = semSimulator.simulateDataFisher(sampleSize);
 

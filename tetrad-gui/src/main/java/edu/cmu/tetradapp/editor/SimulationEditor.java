@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.utils.TakesData;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -407,8 +408,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[1])) {
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
-//                } else if (simulationItem.equals(simulationItems[2])) {
-//                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
                     simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
@@ -421,8 +420,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
 
-            }
-            else {
+            } else {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
                 simulation.getParams().set("simulationsDropdownPreference", simulationItem);
                 simulation.setFixedGraph(false);
@@ -436,9 +434,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 } else if (simulationItem.equals(simulationItems[1])) {
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
-//                    simulation.setSimulation(new SemThenDiscretize(randomGraph), simulation.getParams());
-//                } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+                    simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
+                            simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
                     simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[4])) {
@@ -487,11 +484,14 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         + simulation.getSimulation().getClass());
             }
         } else {
-            if (simulation.getSourceGraph() != null) {
+            if (simulation.getSimulation() instanceof TakesData) {
+                simulationItems = new String[]{
+                        "Linear Fisher Model",
+                };
+            } else if (simulation.getSourceGraph() != null) {
                 simulationItems = new String[]{
                         "Bayes net",
                         "Structural Equation Model",
-//                        "Structural Equation Model, discretizing some variables",
                         "Linear Fisher Model",
                         "General Structural Equation Model Special",
                         "Lee & Hastie",
@@ -501,7 +501,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulationItems = new String[]{
                         "Bayes net",
                         "Structural Equation Model",
-//                        "Structural Equation Model, discretizing some variables",
                         "Linear Fisher Model",
                         "General Structural Equation Model Special",
                         "Lee & Hastie",

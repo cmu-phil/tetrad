@@ -273,6 +273,16 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
         }
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        if (nodes.size() != this.nodes.size()) {
+            throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables " +
+                    "you are trying to set.");
+        }
+
+        this.nodes = nodes;
+    }
+
     /**
      * Adds an edge to the graph if the grpah constraints permit it.
      *

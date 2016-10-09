@@ -1091,6 +1091,11 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        throw new UnsupportedOperationException("Sorry, you cannot replace the variables for a time lag graph.");
+    }
+
     public boolean isSessionChanged() {
         return this.session.isSessionChanged();
     }

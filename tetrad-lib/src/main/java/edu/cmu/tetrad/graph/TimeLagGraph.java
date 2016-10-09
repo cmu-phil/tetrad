@@ -649,6 +649,11 @@ public class TimeLagGraph implements Graph {
         return graph.getSepset(n1, n2);
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        throw new IllegalArgumentException("Sorry, you cannot replace the variables for a time lag graph.");
+    }
+
     public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node);
     }

@@ -11,7 +11,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
-import edu.cmu.tetrad.sem.LinearSimulations;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             graphs.add(graph);
 
-            LinearSimulations sim = new LinearSimulations(graph);
+            LargeScaleSimulation sim = new LargeScaleSimulation(graph);
             if (parameters.getDouble("coefHigh") > 0.80) {
                 System.out.println("Coefficients have been set (perhaps by default) too " +
                         "high for stationary time series.");
