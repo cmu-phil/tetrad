@@ -806,6 +806,11 @@ public final class SemGraph implements Graph, TetradSerializable {
         return graph.getSepset(n1, n2);
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        graph.setNodes(nodes);
+    }
+
     //========================PRIVATE METHODS===========================//
 
     /**

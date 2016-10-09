@@ -4,12 +4,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
 
@@ -18,36 +18,19 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class PcLocal implements Algorithm, HasKnowledge {
+public class CpcStable implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcLocal(IndependenceWrapper test) {
+    public CpcStable(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    public PcLocal(IndependenceWrapper test, Algorithm initialGraph) {
-        this.test = test;
-        this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
-
-        edu.cmu.tetrad.search.PcLocal search = new edu.cmu.tetrad.search.PcLocal(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.CpcStable search = new edu.cmu.tetrad.search.CpcStable(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
-
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
-
         return search.search();
     }
 
@@ -58,7 +41,7 @@ public class PcLocal implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "Local PC (\"Peter and Clark\") using " + test.getDescription();
+        return "CPC-Stable (Conservative \"Peter and Clark\" Stable) using " + test.getDescription();
     }
 
     @Override

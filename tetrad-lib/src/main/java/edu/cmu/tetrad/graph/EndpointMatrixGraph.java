@@ -1758,6 +1758,16 @@ public class EndpointMatrixGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        if (nodes.size() != this.nodes.size()) {
+            throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables " +
+                    "you are trying to set.");
+        }
+
+        this.nodes = nodes;
+    }
+
 
     private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
         ancestors.add(node);

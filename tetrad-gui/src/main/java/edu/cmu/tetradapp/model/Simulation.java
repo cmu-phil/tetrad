@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
@@ -58,6 +55,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     private String name;
     private boolean fixedGraph = true;
     private boolean fixedSimulation = true;
+    private List<DataModel> inputDataModelList;
 
     //============================CONSTRUCTORS=========================//
 
@@ -188,6 +186,16 @@ public class Simulation extends DataWrapper implements SessionModel,
         createSimulation();
     }
 
+    public Simulation(DataWrapper dataWrapper, Parameters parameters) {
+        if (simulation == null) {
+            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
+            this.inputDataModelList = dataWrapper.getDataModelList();
+            this.parameters = parameters;
+            this.fixedGraph = false;
+            this.fixedSimulation = false;
+        }
+    }
+
     public edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation() {
         return this.simulation;
     }
@@ -309,6 +317,10 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
         this.simulation = simulation;
+    }
+
+    public List<DataModel> getInputDataModelList() {
+        return inputDataModelList;
     }
 }
 

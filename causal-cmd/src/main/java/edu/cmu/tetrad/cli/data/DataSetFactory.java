@@ -20,7 +20,7 @@ package edu.cmu.tetrad.cli.data;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 
 /**
  *
@@ -31,10 +31,10 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 public class DataSetFactory {
 
     public static DataSet buildSemSimulateDataAcyclic(Graph graph, int numOfCases) {
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(System.out);
 
-        return simulator.simulateDataFixPoint(numOfCases);
+        return simulator.simulateDataFisher(numOfCases);
     }
 
 }

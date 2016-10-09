@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -241,7 +241,7 @@ public class Comparison2 {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                LargeSemSimulator sim = new LargeSemSimulator(trueDag);
+                LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
 
                 /** added 6.08.16 for tsFCI **/
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
@@ -276,7 +276,7 @@ public class Comparison2 {
                         sub2[i] = tierSize + i;
                     }
                     do {
-                        dataSet = sim.simulateDataFixPoint(params.getSampleSize());
+                        dataSet = sim.simulateDataFisher(params.getSampleSize());
 //                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
 //                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 
@@ -299,7 +299,7 @@ public class Comparison2 {
                         System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
                         System.out.println("Made " + (attempt-1) + " attempts to get stable matrix.");
                         sim.setCoefRange(0.15, 0.3);
-                        dataSet = sim.simulateDataFixPoint(params.getSampleSize());
+                        dataSet = sim.simulateDataFisher(params.getSampleSize());
                     } else System.out.println("Coefficient matrix is stable.");
                 }
 

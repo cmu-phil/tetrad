@@ -189,6 +189,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return graph.getSepset(n1, n2);
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        graph.setNodes(nodes);
+    }
+
     public List<String> getNodeNames() {
         return getGraph().getNodeNames();
     }

@@ -41,7 +41,7 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         edu.cmu.tetrad.search.Fgs search =
-                new edu.cmu.tetrad.search.Fgs(score.getScore(DataUtils.getCovMatrix(dataSet), parameters));
+                new edu.cmu.tetrad.search.Fgs(score.getScore(dataSet, parameters));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
@@ -52,9 +52,10 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
             search.setOut((PrintStream) obj);
         }
 
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
+        if (initial != null) {
+            search.setInitialGraph(initial);
+        }
+
         return search.search();
     }
 

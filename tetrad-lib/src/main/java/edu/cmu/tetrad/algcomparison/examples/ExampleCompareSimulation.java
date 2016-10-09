@@ -68,7 +68,7 @@ public class ExampleCompareSimulation {
         algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
         algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new Cpcs(new FisherZ()));
+        algorithms.add(new CpcStable(new FisherZ()));
 
         Simulations simulations = new Simulations();
 

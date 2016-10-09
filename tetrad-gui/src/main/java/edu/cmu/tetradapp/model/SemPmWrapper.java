@@ -21,14 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphScore;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
@@ -36,7 +34,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
@@ -93,7 +90,7 @@ public class SemPmWrapper implements SessionModel, GraphSource {
             throw new NullPointerException("No data sets have been simulated.");
         }
 
-        if (_simulation instanceof LargeSemSimulation) {
+        if (_simulation instanceof LinearFisherModel) {
             throw new IllegalArgumentException("Large SEM simulations cannot be represented " +
                     "using a SEM PM or IM box, sorry.");
         }

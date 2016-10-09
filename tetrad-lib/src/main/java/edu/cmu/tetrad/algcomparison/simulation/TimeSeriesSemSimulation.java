@@ -11,7 +11,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             graphs.add(graph);
 
-            LargeSemSimulator sim = new LargeSemSimulator(graph);
+            LargeScaleSimulation sim = new LargeScaleSimulation(graph);
             if (parameters.getDouble("coefHigh") > 0.80) {
                 System.out.println("Coefficients have been set (perhaps by default) too " +
                         "high for stationary time series.");
@@ -72,7 +72,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             }
             DataSet dataSet;
             do {
-                dataSet = sim.simulateDataFixPoint(parameters.getInt("sampleSize")); //params.getSampleSize());
+                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize")); //params.getSampleSize());
 
                 TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
                 TetradMatrix B = coefMat.getSelection(sub, sub);
@@ -87,7 +87,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
                 System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
                 System.out.println("Made " + (attempt - 1) + " attempts to get stable matrix.");
                 sim.setCoefRange(0.15, 0.3);
-                dataSet = sim.simulateDataFixPoint(parameters.getInt("sampleSize"));//params.getSampleSize());
+                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize"));//params.getSampleSize());
             } //else System.out.println("Coefficient matrix is stable.");
 
             dataSet.setName("" + (i + 1));

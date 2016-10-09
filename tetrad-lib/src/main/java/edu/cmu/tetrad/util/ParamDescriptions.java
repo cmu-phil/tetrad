@@ -41,9 +41,9 @@ public class ParamDescriptions {
         put("printAverageTables", new ParamDescription("Yes if average tables should be printed", true));
         put("printGraphs", new ParamDescription("Yes if graphs should be printed", false));
         put("dataType", new ParamDescription("Categorical or discrete", "categorical"));
-        put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 50.0, 0.0, 100.0));
+        put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 0.0, 0.0, 100.0));
         put("ofInterestCutoff", new ParamDescription("Cutoff for graphs considered to be of interest", 0.05, 0.0, 1.0));
-        put("numCategories", new ParamDescription("Number of categories", 4, 2, Integer.MAX_VALUE));
+        put("numCategories", new ParamDescription("Number of categories for discrete variables", 4, 2, Integer.MAX_VALUE));
         put("minCategories", new ParamDescription("Minimum number of categories", 2, 2, Integer.MAX_VALUE));
         put("maxCategories", new ParamDescription("Maximum number of categories", 2, 2, Integer.MAX_VALUE));
         put("samplePrior", new ParamDescription("Sample prior", 1.0, 1.0, Double.MAX_VALUE));
@@ -115,6 +115,11 @@ public class ParamDescriptions {
 
 //        put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
         put("applyR1", new ParamDescription("Yes if the orient away from arrow should be applied", false));
+        put("probCycle", new ParamDescription("The probability of adding a cycle to the graph", 1.0, 0.0, 1.0));
+        put("intervalBetweenShocks", new ParamDescription("Interval beween shocks (R. A. Fisher simulation model)",
+                10, 1, Integer.MAX_VALUE));
+        put("fisherEpsilon", new ParamDescription("Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence",
+                .001, Double.MIN_VALUE, Double.MAX_VALUE));
     }
 
     public static ParamDescriptions instance() {

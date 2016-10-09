@@ -450,6 +450,11 @@ public class LagGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        graph.setNodes(nodes);
+    }
+
     private Dag getGraph() {
         return graph;
     }

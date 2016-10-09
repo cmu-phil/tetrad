@@ -503,6 +503,28 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public List<String> getVariableNames() {
         return null;
     }
+
+    public List<Graph> getCompareGraph() {
+        List<Graph> compareGraphs = new ArrayList<>();
+
+        for (Graph graph : getGraphs()) {
+            compareGraphs.add(algorithm.getComparisonGraph(graph));
+        }
+
+        return compareGraphs;
+    }
+
+    public List<Graph> getCompareGraphs(List<Graph> graphs) {
+        if (graphs == null) throw new NullPointerException();
+
+        List<Graph> compareGraphs = new ArrayList<>();
+
+        for (Graph graph : graphs) {
+            compareGraphs.add(algorithm.getComparisonGraph(graph));
+        }
+
+        return compareGraphs;
+    }
 }
 
 

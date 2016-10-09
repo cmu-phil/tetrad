@@ -36,6 +36,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
+import edu.cmu.tetrad.algcomparison.joe.PcMaxLocal;
+import edu.cmu.tetrad.algcomparison.joe.Wfgs;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
@@ -536,7 +539,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
                 break;
             case CPCStable:
-                algorithm = new Cpcs(independenceWrapper);
+                algorithm = new CpcStable(independenceWrapper);
                 break;
             case PCStable:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {

@@ -26,33 +26,18 @@ public class Ccd implements Algorithm {
         this.test = type;
     }
 
-    public Ccd(IndependenceWrapper type, Algorithm initialGraph) {
-        this.test = type;
-        this.initialGraph = initialGraph;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
-
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                 test.getTest(dataSet, parameters));
-//        search.setKnowledge(knowledge);
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
+        search.setApplyR1(parameters.getBoolean("applyR1"));
 
         return search.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return graph;
     }
 
     @Override
@@ -69,6 +54,7 @@ public class Ccd implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        parameters.add("applyR1");
         return parameters;
     }
 }

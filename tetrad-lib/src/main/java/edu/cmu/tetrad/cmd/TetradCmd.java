@@ -838,7 +838,6 @@ public final class TetradCmd {
 
         Ccd ccd = new Ccd(getIndependenceTest());
         ccd.setDepth(getDepth());
-        ccd.setVerbose(verbose);
 
         // Convert back to Graph..
         Graph resultGraph = ccd.search();

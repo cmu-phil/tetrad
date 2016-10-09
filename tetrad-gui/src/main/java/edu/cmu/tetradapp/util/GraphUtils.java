@@ -134,7 +134,7 @@ public class GraphUtils {
             }
 
             if (addCycles) {
-                graph = edu.cmu.tetrad.graph.GraphUtils.cyclicGraph2(numNodes, newGraphNumEdges);
+                graph = edu.cmu.tetrad.graph.GraphUtils.cyclicGraph2(numNodes, newGraphNumEdges, 8);
             } else {
                 graph = new EdgeListGraph(graph);
             }

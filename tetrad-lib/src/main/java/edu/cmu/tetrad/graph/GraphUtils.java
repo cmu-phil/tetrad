@@ -806,7 +806,7 @@ public final class GraphUtils {
      * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5
      * to the graph, then finally adding two cycles.
      */
-    public static Graph cyclicGraph2(int numNodes, int numEdges) {
+    public static Graph cyclicGraph2(int numNodes, int numEdges, int maxDegree) {
 
         List<Node> nodes = new ArrayList<>();
 
@@ -839,10 +839,16 @@ public final class GraphUtils {
                 cycleNodes.add(node);
             }
 
-            for (int i = 0; i < cycleSize; i++) {
-                Node node = cycleNodes.get(i);
+//            for (int i = 0; i < cycleSize; i++) {
+//                Node node = cycleNodes.get(i);
+//
+//                if (graph.getAdjacentNodes(node).size() > 3) {
+//                    continue LOOP;
+//                }
+//            }
 
-                if (graph.getAdjacentNodes(node).size() > 3) {
+            for (int i = 0; i < cycleNodes.size(); i++) {
+                if (graph.getDegree(cycleNodes.get(i)) >= maxDegree) {
                     continue LOOP;
                 }
             }
@@ -877,6 +883,106 @@ public final class GraphUtils {
             }
 
             edge = Edges.directedEdge(cycleNodes.get(cycleNodes.size() - 1), cycleNodes.get(0));
+
+            if (!graph.containsEdge(edge)) {
+                graph.addEdge(edge);
+
+                if (graph.getNumEdges() == numEdges) {
+                    break;
+                }
+            }
+        }
+
+        GraphUtils.circleLayout(graph, 200, 200, 150);
+
+        return graph;
+    }
+
+    /**
+     * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5
+     * to the graph, then finally adding two cycles.
+     */
+    public static Graph cyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle) {
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        LOOP:
+        while (graph.getEdges().size() < numEdges /*&& ++count1 < 100*/) {
+//            int cycleSize = RandomUtil.getInstance().nextInt(2) + 4;
+            int cycleSize = RandomUtil.getInstance().nextInt(3) + 3;
+
+            // Pick that many nodes randomly
+            List<Node> cycleNodes = new ArrayList<>();
+            int count2 = -1;
+
+            for (int i = 0; i < cycleSize; i++) {
+                Node node = nodes.get(RandomUtil.getInstance().nextInt(nodes.size()));
+
+                if (cycleNodes.contains(node)) {
+                    i--;
+                    ++count2;
+                    if (count2 < 10) {
+                        continue;
+                    }
+                }
+
+                cycleNodes.add(node);
+            }
+
+//            for (int i = 0; i < cycleSize; i++) {
+//                Node node = cycleNodes.get(i);
+//
+//                if (graph.getAdjacentNodes(node).size() > 3) {
+//                    continue LOOP;
+//                }
+//            }
+
+            for (int i = 0; i < cycleNodes.size(); i++) {
+                if (graph.getDegree(cycleNodes.get(i)) >= maxDegree) {
+                    continue LOOP;
+                }
+            }
+
+            Edge edge;
+
+            // Make sure you won't created any two cycles (this will be done later, explicitly)
+            for (int i = 0; i < cycleNodes.size() - 1; i++) {
+                edge = Edges.directedEdge(cycleNodes.get(i + 1), cycleNodes.get(i));
+
+                if (graph.containsEdge(edge)) {
+                    continue LOOP;
+                }
+            }
+
+            edge = Edges.directedEdge(cycleNodes.get(0), cycleNodes.get(cycleNodes.size() - 1));
+
+            if (graph.containsEdge(edge)) {
+                continue;
+            }
+
+            for (int i = 0; i < cycleNodes.size() - 1; i++) {
+                edge = Edges.directedEdge(cycleNodes.get(i), cycleNodes.get(i + 1));
+
+                if (!graph.containsEdge(edge)) {
+                    graph.addEdge(edge);
+
+                    if (graph.getNumEdges() == numEdges) {
+                        break LOOP;
+                    }
+                }
+            }
+
+            if (RandomUtil.getInstance().nextDouble() < probCycle) {
+                edge = Edges.directedEdge(cycleNodes.get(cycleNodes.size() - 1), cycleNodes.get(0));
+            } else {
+                edge = Edges.directedEdge(cycleNodes.get(0), cycleNodes.get(cycleNodes.size() - 1));
+            }
 
             if (!graph.containsEdge(edge)) {
                 graph.addEdge(edge);

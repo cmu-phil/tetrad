@@ -298,7 +298,7 @@ public class PcMax implements GraphSearch {
 
             @Override
             public int compare(Triple o1, Triple o2) {
-                return -Double.compare(scores.get(o1), scores.get(o1));
+                return -Double.compare(scores.get(o2), scores.get(o1));
             }
         });
 
