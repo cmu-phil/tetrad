@@ -36,7 +36,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
-import edu.cmu.tetrad.algcomparison.joe.PcMax;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
 import edu.cmu.tetrad.algcomparison.joe.PcMaxLocal;
 import edu.cmu.tetrad.algcomparison.joe.Wfgs;
 import edu.cmu.tetrad.algcomparison.score.*;
