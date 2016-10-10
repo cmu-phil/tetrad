@@ -482,11 +482,12 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         + simulation.getSimulation().getClass());
             }
         } else {
-            if (simulation.getSimulation() instanceof TakesData) {
-                simulationItems = new String[]{
-                        "Linear Fisher Model",
-                };
-            } else if (simulation.getSourceGraph() != null) {
+//            if (simulation.getSimulation() instanceof TakesData) {
+//                simulationItems = new String[]{
+//                        "Linear Fisher Model",
+//                };
+//            } else
+            if (simulation.getSourceGraph() != null) {
                 simulationItems = new String[]{
                         "Bayes net",
                         "Structural Equation Model",

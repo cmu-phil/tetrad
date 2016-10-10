@@ -47,6 +47,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
+    private double pValue = Double.NaN;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha) {
         this.data = data;
@@ -100,6 +101,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
         double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
 
+        this.pValue = p;
+
         return p > alpha;
     }
 
@@ -127,7 +130,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return Double.NaN;
+        return this.pValue;
     }
 
     /**
@@ -173,14 +176,14 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return Double.NaN;
+        return alpha;
     }
 
     /**
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
-
+        this.alpha = alpha;
     }
 
     public DataSet getData() {
@@ -209,7 +212,11 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        double v = getAlpha() - getPValue();
+
+        System.out.println("alpha = " + getAlpha() + " p value = " + getPValue() + " score = " + v);
+
+        return v;
     }
 
     /**

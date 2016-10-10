@@ -35,6 +35,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -54,7 +55,7 @@ import java.util.Map;
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
         MultipleGraphSource, Unmarshallable, SessionModel, IndTestProducer,
-        KnowledgeBoxInput {
+        KnowledgeBoxInput, DoNotAddOldModel {
 
     static final long serialVersionUID = 23L;
 

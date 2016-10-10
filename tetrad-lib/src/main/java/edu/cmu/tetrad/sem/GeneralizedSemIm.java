@@ -851,7 +851,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      *                              Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
-    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks, double epsilon) {
+    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
+                                      double epsilon) {
         if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
                 "Interval between shocks must be >= 1: " + intervalBetweenShocks);
         if (epsilon <= 0.0) throw new IllegalArgumentException(
@@ -886,9 +887,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         // Do the simulation.
         for (int row = 0; row < sampleSize; row++) {
-            for (int _j = 0; _j < t1.length; _j++) {
-                // Take random draws from error distributions.
-                Node error = pm.getErrorNode(variableNodes.get(_j));
+            for (int j = 0; j < t1.length; j++) {
+                Node error = pm.getErrorNode(variableNodes.get(j));
 
                 if (error == null) {
                     throw new NullPointerException();
@@ -902,7 +902,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                 }
 
                 variableValues.put(error.getName(), value);
-                shocks[_j] = value;
+                shocks[j] = value;
             }
 
             for (int i = 0; i < intervalBetweenShocks; i++) {
@@ -910,7 +910,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                     t2[j] = shocks[j];
                     Node node = variableNodes.get(j);
                     Expression expression = pm.getNodeExpression(node);
-                    t2[j] += expression.evaluate(context);
+                    t2[j] = expression.evaluate(context);
                     variableValues.put(node.getName(), t2[j]);
                 }
 

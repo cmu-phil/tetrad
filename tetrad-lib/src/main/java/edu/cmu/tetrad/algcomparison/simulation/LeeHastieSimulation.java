@@ -91,6 +91,8 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
+        parameters.add("intervalBetweenShocks");
+        parameters.add("fisherEpsilon");
         return parameters;
     }
 
@@ -130,7 +132,13 @@ public class LeeHastieSimulation implements Simulation {
         GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
+//        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
+        DataSet ds = im.simulateDataFisher(
+                parameters.getInt("sampleSize"),
+                parameters.getInt("intervalBetweenShocks"),
+                parameters.getDouble("fisherEpsilon")
+        );
+
         return MixedUtils.makeMixedData(ds, nd);
     }
 

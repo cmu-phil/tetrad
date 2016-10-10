@@ -37,11 +37,11 @@ public class LinearFisherModel implements Simulation, TakesData {
         this.randomGraph = graph;
         this.shocks = shocks;
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                "The initial dataset you've provided will be used as initial shocks" +
-                        "\nfor a Fisher model.");
-
         if (shocks != null) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The initial dataset you've provided will be used as initial shocks" +
+                            "\nfor a Fisher model.");
+
             for (DataModel _shocks : shocks) {
                 if (_shocks == null) throw new NullPointerException("Dataset containing shocks must not be null.");
                 DataSet dataSet = (DataSet) _shocks;
@@ -92,7 +92,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             if (shocks == null) {
                 dataSet = simulator.simulateDataFisher(
-                        simulator.getSoCalledPoissonShocks(parameters.getInt("sampleSize")),
+                        simulator.getUncorrelatedGaussianShocks(parameters.getInt("sampleSize")),
                         parameters.getInt("intervalBetweenShocks"),
                         parameters.getDouble("fisherEpsilon")
                 );
