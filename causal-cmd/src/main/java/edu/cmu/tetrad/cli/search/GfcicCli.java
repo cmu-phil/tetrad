@@ -84,7 +84,7 @@ public class GfcicCli extends FgscCli {
         ParamDescriptions param = ParamDescriptions.instance();
 
         List<Option> options = super.getOptionalOptions();
-        options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
+        options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttrs.ALPHA))));
 
         return options;
     }

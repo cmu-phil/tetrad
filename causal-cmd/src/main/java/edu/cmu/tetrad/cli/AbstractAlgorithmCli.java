@@ -23,6 +23,7 @@ import edu.cmu.tetrad.cli.util.AlgorithmCommonTask;
 import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.search;
 import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutJson;
 import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutResult;
+import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutTetradGraphJson;
 import edu.cmu.tetrad.latest.LatestClient;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
@@ -60,6 +61,7 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
     protected boolean verbose;
     protected int numOfThreads;
     protected boolean isSerializeJson;
+    protected boolean tetradGraphJson;
     protected Path dirOut;
     protected static String outputPrefix;
     protected boolean validationOutput;
@@ -125,6 +127,10 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
 
         if (isSerializeJson) {
             writeOutJson(outputPrefix, graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
+        }
+        
+        if (tetradGraphJson) {
+        	writeOutTetradGraphJson(graph, Paths.get(dirOut.toString(), outputPrefix + ".json"));
         }
     }
 
@@ -236,6 +242,7 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
         MAIN_OPTIONS.addOption(null, "verbose", false, "Print additional information.");
         MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
         MAIN_OPTIONS.addOption(null, "json", false, "Create JSON output.");
+        MAIN_OPTIONS.addOption(null, "tetrad-graph-json", false, "Create Tetrad Graph JSON output.");
         MAIN_OPTIONS.addOption("o", "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name for output files.");
         MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
@@ -256,6 +263,7 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
         verbose = cmd.hasOption("verbose");
         numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
         isSerializeJson = cmd.hasOption("json");
+        tetradGraphJson = cmd.hasOption("tetrad-graph-json");
 
         dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
         outputPrefix = cmd.getOptionValue("output-prefix", String.format("%s_%s_%d", getAlgorithmType().getCmd(), dataFile.getFileName(), System.currentTimeMillis()));

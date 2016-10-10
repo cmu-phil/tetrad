@@ -23,13 +23,20 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -43,215 +50,266 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestGFci {
 
-    public void test1() {
-        RandomUtil.getInstance().setSeed(1450189593459L);
+	public void test1() {
+		RandomUtil.getInstance().setSeed(1450189593459L);
 
-        int numNodes = 10;
-        int numLatents = 5;
-        int numEdges = 10;
-        int sampleSize = 1000;
+		int numNodes = 10;
+		int numLatents = 5;
+		int numEdges = 10;
+		int sampleSize = 1000;
 
-//        int numNodes = 3000;
-//        int numLatents = 150;
-//        int numEdges = 4500;
-//        int sampleSize = 1000;
+		// int numNodes = 3000;
+		// int numLatents = 150;
+		// int numEdges = 4500;
+		// int sampleSize = 1000;
 
-        double alpha = 0.01;
-        double penaltyDiscount = 2;
-        int depth = -1;
-        int maxPathLength = -1;
-        boolean possibleDsepDone = true;
-        boolean completeRuleSetUsed = false;
-        boolean faithfulnessAssumed = true;
+		double alpha = 0.01;
+		double penaltyDiscount = 2;
+		int depth = -1;
+		int maxPathLength = -1;
+		boolean possibleDsepDone = true;
+		boolean completeRuleSetUsed = false;
+		boolean faithfulnessAssumed = true;
 
-        List<Node> vars = new ArrayList<>();
+		List<Node> vars = new ArrayList<>();
 
-        for (int i = 0; i < numNodes; i++) {
-            vars.add(new ContinuousVariable("X" + (i + 1)));
-        }
+		for (int i = 0; i < numNodes; i++) {
+			vars.add(new ContinuousVariable("X" + (i + 1)));
+		}
 
-        Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
-//        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
-//        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
+		Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
+		// Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars,
+		// numLatents, numEdges);
+		// Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05,
+		// .05, 3);
 
-        DataSet data;
+		DataSet data;
 
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
-        simulator.setCoefRange(.5, 1.5);
-        simulator.setVarRange(1, 3);
-        data = simulator.simulateDataAcyclic(sampleSize);
-        data = DataUtils.restrictToMeasured(data);
+		LargeSemSimulator simulator = new LargeSemSimulator(dag);
+		simulator.setCoefRange(.5, 1.5);
+		simulator.setVarRange(1, 3);
+		data = simulator.simulateDataAcyclic(sampleSize);
+		data = DataUtils.restrictToMeasured(data);
 
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
+		ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
-        SemBicScore score = new SemBicScore(cov);
-        score.setPenaltyDiscount(penaltyDiscount);
+		IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+		SemBicScore score = new SemBicScore(cov);
+		score.setPenaltyDiscount(penaltyDiscount);
 
-        independenceTest.setAlpha(alpha);
+		independenceTest.setAlpha(alpha);
 
-        GFci gFci = new GFci(independenceTest, score);
-        gFci.setVerbose(false);
-        gFci.setMaxIndegree(depth);
-        gFci.setMaxPathLength(maxPathLength);
-//        gFci.setPossibleDsepSearchDone(possibleDsepDone);
-        gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
-        gFci.setFaithfulnessAssumed(faithfulnessAssumed);
-        Graph outGraph = gFci.search();
+		GFci gFci = new GFci(independenceTest, score);
+		gFci.setVerbose(false);
+		gFci.setMaxIndegree(depth);
+		gFci.setMaxPathLength(maxPathLength);
+		// gFci.setPossibleDsepSearchDone(possibleDsepDone);
+		gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
+		gFci.setFaithfulnessAssumed(faithfulnessAssumed);
+		Graph outGraph = gFci.search();
 
-        final DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        dagToPag.setMaxPathLength(maxPathLength);
-        Graph truePag = dagToPag.convert();
+		final DagToPag dagToPag = new DagToPag(dag);
+		dagToPag.setCompleteRuleSetUsed(false);
+		dagToPag.setMaxPathLength(maxPathLength);
+		Graph truePag = dagToPag.convert();
 
-        outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
+		outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
-        int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
+		int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
 
-        int[][] expectedCounts = {
-                {0, 0, 0, 0, 0, 0},
-                {0, 4, 0, 0, 0, 1},
-                {0, 0, 3, 0, 0, 1},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-        };
+		int[][] expectedCounts = { { 0, 0, 0, 0, 0, 0 }, { 0, 4, 0, 0, 0, 1 }, { 0, 0, 3, 0, 0, 1 },
+				{ 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 },
+				{ 0, 0, 0, 0, 0, 0 }, };
 
-        for (int i = 0; i < counts.length; i++) {
-            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
-        }
+		for (int i = 0; i < counts.length; i++) {
+			assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
+		}
 
-//        System.out.println(MatrixUtils.toString(counts));
-//        System.out.println(MatrixUtils.toString(expectedCounts));
-    }
+		// System.out.println(MatrixUtils.toString(counts));
+		// System.out.println(MatrixUtils.toString(expectedCounts));
+	}
 
-    @Test
-    public void test2() {
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node L = new GraphNode("L");
-        L.setNodeType(NodeType.LATENT);
+	@Test
+	public void test2() {
+		Node x1 = new GraphNode("X1");
+		Node x2 = new GraphNode("X2");
+		Node x3 = new GraphNode("X3");
+		Node x4 = new GraphNode("X4");
+		Node L = new GraphNode("L");
+		L.setNodeType(NodeType.LATENT);
 
-        Graph g1 = new EdgeListGraph();
-        g1.addNode(x1);
-        g1.addNode(x2);
-        g1.addNode(x3);
-        g1.addNode(x4);
-        g1.addNode(L);
+		Graph g1 = new EdgeListGraph();
+		g1.addNode(x1);
+		g1.addNode(x2);
+		g1.addNode(x3);
+		g1.addNode(x4);
+		g1.addNode(L);
 
-        g1.addDirectedEdge(x1, x2);
-        g1.addDirectedEdge(x4, x3);
-        g1.addDirectedEdge(L, x2);
-        g1.addDirectedEdge(L, x3);
+		g1.addDirectedEdge(x1, x2);
+		g1.addDirectedEdge(x4, x3);
+		g1.addDirectedEdge(L, x2);
+		g1.addDirectedEdge(L, x3);
 
-        GFci gfci = new GFci(new IndTestDSep(g1), new GraphScore(g1));
+		GFci gfci = new GFci(new IndTestDSep(g1), new GraphScore(g1));
 
-        Graph pag = gfci.search();
+		Graph pag = gfci.search();
 
-        Graph truePag = new EdgeListGraph();
+		Graph truePag = new EdgeListGraph();
 
-        truePag.addNode(x1);
-        truePag.addNode(x2);
-        truePag.addNode(x3);
-        truePag.addNode(x4);
+		truePag.addNode(x1);
+		truePag.addNode(x2);
+		truePag.addNode(x3);
+		truePag.addNode(x4);
 
-        truePag.addPartiallyOrientedEdge(x1, x2);
-        truePag.addBidirectedEdge(x2, x3);
-        truePag.addPartiallyOrientedEdge(x4, x3);
+		truePag.addPartiallyOrientedEdge(x1, x2);
+		truePag.addBidirectedEdge(x2, x3);
+		truePag.addPartiallyOrientedEdge(x4, x3);
 
-//        System.out.println(pag);
+		// System.out.println(pag);
 
-        assertEquals(pag, truePag);
-    }
+		assertEquals(pag, truePag);
+	}
 
-    @Test
-    public void testFromGraph() {
-        RandomUtil.getInstance().setSeed(new Date().getTime());
+	@Test
+	public void testFromGraph() {
+		RandomUtil.getInstance().setSeed(new Date().getTime());
 
-        int numNodes = 20;
-        int numLatents = 5;
-        int numIterations = 20;
+		int numNodes = 20;
+		int numLatents = 5;
+		int numIterations = 20;
 
-        boolean completeRuleSetUsed = false;
-        boolean faithfulnessAssumed = true;
+		boolean completeRuleSetUsed = false;
+		boolean faithfulnessAssumed = true;
 
-        for (int i = 0; i < numIterations; i++) {
-//            System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
-                    10, 10, 10, false);
+		for (int i = 0; i < numIterations; i++) {
+			// System.out.println("Iteration " + (i + 1));
+			Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes, 10, 10, 10, false);
 
-            GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
-            gfci.setCompleteRuleSetUsed(completeRuleSetUsed);
-//            GFci gfci = new GFci(new IndTestDSep(dag));
-            gfci.setFaithfulnessAssumed(faithfulnessAssumed);
-            Graph pag1 = gfci.search();
+			GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
+			gfci.setCompleteRuleSetUsed(completeRuleSetUsed);
+			// GFci gfci = new GFci(new IndTestDSep(dag));
+			gfci.setFaithfulnessAssumed(faithfulnessAssumed);
+			Graph pag1 = gfci.search();
 
+			DagToPag dagToPag = new DagToPag(dag);
+			dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+			Graph pag2 = dagToPag.convert();
 
+			// System.out.println(pag1);
+			// System.out.println(pattern2);
+			//
+			// System.out.println(MisclassificationUtils.edgeMisclassifications(pag1,
+			// pag2));
+			assertEquals(pag2, pag1);
+		}
+	}
 
-            DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-            Graph pag2 = dagToPag.convert();
+	@Test
+	public void testFromData() {
+		int numNodes = 1000;
+		int numLatents = 50;
+		int numEdges = 1000;
+		int sampleSize = 1000;
 
-//            System.out.println(pag1);
-//            System.out.println(pattern2);
-//
-//            System.out.println(MisclassificationUtils.edgeMisclassifications(pag1, pag2));
-            assertEquals(pag2, pag1);
-        }
-    }
+		// System.out.println(RandomUtil.getInstance().getSeed());
+		//
+		// RandomUtil.getInstance().setSeed(1461186701390L);
 
-    @Test
-    public void testFromData() {
-        int numNodes = 1000;
-        int numLatents = 50;
-        int numEdges = 1000;
-        int sampleSize = 1000;
+		List<Node> variables = new ArrayList<>();
 
-//        System.out.println(RandomUtil.getInstance().getSeed());
-//
-//        RandomUtil.getInstance().setSeed(1461186701390L);
+		for (int i = 0; i < numNodes; i++) {
+			variables.add(new ContinuousVariable("X" + (i + 1)));
+		}
 
+		Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
-        List<Node> variables = new ArrayList<>();
+		LargeSemSimulator semSimulator = new LargeSemSimulator(g);
 
-        for (int i = 0; i < numNodes; i++) {
-            variables.add(new ContinuousVariable("X" + (i + 1)));
-        }
+		DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
 
-        Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+		data = DataUtils.restrictToMeasured(data);
 
-        LargeSemSimulator semSimulator = new LargeSemSimulator(g);
+		IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly(data), 0.001);
+		SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+		score.setPenaltyDiscount(4);
+		GFci gFci = new GFci(test, score);
+		gFci.setFaithfulnessAssumed(true);
 
-        DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
+		long start = System.currentTimeMillis();
 
-        data = DataUtils.restrictToMeasured(data);
+		Graph graph = gFci.search();
 
-        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly(data), 0.001);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
-        score.setPenaltyDiscount(4);
-        GFci gFci = new GFci(test, score);
-        gFci.setFaithfulnessAssumed(true);
+		long stop = System.currentTimeMillis();
 
-        long start = System.currentTimeMillis();
+		System.out.println("Elapsed " + (stop - start) + " ms");
 
-        Graph graph = gFci.search();
+		DagToPag dagToPag = new DagToPag(g);
+		dagToPag.setVerbose(false);
+		// System.out.println(MisclassificationUtils.edgeMisclassifications(graph,
+		// dagToPag.convert()));
 
-        long stop = System.currentTimeMillis();
+	}
 
-        System.out.println("Elapsed " + (stop - start) + " ms");
+	@Test
+	public void testRandomDiscreteData() {
+		int sampleSize = 1000;
 
-        DagToPag dagToPag = new DagToPag(g);
-        dagToPag.setVerbose(false);
-//        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag.convert()));
+		Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
+		Dag dag = new Dag(g);
+		BayesPm bayesPm = new BayesPm(dag);
+		BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-    }
+		DataSet data = bayesIm.simulateData(sampleSize, false);
+
+		IndependenceTest test = new IndTestChiSquare(data, 0.05);
+		BDeuScore bDeuScore = new BDeuScore(data);
+		bDeuScore.setSamplePrior(1.0);
+		bDeuScore.setStructurePrior(1.0);
+
+		GFci gFci = new GFci(test, bDeuScore);
+		gFci.setFaithfulnessAssumed(true);
+
+		long start = System.currentTimeMillis();
+
+		Graph graph = gFci.search();
+
+		long stop = System.currentTimeMillis();
+
+		System.out.println("Elapsed " + (stop - start) + " ms");
+
+		DagToPag dagToPag = new DagToPag(g);
+		dagToPag.setVerbose(false);
+	}
+
+	@Test
+	public void testDiscreteData() throws IOException {
+		double alpha = 0.05;
+		char delimiter = '\t';
+		Path dataFile = Paths.get("../causal-cmd/test/data/diff_delim/sim_discrete_data_20vars_100cases.txt");
+		// System.out.println(dataFile.toAbsolutePath().toString());
+		VerticalTabularDiscreteDataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
+		DataSet dataSet = dataReader.readInData();
+
+		IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
+
+		BDeuScore score = new BDeuScore(dataSet);
+		score.setStructurePrior(1.0);
+		score.setSamplePrior(1.0);
+
+		GFci gFci = new GFci(indTest, score);
+		gFci.setFaithfulnessAssumed(true);
+		gFci.setMaxIndegree(-1);
+		gFci.setMaxPathLength(-1);
+		gFci.setCompleteRuleSetUsed(false);
+		gFci.setVerbose(true);
+
+		long start = System.currentTimeMillis();
+
+		Graph graph = gFci.search();
+
+		long stop = System.currentTimeMillis();
+
+		System.out.println("Elapsed " + (stop - start) + " ms");
+
+	}
 }
-
-
-
-
-

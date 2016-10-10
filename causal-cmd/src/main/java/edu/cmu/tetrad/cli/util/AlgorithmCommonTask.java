@@ -36,6 +36,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  *
  * Sep 19, 2016 3:15:02 PM
@@ -44,111 +47,141 @@ import org.slf4j.LoggerFactory;
  */
 public class AlgorithmCommonTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCommonTask.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCommonTask.class);
 
-    public static void writeOutResult(String heading, String runInfo, Graph graph, Path outputFile) {
-        String fileName = outputFile.getFileName().toString();
-        String task = "writing out result file " + fileName;
-        logStartTask(task);
-        try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            writer.println(heading);
-            writer.println(runInfo);
-            writer.println(graph.toString());
-        } catch (IOException exception) {
-            logFailedTask(task, exception);
-        }
-        logEndTask(task);
-    }
+	public static void writeOutResult(String heading, String runInfo, Graph graph, Path outputFile) {
+		String fileName = outputFile.getFileName().toString();
+		String task = "writing out result file " + fileName;
+		logStartTask(task);
+		try (PrintStream writer = new PrintStream(
+				new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+			writer.println(heading);
+			writer.println(runInfo);
+			writer.println(graph.toString());
+		} catch (IOException exception) {
+			logFailedTask(task, exception);
+		}
+		logEndTask(task);
+	}
 
-    public static void writeOutJson(String graphId, Graph graph, Path outputFile) {
-        String fileName = outputFile.getFileName().toString();
-        String task = "writing out Json file " + fileName;
-        logStartTask(task);
-        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            JsonSerializer.writeToStream(JsonSerializer.serialize(graph, graphId), graphWriter);
-        } catch (Exception exception) {
-            logFailedTask(task, exception);
-        }
-        logEndTask(task);
-    }
+	public static void writeOutTetradGraphJson(Graph graph, Path outputFile) {
+		if (graph == null) {
+			return;
+		}
 
-    public static Graph search(DataSet dataSet, Algorithm algorithm, Parameters parameters) {
-        String task = "running algorithm " + algorithm.getDescription();
-        logStartTask(task);
-        Graph graph = algorithm.search(dataSet, parameters);
-        logEndTask(task);
+		try (PrintStream graphWriter = new PrintStream(
+				new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+			String fileName = outputFile.getFileName().toString();
 
-        return graph;
-    }
+			String msg = String.format("Writing out Tetrad Graph Json file '%s'.", fileName);
+			System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+			LOGGER.info(msg);
 
-    public static IKnowledge readInPriorKnowledge(Path knowledgeFile) {
-        IKnowledge knowledge = null;
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			graphWriter.print(gson.toJson(graph));
 
-        if (knowledgeFile != null) {
-            String task = "reading in prior knowledge file " + knowledgeFile.getFileName();
-            logStartTask(task);
-            try {
-                knowledge = IKnowledgeFactory.readInKnowledge(knowledgeFile);
-            } catch (IOException exception) {
-                logFailedTask(task, exception);
-                System.exit(-127);
-            }
-            logEndTask(task);
-        }
+			msg = String.format("Finished writing out Tetrad Graph Json file '%s'.", fileName);
+			System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+			LOGGER.info(msg);
 
-        return knowledge;
-    }
+		} catch (Throwable throwable) {
+			String errMsg = String.format("Failed when writing out Tetrad Graph Json file '%s'.",
+					outputFile.getFileName().toString());
+			System.err.println(errMsg);
+			LOGGER.error(errMsg, throwable);
+		}
+	}
 
-    public static DataSet readInDataSet(Set<String> excludedVariables, Path dataFile, DataReader dataReader) {
-        DataSet dataSet = null;
+	public static void writeOutJson(String graphId, Graph graph, Path outputFile) {
+		String fileName = outputFile.getFileName().toString();
+		String task = "writing out Json file " + fileName;
+		logStartTask(task);
+		try (PrintStream graphWriter = new PrintStream(
+				new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+			JsonSerializer.writeToStream(JsonSerializer.serialize(graph, graphId), graphWriter);
+		} catch (Exception exception) {
+			logFailedTask(task, exception);
+		}
+		logEndTask(task);
+	}
 
-        String task = "reading in data file " + dataFile.getFileName();
-        logStartTask(task);
-        try {
-            dataSet = excludedVariables.isEmpty() ? dataReader.readInData() : dataReader.readInData(excludedVariables);
-        } catch (IOException exception) {
-            logFailedTask(task, exception);
-            System.exit(-127);
-        }
-        logEndTask(task);
+	public static Graph search(DataSet dataSet, Algorithm algorithm, Parameters parameters) {
+		String task = "running algorithm " + algorithm.getDescription();
+		logStartTask(task);
+		Graph graph = algorithm.search(dataSet, parameters);
+		logEndTask(task);
 
-        return dataSet;
-    }
+		return graph;
+	}
 
-    public static Set<String> readInVariables(Path variableFile) {
-        Set<String> variables = new HashSet<>();
+	public static IKnowledge readInPriorKnowledge(Path knowledgeFile) {
+		IKnowledge knowledge = null;
 
-        if (variableFile != null) {
-            String task = "reading in excluded variable file " + variableFile.getFileName();
-            logStartTask(task);
-            try {
-                variables.addAll(FileIO.extractUniqueLine(variableFile));
-            } catch (IOException exception) {
-                logFailedTask(task, exception);
-                System.exit(-127);
-            }
-            logEndTask(task);
-        }
+		if (knowledgeFile != null) {
+			String task = "reading in prior knowledge file " + knowledgeFile.getFileName();
+			logStartTask(task);
+			try {
+				knowledge = IKnowledgeFactory.readInKnowledge(knowledgeFile);
+			} catch (IOException exception) {
+				logFailedTask(task, exception);
+				System.exit(-127);
+			}
+			logEndTask(task);
+		}
 
-        return variables;
-    }
+		return knowledge;
+	}
 
-    private static void logStartTask(String task) {
-        String msg = String.format("%s: Start %s.", AppTool.fmtDateNow(), task);
-        System.out.println(msg);
-        LOGGER.info(String.format("Start %s.", task));
-    }
+	public static DataSet readInDataSet(Set<String> excludedVariables, Path dataFile, DataReader dataReader) {
+		DataSet dataSet = null;
 
-    private static void logEndTask(String task) {
-        String msg = String.format("%s: End %s.", AppTool.fmtDateNow(), task);
-        System.out.println(msg);
-        LOGGER.info(String.format("End %s.", task));
-    }
+		String task = "reading in data file " + dataFile.getFileName();
+		logStartTask(task);
+		try {
+			dataSet = excludedVariables.isEmpty() ? dataReader.readInData() : dataReader.readInData(excludedVariables);
+		} catch (IOException exception) {
+			logFailedTask(task, exception);
+			System.exit(-127);
+		}
+		logEndTask(task);
 
-    private static void logFailedTask(String task, Exception exception) {
-        String errMsg = String.format("Failed %s.", task);
-        System.err.println(errMsg);
-        LOGGER.error(errMsg, exception);
-    }
+		return dataSet;
+	}
+
+	public static Set<String> readInVariables(Path variableFile) {
+		Set<String> variables = new HashSet<>();
+
+		if (variableFile != null) {
+			String task = "reading in excluded variable file " + variableFile.getFileName();
+			logStartTask(task);
+			try {
+				variables.addAll(FileIO.extractUniqueLine(variableFile));
+			} catch (IOException exception) {
+				logFailedTask(task, exception);
+				System.exit(-127);
+			}
+			logEndTask(task);
+		}
+
+		return variables;
+	}
+
+	private static void logStartTask(String task) {
+		String msg = String.format("%s: Start %s.", AppTool.fmtDateNow(), task);
+		System.out.println(msg);
+		LOGGER.info(String.format("Start %s.", task));
+	}
+
+	private static void logEndTask(String task) {
+		String msg = String.format("%s: End %s.", AppTool.fmtDateNow(), task);
+		System.out.println(msg);
+		LOGGER.info(String.format("End %s.", task));
+	}
+
+	private static void logFailedTask(String task, Exception exception) {
+		String errMsg = String.format("Failed %s.", task);
+		System.err.println(errMsg);
+		LOGGER.error(errMsg, exception);
+	}
 
 }
