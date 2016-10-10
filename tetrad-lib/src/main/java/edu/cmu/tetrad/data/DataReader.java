@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  *
  * @author Joseph Ramsey
  */
-public final class DataReader {
+public final class DataReader implements IDataReader {
 
     /**
      * A set of characters that in any combination makes up a delimiter.
