@@ -45,7 +45,7 @@ public class TestConditionalLikelihood {
         Graph graph = MixedUtils.makeMixedGraph(dag, nd);
         GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
-        DataSet data = MixedUtils.makeMixedData(im.simulateDataAvoidInfinity(100, false), nd);
+        DataSet data = MixedUtils.makeMixedData(im.simulateDataFisher(100), nd);
 
         // Calculate lik and dof for 1 | 2, 2, 2 | 1, and 1.
         ConditionalGaussianLikelihood lik = new ConditionalGaussianLikelihood(data);

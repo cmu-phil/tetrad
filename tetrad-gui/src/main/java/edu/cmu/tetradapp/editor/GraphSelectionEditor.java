@@ -479,7 +479,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     public void setGraph(Graph graph) {
         wrapper.setGraphs(Collections.singletonList(graph));
         editorPanel.reset();
-        getWorkbench().setGraph(new EdgeListGraphSingleConnections());
+        getWorkbench().setGraph(graph);
     }
 
     public void replace(List<Graph> graphs) {

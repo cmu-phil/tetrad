@@ -1,9 +1,8 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
+package edu.cmu.tetrad.algcomparison.joe;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -15,24 +14,22 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
- * PC-Max
+ * PC.
  *
  * @author jdramsey
  */
-public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class PcMaxLocal implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcMax(IndependenceWrapper test) {
+    public PcMaxLocal(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
-                test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.PcMaxLocal search = new edu.cmu.tetrad.search.PcMaxLocal(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
         return search.search();
     }
@@ -44,9 +41,7 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "PC-Max (\"Peter and Clark\") using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "Max Local PC (\"Peter and Clark\") using " + test.getDescription();
     }
 
     @Override

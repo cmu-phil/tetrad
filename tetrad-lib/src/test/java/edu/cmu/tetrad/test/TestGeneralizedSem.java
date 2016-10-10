@@ -125,7 +125,7 @@ public class TestGeneralizedSem {
 
             print(im);
 
-            DataSet dataSet = im.simulateDataAvoidInfinity(10, false);
+            DataSet dataSet = im.simulateDataFisher(10);
 
             print(dataSet);
 

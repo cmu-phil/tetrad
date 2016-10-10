@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  *
  * @author Joseph Ramsey
  */
-public final class DataReader {
+public final class DataReader implements IDataReader {
 
     /**
      * A set of characters that in any combination makes up a delimiter.
@@ -121,6 +121,7 @@ public final class DataReader {
     /**
      * Lines beginning with blanks or this marker will be skipped.
      */
+    @Override
     public void setCommentMarker(String commentMarker) {
         if (commentMarker == null) {
             throw new NullPointerException("Cannot be null.");
@@ -132,6 +133,7 @@ public final class DataReader {
     /**
      * This is the delimiter used to parse the data. Default is whitespace.
      */
+    @Override
     public void setDelimiter(DelimiterType delimiterType) {
         if (delimiterType == null) {
             throw new NullPointerException("Cannot be null.");
@@ -143,6 +145,7 @@ public final class DataReader {
     /**
      * Text between matched ones of these will treated as quoted text.
      */
+    @Override
     public void setQuoteChar(char quoteChar) {
         this.quoteChar = quoteChar;
     }
@@ -151,6 +154,7 @@ public final class DataReader {
      * Will read variable names from the first row if this is true; otherwise,
      * will make make up variables in the series X1, x2, ... Xn.
      */
+    @Override
     public void setVariablesSupplied(boolean varNamesSupplied) {
         this.varNamesSupplied = varNamesSupplied;
     }
@@ -158,6 +162,7 @@ public final class DataReader {
     /**
      * If true, a column of ID's is supplied; otherwise, not.
      */
+    @Override
     public void setIdsSupplied(boolean caseIdsPresent) {
         this.idsSupplied = caseIdsPresent;
     }
@@ -166,6 +171,7 @@ public final class DataReader {
      * If null, ID's are in an unlabeled first column; otherwise, they are in
      * the column with the given label.
      */
+    @Override
     public void setIdLabel(String caseIdsLabel) {
         this.idLabel = caseIdsLabel;
     }
@@ -174,6 +180,7 @@ public final class DataReader {
      * Tokens that are blank or equal to this value will be counted as missing
      * values.
      */
+    @Override
     public void setMissingValueMarker(String missingValueMarker) {
         if (missingValueMarker == null) {
             throw new NullPointerException("Cannot be null.");
@@ -186,6 +193,7 @@ public final class DataReader {
      * Integral columns with up to this number of discrete values will be
      * treated as discrete.
      */
+    @Override
     public void setMaxIntegralDiscrete(int maxIntegralDiscrete) {
         if (maxIntegralDiscrete < -1) {
             throw new IllegalArgumentException(
@@ -199,6 +207,7 @@ public final class DataReader {
      * The known variables for a given name will usurp guess the variable by
      * that name.
      */
+    @Override
     public void setKnownVariables(List<Node> knownVariables) {
         if (knownVariables == null) {
             throw new NullPointerException();
@@ -214,6 +223,7 @@ public final class DataReader {
      * @throws IOException if the file cannot be read.
 //     * @deprecated use the data readers from edu.cmu.tetrad.io package // Can't deprecate this yet.
      */
+    @Override
     public DataSet parseTabular(File file) throws IOException {
         FileReader reader = null, reader2 = null;
 
@@ -256,6 +266,7 @@ public final class DataReader {
      * RectangularDataSet if successful. Log messages are written to the
      * LogUtils log; to view them, add System.out to that.
      */
+    @Override
     public DataSet parseTabular(char[] chars) {
 
         // Do first pass to get a description of the file.
@@ -570,6 +581,7 @@ public final class DataReader {
      *
      * @throws IOException if the file cannot be read.
      */
+    @Override
     public ICovarianceMatrix parseCovariance(File file) throws IOException {
         FileReader reader = null;
 
@@ -607,6 +619,7 @@ public final class DataReader {
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
      */
+    @Override
     public ICovarianceMatrix parseCovariance(char[] chars) {
 
         // Do first pass to get a description of the file.
@@ -745,6 +758,7 @@ public final class DataReader {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      */
+    @Override
     public IKnowledge parseKnowledge(File file) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
@@ -757,6 +771,7 @@ public final class DataReader {
      * Parses knowledge from the char array, assuming that's all there is in the
      * char array.
      */
+    @Override
     public IKnowledge parseKnowledge(char[] chars) {
         CharArrayReader reader = new CharArrayReader(chars);
         Lineizer lineizer = new Lineizer(reader, commentMarker);

@@ -173,8 +173,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         List<Graph> graphs = new ArrayList<>();
                         for (int i = 0; i < _simulation.getNumDataSets(); i++) {
                             graphs.add(_simulation.getTrueGraph(i));
-
-
                         }
 
                         graphEditor.replace(graphs);

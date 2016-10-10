@@ -1058,7 +1058,7 @@ public class MixedUtils {
         System.out.println(im);
 
         int samps = 15;
-        DataSet ds = im.simulateDataAvoidInfinity(samps, false);
+        DataSet ds = im.simulateDataFisher(samps);
         System.out.println(ds);
 
         System.out.println("num cats " + ((DiscreteVariable) g.getNode("X4")).getNumCategories());
