@@ -138,7 +138,7 @@ public class GfcicCli extends AbstractAlgorithmCli {
         alpha = Args.getDouble(cmd.getOptionValue("alpha", String.valueOf(param.get(ParamAttrs.ALPHA).getDefaultValue())));
         penaltyDiscount = Args.getDoubleMin(cmd.getOptionValue("penalty-discount", String.valueOf(param.get(ParamAttrs.PENALTY_DISCOUNT).getDefaultValue())), 0);
         maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttrs.MAX_INDEGREE).getDefaultValue())), -1);
-        faithfulnessAssumed = !cmd.hasOption("faithfulness-assumed");
+        faithfulnessAssumed = cmd.hasOption("faithfulness-assumed");
         skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
         skipZeroVariance = cmd.hasOption("skip-non-zero-variance");
     }
