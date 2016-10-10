@@ -134,7 +134,7 @@ public class FgscCli extends AbstractAlgorithmCli {
 
         penaltyDiscount = Args.getDoubleMin(cmd.getOptionValue("penalty-discount", String.valueOf(param.get(ParamAttrs.PENALTY_DISCOUNT).getDefaultValue())), 0);
         maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(param.get(ParamAttrs.MAX_DEGREE).getDefaultValue())), -1);
-        faithfulnessAssumed = !cmd.hasOption("faithfulness-assumed");
+        faithfulnessAssumed = cmd.hasOption("faithfulness-assumed");
         skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
         skipZeroVariance = cmd.hasOption("skip-non-zero-variance");
     }
