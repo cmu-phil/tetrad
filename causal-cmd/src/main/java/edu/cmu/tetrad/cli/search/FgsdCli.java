@@ -136,7 +136,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
         structurePrior = Args.getDouble(cmd.getOptionValue("structure-prior", String.valueOf(param.get(ParamAttrs.STRUCTURE_PRIOR).getDefaultValue())));
         samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", String.valueOf(param.get(ParamAttrs.SAMPLE_PRIOR).getDefaultValue())));
         maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(param.get(ParamAttrs.MAX_DEGREE).getDefaultValue())), -1);
-        faithfulnessAssumed = !cmd.hasOption("faithfulness-assumed");
+        faithfulnessAssumed = cmd.hasOption("faithfulness-assumed");
         skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
         skipCategoryLimit = cmd.hasOption("skip-category-limit");
     }
