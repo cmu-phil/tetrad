@@ -42,6 +42,7 @@ public class SepsetsMinScore implements SepsetProducer {
     private int depth = 3;
     private double p = Double.NaN;
     private boolean verbose = false;
+    private boolean returnNullWhenIndep;
 
     public SepsetsMinScore(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
@@ -90,9 +91,16 @@ public class SepsetsMinScore implements SepsetProducer {
                     getIndependenceTest().isIndependent(i, k, v2);
                     double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p && p2 < 0) {
-                        _p = p2;
-                        _v = v2;
+                    if (returnNullWhenIndep) {
+                        if (p2 < _p && p2 < 0) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    } else {
+                        if (p2 < _p) {
+                            _p = p2;
+                            _v = v2;
+                        }
                     }
                 }
             }
@@ -107,9 +115,16 @@ public class SepsetsMinScore implements SepsetProducer {
                     getIndependenceTest().isIndependent(i, k, v2);
                     double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p && p2 < 0) {
-                        _p = p2;
-                        _v = v2;
+                    if (returnNullWhenIndep) {
+                        if (p2 < _p && p2 < 0) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    } else {
+                        if (p2 < _p) {
+                            _p = p2;
+                            _v = v2;
+                        }
                     }
                 }
             }
@@ -151,6 +166,14 @@ public class SepsetsMinScore implements SepsetProducer {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void setReturnNullWhenIndep(boolean returnNullWhenIndep) {
+        this.returnNullWhenIndep = returnNullWhenIndep;
+    }
+
+    public boolean isReturnNullWhenIndep() {
+        return returnNullWhenIndep;
     }
 }
 

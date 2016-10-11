@@ -76,26 +76,29 @@ public final class GCcd implements GraphSearch {
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(false);
-        Graph psi = fgs.search();
+        Graph fgsGraph = fgs.search();
+        Graph psi = new EdgeListGraphSingleConnections(fgsGraph);
 
-//        SepsetProducer sepsets0 = new SepsetsGreedy(new EdgeListGraphSingleConnections(psi),
-//                independenceTest, null, -1);
-        SepsetProducer sepsets = new SepsetsMinScore(psi, independenceTest, -1);
+//        SepsetProducer sepsets0 = new SepsetsGreedy(fgsGraph, independenceTest, null, -1);
+        SepsetsMinScore sepsets = new SepsetsMinScore(fgsGraph, independenceTest, -1);
+        sepsets.setReturnNullWhenIndep(false);
 
         for (Edge edge : psi.getEdges()) {
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
-            if (psi.isAdjacentTo(a, c)) {
-                if (sepsets.getSepset(a, c) != null) {
-                    psi.removeEdge(a, c);
-                }
+            sepsets.getSepset(a, c);
+
+            if (sepsets.getScore() > 0.0) {
+                psi.removeEdge(a, c);
             }
         }
 
         psi.reorientAllWith(Endpoint.CIRCLE);
 
-        stepB(psi);
+        sepsets = new SepsetsMinScore(psi, independenceTest, -1);
+
+        stepB(psi, fgsGraph, sepsets);
         stepC(psi, sepsets);
         stepD(psi, sepsets, supSepsets);
         stepE(supSepsets, psi);
@@ -148,13 +151,14 @@ public final class GCcd implements GraphSearch {
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private void stepB(Graph psi) {
+    private void stepB(Graph psi, Graph fgsGraph, SepsetProducer sepsets) {
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
         final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
 
         List<Node> nodes = psi.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
+            private SepsetProducer sepsets;
             private final Map<Triple, Double> colliders;
             private final Map<Triple, Double> noncolliders;
             private int from;
@@ -162,11 +166,15 @@ public final class GCcd implements GraphSearch {
             private int chunk = 20;
             private List<Node> nodes;
             private Graph psi;
+            private Graph fgsGraph;
 
-            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> colliders,
+            public Task(SepsetProducer sepsets, List<Node> nodes, Graph graph, Graph fgsGraph,
+                        Map<Triple, Double> colliders,
                         Map<Triple, Double> noncolliders, int from, int to) {
+                this.sepsets = sepsets;
                 this.nodes = nodes;
                 this.psi = graph;
+                this.fgsGraph = fgsGraph;
                 this.from = from;
                 this.to = to;
                 this.colliders = colliders;
@@ -177,15 +185,15 @@ public final class GCcd implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNodeCollider(psi, colliders, noncolliders, nodes.get(i));
+                        doNodeCollider(sepsets, psi, fgsGraph, colliders, noncolliders, nodes.get(i));
                     }
 
                     return true;
                 } else {
                     int mid = (to + from) / 2;
 
-                    Task left = new Task(nodes, psi, colliders, noncolliders, from, mid);
-                    Task right = new Task(nodes, psi, colliders, noncolliders, mid, to);
+                    Task left = new Task(sepsets, nodes, psi, fgsGraph, colliders, noncolliders, from, mid);
+                    Task right = new Task(sepsets, nodes, psi, fgsGraph, colliders, noncolliders, mid, to);
 
                     left.fork();
                     right.compute();
@@ -196,7 +204,7 @@ public final class GCcd implements GraphSearch {
             }
         }
 
-        Task task = new Task(nodes, psi, colliders, noncolliders, 0, nodes.size());
+        Task task = new Task(sepsets, nodes, psi, fgsGraph, colliders, noncolliders, 0, nodes.size());
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
@@ -235,7 +243,8 @@ public final class GCcd implements GraphSearch {
         orientAwayFromArrow(psi);
     }
 
-    private void doNodeCollider(Graph psi, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
+    private void doNodeCollider(SepsetProducer sepsets, Graph psi, Graph fgsGraph, Map<Triple, Double> colliders,
+                                Map<Triple, Double> noncolliders, Node b) {
         List<Node> adjacentNodes = psi.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
@@ -254,44 +263,20 @@ public final class GCcd implements GraphSearch {
                 continue;
             }
 
-            List<Node> adja = psi.getAdjacentNodes(a);
-            double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
+//            if (fgsGraph.isAdjacentTo(a, c)) {
+//                sepsets.getSepset(a, c);
+//                double score = sepsets.getScore();
+//
+//                if (fgsGraph.isDefCollider(a, b, c)) {
+//                    colliders.put(new Triple(a, b, c), score);
+//                }
+//
+//                continue;
+//            }
 
-            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
-            int[] comb2;
-
-            while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
-                independenceTest.isIndependent(a, c, s);
-                double _score = independenceTest.getScore();
-
-                if (_score < score && _score < 0) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            List<Node> adjc = psi.getAdjacentNodes(c);
-
-            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
-            int[] comb3;
-
-            while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
-                independenceTest.isIndependent(c, a, s);
-                double _score = independenceTest.getScore();
-
-                if (_score < score && _score < 0) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            // This could happen if there are undefined values and such.
-            if (S == null) {
-                continue;
-            }
+            List<Node> S = sepsets.getSepset(a, c);
+//            if (S == null) continue;
+            double score = sepsets.getScore();
 
             if (S.contains(b)) {
                 noncolliders.put(new Triple(a, b, c), score);
@@ -343,7 +328,7 @@ public final class GCcd implements GraphSearch {
                 //...X is not in sepset<A, Y>...
                 List<Node> sepset = sepsets.getSepset(a, y);
 
-                if (sepset == null) {
+                if (sepsets.getScore() > 0) {
                     continue;
                 }
 

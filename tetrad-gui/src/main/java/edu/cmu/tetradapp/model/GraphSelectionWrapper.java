@@ -69,15 +69,6 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         }
 
         this.params = params;
-
-        List<Graph> oldGraphs = getGraphs();
-
-        if (oldGraphs != null) {
-            for (int i = 0; i < graphs.size(); i++) {
-                graphs.set(i, GraphUtils.replaceNodes(graphs.get(i), oldGraphs.get(0).getNodes()));
-            }
-        }
-
         init(params, graphs);
     }
 
