@@ -21,13 +21,20 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -247,6 +254,69 @@ public class TestGFci {
 //        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag.convert()));
 
     }
+    
+    @Test
+	public void testRandomDiscreteData() {
+		int sampleSize = 1000;
+
+		Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
+		Dag dag = new Dag(g);
+		BayesPm bayesPm = new BayesPm(dag);
+		BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+
+		DataSet data = bayesIm.simulateData(sampleSize, false);
+
+		IndependenceTest test = new IndTestChiSquare(data, 0.05);
+		BDeuScore bDeuScore = new BDeuScore(data);
+		bDeuScore.setSamplePrior(1.0);
+		bDeuScore.setStructurePrior(1.0);
+
+		GFci gFci = new GFci(test, bDeuScore);
+		gFci.setFaithfulnessAssumed(true);
+
+		long start = System.currentTimeMillis();
+
+		Graph graph = gFci.search();
+
+		long stop = System.currentTimeMillis();
+
+		System.out.println("Elapsed " + (stop - start) + " ms");
+
+		DagToPag dagToPag = new DagToPag(g);
+		dagToPag.setVerbose(false);
+	}
+
+	@Test
+	public void testDiscreteData() throws IOException {
+		double alpha = 0.05;
+		char delimiter = '\t';
+		Path dataFile = Paths.get("../causal-cmd/test/data/diff_delim/sim_discrete_data_20vars_100cases.txt");
+		// System.out.println(dataFile.toAbsolutePath().toString());
+		VerticalTabularDiscreteDataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
+		DataSet dataSet = dataReader.readInData();
+
+		IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
+
+		BDeuScore score = new BDeuScore(dataSet);
+		score.setStructurePrior(1.0);
+		score.setSamplePrior(1.0);
+
+		GFci gFci = new GFci(indTest, score);
+		gFci.setFaithfulnessAssumed(true);
+		gFci.setMaxIndegree(-1);
+		gFci.setMaxPathLength(-1);
+		gFci.setCompleteRuleSetUsed(false);
+		gFci.setVerbose(true);
+
+		long start = System.currentTimeMillis();
+
+		Graph graph = gFci.search();
+
+		long stop = System.currentTimeMillis();
+
+		System.out.println("Elapsed " + (stop - start) + " ms");
+
+	}
 }
 
 
