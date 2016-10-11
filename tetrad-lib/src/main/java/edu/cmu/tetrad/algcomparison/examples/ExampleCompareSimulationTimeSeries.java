@@ -73,7 +73,7 @@ public class ExampleCompareSimulationTimeSeries {
 
         algorithms.add(new TsFci(new FisherZ()));
         algorithms.add(new TsGfci(new FisherZ(), new SemBicScore()));
-        algorithms.add(new TsImages(new FisherZ()));
+        algorithms.add(new TsImages(new SemBicScore()));
 
         Simulations simulations = new Simulations();
 

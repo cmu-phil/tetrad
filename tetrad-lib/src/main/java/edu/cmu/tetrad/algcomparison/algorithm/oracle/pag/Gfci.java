@@ -32,7 +32,7 @@ public class Gfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        GFciMax search = new GFciMax(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+        GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
         search.setMaxIndegree(parameters.getInt("maxIndegree"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.*;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesData;
 import edu.cmu.tetrad.data.DataModelList;
@@ -464,6 +465,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             } else if (simulation.getSimulation() instanceof SemSimulation) {
                 simulationItems = new String[]{
                         "Structural Equation Model"
+                };
+            } else if (simulation.getSimulation() instanceof LinearFisherModel) {
+                simulationItems = new String[]{
+                        "Linear Fisher Model"
                 };
             } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
                 simulationItems = new String[]{

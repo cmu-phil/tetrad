@@ -48,8 +48,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, MultipleGraphSource, MultipleDataSource,
-        DoNotAddOldModel {
+        SimulationParamsSource, MultipleGraphSource, MultipleDataSource {
     static final long serialVersionUID = 23L;
 
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;

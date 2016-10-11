@@ -91,6 +91,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             } //else System.out.println("Coefficient matrix is stable.");
 
             dataSet.setName("" + (i + 1));
+            dataSet.setKnowledge(knowledge.copy());
             dataSets.add(dataSet);
         }
     }

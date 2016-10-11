@@ -55,7 +55,7 @@ import java.util.Map;
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
         MultipleGraphSource, Unmarshallable, SessionModel, IndTestProducer,
-        KnowledgeBoxInput, DoNotAddOldModel {
+        KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
 
@@ -250,7 +250,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
-                        throw new IllegalArgumentException("The random selection size is greater than the number of data sets.");
+                        throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than " +
+                                "the number of data sets.");
                     }
 
                     Collections.shuffle(dataSets);
@@ -278,7 +279,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             } else {
                 for (DataModel data : getDataModelList()) {
                     System.out.println("Analyzing data set # " + (++i));
-                    DataModel dataSet = data; //(DataSet) data;
                     Algorithm algorithm = getAlgorithm();
 
                     if (algorithm instanceof HasKnowledge) {
@@ -287,12 +287,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     DataType algDataType = algorithm.getDataType();
 
-                    if (dataSet.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                        graphList.add(algorithm.search(dataSet, parameters));
-                    } else if (dataSet.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed) && dataSet.isDiscrete()) {
-                        graphList.add(algorithm.search(dataSet, parameters));
-                    } else if (((DataSet) data).isMixed() && algDataType == DataType.Mixed) {
-                        graphList.add(algorithm.search(dataSet, parameters));
+                    System.out.println("data type = " + algDataType);
+                    System.out.println("Continuous = " + data.isContinuous());
+
+                    if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+                        graphList.add(algorithm.search(data, parameters));
+                    } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
+                        graphList.add(algorithm.search(data, parameters));
+                    } else if (data.isMixed() && algDataType == DataType.Mixed) {
+                        graphList.add(algorithm.search(data, parameters));
                     } else {
                         throw new IllegalArgumentException("The type of data changed; try opening up the search editor and " +
                                 "running the algorithm there.");

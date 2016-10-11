@@ -29,7 +29,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.TsImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
@@ -155,13 +154,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
-        //        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.forbid_latent_common_causes, OracleType.Both));
 
@@ -169,16 +165,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.FgsMeasurement, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
+        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.Test));
 
         descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.search_for_Markov_blankets, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.search_for_Markov_blankets, OracleType.Score));
-//        descriptions.add(new AlgorithmDescription(AlgName.Wfgs, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.produce_undirected_graphs, OracleType.Test));
 
 //        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
@@ -572,7 +564,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new TsGfci(independenceWrapper, scoreWrapper);
                 break;
             case TsImages:
-                algorithm = new TsImagesSemBic();
+                algorithm = new TsImages(scoreWrapper);
                 break;
             case CCD:
                 algorithm = new Ccd(independenceWrapper);

@@ -36,7 +36,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
                 score.getScore(dataSet, parameters));
-        search.setKnowledge(knowledge);
+        search.setKnowledge(dataSet.getKnowledge());
         return search.search();
     }
 

@@ -3546,7 +3546,9 @@ public final class GraphUtils {
             return 4;
         }
 
-        throw new IllegalArgumentException("Unsupported edgeTop type : " + edgeTop);
+        return 5;
+
+//        throw new IllegalArgumentException("Unsupported edge type : " + edgeTop);
     }
 
     private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
