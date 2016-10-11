@@ -464,7 +464,7 @@ public class TestGeneralizedSem {
 
         double aSquaredStar = estimator.getaSquaredStar();
 
-        assertEquals(0.59, aSquaredStar, 0.01);
+        assertEquals(1.04, aSquaredStar, 0.01);
     }
 
     @Test
