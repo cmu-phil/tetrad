@@ -42,7 +42,7 @@ import java.util.concurrent.RecursiveTask;
  * @author Frank C. Wimberly
  * @author Joseph Ramsey
  */
-public final class GCcd implements GraphSearch {
+public final class CcdMax implements GraphSearch {
     private IndependenceTest independenceTest;
     private Score score;
     private int depth = -1;
@@ -51,7 +51,7 @@ public final class GCcd implements GraphSearch {
     private boolean applyR1 = false;
     private boolean verbose;
 
-    public GCcd(IndependenceTest test, Score score) {
+    public CcdMax(IndependenceTest test, Score score) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
         this.score = score;
@@ -72,54 +72,17 @@ public final class GCcd implements GraphSearch {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A
-        Fgs fgs = new Fgs(score);
-        fgs.setVerbose(verbose);
-        fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(false);
-        Graph fgsGraph = fgs.search();
-        Graph psi = new EdgeListGraphSingleConnections(fgsGraph);
+        Graph psi = stepA();
 
-//        SepsetProducer sepsets0 = new SepsetsGreedy(fgsGraph, independenceTest, null, -1);
-        SepsetsMinScore sepsets = new SepsetsMinScore(fgsGraph, independenceTest, -1);
-        sepsets.setReturnNullWhenIndep(false);
+        SepsetsMinScore sepsets = new SepsetsMinScore(psi, independenceTest, -1);
 
-        for (Edge edge : psi.getEdges()) {
-            Node a = edge.getNode1();
-            Node c = edge.getNode2();
-
-            sepsets.getSepset(a, c);
-
-            if (sepsets.getScore() > 0.0) {
-                psi.removeEdge(a, c);
-            }
-        }
-
-        psi.reorientAllWith(Endpoint.CIRCLE);
-
-        sepsets = new SepsetsMinScore(psi, independenceTest, -1);
-
-        stepB(psi, fgsGraph, sepsets);
-        stepC(psi, sepsets);
+        stepB(psi, sepsets);
+//        stepC(psi, sepsets);
         stepD(psi, sepsets, supSepsets);
-        stepE(supSepsets, psi);
+        stepE(psi, supSepsets);
         stepF(psi, sepsets, supSepsets);
 
         return psi;
-    }
-
-    private void orientAwayFromArrow(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-
-            edge = graph.getEdge(n1, n2);
-
-            if (edge.pointsTowards(n1)) {
-                orientAwayFromArrow(n2, n1, graph);
-            } else if (edge.pointsTowards(n2)) {
-                orientAwayFromArrow(n1, n2, graph);
-            }
-        }
     }
 
     public IKnowledge getKnowledge() {
@@ -149,9 +112,28 @@ public final class GCcd implements GraphSearch {
         return 0;
     }
 
+    public boolean isApplyR1() {
+        return applyR1;
+    }
+
+    public void setApplyR1(boolean applyR1) {
+        this.applyR1 = applyR1;
+    }
+
     //======================================== PRIVATE METHODS ====================================//
 
-    private void stepB(Graph psi, Graph fgsGraph, SepsetProducer sepsets) {
+    private Graph stepA() {
+        FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
+        fas.setKnowledge(getKnowledge());
+        fas.setDepth(getDepth());
+        fas.setVerbose(false);
+        fas.setRecordSepsets(false);
+        Graph psi = fas.search();
+        psi.reorientAllWith(Endpoint.CIRCLE);
+        return psi;
+    }
+
+    private void stepB(Graph psi, SepsetProducer sepsets) {
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
         final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
 
@@ -163,18 +145,16 @@ public final class GCcd implements GraphSearch {
             private final Map<Triple, Double> noncolliders;
             private int from;
             private int to;
-            private int chunk = 20;
+            private int chunk = 100;
             private List<Node> nodes;
             private Graph psi;
-            private Graph fgsGraph;
 
-            public Task(SepsetProducer sepsets, List<Node> nodes, Graph graph, Graph fgsGraph,
+            public Task(SepsetProducer sepsets, List<Node> nodes, Graph graph,
                         Map<Triple, Double> colliders,
                         Map<Triple, Double> noncolliders, int from, int to) {
                 this.sepsets = sepsets;
                 this.nodes = nodes;
                 this.psi = graph;
-                this.fgsGraph = fgsGraph;
                 this.from = from;
                 this.to = to;
                 this.colliders = colliders;
@@ -185,15 +165,15 @@ public final class GCcd implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNodeCollider(sepsets, psi, fgsGraph, colliders, noncolliders, nodes.get(i));
+                        doNodeCollider(sepsets, psi, colliders, noncolliders, nodes.get(i));
                     }
 
                     return true;
                 } else {
                     int mid = (to + from) / 2;
 
-                    Task left = new Task(sepsets, nodes, psi, fgsGraph, colliders, noncolliders, from, mid);
-                    Task right = new Task(sepsets, nodes, psi, fgsGraph, colliders, noncolliders, mid, to);
+                    Task left = new Task(sepsets, nodes, psi, colliders, noncolliders, from, mid);
+                    Task right = new Task(sepsets, nodes, psi, colliders, noncolliders, mid, to);
 
                     left.fork();
                     right.compute();
@@ -204,7 +184,7 @@ public final class GCcd implements GraphSearch {
             }
         }
 
-        Task task = new Task(sepsets, nodes, psi, fgsGraph, colliders, noncolliders, 0, nodes.size());
+        Task task = new Task(sepsets, nodes, psi, colliders, noncolliders, 0, nodes.size());
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
@@ -243,7 +223,7 @@ public final class GCcd implements GraphSearch {
         orientAwayFromArrow(psi);
     }
 
-    private void doNodeCollider(SepsetProducer sepsets, Graph psi, Graph fgsGraph, Map<Triple, Double> colliders,
+    private void doNodeCollider(SepsetProducer sepsets, Graph psi, Map<Triple, Double> colliders,
                                 Map<Triple, Double> noncolliders, Node b) {
         List<Node> adjacentNodes = psi.getAdjacentNodes(b);
 
@@ -263,20 +243,10 @@ public final class GCcd implements GraphSearch {
                 continue;
             }
 
-//            if (fgsGraph.isAdjacentTo(a, c)) {
-//                sepsets.getSepset(a, c);
-//                double score = sepsets.getScore();
-//
-//                if (fgsGraph.isDefCollider(a, b, c)) {
-//                    colliders.put(new Triple(a, b, c), score);
-//                }
-//
-//                continue;
-//            }
-
             List<Node> S = sepsets.getSepset(a, c);
-//            if (S == null) continue;
             double score = sepsets.getScore();
+
+            if (S == null) continue;
 
             if (S.contains(b)) {
                 noncolliders.put(new Triple(a, b, c), score);
@@ -286,71 +256,53 @@ public final class GCcd implements GraphSearch {
         }
     }
 
-    private void stepC(Graph psi, SepsetProducer sepsets) {
+    private void stepC(Graph psi, SepsetsMinScore sepsets) {
         TetradLogger.getInstance().log("info", "\nStep C");
 
-        EDGE:
         for (Edge edge : psi.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            // x and y are adjacent.
+            // Orientable...
+            if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
+                    (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
+                continue;
+            }
+
+            if (wouldCreateBadCollider(x, y, psi)) {
+                continue;
+            }
 
             List<Node> adjx = psi.getAdjacentNodes(x);
             List<Node> adjy = psi.getAdjacentNodes(y);
 
-            for (Node node : adjx) {
-                if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
-                        && psi.isUnderlineTriple(y, x, node)) {
-                    continue EDGE;
-                }
-            }
+            Set<Node> possibleA = new HashSet<>();
+            possibleA.addAll(adjx);
+            possibleA.addAll(adjy);
+            addAdjacents(possibleA, psi);
+            addAdjacents(possibleA, psi);
+            possibleA.remove(x);
+            possibleA.remove(y);
+            possibleA.removeAll(adjx);
+            possibleA.removeAll(adjy);
 
             // Check each A
-            for (Node a : nodes) {
-                if (a == x) continue;
-                if (a == y) continue;
-
-                //...A is not adjacent to X and A is not adjacent to Y...
-                if (adjx.contains(a)) continue;
-                if (adjy.contains(a)) continue;
-
-                // Orientable...
-                if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                        (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
-                    continue;
-                }
-
-                if (wouldCreateBadCollider(x, y, psi)) {
-                    continue;
-                }
-
-                //...X is not in sepset<A, Y>...
+            for (Node a : possibleA) {
                 List<Node> sepset = sepsets.getSepset(a, y);
-
-                if (sepsets.getScore() > 0) {
-                    continue;
-                }
 
                 if (sepset.contains(x)) continue;
 
-                if (!sepsets.isIndependent(a, x, sepset)) {
-                    psi.removeEdge(x, y);
-                    psi.addDirectedEdge(y, x);
-                    orientAwayFromArrow(y, x, psi);
-                    break;
+                if (sepsets.isIndependent(a, x, sepset)) {
+                    continue;
                 }
+
+                psi.removeEdge(x, y);
+                psi.addDirectedEdge(y, x);
+                orientAwayFromArrow(y, x, psi);
+                System.out.println("Orienting step C " + psi.getEdge(x, y));
+                break;
             }
         }
-    }
-
-    private boolean wouldCreateBadCollider(Node x, Node y, Graph psi) {
-        for (Node z : psi.getAdjacentNodes(y)) {
-            if (x == z) continue;
-            if (psi.getEndpoint(x, y) != Endpoint.ARROW && psi.getEndpoint(z, y) == Endpoint.ARROW) return true;
-        }
-
-        return false;
     }
 
     private void stepD(Graph psi, SepsetProducer sepsets, final Map<Triple, Set<Node>> supSepsets) {
@@ -450,7 +402,7 @@ public final class GCcd implements GraphSearch {
         }
     }
 
-    private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
+    private void stepE(Graph psi, Map<Triple, Set<Node>> supSepset) {
         TetradLogger.getInstance().log("info", "\nStep E");
 
         for (Triple triple : psi.getDottedUnderlines()) {
@@ -467,16 +419,16 @@ public final class GCcd implements GraphSearch {
                     continue;
                 }
 
+                if (wouldCreateBadCollider(b, d, psi)) {
+                    continue;
+                }
+
                 if (supSepset.get(triple).contains(d)) {
 
                     // Orient B*-oD as B*-D
                     psi.setEndpoint(b, d, Endpoint.TAIL);
                 } else {
                     if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    if (wouldCreateBadCollider(b, d, psi)) {
                         continue;
                     }
 
@@ -496,16 +448,16 @@ public final class GCcd implements GraphSearch {
                     continue;
                 }
 
+                if (wouldCreateBadCollider(b, d, psi)) {
+                    continue;
+                }
+
                 if (supSepset.get(triple).contains(d)) {
 
                     // Orient B*-oD as B*-D
                     psi.setEndpoint(b, d, Endpoint.TAIL);
                 } else {
                     if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    if (wouldCreateBadCollider(b, d, psi)) {
                         continue;
                     }
 
@@ -536,6 +488,10 @@ public final class GCcd implements GraphSearch {
                     continue;
                 }
 
+                if (wouldCreateBadCollider(b, d, psi)) {
+                    continue;
+                }
+
                 //...and D is not adjacent to both A and C in psi...
                 if (psi.isAdjacentTo(a, d) && psi.isAdjacentTo(c, d)) {
                     continue;
@@ -550,10 +506,6 @@ public final class GCcd implements GraphSearch {
                 supSepUnionD.add(d);
                 supSepUnionD.addAll(supSepsets.get(triple));
                 List<Node> listSupSepUnionD = new ArrayList<>(supSepUnionD);
-
-                if (wouldCreateBadCollider(b, d, psi)) {
-                    continue;
-                }
 
                 //If A and C are a pair of vertices d-connected given
                 //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD
@@ -581,6 +533,21 @@ public final class GCcd implements GraphSearch {
         }
 
         return new ArrayList<>(nodes);
+    }
+
+    private void orientAwayFromArrow(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+
+            edge = graph.getEdge(n1, n2);
+
+            if (edge.pointsTowards(n1)) {
+                orientAwayFromArrow(n2, n1, graph);
+            } else if (edge.pointsTowards(n2)) {
+                orientAwayFromArrow(n1, n2, graph);
+            }
+        }
     }
 
     private void orientAwayFromArrow(Node a, Node b, Graph graph) {
@@ -623,12 +590,19 @@ public final class GCcd implements GraphSearch {
         return true;
     }
 
-    public boolean isApplyR1() {
-        return applyR1;
+    private void addAdjacents(Set<Node> possibleA, Graph graph) {
+        for (Node node : new HashSet<>(possibleA)) {
+            possibleA.addAll(graph.getAdjacentNodes(node));
+        }
     }
 
-    public void setApplyR1(boolean applyR1) {
-        this.applyR1 = applyR1;
+    private boolean wouldCreateBadCollider(Node x, Node y, Graph psi) {
+        for (Node z : psi.getAdjacentNodes(y)) {
+            if (x == z) continue;
+            if (psi.getEndpoint(x, y) != Endpoint.ARROW && psi.getEndpoint(z, y) == Endpoint.ARROW) return true;
+        }
+
+        return false;
     }
 }
 

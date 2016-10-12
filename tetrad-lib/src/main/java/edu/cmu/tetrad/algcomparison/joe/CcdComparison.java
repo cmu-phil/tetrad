@@ -24,7 +24,7 @@ package edu.cmu.tetrad.algcomparison.joe;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Ccd;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GCcd;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -85,7 +85,7 @@ public class CcdComparison {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Ccd(new FisherZ()));
-        algorithms.add(new GCcd(new FisherZ(), new SemBicScore()));
+        algorithms.add(new CcdMax(new FisherZ(), new SemBicScore()));
 
         Comparison comparison = new Comparison();
 

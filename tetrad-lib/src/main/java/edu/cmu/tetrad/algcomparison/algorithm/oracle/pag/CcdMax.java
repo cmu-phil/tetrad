@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
@@ -17,13 +16,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class GCcd implements Algorithm {
+public class CcdMax implements Algorithm {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GCcd(IndependenceWrapper test, ScoreWrapper score) {
+    public CcdMax(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -33,7 +32,7 @@ public class GCcd implements Algorithm {
         DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
         IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
         Score score = this.score.getScore(continuousDataSet, parameters);
-        edu.cmu.tetrad.search.GCcd search = new edu.cmu.tetrad.search.GCcd(test, score);
+        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test, score);
         search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
         return search.search();
@@ -46,7 +45,7 @@ public class GCcd implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "GCCD (Greedy Cyclic Discovery Search) using " + test.getDescription();
+        return "CCD-Max (Cyclic Discovery Search Max) using " + test.getDescription();
     }
 
     @Override

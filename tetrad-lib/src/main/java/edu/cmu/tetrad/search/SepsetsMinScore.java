@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * One is often faced with the following problem. We start by estimating the adjacencies using
@@ -174,6 +175,77 @@ public class SepsetsMinScore implements SepsetProducer {
 
     public boolean isReturnNullWhenIndep() {
         return returnNullWhenIndep;
+    }
+
+    public List<Node> getSepset(Node a, Node y, Set<Node> inSet) {
+        return getMinSepset(a, y, inSet);
+    }
+
+    private List<Node> getMinSepset(Node i, Node k, Set<Node> insSet) {
+        double _p = Double.POSITIVE_INFINITY;
+        List<Node> _v = null;
+
+        List<Node> adji = graph.getAdjacentNodes(i);
+        List<Node> adjk = graph.getAdjacentNodes(k);
+        adji.remove(k);
+        adjk.remove(i);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adji.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v2 = GraphUtils.asList(choice, adji);
+
+                    if (!insSet.containsAll(v2)) continue;
+
+                    getIndependenceTest().isIndependent(i, k, v2);
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (returnNullWhenIndep) {
+                        if (p2 < _p && p2 < 0) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    } else {
+                        if (p2 < _p) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    }
+                }
+            }
+
+            if (d <= adjk.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v2 = GraphUtils.asList(choice, adjk);
+
+                    if (!insSet.containsAll(v2)) continue;
+
+                    getIndependenceTest().isIndependent(i, k, v2);
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (returnNullWhenIndep) {
+                        if (p2 < _p && p2 < 0) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    } else {
+                        if (p2 < _p) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    }
+                }
+            }
+        }
+
+        this.p = _p;
+        return _v;
     }
 }
 
