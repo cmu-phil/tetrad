@@ -18,33 +18,32 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.io.ObjectStreamException;
 import java.util.regex.Pattern;
 
 /**
  * Type-safe enum of delimiter types for parsing data. DISCRETE is used in data
  * where every line starts a new field and every occurrence of a tab starts a
- * new field. SECTION_MARKER is replaces tabs by " *\t *". LAUNCH_TIME replaces tabs
- * by ",". Custom replaces tabs by a specified regular expression.
+ * new field. SECTION_MARKER is replaces tabs by " *\t *". LAUNCH_TIME replaces
+ * tabs by ",". Custom replaces tabs by a specified regular expression.
  *
  * @author Joseph Ramsey
  */
 public final class DelimiterType implements TetradSerializable {
+
     static final long serialVersionUID = 23L;
 
-    public static final DelimiterType WHITESPACE =
-            new DelimiterType("Whitespace", "\\s+");
-    public static final DelimiterType TAB =
-            new DelimiterType("Tab", "\t");
-    public static final DelimiterType COMMA =
-            new DelimiterType("Comma", ",");
-    public static final DelimiterType COLON =
-            new DelimiterType("Comma", ":");
+    public static final DelimiterType WHITESPACE
+            = new DelimiterType("Whitespace", "\\s+");
+    public static final DelimiterType TAB
+            = new DelimiterType("Tab", "\t");
+    public static final DelimiterType COMMA
+            = new DelimiterType("Comma", ",");
+    public static final DelimiterType COLON
+            = new DelimiterType("Colon", ":");
 
     /**
      * The name of this type.
@@ -96,8 +95,3 @@ public final class DelimiterType implements TetradSerializable {
         return TYPES[ordinal]; // Canonicalize.
     }
 }
-
-
-
-
-
