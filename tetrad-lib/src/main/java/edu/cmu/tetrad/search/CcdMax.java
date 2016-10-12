@@ -32,6 +32,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
+import static com.sun.tools.doclint.Entity.phi;
+
 /**
  * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
  * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and
@@ -328,7 +330,12 @@ public final class CcdMax implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNodeStepD(psi, sepsets, supSepsets, local, nodes.get(i));
+                        for (int j = 0; j < nodes.size(); j++) {
+                            Node a = nodes.get(i);
+                            Node c = nodes.get(j);
+                            if (psi.isAdjacentTo(a, c)) continue;
+                            doNodeStepD(psi, sepsets, supSepsets, local, a, c);
+                        }
                     }
 
                     return true;
@@ -353,43 +360,42 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
-                             Map<Node, List<Node>> local, Node b) {
-        List<Node> adj = psi.getAdjacentNodes(b);
+                             Map<Node, List<Node>> local, Node a, Node c) {
+        if (a == c) return;
+        if (psi.isAdjacentTo(a, c)) return;
 
-        if (adj.size() < 2) {
-            return;
-        }
+        List<Node> adj = psi.getAdjacentNodes(a);
+        adj.retainAll(psi.getAdjacentNodes(c));
 
-        ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> _adj = GraphUtils.asList(choice, adj);
-            Node a = _adj.get(0);
-            Node c = _adj.get(1);
-
-            if (!psi.isDefCollider(a, b, c)) continue;
+        for (Node b : adj) {
+            if (!psi.isDefCollider(a, b, c)) {
+                continue;
+            }
 
             List<Node> S = sepsets.getSepset(a, c);
             if (S == null) continue;
-            ArrayList<Node> TT = new ArrayList<>(local.get(a));
-            TT.removeAll(S);
-            TT.remove(b);
-            TT.remove(c);
+            Set<Node> TT_S = new HashSet<>(local.get(a));
+            TT_S.removeAll(S);
+            TT_S.remove(b);
+            TT_S.remove(c);
+            List<Node> TT = new ArrayList<>(TT_S);
+            System.out.println(" a = " + a + " b = " + b + " c = " + c +
+                    "S = " + S + " local(a) = " + local.get(a) + " TT = " + TT);
 
             DepthChoiceGenerator gen2 = new DepthChoiceGenerator(TT.size(), -1);
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {
                 Set<Node> T = GraphUtils.asSet(choice2, TT);
-                Set<Node> B = new HashSet<>(T);
-                B.addAll(S);
-                B.add(b);
+                Set<Node> supsepset = new HashSet<>(T);
+                supsepset.addAll(S);
+                supsepset.add(b);
 
-                if (sepsets.isIndependent(a, c, new ArrayList<>(B))) {
+                System.out.println("supsepset(" + a + ", " + c + ") = " + supsepset);
+
+                if (sepsets.isIndependent(a, c, new ArrayList<>(supsepset))) {
                     psi.addDottedUnderlineTriple(a, b, c);
-                    supSepsets.put(new Triple(a, b, c), B);
-                    break;
+                    supSepsets.put(new Triple(a, b, c), supsepset);
                 }
             }
         }
@@ -399,58 +405,32 @@ public final class CcdMax implements GraphSearch {
         TetradLogger.getInstance().log("info", "\nStep E");
 
         for (Triple triple : psi.getDottedUnderlines()) {
+            System.out.println(triple);
+
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            List<Node> aAdj = psi.getAdjacentNodes(a);
+            List<Node> bAdj = psi.getAdjacentNodes(b);
 
-            for (Node d : aAdj) {
-                if (d == b) continue;
-
-                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                    continue;
-                }
-
-                if (wouldCreateBadCollider(b, d, psi)) {
-                    continue;
-                }
+            for (Node d : bAdj) {
+                if (d == a || d == c) continue;
+                if (!psi.isDefCollider(a, d, c)) continue;
 
                 if (supSepset.get(triple).contains(d)) {
 
                     // Orient B*-oD as B*-D
                     psi.setEndpoint(b, d, Endpoint.TAIL);
                 } else {
+                    if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
+                        continue;
+                    }
+
                     if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
                         continue;
                     }
 
-                    // Or orient Bo-oD or B-oD as B->D...
-                    psi.removeEdge(b, d);
-                    psi.addDirectedEdge(b, d);
-                    orientAwayFromArrow(b, d, psi);
-                }
-            }
-
-            List<Node> cAdj = psi.getAdjacentNodes(c);
-
-            for (Node d : cAdj) {
-                if (d == b) continue;
-
-                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                    continue;
-                }
-
-                if (wouldCreateBadCollider(b, d, psi)) {
-                    continue;
-                }
-
-                if (supSepset.get(triple).contains(d)) {
-
-                    // Orient B*-oD as B*-D
-                    psi.setEndpoint(b, d, Endpoint.TAIL);
-                } else {
-                    if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
+                    if (wouldCreateBadCollider(b, d, psi)) {
                         continue;
                     }
 
