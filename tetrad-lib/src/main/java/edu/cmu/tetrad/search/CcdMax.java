@@ -239,16 +239,6 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private boolean supIndep(Node a, Node c, Node x, Node y, Graph psi) {
-        Set<Node> cond = new HashSet<>();
-        cond.add(x);
-        cond.add(y);
-        cond.addAll(local(psi, a));
-        cond.remove(c);
-        System.out.println("a = " + a + " c = " + c + " x = " + x + " y = " + y + " local(a) = " + local(psi, a));
-        return independenceTest.isIndependent(a, c, new ArrayList<>(cond));
-    }
-
     private void stepE(Graph psi) {
         TetradLogger.getInstance().log("info", "\nStep E");
 
@@ -330,7 +320,7 @@ public final class CcdMax implements GraphSearch {
                         //If A and C are a pair of vertices d-connected given
                         //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD
                         //as B->D in psi.
-                        if (supIndep(a, c, b, d, psi)) {
+                        if (!supIndep(a, c, b, d, psi)) {
                             psi.removeEdge(b, d);
                             psi.addDirectedEdge(b, d);
                             orientAwayFromArrow(b, d, psi);
@@ -424,6 +414,15 @@ public final class CcdMax implements GraphSearch {
 
     private boolean isApplyR1() {
         return applyR1;
+    }
+
+    private boolean supIndep(Node a, Node c, Node x, Node y, Graph psi) {
+        Set<Node> cond = new HashSet<>();
+        cond.add(x);
+        cond.add(y);
+        cond.addAll(local(psi, a));
+        cond.remove(c);
+        return independenceTest.isIndependent(a, c, new ArrayList<>(cond));
     }
 }
 
