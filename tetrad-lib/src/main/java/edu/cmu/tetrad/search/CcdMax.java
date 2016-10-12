@@ -116,6 +116,7 @@ public final class CcdMax implements GraphSearch {
 
     private void stepB(Graph psi) {
         SepsetsMinScore sepsets = new SepsetsMinScore(psi, independenceTest, -1);
+        sepsets.setReturnNullWhenIndep(false);
 
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
         final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
