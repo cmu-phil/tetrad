@@ -2,11 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
@@ -19,20 +17,17 @@ import java.util.List;
 public class CcdMax implements Algorithm {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CcdMax(IndependenceWrapper test, ScoreWrapper score) {
+    public CcdMax(IndependenceWrapper test) {
         this.test = test;
-        this.score = score;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
         IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
-        Score score = this.score.getScore(continuousDataSet, parameters);
-        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test, score);
+        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
         search.setApplyR1(parameters.getBoolean("applyR1"));
         search.setKnowledge(knowledge);
         return search.search();

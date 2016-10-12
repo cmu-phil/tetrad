@@ -44,17 +44,14 @@ import java.util.concurrent.RecursiveTask;
  */
 public final class CcdMax implements GraphSearch {
     private IndependenceTest independenceTest;
-    private Score score;
     private int depth = -1;
     private IKnowledge knowledge;
     private List<Node> nodes;
     private boolean applyR1 = false;
-    private boolean verbose;
 
-    public CcdMax(IndependenceTest test, Score score) {
+    public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
-        this.score = score;
         this.nodes = test.getVariables();
     }
 
@@ -95,10 +92,6 @@ public final class CcdMax implements GraphSearch {
 
     public void setDepth(int depth) {
         this.depth = depth;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     public void setKnowledge(IKnowledge knowledge) {

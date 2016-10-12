@@ -171,8 +171,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         if (model instanceof Graph) {
             IndependenceTest test = new IndTestDSep((Graph) model);
             Score score = new GraphScore((Graph) model);
-            ccd = new CcdMax(test, score);
-            ccd.setVerbose(true);
+            ccd = new CcdMax(test);
         } else {
 
             if (model instanceof DataSet) {
@@ -187,7 +186,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    ccd = new CcdMax(test, gesScore);
+                    ccd = new CcdMax(test);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -205,7 +204,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestScore(gesScore);
-                ccd = new CcdMax(test, gesScore);
+                ccd = new CcdMax(test);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -230,7 +229,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     IndependenceTest test = new IndTestScore(fgsScore);
-                    ccd = new CcdMax(test, fgsScore);
+                    ccd = new CcdMax(test);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
@@ -253,7 +252,6 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //        gfci.setInitialGraph(initialGraph);
 //        gfci.setKnowledge(getParameters().getKnowledge());
 //        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
-        ccd.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setMaxIndegree(3);
 //        ccd.setHeuristicSpeedup(params.isFaithfulnessAssumed());
