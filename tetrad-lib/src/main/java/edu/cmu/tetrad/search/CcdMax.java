@@ -24,15 +24,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
-
-import static com.sun.tools.doclint.Entity.phi;
 
 /**
  * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
@@ -48,13 +45,11 @@ public final class CcdMax implements GraphSearch {
     private IndependenceTest independenceTest;
     private int depth = -1;
     private IKnowledge knowledge;
-    private List<Node> nodes;
     private boolean applyR1 = false;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
-        this.nodes = test.getVariables();
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -68,18 +63,13 @@ public final class CcdMax implements GraphSearch {
      * underlines of the PAG.
      */
     public Graph search() {
-        Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A
         Graph psi = stepA();
 
-        SepsetsMinScore sepsets = new SepsetsMinScore(psi, independenceTest, -1);
-
-        stepB(psi, sepsets);
-//        stepC(psi, sepsets);
-        stepD(psi, sepsets, supSepsets);
-        stepE(psi, supSepsets);
-        stepF(psi, sepsets, supSepsets);
+        stepB(psi);
+        stepE(psi);
+        stepF(psi);
 
         return psi;
     }
@@ -107,10 +97,6 @@ public final class CcdMax implements GraphSearch {
         return 0;
     }
 
-    public boolean isApplyR1() {
-        return applyR1;
-    }
-
     public void setApplyR1(boolean applyR1) {
         this.applyR1 = applyR1;
     }
@@ -128,7 +114,9 @@ public final class CcdMax implements GraphSearch {
         return psi;
     }
 
-    private void stepB(Graph psi, SepsetProducer sepsets) {
+    private void stepB(Graph psi) {
+        SepsetsMinScore sepsets = new SepsetsMinScore(psi, independenceTest, -1);
+
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
         final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
 
@@ -144,9 +132,9 @@ public final class CcdMax implements GraphSearch {
             private List<Node> nodes;
             private Graph psi;
 
-            public Task(SepsetProducer sepsets, List<Node> nodes, Graph graph,
-                        Map<Triple, Double> colliders,
-                        Map<Triple, Double> noncolliders, int from, int to) {
+            private Task(SepsetProducer sepsets, List<Node> nodes, Graph graph,
+                         Map<Triple, Double> colliders,
+                         Map<Triple, Double> noncolliders, int from, int to) {
                 this.sepsets = sepsets;
                 this.nodes = nodes;
                 this.psi = graph;
@@ -251,242 +239,104 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private void stepC(Graph psi, SepsetsMinScore sepsets) {
-        TetradLogger.getInstance().log("info", "\nStep C");
-
-        for (Edge edge : psi.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            // Orientable...
-            if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                    (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
-                continue;
-            }
-
-            if (wouldCreateBadCollider(x, y, psi)) {
-                continue;
-            }
-
-            List<Node> adjx = psi.getAdjacentNodes(x);
-            List<Node> adjy = psi.getAdjacentNodes(y);
-
-            Set<Node> possibleA = new HashSet<>();
-            possibleA.addAll(adjx);
-            possibleA.addAll(adjy);
-            addAdjacents(possibleA, psi);
-            addAdjacents(possibleA, psi);
-            possibleA.remove(x);
-            possibleA.remove(y);
-            possibleA.removeAll(adjx);
-            possibleA.removeAll(adjy);
-
-            // Check each A
-            for (Node a : possibleA) {
-                List<Node> sepset = sepsets.getSepset(a, y);
-
-                if (sepset.contains(x)) continue;
-
-                if (sepsets.isIndependent(a, x, sepset)) {
-                    continue;
-                }
-
-                psi.removeEdge(x, y);
-                psi.addDirectedEdge(y, x);
-                orientAwayFromArrow(y, x, psi);
-                System.out.println("Orienting step C " + psi.getEdge(x, y));
-                break;
-            }
-        }
+    private boolean supIndep(Node a, Node c, Node x, Node y, Graph psi) {
+        Set<Node> cond = new HashSet<>();
+        cond.add(x);
+        cond.add(y);
+        cond.addAll(local(psi, a));
+        cond.remove(c);
+        System.out.println("a = " + a + " c = " + c + " x = " + x + " y = " + y + " local(a) = " + local(psi, a));
+        return independenceTest.isIndependent(a, c, new ArrayList<>(cond));
     }
 
-    private void stepD(Graph psi, SepsetProducer sepsets, final Map<Triple, Set<Node>> supSepsets) {
-        Map<Node, List<Node>> local = new HashMap<>();
-
-        for (Node node : psi.getNodes()) {
-            local.put(node, local(psi, node));
-        }
-
-        class Task extends RecursiveTask<Boolean> {
-            private Graph psi;
-            private SepsetProducer sepsets;
-            private Map<Triple, Set<Node>> supSepsets;
-            private Map<Node, List<Node>> local;
-            private int from;
-            private int to;
-            private int chunk = 20;
-
-            public Task(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
-                        Map<Node, List<Node>> local, int from, int to) {
-                this.psi = psi;
-                this.sepsets = sepsets;
-                this.supSepsets = supSepsets;
-                this.local = local;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        for (int j = 0; j < nodes.size(); j++) {
-                            Node a = nodes.get(i);
-                            Node c = nodes.get(j);
-                            if (psi.isAdjacentTo(a, c)) continue;
-                            doNodeStepD(psi, sepsets, supSepsets, local, a, c);
-                        }
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(psi, sepsets, supSepsets, local, from, mid);
-                    Task right = new Task(psi, sepsets, supSepsets, local, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
-        }
-
-        Task task = new Task(psi, sepsets, supSepsets, local, 0, nodes.size());
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-    }
-
-    private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
-                             Map<Node, List<Node>> local, Node a, Node c) {
-        if (a == c) return;
-        if (psi.isAdjacentTo(a, c)) return;
-
-        List<Node> adj = psi.getAdjacentNodes(a);
-        adj.retainAll(psi.getAdjacentNodes(c));
-
-        for (Node b : adj) {
-            if (!psi.isDefCollider(a, b, c)) {
-                continue;
-            }
-
-            List<Node> S = sepsets.getSepset(a, c);
-            if (S == null) continue;
-            Set<Node> TT_S = new HashSet<>(local.get(a));
-            TT_S.removeAll(S);
-            TT_S.remove(b);
-            TT_S.remove(c);
-            List<Node> TT = new ArrayList<>(TT_S);
-            System.out.println(" a = " + a + " b = " + b + " c = " + c +
-                    "S = " + S + " local(a) = " + local.get(a) + " TT = " + TT);
-
-            DepthChoiceGenerator gen2 = new DepthChoiceGenerator(TT.size(), -1);
-            int[] choice2;
-
-            while ((choice2 = gen2.next()) != null) {
-                Set<Node> T = GraphUtils.asSet(choice2, TT);
-                Set<Node> supsepset = new HashSet<>(T);
-                supsepset.addAll(S);
-                supsepset.add(b);
-
-                System.out.println("supsepset(" + a + ", " + c + ") = " + supsepset);
-
-                if (sepsets.isIndependent(a, c, new ArrayList<>(supsepset))) {
-                    psi.addDottedUnderlineTriple(a, b, c);
-                    supSepsets.put(new Triple(a, b, c), supsepset);
-                }
-            }
-        }
-    }
-
-    private void stepE(Graph psi, Map<Triple, Set<Node>> supSepset) {
+    private void stepE(Graph psi) {
         TetradLogger.getInstance().log("info", "\nStep E");
 
-        for (Triple triple : psi.getDottedUnderlines()) {
-            System.out.println(triple);
+        for (Node b : psi.getNodes()) {
+            List<Node> adj = psi.getAdjacentNodes(b);
 
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
+            for (Node a : adj) {
+                for (Node c : adj) {
+                    if (a == c) continue;
 
-            List<Node> bAdj = psi.getAdjacentNodes(b);
-
-            for (Node d : bAdj) {
-                if (d == a || d == c) continue;
-                if (!psi.isDefCollider(a, d, c)) continue;
-
-                if (supSepset.get(triple).contains(d)) {
-
-                    // Orient B*-oD as B*-D
-                    psi.setEndpoint(b, d, Endpoint.TAIL);
-                } else {
-                    if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
+                    if (!psi.isDefCollider(a, b, c)) {
                         continue;
                     }
 
-                    if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                        continue;
-                    }
+                    for (Node d : adj) {
+                        if (d == a || d == b) continue;
 
-                    if (wouldCreateBadCollider(b, d, psi)) {
-                        continue;
-                    }
+                        if (supIndep(a, c, b, d, psi)) {
 
-                    // Or orient Bo-oD or B-oD as B->D...
-                    psi.removeEdge(b, d);
-                    psi.addDirectedEdge(b, d);
-                    orientAwayFromArrow(b, d, psi);
+                            // Orient B*-oD as B*-D
+                            psi.setEndpoint(b, d, Endpoint.TAIL);
+                            psi.addDottedUnderlineTriple(a, b, c);
+                        } else {
+                            if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
+                                continue;
+                            }
+
+                            if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
+                                continue;
+                            }
+
+                            if (wouldCreateBadCollider(b, d, psi)) {
+                                continue;
+                            }
+
+                            // Or orient Bo-oD or B-oD as B->D...
+                            psi.removeEdge(b, d);
+                            psi.addDirectedEdge(b, d);
+                            orientAwayFromArrow(b, d, psi);
+                        }
+                    }
                 }
             }
         }
     }
 
-    private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
-        for (Triple triple : psi.getDottedUnderlines()) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
+    private void stepF(Graph psi) {
+        for (Node b : psi.getNodes()) {
+            List<Node> adj = psi.getAdjacentNodes(b);
 
-            Set<Node> adj = new HashSet<>(psi.getAdjacentNodes(a));
-            adj.addAll(psi.getAdjacentNodes(c));
+            for (Node a : adj) {
+                for (Node c : adj) {
+                    if (a == c) continue;
 
-            for (Node d : adj) {
-                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                    continue;
-                }
+                    if (!psi.isDefCollider(a, b, c)) {
+                        continue;
+                    }
 
-                if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                    continue;
-                }
+                    for (Node d : adj) {
+                        if (d == a || d == b) continue;
 
-                if (wouldCreateBadCollider(b, d, psi)) {
-                    continue;
-                }
+                        if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
+                            continue;
+                        }
 
-                //...and D is not adjacent to both A and C in psi...
-                if (psi.isAdjacentTo(a, d) && psi.isAdjacentTo(c, d)) {
-                    continue;
-                }
+                        if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
+                            continue;
+                        }
 
-                //...and B and D are adjacent...
-                if (!psi.isAdjacentTo(b, d)) {
-                    continue;
-                }
+                        if (wouldCreateBadCollider(b, d, psi)) {
+                            continue;
+                        }
 
-                Set<Node> supSepUnionD = new HashSet<>();
-                supSepUnionD.add(d);
-                supSepUnionD.addAll(supSepsets.get(triple));
-                List<Node> listSupSepUnionD = new ArrayList<>(supSepUnionD);
+                        //...and D is not adjacent to both A and C in psi...
+                        if (psi.isAdjacentTo(a, d) && psi.isAdjacentTo(c, d)) {
+                            continue;
+                        }
 
-                //If A and C are a pair of vertices d-connected given
-                //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD
-                //as B->D in psi.
-                if (!sepsets.isIndependent(a, c, listSupSepUnionD)) {
-                    psi.removeEdge(b, d);
-                    psi.addDirectedEdge(b, d);
-                    orientAwayFromArrow(b, d, psi);
+                        //If A and C are a pair of vertices d-connected given
+                        //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD
+                        //as B->D in psi.
+                        if (supIndep(a, c, b, d, psi)) {
+                            psi.removeEdge(b, d);
+                            psi.addDirectedEdge(b, d);
+                            orientAwayFromArrow(b, d, psi);
+                            psi.addDottedUnderlineTriple(a, b, c);
+                        }
+                    }
                 }
             }
         }
@@ -563,12 +413,6 @@ public final class CcdMax implements GraphSearch {
         return true;
     }
 
-    private void addAdjacents(Set<Node> possibleA, Graph graph) {
-        for (Node node : new HashSet<>(possibleA)) {
-            possibleA.addAll(graph.getAdjacentNodes(node));
-        }
-    }
-
     private boolean wouldCreateBadCollider(Node x, Node y, Graph psi) {
         for (Node z : psi.getAdjacentNodes(y)) {
             if (x == z) continue;
@@ -576,6 +420,10 @@ public final class CcdMax implements GraphSearch {
         }
 
         return false;
+    }
+
+    private boolean isApplyR1() {
+        return applyR1;
     }
 }
 
