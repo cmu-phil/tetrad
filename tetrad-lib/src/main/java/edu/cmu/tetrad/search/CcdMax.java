@@ -68,8 +68,28 @@ public final class CcdMax implements GraphSearch {
         Graph psi = stepA();
 
         stepB(psi);
-        stepE(psi);
-        stepF(psi);
+        stepsEF(psi);
+
+        Edge nondirectedEdge = null;
+
+        do {
+            nondirectedEdge = null;
+
+            for (Edge edge : psi.getEdges()) {
+                if (Edges.isNondirectedEdge(edge)) {
+                    nondirectedEdge = edge;
+                    break;
+                }
+            }
+
+            if (nondirectedEdge != null) {
+                Node x = nondirectedEdge.getNode1();
+                Node y = nondirectedEdge.getNode2();
+                psi.removeEdge(nondirectedEdge);
+                psi.addDirectedEdge(x, y);
+                orientAwayFromArrow(x, y, psi);
+            }
+        } while (nondirectedEdge != null);
 
         return psi;
     }
@@ -240,45 +260,68 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private void stepE(Graph psi) {
+    // Orient feedback loops and a few extra directed edges.
+    private void stepsEF(Graph psi) {
         TetradLogger.getInstance().log("info", "\nStep E");
 
-        for (Node b : psi.getNodes()) {
-            List<Node> adj = psi.getAdjacentNodes(b);
+        for (Node x : psi.getNodes()) {
+            List<Node> adj = psi.getAdjacentNodes(x);
 
-            for (Node a : adj) {
-                for (Node c : adj) {
+            for (int i = 0; i < adj.size(); i++) {
+                Node a = adj.get(i);
+
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node c = adj.get(j);
+
                     if (a == c) continue;
 
-                    if (!psi.isDefCollider(a, b, c)) {
+                    if (!psi.isDefCollider(a, x, c)) {
                         continue;
                     }
 
-                    for (Node d : adj) {
-                        if (d == a || d == b) continue;
+                    for (Node y : adj) {
+                        if (y == a || y == c) continue;
 
-                        if (supIndep(a, c, b, d, psi)) {
+                        boolean sup1 = supIndep(a, c, x, y, psi);
+                        boolean sup2 = supIndep(c, a, x, y, psi);
 
-                            // Orient B*-oD as B*-D
-                            psi.setEndpoint(b, d, Endpoint.TAIL);
-                            psi.addDottedUnderlineTriple(a, b, c);
-                        } else {
-                            if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                                continue;
+                        if (psi.isDefCollider(a, y, c)) {
+                            if (sup1 && sup2) {
+                                psi.removeEdge(x, y);
+                                psi.addUndirectedEdge(x, y);
+                                psi.addDottedUnderlineTriple(a, x, c);
+                                psi.addDottedUnderlineTriple(a, y, c);
+                            } else if (sup1) {
+                                if (wouldCreateBadCollider(x, y, psi)) {
+                                    continue;
+                                }
+
+                                psi.removeEdge(x, y);
+                                psi.addDirectedEdge(x, y);
+                                orientAwayFromArrow(x, y, psi);
+                                psi.addDottedUnderlineTriple(a, x, c);
+                            } else if (sup2) {
+                                if (wouldCreateBadCollider(y, x, psi)) {
+                                    continue;
+                                }
+
+                                psi.removeEdge(y, x);
+                                psi.addDirectedEdge(y, x);
+                                orientAwayFromArrow(y, x, psi);
+                                psi.addDottedUnderlineTriple(a, y, c);
                             }
-
-                            if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                                continue;
+                        } else if (sup1 && !(psi.isAdjacentTo(a, y) && psi.isAdjacentTo(c, y))) {
+                            if (!wouldCreateBadCollider(x, y, psi)) {
+                                psi.removeEdge(x, y);
+                                psi.addDirectedEdge(x, y);
+                                orientAwayFromArrow(x, y, psi);
                             }
-
-                            if (wouldCreateBadCollider(b, d, psi)) {
-                                continue;
+                        } else if (sup2 && !(psi.isAdjacentTo(a, x) && psi.isAdjacentTo(c, x))) {
+                            if (!wouldCreateBadCollider(y, x, psi)) {
+                                psi.removeEdge(y, x);
+                                psi.addDirectedEdge(y, x);
+                                orientAwayFromArrow(y, x, psi);
                             }
-
-                            // Or orient Bo-oD or B-oD as B->D...
-                            psi.removeEdge(b, d);
-                            psi.addDirectedEdge(b, d);
-                            orientAwayFromArrow(b, d, psi);
                         }
                     }
                 }
@@ -286,53 +329,8 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private void stepF(Graph psi) {
-        for (Node b : psi.getNodes()) {
-            List<Node> adj = psi.getAdjacentNodes(b);
-
-            for (Node a : adj) {
-                for (Node c : adj) {
-                    if (a == c) continue;
-
-                    if (!psi.isDefCollider(a, b, c)) {
-                        continue;
-                    }
-
-                    for (Node d : adj) {
-                        if (d == a || d == b) continue;
-
-                        if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                            continue;
-                        }
-
-                        if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                            continue;
-                        }
-
-                        if (wouldCreateBadCollider(b, d, psi)) {
-                            continue;
-                        }
-
-                        //...and D is not adjacent to both A and C in psi...
-                        if (psi.isAdjacentTo(a, d) && psi.isAdjacentTo(c, d)) {
-                            continue;
-                        }
-
-                        //If A and C are a pair of vertices d-connected given
-                        //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD
-                        //as B->D in psi.
-                        if (!supIndep(a, c, b, d, psi)) {
-                            psi.removeEdge(b, d);
-                            psi.addDirectedEdge(b, d);
-                            orientAwayFromArrow(b, d, psi);
-                            psi.addDottedUnderlineTriple(a, b, c);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    // Returns a set that would be a Markov blanket if there were no feedback
+    // loops.
     private List<Node> local(Graph psi, Node x) {
         Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
 
@@ -422,7 +420,7 @@ public final class CcdMax implements GraphSearch {
         cond.add(x);
         cond.add(y);
         cond.addAll(local(psi, a));
-        cond.remove(c);
+        cond.remove(c); // a will automatically not be included. c will be.
         return independenceTest.isIndependent(a, c, new ArrayList<>(cond));
     }
 }
