@@ -294,11 +294,12 @@ public class PcMax implements GraphSearch {
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
+        // Most independent ones first.
         Collections.sort(tripleList, new Comparator<Triple>() {
 
             @Override
             public int compare(Triple o1, Triple o2) {
-                return -Double.compare(scores.get(o2), scores.get(o1));
+                return Double.compare(scores.get(o2), scores.get(o1));
             }
         });
 

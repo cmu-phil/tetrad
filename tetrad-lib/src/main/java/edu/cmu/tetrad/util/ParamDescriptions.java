@@ -118,6 +118,8 @@ public class ParamDescriptions {
         put("probCycle", new ParamDescription("The probability of adding a cycle to the graph", 1.0, 0.0, 1.0));
         put("intervalBetweenShocks", new ParamDescription("Interval beween shocks (R. A. Fisher simulation model)",
                 10, 1, Integer.MAX_VALUE));
+        put("skipNumRecords", new ParamDescription("Number of records that should be skipped between recordings",
+                0, 0, Integer.MAX_VALUE));
         put("fisherEpsilon", new ParamDescription("Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence",
                 .001, Double.MIN_VALUE, Double.MAX_VALUE));
     }

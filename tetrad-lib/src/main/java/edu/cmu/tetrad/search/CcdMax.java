@@ -69,7 +69,13 @@ public final class CcdMax implements GraphSearch {
 
         stepB(psi);
         stepsEF(psi);
+//        psi = pickAGraph(psi);
 
+        return psi;
+    }
+
+    private Graph pickAGraph(Graph psi) {
+        psi = new EdgeListGraphSingleConnections(psi);
         Edge nondirectedEdge = null;
 
         do {
@@ -144,14 +150,14 @@ public final class CcdMax implements GraphSearch {
         List<Node> nodes = psi.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
-            private SepsetProducer sepsets;
+            private final SepsetProducer sepsets;
             private final Map<Triple, Double> colliders;
             private final Map<Triple, Double> noncolliders;
-            private int from;
-            private int to;
-            private int chunk = 100;
-            private List<Node> nodes;
-            private Graph psi;
+            private final int from;
+            private final int to;
+            private final int chunk = 100;
+            private final List<Node> nodes;
+            private final Graph psi;
 
             private Task(SepsetProducer sepsets, List<Node> nodes, Graph graph,
                          Map<Triple, Double> colliders,
@@ -195,11 +201,12 @@ public final class CcdMax implements GraphSearch {
         List<Triple> collidersList = new ArrayList<>(colliders.keySet());
         List<Triple> noncollidersList = new ArrayList<>(noncolliders.keySet());
 
+        // Most independent ones first.
         Collections.sort(collidersList, new Comparator<Triple>() {
 
             @Override
             public int compare(Triple o1, Triple o2) {
-                return -Double.compare(colliders.get(o2), colliders.get(o1));
+                return Double.compare(colliders.get(o2), colliders.get(o1));
             }
         });
 
@@ -282,45 +289,42 @@ public final class CcdMax implements GraphSearch {
                     for (Node y : adj) {
                         if (y == a || y == c) continue;
 
+                        Edge edge = psi.getEdge(x, y);
+
+                        if (!(Edges.isUndirectedEdge(edge) || Edges.isDirectedEdge(edge))) {
+                            continue;
+                        }
+
                         boolean sup1 = supIndep(a, c, x, y, psi);
-                        boolean sup2 = supIndep(c, a, x, y, psi);
 
                         if (psi.isDefCollider(a, y, c)) {
+                            boolean sup2 = supIndep(c, a, x, y, psi);
+
                             if (sup1 && sup2) {
                                 psi.removeEdge(x, y);
                                 psi.addUndirectedEdge(x, y);
                                 psi.addDottedUnderlineTriple(a, x, c);
                                 psi.addDottedUnderlineTriple(a, y, c);
                             } else if (sup1) {
-                                if (wouldCreateBadCollider(x, y, psi)) {
-                                    continue;
+                                if (!wouldCreateBadCollider(x, y, psi)) {
+                                    psi.removeEdge(x, y);
+                                    psi.addDirectedEdge(x, y);
+                                    orientAwayFromArrow(x, y, psi);
+                                    psi.addDottedUnderlineTriple(a, x, c);
                                 }
-
-                                psi.removeEdge(x, y);
-                                psi.addDirectedEdge(x, y);
-                                orientAwayFromArrow(x, y, psi);
-                                psi.addDottedUnderlineTriple(a, x, c);
                             } else if (sup2) {
-                                if (wouldCreateBadCollider(y, x, psi)) {
-                                    continue;
+                                if (!wouldCreateBadCollider(y, x, psi)) {
+                                    psi.removeEdge(y, x);
+                                    psi.addDirectedEdge(y, x);
+                                    orientAwayFromArrow(y, x, psi);
+                                    psi.addDottedUnderlineTriple(a, y, c);
                                 }
-
-                                psi.removeEdge(y, x);
-                                psi.addDirectedEdge(y, x);
-                                orientAwayFromArrow(y, x, psi);
-                                psi.addDottedUnderlineTriple(a, y, c);
                             }
                         } else if (sup1 && !(psi.isAdjacentTo(a, y) && psi.isAdjacentTo(c, y))) {
                             if (!wouldCreateBadCollider(x, y, psi)) {
                                 psi.removeEdge(x, y);
                                 psi.addDirectedEdge(x, y);
                                 orientAwayFromArrow(x, y, psi);
-                            }
-                        } else if (sup2 && !(psi.isAdjacentTo(a, x) && psi.isAdjacentTo(c, x))) {
-                            if (!wouldCreateBadCollider(y, x, psi)) {
-                                psi.removeEdge(y, x);
-                                psi.addDirectedEdge(y, x);
-                                orientAwayFromArrow(y, x, psi);
                             }
                         }
                     }
@@ -379,7 +383,6 @@ public final class CcdMax implements GraphSearch {
         if (!(graph.isUnderlineTriple(a, b, c))) {
             return false;
         }
-
 
         if (graph.getEdge(b, c).pointsTowards(b)) {
             return false;
