@@ -31,13 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
- * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and
- * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. </p> The search
- * method returns an instance of a Graph but it also constructs two lists of node triples which represent the underlines
- * and dotted underlines that the algorithm discovers.
+ * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
  *
- * @author Frank C. Wimberly
  * @author Joseph Ramsey
  */
 public final class CcdMax implements GraphSearch {
@@ -62,14 +57,13 @@ public final class CcdMax implements GraphSearch {
      * underlines of the PAG.
      */
     public Graph search() {
-
         SepsetMap map = new SepsetMap();
 
         Graph graph = fastAdjacencySearch();
         orientCollidersMaxP(graph, map);
         orientTwoShieldConstructs(graph);
 
-        if (orientTowardDConnection) {
+        if (applyOrientAwayFromCollider) {
             orientTowardDConnection(graph, map);
         }
 
@@ -225,7 +219,7 @@ public final class CcdMax implements GraphSearch {
                 continue;
             }
 
-            Pair P = getSepset(a, c, graph);
+            Pair P = maxPSepset(a, c, graph);
             List<Node> S = P.getCond();
             double score = P.getScore();
 
@@ -303,7 +297,6 @@ public final class CcdMax implements GraphSearch {
                 if (!sepsetay.containsAll(sepsetax)) {
                     if (!independenceTest.isIndependent(a, x, sepsetay)) {
                         addDirectedEdge(graph, y, x);
-                        orientAwayFromArrow(y, x, graph);
                         continue EDGE;
                     }
                 }
@@ -330,7 +323,7 @@ public final class CcdMax implements GraphSearch {
                         if (y == a || y == b) continue;
 
                         if (graph.isAdjacentTo(y, a) && graph.isAdjacentTo(y, b)) {
-                            if (sepsetNotContaining(graph, a, b, x, y) != null) {
+                            if (sepset(graph, a, b, set(), set(x, y)) != null) {
                                 Edge edge = graph.getEdge(x, y);
                                 orientCollider(graph, a, x, b);
                                 orientCollider(graph, a, y, b);
@@ -339,14 +332,14 @@ public final class CcdMax implements GraphSearch {
                                     continue;
                                 }
 
-                                if (sepsetContaining(graph, a, b, x, y) != null) {
+                                if (sepset(graph, a, b, set(x, y), set()) != null) {
                                     addUndirectedEdge(graph, x, y);
                                     graph.addDottedUnderlineTriple(a, x, b);
                                     graph.addDottedUnderlineTriple(a, y, b);
-                                } else if (sepsetNotContainingButNot(graph, a, b, x, y) != null) {
+                                } else if (sepset(graph, a, b, set(x), set(y)) != null) {
                                     addDirectedEdge(graph, x, y);
                                     graph.addDottedUnderlineTriple(a, x, b);
-                                } else if (sepsetNotContainingButNot(graph, b, a, y, x) != null) {
+                                } else if (sepset(graph, b, a, set(y), set(x)) != null) {
                                     addDirectedEdge(graph, y, x);
                                     graph.addDottedUnderlineTriple(a, y, b);
                                 }
@@ -362,7 +355,7 @@ public final class CcdMax implements GraphSearch {
         if (wouldCreateBadCollider(x, y, graph)) return;
         graph.removeEdge(x, y);
         graph.addDirectedEdge(x, y);
-        orientAwayFromArrow(x, y, graph);
+        orientAwayFromArrow(graph, x, y);
     }
 
     private void addUndirectedEdge(Graph graph, Node x, Node y) {
@@ -377,6 +370,8 @@ public final class CcdMax implements GraphSearch {
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);
         graph.addDirectedEdge(c, b);
+        orientAwayFromArrow(graph, a, b);
+        orientAwayFromArrow(graph, c, b);
     }
 
     private void orientAwayFromArrow(Graph graph) {
@@ -387,15 +382,15 @@ public final class CcdMax implements GraphSearch {
             edge = graph.getEdge(n1, n2);
 
             if (edge.pointsTowards(n1)) {
-                orientAwayFromArrow(n2, n1, graph);
+                orientAwayFromArrow(graph, n2, n1);
             } else if (edge.pointsTowards(n2)) {
-                orientAwayFromArrow(n1, n2, graph);
+                orientAwayFromArrow(graph, n1, n2);
             }
         }
     }
 
-    private void orientAwayFromArrow(Node a, Node b, Graph graph) {
-        if (!isApplyOrientAwayFromCollider()) return;
+    private void orientAwayFromArrow(Graph graph, Node a, Node b) {
+        if (!applyOrientAwayFromCollider) return;
 
         for (Node c : graph.getAdjacentNodes(b)) {
             if (c == a) continue;
@@ -442,10 +437,6 @@ public final class CcdMax implements GraphSearch {
         return false;
     }
 
-    private boolean isApplyOrientAwayFromCollider() {
-        return applyOrientAwayFromCollider;
-    }
-
     private class Pair {
         private List<Node> cond;
         private double score;
@@ -464,7 +455,7 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private Pair getSepset(Node i, Node k, Graph graph) {
+    private Pair maxPSepset(Node i, Node k, Graph graph) {
         double _p = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
 
@@ -512,8 +503,8 @@ public final class CcdMax implements GraphSearch {
         return new Pair(_v, _p);
     }
 
-    private List<Node> sepsetContaining(Graph graph, Node a, Node c, Node... x) {
-        double _p = Double.POSITIVE_INFINITY;
+    // Returns a sepset containing the nodes in 'containing' but not the nodes in 'notContaining'.
+    private List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining) {
         List<Node> _v = null;
 
         List<Node> adj = graph.getAdjacentNodes(a);
@@ -528,47 +519,15 @@ public final class CcdMax implements GraphSearch {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> v2 = GraphUtils.asSet(choice, adj);
-                    Collections.addAll(v2, x);
+                    v2.addAll(containing);
+                    v2.removeAll(notContaining);
                     v2.remove(a);
                     v2.remove(c);
 
                     getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
                     double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p && p2 < 0) {
-                        _p = p2;
-                        _v = new ArrayList<>(v2);
-                    }
-                }
-            }
-        }
-
-        return _v;
-    }
-
-    private List<Node> sepsetNotContaining(Graph graph, Node a, Node c, Node... x) {
-        double _p = Double.POSITIVE_INFINITY;
-
-        List<Node> adj = graph.getAdjacentNodes(a);
-        adj.addAll(graph.getAdjacentNodes(c));
-        adj.remove(c);
-        adj.remove(a);
-
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
-            if (d <= adj.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
-                    for (Node _x : x) v2.remove(_x);
-                    v2.remove(a);
-                    v2.remove(c);
-
-                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
-                    double p2 = getIndependenceTest().getScore();
-
-                    if (p2 < _p && p2 < 0) {
+                    if (p2 < 0) {
                         return new ArrayList<>(v2);
                     }
                 }
@@ -578,37 +537,10 @@ public final class CcdMax implements GraphSearch {
         return null;
     }
 
-    private List<Node> sepsetNotContainingButNot(Graph graph, Node a, Node c, Node x, Node y) {
-        double _p = Double.POSITIVE_INFINITY;
-
-        List<Node> adj = graph.getAdjacentNodes(a);
-        adj.addAll(graph.getAdjacentNodes(c));
-        adj.remove(c);
-        adj.remove(a);
-
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
-            if (d <= adj.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
-                    v2.add(x);
-                    v2.remove(y);
-                    v2.remove(a);
-                    v2.remove(c);
-
-                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
-                    double p2 = getIndependenceTest().getScore();
-
-                    if (p2 < _p && p2 < 0) {
-                        return new ArrayList<>(v2);
-                    }
-                }
-            }
-        }
-
-        return null;
+    private Set set(Node...x) {
+        Set S = new HashSet();
+        for (Node _x : x) S.add(_x);
+        return S;
     }
 }
 
