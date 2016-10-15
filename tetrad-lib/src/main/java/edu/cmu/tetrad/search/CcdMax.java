@@ -39,7 +39,6 @@ public final class CcdMax implements GraphSearch {
     private IndependenceTest independenceTest;
     private int depth = -1;
     private boolean applyOrientAwayFromCollider = false;
-    private boolean orientTowardDConnection = true;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -237,73 +236,6 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private void orientTowardDConnection(Graph graph, SepsetMap map) {
-
-        EDGE:
-        for (Edge edge : graph.getEdges()) {
-            if (!Edges.isNondirectedEdge(edge)) continue;
-
-            Set<Node> surround = new HashSet<>();
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-            surround.add(x);
-
-            for (int i = 1; i < 2; i++) {
-                for (Node z : new HashSet<>(surround)) {
-                    surround.addAll(graph.getAdjacentNodes(z));
-                }
-            }
-
-            surround.remove(x);
-            surround.remove(y);
-            surround.removeAll(graph.getAdjacentNodes(x));
-            surround.removeAll(graph.getAdjacentNodes(y));
-            boolean orient = false;
-            boolean agree = true;
-
-            for (Node a : surround) {
-                List<Node> sepsetax = map.get(a, x);
-                List<Node> sepsetay = map.get(a, y);
-
-                if (sepsetax == null) continue;
-                if (sepsetay == null) continue;
-
-                if (!sepsetax.equals(sepsetay)) {
-                    if (sepsetax.containsAll(sepsetay)) {
-                        orient = true;
-                    } else {
-                        agree = false;
-                    }
-                }
-            }
-
-            if (orient && agree) {
-                addDirectedEdge(graph, y, x);
-            }
-
-            for (Node a : surround) {
-                if (x == a) continue;
-                if (y == a) continue;
-                if (graph.getAdjacentNodes(x).contains(a)) continue;
-                if (graph.getAdjacentNodes(y).contains(a)) continue;
-
-                List<Node> sepsetax = map.get(a, x);
-                List<Node> sepsetay = map.get(a, y);
-
-                if (sepsetax == null) continue;
-                if (sepsetay == null) continue;
-                if (sepsetay.contains(x)) continue;
-
-                if (!sepsetay.containsAll(sepsetax)) {
-                    if (!independenceTest.isIndependent(a, x, sepsetay)) {
-                        addDirectedEdge(graph, y, x);
-                        continue EDGE;
-                    }
-                }
-            }
-        }
-    }
-
     // Orient feedback loops and a few extra directed edges.
     private void orientTwoShieldConstructs(Graph graph) {
         TetradLogger.getInstance().log("info", "\nStep E");
@@ -351,16 +283,16 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private void addDirectedEdge(Graph graph, Node x, Node y) {
-        if (wouldCreateBadCollider(x, y, graph)) return;
-        graph.removeEdge(x, y);
-        graph.addDirectedEdge(x, y);
-        orientAwayFromArrow(graph, x, y);
+    private void addDirectedEdge(Graph graph, Node a, Node b) {
+        if (wouldCreateBadCollider(a, b, graph)) return;
+        graph.removeEdge(a, b);
+        graph.addDirectedEdge(a, b);
+        orientAwayFromArrow(graph, a, b);
     }
 
-    private void addUndirectedEdge(Graph graph, Node x, Node y) {
-        graph.removeEdge(x, y);
-        graph.addUndirectedEdge(x, y);
+    private void addUndirectedEdge(Graph graph, Node a, Node b) {
+        graph.removeEdge(a, b);
+        graph.addUndirectedEdge(a, b);
     }
 
     private void orientCollider(Graph graph, Node a, Node b, Node c) {
@@ -503,10 +435,9 @@ public final class CcdMax implements GraphSearch {
         return new Pair(_v, _p);
     }
 
-    // Returns a sepset containing the nodes in 'containing' but not the nodes in 'notContaining'.
+    // Returns a sepset containing the nodes in 'containing' but not the nodes in 'notContaining', or
+    // null if there is no such sepset.
     private List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining) {
-        List<Node> _v = null;
-
         List<Node> adj = graph.getAdjacentNodes(a);
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
@@ -537,9 +468,76 @@ public final class CcdMax implements GraphSearch {
         return null;
     }
 
-    private Set set(Node...x) {
-        Set S = new HashSet();
-        for (Node _x : x) S.add(_x);
+    private void orientTowardDConnection(Graph graph, SepsetMap map) {
+
+        EDGE:
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isNondirectedEdge(edge)) continue;
+
+            Set<Node> surround = new HashSet<>();
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+            surround.add(x);
+
+            for (int i = 1; i < 2; i++) {
+                for (Node z : new HashSet<>(surround)) {
+                    surround.addAll(graph.getAdjacentNodes(z));
+                }
+            }
+
+            surround.remove(x);
+            surround.remove(y);
+            surround.removeAll(graph.getAdjacentNodes(x));
+            surround.removeAll(graph.getAdjacentNodes(y));
+            boolean orient = false;
+            boolean agree = true;
+
+            for (Node a : surround) {
+                List<Node> sepsetax = map.get(a, x);
+                List<Node> sepsetay = map.get(a, y);
+
+                if (sepsetax == null) continue;
+                if (sepsetay == null) continue;
+
+                if (!sepsetax.equals(sepsetay)) {
+                    if (sepsetax.containsAll(sepsetay)) {
+                        orient = true;
+                    } else {
+                        agree = false;
+                    }
+                }
+            }
+
+            if (orient && agree) {
+                addDirectedEdge(graph, y, x);
+            }
+
+            for (Node a : surround) {
+                if (x == a) continue;
+                if (y == a) continue;
+                if (graph.getAdjacentNodes(x).contains(a)) continue;
+                if (graph.getAdjacentNodes(y).contains(a)) continue;
+
+                List<Node> sepsetax = map.get(a, x);
+                List<Node> sepsetay = map.get(a, y);
+
+                if (sepsetax == null) continue;
+                if (sepsetay == null) continue;
+                if (sepsetay.contains(x)) continue;
+
+                if (!sepsetay.containsAll(sepsetax)) {
+                    if (!independenceTest.isIndependent(a, x, sepsetay)) {
+                        addDirectedEdge(graph, y, x);
+                        continue EDGE;
+                    }
+                }
+            }
+        }
+    }
+
+    private Set<Node> set(Node...n) {
+        Set<Node> S = new HashSet<>();
+        Collections.addAll(S, n);
         return S;
     }
 }
