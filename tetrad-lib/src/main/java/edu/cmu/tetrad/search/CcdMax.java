@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -44,8 +43,8 @@ import java.util.concurrent.RecursiveTask;
 public final class CcdMax implements GraphSearch {
     private IndependenceTest independenceTest;
     private int depth = -1;
-    private IKnowledge knowledge;
-    private boolean applyR1 = false;
+    private boolean applyOrientAwayFromCollider = false;
+    private boolean orientTowardDConnection = true;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -64,44 +63,17 @@ public final class CcdMax implements GraphSearch {
      */
     public Graph search() {
 
-        // Step A
-        Graph psi = stepA();
+        SepsetMap map = new SepsetMap();
 
-        stepB(psi);
-        stepsEF(psi);
-//        psi = pickAGraph(psi);
+        Graph graph = fastAdjacencySearch();
+        orientCollidersMaxP(graph, map);
+        orientTwoShieldConstructs(graph);
 
-        return psi;
-    }
+        if (orientTowardDConnection) {
+            orientTowardDConnection(graph, map);
+        }
 
-    private Graph pickAGraph(Graph psi) {
-        psi = new EdgeListGraphSingleConnections(psi);
-        Edge nondirectedEdge = null;
-
-        do {
-            nondirectedEdge = null;
-
-            for (Edge edge : psi.getEdges()) {
-                if (Edges.isNondirectedEdge(edge)) {
-                    nondirectedEdge = edge;
-                    break;
-                }
-            }
-
-            if (nondirectedEdge != null) {
-                Node x = nondirectedEdge.getNode1();
-                Node y = nondirectedEdge.getNode2();
-                psi.removeEdge(nondirectedEdge);
-                psi.addDirectedEdge(x, y);
-                orientAwayFromArrow(x, y, psi);
-            }
-        } while (nondirectedEdge != null);
-
-        return psi;
-    }
-
-    public IKnowledge getKnowledge() {
-        return knowledge;
+        return graph;
     }
 
     public int getDepth() {
@@ -112,59 +84,61 @@ public final class CcdMax implements GraphSearch {
         this.depth = depth;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-        this.knowledge = knowledge;
-    }
-
     public long getElapsedTime() {
         return 0;
     }
 
-    public void setApplyR1(boolean applyR1) {
-        this.applyR1 = applyR1;
+    public void setApplyOrientAwayFromCollider(boolean applyOrientAwayFromCollider) {
+        this.applyOrientAwayFromCollider = applyOrientAwayFromCollider;
+    }
+
+    public IndependenceTest getIndependenceTest() {
+        return independenceTest;
+    }
+
+    public void setIndependenceTest(IndependenceTest independenceTest) {
+        this.independenceTest = independenceTest;
     }
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private Graph stepA() {
+    private Graph fastAdjacencySearch() {
         FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
-        fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setRecordSepsets(false);
-        Graph psi = fas.search();
-        psi.reorientAllWith(Endpoint.CIRCLE);
-        return psi;
+        Graph graph = fas.search();
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        return graph;
     }
 
-    private void stepB(Graph psi) {
-        SepsetsMinScore sepsets = new SepsetsMinScore(psi, independenceTest, -1);
+    private void orientCollidersMaxP(Graph graph, SepsetMap map) {
+        SepsetsMinScore sepsets = new SepsetsMinScore(graph, independenceTest, -1);
         sepsets.setReturnNullWhenIndep(false);
 
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
         final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
 
-        List<Node> nodes = psi.getNodes();
+        List<Node> nodes = graph.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
             private final SepsetProducer sepsets;
+            private final SepsetMap map;
             private final Map<Triple, Double> colliders;
             private final Map<Triple, Double> noncolliders;
             private final int from;
             private final int to;
             private final int chunk = 100;
             private final List<Node> nodes;
-            private final Graph psi;
+            private final Graph graph;
 
-            private Task(SepsetProducer sepsets, List<Node> nodes, Graph graph,
+            private Task(SepsetProducer sepsets, SepsetMap map, List<Node> nodes, Graph graph,
                          Map<Triple, Double> colliders,
                          Map<Triple, Double> noncolliders, int from, int to) {
                 this.sepsets = sepsets;
+                this.map = map;
                 this.nodes = nodes;
-                this.psi = graph;
+                this.graph = graph;
                 this.from = from;
                 this.to = to;
                 this.colliders = colliders;
@@ -175,15 +149,15 @@ public final class CcdMax implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNodeCollider(sepsets, psi, colliders, noncolliders, nodes.get(i));
+                        doNodeCollider(graph, colliders, noncolliders, nodes.get(i), map);
                     }
 
                     return true;
                 } else {
                     int mid = (to + from) / 2;
 
-                    Task left = new Task(sepsets, nodes, psi, colliders, noncolliders, from, mid);
-                    Task right = new Task(sepsets, nodes, psi, colliders, noncolliders, mid, to);
+                    Task left = new Task(sepsets, map, nodes, graph, colliders, noncolliders, from, mid);
+                    Task right = new Task(sepsets, map, nodes, graph, colliders, noncolliders, mid, to);
 
                     left.fork();
                     right.compute();
@@ -194,7 +168,7 @@ public final class CcdMax implements GraphSearch {
             }
         }
 
-        Task task = new Task(sepsets, nodes, psi, colliders, noncolliders, 0, nodes.size());
+        Task task = new Task(sepsets, map, nodes, graph, colliders, noncolliders, 0, nodes.size());
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
@@ -215,11 +189,8 @@ public final class CcdMax implements GraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            if (!(psi.getEndpoint(b, a) == Endpoint.ARROW || psi.getEndpoint(b, c) == Endpoint.ARROW)) {
-                psi.removeEdge(a, b);
-                psi.removeEdge(c, b);
-                psi.addDirectedEdge(a, b);
-                psi.addDirectedEdge(c, b);
+            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
+                orientCollider(graph, a, b, c);
             }
         }
 
@@ -228,15 +199,15 @@ public final class CcdMax implements GraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            psi.addUnderlineTriple(a, b, c);
+            graph.addUnderlineTriple(a, b, c);
         }
 
-        orientAwayFromArrow(psi);
+        orientAwayFromArrow(graph);
     }
 
-    private void doNodeCollider(SepsetProducer sepsets, Graph psi, Map<Triple, Double> colliders,
-                                Map<Triple, Double> noncolliders, Node b) {
-        List<Node> adjacentNodes = psi.getAdjacentNodes(b);
+    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders,
+                                Map<Triple, Double> noncolliders, Node b, SepsetMap map) {
+        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -250,14 +221,19 @@ public final class CcdMax implements GraphSearch {
             Node c = adjacentNodes.get(combination[1]);
 
             // Skip triples that are shielded.
-            if (psi.isAdjacentTo(a, c)) {
+            if (graph.isAdjacentTo(a, c)) {
                 continue;
             }
 
-            List<Node> S = sepsets.getSepset(a, c);
-            double score = sepsets.getScore();
+            Pair P = getSepset(a, c, graph);
+            List<Node> S = P.getCond();
+            double score = P.getScore();
 
-            if (S == null) continue;
+            if (S == null) {
+                continue;
+            }
+
+            map.set(a, c, S);
 
             if (S.contains(b)) {
                 noncolliders.put(new Triple(a, b, c), score);
@@ -267,64 +243,113 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
+    private void orientTowardDConnection(Graph graph, SepsetMap map) {
+
+        EDGE:
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isNondirectedEdge(edge)) continue;
+
+            Set<Node> surround = new HashSet<>();
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+            surround.add(x);
+
+            for (int i = 1; i < 2; i++) {
+                for (Node z : new HashSet<>(surround)) {
+                    surround.addAll(graph.getAdjacentNodes(z));
+                }
+            }
+
+            surround.remove(x);
+            surround.remove(y);
+            surround.removeAll(graph.getAdjacentNodes(x));
+            surround.removeAll(graph.getAdjacentNodes(y));
+            boolean orient = false;
+            boolean agree = true;
+
+            for (Node a : surround) {
+                List<Node> sepsetax = map.get(a, x);
+                List<Node> sepsetay = map.get(a, y);
+
+                if (sepsetax == null) continue;
+                if (sepsetay == null) continue;
+
+                if (!sepsetax.equals(sepsetay)) {
+                    if (sepsetax.containsAll(sepsetay)) {
+                        orient = true;
+                    } else {
+                        agree = false;
+                    }
+                }
+            }
+
+            if (orient && agree) {
+                addDirectedEdge(graph, y, x);
+            }
+
+            for (Node a : surround) {
+                if (x == a) continue;
+                if (y == a) continue;
+                if (graph.getAdjacentNodes(x).contains(a)) continue;
+                if (graph.getAdjacentNodes(y).contains(a)) continue;
+
+                List<Node> sepsetax = map.get(a, x);
+                List<Node> sepsetay = map.get(a, y);
+
+                if (sepsetax == null) continue;
+                if (sepsetay == null) continue;
+                if (sepsetay.contains(x)) continue;
+
+                if (!sepsetay.containsAll(sepsetax)) {
+                    if (!independenceTest.isIndependent(a, x, sepsetay)) {
+                        addDirectedEdge(graph, y, x);
+                        orientAwayFromArrow(y, x, graph);
+                        continue EDGE;
+                    }
+                }
+            }
+        }
+    }
+
     // Orient feedback loops and a few extra directed edges.
-    private void stepsEF(Graph psi) {
+    private void orientTwoShieldConstructs(Graph graph) {
         TetradLogger.getInstance().log("info", "\nStep E");
 
-        for (Node x : psi.getNodes()) {
-            List<Node> adj = psi.getAdjacentNodes(x);
+        for (Node x : graph.getNodes()) {
+            List<Node> adj = graph.getAdjacentNodes(x);
 
             for (int i = 0; i < adj.size(); i++) {
                 Node a = adj.get(i);
 
                 for (int j = i + 1; j < adj.size(); j++) {
-                    Node c = adj.get(j);
-
-                    if (a == c) continue;
-
-                    if (!psi.isDefCollider(a, x, c)) {
-                        continue;
-                    }
+                    Node b = adj.get(j);
+                    if (a == b) continue;
+                    if (graph.isAdjacentTo(a, b)) continue;
 
                     for (Node y : adj) {
-                        if (y == a || y == c) continue;
+                        if (y == a || y == b) continue;
 
-                        Edge edge = psi.getEdge(x, y);
+                        if (graph.isAdjacentTo(y, a) && graph.isAdjacentTo(y, b)) {
+                            if (sepsetNotContaining(graph, a, b, x, y) != null) {
+                                Edge edge = graph.getEdge(x, y);
+                                orientCollider(graph, a, x, b);
+                                orientCollider(graph, a, y, b);
 
-                        if (!(Edges.isUndirectedEdge(edge) || Edges.isDirectedEdge(edge))) {
-                            continue;
-                        }
-
-                        boolean sup1 = supIndep(a, c, x, y, psi);
-
-                        if (psi.isDefCollider(a, y, c)) {
-                            boolean sup2 = supIndep(c, a, x, y, psi);
-
-                            if (sup1 && sup2) {
-                                psi.removeEdge(x, y);
-                                psi.addUndirectedEdge(x, y);
-                                psi.addDottedUnderlineTriple(a, x, c);
-                                psi.addDottedUnderlineTriple(a, y, c);
-                            } else if (sup1) {
-                                if (!wouldCreateBadCollider(x, y, psi)) {
-                                    psi.removeEdge(x, y);
-                                    psi.addDirectedEdge(x, y);
-                                    orientAwayFromArrow(x, y, psi);
-                                    psi.addDottedUnderlineTriple(a, x, c);
+                                if ((Edges.isUndirectedEdge(edge) || Edges.isDirectedEdge(edge))) {
+                                    continue;
                                 }
-                            } else if (sup2) {
-                                if (!wouldCreateBadCollider(y, x, psi)) {
-                                    psi.removeEdge(y, x);
-                                    psi.addDirectedEdge(y, x);
-                                    orientAwayFromArrow(y, x, psi);
-                                    psi.addDottedUnderlineTriple(a, y, c);
+
+                                if (sepsetContaining(graph, a, b, x, y) != null) {
+                                    addUndirectedEdge(graph, x, y);
+                                    graph.addDottedUnderlineTriple(a, x, b);
+                                    graph.addDottedUnderlineTriple(a, y, b);
+                                } else if (sepsetNotContainingButNot(graph, a, b, x, y) != null) {
+                                    addDirectedEdge(graph, x, y);
+                                    graph.addDottedUnderlineTriple(a, x, b);
+                                } else if (sepsetNotContainingButNot(graph, b, a, y, x) != null) {
+                                    addDirectedEdge(graph, y, x);
+                                    graph.addDottedUnderlineTriple(a, y, b);
                                 }
-                            }
-                        } else if (sup1 && !(psi.isAdjacentTo(a, y) && psi.isAdjacentTo(c, y))) {
-                            if (!wouldCreateBadCollider(x, y, psi)) {
-                                psi.removeEdge(x, y);
-                                psi.addDirectedEdge(x, y);
-                                orientAwayFromArrow(x, y, psi);
                             }
                         }
                     }
@@ -333,22 +358,25 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    // Returns a set that would be a Markov blanket if there were no feedback
-    // loops.
-    private List<Node> local(Graph psi, Node x) {
-        Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
+    private void addDirectedEdge(Graph graph, Node x, Node y) {
+        if (wouldCreateBadCollider(x, y, graph)) return;
+        graph.removeEdge(x, y);
+        graph.addDirectedEdge(x, y);
+        orientAwayFromArrow(x, y, graph);
+    }
 
-        for (Node y : new HashSet<>(nodes)) {
-            for (Node z : psi.getAdjacentNodes(y)) {
-                if (psi.isDefCollider(x, y, z)) {
-                    if (z != x) {
-                        nodes.add(z);
-                    }
-                }
-            }
-        }
+    private void addUndirectedEdge(Graph graph, Node x, Node y) {
+        graph.removeEdge(x, y);
+        graph.addUndirectedEdge(x, y);
+    }
 
-        return new ArrayList<>(nodes);
+    private void orientCollider(Graph graph, Node a, Node b, Node c) {
+        if (wouldCreateBadCollider(a, b, graph)) return;
+        if (wouldCreateBadCollider(c, b, graph)) return;
+        graph.removeEdge(a, b);
+        graph.removeEdge(c, b);
+        graph.addDirectedEdge(a, b);
+        graph.addDirectedEdge(c, b);
     }
 
     private void orientAwayFromArrow(Graph graph) {
@@ -367,7 +395,7 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void orientAwayFromArrow(Node a, Node b, Graph graph) {
-        if (!isApplyR1()) return;
+        if (!isApplyOrientAwayFromCollider()) return;
 
         for (Node c : graph.getAdjacentNodes(b)) {
             if (c == a) continue;
@@ -388,8 +416,8 @@ public final class CcdMax implements GraphSearch {
             return false;
         }
 
-        graph.removeEdge(b, c);
-        graph.addDirectedEdge(b, c);
+        addDirectedEdge(graph, b, c);
+        graph.removeUnderlineTriple(a, b, c);
 
         for (Node d : graph.getAdjacentNodes(c)) {
             if (d == b) return true;
@@ -405,26 +433,182 @@ public final class CcdMax implements GraphSearch {
         return true;
     }
 
-    private boolean wouldCreateBadCollider(Node x, Node y, Graph psi) {
-        for (Node z : psi.getAdjacentNodes(y)) {
+    private boolean wouldCreateBadCollider(Node x, Node y, Graph graph) {
+        for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
-            if (psi.getEndpoint(x, y) != Endpoint.ARROW && psi.getEndpoint(z, y) == Endpoint.ARROW) return true;
+            if (graph.getEndpoint(x, y) != Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW) return true;
         }
 
         return false;
     }
 
-    private boolean isApplyR1() {
-        return applyR1;
+    private boolean isApplyOrientAwayFromCollider() {
+        return applyOrientAwayFromCollider;
     }
 
-    private boolean supIndep(Node a, Node c, Node x, Node y, Graph psi) {
-        Set<Node> cond = new HashSet<>();
-        cond.add(x);
-        cond.add(y);
-        cond.addAll(local(psi, a));
-        cond.remove(c); // a will automatically not be included. c will be.
-        return independenceTest.isIndependent(a, c, new ArrayList<>(cond));
+    private class Pair {
+        private List<Node> cond;
+        private double score;
+
+        Pair(List<Node> cond, double score) {
+            this.cond = cond;
+            this.score = score;
+        }
+
+        public List<Node> getCond() {
+            return cond;
+        }
+
+        public double getScore() {
+            return score;
+        }
+    }
+
+    private Pair getSepset(Node i, Node k, Graph graph) {
+        double _p = Double.POSITIVE_INFINITY;
+        List<Node> _v = null;
+
+        List<Node> adji = graph.getAdjacentNodes(i);
+        List<Node> adjk = graph.getAdjacentNodes(k);
+        adji.remove(k);
+        adjk.remove(i);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adji.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v2 = GraphUtils.asList(choice, adji);
+
+                    getIndependenceTest().isIndependent(i, k, v2);
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (p2 < _p) {
+                        _p = p2;
+                        _v = v2;
+                    }
+                }
+            }
+
+            if (d <= adjk.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v2 = GraphUtils.asList(choice, adjk);
+
+                    getIndependenceTest().isIndependent(i, k, v2);
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (p2 < _p) {
+                        _p = p2;
+                        _v = v2;
+                    }
+                }
+            }
+        }
+
+        return new Pair(_v, _p);
+    }
+
+    private List<Node> sepsetContaining(Graph graph, Node a, Node c, Node... x) {
+        double _p = Double.POSITIVE_INFINITY;
+        List<Node> _v = null;
+
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.addAll(graph.getAdjacentNodes(c));
+        adj.remove(c);
+        adj.remove(a);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
+            if (d <= adj.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
+                    Collections.addAll(v2, x);
+                    v2.remove(a);
+                    v2.remove(c);
+
+                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (p2 < _p && p2 < 0) {
+                        _p = p2;
+                        _v = new ArrayList<>(v2);
+                    }
+                }
+            }
+        }
+
+        return _v;
+    }
+
+    private List<Node> sepsetNotContaining(Graph graph, Node a, Node c, Node... x) {
+        double _p = Double.POSITIVE_INFINITY;
+
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.addAll(graph.getAdjacentNodes(c));
+        adj.remove(c);
+        adj.remove(a);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
+            if (d <= adj.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
+                    for (Node _x : x) v2.remove(_x);
+                    v2.remove(a);
+                    v2.remove(c);
+
+                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (p2 < _p && p2 < 0) {
+                        return new ArrayList<>(v2);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private List<Node> sepsetNotContainingButNot(Graph graph, Node a, Node c, Node x, Node y) {
+        double _p = Double.POSITIVE_INFINITY;
+
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.addAll(graph.getAdjacentNodes(c));
+        adj.remove(c);
+        adj.remove(a);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
+            if (d <= adj.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
+                    v2.add(x);
+                    v2.remove(y);
+                    v2.remove(a);
+                    v2.remove(c);
+
+                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                    double p2 = getIndependenceTest().getScore();
+
+                    if (p2 < _p && p2 < 0) {
+                        return new ArrayList<>(v2);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }
 
