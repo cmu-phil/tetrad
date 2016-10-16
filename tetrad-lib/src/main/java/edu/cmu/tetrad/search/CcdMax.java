@@ -120,24 +120,26 @@ public final class CcdMax implements GraphSearch {
 
                         if (graph.isAdjacentTo(d, a) && graph.isAdjacentTo(d, b)) {
                             if (sepset(graph, a, b, set(), set(c, d)) != null) {
-                                orientCollider(graph, a, c, b);
-                                orientCollider(graph, a, d, b);
-
                                 if ((graph.getEdges().size() == 2 || Edges.isDirectedEdge(graph.getEdge(c, d)))) {
                                     continue;
                                 }
 
                                 if (sepset(graph, a, b, set(c, d), set()) != null) {
+                                    orientCollider(graph, a, c, b);
+                                    orientCollider(graph, a, d, b);
                                     addFeedback(graph, c, d);
-                                    graph.addDottedUnderlineTriple(a, c, b);
-                                    graph.addDottedUnderlineTriple(a, d, b);
-                                } else if (sepset(graph, a, b, set(c), set(d)) != null) {
-                                    addDirectedEdge(graph, c, d);
-                                    graph.addDottedUnderlineTriple(a, c, b);
-                                } else if (sepset(graph, b, a, set(d), set(c)) != null) {
-                                    addDirectedEdge(graph, d, c);
-                                    graph.addDottedUnderlineTriple(a, d, b);
+//                                    graph.addDottedUnderlineTriple(a, c, b);
+//                                    graph.addDottedUnderlineTriple(a, d, b);
                                 }
+
+                                // These ambiguities are not induced by the model.
+//                                else if (sepset(graph, a, b, set(c), set(d)) != null) {
+//                                    addDirectedEdge(graph, c, d);
+//                                    graph.addDottedUnderlineTriple(a, c, b);
+//                                } else if (sepset(graph, b, a, set(d), set(c)) != null) {
+//                                    addDirectedEdge(graph, d, c);
+//                                    graph.addDottedUnderlineTriple(a, d, b);
+//                                }
                             }
                         }
                     }
@@ -151,7 +153,6 @@ public final class CcdMax implements GraphSearch {
         sepsets.setReturnNullWhenIndep(false);
 
         final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
-        final Map<Triple, Double> noncolliders = new ConcurrentHashMap<>();
 
         final List<Node> nodes = graph.getNodes();
 
@@ -159,7 +160,6 @@ public final class CcdMax implements GraphSearch {
             private final SepsetProducer sepsets;
             private final SepsetMap map;
             private final Map<Triple, Double> colliders;
-            private final Map<Triple, Double> noncolliders;
             private final int from;
             private final int to;
             private final int chunk = 100;
@@ -168,7 +168,7 @@ public final class CcdMax implements GraphSearch {
 
             private Task(SepsetProducer sepsets, SepsetMap map, List<Node> nodes, Graph graph,
                          Map<Triple, Double> colliders,
-                         Map<Triple, Double> noncolliders, int from, int to) {
+                         int from, int to) {
                 this.sepsets = sepsets;
                 this.map = map;
                 this.nodes = nodes;
@@ -176,22 +176,21 @@ public final class CcdMax implements GraphSearch {
                 this.from = from;
                 this.to = to;
                 this.colliders = colliders;
-                this.noncolliders = noncolliders;
             }
 
             @Override
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNodeCollider(graph, colliders, noncolliders, nodes.get(i), map);
+                        doNode(graph, colliders, nodes.get(i), map);
                     }
 
                     return true;
                 } else {
                     int mid = (to + from) / 2;
 
-                    Task left = new Task(sepsets, map, nodes, graph, colliders, noncolliders, from, mid);
-                    Task right = new Task(sepsets, map, nodes, graph, colliders, noncolliders, mid, to);
+                    Task left = new Task(sepsets, map, nodes, graph, colliders, from, mid);
+                    Task right = new Task(sepsets, map, nodes, graph, colliders, mid, to);
 
                     left.fork();
                     right.compute();
@@ -202,12 +201,11 @@ public final class CcdMax implements GraphSearch {
             }
         }
 
-        Task task = new Task(sepsets, map, nodes, graph, colliders, noncolliders, 0, nodes.size());
+        Task task = new Task(sepsets, map, nodes, graph, colliders, 0, nodes.size());
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
         List<Triple> collidersList = new ArrayList<>(colliders.keySet());
-        List<Triple> noncollidersList = new ArrayList<>(noncolliders.keySet());
 
         // Most independent ones first.
         Collections.sort(collidersList, new Comparator<Triple>() {
@@ -228,19 +226,10 @@ public final class CcdMax implements GraphSearch {
             }
         }
 
-        for (Triple triple : noncollidersList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.addUnderlineTriple(a, b, c);
-        }
-
         orientAwayFromArrow(graph);
     }
 
-    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders,
-                                Map<Triple, Double> noncolliders, Node b, SepsetMap map) {
+    private void doNode(Graph graph, Map<Triple, Double> colliders, Node b, SepsetMap map) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
@@ -270,7 +259,7 @@ public final class CcdMax implements GraphSearch {
             map.set(a, c, S);
 
             if (S.contains(b)) {
-                noncolliders.put(new Triple(a, b, c), score);
+                graph.addUnderlineTriple(a, b, c);
             } else {
                 colliders.put(new Triple(a, b, c), score);
             }
@@ -344,12 +333,12 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-
-    private void addDirectedEdge(Graph graph, Node a, Node b) {
-        if (wouldCreateBadCollider(a, b, graph)) return;
+    private boolean addDirectedEdge(Graph graph, Node a, Node b) {
+//        if (wouldCreateBadCollider(a, b, graph)) return false;
         graph.removeEdge(a, b);
         graph.addDirectedEdge(a, b);
         orientAwayFromArrow(graph, a, b);
+        return true;
     }
 
     private void addFeedback(Graph graph, Node a, Node b) {
@@ -393,30 +382,28 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
+    private void orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
         if (!Edges.isUndirectedEdge(graph.getEdge(b, c))) {
-            return false;
+            return;
         }
 
         if (!(graph.isUnderlineTriple(a, b, c))) {
-            return false;
+            return;
         }
 
-        addDirectedEdge(graph, b, c);
+        if (!Edges.isDirectedEdge(graph.getEdge(a, b))) {
+            return;
+        }
+
+        boolean oriented = addDirectedEdge(graph, b, c);
+        if (!oriented) return;
+
         graph.removeUnderlineTriple(a, b, c);
 
         for (Node d : graph.getAdjacentNodes(c)) {
-            if (d == b) return true;
-
-            Edge bc = graph.getEdge(b, c);
-
-            if (!orientAwayFromArrowVisit(b, c, d, graph)) {
-                graph.removeEdge(b, c);
-                graph.addEdge(bc);
-            }
+            if (d == b) continue;
+            orientAwayFromArrowVisit(b, c, d, graph);
         }
-
-        return true;
     }
 
     private boolean wouldCreateBadCollider(Node x, Node y, Graph graph) {
