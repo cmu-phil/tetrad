@@ -75,10 +75,17 @@ public final class CcdMax implements GraphSearch {
         this.depth = depth;
     }
 
+    /**
+     * @return The elapsed time in milliseconds.
+     */
     public long getElapsedTime() {
         return elapsed;
     }
 
+    /**
+     * @param applyOrientAwayFromCollider True if the orient away from collider rule should be
+     *                                    applied.
+     */
     public void setApplyOrientAwayFromCollider(boolean applyOrientAwayFromCollider) {
         this.applyOrientAwayFromCollider = applyOrientAwayFromCollider;
     }
@@ -128,18 +135,7 @@ public final class CcdMax implements GraphSearch {
                                     orientCollider(graph, a, c, b);
                                     orientCollider(graph, a, d, b);
                                     addFeedback(graph, c, d);
-//                                    graph.addDottedUnderlineTriple(a, c, b);
-//                                    graph.addDottedUnderlineTriple(a, d, b);
                                 }
-
-                                // These ambiguities are not induced by the model.
-//                                else if (sepset(graph, a, b, set(c), set(d)) != null) {
-//                                    addDirectedEdge(graph, c, d);
-//                                    graph.addDottedUnderlineTriple(a, c, b);
-//                                } else if (sepset(graph, b, a, set(d), set(c)) != null) {
-//                                    addDirectedEdge(graph, d, c);
-//                                    graph.addDottedUnderlineTriple(a, d, b);
-//                                }
                             }
                         }
                     }
@@ -334,7 +330,6 @@ public final class CcdMax implements GraphSearch {
     }
 
     private boolean addDirectedEdge(Graph graph, Node a, Node b) {
-//        if (wouldCreateBadCollider(a, b, graph)) return false;
         graph.removeEdge(a, b);
         graph.addDirectedEdge(a, b);
         orientAwayFromArrow(graph, a, b);
