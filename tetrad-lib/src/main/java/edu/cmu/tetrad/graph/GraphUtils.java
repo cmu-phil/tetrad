@@ -1763,6 +1763,12 @@ public final class GraphUtils {
         return pathString(graph, path, new LinkedList<Node>());
     }
 
+    public static String pathString(Graph graph, Node...x) {
+        List<Node> path = new ArrayList<>();
+        Collections.addAll(path, x);
+        return pathString(graph, path, new LinkedList<Node>());
+    }
+
     private static String pathString(Graph graph, List<Node> path, List<Node> conditioningVars) {
         StringBuilder buf = new StringBuilder();
 

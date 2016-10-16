@@ -26,6 +26,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 
@@ -75,17 +76,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * Set of ambiguous triples. Note the name can't be changed due to
      * serialization.
      */
-    protected Set<Triple> ambiguousTriples = new HashSet<>();
+    protected Set<Triple> ambiguousTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
 
     /**
      * @serial
      */
-    protected Set<Triple> underLineTriples = new HashSet<>();
+    protected Set<Triple> underLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
 
     /**
      * @serial
      */
-    protected Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    protected Set<Triple> dottedUnderLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
@@ -1597,7 +1598,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
-            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
+            return;
+//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
         underLineTriples.add(new Triple(x, y, z));
@@ -1607,7 +1609,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
-            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
+            return;
+//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
         dottedUnderLineTriples.add(triple);

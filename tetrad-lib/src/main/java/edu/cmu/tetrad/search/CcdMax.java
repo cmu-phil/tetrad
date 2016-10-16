@@ -219,6 +219,8 @@ public final class CcdMax implements GraphSearch {
 
             if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
                 orientCollider(graph, a, b, c);
+            } else {
+                graph.addUnderlineTriple(a, b, c);
             }
         }
 
@@ -349,8 +351,6 @@ public final class CcdMax implements GraphSearch {
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);
         graph.addDirectedEdge(c, b);
-        orientAwayFromArrow(graph, a, b);
-        orientAwayFromArrow(graph, c, b);
     }
 
     private void orientAwayFromArrow(Graph graph) {
@@ -383,10 +383,6 @@ public final class CcdMax implements GraphSearch {
         }
 
         if (!(graph.isUnderlineTriple(a, b, c))) {
-            return;
-        }
-
-        if (!Edges.isDirectedEdge(graph.getEdge(a, b))) {
             return;
         }
 
