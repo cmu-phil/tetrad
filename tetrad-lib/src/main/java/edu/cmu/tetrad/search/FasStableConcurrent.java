@@ -100,7 +100,7 @@ public class FasStableConcurrent implements IFas {
      */
     private PrintStream out = System.out;
 
-    int chunk = 50;
+    private int chunk = 100;
 
     private boolean recordSepsets = true;
 
@@ -333,16 +333,14 @@ public class FasStableConcurrent implements IFas {
 
                     return true;
                 } else {
-                    List<Depth0Task> tasks = new ArrayList<>();
-
                     final int mid = (to + from) / 2;
 
                     Depth0Task left = new Depth0Task(chunk, from, mid);
-                    tasks.add(left);
                     Depth0Task right = new Depth0Task(chunk, mid, to);
-                    tasks.add(right);
 
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }
@@ -472,13 +470,6 @@ public class FasStableConcurrent implements IFas {
                                             getSepsets().set(x, y, condSet);
                                         }
 
-                                        // This creates a bottleneck for the parallel search.
-//                                        if (verbose) {
-//                                            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-//                                                    nf.format(test.getPValue()));
-//                                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-//                                        }
-
                                         continue EDGE;
                                     }
                                 }
@@ -488,16 +479,14 @@ public class FasStableConcurrent implements IFas {
 
                     return true;
                 } else {
-                    List<DepthTask> tasks = new ArrayList<>();
-
                     final int mid = (to + from) / 2;
 
                     DepthTask left = new DepthTask(chunk, from, mid);
-                    tasks.add(left);
                     DepthTask right = new DepthTask(chunk, mid, to);
-                    tasks.add(right);
 
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }

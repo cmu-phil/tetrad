@@ -28,6 +28,7 @@ public class CcdMax implements Algorithm {
         DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
         IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+        search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         return search.search();
     }

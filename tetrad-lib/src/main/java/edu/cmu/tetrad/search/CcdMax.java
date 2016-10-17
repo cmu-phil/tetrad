@@ -54,10 +54,15 @@ public final class CcdMax implements GraphSearch {
      */
     public Graph search() {
         SepsetMap map = new SepsetMap();
+        System.out.println("FAS");
         Graph graph = fastAdjacencySearch();
+        System.out.println("Two shield constructs");
         orientTwoShieldConstructs(graph);
+        System.out.println("Max P collider orientation");
         orientCollidersMaxP(graph, map);
+        System.out.println("Toward D-connection");
         orientTowardDConnection(graph, map);
+        System.out.println("Done");
         return graph;
     }
 
@@ -441,12 +446,17 @@ public final class CcdMax implements GraphSearch {
                 while ((choice = gen.next()) != null) {
                     List<Node> v2 = GraphUtils.asList(choice, adji);
 
-                    getIndependenceTest().isIndependent(i, k, v2);
-                    double p2 = getIndependenceTest().getScore();
+                    try {
+                        getIndependenceTest().isIndependent(i, k, v2);
+                        double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p) {
-                        _p = p2;
-                        _v = v2;
+                        if (p2 < _p) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    } catch (Exception e) {
+                        return new Pair(null, Double.POSITIVE_INFINITY);
+//                        e.printStackTrace();
                     }
                 }
             }
@@ -458,12 +468,17 @@ public final class CcdMax implements GraphSearch {
                 while ((choice = gen.next()) != null) {
                     List<Node> v2 = GraphUtils.asList(choice, adjk);
 
-                    getIndependenceTest().isIndependent(i, k, v2);
-                    double p2 = getIndependenceTest().getScore();
+                    try {
+                        getIndependenceTest().isIndependent(i, k, v2);
+                        double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < _p) {
-                        _p = p2;
-                        _v = v2;
+                        if (p2 < _p) {
+                            _p = p2;
+                            _v = v2;
+                        }
+                    } catch (Exception e) {
+                        return new Pair(null, Double.POSITIVE_INFINITY);
+//                        e.printStackTrace();
                     }
                 }
             }
