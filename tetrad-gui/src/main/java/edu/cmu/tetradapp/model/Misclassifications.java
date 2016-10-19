@@ -217,6 +217,22 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
                 this.targetGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
+                }
+            }
+
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
+                }
+            }
+
             if (referenceGraphs == null) {
                 this.referenceGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
             }
@@ -233,6 +249,22 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
             if (model1 instanceof MultipleGraphSource) {
                 this.targetGraphs = ((MultipleGraphSource) model1).getGraphs();
+            }
+
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
+                }
+            }
+
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
+                }
             }
 
             if (referenceGraphs == null) {

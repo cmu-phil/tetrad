@@ -53,7 +53,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new TsDagToPag(graph).convert();
+        return graph;
     }
 
     @Override

@@ -224,8 +224,6 @@ public final class CcdMax implements GraphSearch {
 
             if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
                 orientCollider(graph, a, b, c);
-            } else {
-                graph.addUnderlineTriple(a, b, c);
             }
         }
 
@@ -261,9 +259,7 @@ public final class CcdMax implements GraphSearch {
 
             map.set(a, c, S);
 
-            if (S.contains(b)) {
-                graph.addUnderlineTriple(a, b, c);
-            } else {
+            if (!S.contains(b)) {
                 colliders.put(new Triple(a, b, c), score);
             }
         }
@@ -336,11 +332,15 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private boolean addDirectedEdge(Graph graph, Node a, Node b) {
+    private void addDirectedEdge(Graph graph, Node a, Node b) {
         graph.removeEdge(a, b);
         graph.addDirectedEdge(a, b);
         orientAwayFromArrow(graph, a, b);
-        return true;
+    }
+
+    private void orientUndirectedEdge(Graph graph, Node a, Node b) {
+        graph.removeEdge(a, b);
+        graph.addUndirectedEdge(a, b);
     }
 
     private void addFeedback(Graph graph, Node a, Node b) {
@@ -350,8 +350,8 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void orientCollider(Graph graph, Node a, Node b, Node c) {
-        if (wouldCreateBadCollider(a, b, graph)) return;
-        if (wouldCreateBadCollider(c, b, graph)) return;
+        if (wouldCreateBadCollider(graph, a, b)) return;
+        if (wouldCreateBadCollider(graph, c, b)) return;
         graph.removeEdge(a, b);
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);
@@ -383,18 +383,24 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
-        if (graph.getEdges(b, c).size() > 1 || !Edges.isUndirectedEdge(graph.getEdge(b, c))) {
+        if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
             return;
         }
 
-        if (!(graph.isUnderlineTriple(a, b, c))) {
+        if (!Edges.isUndirectedEdge(graph.getEdge(b, c))) {
             return;
         }
 
-        boolean oriented = addDirectedEdge(graph, b, c);
-        if (!oriented) return;
+        if (graph.isAdjacentTo(a, c)) {
+            return;
+        }
 
-        graph.removeUnderlineTriple(a, b, c);
+        if (wouldCreateBadCollider(graph, b, c))  {
+            orientUndirectedEdge(graph, a, b);
+            return;
+        }
+
+        addDirectedEdge(graph, b, c);
 
         for (Node d : graph.getAdjacentNodes(c)) {
             if (d == b) continue;
@@ -408,10 +414,14 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private boolean wouldCreateBadCollider(Node x, Node y, Graph graph) {
+    private boolean wouldCreateBadCollider(Graph graph, Node x, Node y) {
         for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
-            if (graph.getEndpoint(x, y) != Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW) return true;
+
+            if (graph.getEndpoint(z, y) == Endpoint.ARROW &&
+                    sepset(graph, x, z, set(), set(y)) == null) {
+                return true;
+            }
         }
 
         return false;
