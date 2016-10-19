@@ -249,6 +249,10 @@ public final class CcdMax implements GraphSearch {
                 continue;
             }
 
+            if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
+                continue;
+            }
+
             Pair P = maxPSepset(a, c, graph);
             List<Node> S = P.getCond();
             double score = P.getScore();
@@ -333,7 +337,7 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void addDirectedEdge(Graph graph, Node a, Node b) {
-        graph.removeEdge(a, b);
+        graph.removeEdges(a, b);
         graph.addDirectedEdge(a, b);
         orientAwayFromArrow(graph, a, b);
     }
@@ -418,7 +422,8 @@ public final class CcdMax implements GraphSearch {
         for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
 
-            if (graph.getEndpoint(z, y) == Endpoint.ARROW &&
+            if (!graph.isAdjacentTo(x, z) &&
+                    graph.getEndpoint(z, y) == Endpoint.ARROW &&
                     sepset(graph, x, z, set(), set(y)) == null) {
                 return true;
             }
