@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.dist.Split;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -86,6 +87,8 @@ public class LinearFisherModel implements Simulation, TakesData {
             simulator.setVarRange(
                     parameters.getDouble("varLow"),
                     parameters.getDouble("varHigh"));
+            simulator.setCoefSymmetric(parameters.getBoolean("coefSymmetric"));
+
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
             DataSet dataSet;
@@ -161,6 +164,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("varLow");
         parameters.add("varHigh");
         parameters.add("verbose");
+        parameters.add("coefSymmetric");
         parameters.add("numRuns");
         parameters.add("percentDiscrete");
         parameters.add("numCategories");

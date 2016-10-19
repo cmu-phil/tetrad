@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesCcd;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
@@ -158,6 +159,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
 
@@ -606,6 +608,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case IMaGES_SEM_BIC:
                 algorithm = new ImagesSemBic();
                 break;
+            case IMaGES_CCD:
+                algorithm = new ImagesCcd();
+                break;
             case GLASSO:
                 algorithm = new Glasso();
                 break;
@@ -992,7 +997,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
-        IMaGES_BDeu, IMaGES_SEM_BIC,
+        IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
         EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn

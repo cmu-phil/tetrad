@@ -964,7 +964,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         for (Edge edge : edges) {
             if (edge == null) continue;
-            adj.add(edge.getDistalNode(node));
+            Node z = edge.getDistalNode(node);
+            if (!adj.contains(z)) {
+                adj.add(z);
+            }
         }
 
         return adj;
@@ -1954,6 +1957,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         List<String> names = new ArrayList<>();
         names.add("Underlines");
         names.add("Dotted Underlines");
+        names.add("Ambiguous Triples");
         return names;
     }
 
@@ -1965,6 +1969,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         List<List<Triple>> triplesList = new ArrayList<>();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, this));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, this));
+        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, this));
         return triplesList;
     }
 

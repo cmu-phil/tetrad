@@ -383,7 +383,7 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
-        if (!Edges.isUndirectedEdge(graph.getEdge(b, c))) {
+        if (graph.getEdges(b, c).size() > 1 || !Edges.isUndirectedEdge(graph.getEdge(b, c))) {
             return;
         }
 
@@ -398,7 +398,13 @@ public final class CcdMax implements GraphSearch {
 
         for (Node d : graph.getAdjacentNodes(c)) {
             if (d == b) continue;
+            Edge edge = graph.getEdge(c, d);
             orientAwayFromArrowVisit(b, c, d, graph);
+
+            if (graph.getEdges(c, d).size() == 1 && !graph.getEdge(c, d).pointsTowards(d)) {
+                graph.removeEdge(c, d);
+                graph.addEdge(edge);
+            }
         }
     }
 

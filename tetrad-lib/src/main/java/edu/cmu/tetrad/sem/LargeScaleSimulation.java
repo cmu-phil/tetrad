@@ -62,6 +62,7 @@ public final class LargeScaleSimulation {
     private boolean verbose = false;
     long seed = new Date().getTime();
     private boolean alreadySetUp = false;
+    private boolean coefSymmetric = false;
 
     //=============================CONSTRUCTORS============================//
 
@@ -361,7 +362,9 @@ public final class LargeScaleSimulation {
 
             System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
-            newCoefs[newCoefs.length - 1] = edgeCoefDist.nextRandom();
+            double coef = edgeCoefDist.nextRandom();
+            if (coefSymmetric) coef = Math.abs(coef);
+            newCoefs[newCoefs.length - 1] = coef;
 
             this.parents[_head] = newParents;
             this.coefs[_head] = newCoefs;
@@ -707,6 +710,10 @@ public final class LargeScaleSimulation {
         }
 
         return shocks;
+    }
+
+    public void setCoefSymmetric(boolean coefSymmetric) {
+        this.coefSymmetric = coefSymmetric;
     }
 }
 

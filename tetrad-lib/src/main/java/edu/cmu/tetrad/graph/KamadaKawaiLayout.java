@@ -105,7 +105,7 @@ public final class KamadaKawaiLayout {
             throw new NullPointerException();
         }
 
-        this.graph = graph;
+        this.graph = GraphUtils.undirectedGraph(graph);
     }
 
     //============================PUBLIC METHODS==========================//

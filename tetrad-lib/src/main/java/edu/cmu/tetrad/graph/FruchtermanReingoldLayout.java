@@ -112,7 +112,7 @@ public final class FruchtermanReingoldLayout {
             //pos[i][1] = RandomUtil.nextInt(600);
         }
 
-        List<Edge> edges = new ArrayList<>(graph().getEdges());
+        List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
 
         for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
             Edge edge = i.next();
