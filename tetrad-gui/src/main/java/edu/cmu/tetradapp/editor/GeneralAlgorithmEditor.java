@@ -166,6 +166,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FCI_Max, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
@@ -554,6 +555,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case CFCI:
                 algorithm = new Cfci(independenceWrapper);
+                break;
+            case FCI_Max:
+                algorithm = new FciMax(independenceWrapper);
                 break;
             case TsFCI:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
@@ -995,7 +999,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private enum AlgName {
         PC, PCStable, CPC, CPCStable, FGS, /*PcLocal,*/ PcMax, PcMaxLocal, FAS,
         FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
-        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
+        FCI, RFCI, CFCI, FCI_Max, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,
         Bpc, Fofc, Ftfc,

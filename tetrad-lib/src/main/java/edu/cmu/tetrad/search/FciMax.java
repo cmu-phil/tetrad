@@ -27,11 +27,14 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RecursiveTask;
 
 
 /**
@@ -106,12 +109,15 @@ public final class FciMax implements GraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    private Graph trueDag;
-    private ConcurrentMap<Node, Integer> hashIndices;
-    private ICovarianceMatrix covarianceMatrix;
-    private double penaltyDiscount = 2;
-    private SepsetMap possibleDsepSepsets = new SepsetMap();
+
+    /**
+     * An initial graph if there is one.
+     */
     private Graph initialGraph;
+
+    /**
+     * Max path length for the possible dsep search.
+     */
     private int possibleDsepDepth = -1;
 
 
@@ -127,7 +133,6 @@ public final class FciMax implements GraphSearch {
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
-        buildIndexing(independenceTest.getVariables());
     }
 
     /**
@@ -184,7 +189,6 @@ public final class FciMax implements GraphSearch {
         FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
-//        return search(new Fas(getIndependenceTest()));
     }
 
     public void setInitialGraph(Graph initialGraph) {
@@ -204,20 +208,11 @@ public final class FciMax implements GraphSearch {
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-//        SepsetProducer sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
         SepsetProducer sp = new SepsetsMaxPValuePossDsep(graph, independenceTest, null, depth, maxPathLength);
-        SepsetProducer sp2 = new SepsetsMaxScore(graph, independenceTest, null, depth);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
-//            long time1 = System.currentTimeMillis();
-//            new FciOrient(new SepsetsSet(this.sepsets, independenceTest)).ruleR0(graph);
-//            SepsetProducer sepsetProducer = new SepsetsSet(sepsets, independenceTest);
-
-            addColliders(graph, sp2, knowledge);
-
-            System.out.println("Possible dsep add colliders done");
+            addColliders(graph);
 
             for (Edge edge : new ArrayList<>(graph.getEdges())) {
                 Node x = edge.getNode1();
@@ -228,38 +223,14 @@ public final class FciMax implements GraphSearch {
                 if (sepset != null) {
                     graph.removeEdge(x, y);
                     sepsets.set(x, y, sepset);
-                    System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
                 }
             }
 
-            System.out.println("Possible dsep done");
-
-
-//            long time2 = System.currentTimeMillis();
-//            logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
-//
-//            // Step FCI D.
-//            long time3 = System.currentTimeMillis();
-//
-//            System.out.println("Starting possible dsep search");
-//            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
-//            possibleDSep.setKnowledge(getKnowledge());
-//            possibleDSep.setMaxPathLength(maxPathLength);
-//            this.sepsets.addAll(possibleDSep.search());
-//            long time4 = System.currentTimeMillis();
-//            logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
-//            System.out.println("Starting possible dsep search");
-
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
-
-            System.out.println("Reoriented with circles");
         }
 
-        addColliders(graph, sp2, knowledge);
-
-        System.out.println("Added colliders again");
+        addColliders(graph);
 
         // Step CI C (Zhang's step F3.)
         long time5 = System.currentTimeMillis();
@@ -274,108 +245,137 @@ public final class FciMax implements GraphSearch {
         fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
 
-        System.out.println("Final orientation done");
-
         return graph;
     }
 
-    /**
-     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
-     * case y is in Sepset({x, z}).
-     */
-    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose, IKnowledge knowledge) {
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
-        Map<Triple, Double> colliders = new HashMap<>();
+    private void addColliders(Graph graph) {
+        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
 
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        class Task extends RecursiveTask<Boolean> {
+            int from;
+            int to;
+            int chunk = 20;
+            List<Node> nodes;
+            Graph graph;
 
-            if (adjacentNodes.size() < 2) {
+            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
+                this.nodes = nodes;
+                this.graph = graph;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        doNode(graph, scores, nodes.get(i));
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to + from) / 2;
+
+                    Task left = new Task(nodes, graph, scores, from, mid);
+                    Task right = new Task(nodes, graph, scores, mid, to);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+
+                    return true;
+                }
+            }
+        }
+
+        Task task = new Task(nodes, graph, scores, 0, nodes.size());
+
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+
+        List<Triple> tripleList = new ArrayList<>(scores.keySet());
+
+        // Most independent ones first.
+        Collections.sort(tripleList, new Comparator<Triple>() {
+
+            @Override
+            public int compare(Triple o1, Triple o2) {
+                return Double.compare(scores.get(o2), scores.get(o1));
+            }
+        });
+
+        for (Triple triple : tripleList) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
+
+            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+            }
+        }
+    }
+
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
+        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+        if (adjacentNodes.size() < 2) {
+            return;
+        }
+
+        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+        int[] combination;
+
+        while ((combination = cg.next()) != null) {
+            Node a = adjacentNodes.get(combination[0]);
+            Node c = adjacentNodes.get(combination[1]);
+
+            // Skip triples that are shielded.
+            if (graph.isAdjacentTo(a, c)) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
+            List<Node> adja = graph.getAdjacentNodes(a);
+            double score = Double.POSITIVE_INFINITY;
+            List<Node> S = null;
 
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+            int[] comb2;
 
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
+            while ((comb2 = cg2.next()) != null) {
+                List<Node> s = GraphUtils.asList(comb2, adja);
+                independenceTest.isIndependent(a, c, s);
+                double _score = independenceTest.getScore();
 
-                List<Node> sepset = sepsetProducer.getSepset(a, c);
-
-                if (sepset == null) continue;
-
-//
-                if (sepsetProducer.getScore() < getIndependenceTest().getAlpha()) continue;
-
-                if (!sepset.contains(b)) {
-                    System.out.println("sepset = " + sepset + " b = " + b + " p = " + sepsetProducer.getScore());
-
-                    if (verbose) {
-                        System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                    }
-
-                    IndependenceTest test2 = new IndTestDSep(trueDag);
-                    SepsetProducer sp2 = new SepsetsMaxScore(graph, test2, null, depth);
-
-                    System.out.println("Dsep sepset = " + sp2.getSepset(a, c));
-
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
-
-//                    colliders.add(new Triple(a, b, c));
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+                if (_score < score) {
+                    score = _score;
+                    S = s;
                 }
             }
-        }
 
-        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
+            List<Node> adjc = graph.getAdjacentNodes(c);
 
-        System.out.println("Done finding colliders");
+            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+            int[] comb3;
 
-        return colliders;
-    }
+            while ((comb3 = cg3.next()) != null) {
+                List<Node> s = GraphUtils.asList(comb3, adjc);
+                independenceTest.isIndependent(c, a, s);
+                double _score = independenceTest.getScore();
 
-    private void addColliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
-        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose, knowledge);
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
+            }
 
-        final List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
-
-        for (Triple collider : colliders) {
-            if (collidersPs.get(collider) < getIndependenceTest().getAlpha()) continue;
-
-            Node a = collider.getX();
-            Node b = collider.getY();
-            Node c = collider.getZ();
-
-//            if (!(isArrowpointAllowed(a, b, knowledge) && isArrowpointAllowed(c, b, knowledge))) {
-//                continue;
-//            }
-
-//            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
-//                graph.removeEdge(a, b);
-//                graph.removeEdge(c, b);
-//                graph.addDirectedEdge(a, b);
-//                graph.addDirectedEdge(c, b);
-//            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
+            // S actually has to be non-null here, but the compiler doesn't know that.
+            if (S != null && !S.contains(b)) {
+                scores.put(new Triple(a, b, c), score);
+            }
         }
     }
-
-    private static List<Node> union(List<Node> nodes, Node a) {
-        List<Node> union = new ArrayList<>(nodes);
-        union.add(a);
-        return union;
-    }
-
 
     public SepsetMap getSepsets() {
         return this.sepsets;
@@ -453,26 +453,7 @@ public final class FciMax implements GraphSearch {
         return independenceTest;
     }
 
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
     //===========================PRIVATE METHODS=========================//
-
-    private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<>();
-        for (Node node : nodes) {
-            this.hashIndices.put(node, variables.indexOf(node));
-        }
-    }
 
     /**
      * Orients according to background knowledge

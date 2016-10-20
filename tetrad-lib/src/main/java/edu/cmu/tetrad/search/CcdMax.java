@@ -387,7 +387,9 @@ public final class CcdMax implements GraphSearch {
     }
 
     private void orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
-        if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
+
+        // This shouldn't happen--a--b--c should be shielded. Checking just in case...
+        if (graph.getEdges(b, c).size() > 1) {
             return;
         }
 
@@ -400,7 +402,6 @@ public final class CcdMax implements GraphSearch {
         }
 
         if (wouldCreateBadCollider(graph, b, c))  {
-            orientUndirectedEdge(graph, a, b);
             return;
         }
 
@@ -408,12 +409,15 @@ public final class CcdMax implements GraphSearch {
 
         for (Node d : graph.getAdjacentNodes(c)) {
             if (d == b) continue;
-            Edge edge = graph.getEdge(c, d);
+            List<Edge> edges = graph.getEdges(b, c);
             orientAwayFromArrowVisit(b, c, d, graph);
 
             if (graph.getEdges(c, d).size() == 1 && !graph.getEdge(c, d).pointsTowards(d)) {
-                graph.removeEdge(c, d);
-                graph.addEdge(edge);
+                graph.removeEdge(b, c);
+
+                for (Edge edge : edges) {
+                    graph.addEdge(edge);
+                }
             }
         }
     }

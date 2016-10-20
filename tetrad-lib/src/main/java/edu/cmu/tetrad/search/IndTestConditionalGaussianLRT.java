@@ -212,11 +212,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        double v = getAlpha() - getPValue();
-
-        System.out.println("alpha = " + getAlpha() + " p value = " + getPValue() + " score = " + v);
-
-        return v;
+        return getAlpha() - getPValue();
     }
 
     /**
