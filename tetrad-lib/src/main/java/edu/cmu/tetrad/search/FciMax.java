@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
@@ -33,7 +32,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RecursiveTask;
 
 
@@ -46,10 +44,8 @@ import java.util.concurrent.RecursiveTask;
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
  * @author Joseph Ramsey
- * @author Choh-Man Teng
+ * @author Vineet Rhagu
  */
 public final class FciMax implements GraphSearch {
 
@@ -135,33 +131,6 @@ public final class FciMax implements GraphSearch {
         this.variables.addAll(independenceTest.getVariables());
     }
 
-    /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
-     * search over.
-     */
-    public FciMax(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-
-        Set<Node> remVars = new HashSet<>();
-        for (Node node1 : this.variables) {
-            boolean search = false;
-            for (Node node2 : searchVars) {
-                if (node1.getName().equals(node2.getName())) {
-                    search = true;
-                }
-            }
-            if (!search) {
-                remVars.add(node1);
-            }
-        }
-        this.variables.removeAll(remVars);
-    }
-
     //========================PUBLIC METHODS==========================//
 
     public int getDepth() {
@@ -182,10 +151,6 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search() {
-        return search(getIndependenceTest().getVariables());
-    }
-
-    public Graph search(List<Node> nodes) {
         FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
@@ -310,10 +275,8 @@ public final class FciMax implements GraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-            }
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
         }
     }
 
@@ -506,14 +469,6 @@ public final class FciMax implements GraphSearch {
         }
 
         logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public int getPossibleDsepDepth() {
-        return possibleDsepDepth;
-    }
-
-    public void setPossibleDsepDepth(int possibleDsepDepth) {
-        this.possibleDsepDepth = possibleDsepDepth;
     }
 }
 
