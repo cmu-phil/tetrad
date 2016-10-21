@@ -342,13 +342,8 @@ public final class CcdMax implements GraphSearch {
         orientAwayFromArrow(graph, a, b);
     }
 
-    private void orientUndirectedEdge(Graph graph, Node a, Node b) {
-        graph.removeEdge(a, b);
-        graph.addUndirectedEdge(a, b);
-    }
-
     private void addFeedback(Graph graph, Node a, Node b) {
-        graph.removeEdge(a, b);
+        graph.removeEdges(a, b);
         graph.addEdge(Edges.directedEdge(a, b));
         graph.addEdge(Edges.directedEdge(b, a));
     }
@@ -356,6 +351,8 @@ public final class CcdMax implements GraphSearch {
     private void orientCollider(Graph graph, Node a, Node b, Node c) {
         if (wouldCreateBadCollider(graph, a, b)) return;
         if (wouldCreateBadCollider(graph, c, b)) return;
+        if (graph.getEdges(a, b).size() > 1) return;
+        if (graph.getEdges(b, c).size() > 1) return;
         graph.removeEdge(a, b);
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);
@@ -480,8 +477,8 @@ public final class CcdMax implements GraphSearch {
                             _v = v2;
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         return new Pair(null, Double.POSITIVE_INFINITY);
-//                        e.printStackTrace();
                     }
                 }
             }
@@ -502,8 +499,8 @@ public final class CcdMax implements GraphSearch {
                             _v = v2;
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         return new Pair(null, Double.POSITIVE_INFINITY);
-//                        e.printStackTrace();
                     }
                 }
             }

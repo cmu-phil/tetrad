@@ -960,7 +960,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     public List<Node> getAdjacentNodes(Node node) {
         List<Edge> edges = edgeLists.get(node);
-        List<Node> adj = new ArrayList<>(edges.size());
+        Set<Node> adj = new HashSet<>(edges.size());
 
         for (Edge edge : edges) {
             if (edge == null) continue;
@@ -970,7 +970,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             }
         }
 
-        return adj;
+        return new ArrayList<>(adj);
     }
 
     /**
