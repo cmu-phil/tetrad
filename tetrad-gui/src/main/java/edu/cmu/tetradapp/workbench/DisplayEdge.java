@@ -164,7 +164,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //    private Color lineColor = Color.black;
 
 
-
 //    public Color lineColor = new Color(99, 101, 188);
 //    public Color lineColor = new Color(0, 4, 255);
 //    public Color lineColor = new Color(52, 55, 217);
@@ -203,6 +202,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
+    private boolean dashed = false;
 
     //==========================CONSTRUCTORS============================//
 
@@ -215,6 +215,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * @param type  the type of the edge, either UNRANDOMIZED or RANDOMIZED.
      */
     protected DisplayEdge(DisplayNode node1, DisplayNode node2, int type) {
+        this(node1, node2, type, null);
+    }
+
+    protected DisplayEdge(DisplayNode node1, DisplayNode node2, int type, Color color) {
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
         }
@@ -232,6 +236,11 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         this.node1 = node1;
         this.node2 = node2;
         this.type = type;
+
+        if (color != null) {
+            this.lineColor = color;
+        }
+
         this.mode = ANCHORED_UNSELECTED;
 
         node1.addComponentListener(compHandler);
@@ -251,6 +260,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * @param node2 the 'to' component.
      */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2) {
+        this(modelEdge, node1, node2, null);
+    }
+
+    public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2, Color color) {
 
         if (modelEdge == null) {
             throw new NullPointerException("Model edge must not be null.");
@@ -267,6 +280,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         this.modelEdge = modelEdge;
         this.node1 = node1;
         this.node2 = node2;
+
+        if (color != null) {
+            this.lineColor = color;
+        }
         this.mode = ANCHORED_UNSELECTED;
 
         node1.addComponentListener(compHandler);
@@ -292,6 +309,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * @see #updateTrackPoint
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type) {
+        this(node1, mouseTrackPoint, type, null);
+    }
+
+    public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type, Color color) {
 
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
@@ -311,6 +332,11 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         this.node1 = node1;
         this.mouseTrackPoint = mouseTrackPoint;
         this.type = type;
+
+        if (color != null) {
+            this.lineColor = color;
+        }
+
         this.mode = HALF_ANCHORED;
 
         resetBounds();
@@ -407,7 +433,20 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         // width <= 1.0 seems to cause the problem, so we pick a stroke
         // width slightly greater than 1.0. jdramsey 4/16/2005
 //        g2d.setStroke(new BasicStroke(1.000001f));
-        g2d.setStroke(new BasicStroke(getStrokeWidth() + 0.000001f));
+        BasicStroke s;
+
+        if (dashed) {
+            float dash1[] = {10.0f};
+            s = new BasicStroke(1.0f,
+                    BasicStroke.CAP_BUTT,
+                    BasicStroke.JOIN_MITER,
+                    10.0f, dash1, 0.0f);
+        } else {
+            s = new BasicStroke(getStrokeWidth() + 0.000001f);
+        }
+
+        g2d.setStroke(s);
+        g2d.setColor(lineColor);
         g2d.drawLine(x1, y1, x2, y2);
 
         if (!isShowAdjacenciesOnly()) {
@@ -626,7 +665,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * rectangles but doesn't always...)
      *
      * @return a point pair which represents the connecting line segment through
-     *         the center of each rectangle touching the edge of each.
+     * the center of each rectangle touching the edge of each.
      */
     protected final PointPair calculateEdge(DisplayNode comp1, DisplayNode comp2) {
         Rectangle r1 = comp1.getBounds();
@@ -842,7 +881,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param pp the point pair representing the line segment of the edge.
      * @return the Polygon representing the sleeve, or null if no such Polygon
-     *         exists (because, e.g., one of the endpoints is null).
+     * exists (because, e.g., one of the endpoints is null).
      */
     private Polygon getSleeve(PointPair pp) {
         if ((pp == null) || (pp.getFrom() == null) || (pp.getTo() == null)) {
@@ -990,7 +1029,19 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public void setLineColor(Color lineColor) {
-        this.lineColor = lineColor;
+        if (lineColor != null) {
+            this.lineColor = lineColor;
+        }
+    }
+
+    @Override
+    public boolean getDashed() {
+        return dashed;
+    }
+
+    @Override
+    public void setDashed(boolean dashed) {
+        this.dashed = dashed;
     }
 
     public Color getSelectedColor() {

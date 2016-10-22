@@ -1232,11 +1232,13 @@ public abstract class AbstractWorkbench extends JComponent
         }
 
         IDisplayEdge displayEdge = getNewDisplayEdge(modelEdge);
-        if (graph.isHighlighted(modelEdge)) displayEdge.setHighlighted(true);
-
         if (displayEdge == null) {
             return;
         }
+
+        if (graph.isHighlighted(modelEdge)) displayEdge.setHighlighted(true);
+        displayEdge.setLineColor(modelEdge.getLineColor());
+        displayEdge.setDashed(modelEdge.isDashed());
 
         // Link the display edge to the model edge.
 

@@ -307,8 +307,6 @@ public class TestPurify {
         Graph _structuralGraph = _graph.subgraph(_latents);
 
         assertEquals(2, _structuralGraph.getNumEdges());
-
-
     }
 }
 

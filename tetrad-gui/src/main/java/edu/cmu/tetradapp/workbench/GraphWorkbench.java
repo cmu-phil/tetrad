@@ -218,19 +218,21 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
+        Color color = null;
+
         switch (edgeMode) {
             case DIRECTED_EDGE:
-                return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED);
+                return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED, color);
 
             case NONDIRECTED_EDGE:
-                return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED);
+                return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED, color);
 
             case PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
-                        DisplayEdge.PARTIALLY_ORIENTED);
+                        DisplayEdge.PARTIALLY_ORIENTED, color);
 
             case BIDIRECTED_EDGE:
-                return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED);
+                return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED, color);
 
             default :
                 throw new IllegalStateException();

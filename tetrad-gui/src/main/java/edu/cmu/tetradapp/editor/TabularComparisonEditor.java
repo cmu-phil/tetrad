@@ -90,7 +90,7 @@ public class TabularComparisonEditor extends JPanel {
 
     private TextTable getTextTable(DataSet dataSet, NumberFormat nf) {
         TextTable table = new TextTable(dataSet.getNumRows() + 2, dataSet.getNumColumns() + 1);
-
+        table.setTabDelimited(true);
         table.setToken(0, 0, "Run");
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {

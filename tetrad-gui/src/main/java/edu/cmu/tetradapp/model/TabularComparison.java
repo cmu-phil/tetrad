@@ -101,10 +101,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
         }
 
-        if (model1 instanceof GeneralAlgorithmRunner) {
+        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof Simulation) {
             GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
             this.algorithm = generalAlgorithmRunner.getAlgorithm();
-        } else if (model2 instanceof GeneralAlgorithmRunner) {
+        } else if (model2 instanceof GeneralAlgorithmRunner && model1 instanceof Simulation) {
             GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
             this.algorithm = generalAlgorithmRunner.getAlgorithm();
         }
@@ -218,11 +218,11 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
 //        statistics.add(new ElapsedTime());
-        statistics.add(new F1Adj());
-        statistics.add(new F1Arrow());
-        statistics.add(new MathewsCorrAdj());
-        statistics.add(new MathewsCorrArrow());
-        statistics.add(new SHD());
+//        statistics.add(new F1Adj());
+//        statistics.add(new F1Arrow());
+//        statistics.add(new MathewsCorrAdj());
+//        statistics.add(new MathewsCorrArrow());
+//        statistics.add(new SHD());
 
         List<Node> variables = new ArrayList<>();
 
