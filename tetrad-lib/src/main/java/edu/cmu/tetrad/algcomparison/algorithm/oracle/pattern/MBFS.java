@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -48,7 +49,7 @@ public class MBFS implements Algorithm, HasKnowledge {
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Node target = graph.getNode(targetName);
-        return GraphUtils.markovBlanketDag(target, graph);
+        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
     }
 
     @Override

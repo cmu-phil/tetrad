@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
@@ -33,6 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -102,49 +104,82 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
         String referenceName = this.params.getString("referenceGraphName", null);
 
-        if (referenceName == null) {
-            throw new IllegalArgumentException("Must specify a reference graph.");
-        } else {
-            Object model11 = model1;
-            Object model21 = model2;
-
-            if (referenceName.equals(model1.getName())) {
-                if (model11 instanceof MultipleGraphSource) {
-                    this.referenceGraphs = ((MultipleGraphSource) model11).getGraphs();
-                }
-
-                if (model21 instanceof MultipleGraphSource) {
-                    this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
-                }
-
-                if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
-                }
-
-                if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
-                }
-            } else if (referenceName.equals(model2.getName())) {
-                if (model21 instanceof MultipleGraphSource) {
-                    this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
-                }
-
-                if (model11 instanceof MultipleGraphSource) {
-                    this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
-                }
-
-                if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
-                }
-
-                if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
-                }
-            } else {
-                throw new IllegalArgumentException(
-                        "Neither of the supplied session models is named '" +
-                                referenceName + "'.");
+        if (referenceName.equals(model1.getName())) {
+            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
+                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+            } else if (model1 instanceof MultipleGraphSource) {
+                this.referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
+
+            if (model2 instanceof MultipleGraphSource) {
+                this.targetGraphs = ((MultipleGraphSource) model2).getGraphs();
+            }
+
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
+                }
+            }
+
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
+                }
+            }
+
+            if (referenceGraphs == null) {
+                this.referenceGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
+            }
+
+            if (targetGraphs == null) {
+                this.targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
+            }
+        } else if (referenceName.equals(model2.getName())) {
+            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
+                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+            } else if (model1 instanceof MultipleGraphSource) {
+                this.referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
+            }
+
+            if (model1 instanceof MultipleGraphSource) {
+                this.targetGraphs = ((MultipleGraphSource) model1).getGraphs();
+            }
+
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
+                }
+            }
+
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
+                }
+            }
+
+            if (referenceGraphs == null) {
+                this.referenceGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
+            }
+
+            if (targetGraphs == null) {
+                this.targetGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Neither of the supplied session models is named '" +
+                            referenceName + "'.");
+        }
+
+        for (int i = 0; i < targetGraphs.size(); i++) {
+            targetGraphs.set(i, GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
         }
 
         if (algorithm != null) {

@@ -280,7 +280,7 @@ public final class CcdMax implements GraphSearch {
             Node c = edge.getNode2();
             surround.add(b);
 
-            for (int i = 1; i < 2; i++) {
+            for (int i = 1; i < 3; i++) {
                 for (Node z : new HashSet<>(surround)) {
                     surround.addAll(graph.getAdjacentNodes(z));
                 }

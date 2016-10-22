@@ -7,6 +7,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
@@ -48,7 +49,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new TsDagToPag(graph).convert();
+        return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
