@@ -856,6 +856,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 continue;
             }
 
+            if (graph.getDegree(x) > maxDegree - 1) continue;
+            if (graph.getDegree(y) > maxDegree - 1) continue;
+
             if (!arrow.getNaYX().equals(getNaYX(x, y))) {
                 continue;
             }
@@ -867,9 +870,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             if (!validInsert(x, y, arrow.getHOrT(), getNaYX(x, y))) {
                 continue;
             }
-
-            if (graph.getDegree(x) > maxDegree - 1) continue;
-            if (graph.getDegree(y) > maxDegree - 1) continue;
 
             Set<Node> T = arrow.getHOrT();
             double bump = arrow.getBump();
