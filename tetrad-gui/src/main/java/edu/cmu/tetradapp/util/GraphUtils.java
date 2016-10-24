@@ -1,16 +1,11 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.data.DataGraphUtils;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -182,5 +177,64 @@ public class GraphUtils {
         Graph graph = edu.cmu.tetrad.graph.GraphUtils.scaleFreeGraph(numNodes, numLatents,
                 alpha, beta, deltaIn, deltaOut);
         return graph;
+    }
+
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound'. Cycle checker in other words.
+    public static boolean existsSemiDirectedPath(Node from, Node to, int bound, Graph graph) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Q.offer(from);
+        V.add(from);
+        Node e = null;
+        int distance = 0;
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+            if (t == to) {
+                return true;
+            }
+
+            if (e == t) {
+                e = null;
+                distance++;
+                if (distance > (bound == -1 ? 1000 : bound)) return false;
+            }
+
+            for (Node u : graph.getAdjacentNodes(t)) {
+                Edge edge = graph.getEdge(t, u);
+                Node c = traverseSemiDirected(t, edge);
+                if (c == null) continue;
+
+                if (c == to) {
+                    return true;
+                }
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+
+                    if (e == null) {
+                        e = u;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Used to find semidirected paths for cycle checking.
+    public static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
     }
 }

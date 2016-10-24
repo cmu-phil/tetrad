@@ -53,8 +53,8 @@ public final class GFci implements GraphSearch {
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    // The maxIndegree for the fast adjacency search.
-    private int maxIndegree = -1;
+    // The maxDegree for the fast adjacency search.
+    private int maxDegree = -1;
 
     // The logger to use.
     private TetradLogger logger = TetradLogger.getInstance();
@@ -106,12 +106,12 @@ public final class GFci implements GraphSearch {
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
-        fgs.setMaxDegree(maxIndegree);
+        fgs.setMaxDegree(maxDegree);
         fgs.setOut(out);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxDegree);
 
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
@@ -151,6 +151,8 @@ public final class GFci implements GraphSearch {
 
         elapsedTime = time2 - time1;
 
+        graph.setPag(true);
+
         return graph;
     }
 
@@ -160,22 +162,22 @@ public final class GFci implements GraphSearch {
     }
 
     /**
-     * @param maxIndegree The maximum indegree of the output graph.
+     * @param maxDegree The maximum indegree of the output graph.
      */
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) {
+    public void setMaxDegree(int maxDegree) {
+        if (maxDegree < -1) {
             throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
+                    "Depth must be -1 (unlimited) or >= 0: " + maxDegree);
         }
 
-        this.maxIndegree = maxIndegree;
+        this.maxDegree = maxDegree;
     }
 
     /**
      * Returns The maximum indegree of the output graph.
      */
-    public int getMaxIndegree() {
-        return maxIndegree;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
     // Due to Spirtes.

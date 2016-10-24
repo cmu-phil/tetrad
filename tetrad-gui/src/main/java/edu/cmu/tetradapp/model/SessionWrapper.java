@@ -82,6 +82,8 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      */
     private transient SessionHandler sessionHandler;
     private boolean highlighted = false;
+    private boolean pag;
+    private boolean pattern;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -613,15 +615,15 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        throw new UnsupportedOperationException();
+        return new HashSet<>();
     }
 
     public Set<Triple> getUnderLines() {
-        throw new UnsupportedOperationException();
+        return new HashSet<>();
     }
 
     public Set<Triple> getDottedUnderlines() {
-        throw new UnsupportedOperationException();
+        return new HashSet<>();
     }
 
     /**
@@ -746,6 +748,26 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         return null;
+    }
+
+    @Override
+    public boolean isPag() {
+        return pag;
+    }
+
+    @Override
+    public void setPag(boolean pag) {
+        this.pag = pag;
+    }
+
+    @Override
+    public boolean isPattern() {
+        return pattern;
+    }
+
+    @Override
+    public void setPattern(boolean pattern) {
+        this.pattern = pattern;
     }
 
     /**

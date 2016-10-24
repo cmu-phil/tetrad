@@ -33,6 +33,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,6 +45,16 @@ class ParameterPanel extends JPanel {
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
+
+        List<String> removeDuplicates = new ArrayList<>();
+
+        for (String param : parametersToEdit) {
+            if (!removeDuplicates.contains(param)) {
+                removeDuplicates.add(param);
+            }
+        }
+
+        parametersToEdit = removeDuplicates;
 
         a.add(b);
 

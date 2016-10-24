@@ -285,13 +285,13 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            Node target = getIndependenceTest().getVariable(targetName);
 //            System.out.println("Target = " + target);
 //
-//            int depth = getParameters().getMaxIndegree();
+//            int depth = getParameters().getMaxDegree();
 //
 //            ScoredIndTest fgsScore = new ScoredIndTest(getIndependenceTest());
 //            fgsScore.setParameter1(getParameters().getAlpha());
 //            FgsMb search = new FgsMb(fgsScore, target);
 //            search.setKnowledge(knowledge);
-//            search.setMaxIndegree(depth);
+//            search.setMaxDegree(depth);
 //            search.setVerbose(true);
 //            search.setHeuristicSpeedup(true);
 //            searchGraph = search.search();

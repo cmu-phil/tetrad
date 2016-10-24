@@ -53,6 +53,8 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * @serial
      */
     private IKnowledge knowledge;
+    private boolean pag;
+    private boolean pattern;
 
     //============================CONSTRUCTORS=============================//
 
@@ -563,6 +565,26 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         return null;
+    }
+
+    @Override
+    public boolean isPag() {
+        return pag;
+    }
+
+    @Override
+    public void setPag(boolean pag) {
+        this.pag = pag;
+    }
+
+    @Override
+    public boolean isPattern() {
+        return pattern;
+    }
+
+    @Override
+    public void setPattern(boolean pattern) {
+        this.pattern = pattern;
     }
 }
 

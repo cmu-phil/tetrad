@@ -163,7 +163,7 @@ public final class TsGFci implements GraphSearch {
 //        System.out.println("GFCI: FGS done");
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
-//        ((SepsetsGreedy) sepsets).setMaxIndegree(3);
+//        ((SepsetsGreedy) sepsets).setMaxDegree(3);
 //        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
@@ -250,6 +250,8 @@ public final class TsGFci implements GraphSearch {
         long time2 = System.currentTimeMillis();
 
         elapsedTime = time2 - time1;
+
+        graph.setPag(true);
 
         return graph;
     }

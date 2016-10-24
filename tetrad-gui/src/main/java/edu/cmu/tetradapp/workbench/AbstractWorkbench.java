@@ -23,9 +23,10 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.ImageUtils;
-import edu.cmu.tetradapp.util.LayoutEditable;
+import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -402,9 +403,8 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return the model edge for the given display edge.
-     *
      * @param displayEdge Ibid.
+     * @return the model edge for the given display edge.
      */
     public final Edge getModelEdge(IDisplayEdge displayEdge) {
         return (Edge) getDisplayToModel().get(displayEdge);
@@ -977,7 +977,16 @@ public abstract class AbstractWorkbench extends JComponent
             throw new IllegalArgumentException("Graph model cannot be null.");
         }
 
-        this.graph = graph;
+        if (graph instanceof SessionWrapper) {
+            this.graph = graph;
+        } else {
+            this.graph = new EdgeListGraph(graph);
+
+            if (graph.isPag()) {
+                addPagColoring(new EdgeListGraph(graph));
+            }
+        }
+
         this.modelEdgesToDisplay = new HashMap<>();
         this.modelNodesToDisplay = new HashMap<>();
         this.displayToModel = new HashMap();
@@ -1013,6 +1022,24 @@ public abstract class AbstractWorkbench extends JComponent
 
         revalidate();
         repaint();
+    }
+
+    private void addPagColoring(EdgeListGraph graph) {
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isDirectedEdge(edge) && graph.defVisible(edge)) {
+                edge.setLineColor(Color.green);
+            }
+
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (!Edges.isDirectedEdge(edge)) {
+                if (edu.cmu.tetradapp.util.GraphUtils.existsSemiDirectedPath(x, y, -1, graph)
+                        || edu.cmu.tetradapp.util.GraphUtils.existsSemiDirectedPath(y, x, -1, graph)) {
+                    edge.setDashed(true);
+                }
+            }
+        }
     }
 
     /**

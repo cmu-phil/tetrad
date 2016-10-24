@@ -58,14 +58,14 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @serial
      */
-    protected Set<Edge> edgesSet;
+    Set<Edge> edgesSet;
 
     /**
      * Map from each node to the List of edges connected to that node.
      *
      * @serial
      */
-    protected Map<Node, List<Edge>> edgeLists;
+    Map<Node, List<Edge>> edgeLists;
 
     /**
      * Fires property change events.
@@ -81,29 +81,33 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * @serial
      */
-    protected Set<Triple> underLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
+    Set<Triple> underLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
 
     /**
      * @serial
      */
-    protected Set<Triple> dottedUnderLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
+    Set<Triple> dottedUnderLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
      * triples. If there are triples in the lists involving removed nodes, these need to be removed from the lists
      * first, so as not to cause confusion.
      */
-    protected boolean stuffRemovedSinceLastTripleAccess = false;
+    boolean stuffRemovedSinceLastTripleAccess = false;
 
     /**
      * The set of highlighted edges.
      */
-    protected Set<Edge> highlightedEdges = new HashSet<>();
+    Set<Edge> highlightedEdges = new HashSet<>();
 
     /**
      * A hash from node names to nodes;
      */
-    protected Map<String, Node> namesHash = new HashMap<>();
+    Map<String, Node> namesHash = new HashMap<>();
+
+    private boolean pattern = false;
+
+    private boolean pag = false;
 
     //==============================CONSTUCTORS===========================//
 
@@ -143,7 +147,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.underLineTriples = graph.getUnderLines();
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
 
-
         for (Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
                 setHighlighted(edge, true);
@@ -153,6 +156,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         for (Node node : nodes) {
             namesHash.put(node.getName(), node);
         }
+
+        this.pag = graph.isPag();
+        this.pattern = graph.isPattern();
     }
 
     /**
@@ -205,6 +211,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         _graph.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
         _graph.highlightedEdges = new HashSet<>(graph.highlightedEdges);
         _graph.namesHash = new HashMap<>(graph.namesHash);
+        _graph.pag = graph.pag;
+        _graph.pattern = graph.pattern;
         return _graph;
     }
 
@@ -721,11 +729,37 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return !isDConnectedTo(x, y, z);
     }
 
-    protected static class Pair {
+    /**
+     * True if this graph has been stamped as a pattern. The search algorithm should do this.
+     */
+    @Override
+    public boolean isPattern() {
+        return pattern;
+    }
+
+    @Override
+    public void setPattern(boolean pattern) {
+        this.pattern = pattern;
+    }
+
+    /**
+     * True if this graph has been "stamped" as a PAG. The search algorithm should do this.
+     */
+    @Override
+    public boolean isPag() {
+        return pag;
+    }
+
+    @Override
+    public void setPag(boolean pag) {
+        this.pag = pag;
+    }
+
+    private static class Pair {
         private Node x;
         private Node y;
 
-        public Pair(Node x, Node y) {
+        Pair(Node x, Node y) {
             this.x = x;
             this.y = y;
         }
@@ -1710,7 +1744,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
 
-    protected void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
         if (ancestors.contains(node)) return;
 
         ancestors.add(node);
@@ -1723,7 +1757,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
-    protected void collectDescendantsVisit(Node node, Set<Node> descendants) {
+    private void collectDescendantsVisit(Node node, Set<Node> descendants) {
         descendants.add(node);
         List<Node> children = getChildren(node);
 
@@ -1738,7 +1772,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * closure under the child relation
      */
-    protected void doChildClosureVisit(Node node, Set<Node> closure) {
+    private void doChildClosureVisit(Node node, Set<Node> closure) {
         if (!closure.contains(node)) {
             closure.add(node);
 
@@ -1763,7 +1797,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @param closure the closure of the conditioning set uner the parent
      *                relation (to be calculated recursively).
      */
-    protected void doParentClosureVisit(Node node, Set<Node> closure) {
+    private void doParentClosureVisit(Node node, Set<Node> closure) {
         if (closure.contains(node)) return;
         closure.add(node);
 
@@ -1788,7 +1822,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * @return true iff there is a directed path from node1 to node2.
      */
-    protected boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+    boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
         path.add(node1);
 
         for (Edge edge : getEdges(node1)) {
@@ -1815,7 +1849,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return false;
     }
 
-    protected boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+    boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
         path.add(node1);
 
         for (Edge edge : getEdges(node1)) {
@@ -1845,7 +1879,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */
-    protected boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
+    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
                                                 LinkedList<Node> path) {
         path.addLast(node1);
 

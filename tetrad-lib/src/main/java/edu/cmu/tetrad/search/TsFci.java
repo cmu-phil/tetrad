@@ -250,7 +250,7 @@ public final class TsFci implements GraphSearch {
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
+//            possibleDSep.setMaxDegree(getPossibleDsepDepth());
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());
@@ -278,6 +278,9 @@ public final class TsFci implements GraphSearch {
         fciOrient.setKnowledge(knowledge);
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
+
+        graph.setPag(true);
+
         return graph;
     }
 

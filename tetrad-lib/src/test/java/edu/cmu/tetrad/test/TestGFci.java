@@ -97,7 +97,7 @@ public class TestGFci {
 
         GFci gFci = new GFci(independenceTest, score);
         gFci.setVerbose(false);
-        gFci.setMaxIndegree(depth);
+        gFci.setMaxDegree(depth);
         gFci.setMaxPathLength(maxPathLength);
 //        gFci.setPossibleDsepSearchDone(possibleDsepDone);
         gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -303,7 +303,7 @@ public class TestGFci {
 
 		GFci gFci = new GFci(indTest, score);
 		gFci.setFaithfulnessAssumed(true);
-		gFci.setMaxIndegree(-1);
+		gFci.setMaxDegree(-1);
 		gFci.setMaxPathLength(-1);
 		gFci.setCompleteRuleSetUsed(false);
 		gFci.setVerbose(true);

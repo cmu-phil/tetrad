@@ -111,6 +111,8 @@ public final class KamadaKawaiLayout {
     //============================PUBLIC METHODS==========================//
 
     public void doLayout() {
+        GraphUtils.circleLayout(graph, 300, 300, 200);
+
         this.monitor = new ProgressMonitor(null, "Energy settling...",
                 "Energy = ?", 0, 100);
         getMonitor().setMillisToDecideToPopup(10);

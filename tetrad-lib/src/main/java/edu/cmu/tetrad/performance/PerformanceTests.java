@@ -742,7 +742,7 @@ public class PerformanceTests {
 
         fci.setVerbose(false);
         fci.setMaxPathLength(maxPathLength);
-        fci.setMaxIndegree(depth);
+        fci.setMaxDegree(depth);
         fci.setFaithfulnessAssumed(false);
         fci.setCompleteRuleSetUsed(true);
         Graph outGraph = fci.search();
@@ -1390,7 +1390,7 @@ public class PerformanceTests {
             GFci fci = new GFci(independenceTest, score);
 //            TFci fci = new TFci(independenceTest);
 //            fci.setVerbose(false);
-            fci.setMaxIndegree(depth);
+            fci.setMaxDegree(depth);
             fci.setMaxPathLength(maxPathLength);
 //            fci.setPossibleDsepSearchDone(possibleDsepDone);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -1695,7 +1695,7 @@ public class PerformanceTests {
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
 //            GFci.setAlpha(penaltyDiscount);
-//            GFci.setMaxIndegree(depth);
+//            GFci.setMaxDegree(depth);
 //            GFci.setMaxPathLength(maxPathLength);
 //            GFci.setPossibleDsepSearchDone(true);
 //            GFci.setCompleteRuleSetUsed(true);
@@ -1714,7 +1714,7 @@ public class PerformanceTests {
 //
 //            PC pc = new PC(independencePc);
 //            pc.setVerbose(false);
-//            pc.setMaxIndegree(depth);
+//            pc.setMaxDegree(depth);
 //
 //            Graph pattern = pc.search();
 //

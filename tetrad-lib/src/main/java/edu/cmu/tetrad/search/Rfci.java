@@ -216,6 +216,8 @@ public final class Rfci implements GraphSearch {
         logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
         logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
 
+        graph.setPag(true);
+
         return graph;
     }
 

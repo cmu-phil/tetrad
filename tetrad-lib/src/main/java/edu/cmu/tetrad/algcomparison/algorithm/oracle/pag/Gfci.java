@@ -9,7 +9,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.GFciMax;
 import edu.cmu.tetrad.util.Parameters;
 import java.io.PrintStream;
 import java.util.List;
@@ -34,7 +33,7 @@ public class Gfci implements Algorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
-        search.setMaxIndegree(parameters.getInt("maxIndegree"));
+        search.setMaxDegree(parameters.getInt("maxDegree"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
