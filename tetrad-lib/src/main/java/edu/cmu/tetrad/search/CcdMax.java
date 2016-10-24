@@ -263,7 +263,7 @@ public final class CcdMax implements GraphSearch {
 
             map.set(a, c, S);
 
-            if (!S.contains(b)) {
+            if (!S.contains(b) && !wouldCreateBadCollider(graph, b, c, colliders.keySet())) {
                 colliders.put(new Triple(a, b, c), score);
             }
         }
@@ -426,6 +426,18 @@ public final class CcdMax implements GraphSearch {
             if (!graph.isAdjacentTo(x, z) &&
                     graph.getEndpoint(z, y) == Endpoint.ARROW &&
                     sepset(graph, x, z, set(), set(y)) == null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean wouldCreateBadCollider(Graph graph, Node x, Node y, Set<Triple> colliders) {
+        for (Node z : graph.getAdjacentNodes(y)) {
+            if (x == z) continue;
+
+            if (!colliders.contains(new Triple(x, y, z))) {
                 return true;
             }
         }
