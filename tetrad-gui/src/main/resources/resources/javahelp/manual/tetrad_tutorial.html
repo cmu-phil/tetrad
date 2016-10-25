@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <title>Tetrad_Tutorial</title>
+
+
+    <style type="text/css">
+        body {
+        font-family: Helvetica, arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        background-color: white;
+        padding: 30px; }
+
+        body > *:first-child {
+        margin-top: 0 !important; }
+        body > *:last-child {
+        margin-bottom: 0 !important; }
+
+        a {
+        color: #4183C4; }
+        a.absent {
+        color: #cc0000; }
+        a.anchor {
+        display: block;
+        padding-left: 30px;
+        margin-left: -30px;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0; }
+
+        h1, h2, h3, h4, h5, h6 {
+        margin: 20px 0 10px;
+        padding: 0;
+        font-weight: bold;
+        -webkit-font-smoothing: antialiased;
+        cursor: text;
+        position: relative; }
+
+        h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor {
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA09pVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoMTMuMCAyMDEyMDMwNS5tLjQxNSAyMDEyLzAzLzA1OjIxOjAwOjAwKSAgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OUM2NjlDQjI4ODBGMTFFMTg1ODlEODNERDJBRjUwQTQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OUM2NjlDQjM4ODBGMTFFMTg1ODlEODNERDJBRjUwQTQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5QzY2OUNCMDg4MEYxMUUxODU4OUQ4M0REMkFGNTBBNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo5QzY2OUNCMTg4MEYxMUUxODU4OUQ4M0REMkFGNTBBNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PsQhXeAAAABfSURBVHjaYvz//z8DJYCRUgMYQAbAMBQIAvEqkBQWXI6sHqwHiwG70TTBxGaiWwjCTGgOUgJiF1J8wMRAIUA34B4Q76HUBelAfJYSA0CuMIEaRP8wGIkGMA54bgQIMACAmkXJi0hKJQAAAABJRU5ErkJggg==) no-repeat 10px center;
+        text-decoration: none; }
+
+        h1 tt, h1 code {
+        font-size: inherit; }
+
+        h2 tt, h2 code {
+        font-size: inherit; }
+
+        h3 tt, h3 code {
+        font-size: inherit; }
+
+        h4 tt, h4 code {
+        font-size: inherit; }
+
+        h5 tt, h5 code {
+        font-size: inherit; }
+
+        h6 tt, h6 code {
+        font-size: inherit; }
+
+        h1 {
+        font-size: 28px;
+        color: black; }
+
+        h2 {
+        font-size: 24px;
+        border-bottom: 1px solid #cccccc;
+        color: black; }
+
+        h3 {
+        font-size: 18px; }
+
+        h4 {
+        font-size: 16px; }
+
+        h5 {
+        font-size: 14px; }
+
+        h6 {
+        color: #777777;
+        font-size: 14px; }
+
+        p, blockquote, ul, ol, dl, li, table, pre {
+        margin: 15px 0; }
+
+        hr {
+        background: transparent url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OENDRjNBN0E2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OENDRjNBN0I2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4Q0NGM0E3ODY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4Q0NGM0E3OTY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqqezsUAAAAfSURBVHjaYmRABcYwBiM2QSA4y4hNEKYDQxAEAAIMAHNGAzhkPOlYAAAAAElFTkSuQmCC) repeat-x 0 0;
+        border: 0 none;
+        color: #cccccc;
+        height: 4px;
+        padding: 0;
+        }
+
+        body > h2:first-child {
+        margin-top: 0;
+        padding-top: 0; }
+        body > h1:first-child {
+        margin-top: 0;
+        padding-top: 0; }
+        body > h1:first-child + h2 {
+        margin-top: 0;
+        padding-top: 0; }
+        body > h3:first-child, body > h4:first-child, body > h5:first-child, body > h6:first-child {
+        margin-top: 0;
+        padding-top: 0; }
+
+        a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+        margin-top: 0;
+        padding-top: 0; }
+
+        h1 p, h2 p, h3 p, h4 p, h5 p, h6 p {
+        margin-top: 0; }
+
+        li p.first {
+        display: inline-block; }
+        li {
+        margin: 0; }
+        ul, ol {
+        padding-left: 30px; }
+
+        ul :first-child, ol :first-child {
+        margin-top: 0; }
+
+        dl {
+        padding: 0; }
+        dl dt {
+        font-size: 14px;
+        font-weight: bold;
+        font-style: italic;
+        padding: 0;
+        margin: 15px 0 5px; }
+        dl dt:first-child {
+        padding: 0; }
+        dl dt > :first-child {
+        margin-top: 0; }
+        dl dt > :last-child {
+        margin-bottom: 0; }
+        dl dd {
+        margin: 0 0 15px;
+        padding: 0 15px; }
+        dl dd > :first-child {
+        margin-top: 0; }
+        dl dd > :last-child {
+        margin-bottom: 0; }
+
+        blockquote {
+        border-left: 4px solid #dddddd;
+        padding: 0 15px;
+        color: #777777; }
+        blockquote > :first-child {
+        margin-top: 0; }
+        blockquote > :last-child {
+        margin-bottom: 0; }
+
+        table {
+        padding: 0;border-collapse: collapse; }
+        table tr {
+        border-top: 1px solid #cccccc;
+        background-color: white;
+        margin: 0;
+        padding: 0; }
+        table tr:nth-child(2n) {
+        background-color: #f8f8f8; }
+        table tr th {
+        font-weight: bold;
+        border: 1px solid #cccccc;
+        margin: 0;
+        padding: 6px 13px; }
+        table tr td {
+        border: 1px solid #cccccc;
+        margin: 0;
+        padding: 6px 13px; }
+        table tr th :first-child, table tr td :first-child {
+        margin-top: 0; }
+        table tr th :last-child, table tr td :last-child {
+        margin-bottom: 0; }
+
+        img {
+        max-width: 100%; }
+
+        span.frame {
+        display: block;
+        overflow: hidden; }
+        span.frame > span {
+        border: 1px solid #dddddd;
+        display: block;
+        float: left;
+        overflow: hidden;
+        margin: 13px 0 0;
+        padding: 7px;
+        width: auto; }
+        span.frame span img {
+        display: block;
+        float: left; }
+        span.frame span span {
+        clear: both;
+        color: #333333;
+        display: block;
+        padding: 5px 0 0; }
+        span.align-center {
+        display: block;
+        overflow: hidden;
+        clear: both; }
+        span.align-center > span {
+        display: block;
+        overflow: hidden;
+        margin: 13px auto 0;
+        text-align: center; }
+        span.align-center span img {
+        margin: 0 auto;
+        text-align: center; }
+        span.align-right {
+        display: block;
+        overflow: hidden;
+        clear: both; }
+        span.align-right > span {
+        display: block;
+        overflow: hidden;
+        margin: 13px 0 0;
+        text-align: right; }
+        span.align-right span img {
+        margin: 0;
+        text-align: right; }
+        span.float-left {
+        display: block;
+        margin-right: 13px;
+        overflow: hidden;
+        float: left; }
+        span.float-left span {
+        margin: 13px 0 0; }
+        span.float-right {
+        display: block;
+        margin-left: 13px;
+        overflow: hidden;
+        float: right; }
+        span.float-right > span {
+        display: block;
+        overflow: hidden;
+        margin: 13px auto 0;
+        text-align: right; }
+
+        code, tt {
+        margin: 0 2px;
+        padding: 0 5px;
+        white-space: nowrap;
+        border: 1px solid #eaeaea;
+        background-color: #f8f8f8;
+        border-radius: 3px; }
+
+        pre code {
+        margin: 0;
+        padding: 0;
+        white-space: pre;
+        border: none;
+        background: transparent; }
+
+        .highlight pre {
+        background-color: #f8f8f8;
+        border: 1px solid #cccccc;
+        font-size: 13px;
+        line-height: 19px;
+        overflow: auto;
+        padding: 6px 10px;
+        border-radius: 3px; }
+
+        pre {
+        background-color: #f8f8f8;
+        border: 1px solid #cccccc;
+        font-size: 13px;
+        line-height: 19px;
+        overflow: auto;
+        padding: 6px 10px;
+        border-radius: 3px; }
+        pre code, pre tt {
+        background-color: transparent;
+        border: none; }
+
+        sup {
+        font-size: 0.83em;
+        vertical-align: super;
+        line-height: 0;
+        }
+        * {
+        -webkit-print-color-adjust: exact;
+        }
+        @media screen and (min-width: 914px) {
+        body {
+        width: 854px;
+        margin:0 auto;
+        }
+        }
+        @media print {
+        table, pre {
+        page-break-inside: avoid;
+        }
+        pre {
+        word-wrap: break-word;
+        }
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+<h1 id="toc_0">Tetrad Tutorial</h1>
+
+<p><img src="images/calvin_hobbes_instructions.png" alt="calvin hobbes instructions"></p>
+
+<ul class="toc">
+    <li>
+        <a href="#toc_0">Tetrad Tutorial</a>
+        <ul>
+            <li>
+                <a href="#toc_1">Things you can do with Tetrad</a>
+            </li>
+            <li>
+                <a href="#toc_2">What&#39;s under the hood</a>
+                <ul>
+                    <li>
+                        <a href="#toc_3">Variables = Nodes = Vertices</a>
+                    </li>
+                    <li>
+                        <a href="#toc_4">Datasets</a>
+                    </li>
+                    <li>
+                        <a href="#toc_5">Graphs</a>
+                    </li>
+                    <li>
+                        <a href="#toc_6">Search algorithms</a>
+                    </li>
+                    <li>
+                        <a href="#toc_7">Knowledge</a>
+                    </li>
+                    <li>
+                        <a href="#toc_8">Parametric &amp; Instantiated models</a>
+                        <ul>
+                            <li>
+                                <a href="#toc_9">Bayes PMs and IMs</a>
+                            </li>
+                            <li>
+                                <a href="#toc_10">SEM PMs and IMs</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#toc_11">Other Objects</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#toc_12">An example pipeline</a>
+            </li>
+            <li>
+                <a href="#toc_13">Takeaway Messages</a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+
+<p>Tetrad includes a huge variety of tools for causal inference. It has been under development since the early 90s. The algorithms in Tetrad were designed by many people, but the vast majority of the implementation was done by Joe Ramsey.</p>
+
+<h2 id="toc_1">Things you can do with Tetrad</h2>
+
+<p>When people say &#39;causal inference&#39;, they mean lots of different things. Here are some things you might want to do with Tetrad:</p>
+
+<ul>
+    <li>You have a <strong>dataset</strong>, and:
+
+        <ul>
+            <li>You want to learn the <strong>causal graph</strong> that describes what causes what (&quot;search&quot;)</li>
+            <li>You want to test whether <strong>a specific variable</strong> causes a target variable, and if so, what is the size of the effect</li>
+            <li>You want to find the <strong>set of variables</strong> that affects some target of interest (&quot;feature selection&quot;)</li>
+            <li>You want to <strong>predict what will happen if you intervene</strong> on some variable</li>
+            <li>You want to find <strong>a set of experiments</strong> that are likely to produce large effects (on one or more targets)</li>
+        </ul></li>
+    <li>You have <strong>a dataset and a known causal graph</strong>, and:
+
+        <ul>
+            <li>You want to <strong>estimate the strength</strong> of a particular causal effect, or all of them</li>
+            <li>You want to <strong>evaluate how well the search algorithms recover your graph</strong> from the data</li>
+            <li>You want to <strong>evaluate how well your graph fits your data</strong>, and maybe find other structures that fit better</li>
+        </ul></li>
+    <li>You have a <strong>search algorithm</strong>, and you want to <strong>evaluate how well it recovers causal graphs from synthetic data</strong> (&quot;simulation&quot;)</li>
+</ul>
+
+<p>All of these tasks can be called &#39;causal inference&#39;. </p>
+
+<p>Despite their differences, these tasks share many components. For example, if you&#39;re learning a graph or evaluating a search algorithm, you need a search function. Tetrad is modular: it lets you mix and match components to do many different kinds of causal inference. This modularity makes Tetrad powerful, but difficult to understand without first understanding the basic components. </p>
+
+<p>To understand what is possible with Tetrad, let&#39;s talk about what it contains.</p>
+
+<h2 id="toc_2">What&#39;s under the hood</h2>
+
+<p><img src="images/comic_ontology.jpg" alt="Comic ontology"></p>
+
+<p>Tetrad is written in Java, an object-oriented programming language. Tetrad uses the following kinds of objects:<sup id="fnref1"><a href="#fn1" rel="footnote">1</a></sup></p>
+
+<h3 id="toc_3">Variables = Nodes = Vertices</h3>
+
+<p><img src="images/variables_schema.png" alt="variables schema"></p>
+
+<p>Causal inference is a scientific discovery problem, so random variables are the basic objects. Variables are identified with &quot;nodes&quot; or &quot;vertices&quot; in causal graphs.<sup id="fnref2"><a href="#fn2" rel="footnote">2</a></sup></p>
+
+<p>In other graph software, you first create a graph, then populate it with nodes; if the graph disappears the nodes do too. By contrast, <strong>in Tetrad the nodes are basic objects</strong>. You can build multiple graphs over the same set of nodes. This represents the scientific problem: we start out knowing what the variables are, and we learn the causal relationships among them.</p>
+
+<p>Variables can be <strong>discrete</strong>- or <strong>continuous</strong>-valued in Tetrad. This distinction matters for search algorithms. </p>
+
+<p><strong>How they&#39;re made:</strong> You create new variables when you load your data into Tetrad, create a random graph, or create a new graph by hand (with no input). </p>
+
+<p><strong>Example:</strong> our set of variables might be {<em>Sunscreen</em>, <em>Temperature</em>, <em>Ice-cream</em>}.</p>
+
+<h3 id="toc_4">Datasets</h3>
+
+<p><img src="images/dataset_schema.png" alt="dataset schema"></p>
+
+<p>Datasets in Tetrad include two parts: a set of variables <em>V</em>, and either a set of observations of all of those variables in the form of a data table <strong>X</strong>, or else a covariance matrix over the variables <strong>&#931;</strong>.</p>
+
+<p><strong>How they&#39;re made:</strong> You create a dataset when you load your data into Tetrad, or generate data from an instantiated model. </p>
+
+<p><strong>Example:</strong> our dataset might look something like this table of observations:</p>
+
+<p>Variables: {<em>Sunscreen</em>, <em>Temperature</em>, <em>Ice-cream</em>}</p>
+
+<p>Data:</p>
+
+<table>
+    <thead>
+    <tr>
+        <th style="text-align: center">Person/Date</th>
+        <th style="text-align: center"><em>Sunscreen</em></th>
+        <th style="text-align: center"><em>Temperature</em></th>
+        <th style="text-align: center"><em>Ice-cream</em></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td style="text-align: center">Hemank, June 12</td>
+        <td style="text-align: center">0ml</td>
+        <td style="text-align: center">32°C</td>
+        <td style="text-align: center">150g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Mahdi, June 12</td>
+        <td style="text-align: center">15ml</td>
+        <td style="text-align: center">32°C</td>
+        <td style="text-align: center">120g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">Benedict, June 14</td>
+        <td style="text-align: center">30ml</td>
+        <td style="text-align: center">36°C</td>
+        <td style="text-align: center">200g</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">...</td>
+        <td style="text-align: center">...</td>
+        <td style="text-align: center">...</td>
+        <td style="text-align: center">...</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>Or this correlation matrix:</p>
+
+<p>Variables: {<em>Sunscreen</em>, <em>Temperature</em>, <em>Ice-cream</em>}</p>
+
+<p>Data:</p>
+
+<table>
+    <thead>
+    <tr>
+        <th style="text-align: center"></th>
+        <th style="text-align: center"><em>Sunscreen</em></th>
+        <th style="text-align: center"><em>Temperature</em></th>
+        <th style="text-align: center"><em>Ice-cream</em></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td style="text-align: center"><strong><em>Sunscreen</em></strong></td>
+        <td style="text-align: center">1</td>
+        <td style="text-align: center">0.3</td>
+        <td style="text-align: center">0.12</td>
+    </tr>
+    <tr>
+        <td style="text-align: center"><strong><em>Temperature</em></strong></td>
+        <td style="text-align: center">0.3</td>
+        <td style="text-align: center">1</td>
+        <td style="text-align: center">0.4</td>
+    </tr>
+    <tr>
+        <td style="text-align: center"><strong><em>Ice-cream</em></strong></td>
+        <td style="text-align: center">0.12</td>
+        <td style="text-align: center">0.4</td>
+        <td style="text-align: center">1</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3 id="toc_5">Graphs</h3>
+
+<p><img src="images/graph_schema.png" alt="graph schema"></p>
+
+<p>A graph <em>G</em> is a set of nodes, <em>V</em>, and a set of edges, <em>E</em>. Each edge has four pieces of information: a pair of nodes and a pair of endpoints, in order. For example, the edge <code>(A, B, -, &gt;)</code> represents the edge A <strong>&#8594;</strong> B, whereas the edge <code>(C, B, &gt;, &gt;)</code> represents the edge C <strong>&#8596;</strong> B. This makes Tetrad&#39;s graph representation very flexible: it can represent undirected edges, bidirected edges, unusual endpoint types, etc. The edge A <strong>&#8594;</strong> B can be interpreted as &quot;A has a direct causal effect on B&quot;; the other kinds of edges are explained elsewhere in the manual.</p>
+
+<p><strong>How they&#39;re made:</strong> There are three ways to create graphs in Tetrad: by hand, using a random graph generator, or using a search algorithm. </p>
+
+<p><strong>Example</strong>: If our causal graph looks like this: <em>Sunscreen</em> <strong>&#8592;</strong> <em>Temperature</em> <strong>&#8594;</strong> <em>Ice-cream</em>, it would be represented in Tetrad like so:</p>
+
+<p>Variables: {<em>Sunscreen</em>, <em>Temperature</em>, <em>Ice-cream</em>}</p>
+
+<p>Edges:
+    {(<em>Sunscreen</em>, <em>Temperature</em>, <code>&gt;</code>, <code>-</code>),
+    (<em>Temperature</em>, <em>Ice-cream</em>, <code>-</code>, <code>&gt;</code>)}</p>
+
+<h3 id="toc_6">Search algorithms</h3>
+
+<p><img src="images/search_schema.png" alt="search schema"></p>
+
+<p>Why the word &quot;search&quot;? You can think about the discovery problem like this. We start with a set of variables; out of <em>all</em> the graphs you can make with those variables, we are searching for the one graph that describes the <em>true causal relationships</em> between those variables. </p>
+
+<p>How many graphs are we looking through? </p>
+
+<table>
+    <thead>
+    <tr>
+        <th style="text-align: center">Number of variables</th>
+        <th style="text-align: left">Number of Directed Acyclic Graphs</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td style="text-align: center">1</td>
+        <td style="text-align: left">1</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">2</td>
+        <td style="text-align: left">3</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">3</td>
+        <td style="text-align: left">25</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">4</td>
+        <td style="text-align: left">543</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">5</td>
+        <td style="text-align: left">29281</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">6</td>
+        <td style="text-align: left">3781503</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">...</td>
+        <td style="text-align: left">...</td>
+    </tr>
+    <tr>
+        <td style="text-align: center">20</td>
+        <td style="text-align: left">more than the number of atoms in the observable universe</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>This is why we need an <em>algorithm</em> to search, rather than inspecting all the graphs by hand. Search algorithms use various tricks to find the answer quickly, without inspecting every single graph.</p>
+
+<p><strong>How they&#39;re made:</strong> A search algorithm is a function: it takes input and produces output. The inputs are:</p>
+
+<ul>
+    <li>A dataset (required)<sup id="fnref3"><a href="#fn3" rel="footnote">3</a></sup>; note that this includes the variable set</li>
+    <li>Background knowledge about the causal relationships (optional)</li>
+    <li>Other settings, like tuning parameters, which depend on the specific algorithm</li>
+</ul>
+
+<p>The output is a graph, or a set of graphs that are equally compatible with the data (a.k.a. an &quot;equivalence class&quot; of graphs). The type of graph you get depends on the type of algorithm you use.</p>
+
+<h3 id="toc_7">Knowledge</h3>
+
+<p><img src="images/knowledge_schema.png" alt="knowledge schema"></p>
+
+<p>As mentioned in the Search Algorithms section, we can use background knowledge as an input to search. Tetrad represents knowledge as a set of variables, a list of forbidden edges<sup id="fnref4"><a href="#fn4" rel="footnote">4</a></sup> and a list of required edges. </p>
+
+<p><strong>How they&#39;re made:</strong> You might think of knowledge as being independent of everything else – that&#39;s what makes it &quot;background&quot; knowledge! However, Tetrad won&#39;t let you create a knowledge object without giving it input: a dataset or search algorithm that tells it the names of your variables. Only then can you list the forbidden and required edges. It is as if Tetrad is asking, &quot;knowledge about <em>what</em>?&quot; </p>
+
+<p><strong>Example:</strong> Say we know that neither ice-cream nor sunscreen can influence the temperature. We would represent this as a pair of forbidden edges. In Tetrad the knowledge would be represented like so:</p>
+
+<p>Variables: {<em>Sunscreen</em>, <em>Temperature</em>, <em>Ice-cream</em>}</p>
+
+<p>Forbidden Edges:
+    {(<em>Sunscreen</em>, <em>Temperature</em>, <code>-</code>, <code>&gt;</code>),
+    (<em>Ice-cream</em>, <em>Temperature</em>, <code>-</code>, <code>&gt;</code>)}</p>
+
+<p>Required Edges: {}</p>
+
+<h3 id="toc_8">Parametric &amp; Instantiated models</h3>
+
+<p>Causal graphs only give us qualitative information: which variables causally influence which others. But they don&#39;t tell us quantitatively how big the causal effects are. They put <em>constraints</em> on the probability distribution over variables in the graph, but they don&#39;t fully specify the probability distribution. For that, we need <strong>models</strong>. </p>
+
+<p>Causal models add information to the graph: they specify a probability distribution, and the distributions you&#39;d get if you intervened on some of the variables.</p>
+
+<p>We need models for several distinct tasks:</p>
+
+<ol>
+    <li>Given data and a graph we trust, we <em>fit</em> a model to learn the size of the causal effects.</li>
+    <li>Given data and a graph we wish to evaluate, we <em>fit</em> and then <em>test</em> a model to see how well that graph can describe our data.</li>
+    <li>Given a graph, we <em>specify</em> a model so we can generate synthetic data from that graph, which we can then use to evaluate a search algorithm.</li>
+</ol>
+
+<p>Tetrad has two confusing distinctions between types of model object. Here they are in one table:</p>
+
+<table>
+    <thead>
+    <tr>
+        <th style="text-align: center"></th>
+        <th style="text-align: left">Bayes model</th>
+        <th style="text-align: left">Structural Equation Model (SEM)</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td style="text-align: center"><strong>Parametric Model</strong></td>
+        <td style="text-align: left">Graph (DAG) where the nodes are <strong>discrete variables</strong>, each with a set of possible values</td>
+        <td style="text-align: left">Graph (DAG) where the nodes are <strong>continuous variables</strong> (means and variances initialized but not assigned values), plus a set of linear parameters (coefficients initialized but not assigned values)</td>
+    </tr>
+    <tr>
+        <td style="text-align: center"><strong>Instantiated model</strong></td>
+        <td style="text-align: left"><strong>Probabilities assigned</strong> to the possible values of each variable, conditional on its parents in the graph</td>
+        <td style="text-align: left"><strong>Values assigned</strong> to all parameters of linear structural equation model (means, variances, and edge coefficients)</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>Tetrad distinguishes between <strong>parametric models</strong> and <strong>instantiated models</strong>. The parametric model just <em>initializes</em> the object: it&#39;s where you decide what kind of model you&#39;re going to use (Bayes or SEM parameterization). The instantiated model then <em>assigns values</em> to the model parameters. </p>
+
+<h4 id="toc_9">Bayes PMs and IMs</h4>
+
+<p><img src="images/bayes_pm_schema.png" alt="bayes pm"></p>
+
+<p>&quot;<strong>Bayes model</strong>&quot; just means the model fits <em>discrete-valued data</em>. It has no special relationship to Bayesian inference<sup id="fnref5"><a href="#fn5" rel="footnote">5</a></sup>. Tetrad uses the term &quot;Bayes model&quot; only because DAGs for discrete data have been called &quot;Bayes nets&quot; (again, not because they have a special relationship to Bayesian inference).</p>
+
+<p>A Bayes Parametric Model (Bayes PM) object includes a graph, and a set of possible values for every variable in that graph. The graph must be a DAG.</p>
+
+<p><strong>How Bayes PMs are made</strong>: You can start with a DAG and a dataset. Tetrad will automatically pull the lists of possible values from the <em>actual</em> values in your data. If you want to generate synthetic data, you can start with just a DAG. Tetrad will ask for a set of possible values for each variable (the default is {0,1}).</p>
+
+<p><img src="images/bayes_im_schema.png" alt="bayes im"></p>
+
+<p>A Bayes Instantiated Model (Bayes IM) object includes everything that&#39;s in a Bayes PM, plus a set of conditional probability tables – one for each node, conditional on its parents in the DAG.</p>
+
+<p><strong>How Bayes IMs are made</strong>: You can start with a Bayes PM and a dataset, in which case Tetrad will estimate the conditional probabilities from your data. If you want to generate synthetic data, you can start with a Bayes PM and specify the conditional probabilities (either by choosing them randomly, or inputting specific values by hand).</p>
+
+<h4 id="toc_10">SEM PMs and IMs</h4>
+
+<p><img src="images/sem_pm_schema.png" alt="sem pm"></p>
+
+<p>&quot;<strong>Structural Equation Models</strong>&quot; or SEMs are used to fit continuous-valued data, under some assumption about the relationships between the variables. In Tetrad you may fit either &quot;standard&quot; (i.e. linear Gaussian) or &quot;generalized&quot; SEMs. </p>
+
+<p>A <em>linear model</em> means the relationships between the variables can be described with linear equations. For example, if we have the graph <em>X</em> <strong>&#8594;</strong> <em>Y</em> <strong>&#8592;</strong> <em>Z</em>, we could describe this as the standard SEM parametric model:</p>
+
+<p>\(X = \varepsilon_1 \\
+    Z = \varepsilon_2 \\
+    Y = \alpha X + \beta Z + \varepsilon_3\)</p>
+
+<p>Where the errors \(\varepsilon_1, \varepsilon_2, \varepsilon_3\) are independent random variables with Gaussian distributions. </p>
+
+<p>A SEM Parametric Model (SEM PM) includes the graph, plus a list of all parameters needed to specify the probability distribution. In this example, the parameters are \(\alpha, \beta, \mu_{\varepsilon_1}, \mu_{\varepsilon_2}, \mu_{\varepsilon_3}, \sigma_{\varepsilon_1}, \sigma_{\varepsilon_2}\), and \(\sigma_{\varepsilon_3}\). However, in the SEM PM object the <em>values</em> of those parameters are undetermined; the values are specified in the instantiated model (see below).</p>
+
+<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one variable is related to its parent by a quadratic equation: \(Y = \alpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
+
+<p><strong>Note</strong>: Although generalized SEM PMs give you more freedom than standard SEM PMs, they require you to make more decisions. You must specify the parametric form of the distribution. If you don&#39;t, Tetrad cannot learn the model from data. Right now there are no nonparametric model fitting methods in Tetrad. </p>
+
+<p><strong>How SEM PMs are made</strong>: All you need is a DAG. If you choose a standard SEM PM, Tetrad can generate the list of parameters from the DAG structure alone. If you choose a generalized SEM PM, you must also specify your parametric model.</p>
+
+<p><img src="images/sem_im_schema.png" alt="sem pm"></p>
+
+<p>The SEM Instantiated Model (SEM IM) <em>assigns values</em> to all those parameters – in this example, to \(\alpha\) and \(\beta\), and to the means and variances of the errors \(\boldsymbol{\varepsilon}\).</p>
+
+<p><strong>How SEM IMs are made</strong>:  You can start with a SEM PM and a dataset, in which case Tetrad will estimate the model parameters from your data. If you want to generate synthetic data, you can start with a SEM PM and specify the parameter values (either by choosing them randomly, or inputting specific values by hand). </p>
+
+<h3 id="toc_11">Other Objects</h3>
+
+<p>There are five other modules that I won&#39;t talk about here. See these other sections of the manual for more information:</p>
+
+<ul>
+    <li>Comparisons between graphs</li>
+    <li>Updaters </li>
+    <li>Regression functions</li>
+    <li>Classifiers</li>
+    <li>Random graph generators</li>
+</ul>
+
+<h2 id="toc_12">An example pipeline</h2>
+
+<p>Say you start with data, and you want to learn a causal model and estimate the size of the causal effects. Your workflow or &quot;pipeline&quot; would look like the following schema. </p>
+
+<p><strong>But take note</strong>: This schema describes what&#39;s happening inside the Tetrad library. In the graphical interface, some steps may be combined. For example, in the current<sup id="fnref6"><a href="#fn6" rel="footnote">6</a></sup> version of the Tetrad GUI, steps 4, 5 and 6 are grouped into a single box.</p>
+
+<p><img src="images/example_workflow_schema.png" alt="pipeline"></p>
+
+<p>In text form: </p>
+
+<ol>
+    <li>Load your data into Tetrad, generating a Dataset object.</li>
+    <li>Feed your data into a Search Algorithm. </li>
+    <li>Choose search settings/assumptions that make sense, given how your data were collected. </li>
+    <li>The output will be an equivalence class of graphs. Choose one plausible DAG from the output equivalence class.</li>
+    <li>Choose a parametric model that makes sense for your data.</li>
+    <li>Use your dataset to learn the parameters of the instantiated model.</li>
+</ol>
+
+<p>You should also perform some <strong>sanity checks</strong> along the way:</p>
+
+<p><em>After running the search algorithm:</em> does the output graph look plausible, based on your background knowledge about the causal system? What changes if you use different search settings?</p>
+
+<p><em>After estimating the model parameters:</em> do the parameters look plausible? What changes if you choose a different graph from the equivalence class?</p>
+
+<h2 id="toc_13">Takeaway Messages</h2>
+
+<p>Tetrad is a modular, object-oriented program for causal inference. &quot;Causal inference&quot; includes a variety of tasks; Tetrad objects can be combined in various ways to accomplish many of those tasks. This tutorial describes some of the most important objects in Tetrad. It is meant to be schematic yet independent of Tetrad&#39;s graphical user interface (which may change in the future). I have included an example of one pipeline – one way of combining Tetrad objects to achieve a particular aim – but that is only the beginning of what is possible with Tetrad. </p>
+
+<p>This tutorial is an introduction to the Tetrad software. For an introduction to causal inference in general, and guidance on interpreting your results, see the companion tutorial.</p>
+
+<div class="footnotes">
+    <hr>
+    <ol>
+
+        <li id="fn1">
+            <p>For brevity, this is a simplified version of Tetrad&#39;s ontology, emphasizing the objects that you see in the GUI, and their dependences. If you want to learn what&#39;s <em>really</em> under the hood you can look at the Tetrad library source code in the Git repository.&nbsp;<a href="#fnref1" rev="footnote">&#8617;</a></p>
+        </li>
+
+        <li id="fn2">
+            <p>In the guts of Tetrad there <em>are</em> differences between node objects and variables, and what you&#39;re using depends on whether you load data first or define a graph and generate data from it. These details should not matter to the user.&nbsp;<a href="#fnref2" rev="footnote">&#8617;</a></p>
+        </li>
+
+        <li id="fn3">
+            <p>You may instead use some kind of &#39;oracle&#39;, which gives the algorithm the information that it would normally estimate from the dataset (e.g. conditional independence facts). This is useful if you&#39;re trying to figure out how the algorithms perform when given perfect information.&nbsp;<a href="#fnref3" rev="footnote">&#8617;</a></p>
+        </li>
+
+        <li id="fn4">
+            <p>We can also use <em>tiers</em> to forbid many edges at once. This is often useful, for example, if you have time-ordered measurements, and you want to prevent any edges going back in time. For more information look at the module on Knowledge.&nbsp;<a href="#fnref4" rev="footnote">&#8617;</a></p>
+        </li>
+
+        <li id="fn5">
+            <p>Of course you can learn a Bayes model using Bayesian updating. However, you can also learn a Structural Equation Model using Bayesian updating. &nbsp;<a href="#fnref5" rev="footnote">&#8617;</a></p>
+        </li>
+
+        <li id="fn6">
+            <p>Current as of 10/21/2016.&nbsp;<a href="#fnref6" rev="footnote">&#8617;</a></p>
+        </li>
+
+    </ol>
+</div>
+
+
+
+<script type="text/x-mathjax-config">
+(function () {
+
+MathJax.Hub.Config({
+	'showProcessingMessages': false,
+	'messageStyle': 'none'
+});
+
+if (typeof MathJaxListener !== 'undefined') {
+	MathJax.Hub.Register.StartupHook('End', function () {
+		MathJaxListener.invokeCallbackForKey_('End');
+	});
+}
+
+})();
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+</body>
+
+</html>

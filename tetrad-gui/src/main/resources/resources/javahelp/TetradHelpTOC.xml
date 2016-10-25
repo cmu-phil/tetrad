@@ -127,13 +127,14 @@
             <tocitem text="Selecting Groups of Nodes" target="selecting_groups_of_nodes"/>
             <tocitem text="Using Popup Menus" target="using_popup_menus"/>
             <!--<tocitem text="Using Templates" target="using_templates"/>-->
-        </tocitem>w
+        </tocitem>
         <tocitem text="Some Definitions" image="toplevelfolder" target="definitions">
             <tocitem text="Measure-Structural Graph" target="measurement_structural_graph"/>
             <tocitem text="Measured and Latent Variables" target="measured_latent_variables"/>
             <tocitem text="Tetrad Graph Types" target="tetrad_graph_types"/>
         </tocitem>
     </tocitem>
+    <tocitem text="Tutorial" target="tetrad_tutorial"/>
     <tocitem text="Why Doesn't TETRAD...?" target="why_doesnt_tetrad"/>
     <tocitem text="For Further Help..." target="for_further_help"/>
     <tocitem text="References" target="references"/>
