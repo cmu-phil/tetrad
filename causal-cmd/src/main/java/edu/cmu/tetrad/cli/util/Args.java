@@ -63,6 +63,16 @@ public class Args {
         return doubleValue;
     }
 
+    public static double getDoubleMinMax(String value, double minValue, double maxValue) {
+        double doubleValue = getDouble(value);
+        if (minValue <= doubleValue && doubleValue <= maxValue) {
+            return doubleValue;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format("Parameter value (%d) must be between %f and %f.", doubleValue, minValue, maxValue));
+        }
+    }
+
     public static int getInteger(String value) {
         try {
             return Integer.parseInt(value);

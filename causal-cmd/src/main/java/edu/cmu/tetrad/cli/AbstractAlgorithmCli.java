@@ -141,9 +141,9 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
             if (isSerializeJson) {
                 writeOutJson(outputPrefix, graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
             }
-            
+
             if (tetradGraphJson) {
-            	writeOutTetradGraphJson(graph, Paths.get(dirOut.toString(), outputPrefix + ".json"));
+                writeOutTetradGraphJson(graph, Paths.get(dirOut.toString(), outputPrefix + ".json"));
             }
         } catch (Exception exception) {
             LOGGER.error("Run algorithm failed.", exception);
