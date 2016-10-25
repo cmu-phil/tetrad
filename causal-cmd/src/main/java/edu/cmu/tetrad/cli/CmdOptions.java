@@ -38,10 +38,20 @@ public class CmdOptions {
 
     public static final String PENALTY_DISCOUNT = "penalty-discount";
     public static final String MAX_DEGREE = "max-degree";
+    public static final String MAX_INDEGREE = "max-indegree";
+    public static final String MAX_OUTDEGREE = "max-outdegree";
     public static final String FAITHFULNESS_ASSUMED = "faithfulness-assumed";
     public static final String ALPHA = "alpha";
     public static final String STRUCTURE_PRIOR = "structure-prior";
     public static final String SAMPLE_PRIOR = "sample-prior";
+
+    public static final String LATENT = "latent";
+    public static final String AVG_DEGREE = "avg-degree";
+    public static final String CONNECTED = "connected";
+
+    public static final String MIN_CATEGORIES = "min-categories";
+    public static final String MAX_CATEGORIES = "max-categories";
+
     public static final String SKIP_UNIQUE_VAR_NAME = "skip-unique-var-name";
     public static final String SKIP_NONZERO_VARIANCE = "skip-nonzero-variance";
     public static final String SKIP_CATEGORY_LIMIT = "skip-category-limit";
@@ -76,6 +86,10 @@ public class CmdOptions {
                 return createDescription(ParamAttrs.PENALTY_DISCOUNT);
             case MAX_DEGREE:
                 return createDescription(ParamAttrs.MAX_DEGREE);
+            case MAX_INDEGREE:
+                return createDescription(ParamAttrs.MAX_INDEGREE);
+            case MAX_OUTDEGREE:
+                return createDescription(ParamAttrs.MAX_OUTDEGREE);
             case FAITHFULNESS_ASSUMED:
                 return createDescription(ParamAttrs.FAITHFULNESS_ASSUMED);
             case ALPHA:
@@ -84,6 +98,12 @@ public class CmdOptions {
                 return createDescription(ParamAttrs.STRUCTURE_PRIOR);
             case SAMPLE_PRIOR:
                 return createDescription(ParamAttrs.SAMPLE_PRIOR);
+            case LATENT:
+                return createDescription(ParamAttrs.NUM_LATENTS);
+            case AVG_DEGREE:
+                return createDescription(ParamAttrs.AVG_DEGREE);
+            case CONNECTED:
+                return createDescription(ParamAttrs.CONNECTED);
             case SKIP_UNIQUE_VAR_NAME:
                 return "Skip check for unique variable names.";
             case SKIP_NONZERO_VARIANCE:
