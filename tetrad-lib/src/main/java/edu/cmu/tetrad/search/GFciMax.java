@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
-
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
@@ -59,8 +58,8 @@ public final class GFciMax implements GraphSearch {
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    // The maxIndegree for the fast adjacency search.
-    private int maxIndegree = -1;
+    // Bounds the degree of the graph.
+    private int maxDegree = -1;
 
     // The logger to use.
     private TetradLogger logger = TetradLogger.getInstance();
@@ -112,11 +111,11 @@ public final class GFciMax implements GraphSearch {
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
-        fgs.setMaxDegree(maxIndegree);
+        fgs.setMaxDegree(maxDegree);
         fgs.setOut(out);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxDegree);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -143,8 +142,7 @@ public final class GFciMax implements GraphSearch {
         }
 
 //        modifiedR0(fgsGraph);
-
-        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, maxIndegree);
+        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, maxDegree);
 
         addColliders(graph, fgsGraph);
 
@@ -171,22 +169,26 @@ public final class GFciMax implements GraphSearch {
     }
 
     /**
-     * @param maxIndegree The maximum indegree of the output graph.
+     * The maximum of parents any nodes can have in output pattern.
+     *
+     * @param maxDegree -1 for unlimited.
      */
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) {
+    public void setMaxDegree(int maxDegree) {
+        if (maxDegree < -1) {
             throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
+                    "Depth must be -1 (unlimited) or >= 0: " + maxDegree);
         }
 
-        this.maxIndegree = maxIndegree;
+        this.maxDegree = maxDegree;
     }
 
     /**
-     * Returns The maximum indegree of the output graph.
+     * The maximum of parents any nodes can have in output pattern.
+     *
+     * @return -1 for unlimited.
      */
-    public int getMaxIndegree() {
-        return maxIndegree;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
     // Due to Spirtes.
@@ -248,8 +250,8 @@ public final class GFciMax implements GraphSearch {
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
+     * should be used, false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -265,7 +267,7 @@ public final class GFciMax implements GraphSearch {
 
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
+     * if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -322,14 +324,13 @@ public final class GFciMax implements GraphSearch {
     }
 
     //===========================================PRIVATE METHODS=======================================//
-
     /**
      * Orients according to background knowledge
      */
     private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext();) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -350,7 +351,7 @@ public final class GFciMax implements GraphSearch {
             logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext();) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
@@ -377,6 +378,7 @@ public final class GFciMax implements GraphSearch {
         List<Node> nodes = graph.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
+
             int from;
             int to;
             int chunk = 20;
@@ -433,7 +435,6 @@ public final class GFciMax implements GraphSearch {
             Node c = adjacentNodes.get(combination[1]);
 
 //            if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-
             // S actually has to be non-null here, but the compiler doesn't know that.
             List<Node> S = sepsets.getSepset(a, c);
             if (S != null && !S.contains(b)) {
