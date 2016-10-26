@@ -1,10 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -20,8 +18,8 @@ public class DiscreteBicTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        Score score = new BicScore(dataSet);
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        Score score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
 //        score.setSamplePrior(parameters.getDouble("samplePrior"));
 //        score.setStructurePrior(parameters.getDouble("structurePrior"));
         return new IndTestScore(score);

@@ -131,7 +131,7 @@ public class PcMaxLocal implements GraphSearch {
             graph = new EdgeListGraph(getIndependenceTest().getVariables());
         }
 
-        sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), null, -1);
+        sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), -1);
 
         meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());

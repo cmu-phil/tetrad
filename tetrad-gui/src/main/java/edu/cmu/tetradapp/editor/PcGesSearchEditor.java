@@ -561,7 +561,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
-        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
+        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
         graph.addSeparator();
 
         graph.add(meekOrient);

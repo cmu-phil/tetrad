@@ -147,50 +147,6 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         JRadioButton graph1 = new JRadioButton(model1.getName());
         JRadioButton graph2 = new JRadioButton(model2.getName());
 
-        ButtonGroup group3 = new ButtonGroup();
-        group3.add(graph1);
-        group3.add(graph2);
-
-        boolean alreadySet = false;
-
-        if (model1 instanceof GeneralAlgorithmRunner) {
-            graph1.setSelected(true);
-            getParams().set("referenceGraphName", model1.getName());
-            getParams().set("targetGraphName", model2.getName());
-            alreadySet = true;
-        }
-
-        if (model1 instanceof GeneralAlgorithmRunner) {
-            graph1.setSelected(true);
-            getParams().set("referenceGraphName", model1.getName());
-            getParams().set("targetGraphName", model2.getName());
-            alreadySet = true;
-        }
-
-        if (model2 instanceof Simulation) {
-            graph2.setSelected(true);
-            getParams().set("referenceGraphName", model2.getName());
-            getParams().set("targetGraphName", model1.getName());
-            alreadySet = true;
-        }
-
-        if (!alreadySet) {
-            String refName = getParams().getString("referenceGraphName", null);
-
-            if (refName == null) {
-                getParams().set("referenceGraphName", model1.getName());
-                getParams().set("targetGraphName", model2.getName());
-                graph1.setSelected(true);
-            } else {
-                String targetName = getParams().getString("targetGraphName", null);
-                if (refName.equals(model1.getName())) {
-                    graph1.setSelected(true);
-                } else if (targetName.equals(model2.getName())) {
-                    graph2.setSelected(true);
-                }
-            }
-        }
-
         graph1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getParams().set("referenceGraphName", model1.getName());
@@ -205,44 +161,39 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
             }
         });
 
-        // continue workbench construction.
+        ButtonGroup group = new ButtonGroup();
+        group.add(graph1);
+        group.add(graph2);
+
+        boolean alreadySet = false;
+
+        if (model1 instanceof GeneralAlgorithmRunner) {
+            graph1.setSelected(true);
+        }
+
+        if (model2 instanceof GeneralAlgorithmRunner) {
+            graph2.setSelected(true);
+            alreadySet = true;
+        }
+
+        if (model2 instanceof Simulation) {
+            graph2.setSelected(true);
+            alreadySet = true;
+        }
+
+        if (!alreadySet) {
+            graph1.setSelected(true);
+        }
+
+        if (graph1.isSelected()) {
+            getParams().set("referenceGraphName", model1.getName());
+            getParams().set("targetGraphName", model2.getName());
+        } else if (graph2.isSelected()) {
+            getParams().set("referenceGraphName", model2.getName());
+            getParams().set("targetGraphName", model1.getName());
+        }
+
         Box b1 = Box.createVerticalBox();
-
-//        Box b2 = Box.createHorizontalBox();
-//        b2.add(new JLabel(
-//                "Should the counts table be reset or appended to with each " +
-//                        "simulation?"));
-//        b2.add(Box.createHorizontalGlue());
-//        b1.add(b2);
-//        b1.add(Box.createVerticalStrut(5));
-
-//        Box b3 = Box.createHorizontalBox();
-//        b3.add(resetOnExecute);
-//        b3.add(Box.createHorizontalGlue());
-//        b1.add(b3);
-
-//        Box b4 = Box.createHorizontalBox();
-//        b4.add(dontResetOnExecute);
-//        b4.add(Box.createHorizontalGlue());
-//        b1.add(b4);
-//        b1.add(Box.createVerticalStrut(20));
-
-//        Box b5 = Box.createHorizontalBox();
-//        b5.add(new JLabel(
-//                "Will the results graph contain latents? (Requires a different algorithm.)"));
-//        b5.add(Box.createHorizontalGlue());
-//        b1.add(b5);
-
-//        Box b6 = Box.createHorizontalBox();
-//        b6.add(latents);
-//        b6.add(Box.createHorizontalGlue());
-//        b1.add(b6);
-
-//        Box b7 = Box.createHorizontalBox();
-//        b7.add(noLatents);
-//        b7.add(Box.createHorizontalGlue());
-//        b1.add(b7);
-//        b1.add(Box.createVerticalStrut(20));
 
         Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("Which of the two input graphs is the true graph?"));

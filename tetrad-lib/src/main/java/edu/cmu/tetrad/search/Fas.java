@@ -123,6 +123,7 @@ public class Fas implements IFas {
     private boolean verbose = false;
 
     private PrintStream out = System.out;
+    private boolean sepsetsReturnEmptyIfNotFixed;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -158,7 +159,7 @@ public class Fas implements IFas {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
         sepset = new SepsetMap();
-        sepset.setReturnEmptyIfNotSet(true);
+        sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
 
         int _depth = depth;
 
@@ -523,6 +524,14 @@ public class Fas implements IFas {
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
+    }
+
+    public boolean isSepsetsReturnEmptyIfNotFixed() {
+        return sepsetsReturnEmptyIfNotFixed;
+    }
+
+    public void setSepsetsReturnEmptyIfNotFixed(boolean sepsetsReturnEmptyIfNotFixed) {
+        this.sepsetsReturnEmptyIfNotFixed = sepsetsReturnEmptyIfNotFixed;
     }
 }
 

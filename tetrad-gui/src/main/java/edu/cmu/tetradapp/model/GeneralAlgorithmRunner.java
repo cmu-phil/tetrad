@@ -277,7 +277,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             } else {
                 for (DataModel data : getDataModelList()) {
                     System.out.println("Analyzing data set # " + (++i));
-                    DataSet dataSet = (DataSet) data;
+                    DataModel dataSet = data; //(DataSet) data;
                     Algorithm algorithm = getAlgorithm();
 
                     if (algorithm instanceof HasKnowledge) {
@@ -502,6 +502,28 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     @Override
     public List<String> getVariableNames() {
         return null;
+    }
+
+    public List<Graph> getCompareGraph() {
+        List<Graph> compareGraphs = new ArrayList<>();
+
+        for (Graph graph : getGraphs()) {
+            compareGraphs.add(algorithm.getComparisonGraph(graph));
+        }
+
+        return compareGraphs;
+    }
+
+    public List<Graph> getCompareGraphs(List<Graph> graphs) {
+        if (graphs == null) throw new NullPointerException();
+
+        List<Graph> compareGraphs = new ArrayList<>();
+
+        for (Graph graph : graphs) {
+            compareGraphs.add(algorithm.getComparisonGraph(graph));
+        }
+
+        return compareGraphs;
     }
 }
 

@@ -53,6 +53,7 @@ import java.util.concurrent.*;
  *
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
+ * @author Daniel Malinsky
  */
 public final class TsFgs2 implements GraphSearch, GraphScorer {
 

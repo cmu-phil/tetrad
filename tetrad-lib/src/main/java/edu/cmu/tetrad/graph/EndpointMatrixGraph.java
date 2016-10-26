@@ -706,6 +706,16 @@ public class EndpointMatrixGraph implements Graph {
         return !isDConnectedTo(x, y, z);
     }
 
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
+
     private static class Pair {
         private Node x;
         private Node y;
@@ -1746,6 +1756,16 @@ public class EndpointMatrixGraph implements Graph {
     @Override
     public List<Node> getSepset(Node n1, Node n2) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setNodes(List<Node> nodes) {
+        if (nodes.size() != this.nodes.size()) {
+            throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables " +
+                    "you are trying to set.");
+        }
+
+        this.nodes = nodes;
     }
 
 

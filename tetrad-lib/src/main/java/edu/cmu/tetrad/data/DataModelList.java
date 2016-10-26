@@ -218,6 +218,21 @@ public final class DataModelList extends AbstractList<DataModel>
         return buf.toString();
     }
 
+    @Override
+    public boolean isContinuous() {
+        return false;
+    }
+
+    @Override
+    public boolean isDiscrete() {
+        return false;
+    }
+
+    @Override
+    public boolean isMixed() {
+        return false;
+    }
+
     public int hashCode() {
         int hashcode = 17;
         hashcode += 17 * name.hashCode();

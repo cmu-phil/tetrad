@@ -40,7 +40,6 @@ import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -156,7 +155,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -164,7 +163,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         //        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
 //        descriptions.add(new AlgorithmDescription(AlgName.JCPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.GCCD, AlgType.forbid_latent_common_causes, OracleType.Both));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -224,7 +223,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
             tests = dsepTests;
         } else if (!(dataModelList.isEmpty())) {
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 tests = continuousTests;
@@ -248,7 +247,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if ((dataModelList.isEmpty() && runner.getSourceGraph() != null)) {
             tests = dsepTests;
         } else if (!dataModelList.isEmpty()) {
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 tests = continuousTests;
@@ -266,7 +265,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         if (dataModelList.isEmpty() && runner.getGraphs() != null) {
             scores = dsepScores;
         } else if (!(dataModelList.isEmpty())) {
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataModel dataSet = dataModelList.get(0);
 
             if (dataSet.isContinuous()) {
                 scores = continuousScores;
@@ -537,7 +536,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
                 break;
             case CPCStable:
-                algorithm = new Cpcs(independenceWrapper);
+                algorithm = new CpcStable(independenceWrapper);
                 break;
             case PCStable:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
@@ -570,7 +569,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
                 break;
             case TsGFCI:
-                algorithm = new TsGfci(independenceWrapper);
+                algorithm = new TsGfci(independenceWrapper, scoreWrapper);
                 break;
             case TsImages:
                 algorithm = new TsImagesSemBic();
@@ -579,9 +578,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Ccd(independenceWrapper);
                 break;
             case GCCD:
-                algorithm = new GCcd(scoreWrapper);
+                algorithm = new GCcd(independenceWrapper, scoreWrapper);
                 break;
-
             case FAS:
                 algorithm = new FAS(independenceWrapper);
                 break;
@@ -595,20 +593,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);
                 break;
-            case PcLocal:
-                algorithm = new PcLocal(independenceWrapper);
-                break;
+//            case PcLocal:
+//                algorithm = new PcLocal(independenceWrapper);
+//                break;
             case PcMax:
                 algorithm = new PcMax(independenceWrapper);
                 break;
-            case PcMaxLocal:
-                algorithm = new PcMaxLocal(independenceWrapper);
-                break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);
-                break;
-            case Wfgs:
-                algorithm = new Wfgs();
                 break;
             case LiNGAM:
                 algorithm = new Lingam();
@@ -737,11 +729,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<IndependenceTest> tests = new ArrayList<>();
 
         for (DataModel dataModel : runner.getDataModelList()) {
-            if (!(dataModel instanceof DataSet)) {
-                throw new IllegalArgumentException("I was expecting a data set to save out indepenedence tests, sorry.");
-            }
-
-            IndependenceTest _test = independenceWrapper.getTest((DataSet) dataModel, parameters);
+            IndependenceTest _test = independenceWrapper.getTest(dataModel, parameters);
             tests.add(_test);
         }
 
@@ -1008,7 +996,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGS, PcLocal, PcMax, PcMaxLocal, FAS,
+        PC, PCStable, CPC, CPCStable, FGS, /*PcLocal,*/ PcMax, PcMaxLocal, FAS,
         FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         LiNGAM, MGM,

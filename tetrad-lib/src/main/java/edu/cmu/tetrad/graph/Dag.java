@@ -384,6 +384,11 @@ public final class Dag implements Graph {
         return GraphUtils.getSepset(n1, n2, this);
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        graph.setNodes(nodes);
+    }
+
     public boolean isAdjacentTo(Node nodeX, Node nodeY) {
         return getGraph().isAdjacentTo(nodeX, nodeY);
     }
@@ -677,6 +682,16 @@ public final class Dag implements Graph {
 
     private Graph getGraph() {
         return graph;
+    }
+
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
     }
 }
 

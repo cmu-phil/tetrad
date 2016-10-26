@@ -7,7 +7,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.DataUtility;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 
@@ -34,7 +33,8 @@ public class FgsMeasurement implements Algorithm, TakesInitialGraph, HasKnowledg
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
+        DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
         dataSet = dataSet.copy();
 
         dataSet = DataUtils.standardizeData(dataSet);

@@ -1,8 +1,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -24,7 +23,7 @@ public class DseparationScore implements ScoreWrapper {
     }
 
     @Override
-    public Score getScore(DataSet dataSet, Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
             return new GraphScore(randomGraph.createGraph(parameters));
         } else {

@@ -23,15 +23,14 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.cli.AlgorithmType;
-import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.cli.CmdOptions;
+import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Formatter;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -41,7 +40,7 @@ import edu.cmu.tetrad.cli.ParamAttrs;
  */
 public class GfcicCli extends FgscCli {
 
-    private double alpha;
+    protected double alpha;
 
     public GfcicCli(String[] args) {
         super(args);
@@ -74,17 +73,13 @@ public class GfcicCli extends FgscCli {
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
         super.parseOptionalOptions(cmd);
-
-        ParamDescriptions param = ParamDescriptions.instance();
-        alpha = Args.getDouble(cmd.getOptionValue("alpha", String.valueOf(param.get(ParamAttrs.ALPHA).getDefaultValue())));
+        alpha = CmdOptions.getDouble(CmdOptions.ALPHA, ParamAttrs.ALPHA, cmd);
     }
 
     @Override
     public List<Option> getOptionalOptions() {
-        ParamDescriptions param = ParamDescriptions.instance();
-
         List<Option> options = super.getOptionalOptions();
-        options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
+        options.add(new Option(null, CmdOptions.ALPHA, true, CmdOptions.getDescription(CmdOptions.ALPHA)));
 
         return options;
     }

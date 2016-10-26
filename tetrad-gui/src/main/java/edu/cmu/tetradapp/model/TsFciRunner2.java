@@ -35,6 +35,7 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
  *
  * @author Joseph Ramsey
+ * @author Daniel Malinsky
  */
 public class TsFciRunner2 extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {

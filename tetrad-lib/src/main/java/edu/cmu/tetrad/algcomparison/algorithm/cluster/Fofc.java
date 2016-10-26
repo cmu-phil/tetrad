@@ -26,8 +26,8 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     public Fofc() {}
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
         double alpha = parameters.getDouble("alpha");
 
         boolean wishart = parameters.getBoolean("useWishart", true);

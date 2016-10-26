@@ -39,7 +39,7 @@ import java.util.Set;
  * @author Joseph Ramsey
  * @see Endpoint
  */
-public interface Graph extends TetradSerializable {
+public interface Graph extends TetradSerializable, TripleClassifier {
     long serialVersionUID = 23L;
 
     /**
@@ -640,6 +640,8 @@ public interface Graph extends TetradSerializable {
     void removeTriplesNotInGraph();
 
     List<Node> getSepset(Node n1, Node n2);
+
+    void setNodes(List<Node> nodes);
 }
 
 

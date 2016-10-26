@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -33,8 +33,6 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public interface TripleClassifier {
-
-    Graph getGraph();
 
     List<String> getTriplesClassificationTypes();
 
