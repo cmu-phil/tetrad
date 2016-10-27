@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.latest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -7,12 +10,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
- * Author : Jeremy Espino MD
- * Created  9/20/16 11:06 AM
+ * Author : Jeremy Espino MD Created 9/20/16 11:06 AM
  */
 public class LatestClient {
 
@@ -37,49 +36,45 @@ public class LatestClient {
     }
 
     public boolean checkLatest(String softwareName, String version) {
+        LOGGER.debug("running version: " + version);
 
-           LOGGER.debug("running version: " + version);
+        final Properties applicationProperties = new Properties();
+        try (InputStream inputStream = this.getClass().getResourceAsStream("/tetrad-lib.properties")) {
+            if (inputStream != null) {
+                applicationProperties.load(inputStream);
+            }
+        } catch (IOException exception) {
+            LOGGER.error("Could not read tetrad-lib.properties file", exception);
+        }
 
-           String BASE_URL;
-           final Properties applicationProperties =  new Properties();
-           try (final InputStream stream =
-                      this.getClass().getResourceAsStream("/tetrad-lib.properties")) {
-               applicationProperties.load(stream);
-               BASE_URL = applicationProperties.getProperty("latest.version.url");
-           } catch (Exception e) {
-               LOGGER.error("Could not read tetrad-lib.properties file", e);
-               latestResult = String.format("Running version %s but unable to contact version server.", version);
-               // return without checking for latest version
-               return false;
-           }
+        String baseUrl = applicationProperties.getProperty("latest.version.url");
+        if (baseUrl == null) {
+            latestResult = String.format("Running version %s but unable to contact version server.", version);
+            return false;
+        }
 
-           try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-               HttpGet request = new HttpGet(BASE_URL + softwareName);
-               request.addHeader("content-type", "application/json");
-               HttpResponse result = httpClient.execute(request);
-               String json = EntityUtils.toString(result.getEntity(), "UTF-8");
-               LOGGER.debug("response from latest version server: " + json);
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            HttpGet request = new HttpGet(baseUrl + softwareName);
+            request.addHeader("content-type", "application/json");
+            HttpResponse result = httpClient.execute(request);
+            String json = EntityUtils.toString(result.getEntity(), "UTF-8");
+            LOGGER.debug("response from latest version server: " + json);
 
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            SoftwareVersion softwareVersion = gson.fromJson(json, SoftwareVersion.class);
 
-               com.google.gson.Gson gson = new com.google.gson.Gson();
-               SoftwareVersion softwareVersion = gson.fromJson(json, SoftwareVersion.class);
+            if (softwareVersion.getSoftwareVersion().equalsIgnoreCase(version)) {
+                latestResult = String.format("Running version %s which is the latest version.", version);
+                return true;
+            } else {
+                latestResult = String.format("Running version %s but the latest version is %s available.", version, softwareVersion.getSoftwareVersion());
+                return false;
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Could not contact server for latest version", ex);
+            latestResult = String.format("Running version %s but unable to contact version server.", version);
+            return false;
+        }
 
-               if (softwareVersion.getSoftwareVersion().equalsIgnoreCase(version)) {
-                   latestResult = String.format("Running version %s which is the latest version.", version);
-                   return true;
-               } else {
-                   latestResult = String.format("Running version %s but the latest version is %s available.", version, softwareVersion.getSoftwareVersion());
-                   return false;
-               }
-
-
-           } catch (Exception ex) {
-
-               LOGGER.error("Could not contact server for latest version", ex);
-               latestResult = String.format("Running version %s but unable to contact version server.", version);
-               return false;
-
-           }
-
-       }
+    }
 }
