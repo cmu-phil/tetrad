@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.util;
 
+import edu.cmu.tetrad.latest.LatestClient;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -54,8 +56,7 @@ public class SplashScreen {
 
         try {
             Thread.sleep(2000);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             // Ignore.
         }
 
@@ -104,7 +105,29 @@ public class SplashScreen {
             b1.add(Box.createHorizontalGlue());
             b.add(b1);
 
-            JTextArea textArea = new JTextArea(LicenseUtils.copyright());
+            String text = LicenseUtils.copyright();
+
+
+            // check if we are running latest version
+            LatestClient latestClient = LatestClient.getInstance();
+            String version = this.getClass().getPackage().getImplementationVersion();
+
+            // if no version it means we are not running a jar so probably development
+            if (version == null) version = "DEVELOPMENT";
+            latestClient.checkLatest("tetrad", version);
+            StringBuilder latestResult = new StringBuilder(latestClient.getLatestResult());
+
+            // insert a carriage return after 66 char in line to match copyright formatting
+            if (latestResult != null) {
+                int i = 0;
+                while ((i = latestResult.indexOf(" ", i + 60)) != -1) {
+                    latestResult.replace(i, i + 1, "\n");
+                }
+                text = text + "\n" + latestResult;
+            }
+
+
+            JTextArea textArea = new JTextArea(text);
             textArea.setBorder(new EmptyBorder(5, 5, 5, 5));
             b.add(textArea);
 
