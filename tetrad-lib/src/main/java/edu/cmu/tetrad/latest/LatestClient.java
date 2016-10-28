@@ -38,24 +38,20 @@ public class LatestClient {
 
     public boolean checkLatest(String softwareName, String version) {
 
-        LOGGER.debug("running version: " + version);
+           LOGGER.debug("running version: " + version);
 
-        String BASE_URL = "";
         final Properties applicationProperties = new Properties();
-        try (final InputStream stream =
-                     this.getClass().getClassLoader().getResourceAsStream("tetrad-lib.properties")) {
-            if (stream != null) {
-                applicationProperties.load(stream);
-                BASE_URL = applicationProperties.getProperty("latest.version.url");
-            } else {
-                LOGGER.warn("Could not find tetrad-lib.properties file");
-                latestResult = String.format("Running version %s but unable to contact version server.", version);
-                return false;
+        try (InputStream inputStream = this.getClass().getResourceAsStream("/tetrad-lib.properties")) {
+            if (inputStream != null) {
+                applicationProperties.load(inputStream);
             }
-        } catch (Exception e) {
-            LOGGER.error("Could not read tetrad-lib.properties file", e);
+        } catch (IOException exception) {
+            LOGGER.error("Could not read tetrad-lib.properties file", exception);
+        }
+
+        String baseUrl = applicationProperties.getProperty("latest.version.url");
+        if (baseUrl == null) {
             latestResult = String.format("Running version %s but unable to contact version server.", version);
-            // return without checking for latest version
             return false;
         }
 
@@ -94,5 +90,5 @@ public class LatestClient {
 
         }
 
-    }
+       }
 }
