@@ -7,6 +7,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -36,12 +37,26 @@ public class LatestClient {
 
     }
 
+    public String getLatestResult(int lineWidth) {
+        StringBuilder truncatedLatestResult = new StringBuilder();
+
+        if (latestResult != null) {
+            truncatedLatestResult.append(latestResult);
+            int i = 0;
+            while ((i = truncatedLatestResult.indexOf(" ", i + lineWidth)) != -1) {
+                truncatedLatestResult.replace(i, i + 1, "\n");
+            }
+        }
+
+        return truncatedLatestResult.toString();
+    }
+
     public boolean checkLatest(String softwareName, String version) {
 
            LOGGER.debug("running version: " + version);
 
         final Properties applicationProperties = new Properties();
-        try (InputStream inputStream = this.getClass().getResourceAsStream("/tetrad-lib.properties")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("tetrad-lib.properties")) {
             if (inputStream != null) {
                 applicationProperties.load(inputStream);
             }
@@ -51,12 +66,12 @@ public class LatestClient {
 
         String baseUrl = applicationProperties.getProperty("latest.version.url");
         if (baseUrl == null) {
-            latestResult = String.format("Running version %s but unable to contact version server.", version);
+            latestResult = String.format("Running version %s but unable to contact version server. To disable checking use the skip-latest option.", version);
             return false;
         }
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-            HttpGet request = new HttpGet(BASE_URL + "/latest/version/latest?softwareName=" + softwareName + "&softwareVersion=" + version);
+            HttpGet request = new HttpGet(baseUrl + "/latest/version/latest?softwareName=" + softwareName + "&softwareVersion=" + version);
             request.addHeader("content-type", "application/json");
             HttpResponse result = httpClient.execute(request);
 

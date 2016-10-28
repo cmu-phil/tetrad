@@ -115,16 +115,8 @@ public class SplashScreen {
             // if no version it means we are not running a jar so probably development
             if (version == null) version = "DEVELOPMENT";
             latestClient.checkLatest("tetrad", version);
-            StringBuilder latestResult = new StringBuilder(latestClient.getLatestResult());
-
-            // insert a carriage return after 66 char in line to match copyright formatting
-            if (latestResult != null) {
-                int i = 0;
-                while ((i = latestResult.indexOf(" ", i + 60)) != -1) {
-                    latestResult.replace(i, i + 1, "\n");
-                }
-                text = text + "\n" + latestResult;
-            }
+            StringBuilder latestResult = new StringBuilder(latestClient.getLatestResult(60));
+            text = text + "\n" + latestResult.toString();
 
 
             JTextArea textArea = new JTextArea(text);

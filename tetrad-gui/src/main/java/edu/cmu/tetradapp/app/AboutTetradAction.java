@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetrad.latest.LatestClient;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.util.LicenseUtils;
@@ -56,6 +57,9 @@ final class AboutTetradAction extends AbstractAction {
         String copyright = LicenseUtils.copyright();
         copyright = copyright.replaceAll("\n", "<br>");
 
+        String latestVersion = LatestClient.getInstance().getLatestResult(60);
+        latestVersion = latestVersion.replaceAll("\n","<br>");
+
 
         JLabel label = new JLabel();
         label.setText("<html>" + "<b>Tetrad " + currentVersion + "</b>" +
@@ -65,7 +69,10 @@ final class AboutTetradAction extends AbstractAction {
                 "<br>Carnegie Mellon University" + "<br>" +
                 "<br>Project Direction: Clark Glymour, Richard Scheines, Peter Spirtes" +
                 "<br>Lead Developer: Joseph Ramsey" +
-                "<br>" + "<br>" + copyright + "</html>");
+                "<br>" + copyright +
+                "<br>" + latestVersion  + "</html>"
+
+        );
         label.setBackground(Color.LIGHT_GRAY);
         label.setFont(new Font("Dialog", Font.PLAIN, 12));
         label.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
