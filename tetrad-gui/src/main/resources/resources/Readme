@@ -12,8 +12,8 @@ start Tetrad. The 'license' file contains the text of the GNU GPL license,
 as posted at http://www.gnu.org/licenses/gpl.txt.
 
 The 'version' file contains the version number of the most recently
-published version of Tetrad. It is updated automatically each time the Ant
-upload task is executed.
+published version of Tetrad. It is updated automatically each time Maven package
+goal is executed.
 
 The 'version' file normally contains a string of this form as
 its first line:
@@ -28,8 +28,7 @@ minor subversion. For example:
 No other string types are permitted; anything else will cause
 the lifecycle package goal to fail.
 
-This currently needs to be coordinated manually with the POM file.
-Might have to give this up.
+This is coordinated automatically with the POM file.
 
 The configuration file that Tetrad uses is configuration.xml. The file
 configuration-post contains the version that's used for posting;

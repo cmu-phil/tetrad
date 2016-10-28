@@ -111,7 +111,9 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
 
         if (!skipLatest) {
             LatestClient latestClient = LatestClient.getInstance();
-            latestClient.checkLatest("causal-cmd", AppTool.jarVersion());
+            String version = AppTool.jarVersion();
+            if (version == null) version = "DEVELOPMENT";
+            latestClient.checkLatest("causal-cmd", version);
             System.out.println(latestClient.getLatestResult());
         }
 
