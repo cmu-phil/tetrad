@@ -446,7 +446,11 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
 
         g2d.setStroke(s);
-        g2d.setColor(lineColor);
+
+        if (!isSelected()) {
+            g2d.setColor(lineColor);
+        }
+
         g2d.drawLine(x1, y1, x2, y2);
 
         if (!isShowAdjacenciesOnly()) {

@@ -21,10 +21,8 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -36,6 +34,8 @@ import edu.cmu.tetradapp.model.PcRunner;
  */
 public class TimeSeriesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
+
+    private IKnowledge knowledge = new Knowledge2();
 
     /**
      * Constructs a new time series dataset.
@@ -57,6 +57,7 @@ public class TimeSeriesWrapper extends DataWrapper {
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
+            knowledge = timeSeries.getKnowledge();
             timeSeriesDataSets.add(timeSeries);
         }
 

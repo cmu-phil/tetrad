@@ -21,10 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +39,7 @@ public final class CcdMax implements GraphSearch {
     private int depth = -1;
     private boolean applyOrientAwayFromCollider = false;
     private long elapsed = 0;
+    private IKnowledge knowledge = new Knowledge2();
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -56,6 +56,7 @@ public final class CcdMax implements GraphSearch {
         SepsetMap map = new SepsetMap();
         System.out.println("FAS");
         Graph graph = fastAdjacencySearch();
+        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
         System.out.println("Two shield constructs");
         orientTwoShieldConstructs(graph);
         System.out.println("Max P collider orientation");
@@ -102,6 +103,7 @@ public final class CcdMax implements GraphSearch {
 
         FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
         fas.setDepth(getDepth());
+        fas.setKnowledge(knowledge);
         fas.setVerbose(false);
         fas.setRecordSepsets(false);
         Graph graph = fas.search();
@@ -183,7 +185,7 @@ public final class CcdMax implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNode(graph, colliders, nodes.get(i), map);
+                        doNode2(graph, colliders, nodes.get(i));
                     }
 
                     return true;
@@ -230,7 +232,7 @@ public final class CcdMax implements GraphSearch {
         orientAwayFromArrow(graph);
     }
 
-    private void doNode(Graph graph, Map<Triple, Double> colliders, Node b, SepsetMap map) {
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
@@ -249,22 +251,87 @@ public final class CcdMax implements GraphSearch {
                 continue;
             }
 
+            List<Node> adja = graph.getAdjacentNodes(a);
+            double score = Double.POSITIVE_INFINITY;
+            List<Node> S = null;
+
+            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+            int[] comb2;
+
+            while ((comb2 = cg2.next()) != null) {
+                List<Node> s = GraphUtils.asList(comb2, adja);
+                independenceTest.isIndependent(a, c, s);
+                double _score = independenceTest.getScore();
+
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
+            }
+
+            List<Node> adjc = graph.getAdjacentNodes(c);
+
+            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+            int[] comb3;
+
+            while ((comb3 = cg3.next()) != null) {
+                List<Node> s = GraphUtils.asList(comb3, adjc);
+                independenceTest.isIndependent(c, a, s);
+                double _score = independenceTest.getScore();
+
+                if (_score < score) {
+                    score = _score;
+                    S = s;
+                }
+            }
+
+            // S actually has to be non-null here, but the compiler doesn't know that.
+            if (S != null && !S.contains(b)) {
+                scores.put(new Triple(a, b, c), score);
+            }
+        }
+    }
+
+    private void doNode2(Graph graph, Map<Triple, Double> colliders, Node b) {
+        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+        if (adjacentNodes.size() < 2) {
+            return;
+        }
+
+        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+        int[] combination;
+
+        while ((combination = cg.next()) != null) {
+            Node a = adjacentNodes.get(combination[0]);
+            Node c = adjacentNodes.get(combination[1]);
+
+            if (knowledge.isForbidden(a.getName(), b.getName())) {
+                continue;
+            }
+
+            if (knowledge.isForbidden(c.getName(), b.getName())) {
+                continue;
+            }
+
+            independenceTest.isIndependent(a, c);
+            double s1 = independenceTest.getScore();
+            independenceTest.isIndependent(a, c, b);
+            double s2 = independenceTest.getScore();
+
+            boolean mycollider2 = s2 > s1;
+
+            // Skip triples that are shielded.
+            if (graph.isAdjacentTo(a, c)) {
+                continue;
+            }
+
             if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
                 continue;
             }
 
-            Pair P = maxPSepset(a, c, graph);
-            List<Node> S = P.getCond();
-            double score = P.getScore();
-
-            if (S == null) {
-                continue;
-            }
-
-            map.set(a, c, S);
-
-            if (!S.contains(b)) {
-                colliders.put(new Triple(a, b, c), score);
+            if (mycollider2) {
+                colliders.put(new Triple(a, b, c), s2);
             }
         }
     }
@@ -294,8 +361,11 @@ public final class CcdMax implements GraphSearch {
             boolean agree = true;
 
             for (Node a : surround) {
-                List<Node> sepsetax = map.get(a, b);
-                List<Node> sepsetay = map.get(a, c);
+//                List<Node> sepsetax = map.get(a, b);
+//                List<Node> sepsetay = map.get(a, c);
+
+                List<Node> sepsetax = maxPSepset(a, b, graph).getCond();
+                List<Node> sepsetay = maxPSepset(a, c, graph).getCond();
 
                 if (sepsetax == null) continue;
                 if (sepsetay == null) continue;
@@ -398,7 +468,7 @@ public final class CcdMax implements GraphSearch {
             return;
         }
 
-        if (wouldCreateBadCollider(graph, b, c))  {
+        if (wouldCreateBadCollider(graph, b, c)) {
             return;
         }
 
@@ -433,6 +503,14 @@ public final class CcdMax implements GraphSearch {
         return false;
     }
 
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     private class Pair {
         private List<Node> cond;
         private double score;
@@ -465,8 +543,13 @@ public final class CcdMax implements GraphSearch {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
+                WHILE:
                 while ((choice = gen.next()) != null) {
                     List<Node> v2 = GraphUtils.asList(choice, adji);
+
+                    for (Node v : v2) {
+                        if (isForbidden(i, k, v2)) continue WHILE;
+                    }
 
                     try {
                         getIndependenceTest().isIndependent(i, k, v2);
@@ -509,6 +592,20 @@ public final class CcdMax implements GraphSearch {
         return new Pair(_v, _p);
     }
 
+    private boolean isForbidden(Node i, Node k, List<Node> v) {
+        for (Node w : v) {
+            if (knowledge.isForbidden(w.getName(), i.getName())) {
+                return true;
+            }
+
+            if (knowledge.isForbidden(w.getName(), k.getName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // Returns a sepset containing the nodes in 'containing' but not the nodes in 'notContaining', or
     // null if there is no such sepset.
     private List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining) {
@@ -522,12 +619,15 @@ public final class CcdMax implements GraphSearch {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
 
+                WHILE:
                 while ((choice = gen.next()) != null) {
                     Set<Node> v2 = GraphUtils.asSet(choice, adj);
                     v2.addAll(containing);
                     v2.removeAll(notContaining);
                     v2.remove(a);
                     v2.remove(c);
+
+                    if (isForbidden(a, c, new ArrayList<>(v2)))
 
                     getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
                     double p2 = getIndependenceTest().getScore();

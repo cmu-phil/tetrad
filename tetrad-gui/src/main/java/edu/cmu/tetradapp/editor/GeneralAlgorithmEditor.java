@@ -36,6 +36,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.joe.PcMaxTriple;
+import edu.cmu.tetrad.algcomparison.joe.PcMaxTriple2;
 import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
@@ -156,6 +158,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMaxTriple, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcMaxTriple2, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -597,6 +601,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case PcMax:
                 algorithm = new PcMax(independenceWrapper);
                 break;
+            case PcMaxTriple:
+                algorithm = new PcMaxTriple(independenceWrapper);
+                break;
+            case PcMaxTriple2:
+                algorithm = new PcMaxTriple2(independenceWrapper);
+                break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);
                 break;
@@ -997,7 +1007,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGS, /*PcLocal,*/ PcMax, PcMaxLocal, FAS,
+        PC, PCStable, CPC, CPCStable, FGS, /*PcLocal,*/ PcMax, PcMaxTriple, PcMaxTriple2, PcMaxLocal, FAS,
         FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
         FCI, RFCI, CFCI, FCI_Max, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,

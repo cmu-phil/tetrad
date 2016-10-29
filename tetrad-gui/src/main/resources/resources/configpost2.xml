@@ -199,11 +199,10 @@
         <!--<model-chooser title="Graph Types"/>-->
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) No inputs
-                 <br> (2) Data (to extract variables)
-                 <br> (3) Also (to extract a graph) any of these: Search, PM, IM, Estimator, Updator
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html>
+               The purpose of this box is to store a graph and allow you possibly to edit it. It can either take
+               <br>no parents or else a box with a graph already in it. Or if not that, a box in which variables are
+               <br>at least defined, so that a empty graph can be formed over those varialbes.
                </html>
             ]]>
         </node-specific-message>
@@ -247,11 +246,9 @@
         <model-chooser title="Types of Parameterized Models"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Graph, OR
-                 <br> (2) Graph AND Data (to extract discrete categories)
-                 <br> (3) Also (to extract a PM) any of these: IM, Estimator
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html>
+               This box requires a graph as a parent; it's going to try to create a parameterized model
+               <br>using the graph structure.
                </html>
             ]]>
         </node-specific-message>
@@ -334,37 +331,9 @@
         <model-chooser title="Types of Instantiated Models"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) PM (Bayes or SEM), OR
-                 <br> (2) IM (to convert Dirichlet Bayes IM to Bayes IM), OR
-                 <br> (3) Estimator (to extract IM)
-                 <br> Note that for the parent boxes, models need to have been created.
-               </html>
-            ]]>
-        </node-specific-message>
-    </session-node>
-    <session-node id="Simulation">
-        <models>
-            <model name="Simulation" acronym="Simulation"
-                   help="data" category="Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
-            </model>
-        </models>
-        <display-component image="dataIcon.gif"/>
-        <model-chooser title="Simulation">
-            edu.cmu.tetradapp.app.CategorizingModelChooser
-        </model-chooser>
-        <node-specific-message>
-            <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Data, OR
-                 <br> (2) Data Manipulation Node
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html>
+               An IM box requires a PM box as parent. It's going to try to pick values for each of the parameters
+               <br>in the PM.
                </html>
             ]]>
         </node-specific-message>
@@ -375,15 +344,15 @@
                 <model-class>edu.cmu.tetradapp.model.DataWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Simulation" acronym="Simulation"-->
-            <!--help="data" category="Data">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="data" description="Data"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.Simulation</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>-->
-            <!--</model>-->
+            <model name="Simulation" acronym="Simulation"
+                   help="data" category="Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
+            </model>
             <model name="Discretize Dataset" acronym="Discretize" help="data"
                    category="Manipulation of Data">
                 <logger>
@@ -883,12 +852,12 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Data, OR
-                 <br> (2) Data Manipulation Node
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html>
+               This box stores a dataset, either loaded from file or simulated, else transformed from another
+               <br>dataset. As such, it either requires no parents or else another dataset as parent. Sometimes
+               <br>it can take multiple datasets as parents.
                </html>
-            ]]>
+               ]]>
         </node-specific-message>
     </session-node>
     <session-node id="Estimator">
@@ -950,17 +919,22 @@
                 <editor-class>edu.cmu.tetradapp.editor.EmBayesEstimatorEditor</editor-class>
                 <params-editor-class>edu.cmu.tetradapp.editor.EMBayesEstimatorParamsEditor</params-editor-class>
             </model>
+            <model name="Pattern Fit" acronym="Pattern Fit"
+                   help="Pattern Fit" category="Simuation-Algorithm Comparisons">
+                <model-class>edu.cmu.tetradapp.model.PatternFitModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PatternFitEditor</editor-class>
+            </model>
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) PM and Data, OR
-                 <br> (2) IM and Data (shortcut for IM->PM + Data)
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html>
+               The purpose of this box is to estimate a model from data. So it needs a model in which the parameters
+               <br>of the model are specified (a PM box) and a dataset (a data box).
                </html>
-            ]]>
+               ]]>
         </node-specific-message>
     </session-node>
     <session-node id="Updater">
@@ -1020,10 +994,10 @@
         <model-chooser title="Types of Updaters"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) IM (Bayes only)
-                 <br> Note that for the parent boxes, models need to have been created.
-                </html>
+               <html>
+               The purpose of this box is to do updating (learning) from a model in which the parameter values have
+               <br>been specified. As such, it needs an instantiated model (IM) as input.
+               </html>
             ]]>
         </node-specific-message>
     </session-node>
@@ -1530,18 +1504,18 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="MIMBuild" acronym="MIMBuild" help="mimbuild"-->
-            <!--category="Multiple Indicator Model searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
-            <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.MimBuildRunner-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
+            <model name="MIMBuild" acronym="MIMBuild" help="mimbuild"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="details" description="Misc Fine Details" default="on"/>
+                    <event id="maxmodel" description="Max P Value Model" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.MimBuildRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MimbuildEditor
+                </editor-class>
+            </model>
             <!--<model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"-->
             <!--category="Multiple Indicator Model searches">-->
             <!--<logger>-->
@@ -1605,17 +1579,17 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FtfcSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="Purify" acronym="Purify" help="purify"-->
-            <!--category="Multiple Indicator Model searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
-            <!--<event id="tetrads" description="Tetrads"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.PurifyRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2-->
-            <!--</editor-class>-->
-            <!--</model>-->
+            <model name="Purify" acronym="Purify" help="purify"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="details" description="Misc Fine Details" default="on"/>
+                    <event id="tetrads" description="Tetrads"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.PurifyRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2
+                </editor-class>
+            </model>
             <!--<model name="MBFS" acronym="MBFS" help="mbf"-->
             <!--category="Feature selection searches">-->
             <!--<logger>-->
@@ -1711,11 +1685,11 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Data or Simulation, OR
-                 <br> (2) Graph (searches directly over graph) OR
-                 <br> Note that for the parent boxes, models need to have been created.
-               </html>
+            <html>
+            The purpose of this box is to do a search over data, yielding a graph that estimates the causal
+            <br>structure over the variables in the data. As such, it needs to have a dataset as input, or
+            <br>at least a graph, for algorithms that can search using d-separation information alone.
+            </html
             ]]>
         </node-specific-message>
     </session-node>
@@ -1748,8 +1722,8 @@
         <model-chooser title="Types of Regression"/>
         <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Nodes:
-                 <br> (1) Data (Continuous)
+               <html>
+               The purpose of this box is to a regression on data. As such, it requires a dataset as input.
                </html>
             ]]>
         </node-specific-message>
@@ -1770,13 +1744,14 @@
         <model-chooser title="Types of Classifiers"/>
         <node-specific-message>
             <![CDATA[
-               <html> Allowable Input Combinations:
-                 <br> (1) IM (Bayes only) + Data (discrete only)
+               <html>
+               The purpose of this box is to perform a classification using a model with parameter values defined
+               <br>(an IM) from data. As such, it needs as parents an IM box and a data box.
                </html>
             ]]>
         </node-specific-message>
     </session-node>
-    <session-node id="Compare">
+    <session-node id="Comparison">
         <models>
             <model name="Edgewise Comparison" acronym="Edge Comp"
                    help="edge_comparison" category="Graph-Graph Comparisons">
@@ -1852,12 +1827,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.EdgeWeightComparisonEditor</editor-class>
             </model>
-            <model name="Model Fit" acronym="Model Fit"
-                   help="Model Fit" category="Simuation-Algorithm Comparisons">
-                <model-class>edu.cmu.tetradapp.model.PatternFitModel
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PatternFitEditor</editor-class>
-            </model>
         </models>
         <display-component image="graphIcon.gif"/>
         <model-chooser title="Types of Comparisons">
@@ -1865,11 +1834,11 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Simulation and Search
-                 <br> (2) Several boxes containing graphs.
-                 <br> (3) Several boxes containing independence tests.
-                 <br> Note that for the parent boxes, models need to have been created.
+                <html>
+                This box is trying to compare things and so needs things to compare. Only certain combinations of
+                <br>things can be compared. You can compare a simulation to a graph output (in certain case). You
+                <br>can compare two graphs, or sometime several graphs. You can compare independence tests from
+                <br>multiple sources. See the manual for more information.
                </html>
             ]]>
         </node-specific-message>
@@ -1936,9 +1905,11 @@
         <model-chooser title="Types of Knowledge"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Any box that contains a set of variables.
-                 <br> Note that for the parent boxes, models need to have been created.
+               <html>
+               The purpose of this box is to store background knowledge for use in a a search that can use such
+               <br>background knowledge, such as PC or FGS, or many other searchs. It needs as input a model that
+               <br>contains variable names, because it needs to know what the variable names are over which the
+               <br>knowledge is defined.
                </html>
             ]]>
         </node-specific-message>

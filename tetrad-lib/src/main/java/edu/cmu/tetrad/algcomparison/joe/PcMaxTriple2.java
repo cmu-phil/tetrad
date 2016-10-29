@@ -1,49 +1,53 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
+package edu.cmu.tetrad.algcomparison.joe;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * PC-Max
  *
  * @author jdramsey
  */
-public class CcdMax implements Algorithm, HasKnowledge {
+public class PcMaxTriple2 implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CcdMax(IndependenceWrapper test) {
+    public PcMaxTriple2(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
-        IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
-        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+        edu.cmu.tetrad.search.PcMaxTriple2 search = new edu.cmu.tetrad.search.PcMaxTriple2(
+                test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
-        search.setDepth(parameters.getInt("depth"));
-        search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         return search.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "CCD-Max (Cyclic Discovery Search Max) using " + test.getDescription();
+        return "PC-Max (\"Peter and Clark\") Max Triple 2 using " + test.getDescription()
+                + (initialGraph != null ? " with initial graph from " +
+                initialGraph.getDescription() : "");
     }
 
     @Override
@@ -55,7 +59,6 @@ public class CcdMax implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
-        parameters.add("applyR1");
         return parameters;
     }
 

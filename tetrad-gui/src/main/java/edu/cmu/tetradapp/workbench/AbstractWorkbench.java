@@ -980,7 +980,7 @@ public abstract class AbstractWorkbench extends JComponent
         if (graph instanceof SessionWrapper) {
             this.graph = graph;
         } else {
-            this.graph = new EdgeListGraph(graph);
+            this.graph = graph;
 
             if (graph.isPag()) {
                 addPagColoring(new EdgeListGraph(graph));
@@ -1227,7 +1227,8 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @param modelEdge the mode edge.
      */
-    private void addEdge(Edge modelEdge) {
+    private void
+    addEdge(Edge modelEdge) {
         if (modelEdge == null) {
             return;
         }

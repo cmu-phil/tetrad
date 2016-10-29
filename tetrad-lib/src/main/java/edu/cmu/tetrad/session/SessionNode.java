@@ -21,10 +21,13 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Array;
@@ -59,7 +62,7 @@ import java.util.*;
  * @see SessionAdapter
  * @see SessionEvent
  */
-public class SessionNode implements TetradSerializable {
+public class SessionNode implements Node, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -1008,11 +1011,71 @@ public class SessionNode implements TetradSerializable {
         return null;
     }
 
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public void setName(String name) {
+
+    }
+
+    @Override
+    public NodeType getNodeType() {
+        return null;
+    }
+
+    @Override
+    public void setNodeType(NodeType nodeType) {
+
+    }
+
     /**
      * Prints out the name of the session node.
      */
     public String toString() {
         return this.getBoxType();
+    }
+
+    @Override
+    public int getCenterX() {
+        return 0;
+    }
+
+    @Override
+    public void setCenterX(int centerX) {
+
+    }
+
+    @Override
+    public int getCenterY() {
+        return 0;
+    }
+
+    @Override
+    public void setCenterY(int centerY) {
+
+    }
+
+    @Override
+    public void setCenter(int centerX, int centerY) {
+
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+
+    }
+
+    @Override
+    public Node like(String name) {
+        return null;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return 0;
     }
 
     /**

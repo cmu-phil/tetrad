@@ -594,7 +594,7 @@ public class TimeSeriesUtils {
         return laggedData;
     }
 
-    public static TimeLagGraph GraphToLagGraph(Graph _graph){
+    public static TimeLagGraph graphToLagGraph(Graph _graph){
         TimeLagGraph graph = new TimeLagGraph();
         int numLags = 1;
 

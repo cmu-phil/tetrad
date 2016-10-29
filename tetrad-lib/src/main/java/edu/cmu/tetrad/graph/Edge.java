@@ -44,7 +44,7 @@ public class Edge implements TetradSerializable, Comparable {
     private Endpoint endpoint2;
 
     // Usual coloring--set to something else for a special line color.
-    private Color lineColor = null;
+    private transient Color lineColor = null;
 
     private boolean dashed = false;
 

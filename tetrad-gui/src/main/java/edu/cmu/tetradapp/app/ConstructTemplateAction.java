@@ -424,7 +424,7 @@ final class ConstructTemplateAction extends AbstractAction {
         return node;
     }
 
-    private void addEdge(String nodeName1, String nodeName2) {
+    public void addEdge(String nodeName1, String nodeName2) {
 
         // Retrieve the nodes from the session wrapper.
         Node node1 = getSessionWrapper().getNode(nodeName1);
@@ -451,6 +451,8 @@ final class ConstructTemplateAction extends AbstractAction {
 
         // Add the edge.
         getSessionWrapper().addEdge(edge);
+        getSessionWorkbench().revalidate();
+        getSessionWorkbench().repaint();
     }
 
     private static SessionNodeWrapper getNewModelNode(String nextButtonType,

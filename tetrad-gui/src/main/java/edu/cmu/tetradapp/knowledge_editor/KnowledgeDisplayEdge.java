@@ -982,7 +982,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @throws UnsupportedOperationException
      */
     public void setLineColor(Color lineColor) {
-        throw new UnsupportedOperationException();
+//        throw new UnsupportedOperationException();
     }
 
     @Override

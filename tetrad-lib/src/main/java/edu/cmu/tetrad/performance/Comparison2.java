@@ -122,7 +122,7 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
-                trueDag = TimeSeriesUtils.GraphToLagGraph(trueDag);
+                trueDag = TimeSeriesUtils.graphToLagGraph(trueDag);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
             /***************************/
@@ -229,7 +229,7 @@ public class Comparison2 {
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                     trueDag = GraphUtils.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
-                    trueDag = TimeSeriesUtils.GraphToLagGraph(trueDag);
+                    trueDag = TimeSeriesUtils.graphToLagGraph(trueDag);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
                 /***************************/

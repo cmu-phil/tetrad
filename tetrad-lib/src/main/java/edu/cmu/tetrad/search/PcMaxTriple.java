@@ -21,12 +21,13 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +42,7 @@ import java.util.concurrent.RecursiveTask;
  *
  * @author Joseph Ramsey.
  */
-public class PcMax implements GraphSearch {
+public class PcMaxTriple implements GraphSearch {
 
     /**
      * The independence test used for the PC search. This can  be a test based on a score.
@@ -91,7 +92,7 @@ public class PcMax implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public PcMax(IndependenceTest independenceTest) {
+    public PcMaxTriple(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -185,12 +186,14 @@ public class PcMax implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(false);
-        fas.setRecordSepsets(false);
+        fas.setRecordSepsets(true);
         graph = fas.search();
+
+        SepsetMap sepsets = fas.getSepsets();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        addColliders(graph);
+        addColliders(graph, sepsets);
 
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
@@ -246,7 +249,7 @@ public class PcMax implements GraphSearch {
         this.verbose = verbose;
     }
 
-    private void addColliders(Graph graph) {
+    private void addColliders(Graph graph, final SepsetMap sepsets) {
         final Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
@@ -269,7 +272,7 @@ public class PcMax implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNode(graph, scores, nodes.get(i));
+                        doNode2(graph, scores, nodes.get(i), sepsets);
                     }
 
                     return true;
@@ -406,67 +409,6 @@ public class PcMax implements GraphSearch {
             }
 
             if (mycollider2) {
-                colliders.put(new Triple(a, b, c), s2);
-            }
-        }
-    }
-
-
-    private void doNode2(Graph graph, Map<Triple, Double> colliders, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            independenceTest.isIndependent(a, c);
-            double s1 = independenceTest.getScore();
-            independenceTest.isIndependent(a, c, b);
-            double s2 = independenceTest.getScore();
-
-            boolean mycollider2 = s2 > s1;
-
-
-//            TetradMatrix cov = independenceTest.getCov().getMatrix();
-//            TetradMatrix inv = cov.inverse();
-//
-//            int x = independenceTest.getVariables().indexOf(a);
-//            int y = independenceTest.getVariables().indexOf(c);
-//
-//            boolean mycolldider = !graph.isAdjacentTo(a, c) && Math.abs(inv.get(x, y)) > independenceTest.getAlpha();
-
-            if (mycollider2) {
-                System.out.println("Collider? " + new Triple(a, b, c));
-            }
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
-                continue;
-            }
-
-//            Pair P = maxPSepset(a, c, graph);
-//            List<Node> S = P.getCond();
-//            double score = P.getScore();
-//
-//            if (S == null) {
-//                continue;
-//            }
-//
-//            map.set(a, c, S);
-
-            if (mycollider2) {
-//            if (!S.contains(b)) {
                 colliders.put(new Triple(a, b, c), s2);
             }
         }
