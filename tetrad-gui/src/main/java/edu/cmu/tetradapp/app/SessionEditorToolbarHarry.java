@@ -46,7 +46,7 @@ import java.util.Map;
  * @see SessionEditor
  * @see SessionEditorToolbarHarry
  */
-final class SessionEditorToolbar extends JPanel {
+final class SessionEditorToolbarHarry extends JPanel {
 
     //=========================MEMBER FIELDS============================//
 
@@ -82,7 +82,7 @@ final class SessionEditorToolbar extends JPanel {
      *
      * @param workbench the workbench this toolbar controls.
      */
-    public SessionEditorToolbar(final SessionEditorWorkbench workbench) {
+    public SessionEditorToolbarHarry(final SessionEditorWorkbench workbench) {
         if (workbench == null) {
             throw new NullPointerException("Workbench must not be null.");
         }
