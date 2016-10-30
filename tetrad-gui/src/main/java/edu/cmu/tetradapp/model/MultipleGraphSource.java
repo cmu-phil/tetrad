@@ -32,6 +32,8 @@ import java.util.List;
  */
 interface MultipleGraphSource {
     List<Graph> getGraphs();
+
+    String getName();
 }
 
 

@@ -68,33 +68,19 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     //=============================CONSTRUCTORS==========================//
 
-    public TabularComparison(GeneralAlgorithmRunner model, Parameters params) {
-        this(model, model.getDataWrapper(), params);
-    }
+//    public TabularComparison(GeneralAlgorithmRunner model, Parameters params) {
+//        this(model, model.getDataWrapper(), params);
+//    }
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public TabularComparison(SessionModel model1, SessionModel model2,
+    public TabularComparison(MultipleGraphSource model1, MultipleGraphSource model2,
                              Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
-        }
-
-        // Need to be able to construct this object even if the models are
-        // null. Otherwise the interface is annoying.
-        if (model2 == null) {
-            model2 = new DagWrapper(new Dag());
-        }
-
-        if (model1 == null) {
-            model1 = new DagWrapper(new Dag());
-        }
-
-        if (!(model1 instanceof MultipleGraphSource) || !(model2 instanceof MultipleGraphSource)) {
-            throw new IllegalArgumentException("Must be graph sources.");
         }
 
         if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
@@ -244,38 +230,16 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         }
     }
 
-    public TabularComparison(GraphWrapper referenceGraph,
-                             AbstractAlgorithmRunner algorithmRunner,
-                             Parameters params) {
-        this(referenceGraph, (SessionModel) algorithmRunner, params);
-    }
-
-    public TabularComparison(GraphWrapper referenceWrapper,
-                             GraphWrapper targetWrapper, Parameters params) {
-        this(referenceWrapper, (SessionModel) targetWrapper, params);
-    }
-
-    public TabularComparison(DagWrapper referenceGraph,
-                             AbstractAlgorithmRunner algorithmRunner,
-                             Parameters params) {
-        this(referenceGraph, (SessionModel) algorithmRunner, params);
-    }
-
-    public TabularComparison(DagWrapper referenceWrapper,
-                             GraphWrapper targetWrapper, Parameters params) {
-        this(referenceWrapper, (SessionModel) targetWrapper, params);
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
-    public static TabularComparison serializableInstance() {
-        return new TabularComparison(DagWrapper.serializableInstance(),
-                DagWrapper.serializableInstance(),
-                new Parameters());
-    }
+//    public static TabularComparison serializableInstance() {
+//        return new TabularComparison(DagWrapper.serializableInstance(),
+//                DagWrapper.serializableInstance(),
+//                new Parameters());
+//    }
 
     //==============================PUBLIC METHODS========================//
 

@@ -58,16 +58,16 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
     //=============================CONSTRUCTORS==========================//
 
-    public EdgewiseComparisonModel(GeneralAlgorithmRunner model, Parameters params) {
-        this(model, model.getDataWrapper(), params);
-    }
+//    public EdgewiseComparisonModel(GeneralAlgorithmRunner model, Parameters params) {
+//        this(model, model.getDataWrapper(), params);
+//    }
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public EdgewiseComparisonModel(SessionModel model1, SessionModel model2,
+    public EdgewiseComparisonModel(MultipleGraphSource model1, MultipleGraphSource model2,
                                    Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
@@ -75,18 +75,18 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
         // Need to be able to construct this object even if the models are
         // null. Otherwise the interface is annoying.
-        if (model2 == null) {
-            model2 = new DagWrapper(new Dag());
-        }
+//        if (model2 == null) {
+//            model2 = new DagWrapper(new Dag());
+//        }
+//
+//        if (model1 == null) {
+//            model1 = new DagWrapper(new Dag());
+//        }
 
-        if (model1 == null) {
-            model1 = new DagWrapper(new Dag());
-        }
-
-        if (!(model1 instanceof MultipleGraphSource) ||
-                !(model2 instanceof MultipleGraphSource)) {
-            throw new IllegalArgumentException("Must be graph sources.");
-        }
+//        if (!(model1 instanceof MultipleGraphSource) ||
+//                !(model2 instanceof MultipleGraphSource)) {
+//            throw new IllegalArgumentException("Must be graph sources.");
+//        }
 
         if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
             throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
@@ -200,31 +200,31 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         }
     }
 
-    public EdgewiseComparisonModel(GraphWrapper referenceGraph,
-                                   AbstractAlgorithmRunner algorithmRunner,
-                                   Parameters params) {
-        this(referenceGraph, (SessionModel) algorithmRunner,
-                params);
-    }
+//    public EdgewiseComparisonModel(GraphWrapper referenceGraph,
+//                                   AbstractAlgorithmRunner algorithmRunner,
+//                                   Parameters params) {
+//        this(referenceGraph, (SessionModel) algorithmRunner,
+//                params);
+//    }
+//
+//    public EdgewiseComparisonModel(GraphWrapper referenceWrapper,
+//                                   GraphWrapper targetWrapper, Parameters params) {
+//        this(referenceWrapper, (SessionModel) targetWrapper,
+//                params);
+//    }
+//
+//    public EdgewiseComparisonModel(DagWrapper referenceGraph,
+//                                   AbstractAlgorithmRunner algorithmRunner,
+//                                   Parameters params) {
+//        this(referenceGraph, (SessionModel) algorithmRunner,
+//                params);
+//    }
 
-    public EdgewiseComparisonModel(GraphWrapper referenceWrapper,
-                                   GraphWrapper targetWrapper, Parameters params) {
-        this(referenceWrapper, (SessionModel) targetWrapper,
-                params);
-    }
-
-    public EdgewiseComparisonModel(DagWrapper referenceGraph,
-                                   AbstractAlgorithmRunner algorithmRunner,
-                                   Parameters params) {
-        this(referenceGraph, (SessionModel) algorithmRunner,
-                params);
-    }
-
-    public EdgewiseComparisonModel(DagWrapper referenceWrapper,
-                                   GraphWrapper targetWrapper, Parameters params) {
-        this(referenceWrapper, (SessionModel) targetWrapper,
-                params);
-    }
+//    public EdgewiseComparisonModel(DagWrapper referenceWrapper,
+//                                   GraphWrapper targetWrapper, Parameters params) {
+//        this(referenceWrapper, (SessionModel) targetWrapper,
+//                params);
+//    }
 
     //==============================PUBLIC METHODS========================//
 

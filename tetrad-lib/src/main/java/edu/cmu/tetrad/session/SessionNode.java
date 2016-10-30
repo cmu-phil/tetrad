@@ -1333,17 +1333,21 @@ public class SessionNode implements Node, TetradSerializable {
             }
         }
 
+        // Is it the case that for this constructor, every argument type is a model class for
+        // one of the existing session nodes? (You can skip Parameters classes.)
         if (existingNodes != null) {
             existingNodes.remove(this);
 
             for (Class<?> type : constructorTypes) {
+                if (type.equals(Parameters.class)) continue;
                 boolean foundNode = false;
 
+                FOR:
                 for (SessionNode node : existingNodes) {
                     for (Class<?> clazz : node.getModelClasses()) {
-                        if (type.equals(Parameters.class) || type.isAssignableFrom(clazz)) {
+                        if (clazz.equals(type)) {
                             foundNode = true;
-                            break;
+                            break FOR;
                         }
                     }
                 }

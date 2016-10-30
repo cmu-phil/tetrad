@@ -69,60 +69,60 @@ public class CovMatrixSumWrapper extends DataWrapper {
 
     }
 
-    public CovMatrixSumWrapper(SemEstimatorWrapper wrapper1, DataWrapper wrapper2) {
-        if (wrapper1 == null || wrapper2 == null) {
-            throw new NullPointerException("The data must not be null");
-        }
+//    public CovMatrixSumWrapper(SemEstimatorWrapper wrapper1, DataWrapper wrapper2) {
+//        if (wrapper1 == null || wrapper2 == null) {
+//            throw new NullPointerException("The data must not be null");
+//        }
+//
+//        DataModel model2 = wrapper2.getSelectedDataModel();
+//
+//        if (!(model2 instanceof ICovarianceMatrix)) {
+//            throw new IllegalArgumentException("Expecting corrariance matrices.");
+//        }
+//
+//        TetradMatrix corr1 = wrapper1.getEstimatedSemIm().getImplCovarMeas();
+//        TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
+//
+//        TetradMatrix corr3 = calcSum(corr1, corr2);
+//
+//        ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariables(), corr3,
+//                ((ICovarianceMatrix) model2).getSampleSize());
+//
+//        setDataModel(corrWrapper);
+//        setSourceGraph(wrapper2.getSourceGraph());
+//        LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
+//
+//    }
 
-        DataModel model2 = wrapper2.getSelectedDataModel();
-
-        if (!(model2 instanceof ICovarianceMatrix)) {
-            throw new IllegalArgumentException("Expecting corrariance matrices.");
-        }
-
-        TetradMatrix corr1 = wrapper1.getEstimatedSemIm().getImplCovarMeas();
-        TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
-
-        TetradMatrix corr3 = calcSum(corr1, corr2);
-
-        ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariables(), corr3,
-                ((ICovarianceMatrix) model2).getSampleSize());
-
-        setDataModel(corrWrapper);
-        setSourceGraph(wrapper2.getSourceGraph());
-        LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
-
-    }
-
-    public CovMatrixSumWrapper(SemImWrapper wrapper1, DataWrapper wrapper2) {
-        try {
-            if (wrapper1 == null || wrapper2 == null) {
-                throw new NullPointerException("The data must not be null");
-            }
-
-            DataModel model2 = wrapper2.getSelectedDataModel();
-
-            if (!(model2 instanceof ICovarianceMatrix)) {
-                throw new IllegalArgumentException("Expecting corrariance matrices.");
-            }
-
-            TetradMatrix corr1 = wrapper1.getSemIm().getImplCovarMeas();
-            TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
-
-            TetradMatrix corr3 = calcSum(corr1, corr2);
-
-            ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariables(), corr3,
-                    ((ICovarianceMatrix) model2).getSampleSize());
-
-            setDataModel(corrWrapper);
-            setSourceGraph(wrapper2.getSourceGraph());
-            LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
-    }
+//    public CovMatrixSumWrapper(SemImWrapper wrapper1, DataWrapper wrapper2) {
+//        try {
+//            if (wrapper1 == null || wrapper2 == null) {
+//                throw new NullPointerException("The data must not be null");
+//            }
+//
+//            DataModel model2 = wrapper2.getSelectedDataModel();
+//
+//            if (!(model2 instanceof ICovarianceMatrix)) {
+//                throw new IllegalArgumentException("Expecting corrariance matrices.");
+//            }
+//
+//            TetradMatrix corr1 = wrapper1.getSemIm().getImplCovarMeas();
+//            TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
+//
+//            TetradMatrix corr3 = calcSum(corr1, corr2);
+//
+//            ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariables(), corr3,
+//                    ((ICovarianceMatrix) model2).getSampleSize());
+//
+//            setDataModel(corrWrapper);
+//            setSourceGraph(wrapper2.getSourceGraph());
+//            LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 
     private TetradMatrix calcSum(TetradMatrix corr1, TetradMatrix corr2) {
         if (corr1.rows() != corr2.rows()) {
