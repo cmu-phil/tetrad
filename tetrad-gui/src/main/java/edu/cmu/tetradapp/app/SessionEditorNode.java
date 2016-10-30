@@ -892,6 +892,10 @@ public final class SessionEditorNode extends DisplayNode {
     private List<String> getConsistentChildBoxTypes(SessionNode thisNode, SessionModel model) {
         List<String> consistentChildBoxes = new ArrayList<>();
 
+        List<Node> nodes = sessionWorkbench.getSessionWrapper().getNodes();
+        List<SessionNode> sessionNodes = new ArrayList<>();
+        for (Node node : nodes) sessionNodes.add(((SessionNodeWrapper) node).getSessionNode());
+
         Set<String> strings = TetradApplicationConfig.getInstance().getConfigs().keySet();
 
         for (String type : strings) {
@@ -900,7 +904,7 @@ public final class SessionEditorNode extends DisplayNode {
 
             SessionNode newNode = new SessionNode(modelClasses);
 
-            if (newNode.isConsistentParent(thisNode)) {
+            if (newNode.isConsistentParent(thisNode, sessionNodes)) {
                 consistentChildBoxes.add("Add " + type);
             }
         }
