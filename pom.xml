@@ -24,7 +24,6 @@
         <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
         <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
         <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
-        <tag>tetrad-6.0-alpha</tag>
     </scm>
 
     <build>
