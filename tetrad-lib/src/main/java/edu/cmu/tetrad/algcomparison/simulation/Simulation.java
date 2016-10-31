@@ -29,7 +29,7 @@ public interface Simulation extends HasParameters, TetradSerializable {
 
     /**
      * @return That graph.
-     * @param index
+     * @param index The index of the desired true graph.
      */
     Graph getTrueGraph(int index);
 
@@ -55,6 +55,4 @@ public interface Simulation extends HasParameters, TetradSerializable {
      * parameters whose values can be varied.
      */
     List<String> getParameters();
-
-
 }

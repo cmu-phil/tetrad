@@ -41,6 +41,7 @@ import java.util.List;
  * Contains some utilities for doing autoregression. Should probably be improved by somebody.
  *
  * @author Joseph Ramsey
+ * @author Daniel Malinsky (some improvements)
  */
 public class TimeSeriesUtils {
 

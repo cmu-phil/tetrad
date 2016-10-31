@@ -46,6 +46,7 @@ import java.util.*;
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey
  * @author Choh-Man Teng
+ * @author Daniel Malinsky
  *
  * This is a copy of FciOrient.java for the tsFCI algorithm. The main difference is that if an edge is orient, it will
  * also orient all homologous edges to preserve the time-repeating structure assumed by tsFCI. Based on (but not

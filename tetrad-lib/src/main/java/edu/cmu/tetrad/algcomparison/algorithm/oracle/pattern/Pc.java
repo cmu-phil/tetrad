@@ -3,11 +3,11 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -35,21 +35,10 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
-
+    public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
-
         return search.search();
     }
 

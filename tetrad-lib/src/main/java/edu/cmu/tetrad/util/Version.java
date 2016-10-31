@@ -70,6 +70,9 @@ public class Version implements TetradSerializable {
      * increases without bound until the next major version, minor version, or
      * minor subversion release, at which point is goes back to zero. If it is
      * zero, release a.b.c.dx may be referred to as a.b.c.
+     * <p/>
+     * With maven snapshots the incremental release number refers to the snapshot build
+     * date.  If this field is SNAPSHOT it is set to max int
      *
      * @serial Range greater than or equal to 0.
      */
@@ -90,24 +93,38 @@ public class Version implements TetradSerializable {
         Pattern pattern2 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)");
         Matcher matcher2 = pattern2.matcher(spec);
 
+        Pattern pattern3 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
+        Matcher matcher3 = pattern3.matcher(spec);
+
+        Pattern pattern4 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-SNAPSHOT");
+        Matcher matcher4 = pattern4.matcher(spec);
+
+        Pattern pattern5 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)\\.(\\d*)");
+        Matcher matcher5 = pattern5.matcher(spec);
+
         if (matcher2.matches()) {
             this.majorVersion = Integer.parseInt(matcher2.group(1));
             this.minorVersion = Integer.parseInt(matcher2.group(2));
             this.minorSubversion = Integer.parseInt(matcher2.group(3));
             this.incrementalRelease = 0;
+        } else if (matcher3.matches()) {
+            this.majorVersion = Integer.parseInt(matcher3.group(1));
+            this.minorVersion = Integer.parseInt(matcher3.group(2));
+            this.minorSubversion = Integer.parseInt(matcher3.group(3));
+            this.incrementalRelease = Integer.parseInt(matcher3.group(4));
+        } else if (matcher4.matches()) {
+            this.majorVersion = Integer.parseInt(matcher4.group(1));
+            this.minorVersion = Integer.parseInt(matcher4.group(2));
+            this.minorSubversion = Integer.parseInt(matcher4.group(3));
+            this.incrementalRelease = 0;
+        } else if (matcher5.matches()) {
+            this.majorVersion = Integer.parseInt(matcher5.group(1));
+            this.minorVersion = Integer.parseInt(matcher5.group(2));
+            this.minorSubversion = Integer.parseInt(matcher5.group(3));
+            this.incrementalRelease = Integer.parseInt(matcher5.group(4));
         } else {
-            Pattern pattern3 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
-            Matcher matcher3 = pattern3.matcher(spec);
-
-            if (matcher3.matches()) {
-                this.majorVersion = Integer.parseInt(matcher3.group(1));
-                this.minorVersion = Integer.parseInt(matcher3.group(2));
-                this.minorSubversion = Integer.parseInt(matcher3.group(3));
-                this.incrementalRelease = Integer.parseInt(matcher3.group(4));
-            } else {
-                throw new IllegalArgumentException("Version should be either of the " +
-                        "form a.b.c (Maven) or a.b.c-d (old): " + spec);
-            }
+            throw new IllegalArgumentException("Version should be either of the " +
+                    "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);
         }
     }
 

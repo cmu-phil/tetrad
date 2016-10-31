@@ -21,9 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
@@ -88,7 +87,7 @@ public class SemImWrapper implements SessionModel, GraphSource {
             throw new NullPointerException("No data sets have been simulated.");
         }
 
-        if (_simulation instanceof LargeSemSimulation) {
+        if (_simulation instanceof LinearFisherModel) {
             throw new IllegalArgumentException("Large SEM simulations cannot be represented " +
                     "using a SEM PM or IM box, sorry.");
         }

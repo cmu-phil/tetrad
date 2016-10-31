@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Stores descriptions of the parameters for the simulation box. All parameters that go
- * into the interface need to be described here.
+ * Stores descriptions of the parameters for the simulation box. All parameters
+ * that go into the interface need to be described here.
  *
  * @author jdramsey
  */
 public class ParamDescriptions {
+
     private static ParamDescriptions instance = new ParamDescriptions();
     private Map<String, ParamDescription> map = new HashMap<>();
 
@@ -17,7 +18,7 @@ public class ParamDescriptions {
         put("numMeasures", new ParamDescription("Number of measured variables", 10, 1, Integer.MAX_VALUE));
         put("numLatents", new ParamDescription("Number of latent variables", 0, 0, Integer.MAX_VALUE));
         put("avgDegree", new ParamDescription("Average degree of graph", 2, 1, Integer.MAX_VALUE));
-        put("maxDegree", new ParamDescription("Maximum degree of graph", 100, 1, Integer.MAX_VALUE));
+        put("maxDegree", new ParamDescription("The maximum degree of the output graph. Use -1 for unbounded.", -1, -1, Integer.MAX_VALUE));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100, 1, Integer.MAX_VALUE));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100, 1, Integer.MAX_VALUE));
         put("connected", new ParamDescription("Yes if graph should be connected", false));
@@ -25,7 +26,7 @@ public class ParamDescriptions {
         put("numRuns", new ParamDescription("Number of runs", 1, 1, Integer.MAX_VALUE));
         put("differentGraphs", new ParamDescription("Yes if a different graph should be used for each run", false));
         put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.01, 0.0, 1.0));
-        put("penaltyDiscount", new ParamDescription("Penalty discount", 4, 0.0, Double.MAX_VALUE));
+        put("penaltyDiscount", new ParamDescription("Penalty discount", 4.0, 0.0, Double.MAX_VALUE));
         put("fgsDepth", new ParamDescription("Maximum number of new colliders", 1, 1, Integer.MAX_VALUE));
         put("standardize", new ParamDescription("Yes if the data should be standardized", false));
         put("measurementVariance", new ParamDescription("Additive measurement noise variance", 0.0, 0, Double.MAX_VALUE));
@@ -41,9 +42,9 @@ public class ParamDescriptions {
         put("printAverageTables", new ParamDescription("Yes if average tables should be printed", true));
         put("printGraphs", new ParamDescription("Yes if graphs should be printed", false));
         put("dataType", new ParamDescription("Categorical or discrete", "categorical"));
-        put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 50.0, 0.0, 100.0));
+        put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 0.0, 0.0, 100.0));
         put("ofInterestCutoff", new ParamDescription("Cutoff for graphs considered to be of interest", 0.05, 0.0, 1.0));
-        put("numCategories", new ParamDescription("Number of categories", 4, 2, Integer.MAX_VALUE));
+        put("numCategories", new ParamDescription("Number of categories for discrete variables", 4, 2, Integer.MAX_VALUE));
         put("minCategories", new ParamDescription("Minimum number of categories", 2, 2, Integer.MAX_VALUE));
         put("maxCategories", new ParamDescription("Maximum number of categories", 2, 2, Integer.MAX_VALUE));
         put("samplePrior", new ParamDescription("Sample prior", 1.0, 1.0, Double.MAX_VALUE));
@@ -61,10 +62,10 @@ public class ParamDescriptions {
                 new ParamDescription("General function template for latent variables", "TSUM(NEW(B)*$)"));
         put("generalSemErrorTemplate",
                 new ParamDescription("General function for error terms", "Beta(2, 5)"));
-        put("coefSymmetric", new ParamDescription("Yes if negative coefficient " +
-                "values should be considered", true));
-        put("covSymmetric", new ParamDescription("Yes if negative covariance " +
-                "values should be considered", true));
+        put("coefSymmetric", new ParamDescription("Yes if negative coefficient "
+                + "values should be considered", true));
+        put("covSymmetric", new ParamDescription("Yes if negative covariance "
+                + "values should be considered", true));
         put("retainPreviousValues", new ParamDescription("Retain previous values", false));
 
         // Boolean Glass parameters.
@@ -100,7 +101,6 @@ public class ParamDescriptions {
         put("targetName", new ParamDescription("Target name", ""));
         put("verbose", new ParamDescription("Yes if verbose output should be printed to standard out", false));
         put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", false));
-        put("maxDegree", new ParamDescription("The maximum degree of the output graph", 5));
 
         put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
         put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));
@@ -112,6 +112,14 @@ public class ParamDescriptions {
         put("latentMeasuredImpureParents", new ParamDescription("Number of Latent --> Measured impure edges", 0));
         put("measuredMeasuredImpureParents", new ParamDescription("Number of Measured --> Measured impure edges", 0));
         put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0));
+
+//        put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
+        put("applyR1", new ParamDescription("Yes if the orient away from arrow should be applied", false));
+        put("probCycle", new ParamDescription("The probability of adding a cycle to the graph", 1.0, 0.0, 1.0));
+        put("intervalBetweenShocks", new ParamDescription("Interval beween shocks (R. A. Fisher simulation model)",
+                10, 1, Integer.MAX_VALUE));
+        put("fisherEpsilon", new ParamDescription("Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence",
+                .001, Double.MIN_VALUE, Double.MAX_VALUE));
     }
 
     public static ParamDescriptions instance() {

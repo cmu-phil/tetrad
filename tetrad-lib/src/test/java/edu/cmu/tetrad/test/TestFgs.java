@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.LargeSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -91,9 +91,9 @@ public class TestFgs {
             causalOrdering[i] = i;
         }
 
-        LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
         simulator.setOut(out);
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
@@ -361,12 +361,14 @@ public class TestFgs {
     public void clarkTest() {
         RandomGraph randomGraph = new RandomForward();
 
-        Simulation simulation = new LargeSemSimulation(randomGraph);
+        Simulation simulation = new LinearFisherModel(randomGraph);
 
         Parameters parameters = new Parameters();
 
-        parameters.set("numMeasures", 1000);
+        parameters.set("numMeasures", 100);
         parameters.set("numLatents", 0);
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.8);
         parameters.set("avgDegree", 2);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
@@ -397,16 +399,19 @@ public class TestFgs {
 
         Graph fgsGraph = fgs.search(dataSet, parameters);
 
-        List<Node> nodes = trueGraph.getNodes();
-
-        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgsGraph, nodes, test);
-        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgsGraph, nodes, test);
+        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgsGraph, test);
+        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgsGraph, test);
 
     }
 
     private void clarkTestForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
-                                   Graph pattern, List<Node> nodes, IndependenceWrapper test) {
+                                   Graph pattern, IndependenceWrapper test) {
         parameters.set("alpha", alpha);
+
+        List<Node> nodes = dataSet.getVariables();
+
+        trueGraph = GraphUtils.replaceNodes(trueGraph, nodes);
+        pattern = GraphUtils.replaceNodes(pattern, nodes);
 
         IndependenceTest _test = test.getTest(dataSet, parameters);
 
@@ -725,9 +730,9 @@ public class TestFgs {
 
         Graph dag = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
-        LargeSemSimulator semSimulator = new LargeSemSimulator(dag);
+        LargeScaleSimulation semSimulator = new LargeScaleSimulation(dag);
 
-        DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
+        DataSet data = semSimulator.simulateDataFisher(sampleSize);
 
         data = DataUtils.restrictToMeasured(data);
 

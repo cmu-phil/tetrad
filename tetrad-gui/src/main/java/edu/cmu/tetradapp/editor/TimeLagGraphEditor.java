@@ -518,7 +518,7 @@ public final class TimeLagGraphEditor extends JPanel
 
 //                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
 
-                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
+                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges(), 8);
                             GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
                         } else {
                             graph = new EdgeListGraph(dag);

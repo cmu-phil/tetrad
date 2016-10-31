@@ -204,51 +204,52 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
-        } else {
-            Object model11 = model1;
-            Object model21 = model2;
+        }
 
-            if (referenceName.equals(model1.getName())) {
-                if (model11 instanceof MultipleGraphSource) {
-                    this.referenceGraphs = ((MultipleGraphSource) model11).getGraphs();
-                }
-
-                if (model21 instanceof MultipleGraphSource) {
-                    this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
-                }
-
-                if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
-                }
-
-                if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
-                }
-            } else if (referenceName.equals(model2.getName())) {
-                if (model21 instanceof MultipleGraphSource) {
-                    this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
-                }
-
-                if (model11 instanceof MultipleGraphSource) {
-                    this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
-                }
-
-                if (referenceGraphs == null) {
-                    this.referenceGraphs = Collections.singletonList(((GraphSource) model21).getGraph());
-                }
-
-                if (targetGraphs == null) {
-                    this.targetGraphs = Collections.singletonList(((GraphSource) model11).getGraph());
-                }
-            } else {
-                throw new IllegalArgumentException(
-                        "Neither of the supplied session models is named '" +
-                                referenceName + "'.");
+        if (referenceName.equals(model1.getName())) {
+            if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
+                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+            } else if (model1 instanceof MultipleGraphSource) {
+                this.referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
+
+            if (model2 instanceof MultipleGraphSource) {
+                this.targetGraphs = ((MultipleGraphSource) model2).getGraphs();
+            }
+
+            if (referenceGraphs == null) {
+                this.referenceGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
+            }
+
+            if (targetGraphs == null) {
+                this.targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
+            }
+        } else if (referenceName.equals(model2.getName())) {
+            if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
+                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+            } else if (model1 instanceof MultipleGraphSource) {
+                this.referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
+            }
+
+            if (model1 instanceof MultipleGraphSource) {
+                this.targetGraphs = ((MultipleGraphSource) model1).getGraphs();
+            }
+
+            if (referenceGraphs == null) {
+                this.referenceGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
+            }
+
+            if (targetGraphs == null) {
+                this.targetGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Neither of the supplied session models is named '" +
+                            referenceName + "'.");
         }
 
         for (int i = 0; i < targetGraphs.size(); i++) {
-            targetGraphs.set(i,GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
+            targetGraphs.set(i, GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
         }
 
 //        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
@@ -263,24 +264,37 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 //            this.algorithm = generalAlgorithmRunner.getAlgorithm();
 //        }
 
-        if (algorithm != null) {
+        if (algorithm != null)
+
+        {
             for (int i = 0; i < referenceGraphs.size(); i++) {
                 referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
             }
         }
 
-        if (referenceGraphs.size() != targetGraphs.size()) {
+        if (referenceGraphs.size() != targetGraphs.size())
+
+        {
             throw new IllegalArgumentException("I was expecting the same number of graphs in each parent.");
         }
 
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().
 
-        for (int i = 0; i < referenceGraphs.size(); i++) {
+                log("info", "Graph Comparison");
+
+        for (
+                int i = 0;
+                i < referenceGraphs.size(); i++)
+
+        {
             TetradLogger.getInstance().log("comparison", "\nModel " + (i + 1));
             TetradLogger.getInstance().log("comparison", getComparisonString(i));
         }
 
-        this.nf = NumberFormatUtil.getInstance().getNumberFormat();
+        this.nf = NumberFormatUtil.getInstance().
+
+                getNumberFormat();
+
     }
 
     private void setVcpcFields(VcpcRunner vcpc) {
@@ -345,23 +359,23 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     public String getComparisonString(int i) {
 
         if (this.useVcpcOutputs) {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsOne() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useCpcOutputs) {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsTwo() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
         if (this.usePcOutputs) {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsThree() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
@@ -375,30 +389,30 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
         if (this.useScpcOutputs) {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsFive() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useSFcpcOutputs) {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsSix() +
                     "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         }
 
         if (this.useFcpcOutputs) {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nAdjacency Misclassification:\n" + adjacencyMisclassificationsSeven() +
                     "\n\nEndpoint Misclassification:\n" + "\nEdge Misclassifications:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i));
         } else {
-            return (params.get("targetGraphName", null) + " down the left; " +
-                    params.get("referenceGraphName", null) + " across the top.") +
+            return (params.get("referenceGraphName", null) + " down the left; " +
+                    params.get("targetGraphName", null) + " across the top.") +
                     "\n\nEdge Misclassification:\n" +
                     MisclassificationUtils.edgeMisclassifications(targetGraphs.get(i), referenceGraphs.get(i)) +
                     "\nEndpoint Misclassification:\n" +

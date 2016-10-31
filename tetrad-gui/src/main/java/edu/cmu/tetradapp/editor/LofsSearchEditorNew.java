@@ -475,7 +475,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
-        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
+        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
         graph.addSeparator();
 
         graph.add(meekOrient);

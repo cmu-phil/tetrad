@@ -18,6 +18,8 @@
  */
 package edu.cmu.tetrad.cli.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.data.DataSet;
@@ -46,18 +48,32 @@ public class AlgorithmCommonTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCommonTask.class);
 
-    public static void writeOutResult(String heading, String runInfo, Graph graph, Path outputFile) {
-        String fileName = outputFile.getFileName().toString();
-        String task = "writing out result file " + fileName;
-        logStartTask(task);
-        try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            writer.println(heading);
-            writer.println(runInfo);
-            writer.println(graph.toString());
-        } catch (IOException exception) {
-            logFailedTask(task, exception);
+    public static void writeOutTetradGraphJson(Graph graph, Path outputFile) {
+        if (graph == null) {
+            return;
         }
-        logEndTask(task);
+
+        try (PrintStream graphWriter = new PrintStream(
+                new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+            String fileName = outputFile.getFileName().toString();
+
+            String msg = String.format("Writing out Tetrad Graph Json file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            graphWriter.print(gson.toJson(graph));
+
+            msg = String.format("Finished writing out Tetrad Graph Json file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+
+        } catch (Throwable throwable) {
+            String errMsg = String.format("Failed when writing out Tetrad Graph Json file '%s'.",
+                    outputFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, throwable);
+        }
     }
 
     public static void writeOutJson(String graphId, Graph graph, Path outputFile) {

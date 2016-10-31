@@ -129,6 +129,23 @@ public class MisclassificationUtils {
     public static String edgeMisclassifications(Graph estGraph, Graph refGraph) {
         StringBuilder builder = new StringBuilder();
 
+        TextTable table2 = new TextTable(9, 7);
+
+        table2.setToken(1, 0, "---");
+        table2.setToken(2, 0, "o-o");
+        table2.setToken(3, 0, "o->");
+        table2.setToken(4, 0, "<-o");
+        table2.setToken(5, 0, "-->");
+        table2.setToken(6, 0, "<--");
+        table2.setToken(7, 0, "<->");
+        table2.setToken(8, 0, "null");
+        table2.setToken(0, 1, "---");
+        table2.setToken(0, 2, "o-o");
+        table2.setToken(0, 3, "o->");
+        table2.setToken(0, 4, "-->");
+        table2.setToken(0, 5, "<->");
+        table2.setToken(0, 6, "null");
+
         int[][] counts = new int[8][6];
 
         for (Edge est1 : estGraph.getEdges()) {
@@ -148,23 +165,6 @@ public class MisclassificationUtils {
 
             counts[m][n]++;
         }
-
-        TextTable table2 = new TextTable(9, 7);
-
-        table2.setToken(1, 0, "---");
-        table2.setToken(2, 0, "o-o");
-        table2.setToken(3, 0, "o->");
-        table2.setToken(4, 0, "<-o");
-        table2.setToken(5, 0, "-->");
-        table2.setToken(6, 0, "<--");
-        table2.setToken(7, 0, "<->");
-        table2.setToken(8, 0, "null");
-        table2.setToken(0, 1, "---");
-        table2.setToken(0, 2, "o-o");
-        table2.setToken(0, 3, "o->");
-        table2.setToken(0, 4, "-->");
-        table2.setToken(0, 5, "<->");
-        table2.setToken(0, 6, "null");
 
         for (Edge true1 : refGraph.getEdges()) {
             Node x = true1.getNode1();

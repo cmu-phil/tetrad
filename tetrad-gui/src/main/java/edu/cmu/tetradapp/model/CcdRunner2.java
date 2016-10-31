@@ -169,9 +169,9 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         double penaltyDiscount = 20.0;//params.getPenaltyDiscount();
 
         if (model instanceof Graph) {
-            GraphScore gesScore = new GraphScore((Graph) model);
-            ccd = new GCcd(gesScore);
-//            ccd.setKnowledge(getParameters().getKnowledge());
+            IndependenceTest test = new IndTestDSep((Graph) model);
+            Score score = new GraphScore((Graph) model);
+            ccd = new GCcd(test, score);
             ccd.setVerbose(true);
         } else {
 
@@ -183,9 +183,11 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
 //                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
+                    IndependenceTest test = new IndTestScore(gesScore);
+
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    ccd = new GCcd(gesScore);
+                    ccd = new GCcd(test, gesScore);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -202,7 +204,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                ccd = new GCcd(gesScore);
+                IndependenceTest test = new IndTestScore(gesScore);
+                ccd = new GCcd(test, gesScore);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -226,7 +229,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    ccd = new GCcd(fgsScore);
+                    IndependenceTest test = new IndTestScore(fgsScore);
+                    ccd = new GCcd(test, fgsScore);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import com.sun.org.apache.bcel.internal.generic.ICONST;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.ICovarianceMatrix;

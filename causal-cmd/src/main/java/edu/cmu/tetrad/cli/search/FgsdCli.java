@@ -23,7 +23,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.cli.AbstractAlgorithmCli;
 import edu.cmu.tetrad.cli.AlgorithmType;
-import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.cli.CmdOptions;
+import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.LimitDiscreteCategory;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
@@ -31,7 +32,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.io.DataReader;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
-import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,7 +41,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -55,7 +54,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     protected double structurePrior;
     protected double samplePrior;
-    protected int maxInDegree;
+    protected int maxDegree;
     protected boolean faithfulnessAssumed;
 
     protected boolean skipUniqueVarName;
@@ -75,7 +74,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
     public void printParameterInfos(Formatter fmt) {
         fmt.format("sample prior = %f%n", samplePrior);
         fmt.format("structure prior = %f%n", structurePrior);
-        fmt.format("max indegree = %d%n", maxInDegree);
+        fmt.format("max degree = %d%n", maxDegree);
         fmt.format("faithfulness assumed = %s%n", faithfulnessAssumed);
     }
 
@@ -84,7 +83,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
         Parameters parameters = new Parameters();
         parameters.set(ParamAttrs.SAMPLE_PRIOR, samplePrior);
         parameters.set(ParamAttrs.STRUCTURE_PRIOR, structurePrior);
-        parameters.set(ParamAttrs.MAX_INDEGREE, maxInDegree);
+        parameters.set(ParamAttrs.MAX_DEGREE, maxDegree);
         parameters.set(ParamAttrs.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
         parameters.set(ParamAttrs.VERBOSE, verbose);
 
@@ -131,14 +130,12 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
-        ParamDescriptions param = ParamDescriptions.instance();
-
-        structurePrior = Args.getDouble(cmd.getOptionValue("structure-prior", String.valueOf(param.get(ParamAttrs.STRUCTURE_PRIOR).getDefaultValue())));
-        samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", String.valueOf(param.get(ParamAttrs.SAMPLE_PRIOR).getDefaultValue())));
-        maxInDegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttrs.MAX_INDEGREE).getDefaultValue())), -1);
-        faithfulnessAssumed = !cmd.hasOption("faithfulness-assumed");
-        skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
-        skipCategoryLimit = cmd.hasOption("skip-category-limit");
+        structurePrior = CmdOptions.getDouble(CmdOptions.STRUCTURE_PRIOR, ParamAttrs.STRUCTURE_PRIOR, cmd);
+        samplePrior = CmdOptions.getDouble(CmdOptions.SAMPLE_PRIOR, ParamAttrs.SAMPLE_PRIOR, cmd);
+        maxDegree = CmdOptions.getInt(CmdOptions.MAX_DEGREE, ParamAttrs.MAX_DEGREE, cmd);
+        faithfulnessAssumed = cmd.hasOption(CmdOptions.FAITHFULNESS_ASSUMED);
+        skipUniqueVarName = cmd.hasOption(CmdOptions.SKIP_UNIQUE_VAR_NAME);
+        skipCategoryLimit = cmd.hasOption(CmdOptions.SKIP_CATEGORY_LIMIT);
     }
 
     @Override
@@ -148,15 +145,13 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     @Override
     public List<Option> getOptionalOptions() {
-        ParamDescriptions param = ParamDescriptions.instance();
-
         List<Option> options = new LinkedList<>();
-        options.add(new Option(null, "structure-prior", true, createDescription(param.get(ParamAttrs.STRUCTURE_PRIOR))));
-        options.add(new Option(null, "sample-prior", true, createDescription(param.get(ParamAttrs.SAMPLE_PRIOR))));
-        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
-        options.add(new Option(null, "faithfulness-assumed", true, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
-        options.add(new Option(null, "skip-unique-var-name", false, "Skip check for unique variable names."));
-        options.add(new Option(null, "skip-category-limit", false, "Skip 'limit number of categories' check."));
+        options.add(new Option(null, CmdOptions.STRUCTURE_PRIOR, true, CmdOptions.createDescription(ParamAttrs.STRUCTURE_PRIOR)));
+        options.add(new Option(null, CmdOptions.SAMPLE_PRIOR, true, CmdOptions.createDescription(ParamAttrs.SAMPLE_PRIOR)));
+        options.add(new Option(null, CmdOptions.MAX_DEGREE, true, CmdOptions.createDescription(ParamAttrs.MAX_DEGREE)));
+        options.add(new Option(null, CmdOptions.FAITHFULNESS_ASSUMED, false, CmdOptions.getDescription(CmdOptions.FAITHFULNESS_ASSUMED)));
+        options.add(new Option(null, CmdOptions.SKIP_UNIQUE_VAR_NAME, false, CmdOptions.getDescription(CmdOptions.SKIP_UNIQUE_VAR_NAME)));
+        options.add(new Option(null, CmdOptions.SKIP_CATEGORY_LIMIT, false, CmdOptions.getDescription(CmdOptions.SKIP_CATEGORY_LIMIT)));
 
         return options;
     }

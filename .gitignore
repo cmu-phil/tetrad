@@ -9,3 +9,5 @@ tetrad-cli/tetrad-cli.iml
 causal-cmd/causal-cmd.iml
 tetrad.iml
 *.iml
+analysis/AnalysisScriptAlpha.java
+analysis/TestFunctions.java

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class PerformanceTests {
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = -1;
 
-        init(new File("long.pc." + numVars + ".txt"), "Tests performance of the FGS algorithm");
+        init(new File("long.pc." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -74,10 +74,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -166,10 +166,10 @@ public class PerformanceTests {
             out.println("Graph done");
 
             System.out.println("Starting simulation");
-            LargeSemSimulator simulator = new LargeSemSimulator(graph);
+            LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
             simulator.setOut(out);
 
-            DataSet data = simulator.simulateDataAcyclic(numCases);
+            DataSet data = simulator.simulateDataFisher(numCases);
 
             out1.println(data);
 
@@ -185,7 +185,7 @@ public class PerformanceTests {
     public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = -1;
 
-        init(new File("long.pcstable." + numVars + ".txt"), "Tests performance of the PC Stable algorithm");
+        init(new File("long.pcstable." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Stable algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -196,10 +196,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -227,12 +227,12 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        Pc pcStable = new Pc(test);
+        PcStable pcStable = new PcStable(test);
 //        pcStable.setVerbose(false);
-        pcStable.setDepth(depth);
+//        pcStable.setDepth(depth);
 //        pcStable.setOut(out);
 
-        Graph estPattern = pcStable.search(new FasStableConcurrent(test), test.getVariables());
+        Graph estPattern = pcStable.search();
 
 //        out.println(estPattern);
 
@@ -262,6 +262,154 @@ public class PerformanceTests {
         out.close();
     }
 
+    public void testPcMax(int numVars, double edgeFactor, int numCases, double alpha) {
+        int depth = -1;
+
+        init(new File("long.pcmax." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Max algorithm");
+
+        long time1 = System.currentTimeMillis();
+
+        Graph dag = makeDag(numVars, edgeFactor);
+
+        System.out.println("Graph done");
+
+        out.println("Graph done");
+
+        System.out.println("Starting simulation");
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
+        simulator.setOut(out);
+
+        DataSet data = simulator.simulateDataFisher(numCases);
+
+        System.out.println("Finishing simulation");
+
+        long time2 = System.currentTimeMillis();
+
+        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+
+        System.out.println("Making covariance matrix");
+
+//        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix(data));
+//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
+//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
+
+//        System.out.println(cov);
+
+        System.out.println("Covariance matrix done");
+
+        long time3 = System.currentTimeMillis();
+
+        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
+
+//        out.println(cov);
+
+        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
+
+        PcMax pcStable = new PcMax(test);
+//        pcStable.setVerbose(false);
+//        pcStable.setDepth(depth);
+//        pcStable.setOut(out);
+
+        Graph estPattern = pcStable.search();
+
+//        out.println(estPattern);
+
+        long time4 = System.currentTimeMillis();
+
+//        out.println("# Vars = " + numVars);
+//        out.println("# Edges = " + (int) (numVars * edgeFactor));
+        out.println("# Cases = " + numCases);
+        out.println("alpha = " + alpha);
+        out.println("depth = " + depth);
+
+        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
+        out.println("Elapsed (running PC-Max) " + (time4 - time3) + " ms");
+
+        out.println("Total elapsed (cov + PC-Max) " + (time4 - time2) + " ms");
+
+        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
+
+        System.out.println("# edges in true pattern = " + truePattern.getNumEdges());
+        System.out.println("# edges in est pattern = " + estPattern.getNumEdges());
+
+        SearchGraphUtils.graphComparison(estPattern, truePattern, out);
+
+        out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
+
+        out.close();
+    }
+
+    public void testFgs(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
+        init(new File("long.fgs." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
+
+        long time1 = System.currentTimeMillis();
+
+        Graph dag = makeDag(numVars, edgeFactor);
+
+        System.out.println("Graph done");
+
+        out.println("Graph done");
+
+        System.out.println("Starting simulation");
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
+        simulator.setOut(out);
+
+        DataSet data = simulator.simulateDataFisher(numCases);
+
+        System.out.println("Finishing simulation");
+
+        long time2 = System.currentTimeMillis();
+
+        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+
+        System.out.println("Making covariance matrix");
+
+        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+
+        System.out.println("Covariance matrix done");
+
+        long time3 = System.currentTimeMillis();
+
+        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
+
+        SemBicScore semBicScore = new SemBicScore(cov);
+        semBicScore.setPenaltyDiscount(penaltyDiscount);
+
+        Fgs pcStable = new Fgs(semBicScore);
+
+        Graph estPattern = pcStable.search();
+
+//        out.println(estPattern);
+
+        long time4 = System.currentTimeMillis();
+
+//        out.println("# Vars = " + numVars);
+//        out.println("# Edges = " + (int) (numVars * edgeFactor));
+        out.println("# Cases = " + numCases);
+        out.println("penalty discount = " + penaltyDiscount);
+
+        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
+        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
+
+        out.println("Total elapsed (cov + FGS) " + (time4 - time2) + " ms");
+
+        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
+
+        System.out.println("# edges in true pattern = " + truePattern.getNumEdges());
+        System.out.println("# edges in est pattern = " + estPattern.getNumEdges());
+
+        SearchGraphUtils.graphComparison(estPattern, truePattern, out);
+
+        out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
+
+        out.close();
+    }
+
+
     public void testCpc(int numVars, double edgeFactor, int numCases) {
         double alpha = 0.0001;
         int depth = -1;
@@ -290,10 +438,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -374,10 +522,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -464,10 +612,10 @@ public class PerformanceTests {
         out.println("Graph done");
 
         System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         simulator.setOut(out);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         System.out.println("Finishing simulation");
 
@@ -560,10 +708,10 @@ public class PerformanceTests {
 
         System.out.println("Starting simulation");
 
-        LargeSemSimulator simulator = new LargeSemSimulator(dag);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
         simulator.setCoefRange(coefLow, coefHigh);
 
-        DataSet data = simulator.simulateDataAcyclic(numCases);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
         data = DataUtils.restrictToMeasured(data);
 
@@ -698,11 +846,11 @@ public class PerformanceTests {
             long elapsed;
 
             if (continuous) {
-                LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+                LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, tiers);
                 simulator.setVerbose(false);
                 simulator.setOut(out);
 
-                DataSet data = simulator.simulateDataAcyclic(numCases);
+                DataSet data = simulator.simulateDataFisher(numCases);
 
                 System.out.println("Finishing simulation");
 
@@ -941,11 +1089,11 @@ public class PerformanceTests {
 
             vars = dag.getNodes();
 
-            LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+            LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, tiers);
             simulator.setVerbose(false);
             simulator.setOut(out);
 
-            DataSet data = simulator.simulateDataAcyclic(numCases);
+            DataSet data = simulator.simulateDataFisher(numCases);
 
             System.out.println("Finishing simulation");
 
@@ -1209,11 +1357,11 @@ public class PerformanceTests {
             // Data.
             System.out.println("Starting simulation");
 
-            LargeSemSimulator simulator = new LargeSemSimulator(dag);
+            LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
             simulator.setCoefRange(.5, 1.5);
             simulator.setVarRange(1, 3);
 
-            DataSet data = simulator.simulateDataAcyclic(numCases);
+            DataSet data = simulator.simulateDataFisher(numCases);
 
             data = DataUtils.restrictToMeasured(data);
 
@@ -2274,7 +2422,26 @@ public class PerformanceTests {
 
         System.out.println("Finish");
 
-//        performanceTests.testFgsComparisonContinuous(1000, 2, 1000, 1);
+        performanceTests.testPc(5000, 1, 1000, .0001);
+
+
+//        performanceTests.testPcStable(20000, 1, 1000, .00001);
+        performanceTests.testPcMax(5000, 1, 1000, .0001);
+//        performanceTests.testPcMax(5000, 5, 1000, .0001);
+//        performanceTests.testFgs(5000, 5, 1000, 4);
+
+//        performanceTests.testPcStable(10000, 1, 1000, .0001);
+//        performanceTests.testPcMax(10000, 1, 1000, .0001);
+//
+//        performanceTests.testPcStable(10000, 1, 1000, .001);
+//        performanceTests.testPcMax(10000, 1, 1000, .001);
+//
+//        performanceTests.testPcStable(10000, 1, 1000, .01);
+//        performanceTests.testPcMax(10000, 1, 1000, .01);
+//
+//        performanceTests.testPcStable(10000, 1, 1000, .05);
+//        performanceTests.testPcMax(10000, 1, 1000, .05);
+
     }
 }
 

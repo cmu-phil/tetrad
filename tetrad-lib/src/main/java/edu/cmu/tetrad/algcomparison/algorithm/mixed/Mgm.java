@@ -1,8 +1,10 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -16,8 +18,9 @@ import java.util.List;
  */
 public class Mgm implements Algorithm {
     static final long serialVersionUID = 23L;
-    public Graph search(DataSet ds, Parameters parameters) {
-        MGM m = new MGM(ds, new double[]{
+    public Graph search(DataModel ds, Parameters parameters) {
+        DataSet _ds = DataUtils.getContinuousDataSet(ds);
+        MGM m = new MGM(_ds, new double[]{
                 parameters.getDouble("mgmParam1"),
                 parameters.getDouble("mgmParam2"),
                 parameters.getDouble("mgmParam3")

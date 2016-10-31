@@ -738,6 +738,16 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         return this.propertyChangeSupport;
     }
 
+    @Override
+    public List<String> getTriplesClassificationTypes() {
+        return null;
+    }
+
+    @Override
+    public List<List<Triple>> getTriplesLists(Node node) {
+        return null;
+    }
+
     /**
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the
      * API.
@@ -1079,6 +1089,11 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     @Override
     public List<Node> getSepset(Node n1, Node n2) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setNodes(List<Node> nodes) {
+        throw new UnsupportedOperationException("Sorry, you cannot replace the variables for a time lag graph.");
     }
 
     public boolean isSessionChanged() {
