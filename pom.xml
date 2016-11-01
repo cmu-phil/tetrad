@@ -89,10 +89,10 @@
         <!--<id>www.phil.cmu.edu_tetrad</id>-->
         <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>-->
         <!--</repository>-->
-        <site>
-            <id>www.phil.cmu.edu_tetrad</id>
-            <url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>
-        </site>
+        <!--<site>-->
+            <!--<id>www.phil.cmu.edu_tetrad</id>-->
+            <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>-->
+        <!--</site>-->
         <repository>
             <id>ccd-releases</id>
             <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/releases/</url>
