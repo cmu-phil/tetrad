@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
-    <version>6.0.1-SNAPSHOT</version>
+    <version>6.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
@@ -24,11 +24,15 @@
         <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
         <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
         <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <build>
         <plugins>
+            <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.3</version>
+                  </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -98,20 +102,6 @@
             <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>ccd</id>
-            <name>CCD Public Repository</name>
-            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/groups/public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
