@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
-    <version>6.0.0</version>
+    <version>6.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
@@ -24,7 +24,7 @@
         <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
         <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
         <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
-      <tag>6.0.0-release</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <build>
