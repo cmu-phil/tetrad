@@ -153,7 +153,8 @@ public final class FruchtermanReingoldLayout {
                     double norm = norm(deltaX, deltaY);
 
                     if (norm == 0.0) {
-                        continue;
+                        norm = 0.1;
+//                        continue;
                     }
 //
 //                    if (norm > 4.0 * getOptimalDistance()) {
@@ -178,7 +179,8 @@ public final class FruchtermanReingoldLayout {
                 double norm = norm(deltaX, deltaY);
 
                 if (norm == 0.0) {
-                    continue;
+                    norm = 0.1;
+//                    continue;
                 }
 
 //                if (norm < 1.5 * getOptimalDistance()) {

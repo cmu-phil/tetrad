@@ -44,7 +44,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @see SessionEditor
- * @see SessionEditorToolbarHarry
+ * @see SessionEditorToolbar
  */
 final class SessionEditorToolbar extends JPanel {
 
@@ -102,36 +102,32 @@ final class SessionEditorToolbar extends JPanel {
                 new ButtonInfo("Select", "Select and Move", "move",
                         "<html>Select and move nodes or groups of nodes " +
                                 "<br>on the workbench.</html>"),
-//                new ButtonInfo("Edge", "Draw Edge", "flow",
-//                        "<html>Add an edge from one node to another to declare" +
-//                                "<br>that the object in the first node should be used " +
-//                                "<br>to construct the object in the second node." +
-//                                "<br>As a shortcut, hold down the Control key." +
-//                                "</html>"),
+                new ButtonInfo("Edge", "Draw Edge", "flow",
+                        "<html>Add an edge from one node to another to declare" +
+                                "<br>that the object in the first node should be used " +
+                                "<br>to construct the object in the second node." +
+                                "<br>As a shortcut, hold down the Control key." +
+                                "</html>"),
                 new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
-                new ButtonInfo("Data", "Data", "data",
+                new ButtonInfo("Compare", "Compare", "compare",
+                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                new ButtonInfo("PM", "Parametric Model", "pm",
+                        "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("IM", "Instantiated Model", "im",
+                        "<html>Add a node for an instantiated model.</html>"),
+                new ButtonInfo("Estimator", "Estimator", "estimator",
+                        "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("Data", "Data & Simulation", "data",
                         "<html>Add a node for a data object.</html>"),
-//                new ButtonInfo("Data", "Data & Simulation", "data",
-//                        "<html>Add a node for a data object.</html>"),
-//                new ButtonInfo("Search", "Search", "search",
-//                        "<html>Add a node for a search algorithm.</html>"),
-                new ButtonInfo("Simulation", "Simulation", "data",
-                        "<html>Add a node for a data object.</html>"),
-//                new ButtonInfo("Comparison", "Comparison", "compare",
-//                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
-//                new ButtonInfo("PM", "Parametric Model", "pm",
-//                        "<html>Add a node for a parametric model.</html>"),
-//                new ButtonInfo("IM", "Instantiated Model", "im",
-//                        "<html>Add a node for an instantiated model.</html>"),
-//                new ButtonInfo("Estimator", "Estimator", "estimator",
-//                        "<html>Add a node for an estimator.</html>"),
-//                new ButtonInfo("Updater", "Updater", "updater",
-//                        "<html>Add a node for an updater.</html>"),
-//                new ButtonInfo("Classify", "Classify", "search",
-//                        "<html>Add a node for a classifier.</html>"),
-//                new ButtonInfo("Regression", "Regression", "regression",
-//                        "<html>Add a node for a regression.</html>"),
-//                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Search", "Search", "search",
+                        "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Updater", "Updater", "updater",
+                        "<html>Add a node for an updater.</html>"),
+                new ButtonInfo("Classify", "Classify", "search",
+                        "<html>Add a node for a classifier.</html>"),
+                new ButtonInfo("Regression", "Regression", "regression",
+                        "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
                 new ButtonInfo("Note", "Note", "note",
                         "<html>Add a note to the session.</html>")
         };
@@ -186,10 +182,8 @@ final class SessionEditorToolbar extends JPanel {
 
         // Add the buttons to the workbench.
         for (int i = 0; i < buttonInfos.length; i++) {
-            if (!buttonInfos[i].getNodeTypeName().equals("Select")) {
-                buttonsPanel.add(buttons[i]);
-                buttonsPanel.add(Box.createVerticalStrut(5));
-            }
+            buttonsPanel.add(buttons[i]);
+            buttonsPanel.add(Box.createVerticalStrut(5));
         }
 
         // Put the panel in a scrollpane.

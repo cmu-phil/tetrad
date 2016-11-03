@@ -60,7 +60,8 @@ public final class CcdMax implements GraphSearch {
         System.out.println("Two shield constructs");
         orientTwoShieldConstructs(graph);
         System.out.println("Max P collider orientation");
-        orientCollidersMaxP(graph, map);
+        new OrientCollidersMaxP(independenceTest).orient(graph);
+        orientAwayFromArrow(graph);
         System.out.println("Toward D-connection");
         orientTowardDConnection(graph, map);
         System.out.println("Done");
@@ -147,191 +148,6 @@ public final class CcdMax implements GraphSearch {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private void orientCollidersMaxP(Graph graph, SepsetMap map) {
-        final SepsetsMinScore sepsets = new SepsetsMinScore(graph, independenceTest, -1);
-        sepsets.setReturnNullWhenIndep(false);
-
-        final Map<Triple, Double> colliders = new ConcurrentHashMap<>();
-
-        final List<Node> nodes = graph.getNodes();
-
-        class Task extends RecursiveTask<Boolean> {
-            private final SepsetProducer sepsets;
-            private final SepsetMap map;
-            private final Map<Triple, Double> colliders;
-            private final int from;
-            private final int to;
-            private final int chunk = 100;
-            private final List<Node> nodes;
-            private final Graph graph;
-
-            private Task(SepsetProducer sepsets, SepsetMap map, List<Node> nodes, Graph graph,
-                         Map<Triple, Double> colliders,
-                         int from, int to) {
-                this.sepsets = sepsets;
-                this.map = map;
-                this.nodes = nodes;
-                this.graph = graph;
-                this.from = from;
-                this.to = to;
-                this.colliders = colliders;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        doNode2(graph, colliders, nodes.get(i));
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(sepsets, map, nodes, graph, colliders, from, mid);
-                    Task right = new Task(sepsets, map, nodes, graph, colliders, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
-        }
-
-        Task task = new Task(sepsets, map, nodes, graph, colliders, 0, nodes.size());
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-
-        List<Triple> collidersList = new ArrayList<>(colliders.keySet());
-
-        // Most independent ones first.
-        Collections.sort(collidersList, new Comparator<Triple>() {
-
-            @Override
-            public int compare(Triple o1, Triple o2) {
-                return Double.compare(colliders.get(o2), colliders.get(o1));
-            }
-        });
-
-        for (Triple triple : collidersList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                orientCollider(graph, a, b, c);
-            }
-        }
-
-        orientAwayFromArrow(graph);
-    }
-
-    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            List<Node> adja = graph.getAdjacentNodes(a);
-            double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
-
-            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
-            int[] comb2;
-
-            while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
-                independenceTest.isIndependent(a, c, s);
-                double _score = independenceTest.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            List<Node> adjc = graph.getAdjacentNodes(c);
-
-            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
-            int[] comb3;
-
-            while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
-                independenceTest.isIndependent(c, a, s);
-                double _score = independenceTest.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            // S actually has to be non-null here, but the compiler doesn't know that.
-            if (S != null && !S.contains(b)) {
-                scores.put(new Triple(a, b, c), score);
-            }
-        }
-    }
-
-    private void doNode2(Graph graph, Map<Triple, Double> colliders, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            if (knowledge.isForbidden(a.getName(), b.getName())) {
-                continue;
-            }
-
-            if (knowledge.isForbidden(c.getName(), b.getName())) {
-                continue;
-            }
-
-            independenceTest.isIndependent(a, c);
-            double s1 = independenceTest.getScore();
-            independenceTest.isIndependent(a, c, b);
-            double s2 = independenceTest.getScore();
-
-            boolean mycollider2 = s2 > s1;
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
-                continue;
-            }
-
-            if (mycollider2) {
-                colliders.put(new Triple(a, b, c), s2);
             }
         }
     }
@@ -429,63 +245,12 @@ public final class CcdMax implements GraphSearch {
         graph.addDirectedEdge(c, b);
     }
 
-    private void orientAwayFromArrow(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-
-            edge = graph.getEdge(n1, n2);
-
-            if (edge.pointsTowards(n1)) {
-                orientAwayFromArrow(graph, n2, n1);
-            } else if (edge.pointsTowards(n2)) {
-                orientAwayFromArrow(graph, n1, n2);
-            }
-        }
-    }
-
     private void orientAwayFromArrow(Graph graph, Node a, Node b) {
         if (!applyOrientAwayFromCollider) return;
 
         for (Node c : graph.getAdjacentNodes(b)) {
             if (c == a) continue;
             orientAwayFromArrowVisit(a, b, c, graph);
-        }
-    }
-
-    private void orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
-
-        // This shouldn't happen--a--b--c should be shielded. Checking just in case...
-        if (graph.getEdges(b, c).size() > 1) {
-            return;
-        }
-
-        if (!Edges.isUndirectedEdge(graph.getEdge(b, c))) {
-            return;
-        }
-
-        if (graph.isAdjacentTo(a, c)) {
-            return;
-        }
-
-        if (wouldCreateBadCollider(graph, b, c)) {
-            return;
-        }
-
-        addDirectedEdge(graph, b, c);
-
-        for (Node d : graph.getAdjacentNodes(c)) {
-            if (d == b) continue;
-            List<Edge> edges = graph.getEdges(b, c);
-            orientAwayFromArrowVisit(b, c, d, graph);
-
-            if (graph.getEdges(c, d).size() == 1 && !graph.getEdge(c, d).pointsTowards(d)) {
-                graph.removeEdge(b, c);
-
-                for (Edge edge : edges) {
-                    graph.addEdge(edge);
-                }
-            }
         }
     }
 
@@ -651,6 +416,58 @@ public final class CcdMax implements GraphSearch {
     private IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
+
+    private void orientAwayFromArrow(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+
+            edge = graph.getEdge(n1, n2);
+
+            if (edge.pointsTowards(n1)) {
+                orientAwayFromArrow(graph, n2, n1);
+            } else if (edge.pointsTowards(n2)) {
+                orientAwayFromArrow(graph, n1, n2);
+            }
+        }
+    }
+
+    private void orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
+
+        // This shouldn't happen--a--b--c should be shielded. Checking just in case...
+        if (graph.getEdges(b, c).size() > 1) {
+            return;
+        }
+
+        if (!Edges.isUndirectedEdge(graph.getEdge(b, c))) {
+            return;
+        }
+
+        if (graph.isAdjacentTo(a, c)) {
+            return;
+        }
+
+        if (wouldCreateBadCollider(graph, b, c)) {
+            return;
+        }
+
+        addDirectedEdge(graph, b, c);
+
+        for (Node d : graph.getAdjacentNodes(c)) {
+            if (d == b) continue;
+            List<Edge> edges = graph.getEdges(b, c);
+            orientAwayFromArrowVisit(b, c, d, graph);
+
+            if (graph.getEdges(c, d).size() == 1 && !graph.getEdge(c, d).pointsTowards(d)) {
+                graph.removeEdge(b, c);
+
+                for (Edge edge : edges) {
+                    graph.addEdge(edge);
+                }
+            }
+        }
+    }
+
 }
 
 

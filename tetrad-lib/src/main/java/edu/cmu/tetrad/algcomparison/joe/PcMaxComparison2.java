@@ -89,8 +89,6 @@ public class PcMaxComparison2 {
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
 //        algorithms.add(new PcMax(new FisherZ()));
-        algorithms.add(new PcMaxTriple(new FisherZ()));
-        algorithms.add(new PcMaxTriple2(new FisherZ()));
         algorithms.add(new Fgs(new SemBicScore()));
 
         Comparison comparison = new Comparison();
