@@ -43,6 +43,8 @@ public final class OrientCollidersMaxP {
     private int depth = -1;
     private long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
+    private boolean useHeuristic = true;
+    private int maxPathLength = 3;
 
     public OrientCollidersMaxP(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -145,8 +147,9 @@ public final class OrientCollidersMaxP {
             Node c = triple.getZ();
 
             if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
+//                graph.setEndpoint(a, b, Endpoint.ARROW);
+//                graph.setEndpoint(c, b, Endpoint.ARROW);
+                orientCollider(graph, a, b, c);
             }
         }
     }
@@ -170,10 +173,14 @@ public final class OrientCollidersMaxP {
                 continue;
             }
 
-            if (existsShortPath(a, c, 3, graph)) {
-                testColliderMaxP(graph, scores, a, b, c);
+            if (useHeuristic) {
+                if (existsShortPath(a, c, maxPathLength, graph)) {
+                    testColliderMaxP(graph, scores, a, b, c);
+                } else {
+                    testColliderHeuristic(graph, scores, a, b, c);
+                }
             } else {
-                testColliderHeuristic(graph, scores, a, b, c);
+                testColliderMaxP(graph, scores, a, b, c);
             }
         }
     }
@@ -381,6 +388,22 @@ public final class OrientCollidersMaxP {
         }
 
         return false;
+    }
+
+    public boolean isUseHeuristic() {
+        return useHeuristic;
+    }
+
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
+    }
+
+    public int getMaxPathLength() {
+        return maxPathLength;
+    }
+
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
     }
 }
 

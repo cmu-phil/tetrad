@@ -83,6 +83,8 @@ public class PcMax implements GraphSearch {
      * True if verbose output should be printed.
      */
     private boolean verbose = false;
+    private boolean useHeuristic;
+    private int maxPathLength;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -191,7 +193,10 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        new OrientCollidersMaxP(independenceTest).orient(graph);
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+        orientCollidersMaxP.orient(graph);
+        orientCollidersMaxP.setUseHeuristic(useHeuristic);
+        orientCollidersMaxP.setMaxPathLength(maxPathLength);
 
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
@@ -245,6 +250,22 @@ public class PcMax implements GraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
+    }
+
+    public boolean isUseHeuristic() {
+        return useHeuristic;
+    }
+
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
+    }
+
+    public int getMaxPathLength() {
+        return maxPathLength;
     }
 }
 

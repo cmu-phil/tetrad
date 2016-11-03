@@ -30,6 +30,8 @@ public class CcdMax implements Algorithm, HasKnowledge {
         DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
         IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
@@ -56,6 +58,8 @@ public class CcdMax implements Algorithm, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("applyR1");
+        parameters.add("useMaxPOrientationHeuristic");
+        parameters.add("maxPOrientationMaxPathLength");
         return parameters;
     }
 

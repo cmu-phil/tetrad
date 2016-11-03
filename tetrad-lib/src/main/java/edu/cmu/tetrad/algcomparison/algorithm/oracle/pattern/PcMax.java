@@ -34,6 +34,8 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
                 test.getTest(dataSet, parameters));
+        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setKnowledge(knowledge);
         return search.search();
     }
@@ -59,6 +61,8 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        parameters.add("useMaxPOrientationHeuristic");
+        parameters.add("maxPOrientationMaxPathLength");
         return parameters;
     }
 

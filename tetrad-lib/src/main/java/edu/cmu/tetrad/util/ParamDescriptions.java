@@ -122,6 +122,13 @@ public class ParamDescriptions {
                 0, 0, Integer.MAX_VALUE));
         put("fisherEpsilon", new ParamDescription("Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence",
                 .001, Double.MIN_VALUE, Double.MAX_VALUE));
+
+        put("useMaxPOrientationHeuristic", new ParamDescription(
+                "Yes if the heuristic for orienting unshielded colliders for max P should be used",
+                true));
+        put("maxPOrientationMaxPathLength", new ParamDescription(
+                "Maximum path length for the unshielded collider heuristic for max P",
+                3, 0, Integer.MAX_VALUE));
     }
 
     public static ParamDescriptions instance() {

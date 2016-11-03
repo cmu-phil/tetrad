@@ -40,6 +40,8 @@ public final class CcdMax implements GraphSearch {
     private boolean applyOrientAwayFromCollider = false;
     private long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
+    private boolean useHeuristic = true;
+    private int maxPathLength = 3;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -60,7 +62,10 @@ public final class CcdMax implements GraphSearch {
         System.out.println("Two shield constructs");
         orientTwoShieldConstructs(graph);
         System.out.println("Max P collider orientation");
-        new OrientCollidersMaxP(independenceTest).orient(graph);
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+        orientCollidersMaxP.setUseHeuristic(useHeuristic);
+        orientCollidersMaxP.setMaxPathLength(maxPathLength);
+        orientCollidersMaxP.orient(graph);
         orientAwayFromArrow(graph);
         System.out.println("Toward D-connection");
         orientTowardDConnection(graph, map);
@@ -274,6 +279,22 @@ public final class CcdMax implements GraphSearch {
 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    public boolean isUseHeuristic() {
+        return useHeuristic;
+    }
+
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
+    }
+
+    public int getMaxPathLength() {
+        return maxPathLength;
+    }
+
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
     }
 
     private class Pair {
