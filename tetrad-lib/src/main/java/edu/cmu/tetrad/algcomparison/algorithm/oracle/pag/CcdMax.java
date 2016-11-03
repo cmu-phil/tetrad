@@ -35,6 +35,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
+        search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
         return search.search();
     }
 
@@ -57,9 +58,10 @@ public class CcdMax implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
-        parameters.add("applyR1");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
+        parameters.add("applyR1");
+        parameters.add("orientTowardDConnections");
         return parameters;
     }
 
