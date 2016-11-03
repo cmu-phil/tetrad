@@ -1248,10 +1248,6 @@
             <!--<event id="dependencies" description="Dependencies"/>-->
             <!--<event id="details" description="Misc Fine Details"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.PcMaxLocalRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
             <!--<model name="LiNGAM" acronym="LiNGAM" help="lingam"-->
             <!--category="DAG Searches">-->
             <!--<logger>-->
