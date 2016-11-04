@@ -323,6 +323,63 @@ public final class LargeScaleSimulation {
         return DataUtils.restrictToMeasured(boxDataSet);
     }
 
+    public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon) {
+        if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
+                "Interval between shocks must be >= 1: " + intervalBetweenShocks);
+        if (epsilon <= 0.0) throw new IllegalArgumentException(
+                "Epsilon must be > 0: " + epsilon);
+
+        int size = variableNodes.size();
+
+        setupModel(size);
+
+        double[] t1 = new double[variableNodes.size()];
+        double[] t2 = new double[variableNodes.size()];
+        double[][] all = new double[variableNodes.size()][sampleSize];
+
+        int s = 0;
+        int shockIndex = 0;
+        int recordingIndex = 0;
+        double[] shock = getUncorrelatedGaussianShocks(1)[0];
+
+
+        while (s < sampleSize) {
+            if ((++shockIndex) % intervalBetweenShocks == 0) {
+                shock = getUncorrelatedGaussianShocks(1)[0];
+            }
+
+            if ((++recordingIndex) % intervalBetweenRecordings == 0) {
+                for (int j = 0; j < t1.length; j++) {
+                    all[j][s] = t1[j];
+                }
+
+                s++;
+            }
+
+            for (int j = 0; j < t1.length; j++) {
+                t2[j] = shock[j];
+                for (int k = 0; k < parents[j].length; k++) {
+                    t2[j] += t1[parents[j][k]] * coefs[j][k];
+                }
+            }
+
+            double[] t3 = t1;
+            t1 = t2;
+            t2 = t3;
+        }
+
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : getVariableNodes()) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
+        }
+
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        return DataUtils.restrictToMeasured(boxDataSet);
+    }
+
     private void setupModel(int size) {
         if (alreadySetUp) return;
 

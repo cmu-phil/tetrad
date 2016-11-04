@@ -24,9 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -102,8 +100,9 @@ public class FasStableConcurrent2 implements IFas {
      */
     private PrintStream out = System.out;
 
-    int chunk = 50;
+    private int chunk = 100;
 
+    private boolean recordSepsets = true;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -137,6 +136,10 @@ public class FasStableConcurrent2 implements IFas {
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
+        if (initialGraph != null) {
+            initialGraph = GraphUtils.replaceNodes(initialGraph, test.getVariables());
+        }
+
         // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
         // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
         Graph graph = new EdgeListGraphSingleConnections(test.getVariables());
@@ -160,28 +163,48 @@ public class FasStableConcurrent2 implements IFas {
             adjacencies.put(node, new HashSet<Node>());
         }
 
-        double alpha = test.getAlpha();
+        for (int d = 0; d <= _depth; d++) {
+            boolean more;
 
-        for (double _alpha = 0.9; _alpha > alpha; _alpha /= 2.0) {
-            System.out.println("_alpha = " + _alpha);
-            searchAtDepth0(nodes, test, adjacencies);
+            if (d == 0) {
+                more = searchAtDepth0(nodes, test, adjacencies);
+            } else {
+                more = searchAtDepth(nodes, test, adjacencies, d);
+            }
 
-            test.setAlpha(_alpha);
+            if (!more) {
+                break;
+            }
+        }
 
-            boolean didIt = false;
+        for (int k = 0; k < 0; k++) {
+            initialGraph = new EdgeListGraphSingleConnections(test.getVariables());
 
-            for (int d = didIt ? 1 : 0; d <= _depth; d++) {
+            for (int i = 0; i < nodes.size(); i++) {
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    Node x = nodes.get(i);
+                    Node y = nodes.get(j);
+
+                    if (adjacencies.get(x).contains(y)) {
+                        initialGraph.addUndirectedEdge(x, y);
+                    }
+                }
+            }
+
+            for (int d = 0; d <= _depth; d++) {
                 boolean more;
 
-                more = searchAtDepth(nodes, test, adjacencies, d);
+                if (d == 0) {
+                    more = searchAtDepth0(nodes, test, adjacencies);
+                } else {
+                    more = searchAtDepth(nodes, test, adjacencies, d);
+                }
 
                 if (!more) {
                     break;
                 }
             }
         }
-
-        test.setAlpha(alpha);
 
         if (verbose) {
             out.println("Finished with search, constructing Graph...");
@@ -293,12 +316,16 @@ public class FasStableConcurrent2 implements IFas {
                             final Node y = nodes.get(j);
 
                             if (initialGraph != null) {
-                                Node x2 = initialGraph.getNode(x.getName());
-                                Node y2 = initialGraph.getNode(y.getName());
-
-                                if (!initialGraph.isAdjacentTo(x2, y2)) {
+                                if (!initialGraph.isAdjacentTo(x, y)) {
                                     continue;
                                 }
+
+//                                Node x2 = initialGraph.getNode(x.getName());
+//                                Node y2 = initialGraph.getNode(y.getName());
+//
+//                                if (!initialGraph.isAdjacentTo(x2, y2)) {
+//                                    continue;
+//                                }
                             }
 
                             boolean independent;
@@ -316,18 +343,9 @@ public class FasStableConcurrent2 implements IFas {
                                     knowledge.noEdgeRequired(x.getName(), y.getName());
 
                             if (independent && noEdgeRequired) {
-                                if (!sepsets.isReturnEmptyIfNotSet()) {
+                                if (recordSepsets && !sepsets.isReturnEmptyIfNotSet()) {
                                     getSepsets().set(x, y, empty);
                                 }
-
-                                // This creates a bottleneck for the parallel search.
-//                                if (verbose) {
-//                                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                            nf.format(test.getPValue()));
-//
-//                                    out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                            nf.format(test.getPValue()));
-//                                }
                             } else if (!forbiddenEdge(x, y)) {
                                 adjacencies.get(x).add(y);
                                 adjacencies.get(y).add(x);
@@ -342,16 +360,14 @@ public class FasStableConcurrent2 implements IFas {
 
                     return true;
                 } else {
-                    List<Depth0Task> tasks = new ArrayList<>();
-
                     final int mid = (to + from) / 2;
 
                     Depth0Task left = new Depth0Task(chunk, from, mid);
-                    tasks.add(left);
                     Depth0Task right = new Depth0Task(chunk, mid, to);
-                    tasks.add(right);
 
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }
@@ -477,14 +493,9 @@ public class FasStableConcurrent2 implements IFas {
                                         adjacencies.get(x).remove(y);
                                         adjacencies.get(y).remove(x);
 
-                                        getSepsets().set(x, y, condSet);
-
-                                        // This creates a bottleneck for the parallel search.
-//                                        if (verbose) {
-//                                            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-//                                                    nf.format(test.getPValue()));
-//                                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-//                                        }
+                                        if (recordSepsets) {
+                                            getSepsets().set(x, y, condSet);
+                                        }
 
                                         continue EDGE;
                                     }
@@ -495,16 +506,14 @@ public class FasStableConcurrent2 implements IFas {
 
                     return true;
                 } else {
-                    List<DepthTask> tasks = new ArrayList<>();
-
                     final int mid = (to + from) / 2;
 
                     DepthTask left = new DepthTask(chunk, from, mid);
-                    tasks.add(left);
                     DepthTask right = new DepthTask(chunk, mid, to);
-                    tasks.add(right);
 
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }
@@ -603,6 +612,17 @@ public class FasStableConcurrent2 implements IFas {
 
     public PrintStream getOut() {
         return out;
+    }
+
+    /**
+     * True if sepsets should be recorded. This is not necessary for all algorithms.
+     */
+    public boolean isRecordSepsets() {
+        return recordSepsets;
+    }
+
+    public void setRecordSepsets(boolean recordSepsets) {
+        this.recordSepsets = recordSepsets;
     }
 }
 

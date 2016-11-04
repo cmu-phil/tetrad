@@ -42,8 +42,12 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
+        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+        search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
+        search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
+        search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
         return search.search();
     }
 
@@ -71,10 +75,17 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
+
         parameters.add("depth");
+        parameters.add("orientVisibleFeedbackLoops");
+        parameters.add("useMaxPOrientationHeuristic");
+        parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
+        parameters.add("orientTowardDConnections");
+
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");
+
         return parameters;
     }
 

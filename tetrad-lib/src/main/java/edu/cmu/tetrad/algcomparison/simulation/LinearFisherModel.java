@@ -93,10 +93,29 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             DataSet dataSet;
 
+//            if (shocks == null) {
+//                dataSet = simulator.simulateDataFisher(
+//                        simulator.getUncorrelatedGaussianShocks(parameters.getInt("sampleSize")),
+//                        parameters.getInt("intervalBetweenShocks"),
+//                        parameters.getInt("intervalBetweenRecordings"),
+//                        parameters.getDouble("fisherEpsilon")
+//                );
+//            } else {
+//                DataSet _shocks = (DataSet) shocks.get(i);
+//
+//                dataSet = simulator.simulateDataFisher(
+//                        _shocks.getDoubleData().toArray(),
+//                        parameters.getInt("intervalBetweenShocks"),
+//                        parameters.getInt("intervalBetweenRecordings"),
+//                        parameters.getDouble("fisherEpsilon")
+//                );
+//            }
+
             if (shocks == null) {
                 dataSet = simulator.simulateDataFisher(
-                        simulator.getUncorrelatedGaussianShocks(parameters.getInt("sampleSize")),
                         parameters.getInt("intervalBetweenShocks"),
+                        parameters.getInt("intervalBetweenRecordings"),
+                        parameters.getInt("sampleSize"),
                         parameters.getDouble("fisherEpsilon")
                 );
             } else {
@@ -171,6 +190,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
         parameters.add("intervalBetweenShocks");
+        parameters.add("intervalBetweenRecordings");
         parameters.add("fisherEpsilon");
         return parameters;
     }

@@ -118,6 +118,10 @@ public class ParamDescriptions {
         put("probCycle", new ParamDescription("The probability of adding a cycle to the graph", 1.0, 0.0, 1.0));
         put("intervalBetweenShocks", new ParamDescription("Interval beween shocks (R. A. Fisher simulation model)",
                 10, 1, Integer.MAX_VALUE));
+        put("intervalBetweenRecordings", new ParamDescription(
+                "Interval between data recordings for the linear Fisher model",
+                10, 1, Integer.MAX_VALUE));
+
         put("skipNumRecords", new ParamDescription("Number of records that should be skipped between recordings",
                 0, 0, Integer.MAX_VALUE));
         put("fisherEpsilon", new ParamDescription("Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence",
@@ -130,8 +134,12 @@ public class ParamDescriptions {
                 "Maximum path length for the unshielded collider heuristic for max P",
                 3, 0, Integer.MAX_VALUE));
         put("orientTowardDConnections", new ParamDescription(
-                "True if Richardson's step C (orient toward d-connection) should be used",
+                "Yes if Richardson's step C (orient toward d-connection) should be used",
                 true));
+        put("orientVisibleFeedbackLoops", new ParamDescription(
+                "Yes if visible feedback loops should be oriented",
+                true));
+
 
     }
 

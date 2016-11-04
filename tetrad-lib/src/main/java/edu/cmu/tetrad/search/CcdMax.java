@@ -43,6 +43,7 @@ public final class CcdMax implements GraphSearch {
     private boolean useHeuristic = true;
     private int maxPathLength = 3;
     private boolean useOrientTowardDConnections = true;
+    private boolean orientVisibleFeedbackLoops = true;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -61,7 +62,11 @@ public final class CcdMax implements GraphSearch {
         Graph graph = fastAdjacencySearch();
         SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
         System.out.println("Two shield constructs");
-        orientTwoShieldConstructs(graph);
+
+        if (orientVisibleFeedbackLoops) {
+            orientTwoShieldConstructs(graph);
+        }
+
         System.out.println("Max P collider orientation");
         final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
         orientCollidersMaxP.setUseHeuristic(useHeuristic);
@@ -310,6 +315,14 @@ public final class CcdMax implements GraphSearch {
         this.useOrientTowardDConnections = useOrientTowardDConnections;
     }
 
+    public void setOrientVisibleFeedbackLoops(boolean orientVisibleFeedbackLoops) {
+        this.orientVisibleFeedbackLoops = orientVisibleFeedbackLoops;
+    }
+
+    public boolean isOrientVisibleFeedbackLoops() {
+        return orientVisibleFeedbackLoops;
+    }
+
     private class Pair {
         private List<Node> cond;
         private double score;
@@ -428,7 +441,7 @@ public final class CcdMax implements GraphSearch {
 
                     if (isForbidden(a, c, new ArrayList<>(v2)))
 
-                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                        getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
                     double p2 = getIndependenceTest().getScore();
 
                     if (p2 < 0) {
@@ -487,21 +500,41 @@ public final class CcdMax implements GraphSearch {
 
         addDirectedEdge(graph, b, c);
 
+        List<Edge> undirectedEdges = new ArrayList<>();
+
         for (Node d : graph.getAdjacentNodes(c)) {
             if (d == b) continue;
-            List<Edge> edges = graph.getEdges(b, c);
+            Edge e = graph.getEdge(c, d);
+            if (Edges.isUndirectedEdge(e)) undirectedEdges.add(e);
+        }
+
+        for (Node d : graph.getAdjacentNodes(c)) {
+            if (d == b) continue;
             orientAwayFromArrowVisit(b, c, d, graph);
+        }
 
-            if (graph.getEdges(c, d).size() == 1 && !graph.getEdge(c, d).pointsTowards(d)) {
-                graph.removeEdge(b, c);
+        boolean allOriented = true;
 
-                for (Edge edge : edges) {
-                    graph.addEdge(edge);
-                }
+        for (Edge e : undirectedEdges) {
+            Node d = Edges.traverse(c, e);
+            Edge f = graph.getEdge(c, d);
+
+            if (!f.pointsTowards(d)) {
+                allOriented = false;
+                break;
+            }
+        }
+
+        if (!allOriented) {
+            for (Edge e : undirectedEdges) {
+                Node d = Edges.traverse(c, e);
+                Edge f = graph.getEdge(c, d);
+
+                graph.removeEdge(f);
+                graph.addEdge(e);
             }
         }
     }
-
 }
 
 

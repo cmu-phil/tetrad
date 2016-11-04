@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -174,7 +173,7 @@ public final class OrientCollidersMaxP {
             }
 
             if (useHeuristic) {
-                if (existsShortPath(a, c, maxPathLength, graph)) {
+                if (existsShortPath(a, b, c, maxPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
                     testColliderHeuristic(graph, scores, a, b, c);
@@ -326,7 +325,7 @@ public final class OrientCollidersMaxP {
 
                     if (isForbidden(a, c, new ArrayList<>(v2)))
 
-                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                        getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
                     double p2 = getIndependenceTest().getScore();
 
                     if (p2 < 0) {
@@ -350,7 +349,7 @@ public final class OrientCollidersMaxP {
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.
-    private boolean existsShortPath(Node x, Node z, int bound, Graph graph) {
+    private boolean existsShortPath(Node x, Node y, Node z, int bound, Graph graph) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
         Q.offer(x);
@@ -371,10 +370,8 @@ public final class OrientCollidersMaxP {
                 Edge edge = graph.getEdge(t, u);
                 Node c = Edges.traverse(t, edge);
                 if (c == null) continue;
-
-                if (c == z && distance > 2) {
-                    return true;
-                }
+//                if (t == y && c == z && distance > 2) continue;
+                if (c == z && distance > 2) return true;
 
                 if (!V.contains(c)) {
                     V.add(c);
