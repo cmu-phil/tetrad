@@ -177,7 +177,7 @@ public class FasStableConcurrent2 implements IFas {
             }
         }
 
-        for (int k = 0; k < 0; k++) {
+        for (int k = 0; k < 3; k++) {
             initialGraph = new EdgeListGraphSingleConnections(test.getVariables());
 
             for (int i = 0; i < nodes.size(); i++) {
@@ -189,6 +189,12 @@ public class FasStableConcurrent2 implements IFas {
                         initialGraph.addUndirectedEdge(x, y);
                     }
                 }
+            }
+
+            adjacencies = new ConcurrentSkipListMap<>();
+
+            for (Node node : nodes) {
+                adjacencies.put(node, new HashSet<Node>());
             }
 
             for (int d = 0; d <= _depth; d++) {
@@ -319,13 +325,6 @@ public class FasStableConcurrent2 implements IFas {
                                 if (!initialGraph.isAdjacentTo(x, y)) {
                                     continue;
                                 }
-
-//                                Node x2 = initialGraph.getNode(x.getName());
-//                                Node y2 = initialGraph.getNode(y.getName());
-//
-//                                if (!initialGraph.isAdjacentTo(x2, y2)) {
-//                                    continue;
-//                                }
                             }
 
                             boolean independent;

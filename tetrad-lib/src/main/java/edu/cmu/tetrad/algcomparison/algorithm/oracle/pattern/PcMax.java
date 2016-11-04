@@ -42,6 +42,7 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
+//        return new EdgeListGraph(graph);
         return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 

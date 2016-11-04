@@ -273,11 +273,17 @@ public final class CcdMax implements GraphSearch {
         for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
 
-            if (!graph.isAdjacentTo(x, z) &&
-                    graph.getEndpoint(z, y) == Endpoint.ARROW &&
-                    sepset(graph, x, z, set(), set(y)) == null) {
+            if ( graph.isDefCollider(x, y, z)) {
                 return true;
             }
+
+//            if (!graph.isAdjacentTo(z, y) &&
+//                    graph.getEndpoint(z, y) == Endpoint.ARROW
+////                    &&
+////                    sepset(graph, x, z, set(), set(y)) == null
+//                    ) {
+//                return true;
+//            }
         }
 
         return false;
@@ -493,6 +499,10 @@ public final class CcdMax implements GraphSearch {
         if (graph.isAdjacentTo(a, c)) {
             return;
         }
+
+//        if (sepset(graph, a, c, set(), set(b)) != null) {
+//            return;
+//        }
 
         if (wouldCreateBadCollider(graph, b, c)) {
             return;

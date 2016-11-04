@@ -1026,18 +1026,27 @@ public abstract class AbstractWorkbench extends JComponent
 
     private void addPagColoring(EdgeListGraph graph) {
         for (Edge edge : graph.getEdges()) {
-            if (Edges.isDirectedEdge(edge) && graph.defVisible(edge)) {
-                edge.setLineColor(Color.green);
+            if (!Edges.isDirectedEdge(edge)) {
+                continue;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            Node x = Edges.getDirectedEdgeTail(edge);
+            Node y = Edges.getDirectedEdgeHead(edge);
 
-            if (!Edges.isDirectedEdge(edge)) {
-                if (edu.cmu.tetradapp.util.GraphUtils.existsSemiDirectedPath(x, y, -1, graph)
-                        || edu.cmu.tetradapp.util.GraphUtils.existsSemiDirectedPath(y, x, -1, graph)) {
-                    edge.setDashed(true);
-                }
+            graph.removeEdge(edge);
+            final boolean dashed = edu.cmu.tetradapp.util.GraphUtils.existsSemiDirectedPath(x, y, -1, graph);
+
+            if (dashed) {
+                System.out.println("semidirected path from " + x + " to " + y);
+            }
+
+            System.out.println(graph);
+
+            graph.addEdge(edge);
+            edge.setDashed(dashed);
+
+            if (graph.defVisible(edge)) {
+                edge.setLineColor(Color.green);
             }
         }
     }

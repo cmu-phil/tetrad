@@ -224,14 +224,63 @@ public class GraphUtils {
         return false;
     }
 
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound' except for an edge from->to itself. Cycle checker in other words.
+    public static boolean existsSemiDirectedPathExcept(Node from, Node to, int bound, Graph graph) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Q.offer(from);
+        V.add(from);
+        Node e = null;
+        int distance = 0;
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+//            if (t == to) {
+//                return true;
+//            }
+
+            if (e == t) {
+                e = null;
+                distance++;
+                if (distance > (bound == -1 ? 1000 : bound)) return false;
+            }
+
+            for (Node u : graph.getAdjacentNodes(t)) {
+                Edge edge = graph.getEdge(t, u);
+                Node c = traverseSemiDirected(t, edge);
+                if (c == null) continue;
+
+                if (t == from && c == to) {
+                    continue;
+                }
+
+                if (c == to) {
+                    return true;
+                }
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+
+                    if (e == null) {
+                        e = u;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     // Used to find semidirected paths for cycle checking.
     public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
+            if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
                 return edge.getNode2();
             }
         } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
+            if (edge.getEndpoint2() == Endpoint.TAIL || edge.getEndpoint2() == Endpoint.CIRCLE) {
                 return edge.getNode1();
             }
         }

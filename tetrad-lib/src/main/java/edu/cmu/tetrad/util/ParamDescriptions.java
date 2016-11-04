@@ -114,7 +114,7 @@ public class ParamDescriptions {
         put("measuredMeasuredImpureAssociations", new ParamDescription("Number of Measured <-> Measured impure edges", 0));
 
 //        put("useRuleC", new ParamDescription("Yes if rule C for CCD should be used", false));
-        put("applyR1", new ParamDescription("Yes if the orient away from arrow should be applied", true));
+        put("applyR1", new ParamDescription("Yes if the orient away from arrow rule should be applied", true));
         put("probCycle", new ParamDescription("The probability of adding a cycle to the graph", 1.0, 0.0, 1.0));
         put("intervalBetweenShocks", new ParamDescription("Interval beween shocks (R. A. Fisher simulation model)",
                 10, 1, Integer.MAX_VALUE));
