@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
@@ -116,7 +117,7 @@ public final class CcdMax implements GraphSearch {
 
     private Graph fastAdjacencySearch() {
         long start = System.currentTimeMillis();
-
+    
         FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
         fas.setDepth(getDepth());
         fas.setKnowledge(knowledge);
