@@ -503,11 +503,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         switch (name) {
             case FGS:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Fgs(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new Fgs(scoreWrapper);
-                }
+                algorithm = new Fgs(scoreWrapper);
+
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Fgs(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                algorithm = new Fgs(scoreWrapper);
+//                }
                 break;
 //            case FgsMeasurement:
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
@@ -544,11 +546,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Gfci(independenceWrapper, scoreWrapper);
                 break;
             case FCI:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new Fci(independenceWrapper);
-                }
+                algorithm = new Fci(independenceWrapper);
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new Fci(independenceWrapper);
+//                }
                 break;
             case RFCI:
                 algorithm = new Rfci(independenceWrapper);
@@ -560,11 +563,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new FciMax(independenceWrapper);
                 break;
             case TsFCI:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new TsFci(independenceWrapper);
-                }
+                algorithm = new TsFci(independenceWrapper);
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new TsFci(independenceWrapper);
+//                }
                 break;
             case TsGFCI:
                 algorithm = new TsGfci(independenceWrapper, scoreWrapper);
@@ -582,11 +586,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new FAS(independenceWrapper);
                 break;
             case FgsMb:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new FgsMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new FgsMb(scoreWrapper);
-                }
+                algorithm = new FgsMb(scoreWrapper);
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new FgsMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new FgsMb(scoreWrapper);
+//                }
                 break;
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);

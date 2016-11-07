@@ -81,7 +81,6 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
         parameters.add("verbose");
-        parameters.add("printStream");
         return parameters;
     }
 

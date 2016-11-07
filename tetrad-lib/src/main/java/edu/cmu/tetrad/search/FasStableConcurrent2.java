@@ -177,7 +177,7 @@ public class FasStableConcurrent2 implements IFas {
             }
         }
 
-        for (int k = 0; k < 3; k++) {
+        for (int k = 0; k < 1; k++) {
             initialGraph = new EdgeListGraphSingleConnections(test.getVariables());
 
             for (int i = 0; i < nodes.size(); i++) {
@@ -473,8 +473,15 @@ public class FasStableConcurrent2 implements IFas {
                                 ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                                 int[] choice;
 
+                                COND:
                                 while ((choice = cg.next()) != null) {
                                     List<Node> condSet = GraphUtils.asList(choice, ppx);
+
+                                    for (Node z : condSet) {
+                                        if (!existsShortPath(x, y, z, 2, adjacencies)) {
+                                            continue COND;
+                                        }
+                                    }
 
                                     boolean independent;
 
@@ -622,6 +629,44 @@ public class FasStableConcurrent2 implements IFas {
 
     public void setRecordSepsets(boolean recordSepsets) {
         this.recordSepsets = recordSepsets;
+    }
+
+
+    private boolean existsShortPath(Node x, Node y, Node z, int bound, final Map<Node, Set<Node>> adjacencies) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Q.offer(x);
+        V.add(x);
+        Node e = null;
+        int distance = 0;
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+
+            if (e == t) {
+                e = null;
+                distance++;
+                if (distance > (bound == -1 ? 1000 : bound)) return false;
+            }
+
+            for (Node c : adjacencies.get(t)) {
+                if (c == null) continue;
+//                if (t == y && c == z && distance > 2) continue;
+                if (c == y || c == x) continue;
+                if (c == z) return true;
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+
+                    if (e == null) {
+                        e = c;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
 

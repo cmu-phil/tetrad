@@ -99,7 +99,12 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
 //        if (dof <= 1) dof = 1;
 
-        double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
+        double p = 0;
+        try {
+            p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         this.pValue = p;
 

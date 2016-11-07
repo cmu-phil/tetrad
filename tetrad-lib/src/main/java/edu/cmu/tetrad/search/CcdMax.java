@@ -45,6 +45,7 @@ public final class CcdMax implements GraphSearch {
     private int maxPathLength = 3;
     private boolean useOrientTowardDConnections = true;
     private boolean orientVisibleFeedbackLoops = true;
+    private boolean doColliderOrientations = true;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -69,11 +70,16 @@ public final class CcdMax implements GraphSearch {
         }
 
         System.out.println("Max P collider orientation");
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
-        orientCollidersMaxP.setUseHeuristic(useHeuristic);
-        orientCollidersMaxP.setMaxPathLength(maxPathLength);
-        orientCollidersMaxP.orient(graph);
+
+        if (doColliderOrientations) {
+            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+            orientCollidersMaxP.setUseHeuristic(useHeuristic);
+            orientCollidersMaxP.setMaxPathLength(maxPathLength);
+            orientCollidersMaxP.orient(graph);
+        }
+
         orientAwayFromArrow(graph);
+
         System.out.println("Toward D-connection");
 
         if (useOrientTowardDConnections) {
@@ -118,7 +124,7 @@ public final class CcdMax implements GraphSearch {
     private Graph fastAdjacencySearch() {
         long start = System.currentTimeMillis();
     
-        FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
+        FasStableConcurrent2 fas = new FasStableConcurrent2(null, independenceTest);
         fas.setDepth(getDepth());
         fas.setKnowledge(knowledge);
         fas.setVerbose(false);
@@ -328,6 +334,14 @@ public final class CcdMax implements GraphSearch {
 
     public boolean isOrientVisibleFeedbackLoops() {
         return orientVisibleFeedbackLoops;
+    }
+
+    public boolean isDoColliderOrientations() {
+        return doColliderOrientations;
+    }
+
+    public void setDoColliderOrientations(boolean doColliderOrientations) {
+        this.doColliderOrientations = doColliderOrientations;
     }
 
     private class Pair {

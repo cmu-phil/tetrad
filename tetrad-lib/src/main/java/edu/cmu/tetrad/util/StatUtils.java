@@ -1755,13 +1755,7 @@ public final class StatUtils {
 
         try {
             TetradMatrix inverse = submatrix.inverse();
-
-            double a = -1.0 * inverse.get(0, 1);
-            double v0 = inverse.get(0, 0);
-            double v1 = inverse.get(1, 1);
-            double b = Math.sqrt(v0 * v1);
-
-            return a / b;
+            return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
         } catch (Exception e) {
             e.printStackTrace();
             return Double.NaN;

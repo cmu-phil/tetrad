@@ -173,7 +173,7 @@ public final class OrientCollidersMaxP {
             }
 
             if (useHeuristic) {
-                if (existsShortPath(a, b, c, maxPathLength, graph)) {
+                if (existsShortPath(a, c, maxPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
                     testColliderHeuristic(graph, scores, a, b, c);
@@ -349,7 +349,7 @@ public final class OrientCollidersMaxP {
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.
-    private boolean existsShortPath(Node x, Node y, Node z, int bound, Graph graph) {
+    private boolean existsShortPath(Node x, Node z, int bound, Graph graph) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
         Q.offer(x);

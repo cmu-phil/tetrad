@@ -24,7 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -48,7 +51,7 @@ import java.util.concurrent.RecursiveTask;
  *
  * @author Joseph Ramsey.
  */
-public class FasStableConcurrent implements IFas {
+public class FasStableConcurrentFdr implements IFas {
 
     /**
      * The independence test. This should be appropriate to the types
@@ -109,14 +112,14 @@ public class FasStableConcurrent implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.    wd
      */
-    public FasStableConcurrent(IndependenceTest test) {
+    public FasStableConcurrentFdr(IndependenceTest test) {
         this.test = test;
     }
 
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasStableConcurrent(Graph initialGraph, IndependenceTest test) {
+    public FasStableConcurrentFdr(Graph initialGraph, IndependenceTest test) {
         this.test = test;
         this.initialGraph = initialGraph;
     }
@@ -258,6 +261,9 @@ public class FasStableConcurrent implements IFas {
         }
 
         final List<Node> empty = Collections.emptyList();
+        final Map<Double, Edge> scoredEdges = new ConcurrentSkipListMap<>();
+
+        final List<Double> sorted = new ArrayList<>();
 
         class Depth0Task extends RecursiveTask<Boolean> {
             private int chunk;
@@ -292,13 +298,77 @@ public class FasStableConcurrent implements IFas {
                                 }
                             }
 
-                            boolean independent;
-
                             try {
-                                independent = test.isIndependent(x, y, empty);
+                                test.isIndependent(x, y, empty);
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                independent = true;
+                            }
+
+                            numIndependenceTests++;
+
+                            final double pValue = test.getPValue();
+
+                            sorted.add(pValue);
+                        }
+                    }
+
+                    return true;
+                } else {
+                    final int mid = (to + from) / 2;
+
+                    Depth0Task left = new Depth0Task(chunk, from, mid);
+                    Depth0Task right = new Depth0Task(chunk, mid, to);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+
+                    return true;
+                }
+            }
+        }
+
+        pool.invoke(new Depth0Task(chunk, 0, nodes.size()));
+        Collections.sort(sorted);
+        final double cutoff = StatUtils.fdrCutoff(test.getAlpha(), sorted, false, true);
+
+        class Depth0Task2 extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+
+            public Depth0Task2(int chunk, int from, int to) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        if (verbose) {
+                            if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        }
+
+                        final Node x = nodes.get(i);
+
+                        for (int j = 0; j < i; j++) {
+                            final Node y = nodes.get(j);
+
+                            if (initialGraph != null) {
+                                Node x2 = initialGraph.getNode(x.getName());
+                                Node y2 = initialGraph.getNode(y.getName());
+
+                                if (!initialGraph.isAdjacentTo(x2, y2)) {
+                                    continue;
+                                }
+                            }
+
+                            try {
+                                test.isIndependent(x, y, empty);
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
 
                             numIndependenceTests++;
@@ -306,19 +376,10 @@ public class FasStableConcurrent implements IFas {
                             boolean noEdgeRequired =
                                     knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                            if (independent && noEdgeRequired) {
+                            if (test.getPValue() > cutoff && noEdgeRequired) {
                                 if (recordSepsets && !sepsets.isReturnEmptyIfNotSet()) {
                                     getSepsets().set(x, y, empty);
                                 }
-
-                                // This creates a bottleneck for the parallel search.
-//                                if (verbose) {
-//                                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                            nf.format(test.getPValue()));
-//
-//                                    out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                            nf.format(test.getPValue()));
-//                                }
                             } else if (!forbiddenEdge(x, y)) {
                                 adjacencies.get(x).add(y);
                                 adjacencies.get(y).add(x);
@@ -347,7 +408,7 @@ public class FasStableConcurrent implements IFas {
             }
         }
 
-        pool.invoke(new Depth0Task(chunk, 0, nodes.size()));
+        pool.invoke(new Depth0Task2(chunk, 0, nodes.size()));
 
         return freeDegree(nodes, adjacencies) > 0;
     }
@@ -400,7 +461,8 @@ public class FasStableConcurrent implements IFas {
 //        return false;
 //    }
 
-    private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
+    private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test,
+                                  final Map<Node, Set<Node>> adjacencies,
                                   final int depth) {
 
         if (verbose) {
@@ -413,6 +475,8 @@ public class FasStableConcurrent implements IFas {
         for (Node node : adjacencies.keySet()) {
             adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
         }
+
+        final List<Double> sorted = new ArrayList<>();
 
         class DepthTask extends RecursiveTask<Boolean> {
             private int chunk;
@@ -439,8 +503,11 @@ public class FasStableConcurrent implements IFas {
 
                         EDGE:
                         for (Node y : adjx) {
-                            List<Node> _adjx = new ArrayList<>(adjx);
+                            if (!existsShortPath(x, y, 3, adjacencies)) {
+                                continue;
+                            }
 
+                            List<Node> _adjx = new ArrayList<>(adjx);
                             _adjx.remove(y);
                             List<Node> ppx = possibleParents(x, _adjx, knowledge);
 
@@ -448,7 +515,6 @@ public class FasStableConcurrent implements IFas {
                                 ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                                 int[] choice;
 
-                                COND:
                                 while ((choice = cg.next()) != null) {
                                     List<Node> condSet = GraphUtils.asList(choice, ppx);
 
@@ -465,13 +531,7 @@ public class FasStableConcurrent implements IFas {
                                             knowledge.noEdgeRequired(x.getName(), y.getName());
 
                                     if (independent && noEdgeRequired) {
-                                        adjacencies.get(x).remove(y);
-                                        adjacencies.get(y).remove(x);
-
-                                        if (recordSepsets) {
-                                            getSepsets().set(x, y, condSet);
-                                        }
-
+                                        sorted.add(test.getPValue());
                                         continue EDGE;
                                     }
                                 }
@@ -496,6 +556,87 @@ public class FasStableConcurrent implements IFas {
         }
 
         pool.invoke(new DepthTask(chunk, 0, nodes.size()));
+
+        Collections.sort(sorted);
+        final double cutoff = StatUtils.fdrCutoff(test.getAlpha(), sorted, false, true);
+
+        System.out.println();
+
+        class DepthTask2 extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+
+            public DepthTask2(int chunk, int from, int to) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        if (verbose) {
+                            if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        }
+
+                        Node x = nodes.get(i);
+
+                        List<Node> adjx = new ArrayList<>(adjacenciesCopy.get(x));
+
+                        EDGE:
+                        for (Node y : adjx) {
+                            List<Node> _adjx = new ArrayList<>(adjx);
+                            _adjx.remove(y);
+                            List<Node> ppx = possibleParents(x, _adjx, knowledge);
+
+                            if (ppx.size() >= depth) {
+                                ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
+                                int[] choice;
+
+                                while ((choice = cg.next()) != null) {
+                                    List<Node> condSet = GraphUtils.asList(choice, ppx);
+
+                                    try {
+                                        numIndependenceTests++;
+                                        test.isIndependent(x, y, condSet);
+
+                                        if (test.getPValue() > cutoff) {
+                                            adjacencies.get(x).remove(y);
+                                            adjacencies.get(y).remove(x);
+
+                                            if (recordSepsets) {
+                                                getSepsets().set(x, y, condSet);
+                                            }
+
+                                            continue EDGE;
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                } else {
+                    final int mid = (to + from) / 2;
+
+                    DepthTask left = new DepthTask(chunk, from, mid);
+                    DepthTask right = new DepthTask(chunk, mid, to);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+
+                    return true;
+                }
+            }
+        }
+
+        pool.invoke(new DepthTask2(chunk, 0, nodes.size()));
 
         if (verbose) {
             System.out.println("Done with depth");
@@ -600,6 +741,41 @@ public class FasStableConcurrent implements IFas {
         this.recordSepsets = recordSepsets;
     }
 
+    private boolean existsShortPath(Node x, Node z, int bound, final Map<Node, Set<Node>> adjacencies) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Q.offer(x);
+        V.add(x);
+        Node e = null;
+        int distance = 0;
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+
+            if (e == t) {
+                e = null;
+                distance++;
+                if (distance > (bound == -1 ? 1000 : bound)) return false;
+            }
+
+            for (Node c : adjacencies.get(t)) {
+                if (c == null) continue;
+//                if (t == y && c == z && distance > 2) continue;
+                if (t != x && t != z && c == z) return true;
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+
+                    if (e == null) {
+                        e = c;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 

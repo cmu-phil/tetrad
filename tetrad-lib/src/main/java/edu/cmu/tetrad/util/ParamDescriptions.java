@@ -139,8 +139,9 @@ public class ParamDescriptions {
         put("orientVisibleFeedbackLoops", new ParamDescription(
                 "Yes if visible feedback loops should be oriented",
                 true));
-
-
+        put("doColliderOrientation", new ParamDescription(
+                "Yes if unshielded collider orientation should be done",
+                true));
     }
 
     public static ParamDescriptions instance() {
