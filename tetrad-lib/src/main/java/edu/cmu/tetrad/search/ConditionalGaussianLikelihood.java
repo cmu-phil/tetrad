@@ -219,13 +219,9 @@ public class ConditionalGaussianLikelihood {
         } else {
             int N = dataSet.getNumRows();
 
-
             int p = X.size();
 
             List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
-            List<DiscreteVariable> A2 = new ArrayList<>(A);
-            A2.add(B);
-            List<List<Integer>> cells2 = adTree.getCellLeaves(A2);
 
             int[] continuousCols = new int[p];
             for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
@@ -236,16 +232,15 @@ public class ConditionalGaussianLikelihood {
                 int cell1Size = 0;
                 double mixedProb = 0;
 
+                // times P(A U {B})
                 if (A.size() > 0) {
-                    int n1 = 0;
-
                     for (List<Integer> _cell : cells1) {
-                        n1 += _cell.size();
-                    }
+                        int n1 = _cell.size();
 
-                    if (n1 > 0) {
-                        double prob = n1 / (double) N;
-                        mixedProb += n1 * Math.log(prob);
+                        if (n1 > 0) {
+                            double prob = n1 / (double) N;
+                            mixedProb += n1 * Math.log(prob);
+                        }
                     }
                 }
 
@@ -278,7 +273,10 @@ public class ConditionalGaussianLikelihood {
                 lik += cell1Size * Math.log(mixedProb);
             }
 
-            int dof = f(A2) * h(X) + f(A2);
+            List<DiscreteVariable> A2 = new ArrayList<>(A);
+            A2.add(B);
+
+            int dof = 2 * f(A) * h(X) + f(A2);
             return new Ret(lik, dof);
         }
     }
