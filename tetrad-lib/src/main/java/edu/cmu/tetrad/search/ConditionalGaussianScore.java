@@ -61,7 +61,7 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(i, parents);
+        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
         int N = dataSet.getNumRows();
 

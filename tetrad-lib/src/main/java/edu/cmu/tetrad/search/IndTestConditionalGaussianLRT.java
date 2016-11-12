@@ -91,8 +91,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             list2[i] = _z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihoodRatio(_x, list1);
-        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihoodRatio(_x, list2);
+        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_x, list1);
+        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihood(_x, list2);
 
         double lik = ret1.getLik() - ret2.getLik();
         double dof = ret1.getDof() - ret2.getDof();

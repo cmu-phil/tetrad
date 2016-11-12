@@ -31,15 +31,18 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import java.util.*;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS.
+ * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
+ * the continuous variables are jointly Gaussian conditional on the discrete variables; in all other cases, it will
+ * be less than maximal. For an algorithm like FGS this is fine.
  *
  * @author Joseph Ramsey
  */
 public class ConditionalGaussianLikelihood {
 
+    // The data set. May contain continuous and/or discrete variables.
     private DataSet dataSet;
 
-    // The variables of the continuousData set.
+    // The variables of the data set.
     private List<Node> variables;
 
     // Indices of variables.
@@ -47,9 +50,6 @@ public class ConditionalGaussianLikelihood {
 
     // Continuous data only.
     private double[][] continuousData;
-
-    // Discrete data only. AD tree already initialized to this.
-//    private int[][] discreteData;
 
     //The AD Tree used to count discrete cells.
     private AdLeafTree adTree;
@@ -91,7 +91,6 @@ public class ConditionalGaussianLikelihood {
         this.variables = dataSet.getVariables();
 
         continuousData = new double[dataSet.getNumColumns()][];
-//        discreteData = new int[dataSet.getNumColumns()][];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
@@ -105,15 +104,6 @@ public class ConditionalGaussianLikelihood {
 
                 continuousData[j] = col;
             }
-//            else if (v instanceof DiscreteVariable) {
-//                int[] col = new int[dataSet.getNumRows()];
-//
-//                for (int i = 0; i < dataSet.getNumRows(); i++) {
-//                    col[i] = dataSet.getInt(i, j);
-//                }
-//
-//                discreteData[j] = col;
-//            }
         }
 
         nodesHash = new HashMap<>();
@@ -123,10 +113,17 @@ public class ConditionalGaussianLikelihood {
             nodesHash.put(v, j);
         }
 
-        this.adTree = AdTrees.getAdLeafTree(dataSet);//   new AdLeafTree(dataSet);
+        this.adTree = AdTrees.getAdLeafTree(dataSet);
     }
 
-    public Ret getLikelihoodRatio(int i, int[] parents) {
+    /**
+     * Returns the likelihood of variable i conditional on the given parents, assuming the continuous variables
+     * index by i or by the parents are jointly Gaussian conditional on the discrete comparison.
+     * @param i The index of the conditioned variable.
+     * @param parents The indices of the conditioning variables.
+     * @return The likelihood.
+     */
+    public Ret getLikelihood(int i, int[] parents) {
         Node target = variables.get(i);
 
         List<ContinuousVariable> X = new ArrayList<>();
@@ -151,35 +148,27 @@ public class ConditionalGaussianLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        Ret ret1;
-        Ret ret2;
-
         if (target instanceof DiscreteVariable && !XPlus.isEmpty()) {
 
-//            if (XPlus.isEmpty()) {
-//
-//                 Multinomial.
-//                ret1 = getJointLikelihood(XPlus, APlus, null);
-//                ret2 = getJointLikelihood(X, A, null);
-//            } else {
-                // A case like P(C | X) = P(X | C) P(C) / P(X). In this case, we assume X is
-                // distributed as conditional Gaussian and calcualte P(X) as a mixture.
-                ret1 = getJointLikelihood(XPlus, new ArrayList<>(A), (DiscreteVariable) target);
-                ret2 = getJointLikelihood(X, A, null);
-//            }
+            // A case like P(C | X) = P(X | C) P(C) / P(X). In this case, we assume X is
+            // distributed as conditional Gaussian and calculate P(X) as a mixture.
+            Ret ret1 = getJointLikelihood(XPlus, new ArrayList<>(A), (DiscreteVariable) target);
+            Ret ret2 = getJointLikelihood(X, A, null);
+
+            double lik = ret1.getLik() - ret2.getLik();
+            int dof = ret1.getDof() - ret2.getDof();
+            return new Ret(lik, dof);
         } else {
 
             // Handles cases like P(X | C) where X is conditional Gaussian as well as
             // P(A | C) where A, C are both discrete.
-            ret1 = getJointLikelihood(XPlus, APlus, null);
-            ret2 = getJointLikelihood(X, A, null);
+            Ret ret1 = getJointLikelihood(XPlus, APlus, null);
+            Ret ret2 = getJointLikelihood(X, A, null);
+
+            double lik = ret1.getLik() - ret2.getLik();
+            int dof = ret1.getDof() - ret2.getDof();
+            return new Ret(lik, dof);
         }
-
-        // Calculate likelihood and dof as for a likelihood ratio test.
-        double lik = ret1.getLik() - ret2.getLik();
-        int dof = ret1.getDof() - ret2.getDof();
-
-        return new Ret(lik, dof);
     }
 
     // The likelihood of the joint over all of these variables, continuous and discrete.
@@ -255,7 +244,7 @@ public class ConditionalGaussianLikelihood {
                         double det = Sigma.det();
                         c1 -= 0.5 * n * Math.log(det);
                     }
-                 }
+                }
             }
 
             c1 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));

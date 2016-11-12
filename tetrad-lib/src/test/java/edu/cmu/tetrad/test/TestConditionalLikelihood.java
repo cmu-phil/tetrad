@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
@@ -50,10 +48,10 @@ public class TestConditionalLikelihood {
         // Calculate lik and dof for 1 | 2, 2, 2 | 1, and 1.
         ConditionalGaussianLikelihood lik = new ConditionalGaussianLikelihood(data);
 
-        ConditionalGaussianLikelihood.Ret ret1 = lik.getLikelihoodRatio(0, new int[]{1});
-        ConditionalGaussianLikelihood.Ret ret2 = lik.getLikelihoodRatio(1, new int[]{});
-        ConditionalGaussianLikelihood.Ret ret3 = lik.getLikelihoodRatio(1, new int[]{0});
-        ConditionalGaussianLikelihood.Ret ret4 = lik.getLikelihoodRatio(0, new int[]{});
+        ConditionalGaussianLikelihood.Ret ret1 = lik.getLikelihood(0, new int[]{1});
+        ConditionalGaussianLikelihood.Ret ret2 = lik.getLikelihood(1, new int[]{});
+        ConditionalGaussianLikelihood.Ret ret3 = lik.getLikelihood(1, new int[]{0});
+        ConditionalGaussianLikelihood.Ret ret4 = lik.getLikelihood(0, new int[]{});
 
 //        // Print out these likelihoods.
 //        System.out.println(ret1);
