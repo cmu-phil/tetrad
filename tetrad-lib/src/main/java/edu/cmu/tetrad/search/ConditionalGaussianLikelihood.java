@@ -48,8 +48,36 @@ public class ConditionalGaussianLikelihood {
     // Continuous data only.
     private double[][] continuousData;
 
-    // Discrete data only.
-    private int[][] discreteData;
+    // Discrete data only. AD tree already initialized to this.
+//    private int[][] discreteData;
+
+    //The AD Tree used to count discrete cells.
+    private AdLeafTree adTree;
+
+    /**
+     * A return value for a likelihood--a pair of <likelihood, degrees of freedom>.
+     */
+    public class Ret {
+        private double lik;
+        private int dof;
+
+        private Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return lik;
+        }
+
+        public int getDof() {
+            return dof;
+        }
+
+        public String toString() {
+            return "lik = " + lik + " dof = " + dof;
+        }
+    }
 
     /**
      * Constructs the score using a covariance matrix.
@@ -63,7 +91,7 @@ public class ConditionalGaussianLikelihood {
         this.variables = dataSet.getVariables();
 
         continuousData = new double[dataSet.getNumColumns()][];
-        discreteData = new int[dataSet.getNumColumns()][];
+//        discreteData = new int[dataSet.getNumColumns()][];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
@@ -76,15 +104,16 @@ public class ConditionalGaussianLikelihood {
                 }
 
                 continuousData[j] = col;
-            } else if (v instanceof DiscreteVariable) {
-                int[] col = new int[dataSet.getNumRows()];
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    col[i] = dataSet.getInt(i, j);
-                }
-
-                discreteData[j] = col;
             }
+//            else if (v instanceof DiscreteVariable) {
+//                int[] col = new int[dataSet.getNumRows()];
+//
+//                for (int i = 0; i < dataSet.getNumRows(); i++) {
+//                    col[i] = dataSet.getInt(i, j);
+//                }
+//
+//                discreteData[j] = col;
+//            }
         }
 
         nodesHash = new HashMap<>();
@@ -95,36 +124,6 @@ public class ConditionalGaussianLikelihood {
         }
 
         this.adTree = AdTrees.getAdLeafTree(dataSet);//   new AdLeafTree(dataSet);
-    }
-
-    private int getDof2(int i, int[] parents) {
-        Node target = variables.get(i);
-
-        int dof2;
-
-        List<ContinuousVariable> X = new ArrayList<>();
-        List<DiscreteVariable> A = new ArrayList<>();
-
-        for (int parent1 : parents) {
-            Node parent = variables.get(parent1);
-
-            if (parent instanceof ContinuousVariable) {
-                X.add((ContinuousVariable) parent);
-            } else {
-                A.add((DiscreteVariable) parent);
-            }
-        }
-
-        if (target instanceof ContinuousVariable) {
-            dof2 = f(A) * g(X);
-        } else if (target instanceof DiscreteVariable) {
-            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
-            dof2 = f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
-        } else {
-            throw new IllegalStateException();
-        }
-
-        return dof2;
     }
 
     public Ret getLikelihoodRatio(int i, int[] parents) {
@@ -156,24 +155,35 @@ public class ConditionalGaussianLikelihood {
         Ret ret2;
 
         if (target instanceof DiscreteVariable && !XPlus.isEmpty()) {
-            ret1 = getJointLikelihood(X, A, (DiscreteVariable) target);
-            ret2 = getJointLikelihood(X, A, null);
+
+//            if (XPlus.isEmpty()) {
+//
+//                 Multinomial.
+//                ret1 = getJointLikelihood(XPlus, APlus, null);
+//                ret2 = getJointLikelihood(X, A, null);
+//            } else {
+                // A case like P(C | X) = P(X | C) P(C) / P(X). In this case, we assume X is
+                // distributed as conditional Gaussian and calcualte P(X) as a mixture.
+                ret1 = getJointLikelihood(XPlus, new ArrayList<>(A), (DiscreteVariable) target);
+                ret2 = getJointLikelihood(X, A, null);
+//            }
         } else {
+
+            // Handles cases like P(X | C) where X is conditional Gaussian as well as
+            // P(A | C) where A, C are both discrete.
             ret1 = getJointLikelihood(XPlus, APlus, null);
             ret2 = getJointLikelihood(X, A, null);
         }
 
+        // Calculate likelihood and dof as for a likelihood ratio test.
         double lik = ret1.getLik() - ret2.getLik();
         int dof = ret1.getDof() - ret2.getDof();
-//        int dof = getDof2(i, parents);
 
         return new Ret(lik, dof);
     }
 
     // The likelihood of the joint over all of these variables, continuous and discrete.
     private Ret getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
-
-//        List<List<Integer>> cells = getCellsOriginal(A);
         if (B == null) {
             int p = X.size();
 
@@ -182,7 +192,7 @@ public class ConditionalGaussianLikelihood {
             int[] continuousCols = new int[p];
             for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
             int N = dataSet.getNumRows();
-            double lik = 0;
+            double c1 = 0, c2 = 0;
 
             for (List<Integer> cell : cells) {
                 int n = cell.size();
@@ -190,7 +200,76 @@ public class ConditionalGaussianLikelihood {
                 if (A.size() > 0) {
                     if (n > 0) {
                         double prob = n / (double) N;
-                        lik += n * Math.log(prob);
+                        c1 += n * Math.log(prob);
+                    }
+                }
+
+                if (X.size() > 0) {
+                    if (n > Math.min(p, 20)) {
+                        TetradMatrix subset = new TetradMatrix(n, p);
+
+                        for (int i = 0; i < n; i++) {
+                            for (int j = 0; j < p; j++) {
+                                subset.set(i, j, continuousData[continuousCols[j]][cell.get(i)]);
+                            }
+                        }
+
+                        TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
+                                false).getCovarianceMatrix());
+                        double det = Sigma.det();
+                        c2 -= 0.5 * n * Math.log(det);
+                    }
+                }
+            }
+
+            c2 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+
+            double lik = c1 + c2;
+            int dof = f(A) * h(X) + f(A);
+
+            return new Ret(lik, dof);
+        } else { // B supplied.
+            int p = X.size();
+            List<List<Integer>> cells = adTree.getCellLeaves(A);
+
+            int[] continuousCols = new int[p];
+            for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
+            int N = dataSet.getNumRows();
+            double c1 = 0, c2 = 0, c3 = 0;
+
+            for (List<Integer> cell : cells) {
+                int n = cell.size();
+
+                if (X.size() > 0) {
+                    if (n > Math.min(p, 20)) {
+                        TetradMatrix subset = new TetradMatrix(n, p);
+
+                        for (int i = 0; i < n; i++) {
+                            for (int j = 0; j < p; j++) {
+                                subset.set(i, j, continuousData[continuousCols[j]][cell.get(i)]);
+                            }
+                        }
+
+                        TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
+                                false).getCovarianceMatrix());
+                        double det = Sigma.det();
+                        c1 -= 0.5 * n * Math.log(det);
+                    }
+                 }
+            }
+
+            c1 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+
+            A.add(B);
+            cells = adTree.getCellLeaves(A);
+
+            for (List<Integer> cell : cells) {
+                int n = cell.size();
+
+                if (A.size() > 0) {
+                    if (n > 0) {
+                        double prob = n / (double) N;
+                        c2 += n * Math.log(prob);
                     }
                 }
 
@@ -207,134 +286,21 @@ public class ConditionalGaussianLikelihood {
                         TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                                 false).getCovarianceMatrix());
                         double det = Sigma.det();
-                        lik -= 0.5 * n * Math.log(det);
+                        c3 -= 0.5 * n * Math.log(det);
                     }
 
-                    lik -= 0.5 * n * p * (1.0 + Math.log(2.0 * Math.PI));
+                    c3 -= 0.5 * n * p * (1.0 + Math.log(2.0 * Math.PI));
                 }
             }
 
+            double lik = Math.max(c1, c3) + c2;
             int dof = f(A) * h(X) + f(A);
             return new Ret(lik, dof);
-        } else {
-            int N = dataSet.getNumRows();
-
-            int p = X.size();
-
-            List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
-
-            int[] continuousCols = new int[p];
-            for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
-            double lik = 0;
-
-            for (List<List<Integer>> cells1 : cells) {
-
-                int cell1Size = 0;
-                double mixedProb = 0;
-
-                // times P(A U {B})
-                if (A.size() > 0) {
-                    for (List<Integer> _cell : cells1) {
-                        int n1 = _cell.size();
-
-                        if (n1 > 0) {
-                            double prob = n1 / (double) N;
-                            mixedProb += n1 * Math.log(prob);
-                        }
-                    }
-                }
-
-                for (List<Integer> cell2 : cells1) {
-                    int cell2Size = cell2.size();
-
-                    // For a single record.
-                    double s = -0.5 * p * (1.0 + Math.log(2.0 * Math.PI));
-
-                    if (cell2Size > p) {
-                        TetradMatrix subset = new TetradMatrix(cell2Size, p);
-
-                        for (int i = 0; i < cell2Size; i++) {
-                            for (int j = 0; j < p; j++) {
-                                subset.set(i, j, continuousData[continuousCols[j]][cell2.get(i)]);
-                            }
-                        }
-
-                        TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                                false).getCovarianceMatrix());
-                        double det = Sigma.det();
-
-                        s = -0.5 * Math.log(det);
-                    }
-
-                    double w = cell2Size / (double) cell1Size;
-                    mixedProb += w * Math.exp(s);
-                }
-
-                lik += cell1Size * Math.log(mixedProb);
-            }
-
-            List<DiscreteVariable> A2 = new ArrayList<>(A);
-            A2.add(B);
-
-            int dof = 2 * f(A) * h(X) + f(A2);
-            return new Ret(lik, dof);
         }
     }
 
-    private List<List<Integer>> getCellsOriginal(List<DiscreteVariable> A) {
-        int d = A.size();
-
-        // For each combination of values for the A guys extract a subset of the data.
-        int[] discreteCols = new int[d];
-        int[] dims = new int[d];
-        int n = dataSet.getNumRows();
-
-        for (int i = 0; i < d; i++) discreteCols[i] = nodesHash.get(A.get(i));
-        for (int i = 0; i < d; i++) dims[i] = A.get(i).getNumCategories();
-
-        List<List<Integer>> cells = new ArrayList<>();
-        for (int i = 0; i < f(A); i++) {
-            cells.add(new ArrayList<Integer>());
-        }
-
-        int[] values = new int[A.size()];
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < A.size(); j++) {
-                values[j] = discreteData[discreteCols[j]][i];
-            }
-
-            int rowIndex = getRowIndex(values, dims);
-            cells.get(rowIndex).add(i);
-        }
-
-        return cells;
-    }
-
-    private AdLeafTree adTree;
-
-    public class Ret {
-        private double lik;
-        private int dof;
-
-        public Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return lik;
-        }
-
-        public int getDof() {
-            return dof;
-        }
-
-        public String toString() {
-            return "lik = " + lik + " dof = " + dof;
-        }
-    }
-
+    // Degrees of freedom for a discrete distribution is the product of the number of categories for each
+    // variable.
     private int f(List<DiscreteVariable> A) {
         int f = 1;
 
@@ -345,34 +311,11 @@ public class ConditionalGaussianLikelihood {
         return f;
     }
 
-    private int g(List<ContinuousVariable> X) {
-        return X.size() + 1;
-    }
-
+    // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
+    // of variables. This is the number of unique entries in the covariance matrix over X.
     private int h(List<ContinuousVariable> X) {
         int p = X.size();
         return p * (p + 1) / 2;
-    }
-
-    private int j(List<DiscreteVariable> A) {
-        int v = 1;
-
-        for (DiscreteVariable a : A) {
-            v *= a.getNumCategories() - 1;
-        }
-
-        return v;
-    }
-
-    public int getRowIndex(int[] values, int[] dims) {
-        int rowIndex = 0;
-
-        for (int i = 0; i < dims.length; i++) {
-            rowIndex *= dims[i];
-            rowIndex += values[i];
-        }
-
-        return rowIndex;
     }
 }
 

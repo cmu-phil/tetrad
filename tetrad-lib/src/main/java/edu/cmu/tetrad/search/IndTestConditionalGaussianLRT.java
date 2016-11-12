@@ -97,7 +97,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         double lik = ret1.getLik() - ret2.getLik();
         double dof = ret1.getDof() - ret2.getDof();
 
-//        if (dof <= 1) dof = 1;
+        if (dof <= 1) dof = 1;
 
         double p = 0;
         try {

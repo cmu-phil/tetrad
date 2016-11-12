@@ -27,8 +27,8 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
-        IndependenceTest test = this.test.getTest(continuousDataSet, parameters);
+//        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
+        IndependenceTest test = this.test.getTest(dataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
         search.setOrientVisibleFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
         search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
