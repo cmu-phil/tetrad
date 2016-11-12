@@ -22,24 +22,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.cli.AbstractAlgorithmCli;
 import edu.cmu.tetrad.cli.AlgorithmType;
+import edu.cmu.tetrad.cli.CmdOptions;
 import edu.cmu.tetrad.cli.ParamAttrs;
-import edu.cmu.tetrad.cli.util.Args;
-import edu.cmu.tetrad.cli.validation.DataValidation;
-import edu.cmu.tetrad.cli.validation.NonZeroVariance;
-import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.io.DataReader;
-import edu.cmu.tetrad.io.TabularContinuousDataReader;
-import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Formatter;
-import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -50,42 +38,24 @@ import org.apache.commons.cli.Option;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class GfcicCli extends AbstractAlgorithmCli {
+public class GfcicCli extends FgscCli {
 
-    private double alpha;
-    protected double penaltyDiscount;
-    protected int maxIndegree;
-    protected boolean faithfulnessAssumed;
-
-    protected boolean skipUniqueVarName;
-    protected boolean skipZeroVariance;
+    protected double alpha;
 
     public GfcicCli(String[] args) {
         super(args);
     }
 
     @Override
-    public void printValidationInfos(Formatter fmt) {
-        fmt.format("ensure variable names are unique = %s%n", !skipUniqueVarName);
-        fmt.format("ensure variables have non-zero variance = %s%n", !skipZeroVariance);
-    }
-
-    @Override
     public void printParameterInfos(Formatter fmt) {
         fmt.format("alpha = %f%n", alpha);
-        fmt.format("penalty discount = %f%n", penaltyDiscount);
-        fmt.format("max indegree = %d%n", maxIndegree);
-        fmt.format("faithfulness assumed = %s%n", faithfulnessAssumed);
+        super.printParameterInfos(fmt);
     }
 
     @Override
     public Parameters getParameters() {
-        Parameters parameters = new Parameters();
+        Parameters parameters = super.getParameters();
         parameters.set(ParamAttrs.ALPHA, alpha);
-        parameters.set(ParamAttrs.PENALTY_DISCOUNT, penaltyDiscount);
-        parameters.set(ParamAttrs.MAX_INDEGREE, maxIndegree);
-        parameters.set(ParamAttrs.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
-        parameters.set(ParamAttrs.VERBOSE, verbose);
 
         return parameters;
     }
@@ -101,64 +71,15 @@ public class GfcicCli extends AbstractAlgorithmCli {
     }
 
     @Override
-    public DataReader getDataReader(Path dataFile, char delimiter) {
-        return new TabularContinuousDataReader(dataFile, delimiter);
-    }
-
-    @Override
-    public List<DataValidation> getDataValidations(DataSet dataSet, Path dirOut, String filePrefix) {
-        List<DataValidation> validations = new LinkedList<>();
-
-        String outputDir = dirOut.toString();
-        if (!skipUniqueVarName) {
-            if (validationOutput) {
-                validations.add(new UniqueVariableNames(dataSet, Paths.get(outputDir, filePrefix + "_duplicate_var_name.txt")));
-            } else {
-                validations.add(new UniqueVariableNames(dataSet));
-            }
-        }
-        if (!skipZeroVariance) {
-            if (validationOutput) {
-                validations.add(new NonZeroVariance(dataSet, numOfThreads, Paths.get(outputDir, filePrefix + "_zero_variance.txt")));
-            } else {
-                validations.add(new NonZeroVariance(dataSet, numOfThreads));
-            }
-        }
-
-        return validations;
-    }
-
-    @Override
-    public void parseRequiredOptions(CommandLine cmd) throws Exception {
-    }
-
-    @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
-        ParamDescriptions param = ParamDescriptions.instance();
-        alpha = Args.getDouble(cmd.getOptionValue("alpha", String.valueOf(param.get(ParamAttrs.ALPHA).getDefaultValue())));
-        penaltyDiscount = Args.getDoubleMin(cmd.getOptionValue("penalty-discount", String.valueOf(param.get(ParamAttrs.PENALTY_DISCOUNT).getDefaultValue())), 0);
-        maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(param.get(ParamAttrs.MAX_INDEGREE).getDefaultValue())), -1);
-        faithfulnessAssumed = cmd.hasOption("faithfulness-assumed");
-        skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
-        skipZeroVariance = cmd.hasOption("skip-non-zero-variance");
-    }
-
-    @Override
-    public List<Option> getRequiredOptions() {
-        return Collections.EMPTY_LIST;
+        super.parseOptionalOptions(cmd);
+        alpha = CmdOptions.getDouble(CmdOptions.ALPHA, ParamAttrs.ALPHA, cmd);
     }
 
     @Override
     public List<Option> getOptionalOptions() {
-        ParamDescriptions param = ParamDescriptions.instance();
-
-        List<Option> options = new LinkedList<>();
-        options.add(new Option(null, "alpha", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
-        options.add(new Option(null, "penalty-discount", true, createDescription(param.get(ParamAttrs.PENALTY_DISCOUNT))));
-        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
-        options.add(new Option(null, "faithfulness-assumed", false, createDescription(param.get(ParamAttrs.FAITHFULNESS_ASSUMED))));
-        options.add(new Option(null, "skip-unique-var-name", false, "Skip check for unique variable names."));
-        options.add(new Option(null, "skip-non-zero-variance", false, "Skip check for zero variance variables."));
+        List<Option> options = super.getOptionalOptions();
+        options.add(new Option(null, CmdOptions.ALPHA, true, CmdOptions.getDescription(CmdOptions.ALPHA)));
 
         return options;
     }

@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Stores descriptions of the parameters for the simulation box. All parameters that go
- * into the interface need to be described here.
+ * Stores descriptions of the parameters for the simulation box. All parameters
+ * that go into the interface need to be described here.
  *
  * @author jdramsey
  */
 public class ParamDescriptions {
+
     private static ParamDescriptions instance = new ParamDescriptions();
     private Map<String, ParamDescription> map = new HashMap<>();
 
@@ -17,7 +18,7 @@ public class ParamDescriptions {
         put("numMeasures", new ParamDescription("Number of measured variables", 10, 1, Integer.MAX_VALUE));
         put("numLatents", new ParamDescription("Number of latent variables", 0, 0, Integer.MAX_VALUE));
         put("avgDegree", new ParamDescription("Average degree of graph", 2, 1, Integer.MAX_VALUE));
-        put("maxDegree", new ParamDescription("Maximum degree of graph", 100, 1, Integer.MAX_VALUE));
+        put("maxDegree", new ParamDescription("The maximum degree of the output graph. Use -1 for unbounded.", -1, -1, Integer.MAX_VALUE));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100, 1, Integer.MAX_VALUE));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100, 1, Integer.MAX_VALUE));
         put("connected", new ParamDescription("Yes if graph should be connected", false));
@@ -61,10 +62,10 @@ public class ParamDescriptions {
                 new ParamDescription("General function template for latent variables", "TSUM(NEW(B)*$)"));
         put("generalSemErrorTemplate",
                 new ParamDescription("General function for error terms", "Beta(2, 5)"));
-        put("coefSymmetric", new ParamDescription("Yes if negative coefficient " +
-                "values should be considered", true));
-        put("covSymmetric", new ParamDescription("Yes if negative covariance " +
-                "values should be considered", true));
+        put("coefSymmetric", new ParamDescription("Yes if negative coefficient "
+                + "values should be considered", true));
+        put("covSymmetric", new ParamDescription("Yes if negative covariance "
+                + "values should be considered", true));
         put("retainPreviousValues", new ParamDescription("Retain previous values", false));
 
         // Boolean Glass parameters.
@@ -100,7 +101,6 @@ public class ParamDescriptions {
         put("targetName", new ParamDescription("Target name", ""));
         put("verbose", new ParamDescription("Yes if verbose output should be printed to standard out", false));
         put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", false));
-        put("maxDegree", new ParamDescription("The maximum degree of the output graph", 5));
 
         put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
         put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));

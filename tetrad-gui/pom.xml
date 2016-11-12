@@ -5,12 +5,27 @@
     <parent>
         <groupId>edu.cmu</groupId>
         <artifactId>tetrad</artifactId>
-        <version>6.0-alpha-SNAPSHOT</version>
+        <version>6.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>resources/version</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>resources/version</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -37,6 +52,8 @@
                                     <manifestEntries>
                                         <Main-Class>edu.cmu.tetradapp.Tetrad</Main-Class>
                                         <Permissions>all-permissions</Permissions>
+                                        <Implementation-Title>${project.name}</Implementation-Title>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
