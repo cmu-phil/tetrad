@@ -173,9 +173,10 @@ public class ConditionalGaussianLikelihood {
 
     // The likelihood of the joint over all of these variables, continuous and discrete.
     private Ret getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
-        if (B == null) {
-            int p = X.size();
+        int p = X.size();
+        final int minSampleSize = Math.min(p, 10);
 
+        if (B == null) {
             List<List<Integer>> cells = adTree.getCellLeaves(A);
 
             int[] continuousCols = new int[p];
@@ -194,7 +195,7 @@ public class ConditionalGaussianLikelihood {
                 }
 
                 if (X.size() > 0) {
-                    if (n > Math.min(p, 20)) {
+                    if (n > minSampleSize) {
                         TetradMatrix subset = new TetradMatrix(n, p);
 
                         for (int i = 0; i < n; i++) {
@@ -218,7 +219,6 @@ public class ConditionalGaussianLikelihood {
 
             return new Ret(lik, dof);
         } else { // B supplied.
-            int p = X.size();
             List<List<Integer>> cells = adTree.getCellLeaves(A);
 
             int[] continuousCols = new int[p];
@@ -230,7 +230,7 @@ public class ConditionalGaussianLikelihood {
                 int n = cell.size();
 
                 if (X.size() > 0) {
-                    if (n > Math.min(p, 20)) {
+                    if (n > minSampleSize) {
                         TetradMatrix subset = new TetradMatrix(n, p);
 
                         for (int i = 0; i < n; i++) {
@@ -263,7 +263,7 @@ public class ConditionalGaussianLikelihood {
                 }
 
                 if (X.size() > 0) {
-                    if (n > 3 * p) {
+                    if (n > minSampleSize) {
                         TetradMatrix subset = new TetradMatrix(n, p);
 
                         for (int i = 0; i < n; i++) {
@@ -277,10 +277,10 @@ public class ConditionalGaussianLikelihood {
                         double det = Sigma.det();
                         c3 -= 0.5 * n * Math.log(det);
                     }
-
-                    c3 -= 0.5 * n * p * (1.0 + Math.log(2.0 * Math.PI));
                 }
             }
+
+            c3 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
 
             double lik = Math.max(c1, c3) + c2;
             int dof = f(A) * h(X) + f(A);
