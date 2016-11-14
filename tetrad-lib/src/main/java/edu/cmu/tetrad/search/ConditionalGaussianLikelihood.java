@@ -175,15 +175,18 @@ public class ConditionalGaussianLikelihood {
     // The likelihood of the joint over all of these variables, continuous and discrete.
     private Ret getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         int p = X.size();
-        final int minSample = Math.min(p, 10);
+        final int minSample = Math.min(p, 5);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
         int N = dataSet.getNumRows();
 
+        final double C = -0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+
         if (B == null) {
             List<List<Integer>> cells = adTree.getCellLeaves(A);
-            double c1 = 0, c2 = 0;
+            double c1 = 0, c2 = C;
+            List<Integer> missing = new ArrayList<>();
 
             for (List<Integer> cell : cells) {
                 if (cell.isEmpty()) continue;
@@ -200,10 +203,18 @@ public class ConditionalGaussianLikelihood {
                         double det = Sigma.det();
                         c2 -= 0.5 * n * Math.log(det);
                     }
+                } else {
+                    missing.addAll(cell);
                 }
             }
 
-            c2 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+            if (X.size() > 0) {
+                if (missing.size() > minSample) {
+                    TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing);
+                    double det = Sigma.det();
+                    c2 -= 0.5 * missing.size() * Math.log(det);
+                }
+            }
 
             double lik = c1 + c2;
             int dof = f(A) * h(X) + f(A);
@@ -211,7 +222,9 @@ public class ConditionalGaussianLikelihood {
             return new Ret(lik, dof);
         } else { // B supplied.
             List<List<Integer>> cells = adTree.getCellLeaves(A);
-            double c1 = 0, c2 = 0, c3 = 0;
+            double c1 = C, c2 = 0, c3 = C;
+
+            List<Integer> missing1 = new ArrayList<>();
 
             for (List<Integer> cell : cells) {
                 if (cell.isEmpty()) continue;
@@ -222,15 +235,25 @@ public class ConditionalGaussianLikelihood {
                         TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
                         double det = Sigma.det();
                         c1 -= 0.5 * n * Math.log(det);
+                    } else {
+                        missing1.addAll(cell);
                     }
                 }
             }
 
-            c1 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+            if (X.size() > 0) {
+                if (missing1.size() > minSample) {
+                    TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing1);
+                    double det = Sigma.det();
+                    c1 -= 0.5 * missing1.size() * Math.log(det);
+                }
+            }
 
             List<DiscreteVariable> APlus = new ArrayList<>(A);
             APlus.add(B);
             cells = adTree.getCellLeaves(APlus);
+
+            List<Integer> missing2 = new ArrayList<>();
 
             for (List<Integer> cell : cells) {
                 if (cell.isEmpty()) continue;
@@ -246,11 +269,19 @@ public class ConditionalGaussianLikelihood {
                         TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
                         double det = Sigma.det();
                         c3 -= 0.5 * n * Math.log(det);
+                    } else {
+                        missing2.addAll(cell);
+                    }
+                }
+
+                if (X.size() > 0) {
+                    if (missing2.size() > minSample) {
+                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing2);
+                        double det = Sigma.det();
+                        c3 -= 0.5 * missing2.size() * Math.log(det);
                     }
                 }
             }
-
-            c3 -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
 
             double lik = Math.max(c1, c3) + c2;
             int dof = f(APlus) * h(X) + f(APlus);
