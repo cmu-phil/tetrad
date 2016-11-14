@@ -21,10 +21,9 @@ package edu.cmu.tetrad.cli.simulation.data;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.cli.CmdOptions;
+import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.SimulationType;
-import edu.cmu.tetrad.cli.util.Args;
-import edu.cmu.tetrad.util.ParamDescription;
-import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import java.util.Collections;
 import java.util.Formatter;
@@ -32,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import edu.cmu.tetrad.cli.ParamAttrs;
 
 /**
  *
@@ -75,17 +73,15 @@ public class BayesNetRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public List<Option> getOptionalOptions() {
-        ParamDescriptions param = ParamDescriptions.instance();
-
         List<Option> options = new LinkedList<>();
-        options.add(new Option(null, "latent", true, createDescription(param.get(ParamAttrs.NUM_LATENTS))));
-        options.add(new Option(null, "avg-degree", true, createDescription(param.get(ParamAttrs.AVG_DEGREE))));
-        options.add(new Option(null, "max-degree", true, createDescription(param.get(ParamAttrs.MAX_DEGREE))));
-        options.add(new Option(null, "max-indegree", true, createDescription(param.get(ParamAttrs.MAX_INDEGREE))));
-        options.add(new Option(null, "max-outdegree", true, createDescription(param.get(ParamAttrs.MAX_OUTDEGREE))));
-        options.add(new Option(null, "connected", false, createDescription(param.get(ParamAttrs.CONNECTED))));
-        options.add(new Option(null, "min-categories", true, createDescription(param.get(ParamAttrs.MIN_CATEGORIES))));
-        options.add(new Option(null, "max-categories", true, createDescription(param.get(ParamAttrs.MAX_CATEGORIES))));
+        options.add(new Option(null, CmdOptions.LATENT, true, CmdOptions.createDescription(ParamAttrs.NUM_LATENTS)));
+        options.add(new Option(null, CmdOptions.AVG_DEGREE, true, CmdOptions.createDescription(ParamAttrs.AVG_DEGREE)));
+        options.add(new Option(null, CmdOptions.MAX_DEGREE, true, CmdOptions.createDescription(ParamAttrs.MAX_DEGREE)));
+        options.add(new Option(null, CmdOptions.MAX_INDEGREE, true, CmdOptions.createDescription(ParamAttrs.MAX_INDEGREE)));
+        options.add(new Option(null, CmdOptions.MAX_OUTDEGREE, true, CmdOptions.createDescription(ParamAttrs.MAX_OUTDEGREE)));
+        options.add(new Option(null, CmdOptions.CONNECTED, false, CmdOptions.createDescription(ParamAttrs.CONNECTED)));
+        options.add(new Option(null, CmdOptions.MIN_CATEGORIES, true, CmdOptions.createDescription(ParamAttrs.MIN_CATEGORIES)));
+        options.add(new Option(null, CmdOptions.MAX_CATEGORIES, true, CmdOptions.createDescription(ParamAttrs.MAX_CATEGORIES)));
 
         return options;
     }
@@ -96,31 +92,14 @@ public class BayesNetRandomForwardCli extends AbstractDataSimulationCli {
 
     @Override
     public void parseOptionalOptions(CommandLine cmd) throws Exception {
-        ParamDescriptions param = ParamDescriptions.instance();
-        ParamDescription pd;
-
-        pd = param.get(ParamAttrs.NUM_LATENTS);
-        numOfLatentConfounders = Args.getIntegerMin(cmd.getOptionValue("latent", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
-
-        pd = param.get(ParamAttrs.AVG_DEGREE);
-        avgDegree = Args.getDoubleMin(cmd.getOptionValue("avg-degree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundDouble());
-
-        pd = param.get(ParamAttrs.MAX_DEGREE);
-        maxDegree = Args.getIntegerMin(cmd.getOptionValue("max-degree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
-
-        pd = param.get(ParamAttrs.MAX_INDEGREE);
-        maxIndegree = Args.getIntegerMin(cmd.getOptionValue("max-indegree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
-
-        pd = param.get(ParamAttrs.MAX_OUTDEGREE);
-        maxOutdegree = Args.getIntegerMin(cmd.getOptionValue("max-outdegree", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
-
-        connected = cmd.hasOption("connected");
-
-        pd = param.get(ParamAttrs.MIN_CATEGORIES);
-        minCategories = Args.getIntegerMin(cmd.getOptionValue("min-categories", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
-
-        pd = param.get(ParamAttrs.MAX_CATEGORIES);
-        maxCategories = Args.getIntegerMin(cmd.getOptionValue("max-categories", String.valueOf(pd.getDefaultValue())), pd.getLowerBoundInt());
+        numOfLatentConfounders = CmdOptions.getInt(CmdOptions.LATENT, ParamAttrs.NUM_LATENTS, cmd);
+        avgDegree = CmdOptions.getDouble(CmdOptions.AVG_DEGREE, ParamAttrs.AVG_DEGREE, cmd);
+        maxDegree = CmdOptions.getInt(CmdOptions.MAX_DEGREE, ParamAttrs.MAX_DEGREE, cmd);
+        maxIndegree = CmdOptions.getInt(CmdOptions.MAX_INDEGREE, ParamAttrs.MAX_INDEGREE, cmd);
+        maxOutdegree = CmdOptions.getInt(CmdOptions.MAX_OUTDEGREE, ParamAttrs.MAX_OUTDEGREE, cmd);
+        connected = cmd.hasOption(CmdOptions.CONNECTED);
+        minCategories = CmdOptions.getInt(CmdOptions.MIN_CATEGORIES, ParamAttrs.MIN_CATEGORIES, cmd);
+        maxCategories = CmdOptions.getInt(CmdOptions.MAX_CATEGORIES, ParamAttrs.MAX_CATEGORIES, cmd);
     }
 
     @Override

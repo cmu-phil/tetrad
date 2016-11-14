@@ -7,6 +7,7 @@
     <!-- Top Level -->
     <mapID target="tetrad_overview" url="manual/tetrad_overview.html"/>
     <mapID target="manual" url="manual/manual.html"/>
+    <mapID target="tetrad_tutorial" url="manual/tetrad_tutorial.html"/>
     <mapID target="why_doesnt_tetrad" url="manual/why_doesnt_tetrad.html"/>
     <mapID target="references" url="manual/references.html"/>
     <mapID target="for_further_help" url="manual/for_further_help.html"/>

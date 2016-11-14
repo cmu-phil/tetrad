@@ -7,7 +7,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.GFciMax;
 import edu.cmu.tetrad.util.Parameters;
 import java.io.PrintStream;
@@ -32,8 +31,8 @@ public class Gfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
-        search.setMaxIndegree(parameters.getInt("maxIndegree"));
+        GFciMax search = new GFciMax(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+        search.setMaxDegree(parameters.getInt("maxDegree"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
@@ -67,7 +66,7 @@ public class Gfci implements Algorithm, HasKnowledge {
         List<String> parameters = test.getParameters();
         parameters.addAll(score.getParameters());
         parameters.add("faithfulnessAssumed");
-        parameters.add("maxIndegree");
+        parameters.add("maxDegree");
         parameters.add("printStream");
         return parameters;
     }
