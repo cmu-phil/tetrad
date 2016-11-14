@@ -120,6 +120,9 @@ public class ParamDescriptions {
                 10, 1, Integer.MAX_VALUE));
         put("fisherEpsilon", new ParamDescription("Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence",
                 .001, Double.MIN_VALUE, Double.MAX_VALUE));
+
+        put("completeRuleSetUsed", new ParamDescription("Yes if the compete FCI rule set should be used", false));
+        put("maxPathLength", new ParamDescription("The maximum path length used for the possible dsep search", -1));
     }
 
     public static ParamDescriptions instance() {
