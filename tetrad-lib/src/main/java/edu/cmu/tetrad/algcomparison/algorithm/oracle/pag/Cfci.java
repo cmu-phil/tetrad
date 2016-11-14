@@ -32,6 +32,7 @@ public class Cfci implements Algorithm, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
         return search.search();
     }
 
@@ -54,6 +55,7 @@ public class Cfci implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        parameters.add("completeRuleSetUsed");
         return parameters;
     }
 

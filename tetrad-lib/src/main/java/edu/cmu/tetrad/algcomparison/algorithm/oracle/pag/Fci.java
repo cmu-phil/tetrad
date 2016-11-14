@@ -45,6 +45,8 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setMaxPathLength(parameters.getInt("maxPathLength"));
+        search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
 
 //        if (initial != null) {
 //            search.setInitialGraph(initial);
@@ -73,6 +75,8 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        parameters.add("maxPathLength");
+        parameters.add("completeRuleSetUsed");
         return parameters;
     }
 
