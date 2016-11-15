@@ -149,17 +149,17 @@ public class ConditionalGaussianLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        if (target instanceof DiscreteVariable && !X.isEmpty()) {
-
-            // A case like P(C | X) = P(X | C) P(C) / P(X). In this case, we assume X is
-            // distributed as conditional Gaussian and calculate P(X) as a mixture.
-            Ret ret1 = getJointLikelihood(X, A, (DiscreteVariable) target);
-            Ret ret2 = getJointLikelihood(X, A, null);
-
-            double lik = ret1.getLik() - ret2.getLik();
-            int dof = ret1.getDof() - ret2.getDof();
-            return new Ret(lik, dof);
-        } else {
+//        if (target instanceof DiscreteVariable && !X.isEmpty()) {
+//
+//            // A case like P(C | X) = P(X | C) P(C) / P(X). In this case, we assume X is
+//            // distributed as conditional Gaussian and calculate P(X) as a mixture.
+//            Ret ret1 = getJointLikelihood(X, A, (DiscreteVariable) target);
+//            Ret ret2 = getJointLikelihood(X, A, null);
+//
+//            double lik = ret1.getLik() - ret2.getLik();
+//            int dof = ret1.getDof() - ret2.getDof();
+//            return new Ret(lik, dof);
+//        } else {
 
             // Handles cases like P(X | C) where X is conditional Gaussian as well as
             // P(A | C) where A, C are both discrete.
@@ -169,7 +169,7 @@ public class ConditionalGaussianLikelihood {
             double lik = ret1.getLik() - ret2.getLik();
             int dof = ret1.getDof() - ret2.getDof();
             return new Ret(lik, dof);
-        }
+//        }
     }
 
     // The likelihood of the joint over all of these variables, continuous and discrete.
@@ -192,19 +192,23 @@ public class ConditionalGaussianLikelihood {
                 if (cell.isEmpty()) continue;
                 int n = cell.size();
 
-                if (A.size() > 0) {
-                    double prob = n;
-                    c1 += n * Math.log(n);
-                }
+                c1 += n * Math.log((double) n);
 
                 if (X.size() > 0) {
                     if (n > minSample) {
                         TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
                         double det = Sigma.det();
                         c2 -= 0.5 * n * Math.log(det);
+                    } else {
+                        missing.addAll(cell);
+
+//                        if (missing.size() > minSample) {
+//                            TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing);
+//                            double det = Sigma.det();
+//                            c2 -= 0.5 * missing.size() * Math.log(det);
+//                            missing.clear();
+//                        }
                     }
-                } else {
-                    missing.addAll(cell);
                 }
             }
 
@@ -216,7 +220,7 @@ public class ConditionalGaussianLikelihood {
                 }
             }
 
-            c1 -= Math.log(N);
+            c1 -= N * Math.log((double) N);
 
             double lik = c1 + c2;
             int dof = f(A) * h(X) + f(A);
@@ -239,6 +243,13 @@ public class ConditionalGaussianLikelihood {
                         c1 -= 0.5 * n * Math.log(det);
                     } else {
                         missing1.addAll(cell);
+
+//                        if (missing1.size() > minSample) {
+//                            TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing1);
+//                            double det = Sigma.det();
+//                            c2 -= 0.5 * missing1.size() * Math.log(det);
+//                            missing1.clear();
+//                        }
                     }
                 }
             }
@@ -261,9 +272,7 @@ public class ConditionalGaussianLikelihood {
                 if (cell.isEmpty()) continue;
                 int n = cell.size();
 
-                if (APlus.size() > 0) {
-                    c2 += n * Math.log(n);
-                }
+                c2 += n * Math.log((double) n);
 
                 if (X.size() > 0) {
                     if (n > minSample) {
@@ -272,20 +281,30 @@ public class ConditionalGaussianLikelihood {
                         c3 -= 0.5 * n * Math.log(det);
                     } else {
                         missing2.addAll(cell);
+
+//                        if (missing2.size() > minSample) {
+//                            TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing2);
+//                            double det = Sigma.det();
+//                            c2 -= 0.5 * missing2.size() * Math.log(det);
+//                            missing2.clear();
+//                        }
                     }
                 }
 
-                if (X.size() > 0) {
-                    if (missing2.size() > minSample) {
-                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing2);
-                        double det = Sigma.det();
-                        c3 -= 0.5 * missing2.size() * Math.log(det);
-                    }
-                }
+//                if (X.size() > 0) {
+//                    if (missing2.size() > minSample) {
+//                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing2);
+//                        double det = Sigma.det();
+//                        c3 -= 0.5 * missing2.size() * Math.log(det);
+//                    }
+//                }
             }
 
+            c2 -= N * Math.log((double) N);
+
             double lik = Math.max(c1, c3) + c2;
-            int dof = f(APlus) * h(X) + f(APlus);
+            int dof = f(APlus) * h(X) + g(APlus);
+
             return new Ret(lik, dof);
         }
     }
@@ -311,6 +330,20 @@ public class ConditionalGaussianLikelihood {
 
         for (DiscreteVariable V : A) {
             f *= V.getNumCategories();
+        }
+
+        return f;
+    }
+
+    private int g(List<DiscreteVariable> A) {
+        int f = 1;
+
+        for (int i = 0; i < A.size() - 1; i++) {
+            f *= A.get(i).getNumCategories();
+        }
+
+        if (!A.isEmpty()) {
+            f *= A.get(A.size() - 1).getNumCategories() - 1;
         }
 
         return f;

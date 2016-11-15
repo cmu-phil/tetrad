@@ -45,12 +45,12 @@ public class ExampleCompareSimulation2 {
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 3);
 
         parameters.set("maxDegree", 5);
 
-        parameters.set("numCategories", 2);
-        parameters.set("percentDiscrete", 20);
+        parameters.set("numCategories", 2, 3, 4);
+        parameters.set("percentDiscrete", 50);
 
         parameters.set("intervalBetweenRecordings", 10);
 
@@ -58,6 +58,7 @@ public class ExampleCompareSimulation2 {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("numCategories"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -85,10 +86,10 @@ public class ExampleCompareSimulation2 {
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
-        comparison.setShowUtilities(true);
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
