@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
@@ -48,7 +51,7 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
 
-        Object obj = parameters.get("printStream");
+        Object obj = parameters.get("printStedu.cmream");
         if (obj instanceof PrintStream) {
             search.setOut((PrintStream) obj);
         }

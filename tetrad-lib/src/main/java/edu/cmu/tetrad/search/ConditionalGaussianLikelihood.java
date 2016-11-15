@@ -193,8 +193,8 @@ public class ConditionalGaussianLikelihood {
                 int n = cell.size();
 
                 if (A.size() > 0) {
-                    double prob = n / (double) N;
-                    c1 += n * Math.log(prob);
+                    double prob = n;
+                    c1 += n * Math.log(n);
                 }
 
                 if (X.size() > 0) {
@@ -215,6 +215,8 @@ public class ConditionalGaussianLikelihood {
                     c2 -= 0.5 * missing.size() * Math.log(det);
                 }
             }
+
+            c1 -= Math.log(N);
 
             double lik = c1 + c2;
             int dof = f(A) * h(X) + f(A);
@@ -260,8 +262,7 @@ public class ConditionalGaussianLikelihood {
                 int n = cell.size();
 
                 if (APlus.size() > 0) {
-                    double prob = n / (double) N;
-                    c2 += n * Math.log(prob);
+                    c2 += n * Math.log(n);
                 }
 
                 if (X.size() > 0) {
