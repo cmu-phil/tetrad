@@ -145,168 +145,66 @@ public class ConditionalGaussianLikelihood {
 
         if (target instanceof ContinuousVariable) {
             XPlus.add((ContinuousVariable) target);
-        } else if (target instanceof DiscreteVariable) {
-            APlus.add((DiscreteVariable) target);
-        }
 
-//        if (target instanceof DiscreteVariable && !X.isEmpty()) {
-//
-//            // A case like P(C | X) = P(X | C) P(C) / P(X). In this case, we assume X is
-//            // distributed as conditional Gaussian and calculate P(X) as a mixture.
-//            Ret ret1 = getJointLikelihood(X, A, (DiscreteVariable) target);
-//            Ret ret2 = getJointLikelihood(X, A, null);
-//
-//            double lik = ret1.getLik() - ret2.getLik();
-//            int dof = ret1.getDof() - ret2.getDof();
-//            return new Ret(lik, dof);
-//        } else {
-
-            // Handles cases like P(X | C) where X is conditional Gaussian as well as
-            // P(A | C) where A, C are both discrete.
             Ret ret1 = getJointLikelihood(XPlus, APlus, null);
             Ret ret2 = getJointLikelihood(X, A, null);
 
             double lik = ret1.getLik() - ret2.getLik();
             int dof = ret1.getDof() - ret2.getDof();
             return new Ret(lik, dof);
-//        }
+        } else {
+            APlus.add((DiscreteVariable) target);
+
+            Ret ret1 = getJointLikelihood(XPlus, APlus, null);
+            Ret ret2 = getJointLikelihood(XPlus, A, null);
+
+            double lik = ret1.getLik() - ret2.getLik();
+            int dof = ret1.getDof() - ret2.getDof();
+            return new Ret(lik, dof);
+        }
+
     }
 
     // The likelihood of the joint over all of these variables, continuous and discrete.
     private Ret getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         int p = X.size();
-        final int minSample = Math.min(p, 5);
+        final int minSample = Math.min(p, 10);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
         int N = dataSet.getNumRows();
 
-        final double C = -0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+        double c1 = 0, c2 = 0;
 
-        if (B == null) {
-            List<List<Integer>> cells = adTree.getCellLeaves(A);
-            double c1 = 0, c2 = C;
-            List<Integer> missing = new ArrayList<>();
+        List<List<Integer>> cells = adTree.getCellLeaves(A);
 
-            for (List<Integer> cell : cells) {
-                if (cell.isEmpty()) continue;
-                int n = cell.size();
+        for (List<Integer> cell : cells) {
+            int a = cell.size();
 
-                c1 += n * Math.log((double) n);
+            if (a > minSample) {
+                if (A.size() > 0) {
+                    c1 += a * Math.log(a);
+                }
 
                 if (X.size() > 0) {
-                    if (n > minSample) {
-                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
-                        double det = Sigma.det();
-                        c2 -= 0.5 * n * Math.log(det);
-                    } else {
-                        missing.addAll(cell);
-
-//                        if (missing.size() > minSample) {
-//                            TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing);
-//                            double det = Sigma.det();
-//                            c2 -= 0.5 * missing.size() * Math.log(det);
-//                            missing.clear();
-//                        }
-                    }
+                    TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
+                    c2 += -0.5 * a * Math.log(Sigma.det());
                 }
             }
-
-            if (X.size() > 0) {
-                if (missing.size() > minSample) {
-                    TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing);
-                    double det = Sigma.det();
-                    c2 -= 0.5 * missing.size() * Math.log(det);
-                }
-            }
-
-            c1 -= N * Math.log((double) N);
-
-            double lik = c1 + c2;
-            int dof = f(A) * h(X) + f(A);
-
-            return new Ret(lik, dof);
-        } else { // B supplied.
-            List<List<Integer>> cells = adTree.getCellLeaves(A);
-            double c1 = C, c2 = 0, c3 = C;
-
-            List<Integer> missing1 = new ArrayList<>();
-
-            for (List<Integer> cell : cells) {
-                if (cell.isEmpty()) continue;
-                int n = cell.size();
-
-                if (X.size() > 0) {
-                    if (n > minSample) {
-                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
-                        double det = Sigma.det();
-                        c1 -= 0.5 * n * Math.log(det);
-                    } else {
-                        missing1.addAll(cell);
-
-//                        if (missing1.size() > minSample) {
-//                            TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing1);
-//                            double det = Sigma.det();
-//                            c2 -= 0.5 * missing1.size() * Math.log(det);
-//                            missing1.clear();
-//                        }
-                    }
-                }
-            }
-
-            if (X.size() > 0) {
-                if (missing1.size() > minSample) {
-                    TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing1);
-                    double det = Sigma.det();
-                    c1 -= 0.5 * missing1.size() * Math.log(det);
-                }
-            }
-
-            List<DiscreteVariable> APlus = new ArrayList<>(A);
-            APlus.add(B);
-            cells = adTree.getCellLeaves(APlus);
-
-            List<Integer> missing2 = new ArrayList<>();
-
-            for (List<Integer> cell : cells) {
-                if (cell.isEmpty()) continue;
-                int n = cell.size();
-
-                c2 += n * Math.log((double) n);
-
-                if (X.size() > 0) {
-                    if (n > minSample) {
-                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, cell);
-                        double det = Sigma.det();
-                        c3 -= 0.5 * n * Math.log(det);
-                    } else {
-                        missing2.addAll(cell);
-
-//                        if (missing2.size() > minSample) {
-//                            TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing2);
-//                            double det = Sigma.det();
-//                            c2 -= 0.5 * missing2.size() * Math.log(det);
-//                            missing2.clear();
-//                        }
-                    }
-                }
-
-//                if (X.size() > 0) {
-//                    if (missing2.size() > minSample) {
-//                        TetradMatrix Sigma = getDataSubsample(p, continuousCols, missing2);
-//                        double det = Sigma.det();
-//                        c3 -= 0.5 * missing2.size() * Math.log(det);
-//                    }
-//                }
-            }
-
-            c2 -= N * Math.log((double) N);
-
-            double lik = Math.max(c1, c3) + c2;
-            int dof = f(APlus) * h(X) + g(APlus);
-
-            return new Ret(lik, dof);
         }
+
+        if (A.size() > 0) {
+            c1 += -N * Math.log(N);
+        }
+
+        if (X.size() > 0) {
+            c2 += -0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+        }
+
+        double lik = c1 + c2;
+        int dof = f(A) * h(X) + f(A);
+
+        return new Ret(lik, dof);
     }
 
     private TetradMatrix getDataSubsample(int p, int[] continuousCols, List<Integer> cell) {
