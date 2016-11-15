@@ -233,20 +233,6 @@ public class ConditionalGaussianLikelihood {
         return f;
     }
 
-    private int g(List<DiscreteVariable> A) {
-        int f = 1;
-
-        for (int i = 0; i < A.size() - 1; i++) {
-            f *= A.get(i).getNumCategories();
-        }
-
-        if (!A.isEmpty()) {
-            f *= A.get(A.size() - 1).getNumCategories() - 1;
-        }
-
-        return f;
-    }
-
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
     // of variables. This is the number of unique entries in the covariance matrix over X.
     private int h(List<ContinuousVariable> X) {
