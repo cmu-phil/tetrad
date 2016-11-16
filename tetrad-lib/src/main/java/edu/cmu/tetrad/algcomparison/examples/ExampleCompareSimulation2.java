@@ -41,11 +41,11 @@ public class ExampleCompareSimulation2 {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 3);
+        parameters.set("penaltyDiscount", 2);
 
         parameters.set("maxDegree", 5);
 
@@ -92,6 +92,8 @@ public class ExampleCompareSimulation2 {
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
+
+        comparison.setTabDelimitedTables(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
