@@ -124,7 +124,7 @@ public final class CcdMax implements GraphSearch {
     private Graph fastAdjacencySearch() {
         long start = System.currentTimeMillis();
     
-        FasStableConcurrent2 fas = new FasStableConcurrent2(null, independenceTest);
+        FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
         fas.setDepth(getDepth());
         fas.setKnowledge(knowledge);
         fas.setVerbose(false);
