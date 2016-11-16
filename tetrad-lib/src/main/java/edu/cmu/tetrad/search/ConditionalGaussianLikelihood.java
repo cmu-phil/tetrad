@@ -146,7 +146,7 @@ public class ConditionalGaussianLikelihood {
         if (target instanceof ContinuousVariable) {
             XPlus.add((ContinuousVariable) target);
 
-            Ret ret1 = getJointLikelihood(XPlus, APlus, null);
+            Ret ret1 = getJointLikelihood(XPlus, A, null);
             Ret ret2 = getJointLikelihood(X, A, null);
 
             double lik = ret1.getLik() - ret2.getLik();
@@ -155,8 +155,8 @@ public class ConditionalGaussianLikelihood {
         } else {
             APlus.add((DiscreteVariable) target);
 
-            Ret ret1 = getJointLikelihood(XPlus, APlus, null);
-            Ret ret2 = getJointLikelihood(XPlus, A, null);
+            Ret ret1 = getJointLikelihood(X, APlus, null);
+            Ret ret2 = getJointLikelihood(X, A, (DiscreteVariable) target);
 
             double lik = ret1.getLik() - ret2.getLik();
             int dof = ret1.getDof() - ret2.getDof();
