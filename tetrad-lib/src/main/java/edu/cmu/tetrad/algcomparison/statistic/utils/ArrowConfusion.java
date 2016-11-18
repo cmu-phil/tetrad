@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -15,12 +16,16 @@ import java.util.Set;
  * @author jdramsey
  */
 public class ArrowConfusion {
+
     private Graph truth;
     private Graph est;
     private int arrowsTp;
     private int arrowsFp;
     private int arrowsFn;
     private int arrowsTn;
+    private int TCtp;
+    private int TCfn;
+    private int TCfp;
 
     public ArrowConfusion(Graph truth, Graph est) {
         this.truth = truth;
@@ -28,23 +33,34 @@ public class ArrowConfusion {
         arrowsTp = 0;
         arrowsFp = 0;
         arrowsFn = 0;
+        TCtp = 0; //two-cycle
+        TCfn = 0;
+        TCfp = 0;
 
         Set<Edge> allOriented = new HashSet<>();
         allOriented.addAll(this.truth.getEdges());
         allOriented.addAll(this.est.getEdges());
 
+        System.out.println(allOriented);
+
         for (Edge edge : allOriented) {
-            Edge edge1 = this.est.getEdge(edge.getNode1(), edge.getNode2());
+
+
+            Edge edge1 = this.est.getDirectedEdge(edge.getNode1(), edge.getNode2());
+            System.out.println(edge1 + "(est)");
 
             Endpoint e1Est = null;
             Endpoint e2Est = null;
 
             if (edge1 != null) {
-                e1Est = edge.getProximalEndpoint(edge.getNode1());
-                e2Est = edge.getProximalEndpoint(edge.getNode2());
+                e1Est = edge1.getProximalEndpoint(edge.getNode1());
+                e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
+            System.out.println(e1Est);
+            System.out.println(e2Est);
 
-            Edge edge2 = this.truth.getEdge(edge.getNode1(), edge.getNode2());
+            Edge edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
+            System.out.println(edge2 + "(truth)");
 
             Endpoint e1True = null;
             Endpoint e2True = null;
@@ -53,13 +69,9 @@ public class ArrowConfusion {
                 e1True = edge2.getProximalEndpoint(edge.getNode1());
                 e2True = edge2.getProximalEndpoint(edge.getNode2());
             }
+            System.out.println(e1True);
+            System.out.println(e2True);
 
-            edge = this.est.getEdge(edge.getNode1(), edge.getNode2());
-
-            if (edge != null) {
-                e1Est = edge.getProximalEndpoint(edge.getNode1());
-                e2Est = edge.getProximalEndpoint(edge.getNode2());
-            }
 
             if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
                 arrowsFp++;
@@ -92,11 +104,39 @@ public class ArrowConfusion {
             if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW) {
                 arrowsTn++;
             }
-        }
 
-//        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
-//        arrowsTn = allEdges - arrowsFn;
+     // test for 2-cycle
+            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(),edge.getNode2());
+
+            if(TwoCycle1.size() == 2 && TwoCycle2.size() == 2){
+                System.out.println("2-cycle correctly inferred " + TwoCycle1);
+                TCtp++; }
+
+            if(TwoCycle1.size() == 2 && TwoCycle2.size() != 2){
+                System.out.println("2-cycle not inferred " + TwoCycle1);
+                TCfn++; }
+
+            if(TwoCycle1.size() != 2 && TwoCycle2.size() == 2){
+                System.out.println("2-cycle falsely inferred" + TwoCycle2);
+                TCfp++;}
+            }
+
+
+        System.out.println(arrowsTp);
+        System.out.println(arrowsFp);
+        System.out.println(arrowsFn);
+        System.out.println(arrowsTn);
+
+        //divide by 2, the 2cycle accuracy is duplicated due to how getEdges is used
+        TCtp = TCtp / 2;
+        TCfn = TCfn / 2;
+        TCfp = TCfp / 2;
+        System.out.println(TCtp);
+        System.out.println(TCfn);
+        System.out.println(TCfp);
     }
+
 
     public int getArrowsTp() {
         return arrowsTp;
@@ -113,5 +153,16 @@ public class ArrowConfusion {
     public int getArrowsTn() {
         return arrowsTn;
     }
+
+    public int getTwoCycleTp() { return TCtp; }
+
+    public int getTwoCycleFp() { return TCfp; }
+
+    public int getTwoCycleFn() { return TCfn; }
+
+
+
+
+
 
 }
