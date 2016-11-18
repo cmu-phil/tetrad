@@ -27,6 +27,7 @@ import edu.cmu.tetrad.cli.CmdOptions;
 import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.LimitDiscreteCategory;
+import edu.cmu.tetrad.cli.validation.TabularDiscreteData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
@@ -122,6 +124,13 @@ public class FgsdCli extends AbstractAlgorithmCli {
         }
 
         return validations;
+    }
+
+    @Override
+    public List<DataValidation> getPreDataValidations(Set<String> excludedVariables) {
+        DataValidation dataValidation = new TabularDiscreteData(excludedVariables, dataFile, delimiter);
+
+        return Collections.singletonList(dataValidation);
     }
 
     @Override
