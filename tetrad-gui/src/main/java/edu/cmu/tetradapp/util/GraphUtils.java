@@ -180,51 +180,6 @@ public class GraphUtils {
     }
 
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
-    public static boolean existsSemiDirectedPath(Node from, Node to, int bound, Graph graph) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
-        Q.offer(from);
-        V.add(from);
-        Node e = null;
-        int distance = 0;
-
-        while (!Q.isEmpty()) {
-            Node t = Q.remove();
-            if (t == to) {
-                return true;
-            }
-
-            if (e == t) {
-                e = null;
-                distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
-            }
-
-            for (Node u : graph.getAdjacentNodes(t)) {
-                Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
-                if (c == null) continue;
-
-                if (c == to) {
-                    return true;
-                }
-
-                if (!V.contains(c)) {
-                    V.add(c);
-                    Q.offer(c);
-
-                    if (e == null) {
-                        e = u;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound' except for an edge from->to itself. Cycle checker in other words.
     public static boolean existsSemiDirectedPathExcept(Node from, Node to, int bound, Graph graph) {
         Queue<Node> Q = new LinkedList<>();
@@ -248,7 +203,7 @@ public class GraphUtils {
 
             for (Node u : graph.getAdjacentNodes(t)) {
                 Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
+                Node c = edu.cmu.tetrad.graph.GraphUtils.traverseSemiDirected(t, edge);
                 if (c == null) continue;
 
                 if (t == from && c == to) {

@@ -983,7 +983,7 @@ public abstract class AbstractWorkbench extends JComponent
             this.graph = graph;
 
             if (graph.isPag()) {
-                addPagColoring(new EdgeListGraph(graph));
+                GraphUtils.addPagColoring(new EdgeListGraph(graph));
             }
         }
 
@@ -1022,33 +1022,6 @@ public abstract class AbstractWorkbench extends JComponent
 
         revalidate();
         repaint();
-    }
-
-    private void addPagColoring(EdgeListGraph graph) {
-        for (Edge edge : graph.getEdges()) {
-            if (!Edges.isDirectedEdge(edge)) {
-                continue;
-            }
-
-            Node x = Edges.getDirectedEdgeTail(edge);
-            Node y = Edges.getDirectedEdgeHead(edge);
-
-            graph.removeEdge(edge);
-            final boolean dashed = edu.cmu.tetradapp.util.GraphUtils.existsSemiDirectedPath(x, y, -1, graph);
-
-            if (dashed) {
-                System.out.println("semidirected path from " + x + " to " + y);
-            }
-
-            System.out.println(graph);
-
-            graph.addEdge(edge);
-            edge.setDashed(dashed);
-
-            if (graph.defVisible(edge)) {
-                edge.setLineColor(Color.green);
-            }
-        }
     }
 
     /**
