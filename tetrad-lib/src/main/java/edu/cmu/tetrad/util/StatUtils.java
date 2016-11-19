@@ -1983,7 +1983,7 @@ public final class StatUtils {
     }
 
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
-    public static double logOfSum(List<Double> logs) {
+    public static double logsum(List<Double> logs) {
 
         Collections.sort(logs, new Comparator<Double>() {
             @Override

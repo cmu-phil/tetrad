@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -42,14 +43,14 @@ public class ExampleCompareSimulation2 {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 100);
+        parameters.set("numMeasures", 10);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 4);
 
         parameters.set("maxDegree", 5);
 
-        parameters.set("numCategories", 2, 3, 4);
+        parameters.set("numCategories", 3);
         parameters.set("percentDiscrete", 50);
 
         parameters.set("intervalBetweenRecordings", 10);
@@ -63,6 +64,8 @@ public class ExampleCompareSimulation2 {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
 //        statistics.add(new F1Adj());
@@ -83,6 +86,7 @@ public class ExampleCompareSimulation2 {
         Simulations simulations = new Simulations();
 
         simulations.add(new LeeHastieSimulation(new RandomForward()));
+//        simulations.add(new LeeHastieSimulation(new ScaleFree()));
 
         Comparison comparison = new Comparison();
 
@@ -93,7 +97,7 @@ public class ExampleCompareSimulation2 {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(true);
+        comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
