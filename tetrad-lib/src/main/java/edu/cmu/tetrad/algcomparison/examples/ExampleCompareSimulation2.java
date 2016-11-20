@@ -43,15 +43,17 @@ public class ExampleCompareSimulation2 {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 10);
+        parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);
         parameters.set("penaltyDiscount", 4);
 
         parameters.set("maxDegree", 5);
 
-        parameters.set("numCategories", 3);
+        parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
+
+        parameters.set("cgExact", true);
 
         parameters.set("intervalBetweenRecordings", 10);
 
@@ -64,8 +66,8 @@ public class ExampleCompareSimulation2 {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new TwoCyclePrecision());
-        statistics.add(new TwoCycleRecall());
+//        statistics.add(new TwoCyclePrecision());
+//        statistics.add(new TwoCycleRecall());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
 //        statistics.add(new F1Adj());

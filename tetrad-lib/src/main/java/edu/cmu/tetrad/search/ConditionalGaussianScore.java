@@ -156,6 +156,10 @@ public class ConditionalGaussianScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
+
+    public void setExact(boolean exact) {
+        this.likelihood.setExact(exact);
+    }
 }
 
 
