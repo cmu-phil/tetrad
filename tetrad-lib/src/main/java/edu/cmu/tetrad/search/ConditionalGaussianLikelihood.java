@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -156,26 +155,21 @@ public class ConditionalGaussianLikelihood {
         }
 
         if (exact) {
-            if (target instanceof ContinuousVariable || X.isEmpty()) {
-                Ret ret1 = getJointLikelihood(XPlus, APlus);
-                Ret ret2 = getJointLikelihood(X, A);
-
-                double lik = ret1.getLik() - ret2.getLik();
-                int dof = ret1.getDof() - ret2.getDof();
-                return new Ret(lik, dof);
-            } else if (target instanceof DiscreteVariable) {
-                return getLikelihood2(X, A, (DiscreteVariable) target);
+            if (target instanceof DiscreteVariable && !X.isEmpty()) {
+                return new Ret(getLikelihood2(X, A, (DiscreteVariable) target), dofExact(X, A, target));
+            } else {
+                double lnL1 = getJointLikelihood(XPlus, APlus, target);
+                double lnL2 = getJointLikelihood(X, A, target);
+                double lik = lnL1 - lnL2;
+                return new Ret(lik, dofExact(X, A, target));
             }
         } else {
-            Ret ret1 = getJointLikelihood(XPlus, APlus);
-            Ret ret2 = getJointLikelihood(X, A);
-
-            double lik = ret1.getLik() - ret2.getLik();
-            int dof = ret1.getDof() - ret2.getDof();
+            double lnL1 = getJointLikelihood(XPlus, APlus, target);
+            double lnL2 = getJointLikelihood(X, A, target);
+            double lik = lnL1 - lnL2;
+            int dof = f(APlus) * h(XPlus) + f(APlus) - (f(A) * h(X) + f(A));
             return new Ret(lik, dof);
         }
-
-        throw new IllegalArgumentException();
     }
 
     /**
@@ -194,7 +188,7 @@ public class ConditionalGaussianLikelihood {
 
     // The likelihood of the joint over all of these variables, assuming conditional Gaussian,
     // continuous and discrete.
-    private Ret getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+    private double getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A, Node B) {
         int k = X.size();
 
         int[] continuousCols = new int[k];
@@ -234,15 +228,12 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        double lik = c1 + c2;
-        int dof = f(A) * h(X) + f(A);
-
-        return new Ret(lik, dof);
+        return c1 + c2;
     }
 
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
     // the denominator is a mixture of Gaussians.
-    private Ret getLikelihood2(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
+    private double getLikelihood2(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         int k = X.size();
 
         int[] continuousCols = new int[k];
@@ -329,10 +320,23 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        List<DiscreteVariable> APlus = new ArrayList<>(A);
-        APlus.add(B);
+        return lnL;
+    }
 
-        return new Ret(lnL, f(APlus) * h(X) + f(APlus) - (f(A) * h(X) + f(A)));
+    // Greg's dof.
+    private int dofExact(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+        if (target instanceof ContinuousVariable) {
+            return f(A) * g(X);
+        } else if (target instanceof DiscreteVariable) {
+            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
+            return f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
+        }
+
+        throw new IllegalStateException();
+    }
+
+    private int g(List<ContinuousVariable> X) {
+        return X.size() + 1;
     }
 
     private TetradMatrix cov(TetradMatrix x) {

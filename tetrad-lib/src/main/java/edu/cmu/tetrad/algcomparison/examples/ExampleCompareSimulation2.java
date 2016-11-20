@@ -53,7 +53,7 @@ public class ExampleCompareSimulation2 {
         parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
 
-        parameters.set("cgExact", true);
+        parameters.set("cgExact", false);
 
         parameters.set("intervalBetweenRecordings", 10);
 
