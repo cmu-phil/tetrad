@@ -157,7 +157,7 @@ public class ConditionalGaussianLikelihood {
         if (exact) {
             if (target instanceof DiscreteVariable && !X.isEmpty()) {
                 Ret ret1 = likelihoodAssumingDeniminatorMixed(X, A, target);
-                Ret ret2 = likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
+                Ret ret2 = likelihoodAssumingDenominatorUnmixed(X, A, X, APlus, target);
                 return ret1.getLik() > ret2.getLik() ? ret1 : ret2;
             } else {
                 return likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
@@ -186,10 +186,9 @@ public class ConditionalGaussianLikelihood {
     }
 
     private Ret likelihoodAssumingDenominatorUnmixed(List<ContinuousVariable> x, List<DiscreteVariable> a,
-                                                     List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus, Node target) {
-        double lnL1 = getJointLikelihood(XPlus, APlus);
-        double lnL2 = getJointLikelihood(x, a);
-        double lik = lnL1 - lnL2;
+                                                     List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus,
+                                                     Node target) {
+        double lik = getJointLikelihood(XPlus, APlus) - getJointLikelihood(x, a);
         return new Ret(lik,  dof(x, a, target));
     }
 

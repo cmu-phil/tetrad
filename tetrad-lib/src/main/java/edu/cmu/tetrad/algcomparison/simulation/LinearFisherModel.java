@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesData;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Discretizer;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -149,7 +146,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                 dataSet.setName(name);
             }
 
-            dataSets.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
         }
     }
 
