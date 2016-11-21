@@ -58,9 +58,9 @@ public class ConditionalGaussianLikelihood {
     // True if the exact algorithm should be used (slower).
     private boolean exact = false;
 
-
     /**
-     * A return value for a likelihood--a pair of <likelihood, degrees of freedom>.
+     * A return value for a likelihood--returns a likelihood value and the degrees of freedom
+     * for it.
      */
     public class Ret {
         private double lik;
@@ -163,7 +163,7 @@ public class ConditionalGaussianLikelihood {
                 double lik = lnL1 - lnL2;
                 return new Ret(lik, dofExact(X, A, target));
             }
-        } else {
+        } else { // heuristic.
             double lnL1 = getJointLikelihood(XPlus, APlus, target);
             double lnL2 = getJointLikelihood(X, A, target);
             double lik = lnL1 - lnL2;
@@ -218,7 +218,13 @@ public class ConditionalGaussianLikelihood {
                     TetradMatrix Sigma = cov(getSubsample(continuousCols, cell));
                     v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
                 } catch (Exception e) {
-                    TetradMatrix Sigma = TetradMatrix.identity(continuousCols.length);
+
+                    // Use the global covariances for cases where the usual covariances fail.
+                    List<Integer> all = new ArrayList<>();
+                    for (int i = 0; i < N; i++) all.add(i);
+                    TetradMatrix subsample2 = getSubsample(continuousCols, all);
+                    TetradMatrix Sigma = cov(subsample2);
+
                     v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
                 }
 
@@ -263,20 +269,25 @@ public class ConditionalGaussianLikelihood {
                     inv.add(covinv);
                     mu.add(means(subsample));
                 } catch (Exception e) {
-                    TetradMatrix cov = TetradMatrix.identity(continuousCols.length);
+
+                    // Use the global covariances for cases where the usual covariances fail.
+                    List<Integer> all = new ArrayList<>();
+                    for (int i = 0; i < N; i++) all.add(i);
+                    TetradMatrix subsample2 = getSubsample(continuousCols, all);
+                    TetradMatrix cov = cov(subsample2);
                     TetradMatrix covinv = cov.inverse();
                     x.add(subsample);
                     sigmas.add(cov);
                     inv.add(covinv);
-                    mu.add(means(subsample));
+                    mu.add(means(subsample2));
                 }
             }
 
             // For each cell calculate k * (2 PI * \sigma|) ^ -1/2.
-            List<Double> factor = new ArrayList<>();
+            List<Double> factors = new ArrayList<>();
 
             for (int u = 0; u < x.size(); u++) {
-                factor.add(Math.pow(Math.pow(2.0 * Math.PI, k) * sigmas.get(u).det(), -0.5));
+                factors.add(Math.pow(Math.pow(2.0 * Math.PI, k) * sigmas.get(u).det(), -0.5));
             }
 
             // Set up container for all of the a's.
@@ -295,7 +306,7 @@ public class ConditionalGaussianLikelihood {
                 for (int v = 0; v < x.size(); v++) {
                     for (int i = 0; i < x.get(u).rows(); i++) {
                         final TetradVector row = x.get(u).getRow(i).minus(mu.get(v));
-                        double g = prob(factor.get(v), inv.get(v), row);
+                        double g = prob(factors.get(v), inv.get(v), row);
                         a.get(u).get(v).add(g);
                     }
                 }
@@ -323,7 +334,6 @@ public class ConditionalGaussianLikelihood {
         return lnL;
     }
 
-    // Greg's dof.
     private int dofExact(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
         if (target instanceof ContinuousVariable) {
             return f(A) * g(X);
@@ -333,10 +343,6 @@ public class ConditionalGaussianLikelihood {
         }
 
         throw new IllegalStateException();
-    }
-
-    private int g(List<ContinuousVariable> X) {
-        return X.size() + 1;
     }
 
     private TetradMatrix cov(TetradMatrix x) {
@@ -350,8 +356,7 @@ public class ConditionalGaussianLikelihood {
 
     // Calculates the means of the columns of x.
     private TetradVector means(TetradMatrix x) {
-        final TetradVector tetradVector = x.sum(1).scalarMult(1.0 / x.rows());
-        return tetradVector;
+        return x.sum(1).scalarMult(1.0 / x.rows());
     }
 
     // Subsample of the continuous variables conditioning on the given cell.
@@ -377,6 +382,10 @@ public class ConditionalGaussianLikelihood {
         }
 
         return f;
+    }
+
+    private int g(List<ContinuousVariable> X) {
+        return X.size() + 1;
     }
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number

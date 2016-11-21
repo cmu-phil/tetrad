@@ -53,7 +53,7 @@ public class ExampleCompareSimulation2 {
         parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
 
-        parameters.set("cgExact", false);
+        parameters.set("cgExact", true);
 
         parameters.set("intervalBetweenRecordings", 10);
 
@@ -99,7 +99,7 @@ public class ExampleCompareSimulation2 {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(false);
+        comparison.setTabDelimitedTables(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
