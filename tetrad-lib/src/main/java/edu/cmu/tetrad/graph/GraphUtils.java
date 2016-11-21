@@ -3406,14 +3406,12 @@ public final class GraphUtils {
             Node y = Edges.getDirectedEdgeHead(edge);
 
             graph.removeEdge(edge);
-            final boolean dashed = existsSemiDirectedPath(x, y, -1, graph) || existsSemiDirectedPath(y, x, -1, graph);
+            final boolean dashed = existsSemiDirectedPath(x, y, -1, graph);
+            graph.addEdge(edge);
 
             if (dashed) {
-                System.out.println("semidirected path from " + x + " to " + y);
+                edge.setDashed(dashed);
             }
-
-            graph.addEdge(edge);
-            edge.setDashed(dashed);
 
             if (graph.defVisible(edge)) {
                 edge.setLineColor(Color.green);

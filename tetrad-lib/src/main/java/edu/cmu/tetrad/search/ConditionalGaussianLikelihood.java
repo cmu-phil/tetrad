@@ -156,19 +156,14 @@ public class ConditionalGaussianLikelihood {
 
         if (exact) {
             if (target instanceof DiscreteVariable && !X.isEmpty()) {
-                return new Ret(getLikelihood2(X, A, (DiscreteVariable) target), dofExact(X, A, target));
+                Ret ret1 = likelihoodAssumingDeniminatorMixed(X, A, target);
+                Ret ret2 = likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
+                return ret1.getLik() > ret2.getLik() ? ret1 : ret2;
             } else {
-                double lnL1 = getJointLikelihood(XPlus, APlus, target);
-                double lnL2 = getJointLikelihood(X, A, target);
-                double lik = lnL1 - lnL2;
-                return new Ret(lik, dofExact(X, A, target));
+                return likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
             }
-        } else { // heuristic.
-            double lnL1 = getJointLikelihood(XPlus, APlus, target);
-            double lnL2 = getJointLikelihood(X, A, target);
-            double lik = lnL1 - lnL2;
-            int dof = f(APlus) * h(XPlus) + f(APlus) - (f(A) * h(X) + f(A));
-            return new Ret(lik, dof);
+        } else {
+            return likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
         }
     }
 
@@ -186,9 +181,21 @@ public class ConditionalGaussianLikelihood {
         this.exact = exact;
     }
 
+    private Ret likelihoodAssumingDeniminatorMixed(List<ContinuousVariable> x, List<DiscreteVariable> a, Node target) {
+        return new Ret(getLikelihood2(x, a, (DiscreteVariable) target), dof(x, a, target));
+    }
+
+    private Ret likelihoodAssumingDenominatorUnmixed(List<ContinuousVariable> x, List<DiscreteVariable> a,
+                                                     List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus, Node target) {
+        double lnL1 = getJointLikelihood(XPlus, APlus);
+        double lnL2 = getJointLikelihood(x, a);
+        double lik = lnL1 - lnL2;
+        return new Ret(lik,  dof(x, a, target));
+    }
+
     // The likelihood of the joint over all of these variables, assuming conditional Gaussian,
     // continuous and discrete.
-    private double getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A, Node B) {
+    private double getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A) {
         int k = X.size();
 
         int[] continuousCols = new int[k];
@@ -204,11 +211,7 @@ public class ConditionalGaussianLikelihood {
             if (a == 0) continue;
 
             if (A.size() > 0) {
-                final double u = a * Math.log(a) - a * Math.log(N);
-
-                if (!Double.isNaN(u)) {
-                    c1 += u;
-                }
+                c1 += a * (Math.log(a) - Math.log(N));
             }
 
             if (k > 0) {
@@ -218,19 +221,16 @@ public class ConditionalGaussianLikelihood {
                     TetradMatrix Sigma = cov(getSubsample(continuousCols, cell));
                     v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
                 } catch (Exception e) {
-
-                    // Use the global covariances for cases where the usual covariances fail.
-                    List<Integer> all = new ArrayList<>();
-                    for (int i = 0; i < N; i++) all.add(i);
-                    TetradMatrix subsample2 = getSubsample(continuousCols, all);
-                    TetradMatrix Sigma = cov(subsample2);
-
+                    TetradMatrix Sigma = TetradMatrix.identity(k);
                     v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
                 }
 
-                if (!Double.isNaN(v)) {
-                    c2 += v;
+                if (a < 5 || Double.isNaN(v) || Double.isInfinite(v)) {
+                    TetradMatrix Sigma = TetradMatrix.identity(k);
+                    v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
                 }
+
+                c2 += v;
             }
         }
 
@@ -240,7 +240,8 @@ public class ConditionalGaussianLikelihood {
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
     // the denominator is a mixture of Gaussians.
     private double getLikelihood2(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
-        int k = X.size();
+        final int k = X.size();
+        final double g = Math.pow(2.0 * Math.PI, k);
 
         int[] continuousCols = new int[k];
         for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
@@ -252,7 +253,6 @@ public class ConditionalGaussianLikelihood {
 
         for (List<List<Integer>> mycells : cells) {
 
-            // Get the subsample for each cell.
             List<TetradMatrix> x = new ArrayList<>();
             List<TetradMatrix> sigmas = new ArrayList<>();
             List<TetradMatrix> inv = new ArrayList<>();
@@ -283,58 +283,45 @@ public class ConditionalGaussianLikelihood {
                 }
             }
 
-            // For each cell calculate k * (2 PI * \sigma|) ^ -1/2.
-            List<Double> factors = new ArrayList<>();
+            double[] factors = new double[x.size()];
 
             for (int u = 0; u < x.size(); u++) {
-                factors.add(Math.pow(Math.pow(2.0 * Math.PI, k) * sigmas.get(u).det(), -0.5));
+                factors[u] = Math.pow(g * sigmas.get(u).det(), -0.5);
             }
 
-            // Set up container for all of the a's.
-            List<List<List<Double>>> a = new ArrayList<>();
+            double[] a = new double[x.size()];
 
-            for (int u = 0; u < x.size(); u++) {
-                a.add(new ArrayList<List<Double>>());
-
-                for (int i = 0; i < x.size(); i++) {
-                    a.get(u).add(new ArrayList<Double>());
-                }
-            }
-
-            // Calculate probabilities of all of the pieces, a's.
-            for (int u = 0; u < x.size(); u++) {
-                for (int v = 0; v < x.size(); v++) {
-                    for (int i = 0; i < x.get(u).rows(); i++) {
-                        final TetradVector row = x.get(u).getRow(i).minus(mu.get(v));
-                        double g = prob(factors.get(v), inv.get(v), row);
-                        a.get(u).get(v).add(g);
-                    }
-                }
-            }
-
-            // Calculate numerator and denominator for each record and add the logs of num / denom.
             for (int u = 0; u < x.size(); u++) {
                 for (int i = 0; i < x.get(u).rows(); i++) {
-                    double num = a.get(u).get(u).get(i) * (x.get(u).rows() / (double) N);
-                    double denom = 0;
+                    for (int v = 0; v < x.size(); v++) {
+                        final TetradVector xm = x.get(u).getRow(i).minus(mu.get(v));
+                        a[v] = prob(factors[v], inv.get(v), xm);
+                    }
+
+                    double num = a[u] * p(N, x, u);
+                    double denom = 0.0;
 
                     for (int v = 0; v < x.size(); v++) {
-                        denom += a.get(u).get(v).get(i) * (x.get(v).rows() / (double) N);
+                        denom += a[v] * (p(N, x, v));
                     }
 
-                    final double v = Math.log(num) - Math.log(denom);
-
-                    if (!Double.isNaN(v)) {
-                        lnL += v;
-                    }
+                    lnL += Math.log(num) - Math.log(denom);
                 }
             }
+        }
+
+        if (Double.isInfinite(lnL)) {
+            System.out.println();
         }
 
         return lnL;
     }
 
-    private int dofExact(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+    private double p(double n, List<TetradMatrix> x, int u) {
+        return x.get(u).rows() / n;
+    }
+
+    private int dof(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
         if (target instanceof ContinuousVariable) {
             return f(A) * g(X);
         } else if (target instanceof DiscreteVariable) {

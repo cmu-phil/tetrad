@@ -315,6 +315,7 @@ public final class TestGraphUtils {
     }
 
     public static boolean existsLatentPath(Graph graph, Node b, Node y) {
+        if (b == y) return false;
         return existsLatentPath(graph, b, y, new LinkedList<Node>());
     }
 
@@ -325,22 +326,20 @@ public final class TestGraphUtils {
 
         path.addLast(b);
 
-        if (b == y) {
-            return true;
-        }
-
         for (Node c : graph.getChildren(b)) {
-            if (c != y && c.getNodeType() != NodeType.LATENT) {
+            if (c == y) return true;
+
+            if (c.getNodeType() != NodeType.LATENT) {
                 continue;
             }
 
-            if (existsLatentPath(graph, c, y, path)) {
-                return true;
+            if (!existsLatentPath(graph, c, y, path)) {
+                return false;
             }
         }
 
         path.removeLast();
-        return false;
+        return true;
     }
 
     private List<Node> list(Node... z) {
