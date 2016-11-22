@@ -21,8 +21,11 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestConditionalGaussianLRT(DataUtils.getMixedDataSet(dataSet),
+        final IndTestConditionalGaussianLRT test
+                = new IndTestConditionalGaussianLRT(DataUtils.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"));
+        test.setDenominatorMixed(parameters.getBoolean("assumeMixed"));
+        return test;
     }
 
     @Override
@@ -37,9 +40,10 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-        params.add("alpha");
-        return params;
+        List<String> parameters = new ArrayList<>();
+        parameters.add("alpha");
+        parameters.add("assumeMixed");
+        return parameters;
     }
 
 }

@@ -55,8 +55,11 @@ public class ConditionalGaussianLikelihood {
     //The AD Tree used to count discrete cells.
     private AdLeafTree adTree;
 
-    // True if the exact algorithm should be used (slower).
-    private boolean exact = false;
+    private boolean denominatorMixed = true;
+
+    public void setDenominatorMixed(boolean denominatorMixed) {
+        this.denominatorMixed = denominatorMixed;
+    }
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
@@ -154,42 +157,17 @@ public class ConditionalGaussianLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        if (exact) {
-            if (target instanceof DiscreteVariable && !X.isEmpty()) {
-                Ret ret1 = likelihoodAssumingDeniminatorMixed(X, A, target);
-                Ret ret2 = likelihoodAssumingDenominatorUnmixed(X, A, X, APlus, target);
-                return ret1.getLik() > ret2.getLik() ? ret1 : ret2;
-            } else {
-                return likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
-            }
+        if (target instanceof DiscreteVariable && !X.isEmpty() && denominatorMixed) {
+            return likelihoodAssumingDenominatorMixed(X, A, target);
         } else {
-            return likelihoodAssumingDenominatorUnmixed(X, A, XPlus, APlus, target);
+            return likelihoodRatio(X, A, XPlus, APlus);
         }
     }
 
-    /**
-     * @return True if the exact method is being used for P(C | X).
-     */
-    public boolean isExact() {
-        return exact;
-    }
-
-    /**
-     * @param exact True if the exact method is being used for P(C | X).
-     */
-    public void setExact(boolean exact) {
-        this.exact = exact;
-    }
-
-    private Ret likelihoodAssumingDeniminatorMixed(List<ContinuousVariable> x, List<DiscreteVariable> a, Node target) {
-        return new Ret(getLikelihood2(x, a, (DiscreteVariable) target), dof(x, a, target));
-    }
-
-    private Ret likelihoodAssumingDenominatorUnmixed(List<ContinuousVariable> x, List<DiscreteVariable> a,
-                                                     List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus,
-                                                     Node target) {
-        double lik = getJointLikelihood(XPlus, APlus) - getJointLikelihood(x, a);
-        return new Ret(lik,  dof(x, a, target));
+    private Ret likelihoodRatio(List<ContinuousVariable> X, List<DiscreteVariable> A,
+                                List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus) {
+        double lik = getJointLikelihood(XPlus, APlus) - getJointLikelihood(X, A);
+        return new Ret(lik, dofJoint(XPlus, APlus) - dofJoint(X, A));
     }
 
     // The likelihood of the joint over all of these variables, assuming conditional Gaussian,
@@ -236,9 +214,14 @@ public class ConditionalGaussianLikelihood {
         return c1 + c2;
     }
 
+    private Ret likelihoodAssumingDenominatorMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+        final double lik = getLikelihoodMixedDenominotor(X, A, (DiscreteVariable) target);
+        return new Ret(lik, dof(X, A, target));
+    }
+
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
     // the denominator is a mixture of Gaussians.
-    private double getLikelihood2(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
+    private double getLikelihoodMixedDenominotor(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         final int k = X.size();
         final double g = Math.pow(2.0 * Math.PI, k);
 
@@ -309,10 +292,6 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        if (Double.isInfinite(lnL)) {
-            System.out.println();
-        }
-
         return lnL;
     }
 
@@ -320,15 +299,13 @@ public class ConditionalGaussianLikelihood {
         return x.get(u).rows() / n;
     }
 
-    private int dof(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
-        if (target instanceof ContinuousVariable) {
-            return f(A) * g(X);
-        } else if (target instanceof DiscreteVariable) {
-            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
-            return f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
-        }
+    private int dofJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+        return f(A) * (h(X) + 1);
+    }
 
-        throw new IllegalStateException();
+    private int dof(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+        List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
+        return f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
     }
 
     private TetradMatrix cov(TetradMatrix x) {
@@ -368,10 +345,6 @@ public class ConditionalGaussianLikelihood {
         }
 
         return f;
-    }
-
-    private int g(List<ContinuousVariable> X) {
-        return X.size() + 1;
     }
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number

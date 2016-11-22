@@ -142,6 +142,12 @@ public class ParamDescriptions {
         put("doColliderOrientation", new ParamDescription(
                 "Yes if unshielded collider orientation should be done",
                 true));
+
+        put("completeRuleSetUsed", new ParamDescription("Yes if the complete FCI ruleset should be used", false));
+        put("assumeMixed", new ParamDescription("Yes if the exact algorithm should be used for conditional " +
+                "Gaussian", true));
+
+
     }
 
     public static ParamDescriptions instance() {

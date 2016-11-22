@@ -54,15 +54,16 @@ public class ExampleCompareSimulation2 {
         parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
 
-        parameters.set("cgExact", true);
-
         parameters.set("intervalBetweenRecordings", 10);
+
+        parameters.set("assumeMixed", true, false);
 
 //        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numCategories"));
+        statistics.add(new ParameterColumn("assumeMixed"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -82,10 +83,7 @@ public class ExampleCompareSimulation2 {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-//        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-//        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
+        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();
 
@@ -94,14 +92,14 @@ public class ExampleCompareSimulation2 {
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true );
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(true);
+        comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
