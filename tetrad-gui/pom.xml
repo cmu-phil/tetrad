@@ -32,8 +32,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -111,6 +111,21 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+        <dependency>
+        	<groupId>edu.pitt.dbmi</groupId>
+        	<artifactId>tetrad-db</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+        	<groupId>edu.pitt.dbmi.ccd</groupId>
+        	<artifactId>causal-tetrad-rest-client</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+        	<groupId>edu.pitt.dbmi</groupId>
+        	<artifactId>ccd-commons</artifactId>
+        	<version>0.3.1</version>
+        </dependency>
     </dependencies>
 
     <!--<distributionManagement>-->
@@ -126,6 +141,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
     </properties>
 
     <!--<scm>-->
