@@ -166,13 +166,14 @@ public class ConditionalGaussianLikelihood {
 
     private Ret likelihoodRatio(List<ContinuousVariable> X, List<DiscreteVariable> A,
                                 List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus) {
-        double lik = getJointLikelihood(XPlus, APlus) - getJointLikelihood(X, A);
-        return new Ret(lik, dofJoint(XPlus, APlus) - dofJoint(X, A));
+        final double lik = likelihoodJoint(XPlus, APlus) - likelihoodJoint(X, A);
+        final int dof = dofJoint(XPlus, APlus) - dofJoint(X, A);
+        return new Ret(lik, dof);
     }
 
     // The likelihood of the joint over all of these variables, assuming conditional Gaussian,
     // continuous and discrete.
-    private double getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+    private double likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
         int k = X.size();
 
         int[] continuousCols = new int[k];
@@ -188,7 +189,7 @@ public class ConditionalGaussianLikelihood {
             if (a == 0) continue;
 
             if (A.size() > 0) {
-                c1 += a * (Math.log(a) - Math.log(N));
+                c1 += multinomialLikelihood(N, a);
             }
 
             if (k > 0) {
@@ -196,15 +197,15 @@ public class ConditionalGaussianLikelihood {
 
                 try {
                     TetradMatrix Sigma = cov(getSubsample(continuousCols, cell));
-                    v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
+                    v = gaussianLikelihood(k, a, Sigma);
                 } catch (Exception e) {
                     TetradMatrix Sigma = TetradMatrix.identity(k);
-                    v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
+                    v = gaussianLikelihood(k, a, Sigma);
                 }
 
                 if (a < 5 || Double.isNaN(v) || Double.isInfinite(v)) {
                     TetradMatrix Sigma = TetradMatrix.identity(k);
-                    v = -0.5 * a * Math.log(Sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
+                    v = gaussianLikelihood(k, a, Sigma);
                 }
 
                 c2 += v;
@@ -214,9 +215,18 @@ public class ConditionalGaussianLikelihood {
         return c1 + c2;
     }
 
+    private double multinomialLikelihood(int n, int a) {
+        return a * (Math.log(a) - Math.log(n));
+    }
+
+    private double gaussianLikelihood(int k, int a, TetradMatrix sigma) {
+        return -0.5 * a * Math.log(sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
+    }
+
     private Ret likelihoodAssumingDenominatorMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
         final double lik = getLikelihoodMixedDenominotor(X, A, (DiscreteVariable) target);
-        return new Ret(lik, dof(X, A, target));
+        final int dof = dof(X, A, target);
+        return new Ret(lik, dof);
     }
 
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
