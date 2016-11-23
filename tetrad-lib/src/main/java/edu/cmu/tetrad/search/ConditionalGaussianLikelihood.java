@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
@@ -194,18 +195,18 @@ public class ConditionalGaussianLikelihood {
 
                 try {
                     TetradMatrix Sigma = cov(getSubsample(continuousCols, cell));
-                    v = gaussianLikelihood(k, a, Sigma);
+                    v = gaussianLikelihood(k, Sigma);
                 } catch (Exception e) {
                     TetradMatrix Sigma = TetradMatrix.identity(k);
-                    v = gaussianLikelihood(k, a, Sigma);
+                    v = gaussianLikelihood(k, Sigma);
                 }
 
-                if (a < 5 || Double.isNaN(v) || Double.isInfinite(v)) {
+                if (a < 1 || Double.isNaN(v) || Double.isInfinite(v)) {
                     TetradMatrix Sigma = TetradMatrix.identity(k);
-                    v = gaussianLikelihood(k, a, Sigma);
+                    v = gaussianLikelihood(k, Sigma);
                 }
 
-                c2 += v;
+                c2 += a * v;
             }
         }
 
@@ -216,8 +217,14 @@ public class ConditionalGaussianLikelihood {
         return a * (Math.log(a) - Math.log(n));
     }
 
-    private double gaussianLikelihood(int k, int a, TetradMatrix sigma) {
-        return -0.5 * a * Math.log(sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
+    private double gaussianLikelihood(int k, TetradMatrix sigma) {
+        double log = Math.log(sigma.det());
+
+//        if (Double.isNaN(log) || Double.isInfinite(log)) {
+//            log = 0.0;
+//        }
+
+        return -0.5 * (log - k - k * Math.log(2.0 * Math.PI));
     }
 
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
@@ -310,8 +317,7 @@ public class ConditionalGaussianLikelihood {
     }
 
     private TetradMatrix cov(TetradMatrix x) {
-        return new TetradMatrix(new Covariance(x.getRealMatrix(),
-                false).getCovarianceMatrix());
+        return new TetradMatrix(new Covariance(x.getRealMatrix(), true).getCovarianceMatrix());
     }
 
     private double prob(Double factor, TetradMatrix inv, TetradVector x) {

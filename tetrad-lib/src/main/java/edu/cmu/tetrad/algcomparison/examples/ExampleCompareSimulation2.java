@@ -45,7 +45,7 @@ public class ExampleCompareSimulation2 {
 
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 2);
+        parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 1000);
         parameters.set("penaltyDiscount", 4);
 
@@ -97,7 +97,7 @@ public class ExampleCompareSimulation2 {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
-        comparison.setSaveGraphs(true);
+        comparison.setSaveGraphs(false);
 
         comparison.setTabDelimitedTables(false);
 
