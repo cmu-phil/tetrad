@@ -179,7 +179,7 @@ public class ArrowConfusion {
 
         for (Edge edge : this.truth.getEdges()) {
 
-           
+
 
             List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
@@ -215,9 +215,9 @@ public class ArrowConfusion {
         TCtp = TCtp / 2;
         TCfn = TCfn / 2;
         TCfp = TCfp / 2;
-        System.out.println(TCtp);
-        System.out.println(TCfn);
-        System.out.println(TCfp);
+ //       System.out.println(TCtp);
+ //       System.out.println(TCfn);
+ //       System.out.println(TCfp);
 
     }
 
