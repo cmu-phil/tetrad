@@ -158,17 +158,14 @@ public class ConditionalGaussianLikelihood {
         }
 
         if (target instanceof DiscreteVariable && !X.isEmpty() && denominatorMixed) {
-            return likelihoodAssumingDenominatorMixed(X, A, target);
+            final double lik = likelihoodMixed(X, A, (DiscreteVariable) target);
+            final int dof = dofMixed(X, A, target);
+            return new Ret(lik, dof);
         } else {
-            return likelihoodRatio(X, A, XPlus, APlus);
+            final double lik = likelihoodJoint(XPlus, APlus) - likelihoodJoint(X, A);
+            final int dof = dofJoint(XPlus, APlus) - dofJoint(X, A);
+            return new Ret(lik, dof);
         }
-    }
-
-    private Ret likelihoodRatio(List<ContinuousVariable> X, List<DiscreteVariable> A,
-                                List<ContinuousVariable> XPlus, List<DiscreteVariable> APlus) {
-        final double lik = likelihoodJoint(XPlus, APlus) - likelihoodJoint(X, A);
-        final int dof = dofJoint(XPlus, APlus) - dofJoint(X, A);
-        return new Ret(lik, dof);
     }
 
     // The likelihood of the joint over all of these variables, assuming conditional Gaussian,
@@ -223,15 +220,9 @@ public class ConditionalGaussianLikelihood {
         return -0.5 * a * Math.log(sigma.det()) - 0.5 * a * k - 0.5 * a * k * Math.log(2.0 * Math.PI);
     }
 
-    private Ret likelihoodAssumingDenominatorMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
-        final double lik = getLikelihoodMixedDenominotor(X, A, (DiscreteVariable) target);
-        final int dof = dof(X, A, target);
-        return new Ret(lik, dof);
-    }
-
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
     // the denominator is a mixture of Gaussians.
-    private double getLikelihoodMixedDenominotor(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
+    private double likelihoodMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         final int k = X.size();
         final double g = Math.pow(2.0 * Math.PI, k);
 
@@ -313,7 +304,7 @@ public class ConditionalGaussianLikelihood {
         return f(A) * (h(X) + 1);
     }
 
-    private int dof(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+    private int dofMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
         List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
         return f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
     }
