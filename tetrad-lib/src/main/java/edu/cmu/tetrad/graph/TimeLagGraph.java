@@ -49,6 +49,9 @@ public class TimeLagGraph implements Graph {
     private int numInitialLags = 1;
     private List<Node> lag0Nodes = new ArrayList<>();
 
+    private boolean pag;
+    private boolean pattern;
+
     public TimeLagGraph() {
     }
 
@@ -374,6 +377,26 @@ public class TimeLagGraph implements Graph {
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         return null;
+    }
+
+    @Override
+    public boolean isPag() {
+        return pag;
+    }
+
+    @Override
+    public void setPag(boolean pag) {
+        this.pag = pag;
+    }
+
+    @Override
+    public boolean isPattern() {
+        return pattern;
+    }
+
+    @Override
+    public void setPattern(boolean pattern) {
+        this.pattern = pattern;
     }
 
     public static class NodeId {

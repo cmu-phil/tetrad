@@ -88,6 +88,9 @@ public class EndpointMatrixGraph implements Graph {
     private HashMap<Endpoint, Short> endpointsToShorts;
     private int numEdges = 0;
 
+    private boolean pag;
+    private boolean pattern;
+
     //==============================CONSTUCTORS===========================//
 
     /**
@@ -714,6 +717,26 @@ public class EndpointMatrixGraph implements Graph {
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         return null;
+    }
+
+    @Override
+    public boolean isPag() {
+        return pag;
+    }
+
+    @Override
+    public void setPag(boolean pag) {
+        this.pag = pag;
+    }
+
+    @Override
+    public boolean isPattern() {
+        return pattern;
+    }
+
+    @Override
+    public void setPattern(boolean pattern) {
+        this.pattern = pattern;
     }
 
     private static class Pair {
