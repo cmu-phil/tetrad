@@ -49,6 +49,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
     private boolean denominatorMixed = true;
+    private double penaltyDiscount;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha) {
         this.data = data;
@@ -235,5 +236,13 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setDenominatorMixed(boolean denominatorMixed) {
         this.denominatorMixed = denominatorMixed;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        likelihood.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
     }
 }

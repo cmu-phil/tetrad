@@ -23,14 +23,14 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -47,7 +47,9 @@ public class ExampleCompareSimulation2 {
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 4);
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("alpha", 0.01);
 
         parameters.set("maxDegree", 5);
 
@@ -56,7 +58,9 @@ public class ExampleCompareSimulation2 {
 
         parameters.set("intervalBetweenRecordings", 10);
 
-        parameters.set("assumeMixed", true, false);
+        parameters.set("assumeMixed", false);
+
+        parameters.set("useMaxPOrientationHeuristic", false);
 
 //        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
@@ -87,7 +91,7 @@ public class ExampleCompareSimulation2 {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(new RandomForward()));
+        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
 //        simulations.add(new LeeHastieSimulation(new ScaleFree()));
 
         Comparison comparison = new Comparison();

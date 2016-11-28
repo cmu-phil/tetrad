@@ -63,15 +63,15 @@ public class ConditionalGaussianScore implements Score {
      */
     public double localScore(int i, int... parents) {
         likelihood.setDenominatorMixed(denominatorMixed);
+        likelihood.setPenaltyDiscount(penaltyDiscount);
+
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
         int N = dataSet.getNumRows();
-
         double lik = ret.getLik();
         int k = ret.getDof();
-//        double prior = getStructurePrior(parents);
 
-        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N);// + prior;
+        return 2.0 * lik - k * Math.log(N);
     }
 
     private double getStructurePrior(int[] parents) {

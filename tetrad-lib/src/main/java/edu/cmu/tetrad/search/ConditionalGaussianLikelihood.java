@@ -58,8 +58,18 @@ public class ConditionalGaussianLikelihood {
 
     private boolean denominatorMixed = true;
 
+    private double penaltyDiscount = 1;
+
     public void setDenominatorMixed(boolean denominatorMixed) {
         this.denominatorMixed = denominatorMixed;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
@@ -159,6 +169,9 @@ public class ConditionalGaussianLikelihood {
         }
 
         if (target instanceof DiscreteVariable && !X.isEmpty() && denominatorMixed) {
+//            final double lik = likelihoodJoint(XPlus, APlus) - likelihoodJoint(X, A);
+//            final int dof = dofJoint(XPlus, APlus) - dofJoint(X, A);
+//
             final double lik = likelihoodMixed(X, A, (DiscreteVariable) target);
             final int dof = dofMixed(X, A, target);
             return new Ret(lik, dof);
@@ -201,7 +214,7 @@ public class ConditionalGaussianLikelihood {
                     v = gaussianLikelihood(k, Sigma);
                 }
 
-                if (a < 1 || Double.isNaN(v) || Double.isInfinite(v)) {
+                if (a < 0 || Double.isNaN(v) || Double.isInfinite(v)) {
                     TetradMatrix Sigma = TetradMatrix.identity(k);
                     v = gaussianLikelihood(k, Sigma);
                 }
@@ -219,11 +232,6 @@ public class ConditionalGaussianLikelihood {
 
     private double gaussianLikelihood(int k, TetradMatrix sigma) {
         double log = Math.log(sigma.det());
-
-//        if (Double.isNaN(log) || Double.isInfinite(log)) {
-//            log = 0.0;
-//        }
-
         return -0.5 * (log - k - k * Math.log(2.0 * Math.PI));
     }
 
@@ -308,7 +316,8 @@ public class ConditionalGaussianLikelihood {
     }
 
     private int dofJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
-        return f(A) * (h(X) + 1);
+        int p =  (int) getPenaltyDiscount();
+        return f(A) * (p *  h(X) + 1);
     }
 
     private int dofMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
