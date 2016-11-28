@@ -276,7 +276,6 @@ public class ConditionalGaussianSimulation implements Simulation {
                         muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                     }
 
-//                    double value = RandomUtil.getInstance().nextNormal(0, 1);
                     double value = RandomUtil.getInstance().nextNormal(0, getParamValue(varComb, paramValues));
 
                     for (Node x : continuousParents) {
@@ -324,14 +323,10 @@ public class ConditionalGaussianSimulation implements Simulation {
             } else if (parameter.getType() == ParamType.COEF) {
                 double min = 0.5;
                 double max = 1.5;
-
                 double value1 = RandomUtil.getInstance().nextUniform(-max, -min);
                 double value2 = RandomUtil.getInstance().nextUniform(min, max);
-                double coef = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 ? value1 : value2;
-
-                map.put(values, coef);
-
-                d = map.get(values);
+                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 ? value1 : value2;
+                map.put(values, d);
             } else if (parameter.getType() == ParamType.MEAN) {
                 d = RandomUtil.getInstance().nextUniform(-0.5, 0.5);
                 map.put(values, d);

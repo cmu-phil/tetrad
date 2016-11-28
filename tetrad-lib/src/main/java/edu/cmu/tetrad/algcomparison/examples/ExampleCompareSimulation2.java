@@ -49,7 +49,7 @@ public class ExampleCompareSimulation2 {
         parameters.set("sampleSize", 1000);
 
         parameters.set("penaltyDiscount", 2);
-        parameters.set("alpha", 0.01);
+        parameters.set("alpha", 0.05);
 
         parameters.set("maxDegree", 5);
 
@@ -58,7 +58,7 @@ public class ExampleCompareSimulation2 {
 
         parameters.set("intervalBetweenRecordings", 10);
 
-        parameters.set("assumeMixed", false);
+        parameters.set("assumeMixed", false, true);
 
         parameters.set("useMaxPOrientationHeuristic", false);
 
@@ -103,7 +103,7 @@ public class ExampleCompareSimulation2 {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(false);
 
-        comparison.setTabDelimitedTables(false);
+        comparison.setTabDelimitedTables(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
