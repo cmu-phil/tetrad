@@ -142,6 +142,10 @@ public class ParamDescriptions {
         put("doColliderOrientation", new ParamDescription(
                 "Yes if unshielded collider orientation should be done",
                 true));
+
+        put("completeRuleSetUsed", new ParamDescription(
+                "Yes if the complete FCI rule set should be used",
+                false));
     }
 
     public static ParamDescriptions instance() {
