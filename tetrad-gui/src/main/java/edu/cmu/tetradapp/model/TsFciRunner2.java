@@ -124,7 +124,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
             fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
-            fci.setMaxIndegree(params.getInt("maxIndegree"));
+            fci.setMaxDegree(params.getInt("maxIndegree"));
             fci.setCompleteRuleSetUsed(false);
             fci.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
             graph = fci.search();

@@ -250,7 +250,7 @@ public final class TsFci implements GraphSearch {
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
+//            possibleDSep.setMaxDegree(getPossibleDsepDepth());
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());
@@ -278,6 +278,9 @@ public final class TsFci implements GraphSearch {
         fciOrient.setKnowledge(knowledge);
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
+
+        graph.setPag(true);
+
         return graph;
     }
 
@@ -501,8 +504,8 @@ public final class TsFci implements GraphSearch {
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = test.getVariable(A);
                 y1 = test.getVariable(B);
-                    //adjacencies.get(x1).remove(y1);
-                    //adjacencies.get(y1).remove(x1);
+                //adjacencies.get(x1).remove(y1);
+                //adjacencies.get(y1).remove(x1);
                 graph.removeEdge(x1,y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
