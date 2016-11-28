@@ -27,6 +27,7 @@ import edu.cmu.tetrad.cli.CmdOptions;
 import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.NonZeroVariance;
+import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
@@ -121,6 +123,13 @@ public class FgscCli extends AbstractAlgorithmCli {
         }
 
         return validations;
+    }
+
+    @Override
+    public List<DataValidation> getPreDataValidations(Set<String> excludedVariables) {
+        DataValidation dataValidation = new TabularContinuousData(excludedVariables, dataFile, delimiter);
+
+        return Collections.singletonList(dataValidation);
     }
 
     @Override

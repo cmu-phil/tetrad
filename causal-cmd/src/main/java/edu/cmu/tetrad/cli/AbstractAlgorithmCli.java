@@ -26,7 +26,6 @@ import static edu.cmu.tetrad.cli.util.AlgorithmCommonTask.writeOutTetradGraphJso
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.validation.DataValidation;
-import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -83,6 +82,8 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
 
     public abstract List<DataValidation> getDataValidations(DataSet dataSet, Path dirOut, String filePrefix);
 
+    public abstract List<DataValidation> getPreDataValidations(Set<String> excludedVariables);
+
     public abstract DataReader getDataReader(Path dataFile, char delimiter);
 
     public abstract Algorithm getAlgorithm(IKnowledge knowledge);
@@ -112,16 +113,18 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
         if (!skipLatest) {
             LatestClient latestClient = LatestClient.getInstance();
             String version = AppTool.jarVersion();
-            if (version == null) version = "DEVELOPMENT";
+            if (version == null) {
+                version = "DEVELOPMENT";
+            }
             latestClient.checkLatest("causal-cmd", version);
             System.out.println(latestClient.getLatestResult());
         }
 
         Set<String> excludedVariables = getExcludedVariables();
-        runPreDataValidations(excludedVariables);
+        preValidateData(excludedVariables);
 
         DataSet dataSet = AlgorithmCommonTask.readInDataSet(excludedVariables, dataFile, getDataReader(dataFile, delimiter));
-        runDataValidations(dataSet);
+        validateData(dataSet);
 
         IKnowledge knowledge = AlgorithmCommonTask.readInPriorKnowledge(knowledgeFile);
 
@@ -189,21 +192,21 @@ public abstract class AbstractAlgorithmCli extends AbstractApplicationCli implem
         return fmt.toString();
     }
 
-    private void runDataValidations(DataSet dataSet) {
+    private void preValidateData(Set<String> excludedVariables) {
+        runDataValidations(getPreDataValidations(excludedVariables));
+    }
+
+    private void validateData(DataSet dataSet) {
+        runDataValidations(getDataValidations(dataSet, dirOut, outputPrefix));
+    }
+
+    private void runDataValidations(List<DataValidation> dataValidations) {
         boolean isValid = true;
-        List<DataValidation> dataValidations = getDataValidations(dataSet, dirOut, outputPrefix);
         for (DataValidation dataValidation : dataValidations) {
             isValid = dataValidation.validate(System.err, verbose) && isValid;
         }
 
         if (!isValid) {
-            System.exit(-128);
-        }
-    }
-
-    protected void runPreDataValidations(Set<String> excludedVariables) {
-        DataValidation dataValidation = new TabularContinuousData(excludedVariables, dataFile, delimiter);
-        if (!dataValidation.validate(System.err, verbose)) {
             System.exit(-128);
         }
     }
