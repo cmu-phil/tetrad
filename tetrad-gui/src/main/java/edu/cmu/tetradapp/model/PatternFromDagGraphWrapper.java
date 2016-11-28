@@ -51,7 +51,7 @@ public class PatternFromDagGraphWrapper extends GraphWrapper implements DoNotAdd
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        Graph pattern = getPattern(new Dag(graph));
+        Graph pattern = getPattern(new EdgeListGraph(graph));
         setGraph(pattern);
 
         TetradLogger.getInstance().log("info", "\nGenerating pattern from DAG.");
@@ -65,8 +65,8 @@ public class PatternFromDagGraphWrapper extends GraphWrapper implements DoNotAdd
     //======================== Private Method ======================//
 
 
-    private static Graph getPattern(Dag dag) {
-        return SearchGraphUtils.patternFromDag(dag);
+    private static Graph getPattern(Graph graph) {
+        return SearchGraphUtils.patternFromDag(graph);
     }
 
     @Override

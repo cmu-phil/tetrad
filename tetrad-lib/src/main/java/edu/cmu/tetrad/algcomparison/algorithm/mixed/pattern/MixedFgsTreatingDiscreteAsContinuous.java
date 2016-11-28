@@ -53,7 +53,7 @@ public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
     }
 
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     public String getDescription() {

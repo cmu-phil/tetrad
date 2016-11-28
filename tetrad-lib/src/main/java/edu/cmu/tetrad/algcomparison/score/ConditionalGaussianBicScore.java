@@ -21,7 +21,11 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        return new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet));
+        final ConditionalGaussianScore conditionalGaussianScore
+                = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet));
+        conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        conditionalGaussianScore.setExact(parameters.getBoolean("cgExact"));
+        return conditionalGaussianScore;
     }
 
     @Override

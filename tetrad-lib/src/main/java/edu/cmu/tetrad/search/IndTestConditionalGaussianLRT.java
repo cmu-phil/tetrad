@@ -91,15 +91,22 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             list2[i] = _z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihoodRatio(_x, list1);
-        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihoodRatio(_x, list2);
+        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_x, list1);
+        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihood(_x, list2);
 
         double lik = ret1.getLik() - ret2.getLik();
         double dof = ret1.getDof() - ret2.getDof();
 
-//        if (dof <= 1) dof = 1;
+        if (dof <= 0) {
+            throw new IllegalArgumentException("DOF must be >= 1");
+        }
 
-        double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
+        double p = 0;
+        try {
+            p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         this.pValue = p;
 
@@ -212,11 +219,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        double v = getAlpha() - getPValue();
-
-        System.out.println("alpha = " + getAlpha() + " p value = " + getPValue() + " score = " + v);
-
-        return v;
+        return getAlpha() - getPValue();
     }
 
     /**

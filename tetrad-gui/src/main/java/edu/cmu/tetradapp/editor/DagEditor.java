@@ -89,8 +89,6 @@ public final class DagEditor extends JPanel
 
         int numModels = dagWrapper.getNumModels();
 
-        System.out.println("numModels = " + numModels);
-
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
 

@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
@@ -48,7 +49,7 @@ public class SkewE implements Algorithm, TakesInitialGraph {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return graph;
+        return new EdgeListGraph(graph);
     }
 
     @Override

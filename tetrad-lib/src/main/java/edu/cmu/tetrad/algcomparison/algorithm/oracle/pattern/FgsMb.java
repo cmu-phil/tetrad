@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -62,7 +63,7 @@ public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Node target = graph.getNode(targetName);
-        return GraphUtils.markovBlanketDag(target, graph);
+        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
     }
 
     @Override

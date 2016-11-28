@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
@@ -41,7 +42,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(graph).convert(); }
+    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(new EdgeListGraph(graph)).convert(); }
 
     public String getDescription() {
         return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription() +

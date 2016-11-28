@@ -96,12 +96,12 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     /**
-     * Retrieves the sepset previously set for {x, y}, or null if no such set was previously set.
+     * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
      */
-    public List<Node> get(Node x, Node y) {
+    public List<Node> get(Node a, Node b) {
         Set<Node> pair = new HashSet<>(2);
-        pair.add(x);
-        pair.add(y);
+        pair.add(a);
+        pair.add(b);
 
         if (correlations != null && !correlations.contains(pair)) {
             return Collections.emptyList();
@@ -147,7 +147,6 @@ public final class SepsetMap implements TetradSerializable {
         return sepsets.equals(_sepset.sepsets);
     }
 
-
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
      * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
@@ -155,9 +154,6 @@ public final class SepsetMap implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

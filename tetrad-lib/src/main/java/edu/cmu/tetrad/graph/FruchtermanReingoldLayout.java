@@ -57,7 +57,7 @@ public final class FruchtermanReingoldLayout {
     /**
      * Optimal distance between vertices.
      */
-    private double optimalDistance;
+    private double optimalDistance = 100;
 
     /**
      * Temperature.
@@ -82,6 +82,8 @@ public final class FruchtermanReingoldLayout {
     //============================PUBLIC METHODS==========================//
 
     public void doLayout() {
+        GraphUtils.circleLayout(graph, 300, 300, 200);
+
         List<List<Node>> components =
                 GraphUtils.connectedComponents(this.graph());
 
@@ -112,7 +114,7 @@ public final class FruchtermanReingoldLayout {
             //pos[i][1] = RandomUtil.nextInt(600);
         }
 
-        List<Edge> edges = new ArrayList<>(graph().getEdges());
+        List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
 
         for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
             Edge edge = i.next();
@@ -132,15 +134,17 @@ public final class FruchtermanReingoldLayout {
             this.edges()[i][1] = u;
         }
 
-        setOptimalDistance(60.0);
+        double avgDegree = 2 * graph.getNumEdges() / graph.getNumNodes();
+
+        setOptimalDistance(20.0 + 20.0 * avgDegree);
         setTemperature(5.0);
 
         for (int i = 0; i < numIterations(); i++) {
 
             // Calculate repulsive forces.
             for (int v = 0; v < numNodes; v++) {
-                nodeDisposition()[v][0] = 0.;
-                nodeDisposition()[v][1] = 0.;
+                nodeDisposition()[v][0] = 0.1;
+                nodeDisposition()[v][1] = 0.1;
 
                 for (int u = 0; u < numNodes; u++) {
                     double deltaX = nodePosition()[u][0] - nodePosition()[v][0];
@@ -149,12 +153,13 @@ public final class FruchtermanReingoldLayout {
                     double norm = norm(deltaX, deltaY);
 
                     if (norm == 0.0) {
-                        continue;
+                        norm = 0.1;
+//                        continue;
                     }
-
-                    if (norm > 4.0 * optimalDistance()) {
-                        continue;
-                    }
+//
+//                    if (norm > 4.0 * getOptimalDistance()) {
+//                        continue;
+//                    }
 
                     double repulsiveForce = fr(norm);
 
@@ -174,12 +179,13 @@ public final class FruchtermanReingoldLayout {
                 double norm = norm(deltaX, deltaY);
 
                 if (norm == 0.0) {
-                    continue;
+                    norm = 0.1;
+//                    continue;
                 }
 
-                if (norm < 1.5 * optimalDistance()) {
-                    continue;
-                }
+//                if (norm < 1.5 * getOptimalDistance()) {
+//                    continue;
+//                }
 
                 double attractiveForce = fa(norm);
                 double attractX = (deltaX / norm) * attractiveForce;
@@ -203,17 +209,16 @@ public final class FruchtermanReingoldLayout {
             }
 
             for (int v = 0; v < numNodes; v++) {
-                double norm =
-                        norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
+                double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
 
-                if (norm == 0.0) {
-                    continue;
-                }
+//                if (norm == 0.0) {
+//                    continue;
+//                }
 
                 nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
-                        Math.min(norm, temperature());
+                        Math.min(norm, getTemperature());
                 nodePosition()[v][1] += (nodeDisposition()[v][1] / norm) *
-                        Math.min(norm, temperature());
+                        Math.min(norm, getTemperature());
 
                 if (Double.isNaN(nodePosition()[v][0]) ||
                         Double.isNaN(nodePosition()[v][1])) {
@@ -260,11 +265,11 @@ public final class FruchtermanReingoldLayout {
     //============================PRIVATE METHODS=========================//  \
 
     private double fa(double d) {
-        return (d * d) / optimalDistance();
+        return (d * d) / getOptimalDistance();
     }
 
     private double fr(double d) {
-        return -(optimalDistance() * optimalDistance()) / d;
+        return -(getOptimalDistance() * getOptimalDistance()) / d;
     }
 
     private double norm(double x, double y) {
@@ -287,20 +292,8 @@ public final class FruchtermanReingoldLayout {
         return nodeDisposition;
     }
 
-    private double optimalDistance() {
-        return getOptimalDistance();
-    }
-
     private int numIterations() {
-        /*
-      The number of iterations.
-     */
-        int numIterations = 6000;
-        return numIterations;
-    }
-
-    private double temperature() {
-        return getTemperature();
+        return 500;
     }
 
     private double leftmostX() {

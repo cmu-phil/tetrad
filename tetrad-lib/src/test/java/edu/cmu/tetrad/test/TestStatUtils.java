@@ -647,6 +647,38 @@ public class TestStatUtils {
         System.out.println(sum / (60 * 60));
     }
 
+//    @Test
+    public void test3() {
+        int count = 0;
+        int total = 100000;
+
+        for (int i = 0; i < total; i++) {
+            double v1 = RandomUtil.getInstance().nextUniform(0, 100);
+            double v2 = RandomUtil.getInstance().nextUniform(0, 100);
+            double w1 = RandomUtil.getInstance().nextUniform(0, 1);
+            double w2 = 1.0 - w1;
+            double m1 = RandomUtil.getInstance().nextUniform(-5.0, 5.0);
+            double m2 = RandomUtil.getInstance().nextUniform(-5.0, 5.0);
+
+            double left1 = 1.0 / v1;
+            double left2 = 1.0 / v2;
+            double m = (left1 + left2) / 2.0;
+
+            double denRight = w1 * v1 + w2 * v2 + w1 * (m1 - m) * (m1 - m) + w1 * (m2 - m) * (m2 - m);
+
+            double right = 1.0 / denRight;
+
+            boolean holds = left1 + left2 > right;
+
+            if (holds) count++;
+
+//            System.out.println(
+                    //x);// + " v1 = " + v1  + " v2 = " + v2  + " m1 = " + m1  + " m2 = " + m2);
+        }
+
+        System.out.println(count);
+    }
+
     private String f(double d1) {
         NumberFormat f = new DecimalFormat("0.000000");
         return f.format(d1);

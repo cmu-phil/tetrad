@@ -1103,6 +1103,8 @@ public final class DataUtils {
     }
 
     public static TetradMatrix cov(TetradMatrix data) {
+
+
         for (int j = 0; j < data.columns(); j++) {
             double sum = 0.0;
 

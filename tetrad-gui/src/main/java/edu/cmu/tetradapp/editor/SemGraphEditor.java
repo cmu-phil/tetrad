@@ -101,8 +101,6 @@ public final class SemGraphEditor extends JPanel
 
         int numModels = getSemGraphWrapper().getNumModels();
 
-        System.out.println("numModels = " + numModels);
-
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
 

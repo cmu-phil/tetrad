@@ -98,7 +98,8 @@ public class TetradVector implements TetradSerializable {
     }
 
     public TetradVector scalarMult(double scalar) {
-        return new TetradVector(data.mapDivideToSelf(scalar));
+
+        return new TetradVector(data.mapMultiplyToSelf(scalar));
     }
 
     public TetradMatrix diag() {

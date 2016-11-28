@@ -183,45 +183,13 @@ public final class IndTestFisherZ implements IndependenceTest {
         int n = sampleSize();
         double r = partialCorrelation(x, y, z);
 
+        int q = z.size();
+        int l = q * (q - 1) / 2;
 
-//        double high = 0.999999;
-//
-//        if (r > high) r = high;
-//        if (r < -high) r = -high;
-//
-        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-//        fisherZ /= 2.0;
-
+        double fisherZ = 0.5 * Math.sqrt(n - l) * (Math.log(1.0 + r) - Math.log(1.0 - r));
+//        double fisherZ = 0.5 * Math.sqrt(n - 3 - z.size()) * (Math.log(1.0 + r) - Math.log(1.0 - r));
         this.fisherZ = fisherZ;
-
-//        double pValue = 2.0 * (1.0 - value);//  RandomUtil.getInstance().normalCdf(0, 1, key));// abs(fisherZ)));
-//        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
-//
-//        boolean independent = pValue > alpha;
-
-        boolean independent = Math.abs(fisherZ) < cutoff;
-
-//        this.pValue = pValue;
-
-//        if (verbose) {
-//            if (independent) {
-//                if (TetradLogger.getInstance().isEventActive("independencies")) {
-//                    TetradLogger.getInstance().log("independencies",
-//                            SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-//                }
-//            } else {
-//                if (pValueLogger != null) {
-//                    pValueLogger.println(getPValue());
-//                }
-//
-//                if (TetradLogger.getInstance().isEventActive("dependencies")) {
-//                    TetradLogger.getInstance().log("dependencies",
-//                            SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-//                }
-//            }
-//        }
-
-        return independent;
+        return Math.abs(fisherZ) < cutoff;
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) {
@@ -257,7 +225,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return pValue;
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
     }
 
     /**
