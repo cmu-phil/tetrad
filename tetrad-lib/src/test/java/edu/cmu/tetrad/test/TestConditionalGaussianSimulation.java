@@ -19,12 +19,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.joe;
+package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -38,7 +39,6 @@ import org.junit.Test;
  */
 public class TestConditionalGaussianSimulation {
 
-    @Test
     public void test1() {
         Parameters parameters = new Parameters();
 
@@ -48,18 +48,22 @@ public class TestConditionalGaussianSimulation {
         parameters.set("sampleSize", 1000);
         parameters.set("penaltyDiscount", 4);
 
-        parameters.set("maxDegree", 5);
+        parameters.set("maxDegree", 6);
 
         parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
-
-//        parameters.set("cgExact", true);
 
         parameters.set("assumeMixed", false);
 
         parameters.set("intervalBetweenRecordings", 10);
 
-//        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("varLow", .3);
+        parameters.set("varHigh", 2);
+        parameters.set("coefLow", .5);
+        parameters.set("coefHigh", 1.2);
+        parameters.set("coefSymmetric", true);
+        parameters.set("meanLow", 0);
+        parameters.set("meanHigh", 1);
 
         Statistics statistics = new Statistics();
 
@@ -68,13 +72,6 @@ public class TestConditionalGaussianSimulation {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new TwoCyclePrecision());
-//        statistics.add(new TwoCycleRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
@@ -83,16 +80,12 @@ public class TestConditionalGaussianSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-//        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-//        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
+        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
-//        simulations.add(new LeeHastieSimulation(new RandomForward()));
-//        simulations.add(new LeeHastieSimulation(new ScaleFree()));
+
+        simulations.add(getConditionalGaussianSimulation());
 
         Comparison comparison = new Comparison();
 
@@ -103,9 +96,17 @@ public class TestConditionalGaussianSimulation {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(true);
+        comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
+    private ConditionalGaussianSimulation getConditionalGaussianSimulation() {
+        return new ConditionalGaussianSimulation(new RandomForward());
+    }
+
+    public static void main(String...args) {
+        new TestConditionalGaussianSimulation().test1();
     }
 }
 

@@ -24,6 +24,13 @@ public class ConditionalGaussianSimulation implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
     private List<Node> shuffledOrder;
+    private double varLow = 1;
+    private double varHigh = 3;
+    private double coefLow = 0.05;
+    private double coefHigh = 1.5;
+    private boolean coefSymmetric = true;
+    private double meanLow = -1;
+    private double meanHigh = 1;
 
     public ConditionalGaussianSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -31,6 +38,14 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        setVarLow(parameters.getDouble("varLow"));
+        setVarHigh(parameters.getDouble("varHigh"));
+        setCoefLow(parameters.getDouble("coefLow"));
+        setCoefHigh(parameters.getDouble("coefHigh"));
+        setCoefSymmetric(parameters.getBoolean("coefSymmetric"));
+        setMeanLow(parameters.getDouble("meanLow"));
+        setMeanHigh(parameters.getDouble("meanHigh"));
+
         double percentDiscrete = parameters.getDouble("percentDiscrete");
 
         boolean discrete = parameters.getString("dataType").equals("discrete");
@@ -90,6 +105,13 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add("numRuns");
         parameters.add("differentGraphs");
         parameters.add("sampleSize");
+        parameters.add("varLow");
+        parameters.add("varHigh");
+        parameters.add("coefLow");
+        parameters.add("coefHigh");
+        parameters.add("coefSymmetric");
+        parameters.add("meanLow");
+        parameters.add("meanHigh");
         return parameters;
     }
 
@@ -127,7 +149,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         G = makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
-        DataSet mixedData = new ColtDataSet(parameters.getInt("sampleSize"), nodes);
+        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt("sampleSize")), nodes);
 
         List<Node> X = new ArrayList<>();
         List<Node> A = new ArrayList<>();
@@ -176,28 +198,6 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
-        }
-
-        int[][] _parents = new int[nodes.size()][];
-
-        for (int i = 0; i < XG.getNodes().size(); i++) {
-            Node y = XG.getNodes().get(i);
-            List<Node> parents = XG.getParents(y);
-
-            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-                Node _node = j.next();
-
-                if (_node.getNodeType() == NodeType.ERROR) {
-                    j.remove();
-                }
-            }
-
-            _parents[i] = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                Node _parent = parents.get(j);
-                _parents[i][j] = XG.getNodes().indexOf(_parent);
-            }
         }
 
         for (int mixedIndex : tiers) {
@@ -318,17 +318,16 @@ public class ConditionalGaussianSimulation implements Simulation {
             Parameter parameter = values.getParameter();
 
             if (parameter.getType() == ParamType.VAR) {
-                d = RandomUtil.getInstance().nextUniform(1, 3);
+                d = RandomUtil.getInstance().nextUniform(varLow, varHigh);
                 map.put(values, d);
             } else if (parameter.getType() == ParamType.COEF) {
-                double min = 0.5;
-                double max = 1.5;
-                double value1 = RandomUtil.getInstance().nextUniform(-max, -min);
-                double value2 = RandomUtil.getInstance().nextUniform(min, max);
-                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 ? value1 : value2;
+                double min = coefLow;
+                double max = coefHigh;
+                double value = RandomUtil.getInstance().nextUniform(min, max);
+                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 && coefSymmetric ? -value : value;
                 map.put(values, d);
             } else if (parameter.getType() == ParamType.MEAN) {
-                d = RandomUtil.getInstance().nextUniform(-0.5, 0.5);
+                d = RandomUtil.getInstance().nextUniform(meanLow, meanHigh);
                 map.put(values, d);
             }
         }
@@ -336,9 +335,37 @@ public class ConditionalGaussianSimulation implements Simulation {
         return d;
     }
 
+    public void setVarLow(double varLow) {
+        this.varLow = varLow;
+    }
+
+    public void setVarHigh(double varHigh) {
+        this.varHigh = varHigh;
+    }
+
+    public void setCoefLow(double coefLow) {
+        this.coefLow = coefLow;
+    }
+
+    public void setCoefHigh(double coefHigh) {
+        this.coefHigh = coefHigh;
+    }
+
+    public void setCoefSymmetric(boolean coefSymmetric) {
+        this.coefSymmetric = coefSymmetric;
+    }
+
+    public void setMeanLow(double meanLow) {
+        this.meanLow = meanLow;
+    }
+
+    public void setMeanHigh(double meanHigh) {
+        this.meanHigh = meanHigh;
+    }
+
     private class Combination {
         private Parameter parameter;
-        Set<VariableValues> paramValues;
+        private Set<VariableValues> paramValues;
 
         public Combination(Parameter parameter) {
             this.parameter = parameter;
@@ -409,6 +436,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         Graph outG = new EdgeListGraph(nodes);
+
         for (Edge e : g.getEdges()) {
             Node n1 = e.getNode1();
             Node n2 = e.getNode2();

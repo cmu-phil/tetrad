@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
@@ -31,6 +30,8 @@ import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
+
+import static java.lang.Math.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
@@ -56,8 +57,10 @@ public class ConditionalGaussianLikelihood {
     //The AD Tree used to count discrete cells.
     private AdLeafTree adTree;
 
+    // True if by assumption the denominotor for problems like P(C | X) = P(X | C) P(C) / P(X) is mixed.
     private boolean denominatorMixed = true;
 
+    // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
 
     public void setDenominatorMixed(boolean denominatorMixed) {
@@ -169,9 +172,6 @@ public class ConditionalGaussianLikelihood {
         }
 
         if (target instanceof DiscreteVariable && !X.isEmpty() && denominatorMixed) {
-//            final double lik = likelihoodJoint(XPlus, APlus) - likelihoodJoint(X, A);
-//            final int dof = dofJoint(XPlus, APlus) - dofJoint(X, A);
-//
             final double lik = likelihoodMixed(X, A, (DiscreteVariable) target);
             final int dof = dofMixed(X, A, target);
             return new Ret(lik, dof);
@@ -191,6 +191,8 @@ public class ConditionalGaussianLikelihood {
         for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
         int N = dataSet.getNumRows();
 
+        TetradMatrix defaultCov = null;
+
         double c1 = 0, c2 = 0;
 
         List<List<Integer>> cells = adTree.getCellLeaves(A);
@@ -200,23 +202,35 @@ public class ConditionalGaussianLikelihood {
             if (a == 0) continue;
 
             if (A.size() > 0) {
-                c1 += multinomialLikelihood(N, a);
+                c1 += a * multinomialLikelihood(a, N);
             }
 
-            if (k > 0) {
+            if (X.size() > 0) {
                 double v;
 
                 try {
-                    TetradMatrix Sigma = cov(getSubsample(continuousCols, cell));
-                    v = gaussianLikelihood(k, Sigma);
-                } catch (Exception e) {
-                    TetradMatrix Sigma = TetradMatrix.identity(k);
-                    v = gaussianLikelihood(k, Sigma);
-                }
+                    TetradMatrix cov = cov(getSubsample(continuousCols, cell));
+                    v = gaussianLikelihood(k, cov);
 
-                if (a < 0 || Double.isNaN(v) || Double.isInfinite(v)) {
-                    TetradMatrix Sigma = TetradMatrix.identity(k);
-                    v = gaussianLikelihood(k, Sigma);
+                    if (Double.isNaN(v) || Double.isInfinite(v)) {
+                        throw new IllegalArgumentException();
+                    }
+
+                    if (defaultCov == null) {
+                        defaultCov = cov;
+                    }
+                } catch (Exception e) {
+                    TetradMatrix cov;
+
+                    if (defaultCov == null) {
+                        List<Integer> all = new ArrayList<>();
+                        for (int i = 0; i < N; i++) all.add(i);
+                        cov = cov(getSubsample(continuousCols, all));
+                    } else {
+                        cov = defaultCov;
+                    }
+
+                    v = gaussianLikelihood(k, cov);
                 }
 
                 c2 += a * v;
@@ -226,17 +240,17 @@ public class ConditionalGaussianLikelihood {
         return c1 + c2;
     }
 
-    private double multinomialLikelihood(int n, int a) {
-        return a * (Math.log(a) - Math.log(n));
+    private double multinomialLikelihood(int a, int N) {
+        return log(a / (double) N);
     }
 
+    // One record.
     private double gaussianLikelihood(int k, TetradMatrix sigma) {
-        double log = Math.log(sigma.det());
-        return -0.5 * (log - k - k * Math.log(2.0 * Math.PI));
+        return -0.5 * (log(sigma.det()) - k - k * log(2.0 * Math.PI));
     }
 
     // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
-    // the denominator is a mixture of Gaussians.
+    // the denominator is a mixture of Gaus sians.
     private double likelihoodMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         final int k = X.size();
         final double g = Math.pow(2.0 * Math.PI, k);
@@ -249,35 +263,46 @@ public class ConditionalGaussianLikelihood {
 
         List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
 
-        for (List<List<Integer>> mycells : cells) {
+        TetradMatrix defaultCov = null;
 
+        for (List<List<Integer>> mycells : cells) {
             List<TetradMatrix> x = new ArrayList<>();
             List<TetradMatrix> sigmas = new ArrayList<>();
             List<TetradMatrix> inv = new ArrayList<>();
             List<TetradVector> mu = new ArrayList<>();
 
             for (List<Integer> cell : mycells) {
-                final TetradMatrix subsample = getSubsample(continuousCols, cell);
+                TetradMatrix subsample = getSubsample(continuousCols, cell);
 
                 try {
                     TetradMatrix cov = cov(subsample);
                     TetradMatrix covinv = cov.inverse();
+
+                    if (defaultCov == null) {
+                        defaultCov = cov;
+                    }
+
                     x.add(subsample);
                     sigmas.add(cov);
                     inv.add(covinv);
                     mu.add(means(subsample));
                 } catch (Exception e) {
+                    TetradMatrix cov;
 
-                    // Use the global covariances for cases where the usual covariances fail.
-                    List<Integer> all = new ArrayList<>();
-                    for (int i = 0; i < N; i++) all.add(i);
-                    TetradMatrix subsample2 = getSubsample(continuousCols, all);
-                    TetradMatrix cov = cov(subsample2);
+                    if (defaultCov != null) {
+                        cov = defaultCov;
+                    } else {
+                        List<Integer> all = new ArrayList<>();
+                        for (int i = 0; i < N; i++) all.add(i);
+                        TetradMatrix subsampleAll = getSubsample(continuousCols, all);
+                        cov = cov(subsampleAll);
+                    }
+
                     TetradMatrix covinv = cov.inverse();
                     x.add(subsample);
                     sigmas.add(cov);
                     inv.add(covinv);
-                    mu.add(means(subsample2));
+                    mu.add(means(subsample));
                 }
             }
 
@@ -296,14 +321,14 @@ public class ConditionalGaussianLikelihood {
                         a[v] = prob(factors[v], inv.get(v), xm);
                     }
 
-                    double num = a[u] * p(N, x, u);
+                    double num = a[u] * p(x, u, N);
                     double denom = 0.0;
 
                     for (int v = 0; v < x.size(); v++) {
-                        denom += a[v] * (p(N, x, v));
+                        denom += a[v] * (p(x, v, N));
                     }
 
-                    lnL += Math.log(num) - Math.log(denom);
+                    lnL += log(num) - log(denom);
                 }
             }
         }
@@ -311,13 +336,13 @@ public class ConditionalGaussianLikelihood {
         return lnL;
     }
 
-    private double p(double n, List<TetradMatrix> x, int u) {
-        return x.get(u).rows() / n;
+    private double p(List<TetradMatrix> x, int u, double N) {
+        return x.get(u).rows() / N;
     }
 
     private int dofJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
-        int p =  (int) getPenaltyDiscount();
-        return f(A) * (p *  h(X) + 1);
+        int p = (int) getPenaltyDiscount();
+        return f(A) * (p * h(X) + 1);
     }
 
     private int dofMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
