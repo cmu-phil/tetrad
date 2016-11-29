@@ -255,7 +255,9 @@ public class MisclassificationUtils {
             return 5;
         }
 
-        throw new IllegalArgumentException("Unsupported edgeTop type : " + e1 + " " + e2);
+        return 5;
+
+//        throw new IllegalArgumentException("Unsupported edge type : " + e1 + " " + e2);
     }
 
     private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {

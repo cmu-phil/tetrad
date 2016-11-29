@@ -41,6 +41,8 @@ public class ConditionalGaussianScore implements Score {
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
 
+    private double penaltyDiscount = 2;
+
     /**
      * Constructs the score using a covariance matrix.
      */
@@ -59,15 +61,15 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(i, parents);
+        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
         int N = dataSet.getNumRows();
 
         double lik = ret.getLik();
         int k = ret.getDof();
-        double prior = getStructurePrior(parents);
+//        double prior = getStructurePrior(parents);
 
-        return 2.0 * lik - k * Math.log(N) + prior;
+        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N);// + prior;
     }
 
     private double getStructurePrior(int[] parents) {
@@ -145,6 +147,18 @@ public class ConditionalGaussianScore implements Score {
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public void setExact(boolean exact) {
+        this.likelihood.setExact(exact);
     }
 }
 

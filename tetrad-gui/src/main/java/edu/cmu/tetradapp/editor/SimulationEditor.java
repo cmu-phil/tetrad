@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.*;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesData;
 import edu.cmu.tetrad.data.DataModelList;
@@ -173,8 +174,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         List<Graph> graphs = new ArrayList<>();
                         for (int i = 0; i < _simulation.getNumDataSets(); i++) {
                             graphs.add(_simulation.getTrueGraph(i));
-
-
                         }
 
                         graphEditor.replace(graphs);
@@ -467,6 +466,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 simulationItems = new String[]{
                         "Structural Equation Model"
                 };
+            } else if (simulation.getSimulation() instanceof LinearFisherModel) {
+                simulationItems = new String[]{
+                        "Linear Fisher Model"
+                };
             } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
                 simulationItems = new String[]{
                         "Standardized Structural Equation Model"
@@ -484,11 +487,12 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         + simulation.getSimulation().getClass());
             }
         } else {
-            if (simulation.getSimulation() instanceof TakesData) {
-                simulationItems = new String[]{
-                        "Linear Fisher Model",
-                };
-            } else if (simulation.getSourceGraph() != null) {
+//            if (simulation.getSimulation() instanceof TakesData) {
+//                simulationItems = new String[]{
+//                        "Linear Fisher Model",
+//                };
+//            } else
+            if (simulation.getSourceGraph() != null) {
                 simulationItems = new String[]{
                         "Bayes net",
                         "Structural Equation Model",

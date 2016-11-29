@@ -207,6 +207,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
+    private boolean dashed = false;
 
     //==========================CONSTRUCTORS============================//
 
@@ -981,7 +982,17 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @throws UnsupportedOperationException
      */
     public void setLineColor(Color lineColor) {
-        throw new UnsupportedOperationException();
+//        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean getDashed() {
+        return dashed;
+    }
+
+    @Override
+    public void setDashed(boolean dashed) {
+        this.dashed = dashed;
     }
 
     /**

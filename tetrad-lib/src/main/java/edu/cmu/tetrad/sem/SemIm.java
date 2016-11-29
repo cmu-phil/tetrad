@@ -2500,7 +2500,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 final double covLow = getParams().getDouble("covLow", 0.1);
                 final double covHigh = getParams().getDouble("covHigh", 0.2);
                 double value = new Split(covLow, covHigh).nextRandom();
-                if (getParams().getBoolean("coefSymmetric", true)) {
+                if (getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
                     return Math.abs(value);

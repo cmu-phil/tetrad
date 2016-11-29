@@ -466,7 +466,7 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix scalarMult(double scalar) {
-        return new TetradMatrix(apacheData.scalarMultiply(scalar), rows(), columns());
+        return new TetradMatrix(apacheData.copy().scalarMultiply(scalar), rows(), columns());
     }
 
     public int rank() {
@@ -531,6 +531,40 @@ public class TetradMatrix implements TetradSerializable {
             for (int j = 0; j < apacheData.getColumnDimension(); j++) {
                 apacheData.setEntry(i, j, matrix.get(i, j));
             }
+        }
+    }
+
+    public TetradVector sum(int direction) {
+        if (direction == 1) {
+            TetradVector sums = new TetradVector(columns());
+
+            for (int j = 0; j < columns(); j++) {
+                double sum = 0.0;
+
+                for (int i = 0; i < rows(); i++) {
+                    sum += apacheData.getEntry(i, j);
+                }
+
+                sums.set(j, sum);
+            }
+
+            return sums;
+        } else if (direction == 2) {
+            TetradVector sums = new TetradVector(rows());
+
+            for (int i = 0; i < rows(); i++) {
+                double sum = 0.0;
+
+                for (int j = 0; j < columns(); j++) {
+                    sum += apacheData.getEntry(i, j);
+                }
+
+                sums.set(i, sum);
+            }
+
+            return sums;
+        } else {
+            throw new IllegalArgumentException("Expecting 1 (sum columns) or 2 (sum rows).");
         }
     }
 }

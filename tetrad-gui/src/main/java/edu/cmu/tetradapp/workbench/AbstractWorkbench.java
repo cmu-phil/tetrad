@@ -23,9 +23,10 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.ImageUtils;
-import edu.cmu.tetradapp.util.LayoutEditable;
+import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -402,9 +403,8 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return the model edge for the given display edge.
-     *
      * @param displayEdge Ibid.
+     * @return the model edge for the given display edge.
      */
     public final Edge getModelEdge(IDisplayEdge displayEdge) {
         return (Edge) getDisplayToModel().get(displayEdge);
@@ -977,7 +977,16 @@ public abstract class AbstractWorkbench extends JComponent
             throw new IllegalArgumentException("Graph model cannot be null.");
         }
 
-        this.graph = graph;
+        if (graph instanceof SessionWrapper) {
+            this.graph = graph;
+        } else {
+            this.graph = graph;
+
+            if (graph.isPag()) {
+                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            }
+        }
+
         this.modelEdgesToDisplay = new HashMap<>();
         this.modelNodesToDisplay = new HashMap<>();
         this.displayToModel = new HashMap();
@@ -1200,7 +1209,8 @@ public abstract class AbstractWorkbench extends JComponent
      *
      * @param modelEdge the mode edge.
      */
-    private void addEdge(Edge modelEdge) {
+    private void
+    addEdge(Edge modelEdge) {
         if (modelEdge == null) {
             return;
         }
@@ -1232,11 +1242,13 @@ public abstract class AbstractWorkbench extends JComponent
         }
 
         IDisplayEdge displayEdge = getNewDisplayEdge(modelEdge);
-        if (graph.isHighlighted(modelEdge)) displayEdge.setHighlighted(true);
-
         if (displayEdge == null) {
             return;
         }
+
+        if (graph.isHighlighted(modelEdge)) displayEdge.setHighlighted(true);
+        displayEdge.setLineColor(modelEdge.getLineColor());
+        displayEdge.setDashed(modelEdge.isDashed());
 
         // Link the display edge to the model edge.
 

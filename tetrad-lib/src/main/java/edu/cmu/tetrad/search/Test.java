@@ -21,17 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.CombinationIterator;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.stat.correlation.Covariance;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,29 +32,6 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class Test {
-
-    // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
-    private double logOfSum(List<Double> logs) {
-
-        Collections.sort(logs, new Comparator<Double>() {
-            @Override
-            public int compare(Double o1, Double o2) {
-                return -Double.compare(o1, o2);
-            }
-        });
-
-        double sum = 0.0;
-        int N = logs.size() - 1;
-        double loga0 = logs.get(0);
-
-        for (int i = 1; i <= N; i++) {
-            sum += Math.exp(logs.get(i) - loga0);
-        }
-
-        sum += 1;
-
-        return loga0 + Math.log(sum);
-    }
 
     @org.junit.Test
     public void test() {
@@ -80,7 +49,7 @@ public class Test {
             sum += _a;
         }
 
-        double logsum = logOfSum(logs);
+        double logsum = StatUtils.logsum(logs);
 
         System.out.println(Math.exp(logsum) + " " + sum);
     }

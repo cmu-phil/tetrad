@@ -158,7 +158,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public void setGraph(Graph graph) {
         graphs = new ArrayList<>();
-        graphs.add(graph);
+        graphs.add(new EdgeListGraph(graph));
         log();
     }
 

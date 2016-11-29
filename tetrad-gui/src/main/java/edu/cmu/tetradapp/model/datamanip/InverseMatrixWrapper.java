@@ -75,22 +75,22 @@ public class InverseMatrixWrapper extends DataWrapper {
 
     }
 
-    public InverseMatrixWrapper(SemImWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException("The Sem IM must not be null.");
-        }
-
-        SemIm semIm = wrapper.getSemIm();
-
-        TetradMatrix matrix = semIm.getImplCovar(true);
-        List<Node> variables = semIm.getSemPm().getVariableNodes();
-
-        ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(variables, matrix, semIm.getSampleSize());
-        setDataModel(covarianceMatrix);
-        setSourceGraph(semIm.getSemPm().getGraph());
-
-        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
-    }
+//    public InverseMatrixWrapper(SemImWrapper wrapper, Parameters params) {
+//        if (wrapper == null) {
+//            throw new NullPointerException("The Sem IM must not be null.");
+//        }
+//
+//        SemIm semIm = wrapper.getSemIm();
+//
+//        TetradMatrix matrix = semIm.getImplCovar(true);
+//        List<Node> variables = semIm.getSemPm().getVariableNodes();
+//
+//        ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(variables, matrix, semIm.getSampleSize());
+//        setDataModel(covarianceMatrix);
+//        setSourceGraph(semIm.getSemPm().getGraph());
+//
+//        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
+//    }
 
 
     /**

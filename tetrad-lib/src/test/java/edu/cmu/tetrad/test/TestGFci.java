@@ -97,7 +97,7 @@ public class TestGFci {
 
         GFci gFci = new GFci(independenceTest, score);
         gFci.setVerbose(false);
-        gFci.setMaxIndegree(depth);
+        gFci.setMaxDegree(depth);
         gFci.setMaxPathLength(maxPathLength);
 //        gFci.setPossibleDsepSearchDone(possibleDsepDone);
         gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -211,10 +211,10 @@ public class TestGFci {
 
     @Test
     public void testFromData() {
-        int numNodes = 1000;
-        int numLatents = 50;
-        int numEdges = 1000;
-        int sampleSize = 1000;
+        int numNodes = 20;
+        int numLatents = 5;
+        int numEdges = 20;
+        int sampleSize = 50;
 
 //        System.out.println(RandomUtil.getInstance().getSeed());
 //
@@ -303,7 +303,7 @@ public class TestGFci {
 
 		GFci gFci = new GFci(indTest, score);
 		gFci.setFaithfulnessAssumed(true);
-		gFci.setMaxIndegree(-1);
+		gFci.setMaxDegree(-1);
 		gFci.setMaxPathLength(-1);
 		gFci.setCompleteRuleSetUsed(false);
 		gFci.setVerbose(true);

@@ -115,7 +115,9 @@ public class Comparison {
         // Create output file.
         try {
             File dir = new File(filePath);
-            this.out = new PrintStream(new FileOutputStream(new File(dir, "Comparison.txt")));
+            dir.mkdirs();
+            File file = new File(dir, "Comparison.txt");
+            this.out = new PrintStream(new FileOutputStream(file));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -133,7 +133,7 @@ public class TetradApplicationConfig {
     private static Map<String, SessionNodeConfig> buildConfiguration(Element root) {
         Elements elements = root.getChildElements();
         ClassLoader loader = getClassLoader();
-        Map<String, SessionNodeConfig> configs = new HashMap<>();
+        Map<String, SessionNodeConfig> configs = new LinkedHashMap<>();
         for (int i = 0; i < elements.size(); i++) {
             Element node = elements.get(i);
             String id = node.getAttributeValue("id");

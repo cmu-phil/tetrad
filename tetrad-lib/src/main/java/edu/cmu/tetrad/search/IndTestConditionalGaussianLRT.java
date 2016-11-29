@@ -47,6 +47,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
+    private double pValue = Double.NaN;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha) {
         this.data = data;
@@ -90,15 +91,24 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             list2[i] = _z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihoodRatio(_x, list1);
-        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihoodRatio(_x, list2);
+        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_x, list1);
+        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihood(_x, list2);
 
         double lik = ret1.getLik() - ret2.getLik();
         double dof = ret1.getDof() - ret2.getDof();
 
-//        if (dof <= 1) dof = 1;
+        if (dof <= 0) {
+            throw new IllegalArgumentException("DOF must be >= 1");
+        }
 
-        double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
+        double p = 0;
+        try {
+            p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        this.pValue = p;
 
         return p > alpha;
     }
@@ -127,7 +137,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return Double.NaN;
+        return this.pValue;
     }
 
     /**
@@ -173,14 +183,14 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return Double.NaN;
+        return alpha;
     }
 
     /**
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
-
+        this.alpha = alpha;
     }
 
     public DataSet getData() {
@@ -209,7 +219,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return getAlpha() - getPValue();
     }
 
     /**

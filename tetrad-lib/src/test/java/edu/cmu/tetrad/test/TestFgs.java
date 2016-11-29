@@ -897,7 +897,7 @@ public class TestFgs {
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 //        System.out.println(im);
 
-        DataSet ds = im.simulateDataAvoidInfinity(samps, false);
+        DataSet ds = im.simulateDataFisher(samps);
         return MixedUtils.makeMixedData(ds, nd);
     }
 

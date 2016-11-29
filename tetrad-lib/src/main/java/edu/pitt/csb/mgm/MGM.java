@@ -1352,7 +1352,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
         System.out.println(im);
 
         int samps = 1000;
-        DataSet ds = im.simulateDataAvoidInfinity(samps, false);
+        DataSet ds = im.simulateDataFisher(samps);
         ds = MixedUtils.makeMixedData(ds, nd);
         //System.out.println(ds);
 

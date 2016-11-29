@@ -372,6 +372,14 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      */
     boolean isDConnectedTo(Node node1, Node node2, List<Node> z);
 
+    boolean isPattern();
+
+    void setPattern(boolean pattern);
+
+    boolean isPag();
+
+    void setPag(boolean pag);
+
     /**
      * Determines whether one node is d-separated from another. Two elements are   E
      * d-separated just in case they are not d-connected.

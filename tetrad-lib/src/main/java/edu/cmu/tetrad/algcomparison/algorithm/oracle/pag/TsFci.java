@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataType;
@@ -36,25 +37,13 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
-
         edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
-
-        search.setKnowledge(knowledge);
-
+        search.setKnowledge(dataSet.getKnowledge());
         return search.search();
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(graph).convert(); }
+    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(new EdgeListGraph(graph)).convert(); }
 
     public String getDescription() {
         return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription() +

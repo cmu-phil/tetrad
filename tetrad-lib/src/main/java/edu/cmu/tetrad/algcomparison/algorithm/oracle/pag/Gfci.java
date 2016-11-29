@@ -36,6 +36,8 @@ public class Gfci implements Algorithm, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
+        search.setMaxPathLength(parameters.getInt("maxPathLength"));
+        search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
 
         Object obj = parameters.get("printStream");
 
@@ -68,6 +70,8 @@ public class Gfci implements Algorithm, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
         parameters.add("printStream");
+        parameters.add("maxPathLength");
+        parameters.add("completeRuleSetUsed");
         return parameters;
     }
 
