@@ -262,7 +262,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param deltaY              the shift in y.
      */
     private void adjustNameAndPosition(SessionNodeWrapper wrapper,
-            List sessionNodeWrappers, int deltaX, int deltaY) {
+                                       List sessionNodeWrappers, int deltaX, int deltaY) {
         String originalName = wrapper.getSessionName();
         String base = extractBase(originalName);
         String uniqueName = nextUniqueName(base, sessionNodeWrappers);
@@ -364,7 +364,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     public Edge getDirectedEdge(Node node1, Node node2) {
-        return null;                
+        return null;
     }
 
     /**
@@ -682,7 +682,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
 
     public void setDottedUnderLineTriples(Set<Triple> triples) {
-        throw new UnsupportedOperationException();                
+        throw new UnsupportedOperationException();
     }
 
     public List<Node> getCausalOrdering() {

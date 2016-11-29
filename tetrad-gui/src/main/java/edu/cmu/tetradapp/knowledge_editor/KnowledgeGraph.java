@@ -312,12 +312,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         } else if(_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS){
             if(!this.knowledge.isForbiddenByGroups(from, to)){
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
-                " is not forbidden by groups.");
+                        " is not forbidden by groups.");
             }
         } else if(_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS){
             if(!this.knowledge.isRequiredByGroups(from, to)){
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
-                " is not required by groups.");
+                        " is not required by groups.");
             }
         }
 
@@ -394,7 +394,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
                     "remove edges forbidden by groups.");
         } else if(_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS){
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
-            "remove edges required by groups.");
+                    "remove edges required by groups.");
         }
 
         return getGraph().removeEdge(edge);
@@ -513,7 +513,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public boolean isDConnectedTo(Node node1, Node node2,
-            List<Node> conditioningNodes) {
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 
