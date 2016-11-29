@@ -46,7 +46,7 @@ public class ExampleCompareSimulation2 {
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 2000);
 
         parameters.set("penaltyDiscount", 2);
         parameters.set("alpha", 0.05);
