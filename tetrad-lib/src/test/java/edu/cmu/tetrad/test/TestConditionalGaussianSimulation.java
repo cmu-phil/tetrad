@@ -30,7 +30,6 @@ import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
-import org.junit.Test;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -46,28 +45,29 @@ public class TestConditionalGaussianSimulation {
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 2);
 
-        parameters.set("maxDegree", 6);
+        parameters.set("maxDegree", 8);
 
         parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
 
         parameters.set("assumeMixed", false);
 
-        parameters.set("intervalBetweenRecordings", 10);
+        parameters.set("intervalBetweenRecordings", 20);
 
-        parameters.set("varLow", .3);
-        parameters.set("varHigh", 2);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
         parameters.set("coefLow", .5);
-        parameters.set("coefHigh", 1.2);
+        parameters.set("coefHigh", 1.5);
         parameters.set("coefSymmetric", true);
-        parameters.set("meanLow", 0);
+        parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
 
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numCategories"));
+        statistics.add(new ParameterColumn("assumeMixed"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -84,25 +84,21 @@ public class TestConditionalGaussianSimulation {
 
         Simulations simulations = new Simulations();
 
-
-        simulations.add(getConditionalGaussianSimulation());
+        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
+//        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(false);
+        comparison.setTabDelimitedTables(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
-    }
-
-    private ConditionalGaussianSimulation getConditionalGaussianSimulation() {
-        return new ConditionalGaussianSimulation(new RandomForward());
     }
 
     public static void main(String...args) {

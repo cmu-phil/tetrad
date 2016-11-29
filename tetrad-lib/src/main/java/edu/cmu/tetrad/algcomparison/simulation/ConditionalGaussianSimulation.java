@@ -12,8 +12,7 @@ import edu.cmu.tetrad.util.*;
 import java.util.*;
 
 /**
- * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
- * data set.
+ * A simulation method based on the conditional Gaussian assumption.
  *
  * @author jdramsey
  */
@@ -94,7 +93,7 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public String getDescription() {
-        return "Lee & Hastie simulation using " + randomGraph.getDescription();
+        return "Conditional Gaussian simulation using " + randomGraph.getDescription();
     }
 
     @Override

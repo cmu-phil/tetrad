@@ -102,7 +102,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         double dof = ret1.getDof() - ret2.getDof();
 
         if (dof <= 0) {
-            throw new IllegalArgumentException("DOF must be >= 1");
+            dof = 1;
+//            throw new IllegalArgumentException("DOF must be >= 1");
         }
 
         double p = 0;
