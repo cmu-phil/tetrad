@@ -37,7 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -56,18 +55,10 @@ public class TestGFci {
         int numEdges = 10;
         int sampleSize = 1000;
 
-//        int numNodes = 3000;
-//        int numLatents = 150;
-//        int numEdges = 4500;
-//        int sampleSize = 1000;
-
         double alpha = 0.01;
         double penaltyDiscount = 2;
         int depth = -1;
         int maxPathLength = -1;
-        boolean possibleDsepDone = true;
-        boolean completeRuleSetUsed = false;
-        boolean faithfulnessAssumed = true;
 
         List<Node> vars = new ArrayList<>();
 
@@ -99,9 +90,8 @@ public class TestGFci {
         gFci.setVerbose(false);
         gFci.setMaxDegree(depth);
         gFci.setMaxPathLength(maxPathLength);
-//        gFci.setPossibleDsepSearchDone(possibleDsepDone);
-        gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
-        gFci.setFaithfulnessAssumed(faithfulnessAssumed);
+        gFci.setCompleteRuleSetUsed(false);
+        gFci.setFaithfulnessAssumed(true);
         Graph outGraph = gFci.search();
 
         final DagToPag dagToPag = new DagToPag(dag);
@@ -168,43 +158,31 @@ public class TestGFci {
         truePag.addBidirectedEdge(x2, x3);
         truePag.addPartiallyOrientedEdge(x4, x3);
 
-//        System.out.println(pag);
-
         assertEquals(pag, truePag);
     }
 
     @Test
     public void testFromGraph() {
-        RandomUtil.getInstance().setSeed(new Date().getTime());
+//        RandomUtil.getInstance().setSeed(new Date().getTime());
+        RandomUtil.getInstance().setSeed(19444322L);
 
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 20;
-
-        boolean completeRuleSetUsed = false;
-        boolean faithfulnessAssumed = true;
+        int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
-//            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
             GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
-            gfci.setCompleteRuleSetUsed(completeRuleSetUsed);
-//            GFci gfci = new GFci(new IndTestDSep(dag));
-            gfci.setFaithfulnessAssumed(faithfulnessAssumed);
+            gfci.setCompleteRuleSetUsed(false);
+            gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
 
-
-
             DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+            dagToPag.setCompleteRuleSetUsed(false);
             Graph pag2 = dagToPag.convert();
 
-//            System.out.println(pag1);
-//            System.out.println(pattern2);
-//
-//            System.out.println(MisclassificationUtils.edgeMisclassifications(pag1, pag2));
             assertEquals(pag2, pag1);
         }
     }
@@ -215,11 +193,6 @@ public class TestGFci {
         int numLatents = 5;
         int numEdges = 20;
         int sampleSize = 50;
-
-//        System.out.println(RandomUtil.getInstance().getSeed());
-//
-//        RandomUtil.getInstance().setSeed(1461186701390L);
-
 
         List<Node> variables = new ArrayList<>();
 
@@ -243,7 +216,7 @@ public class TestGFci {
 
         long start = System.currentTimeMillis();
 
-        Graph graph = gFci.search();
+        gFci.search();
 
         long stop = System.currentTimeMillis();
 
@@ -251,8 +224,6 @@ public class TestGFci {
 
         DagToPag dagToPag = new DagToPag(g);
         dagToPag.setVerbose(false);
-//        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag.convert()));
-
     }
     
     @Test
@@ -276,7 +247,7 @@ public class TestGFci {
 
 		long start = System.currentTimeMillis();
 
-		Graph graph = gFci.search();
+		gFci.search();
 
 		long stop = System.currentTimeMillis();
 
@@ -291,7 +262,7 @@ public class TestGFci {
 		double alpha = 0.05;
 		char delimiter = '\t';
 		Path dataFile = Paths.get("../causal-cmd/test/data/diff_delim/sim_discrete_data_20vars_100cases.txt");
-		// System.out.println(dataFile.toAbsolutePath().toString());
+
 		VerticalTabularDiscreteDataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
 		DataSet dataSet = dataReader.readInData();
 
@@ -310,7 +281,7 @@ public class TestGFci {
 
 		long start = System.currentTimeMillis();
 
-		Graph graph = gFci.search();
+		gFci.search();
 
 		long stop = System.currentTimeMillis();
 

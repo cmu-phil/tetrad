@@ -89,12 +89,16 @@ public final class StatUtils {
      */
     public static double mean(double array[], int N) {
         double sum = 0.0;
+        int count = 0;
 
         for (int i = 0; i < N; i++) {
-            sum += array[i];
+            if (!Double.isNaN(array[i])) {
+                sum += array[i];
+                count++;
+            }
         }
 
-        return sum / N;
+        return sum / (double) count;
     }
 
     /**
@@ -104,12 +108,16 @@ public final class StatUtils {
      */
     public static double mean(TetradVector data, int N) {
         double sum = 0.0;
+        int count = 0;
 
         for (int i = 0; i < N; i++) {
-            sum += data.get(i);
+            if (!Double.isNaN( data.get(i))) {
+                sum +=  data.get(i);
+                count++;
+            }
         }
 
-        return sum / N;
+        return sum / (double) count;
     }
 
     /**
