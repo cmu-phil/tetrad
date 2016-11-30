@@ -56,8 +56,8 @@ public class TestConditionalGaussianSimulation {
 
         parameters.set("intervalBetweenRecordings", 20);
 
-        parameters.set("varLow", 1);
-        parameters.set("varHigh", 3);
+        parameters.set("varLow", 1.);
+        parameters.set("varHigh", 3.);
         parameters.set("coefLow", .5);
         parameters.set("coefHigh", 1.5);
         parameters.set("coefSymmetric", true);
@@ -80,7 +80,7 @@ public class TestConditionalGaussianSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
+//        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();
 

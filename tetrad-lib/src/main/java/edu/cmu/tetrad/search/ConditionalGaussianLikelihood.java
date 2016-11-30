@@ -194,7 +194,6 @@ public class ConditionalGaussianLikelihood {
         double c1 = 0, c2 = 0;
 
         List<List<Integer>> cells = adTree.getCellLeaves(A);
-        int F = 0;
 
         for (List<Integer> cell : cells) {
             int a = cell.size();
@@ -208,19 +207,21 @@ public class ConditionalGaussianLikelihood {
                 double v;
 
                 try {
-                    if (a < 4) {
+
+                    // Determinant will be zero if data are linearly dependent.
+                    if (a <= continuousCols.length) {
                         throw new IllegalArgumentException();
                     }
 
                     TetradMatrix cov = cov(getSubsample(continuousCols, cell));
                     v = gaussianLikelihood(k, cov);
 
-                    if (Double.isNaN(v) || Double.isInfinite(v)) {
+                    // Double check.
+                    if (Double.isInfinite(v)) {
                         throw new IllegalArgumentException();
                     }
 
                     c2 += a * v;
-                    F++;
                 } catch (Exception e) {
                     // No contribution.
                 }
@@ -231,7 +232,7 @@ public class ConditionalGaussianLikelihood {
         int p = (int) getPenaltyDiscount();
 
         // Only count dof for continuous cells that contributed to the likelihood calculation.
-        final int dof = F * p * h(X) + f(A);
+        final int dof = f(A) * p * h(X) + f(A);
         return new Ret(lnL, dof);
     }
 
@@ -257,7 +258,6 @@ public class ConditionalGaussianLikelihood {
         int N = dataSet.getNumRows();
 
         List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
-        int F = 0;
 
         TetradMatrix defaultCov = null;
 
@@ -271,7 +271,9 @@ public class ConditionalGaussianLikelihood {
                 TetradMatrix subsample = getSubsample(continuousCols, cell);
 
                 try {
-                    if (mycells.size() < 2) throw new IllegalArgumentException();
+
+                    // Determinant will be zero if data are linearly dependent.
+                    if (mycells.size() <= continuousCols.length) throw new IllegalArgumentException();
 
                     TetradMatrix cov = cov(subsample);
                     TetradMatrix covinv = cov.inverse();
@@ -284,7 +286,6 @@ public class ConditionalGaussianLikelihood {
                     sigmas.add(cov);
                     inv.add(covinv);
                     mu.add(means(subsample));
-                    F++;
                 } catch (Exception e) {
                     // No contribution.
                 }
@@ -320,7 +321,7 @@ public class ConditionalGaussianLikelihood {
         int p = (int) getPenaltyDiscount();
 
         // Only count dof for continuous cells that contributed to the likelihood calculation.
-        int dof = f(A) * B.getNumCategories() + F * p * h(X);
+        int dof = f(A) * B.getNumCategories() + f(A) * p * h(X);
         return new Ret(lnL, dof);
     }
 
@@ -343,10 +344,10 @@ public class ConditionalGaussianLikelihood {
 
     // Subsample of the continuous variables conditioning on the given cell.
     private TetradMatrix getSubsample(int[] continuousCols, List<Integer> cell) {
-        int n = cell.size();
-        TetradMatrix subset = new TetradMatrix(n, continuousCols.length);
+        int a = cell.size();
+        TetradMatrix subset = new TetradMatrix(a, continuousCols.length);
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < a; i++) {
             for (int j = 0; j < continuousCols.length; j++) {
                 subset.set(i, j, continuousData[continuousCols[j]][cell.get(i)]);
             }
