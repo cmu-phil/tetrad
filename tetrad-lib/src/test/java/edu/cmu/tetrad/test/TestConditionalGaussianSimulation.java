@@ -19,12 +19,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.joe;
+package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -35,41 +36,42 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class ExampleCompareSimulation2 {
-    public static void main(String... args) {
+public class TestConditionalGaussianSimulation {
+
+    public void test1() {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 2);
+        parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 2);
 
-        parameters.set("maxDegree", 5);
+        parameters.set("maxDegree", 8);
 
         parameters.set("numCategories", 2, 3, 4, 5);
         parameters.set("percentDiscrete", 50);
 
-        parameters.set("cgExact", true);
+        parameters.set("assumeMixed", false);
 
-        parameters.set("intervalBetweenRecordings", 10);
+        parameters.set("intervalBetweenRecordings", 20);
 
-//        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("varLow", 1.);
+        parameters.set("varHigh", 3.);
+        parameters.set("coefLow", .5);
+        parameters.set("coefHigh", 1.5);
+        parameters.set("coefSymmetric", true);
+        parameters.set("meanLow", -1);
+        parameters.set("meanHigh", 1);
 
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numCategories"));
+        statistics.add(new ParameterColumn("assumeMixed"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new TwoCyclePrecision());
-//        statistics.add(new TwoCycleRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
@@ -78,19 +80,16 @@ public class ExampleCompareSimulation2 {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-//        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
 //        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(new RandomForward()));
-//        simulations.add(new LeeHastieSimulation(new ScaleFree()));
+        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
+//        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
@@ -100,6 +99,10 @@ public class ExampleCompareSimulation2 {
         comparison.setTabDelimitedTables(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
+    public static void main(String...args) {
+        new TestConditionalGaussianSimulation().test1();
     }
 }
 

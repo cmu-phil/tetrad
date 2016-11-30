@@ -42,6 +42,7 @@ public class ConditionalGaussianScore implements Score {
     private ConditionalGaussianLikelihood likelihood;
 
     private double penaltyDiscount = 2;
+    private boolean denominatorMixed = true;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -61,15 +62,16 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
+        likelihood.setDenominatorMixed(denominatorMixed);
+        likelihood.setPenaltyDiscount(penaltyDiscount);
+
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
         int N = dataSet.getNumRows();
-
         double lik = ret.getLik();
         int k = ret.getDof();
-//        double prior = getStructurePrior(parents);
 
-        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N);// + prior;
+        return 2.0 * lik - k * Math.log(N);
     }
 
     private double getStructurePrior(int[] parents) {
@@ -157,8 +159,8 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setExact(boolean exact) {
-        this.likelihood.setExact(exact);
+    public void setDenominatorMixed(boolean denominatorMixed) {
+        this.denominatorMixed = denominatorMixed;
     }
 }
 

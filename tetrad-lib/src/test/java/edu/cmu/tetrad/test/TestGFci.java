@@ -175,11 +175,12 @@ public class TestGFci {
 
     @Test
     public void testFromGraph() {
-        RandomUtil.getInstance().setSeed(new Date().getTime());
+//        RandomUtil.getInstance().setSeed(new Date().getTime());
+        RandomUtil.getInstance().setSeed(19444322L);
 
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 20;
+        int numIterations = 10;
 
         boolean completeRuleSetUsed = false;
         boolean faithfulnessAssumed = true;

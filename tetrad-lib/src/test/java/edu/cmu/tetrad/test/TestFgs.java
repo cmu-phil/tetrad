@@ -734,8 +734,6 @@ public class TestFgs {
 
         DataSet data = semSimulator.simulateDataFisher(sampleSize);
 
-        data = DataUtils.restrictToMeasured(data);
-
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
         score.setPenaltyDiscount(4);
         Fgs fgs = new Fgs(score);
@@ -749,6 +747,9 @@ public class TestFgs {
         System.out.println("Elapsed " + (stop - start) + " ms");
 
         Graph pattern = SearchGraphUtils.patternForDag(dag);
+
+        pattern = GraphUtils.replaceNodes(pattern, graph.getNodes());
+
         System.out.println(MisclassificationUtils.edgeMisclassifications(graph, pattern));
 
     }
