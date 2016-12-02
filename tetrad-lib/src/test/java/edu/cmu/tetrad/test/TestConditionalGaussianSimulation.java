@@ -25,10 +25,12 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -50,9 +52,9 @@ public class TestConditionalGaussianSimulation {
         parameters.set("maxDegree", 8);
 
         parameters.set("numCategories", 2, 3, 4, 5);
-        parameters.set("percentDiscrete", 50);
+        parameters.set("percentDiscrete", 30);
 
-        parameters.set("assumeMixed", false);
+        parameters.set("numCategoriesToDiscretize", 3);
 
         parameters.set("intervalBetweenRecordings", 20);
 
@@ -64,10 +66,14 @@ public class TestConditionalGaussianSimulation {
         parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
 
+        parameters.set("scaleFreeAlpha", .9);
+        parameters.set("scaleFreeBeta", .05);
+        parameters.set("scaleFreeDeltaIn", 3);
+        parameters.set("scaleFreeDeltaOut", .1);
+
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numCategories"));
-        statistics.add(new ParameterColumn("assumeMixed"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -80,12 +86,12 @@ public class TestConditionalGaussianSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-//        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
+        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
-//        simulations.add(new LeeHastieSimulation(new RandomForward()));
+//        simulations.add(new ConditionalGaussianSimulation(new ScaleFree()));
+        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 

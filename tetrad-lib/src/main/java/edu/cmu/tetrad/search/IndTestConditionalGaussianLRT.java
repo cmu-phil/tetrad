@@ -48,8 +48,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
-    private boolean denominatorMixed = true;
-    private double penaltyDiscount;
+    private int numCategoriesToDiscretize = 3;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha) {
         this.data = data;
@@ -79,7 +78,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        likelihood.setDenominatorMixed(denominatorMixed);
+        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
 
         int _x = nodesHash.get(x);
         int _y = nodesHash.get(y);
@@ -223,6 +222,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     }
 
     @Override
+
     public double getScore() {
         return getAlpha() - getPValue();
     }
@@ -235,15 +235,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
-    public void setDenominatorMixed(boolean denominatorMixed) {
-        this.denominatorMixed = denominatorMixed;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        likelihood.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
+        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 }

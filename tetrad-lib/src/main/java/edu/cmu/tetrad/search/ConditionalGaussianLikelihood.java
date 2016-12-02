@@ -21,9 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
@@ -31,34 +29,44 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
 
+import static edu.cmu.tetrad.data.Discretizer.*;
 import static java.lang.Math.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
- * the continuous variables are jointly Gaussian conditional on the discrete variables; in all other cases, it will
+ * the continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
  * be less than maximal. For an algorithm like FGS this is fine.
  *
  * @author Joseph Ramsey
  */
 public class ConditionalGaussianLikelihood {
 
-    // The data set. May contain continuous and/or discrete variables.
+    // The data set. May contain continuous and/or discrete mixedVariables.
+    private DataSet mixedDataSet;
+
+    // The data set with all continuous mixedVariables discretized.
     private DataSet dataSet;
 
-    // The variables of the data set.
-    private List<Node> variables;
+    // Number of categories to use to discretize continuous mixedVariables.
+    private int numCategoriesToDiscretize = 3;
 
-    // Indices of variables.
+    // The mixedVariables of the mixed data set.
+    private List<Node> mixedVariables;
+
+    // Indices of mixedVariables.
     private Map<Node, Integer> nodesHash;
 
     // Continuous data only.
     private double[][] continuousData;
 
-    //The AD Tree used to count discrete cells.
+    // The AD Tree used to count discrete cells.
     private AdLeafTree adTree;
 
-    // True if by assumption the denominator for problems like P(C | X) = P(X | C) P(C) / P(X) is mixed.
-    private boolean denominatorMixed = true;
+    // Score used for multinomial cases
+    private BicScore score;
+
+//    // True if by assumption the denominator for problems like P(C | X) = P(X | C) P(C) / P(X) is mixed.
+//    private boolean denominatorMixed = true;
 
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
@@ -97,8 +105,8 @@ public class ConditionalGaussianLikelihood {
             throw new NullPointerException();
         }
 
-        this.dataSet = dataSet;
-        this.variables = dataSet.getVariables();
+        this.mixedDataSet = dataSet;
+        this.mixedVariables = dataSet.getVariables();
 
         continuousData = new double[dataSet.getNumColumns()][];
 
@@ -123,25 +131,68 @@ public class ConditionalGaussianLikelihood {
             nodesHash.put(v, j);
         }
 
-        this.adTree = AdTrees.getAdLeafTree(dataSet);
+        this.dataSet = useErsatzVariables();
+        this.adTree = AdTrees.getAdLeafTree(this.dataSet);
+        this.score = new BicScore(this.dataSet);
+    }
+
+    private DataSet useErsatzVariables() {
+        List<Node> nodes = new ArrayList<>();
+        int numCategories = numCategoriesToDiscretize;
+
+        for (Node x : mixedVariables) {
+            if (x instanceof ContinuousVariable) {
+                nodes.add(new DiscreteVariable(x.getName(), numCategories));
+            } else {
+                nodes.add(x);
+            }
+        }
+
+        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(mixedDataSet.getNumRows(), mixedDataSet.getNumColumns()), nodes);
+
+        for (int j = 0; j < mixedVariables.size(); j++) {
+            if (mixedVariables.get(j) instanceof DiscreteVariable) {
+                for (int i = 0; i < mixedDataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, mixedDataSet.getInt(i, j));
+                }
+            } else {
+                double[] column = continuousData[j];
+
+                double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
+
+                List<String> categoryNames = new ArrayList<>();
+
+                for (int i = 0; i < numCategories; i++) {
+                    categoryNames.add("" + i);
+                }
+
+                Discretization d = discretize(column, breakpoints, mixedVariables.get(j).getName(), categoryNames);
+
+                for (int i = 0; i < mixedDataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, d.getData()[i]);
+                }
+            }
+        }
+
+        return replaced;
     }
 
     /**
-     * Returns the likelihood of variable i conditional on the given parents, assuming the continuous variables
+     * Returns the likelihood of variable i conditional on the given parents, assuming the continuous mixedVariables
      * index by i or by the parents are jointly Gaussian conditional on the discrete comparison.
      *
      * @param i       The index of the conditioned variable.
-     * @param parents The indices of the conditioning variables.
+     * @param parents The indices of the conditioning mixedVariables.
      * @return The likelihood.
      */
     public Ret getLikelihood(int i, int[] parents) {
-        Node target = variables.get(i);
+        Node target = mixedVariables.get(i);
 
         List<ContinuousVariable> X = new ArrayList<>();
         List<DiscreteVariable> A = new ArrayList<>();
 
         for (int p : parents) {
-            Node parent = variables.get(p);
+            Node parent = mixedVariables.get(p);
 
             if (parent instanceof ContinuousVariable) {
                 X.add((ContinuousVariable) parent);
@@ -159,18 +210,13 @@ public class ConditionalGaussianLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        if (target instanceof DiscreteVariable && !X.isEmpty() && denominatorMixed) {
-            return likelihoodMixed(X, A, (DiscreteVariable) target);
+        if (target instanceof DiscreteVariable) {// && !X.isEmpty()) {
+            return likelihoodConditionalMultinomial(X, A, (DiscreteVariable) target);
         } else {
             Ret ret1 = likelihoodJoint(XPlus, APlus);
             Ret ret2 = likelihoodJoint(X, A);
             return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
         }
-    }
-
-
-    public void setDenominatorMixed(boolean denominatorMixed) {
-        this.denominatorMixed = denominatorMixed;
     }
 
     public double getPenaltyDiscount() {
@@ -181,15 +227,18 @@ public class ConditionalGaussianLikelihood {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
+        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
 
-    // The likelihood of the joint over all of these variables, assuming conditional Gaussian,
+    // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
     private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
         int k = X.size();
 
         int[] continuousCols = new int[k];
         for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
-        int N = dataSet.getNumRows();
+        int N = mixedDataSet.getNumRows();
 
         double c1 = 0, c2 = 0;
 
@@ -232,7 +281,7 @@ public class ConditionalGaussianLikelihood {
         int p = (int) getPenaltyDiscount();
 
         // Only count dof for continuous cells that contributed to the likelihood calculation.
-        final int dof = f(A) * p * h(X) + f(A);
+        final int dof = f(A) * h(X) + f(A);
         return new Ret(lnL, dof);
     }
 
@@ -245,83 +294,129 @@ public class ConditionalGaussianLikelihood {
         return -0.5 * (log(sigma.det()) - k - k * log(2.0 * Math.PI));
     }
 
-    // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
-    // the denominator is a mixture of Gaussians.
-    private Ret likelihoodMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
-        final int k = X.size();
-        final double g = Math.pow(2.0 * Math.PI, k);
+//    // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
+//    // the denominator is a mixture of Gaussians.
+//    private Ret likelihoodMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
+//        final int k = X.size();
+//        final double g = Math.pow(2.0 * Math.PI, k);
+//
+//        int[] continuousCols = new int[k];
+//        for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
+//        double lnL = 0.0;
+//
+//        int N = dataSet.getNumRows();
+//
+//        List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
+//
+//        TetradMatrix defaultCov = null;
+//
+//        for (List<List<Integer>> mycells : cells) {
+//            List<TetradMatrix> x = new ArrayList<>();
+//            List<TetradMatrix> sigmas = new ArrayList<>();
+//            List<TetradMatrix> inv = new ArrayList<>();
+//            List<TetradVector> mu = new ArrayList<>();
+//
+//            for (List<Integer> cell : mycells) {
+//                TetradMatrix subsample = getSubsample(continuousCols, cell);
+//
+//                try {
+//
+//                    // Determinant will be zero if data are linearly dependent.
+//                    if (mycells.size() <= continuousCols.length) throw new IllegalArgumentException();
+//
+//                    TetradMatrix cov = cov(subsample);
+//                    TetradMatrix covinv = cov.inverse();
+//
+//                    if (defaultCov == null) {
+//                        defaultCov = cov;
+//                    }
+//
+//                    x.add(subsample);
+//                    sigmas.add(cov);
+//                    inv.add(covinv);
+//                    mu.add(means(subsample));
+//                } catch (Exception e) {
+//                    // No contribution.
+//                }
+//            }
+//
+//            double[] factors = new double[x.size()];
+//
+//            for (int u = 0; u < x.size(); u++) {
+//                factors[u] = Math.pow(g * sigmas.get(u).det(), -0.5);
+//            }
+//
+//            double[] a = new double[x.size()];
+//
+//            for (int u = 0; u < x.size(); u++) {
+//                for (int i = 0; i < x.get(u).rows(); i++) {
+//                    for (int v = 0; v < x.size(); v++) {
+//                        final TetradVector xm = x.get(u).getRow(i).minus(mu.get(v));
+//                        a[v] = prob(factors[v], inv.get(v), xm);
+//                    }
+//
+//                    double num = a[u] * p(x, u, N);
+//                    double denom = 0.0;
+//
+//                    for (int v = 0; v < x.size(); v++) {
+//                        denom += a[v] * (p(x, v, N));
+//                    }
+//
+//                    lnL += log(num) - log(denom);
+//                }
+//            }
+//        }
+//
+//        int p = (int) getPenaltyDiscount();
+//
+//        // Only count dof for continuous cells that contributed to the likelihood calculation.
+//        int dof = f(A) * B.getNumCategories() + f(A) * p * h(X);
+//        return new Ret(lnL, dof);
+//    }
 
-        int[] continuousCols = new int[k];
-        for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
-        double lnL = 0.0;
+//    private Ret likelihoodJointMultinomial(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+//        List<DiscreteVariable> W = new ArrayList<>(A);
+//
+//        for (ContinuousVariable x : X) {
+//            DiscreteVariable w = (DiscreteVariable) dataSet.getVariable(x.getName());
+//            W.add(w);
+//        }
+//
+//        double lnL = 0;
+//        int N = dataSet.getNumRows();
+//
+//        List<List<Integer>> cells = adTree.getCellLeaves(W);
+//
+//        for (List<Integer> cell : cells) {
+//            int a = cell.size();
+//            if (a == 0) continue;
+//
+//            if (W.size() > 0) {
+//                lnL += a * multinomialLikelihood(a, N);
+//            }
+//        }
+//
+//        final int dof = f(W);
+//        return new Ret(lnL, dof);
+//    }
 
-        int N = dataSet.getNumRows();
+    private Ret likelihoodConditionalMultinomial(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable T) {
+        List<DiscreteVariable> W = new ArrayList<>(A);
 
-        List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
-
-        TetradMatrix defaultCov = null;
-
-        for (List<List<Integer>> mycells : cells) {
-            List<TetradMatrix> x = new ArrayList<>();
-            List<TetradMatrix> sigmas = new ArrayList<>();
-            List<TetradMatrix> inv = new ArrayList<>();
-            List<TetradVector> mu = new ArrayList<>();
-
-            for (List<Integer> cell : mycells) {
-                TetradMatrix subsample = getSubsample(continuousCols, cell);
-
-                try {
-
-                    // Determinant will be zero if data are linearly dependent.
-                    if (mycells.size() <= continuousCols.length) throw new IllegalArgumentException();
-
-                    TetradMatrix cov = cov(subsample);
-                    TetradMatrix covinv = cov.inverse();
-
-                    if (defaultCov == null) {
-                        defaultCov = cov;
-                    }
-
-                    x.add(subsample);
-                    sigmas.add(cov);
-                    inv.add(covinv);
-                    mu.add(means(subsample));
-                } catch (Exception e) {
-                    // No contribution.
-                }
-            }
-
-            double[] factors = new double[x.size()];
-
-            for (int u = 0; u < x.size(); u++) {
-                factors[u] = Math.pow(g * sigmas.get(u).det(), -0.5);
-            }
-
-            double[] a = new double[x.size()];
-
-            for (int u = 0; u < x.size(); u++) {
-                for (int i = 0; i < x.get(u).rows(); i++) {
-                    for (int v = 0; v < x.size(); v++) {
-                        final TetradVector xm = x.get(u).getRow(i).minus(mu.get(v));
-                        a[v] = prob(factors[v], inv.get(v), xm);
-                    }
-
-                    double num = a[u] * p(x, u, N);
-                    double denom = 0.0;
-
-                    for (int v = 0; v < x.size(); v++) {
-                        denom += a[v] * (p(x, v, N));
-                    }
-
-                    lnL += log(num) - log(denom);
-                }
-            }
+        for (ContinuousVariable x : X) {
+            DiscreteVariable w = (DiscreteVariable) dataSet.getVariable(x.getName());
+            W.add(w);
         }
 
-        int p = (int) getPenaltyDiscount();
+        int t = dataSet.getColumn(T);
 
-        // Only count dof for continuous cells that contributed to the likelihood calculation.
-        int dof = f(A) * B.getNumCategories() + f(A) * p * h(X);
+        int[] c = new int[W.size()];
+
+        for (int i = 0; i < W.size(); i++) c[i] = dataSet.getColumn(W.get(i));
+
+        double lnL = score.getLikelihood(t, c);
+        int dof = score.getDof(t, c);
+
         return new Ret(lnL, dof);
     }
 
@@ -342,7 +437,7 @@ public class ConditionalGaussianLikelihood {
         return x.sum(1).scalarMult(1.0 / x.rows());
     }
 
-    // Subsample of the continuous variables conditioning on the given cell.
+    // Subsample of the continuous mixedVariables conditioning on the given cell.
     private TetradMatrix getSubsample(int[] continuousCols, List<Integer> cell) {
         int a = cell.size();
         TetradMatrix subset = new TetradMatrix(a, continuousCols.length);
@@ -369,7 +464,7 @@ public class ConditionalGaussianLikelihood {
     }
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
-    // of variables. This is the number of unique entries in the covariance matrix over X.
+    // of mixedVariables. This is the number of unique entries in the covariance matrix over X.
     private int h(List<ContinuousVariable> X) {
         int p = X.size();
         return p * (p + 1) / 2;

@@ -146,6 +146,10 @@ public class ParamDescriptions {
         put("completeRuleSetUsed", new ParamDescription(
                 "Yes if the complete FCI rule set should be used",
                 false));
+
+        put("numCategoriesToDiscretize", new ParamDescription(
+                "The number of categories used to discretize continuous variables",
+                3, 1, Integer.MAX_VALUE));
     }
 
     public static ParamDescriptions instance() {
