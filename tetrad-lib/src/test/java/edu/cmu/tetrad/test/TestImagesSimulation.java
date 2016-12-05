@@ -23,14 +23,19 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesCcd;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesPcMax;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -38,25 +43,25 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class TestConditionalGaussianSimulation {
+public class TestImagesSimulation {
 
     public void test1() {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 50);
-        parameters.set("avgDegree", 4);
-        parameters.set("sampleSize", 1000);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("numMeasures", 20);
+        parameters.set("avgDegree", 3);
+//        parameters.set("maxDegree", 5);
+//        parameters.set("maxIndegree",  3);
+//        parameters.set("maxOutdegree", 3);
 
-        parameters.set("maxDegree", 8);
+        parameters.set("sampleSize", 500);
+//        parameters.set("penaltyDiscount", 1);
+//        parameters.set("alpha", 0.001);
 
-        parameters.set("numCategories", 5);
-        parameters.set("percentDiscrete", 3);
-
-        parameters.set("numCategoriesToDiscretize", 3);
-
-        parameters.set("intervalBetweenRecordings", 20);
+//        parameters.set("numCategoriesToDiscretize", 3);
+//
+        parameters.set("intervalBetweenRecordings", 10);
 
         parameters.set("varLow", 1.);
         parameters.set("varHigh", 3.);
@@ -66,14 +71,17 @@ public class TestConditionalGaussianSimulation {
         parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
 
-        parameters.set("scaleFreeAlpha", .9);
-        parameters.set("scaleFreeBeta", .05);
-        parameters.set("scaleFreeDeltaIn", 3);
-        parameters.set("scaleFreeDeltaOut", .1);
+//        parameters.set("scaleFreeAlpha", .9);
+//        parameters.set("scaleFreeBeta", .05);
+//        parameters.set("scaleFreeDeltaIn", 3);
+//        parameters.set("scaleFreeDeltaOut", .1);
+
+        parameters.set("numRandomSelections", 1);
+        parameters.set("randomSelectionSize", 1);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("numCategories"));
+//        statistics.add(new ParameterColumn("numCategories"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -85,13 +93,12 @@ public class TestConditionalGaussianSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
+        algorithms.add(new ImagesSemBic());
+//        algorithms.add(new ImagesPcMax());
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
-//        simulations.add(new LeeHastieSimulation(new RandomForward()));
+        simulations.add(new LinearFisherModel(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
@@ -99,16 +106,16 @@ public class TestConditionalGaussianSimulation {
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(false);
-        comparison.setSaveGraphs(true);
+        comparison.setParallelized(true);
+//        comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(true);
+        comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
     public static void main(String...args) {
-        new TestConditionalGaussianSimulation().test1();
+        new TestImagesSimulation().test1();
     }
 }
 

@@ -21,35 +21,30 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import static java.lang.Math.PI;
+import static java.lang.Math.log;
 
 /**
  * Implements the continuous BIC score for FGS.
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreImages2 implements Score {
-
-    // The covariance matrix.
-    private List<ICovarianceMatrix> covariances;
+public class SemBicScoreImages3 implements ISemBicScore, Score {
 
     // The variables of the covariance matrix.
     private List<Node> variables;
 
-    // The sample size of the covariance matrix.
     private int sampleSize;
 
     // The penalty penaltyDiscount.
@@ -64,92 +59,30 @@ public class SemBicScoreImages2 implements Score {
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
-    private Set<Integer> forbidden = new HashSet<>();
+
+    List<TetradMatrix> dataSets = new ArrayList<>();
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreImages2(List<DataModel> dataModels) {
-        if (dataModels == null) {
-            throw new NullPointerException();
-        }
-
-        this.penaltyDiscount = 2;
-        this.variables = dataModels.get(0).getVariables();
-
-        covariances = new ArrayList<>();
-
-        for (DataModel model : dataModels) {
+    public SemBicScoreImages3(List<DataSet> dataSets) {
+        for (DataModel model : dataSets) {
             if (model instanceof DataSet) {
                 DataSet dataSet = (DataSet) model;
+                this.dataSets.add(dataSet.getDoubleData());
 
                 if (!dataSet.isContinuous()) {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
-
-                CovarianceMatrixOnTheFly cov = new CovarianceMatrixOnTheFly(dataSet);
-                cov.setVariables(variables);
-                covariances.add(cov);
-            } else if (model instanceof ICovarianceMatrix) {
-                ((ICovarianceMatrix) model).setVariables(variables);
-                covariances.add((ICovarianceMatrix) model);
-            } else {
-                throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
             }
         }
 
-        this.sampleSize = covariances.get(0).getSampleSize();
+        this.sampleSize = dataSets.get(0).getNumRows();
+        this.variables = dataSets.get(0).getVariables();
     }
 
-    /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
-     */
-    public double localScore(int i, int... parents) {
-        for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
-        double lik = 0.0;
-
-        int m = covariances.size();
-
-        for (int k = 0; k < m; k++) {
-            double residualVariance = getCovariances(k).getValue(i, i);
-            TetradMatrix covxx = getSelection1(getCovariances(k), parents);
-
-            try {
-                TetradMatrix covxxInv = covxx.inverse();
-
-                TetradVector covxy = getSelection2(getCovariances(k), parents, i);
-                TetradVector b = covxxInv.times(covxy);
-                residualVariance -= covxy.dotProduct(b);
-
-                if (residualVariance <= 0) {
-                    if (isVerbose()) {
-                        out.println("Nonpositive residual varianceY: resVar / varianceY = " +
-                                (residualVariance / getCovariances(k).getValue(i, i)));
-                    }
-                    return Double.NaN;
-                }
-
-                lik += -0.5 * sampleSize * Math.log(residualVariance);
-            } catch (Exception e) {
-                boolean removedOne = true;
-
-                while (removedOne) {
-                    List<Integer> _parents = new ArrayList<>();
-                    for (int y = 0; y < parents.length; y++) _parents.add(parents[y]);
-                    _parents.removeAll(forbidden);
-                    parents = new int[_parents.size()];
-                    for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                    removedOne = printMinimalLinearlyDependentSet(parents, getCovariances(k));
-                }
-
-                return Double.NaN;
-            }
-        }
-
-        double c = getPenaltyDiscount();
-        int N = sampleSize;
-        int dof = m + 1;
-        return 2.0 * lik - c * m * dof * Math.log(N);
+    private TetradMatrix cov(TetradMatrix x) {
+        return new TetradMatrix(new Covariance(x.getRealMatrix(), true).getCovarianceMatrix());
     }
 
     @Override
@@ -162,7 +95,92 @@ public class SemBicScoreImages2 implements Score {
         return localScore(y, x) - localScore(y);
     }
 
-    private int[] append(int[] parents, int extra) {
+    /**
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     */
+    public double localScore(int i, int... parents) {
+        int A = dataSets.size();
+        int a = sampleSize;
+        int p = parents.length;
+        int N = a * A;
+
+        int[] rows = new int[dataSets.get(0).rows()];
+        for (int k = 0; k < dataSets.get(0).rows(); k++) rows[k] = k;
+
+        double lik = 0.0;
+
+        for (TetradMatrix dataSet : dataSets) {
+            int[] all = append(parents, i);
+            final double lik1 = gaussianLikelihood2(dataSet.getSelection(rows, all));
+            final double lik2 = gaussianLikelihood2(dataSet.getSelection(rows, parents));
+            lik += lik1 - lik2;
+        }
+
+        int dof = A * (h(p + 1) - h(p));
+
+        return 2.0 * (lik + 0 * getPriorForStructure(p)) - dof * log(N);
+    }
+
+    private int h(int p) {
+        return p * (p + 1) / 2;
+    }
+
+    private double getPriorForStructure(int numParents) {
+        double e = 1;
+        int vm = variables.size() - 1;
+        return numParents * log(e / (vm)) + (vm - numParents) * log(1.0 - (e / (vm)));
+    }
+
+    private double gaussianLikelihood(TetradMatrix sigma) {
+        int k = sigma.columns();
+        return -0.5 * log(sigma.det()) - k - 0.5 * k * log(2.0 * PI);
+    }
+
+    private double gaussianLikelihood2(TetradMatrix x) {
+        if (x.rows() == 0 || x.columns() == 0) return 0.0;
+        TetradMatrix sigma = cov(x);
+        TetradMatrix sigmaInv = sigma.inverse();
+        double sigmaDet = sigma.det();
+        return gaussianLikelihood2(x, sigmaInv, sigmaDet);
+    }
+
+    private double gaussianLikelihood2(TetradMatrix x, TetradMatrix sigmaInv, double sigmaDet) {
+        TetradMatrix xm = DataUtils.centerData(x);
+        int a = x.rows();
+        double g = xm.times(sigmaInv).times(sigmaInv).times(xm.transpose()).get(0, 0);
+        int k = x.columns();
+        return -0.5 * a * log(sigmaDet) - 0.5 * g - 0.5 * a * k * log(2.0 * PI);
+    }
+
+    // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
+    // the denominator is a mixture of Gaussians.
+    private double likelihoodMixed(TetradMatrix subsample) {
+        final int k = subsample.columns();
+        final double g = Math.pow(2.0 * Math.PI, k);
+
+        double lnL = 0.0;
+        TetradMatrix sigma = cov(subsample);
+        TetradMatrix sigmaInv = sigma.inverse();
+        double sigmaDet = sigma.det();
+
+        for (int i = 0; i < subsample.rows(); i++) {
+            lnL += gaussianLikelihood2(subsample, sigmaInv, sigmaDet);
+        }
+
+        return lnL;
+    }
+
+    private double prob(Double factor, TetradMatrix inv, TetradVector x) {
+        return factor * Math.exp(-0.5 * inv.times(x).dotProduct(x));
+    }
+
+    // Calculates the means of the columns of x.
+    private TetradVector means(TetradMatrix x) {
+        return x.sum(1).scalarMult(1.0 / x.rows());
+    }
+
+
+    int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
@@ -172,27 +190,16 @@ public class SemBicScoreImages2 implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
     public double localScore(int i, int parent) {
         return localScore(i, new int[]{parent});
     }
+
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
     public double localScore(int i) {
         return localScore(i, new int[0]);
-    }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
     public void setOut(PrintStream out) {
@@ -203,17 +210,9 @@ public class SemBicScoreImages2 implements Score {
         return penaltyDiscount;
     }
 
-    private ICovarianceMatrix getCovariances(int i) {
-        return covariances.get(i);
-    }
-
-    public int getSampleSize() {
-        return sampleSize;
-    }
-
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * log(sampleSize);
     }
 
     public DataSet getDataSet() {
@@ -243,29 +242,19 @@ public class SemBicScoreImages2 implements Score {
     }
 
     @Override
-    public void setParameter1(double alpha) {
-        this.penaltyDiscount = alpha;
+    public void setParameter1(double value) {
+        this.penaltyDiscount = value;
+    }
+
+    @Override
+    public int getSampleSize() {
+        return sampleSize;
     }
 
     // Calculates the BIC score.
-    private double score(double residualVariance, int n, double logn, int p, double c) {
-        int cols = getCovariances(0).getDimension();
-        double q = 2 / (double) cols;
-        double bic = -n * Math.log(residualVariance) - c * (p + 1) * logn;
-        double structPrior = (p * Math.log(q) + (cols - p) * Math.log(1.0 - q));
-        return bic;//+ structPrior;
+    private double score(double residualVariance, int n, int p, double c) {
+        return -n * log(residualVariance) - c * (p + 1) * log(n);
     }
-
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int n, double logn, int p, double c) {
-//        int cols = getDataSet().getNumColumns();
-//        double q = 2 / (double) cols;
-//
-//        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
-//
-////        return -n * Math.log(residualVariance) - c * (p + 1) * logn + (p * Math.log(q) + (n - p) * Math.log(1.0 - q));
-//    }
-
 
     private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
@@ -276,7 +265,7 @@ public class SemBicScoreImages2 implements Score {
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
         List<Node> _parents = new ArrayList<>();
         for (int p : parents) _parents.add(variables.get(p));
 
@@ -296,21 +285,9 @@ public class SemBicScoreImages2 implements Score {
             try {
                 m.inverse();
             } catch (Exception e2) {
-                forbidden.add(sel[0]);
                 out.println("### Linear dependence among variables: " + _sel);
-                out.println("### Removing " + _sel.get(0));
-                return true;
             }
         }
-
-        return false;
-    }
-
-    public void setVariables(List<Node> variables) {
-        for (ICovarianceMatrix cov : covariances) {
-            cov.setVariables(variables);
-        }
-        this.variables = variables;
     }
 
     @Override
@@ -326,7 +303,7 @@ public class SemBicScoreImages2 implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(sampleSize));
+        return 1000;
     }
 }
 

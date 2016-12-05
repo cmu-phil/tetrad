@@ -281,7 +281,7 @@ public class ConditionalGaussianLikelihood {
         int p = (int) getPenaltyDiscount();
 
         // Only count dof for continuous cells that contributed to the likelihood calculation.
-        final int dof = f(A) * h(X) + f(A);
+        final int dof = p * f(A) * h(X) + f(A);
         return new Ret(lnL, dof);
     }
 
