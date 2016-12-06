@@ -50,12 +50,12 @@ public class TestImagesSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 20);
-        parameters.set("avgDegree", 3);
+        parameters.set("avgDegree", 4);
 //        parameters.set("maxDegree", 5);
 //        parameters.set("maxIndegree",  3);
 //        parameters.set("maxOutdegree", 3);
 
-        parameters.set("sampleSize", 500);
+        parameters.set("sampleSize", 1000);
 //        parameters.set("penaltyDiscount", 1);
 //        parameters.set("alpha", 0.001);
 

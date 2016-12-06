@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.io.PrintStream;
@@ -34,6 +35,7 @@ import java.util.List;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.log;
+import static java.lang.Math.signum;
 
 /**
  * Implements the continuous BIC score for FGS.
@@ -50,17 +52,13 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
 
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGS
-    private boolean ignoreLinearDependent = false;
-
     // The printstream output should be sent to.
     private PrintStream out = System.out;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
 
-    List<TetradMatrix> dataSets = new ArrayList<>();
+    List<TetradMatrix> covs = new ArrayList<>();
 
     /**
      * Constructs the score using a covariance matrix.
@@ -69,11 +67,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         for (DataModel model : dataSets) {
             if (model instanceof DataSet) {
                 DataSet dataSet = (DataSet) model;
-                this.dataSets.add(dataSet.getDoubleData());
-
-                if (!dataSet.isContinuous()) {
-                    throw new IllegalArgumentException("Datasets must be continuous.");
-                }
+                covs.add(cov(dataSet));
             }
         }
 
@@ -81,8 +75,8 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         this.variables = dataSets.get(0).getVariables();
     }
 
-    private TetradMatrix cov(TetradMatrix x) {
-        return new TetradMatrix(new Covariance(x.getRealMatrix(), true).getCovarianceMatrix());
+    private TetradMatrix cov(DataSet x) {
+        return new CovarianceMatrix(x).getMatrix();
     }
 
     @Override
@@ -99,26 +93,24 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        int A = dataSets.size();
+        int A = covs.size();
         int a = sampleSize;
         int p = parents.length;
         int N = a * A;
 
-        int[] rows = new int[dataSets.get(0).rows()];
-        for (int k = 0; k < dataSets.get(0).rows(); k++) rows[k] = k;
-
         double lik = 0.0;
 
-        for (TetradMatrix dataSet : dataSets) {
+        for (TetradMatrix cov : covs) {
             int[] all = append(parents, i);
-            final double lik1 = gaussianLikelihood2(dataSet.getSelection(rows, all));
-            final double lik2 = gaussianLikelihood2(dataSet.getSelection(rows, parents));
-            lik += lik1 - lik2;
+            final double lik1 = gaussianLikelihood(cov.getSelection(all, all), a);
+            final double lik2 = gaussianLikelihood(cov.getSelection(parents, parents), a);
+            final double v = lik1 - lik2;
+            lik += v;
         }
 
         int dof = A * (h(p + 1) - h(p));
 
-        return 2.0 * (lik + 0 * getPriorForStructure(p)) - dof * log(N);
+        return 2.0 * lik - dof * log(N);
     }
 
     private int h(int p) {
@@ -131,54 +123,38 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return numParents * log(e / (vm)) + (vm - numParents) * log(1.0 - (e / (vm)));
     }
 
-    private double gaussianLikelihood(TetradMatrix sigma) {
-        int k = sigma.columns();
-        return -0.5 * log(sigma.det()) - k - 0.5 * k * log(2.0 * PI);
-    }
+    private double gaussianLikelihood(TetradMatrix sigma, int N) {
+        sigma = TetradMatrix.identity(sigma.rows());
+        TetradMatrix inv = sigma.inverse();
 
-    private double gaussianLikelihood2(TetradMatrix x) {
-        if (x.rows() == 0 || x.columns() == 0) return 0.0;
-        TetradMatrix sigma = cov(x);
-        TetradMatrix sigmaInv = sigma.inverse();
-        double sigmaDet = sigma.det();
-        return gaussianLikelihood2(x, sigmaInv, sigmaDet);
-    }
+        double g = 0.0;
 
-    private double gaussianLikelihood2(TetradMatrix x, TetradMatrix sigmaInv, double sigmaDet) {
-        TetradMatrix xm = DataUtils.centerData(x);
-        int a = x.rows();
-        double g = xm.times(sigmaInv).times(sigmaInv).times(xm.transpose()).get(0, 0);
-        int k = x.columns();
-        return -0.5 * a * log(sigmaDet) - 0.5 * g - 0.5 * a * k * log(2.0 * PI);
-    }
+        for (int i = 0; i < sigma.rows(); i++) {
+            double var = sigma.get(i, i);
+            double sum2 = 0.0;
 
-    // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
-    // the denominator is a mixture of Gaussians.
-    private double likelihoodMixed(TetradMatrix subsample) {
-        final int k = subsample.columns();
-        final double g = Math.pow(2.0 * Math.PI, k);
+            for (int j = 0; j < inv.columns(); j++) {
+                sum2 += inv.get(j, i);
+            }
 
-        double lnL = 0.0;
-        TetradMatrix sigma = cov(subsample);
-        TetradMatrix sigmaInv = sigma.inverse();
-        double sigmaDet = sigma.det();
-
-        for (int i = 0; i < subsample.rows(); i++) {
-            lnL += gaussianLikelihood2(subsample, sigmaInv, sigmaDet);
+            g += var * sum2;
         }
 
-        return lnL;
-    }
+        System.out.println(sigma);
+        System.out.println(inv);
+//        System.out.println(g);
 
-    private double prob(Double factor, TetradMatrix inv, TetradVector x) {
-        return factor * Math.exp(-0.5 * inv.times(x).dotProduct(x));
-    }
+        int k = sigma.columns();
+        final double v1 = -0.5 * N * log(sigma.det());
+        final double v2 = -0.5 * N * g;
+        final double v3 = -0.5 * N * k * log(2.0 * PI);
 
-    // Calculates the means of the columns of x.
-    private TetradVector means(TetradMatrix x) {
-        return x.sum(1).scalarMult(1.0 / x.rows());
-    }
+        final double lik = v1 + v2 + v3;
 
+        System.out.println("g = " + g + " v1 = " + v1 + " v2 = " + v2 + " v3 = " + v3 + " lik = " + lik);
+
+        return lik;
+    }
 
     int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
