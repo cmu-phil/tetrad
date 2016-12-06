@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TextTable;
+import edu.pitt.dbmi.ccd.rest.client.util.JsonUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -2459,6 +2460,18 @@ public final class GraphUtils {
         throw new IllegalStateException();
     }
 
+    public static Graph loadGraphJson(File file) {
+	try {
+            Reader in1 = new FileReader(file);
+            return readerToGraphJson(in1);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        throw new IllegalStateException();
+    }
+    
     public static Graph readerToGraphTxt(String graphString) throws IOException {
         return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
     }
@@ -2526,6 +2539,21 @@ public final class GraphUtils {
 
             graph.addEdge(_edge);
         }
+
+        return graph;
+    }
+
+    public static Graph readerToGraphJson(Reader reader) throws IOException {
+        BufferedReader in = new BufferedReader(reader);
+
+        String json = "";
+        String line;
+
+        while ((line = in.readLine()) != null) {
+            json += line.trim();
+        }
+        
+        Graph graph = JsonUtils.parseJSONObjectToTetradGraph(json);
 
         return graph;
     }

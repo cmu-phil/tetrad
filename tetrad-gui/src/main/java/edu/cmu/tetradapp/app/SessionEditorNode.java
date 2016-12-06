@@ -264,6 +264,8 @@ public final class SessionEditorNode extends DisplayNode {
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
+            editorWindow.setResizable(true);
+            editorWindow.setMaximum(true);
             editorWindow.setVisible(true);
             spawnedEditor = editorWindow;
 

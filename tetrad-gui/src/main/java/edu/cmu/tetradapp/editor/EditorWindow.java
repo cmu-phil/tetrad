@@ -69,6 +69,8 @@ public class EditorWindow extends JInternalFrame
                         boolean cancellable, Component centeringComp) {
         super(title, true, true, true, false);
 
+        System.out.println("EditorWindow: " + title + " : " + buttonName);
+        
         if (editor == null) {
             throw new NullPointerException("Editor must not be null.");
         }

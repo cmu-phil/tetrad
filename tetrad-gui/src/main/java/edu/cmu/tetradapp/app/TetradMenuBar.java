@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.app.hpc.HpcAccountSettingAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -30,6 +31,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -118,6 +120,14 @@ final class TetradMenuBar extends JMenuBar {
         });
 
         fileMenu.add(menuItem);
+        fileMenu.addSeparator();
+
+        JMenu settingsMenu = new JMenu("Settings");
+        JMenuItem loggingSettingMenuItem = new JMenuItem(new SetupLoggingAction());
+        JMenuItem hpcAccountSettingMenuItem = new JMenuItem(new HpcAccountSettingAction());
+        settingsMenu.add(loggingSettingMenuItem);
+        settingsMenu.add(hpcAccountSettingMenuItem);
+        fileMenu.add(settingsMenu);
         fileMenu.addSeparator();
 
         JMenuItem exit = new JMenuItem(new ExitAction());
@@ -226,7 +236,7 @@ final class TetradMenuBar extends JMenuBar {
         displayLogging.setText(desktop.isDisplayLogging() ? "Stop Logging" : "Start Logging");
 
         loggingMenu.add(displayLogging);
-        loggingMenu.add(new SetupLoggingAction());
+//        loggingMenu.add(new SetupLoggingAction());
 //        loggingMenu.add(loggingState);
 
 

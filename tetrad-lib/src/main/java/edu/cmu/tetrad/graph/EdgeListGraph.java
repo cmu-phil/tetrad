@@ -1965,6 +1965,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return triplesList;
     }
 
+    public void setStuffRemovedSinceLastTripleAccess(
+	boolean stuffRemovedSinceLastTripleAccess) {
+	this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
+    }
+
 }
 
 

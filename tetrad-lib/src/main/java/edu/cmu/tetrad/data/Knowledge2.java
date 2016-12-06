@@ -475,7 +475,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
     }
 
-    private void saveKnowledge(Writer out)
+    public void saveKnowledge(Writer out)
             throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");
