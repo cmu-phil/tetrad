@@ -100,6 +100,10 @@ public class CausalCmdApplication {
 
     private static AlgorithmCli getAlgorithmCli(String[] args) {
         String algorithm = Args.getOptionValue(args, ALGO_OPT);
+        if (algorithm == null) {
+            algorithm = "";
+        }
+
         AlgorithmType algorithmType = ALGO_TYPES.get(algorithm);
         if (algorithmType == null) {
             return null;
