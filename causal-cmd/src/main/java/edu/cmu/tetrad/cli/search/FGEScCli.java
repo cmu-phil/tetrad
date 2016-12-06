@@ -45,12 +45,13 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 /**
+ * Command-line interface for FGES continuous.
  *
  * Sep 12, 2016 1:56:30 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgscCli extends AbstractAlgorithmCli {
+public class FGEScCli extends AbstractAlgorithmCli {
 
     protected double penaltyDiscount;
     protected int maxDegree;
@@ -59,7 +60,7 @@ public class FgscCli extends AbstractAlgorithmCli {
     protected boolean skipUniqueVarName;
     protected boolean skipZeroVariance;
 
-    public FgscCli(String[] args) {
+    public FGEScCli(String[] args) {
         super(args);
     }
 
@@ -164,7 +165,7 @@ public class FgscCli extends AbstractAlgorithmCli {
 
     @Override
     public AlgorithmType getAlgorithmType() {
-        return AlgorithmType.FGSC;
+        return AlgorithmType.FGESC;
     }
 
 }

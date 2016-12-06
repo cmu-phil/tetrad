@@ -45,12 +45,13 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 /**
+ * Command-line interface for FGES discrete.
  *
  * Sep 14, 2016 2:31:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsdCli extends AbstractAlgorithmCli {
+public class FGESdCli extends AbstractAlgorithmCli {
 
     public static final int CATEGORY_LIMIT = 10;
 
@@ -62,7 +63,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
     protected boolean skipUniqueVarName;
     protected boolean skipCategoryLimit;
 
-    public FgsdCli(String[] args) {
+    public FGESdCli(String[] args) {
         super(args);
     }
 
@@ -167,7 +168,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     @Override
     public AlgorithmType getAlgorithmType() {
-        return AlgorithmType.FGSD;
+        return AlgorithmType.FGESD;
     }
 
 }
