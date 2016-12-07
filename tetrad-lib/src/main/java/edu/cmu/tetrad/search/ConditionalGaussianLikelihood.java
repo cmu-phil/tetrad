@@ -439,10 +439,9 @@ public class ConditionalGaussianLikelihood {
 
     // Subsample of the continuous mixedVariables conditioning on the given cell.
     private TetradMatrix getSubsample(int[] continuousCols, List<Integer> cell) {
-        int a = cell.size();
-        TetradMatrix subset = new TetradMatrix(a, continuousCols.length);
+        TetradMatrix subset = new TetradMatrix(cell.size(), continuousCols.length);
 
-        for (int i = 0; i < a; i++) {
+        for (int i = 0; i < cell.size(); i++) {
             for (int j = 0; j < continuousCols.length; j++) {
                 subset.set(i, j, continuousData[continuousCols[j]][cell.get(i)]);
             }

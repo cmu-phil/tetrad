@@ -49,19 +49,21 @@ public class TestImagesSimulation {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
-        parameters.set("numMeasures", 20);
+        parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
-//        parameters.set("maxDegree", 5);
+//        parameters.set("maxDegree", 8);
 //        parameters.set("maxIndegree",  3);
 //        parameters.set("maxOutdegree", 3);
 
-        parameters.set("sampleSize", 1000);
-//        parameters.set("penaltyDiscount", 1);
+        parameters.set("sampleSize", 500);
+        parameters.set("penaltyDiscount", 2);
 //        parameters.set("alpha", 0.001);
+
+//        parameters.set("maxDegree", 5);
 
 //        parameters.set("numCategoriesToDiscretize", 3);
 //
-        parameters.set("intervalBetweenRecordings", 10);
+        parameters.set("intervalBetweenRecordings", 20);
 
         parameters.set("varLow", 1.);
         parameters.set("varHigh", 3.);
@@ -77,7 +79,7 @@ public class TestImagesSimulation {
 //        parameters.set("scaleFreeDeltaOut", .1);
 
         parameters.set("numRandomSelections", 1);
-        parameters.set("randomSelectionSize", 1);
+        parameters.set("randomSelectionSize", 3);
 
         Statistics statistics = new Statistics();
 

@@ -411,7 +411,7 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public double det() {
-        return new LUDecomposition(apacheData).getDeterminant();
+        return new CholeskyDecomposition(apacheData).getDeterminant();
     }
 
     public TetradMatrix transpose() {
@@ -466,6 +466,7 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix scalarMult(double scalar) {
+        if (apacheData.getRowDimension() == 0) return new TetradMatrix(0, 0);
         return new TetradMatrix(apacheData.copy().scalarMultiply(scalar), rows(), columns());
     }
 
