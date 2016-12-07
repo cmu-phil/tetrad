@@ -56,7 +56,7 @@ public class TestImagesSimulation {
 //        parameters.set("maxOutdegree", 3);
 
         parameters.set("sampleSize", 500);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 4);
 //        parameters.set("alpha", 0.001);
 
 //        parameters.set("maxDegree", 5);

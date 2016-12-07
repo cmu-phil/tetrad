@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
@@ -210,6 +211,27 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return 2.0 * sum;
     }
 
+//    private double logdet2(TetradMatrix m) {
+//        if (m.rows() == 0) return 0.0;
+//
+//        RealMatrix M = m.getRealMatrix();
+//        final LUDecomposition luDecomposition = new LUDecomposition(M);
+//        RealMatrix L = luDecomposition.getL();
+//        RealMatrix U = luDecomposition.getU();
+//
+//        double sum = 0.0;
+//
+//        for (int i = 0; i < L.getRowDimension(); i++) {
+//            sum += log(L.getEntry(i, i));
+//        }
+//
+//        for (int i = 0; i < U.getRowDimension(); i++) {
+//            sum += log(U.getEntry(i, i));
+//        }
+//
+//        return sum;
+//    }
+
     private int h(int p) {
         return p * (p + 1) / 2;
     }
@@ -221,7 +243,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
 
     private double gaussianLikelihood(TetradMatrix sigma, int n) {
         int k = sigma.columns();
-        return -0.5 * n * (log(sigma.det()) + k * (1.0 + log(2.0 * PI)));
+        return -0.5 * n * (logdet(sigma) + k * (1.0 + log(2.0 * PI)));
     }
 
     private int[] append(int[] parents, int i) {
