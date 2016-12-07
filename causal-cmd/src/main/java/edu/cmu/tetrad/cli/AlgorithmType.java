@@ -26,9 +26,9 @@ package edu.cmu.tetrad.cli;
  */
 public enum AlgorithmType {
 
-    FGSC("FGS Continuous", "fgsc"),
-    FGSD("FGS Discrete", "fgsd"),
-    GFCIC("GFCI Continuous", "gfcic");
+    FGESC("FGES Continuous", "FGESc"),
+    FGESD("FGES Discrete", "FGESd"),
+    GFCIC("GFCI Continuous", "GFCIc");
 
     private final String title;
 

@@ -18,15 +18,15 @@
  */
 package edu.cmu.tetrad.cli;
 
-import edu.cmu.tetrad.cli.search.FgscCli;
-import edu.cmu.tetrad.cli.search.FgsdCli;
-import edu.cmu.tetrad.cli.search.GfcicCli;
+import edu.cmu.tetrad.cli.search.FGEScCli;
+import edu.cmu.tetrad.cli.search.FGESdCli;
+import edu.cmu.tetrad.cli.search.GFCIcCli;
 import edu.cmu.tetrad.cli.simulation.data.BayesNetRandomForwardCli;
 import edu.cmu.tetrad.cli.simulation.data.SemRandomForwardCli;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -45,8 +45,8 @@ public class CausalCmdApplication {
     private static final String SIM_DATA_OPT = "simulate-data";
     private static final String VERSION_OPT = "version";
 
-    private static final Map<String, AlgorithmType> ALGO_TYPES = new HashMap<>();
-    private static final Map<String, SimulationType> SIM_TYPES = new HashMap<>();
+    private static final Map<String, AlgorithmType> ALGO_TYPES = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private static final Map<String, SimulationType> SIM_TYPES = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     static {
         populateMainOptions();
@@ -100,6 +100,10 @@ public class CausalCmdApplication {
 
     private static AlgorithmCli getAlgorithmCli(String[] args) {
         String algorithm = Args.getOptionValue(args, ALGO_OPT);
+        if (algorithm == null) {
+            algorithm = "";
+        }
+
         AlgorithmType algorithmType = ALGO_TYPES.get(algorithm);
         if (algorithmType == null) {
             return null;
@@ -107,12 +111,12 @@ public class CausalCmdApplication {
 
         args = Args.removeOption(args, ALGO_OPT);
         switch (algorithmType) {
-            case FGSC:
-                return new FgscCli(args);
-            case FGSD:
-                return new FgsdCli(args);
+            case FGESC:
+                return new FGEScCli(args);
+            case FGESD:
+                return new FGESdCli(args);
             case GFCIC:
-                return new GfcicCli(args);
+                return new GFCIcCli(args);
             default:
                 return null;
         }
