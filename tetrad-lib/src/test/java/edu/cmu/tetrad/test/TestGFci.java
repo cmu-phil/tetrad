@@ -187,7 +187,7 @@ public class TestGFci {
         }
     }
 
-    @Test
+    //@Test
     public void testFromData() {
         int numNodes = 20;
         int numLatents = 5;
