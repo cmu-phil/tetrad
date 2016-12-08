@@ -1,10 +1,12 @@
 language: java
+
 jdk:
 - oraclejdk8
+
 branches:
   only:
   - development
-  - travis_kill_test
+
 env:
   global:
   - SONATYPE_USERNAME=travis
