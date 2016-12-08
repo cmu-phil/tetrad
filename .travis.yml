@@ -14,4 +14,4 @@ after_success:
 - mvn deploy --settings settings.xml -DskipTests=true -B
 
 before_script:
-  - echo "MAVEN_OPTS='-Xmx3g -XX:MaxPermSize=512m'" > ~/.mavenrc
+  - echo "MAVEN_OPTS='-Xmx3g'" > ~/.mavenrc
