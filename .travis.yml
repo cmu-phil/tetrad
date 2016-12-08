@@ -4,6 +4,7 @@ jdk:
 branches:
   only:
   - development
+  - travis_kill_test
 env:
   global:
   - SONATYPE_USERNAME=travis
@@ -11,3 +12,6 @@ env:
 
 after_success:
 - mvn deploy --settings settings.xml -DskipTests=true -B
+
+before_script:
+  - echo "MAVEN_OPTS='-Xmx3g -XX:MaxPermSize=512m'" > ~/.mavenrc
