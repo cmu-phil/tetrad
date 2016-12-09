@@ -43,12 +43,12 @@ public class TestConditionalGaussianSimulation {
     public void test1() {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4);
-        parameters.set("sampleSize", 2000);
+        parameters.set("avgDegree", 2, 4);
+        parameters.set("sampleSize", 1000);
         parameters.set("penaltyDiscount", 1);
-        parameters.set("alpha", 0.01);
+        parameters.set("alpha", 0.001);
 
         parameters.set("maxDegree", 8);
 
@@ -75,6 +75,7 @@ public class TestConditionalGaussianSimulation {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -103,7 +104,7 @@ public class TestConditionalGaussianSimulation {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(false);
+        comparison.setTabDelimitedTables(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
