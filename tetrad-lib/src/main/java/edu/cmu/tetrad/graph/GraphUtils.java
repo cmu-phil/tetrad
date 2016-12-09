@@ -22,11 +22,11 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TextTable;
-import edu.pitt.dbmi.ccd.rest.client.util.JsonUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import org.apache.http.client.ClientProtocolException;
 
 import edu.pitt.dbmi.ccd.rest.client.RestHttpsClient;
-import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
 import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
 

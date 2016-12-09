@@ -47,6 +47,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
@@ -69,7 +70,6 @@ import edu.pitt.dbmi.ccd.rest.client.service.data.RemoteDataFileService;
 import edu.pitt.dbmi.ccd.rest.client.service.jobqueue.JobQueueService;
 import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
 import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
-import edu.pitt.dbmi.ccd.rest.client.util.JsonUtils;
 import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
 
 import javax.help.CSH;
@@ -77,7 +77,6 @@ import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.StyledDocument;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -193,7 +192,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
 //        descriptions.add(new AlgorithmDescription(AlgName.PcLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FGS, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
         //        descriptions.add(new AlgorithmDescription(AlgName.PcMaxLocal, AlgType.forbid_latent_common_causes, OracleType.Test));
@@ -364,7 +363,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void actionPerformed(ActionEvent e) {
                 setAlgorithm();
 
-                JComboBox<AlgName> box = (JComboBox<AlgName>) e.getSource();
+                @SuppressWarnings("unchecked")
+		JComboBox<AlgName> box = (JComboBox<AlgName>) e.getSource();
                 Object selectedItem = box.getSelectedItem();
 
                 if (selectedItem != null) {
@@ -418,7 +418,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
         class MyKnowledgeInput implements KnowledgeBoxInput {
-            private String name;
+
+	    private static final long serialVersionUID = 1344090367098647696L;
+	    
+	    private String name;
             private List<Node> variables;
             private List<String> varNames;
 
@@ -508,7 +511,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
                 AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
                 switch (name) {
-                case FGS:
+                case FGES:
                 case GFCI:
                     computingAccount = showRemoteComputingOptions(name);
                     break;
@@ -852,15 +855,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             progressTextArea.append(newline);
             progressTextArea.updateUI();
 
-            String algorithmName = AbstractAlgorithmRequest.FGS;
+            String algorithmName = AbstractAlgorithmRequest.FGES;
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
             AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
             switch (name) {
-                case FGS:
-                    algorithmName = AbstractAlgorithmRequest.FGS;
+                case FGES:
+                    algorithmName = AbstractAlgorithmRequest.FGES;
                     if (dataModel.isDiscrete()) {
-                        algorithmName = AbstractAlgorithmRequest.FGS_DISCRETE;
+                        algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
                     }
                     break;
                 case GFCI:
@@ -1017,7 +1020,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
 
         switch (name) {
-            case FGS:
+            case FGES:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
                     algorithm = new Fgs(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
@@ -1333,8 +1336,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         explain2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) algNamesDropdown;
-                String name = box.getSelectedItem().toString();
+//                JComboBox box = (JComboBox) algNamesDropdown;
+//                String name = box.getSelectedItem().toString();
 //                helpSet.setHomeID(name.toLowerCase());
                 helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
@@ -1346,8 +1349,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         explain3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) testDropdown;
-                String name = box.getSelectedItem().toString();
+//                JComboBox box = (JComboBox) testDropdown;
+//                String name = box.getSelectedItem().toString();
 //                helpSet.setHomeID(name.toLowerCase());
                 helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
@@ -1359,8 +1362,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         explain4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) scoreDropdown;
-                String name = box.getSelectedItem().toString();
+//                JComboBox box = (JComboBox) scoreDropdown;
+//                String name = box.getSelectedItem().toString();
 //                helpSet.setHomeID(name.toLowerCase());
                 helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
@@ -1508,7 +1511,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGS, /*PcLocal,*/ PcMax, PcMaxLocal, FAS,
+        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, PcMaxLocal, FAS,
         FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, GCCD,
         LiNGAM, MGM,

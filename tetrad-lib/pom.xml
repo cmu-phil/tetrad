@@ -139,10 +139,11 @@
 			<version>4.5.2</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
-			<groupId>edu.pitt.dbmi.ccd</groupId>
-			<artifactId>causal-tetrad-rest-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
 		</dependency>
 
 	</dependencies>

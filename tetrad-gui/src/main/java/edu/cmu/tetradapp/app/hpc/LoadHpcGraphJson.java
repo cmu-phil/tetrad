@@ -27,6 +27,7 @@ import javax.swing.table.TableColumnModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -36,7 +37,6 @@ import edu.pitt.dbmi.ccd.rest.client.dto.algo.ResultFile;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
 import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
-import edu.pitt.dbmi.ccd.rest.client.util.JsonUtils;
 import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
 
 /**
@@ -178,12 +178,10 @@ public class LoadHpcGraphJson extends AbstractAction {
 	    @Override
 	    public void valueChanged(ListSelectionEvent e) {
 		int row = jsonResultTable.getSelectedRow();
-		System.out.println("Row: " + row);
 		if (row >= 0) {
 		    DefaultTableModel model = (DefaultTableModel) jsonResultTable
 			    .getModel();
 		    jsonFileName = (String) model.getValueAt(row, 0);
-		    System.out.println(" File Name: " + jsonFileName);
 		}
 	    }
 	});
@@ -217,8 +215,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 			    .getColumnModel();
 		    List<Integer> columnWidthList = new ArrayList<>();
 		    for (int i = 0; i < columnModel.getColumnCount(); i++) {
-			int width = columnModel.getColumn(i).getWidth();
-			System.out.println("Index: " + i + " getWidth(): " + width + " getPreferedWidth(): " + columnModel.getColumn(i).getPreferredWidth());
+			int width = columnModel.getColumn(i).getPreferredWidth();
 			columnWidthList.add(width);
 		    }
 		    

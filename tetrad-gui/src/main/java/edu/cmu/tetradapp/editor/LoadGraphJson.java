@@ -3,7 +3,6 @@ package edu.cmu.tetradapp.editor;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -68,8 +67,4 @@ public class LoadGraphJson extends AbstractAction {
         return chooser;
     }
 
-    private GraphEditable getGraphEditable() {
-        return graphEditable;
-    }
-    
 }
