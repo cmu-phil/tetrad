@@ -50,7 +50,7 @@ public class TestImagesSimulation {
 
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 8);
 //        parameters.set("maxDegree", 8);
 //        parameters.set("maxIndegree",  3);
 //        parameters.set("maxOutdegree", 3);
@@ -62,13 +62,13 @@ public class TestImagesSimulation {
 //        parameters.set("maxDegree", 5);
 
 //        parameters.set("numCategoriesToDiscretize", 3);
-//
+
         parameters.set("intervalBetweenRecordings", 20);
 
         parameters.set("varLow", 1.);
         parameters.set("varHigh", 3.);
-        parameters.set("coefLow", .5);
-        parameters.set("coefHigh", 1.5);
+        parameters.set("coefLow", .1);
+        parameters.set("coefHigh", 1);
         parameters.set("coefSymmetric", true);
         parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
@@ -96,7 +96,7 @@ public class TestImagesSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ImagesSemBic());
-//        algorithms.add(new ImagesPcMax());
+        algorithms.add(new ImagesPcMax());
 
         Simulations simulations = new Simulations();
 
@@ -116,7 +116,7 @@ public class TestImagesSimulation {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-    public static void main(String...args) {
+    public static void main(String... args) {
         new TestImagesSimulation().test1();
     }
 }

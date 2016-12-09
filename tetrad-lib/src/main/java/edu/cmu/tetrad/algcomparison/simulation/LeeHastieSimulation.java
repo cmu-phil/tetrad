@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.pitt.csb.mgm.MixedUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 import java.util.*;
 
@@ -119,7 +120,10 @@ public class LeeHastieSimulation implements Simulation {
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                nd.put(shuffledOrder.get(i).getName(), parameters.getInt("numCategories"));
+                final int minNumCategories = parameters.getInt("minCategories");
+                final int maxNumCategories = parameters.getInt("maxCategories");
+                final int value = pickNumCategories(minNumCategories, maxNumCategories);
+                nd.put(shuffledOrder.get(i).getName(), value);
             } else {
                 nd.put(shuffledOrder.get(i).getName(), 0);
             }
@@ -134,4 +138,7 @@ public class LeeHastieSimulation implements Simulation {
         return MixedUtils.makeMixedData(ds, nd);
     }
 
+    private int pickNumCategories(int min, int max) {
+        return RandomUtils.nextInt(min, max + 1);
+    }
 }

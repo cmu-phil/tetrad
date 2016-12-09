@@ -24,9 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +93,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        return score(i, parents);
+        return score1(i, parents);
     }
 
     /**
@@ -171,7 +173,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return 1000;
     }
 
-    private double score(int i, int[] parents) {
+    private double score1(int i, int[] parents) {
         int p = parents.length;
 
         double lik = 0.0;
@@ -187,50 +189,34 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
             dof += p + 1;
         }
 
-        return 2.0 * lik - getPenaltyDiscount() * dof * log(N);// + getPriorForStructure(p, 1);
+        return 2.0 * lik - getPenaltyDiscount() * dof * log(N); //getPriorForStructure(p, 2);
+    }
+
+    public double score2(int i, int[] parents) {
+        double lik = 0.0;
+
+        for (int k = 0; k < covs.size(); k++) {
+            final int a = sampleSizes[k];
+            TetradMatrix cov = covs.get(k);
+            double residualVariance = cov.get(i, i);
+            TetradMatrix covxx = cov.getSelection(parents, parents);
+            TetradMatrix covxxInv = covxx.inverse();
+            TetradVector covxy = cov.getSelection(parents, new int[]{i}).getColumn(0);
+            TetradVector b = covxxInv.times(covxy);
+            residualVariance -= covxy.dotProduct(b);
+            lik += - (a / 2.0) * log(residualVariance) - (a / 2.0) - (a / 2.0) * log(2 * PI);
+        }
+
+//        System.out.println(lik);
+
+        return 2.0 * lik - getPenaltyDiscount() * (parents.length + 1) * log(N);
     }
 
     private TetradMatrix cov(DataSet x) {
         TetradMatrix M = x.getDoubleData();
-        RealMatrix covarianceMatrix = new Covariance(M.getRealMatrix(), false).getCovarianceMatrix();
+        RealMatrix covarianceMatrix = new Covariance(M.getRealMatrix(), true).getCovarianceMatrix();
         return new TetradMatrix(covarianceMatrix, covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
     }
-
-    private double logdet(TetradMatrix m) {
-        if (m.rows() == 0) return 0.0;
-
-        RealMatrix M = m.getRealMatrix();
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(M).getL();
-
-        double sum = 0.0;
-
-        for (int i = 0; i < L.getRowDimension(); i++) {
-            sum += log(L.getEntry(i, i));
-        }
-
-        return 2.0 * sum;
-    }
-
-//    private double logdet2(TetradMatrix m) {
-//        if (m.rows() == 0) return 0.0;
-//
-//        RealMatrix M = m.getRealMatrix();
-//        final LUDecomposition luDecomposition = new LUDecomposition(M);
-//        RealMatrix L = luDecomposition.getL();
-//        RealMatrix U = luDecomposition.getU();
-//
-//        double sum = 0.0;
-//
-//        for (int i = 0; i < L.getRowDimension(); i++) {
-//            sum += log(L.getEntry(i, i));
-//        }
-//
-//        for (int i = 0; i < U.getRowDimension(); i++) {
-//            sum += log(U.getEntry(i, i));
-//        }
-//
-//        return sum;
-//    }
 
     private int h(int p) {
         return p * (p + 1) / 2;
@@ -242,8 +228,55 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     }
 
     private double gaussianLikelihood(TetradMatrix sigma, int n) {
+        if (sigma.columns() == 0 || n == 0) return 0;
         int k = sigma.columns();
-        return -0.5 * n * (logdet(sigma) + k * (1.0 + log(2.0 * PI)));
+        return -0.5 * n * log(sigma.det()) - 0.5 * n * k - 0.5 * n * k * log(2.0 * PI);
+    }
+
+    private double logdet(TetradMatrix m) {
+        RealMatrix M = m.getRealMatrix();
+        final double tol = 1e-9;
+        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
+
+        double sum = 0.0;
+
+        for (int i = 0; i < LT.getRowDimension(); i++) {
+            sum += FastMath.log(LT.getEntry(i, i));
+        }
+
+        return 2.0 * sum;
+    }
+
+    private double logdet2(TetradMatrix m) {
+        if (m.rows() == 0) return 0.0;
+
+        RealMatrix M = m.getRealMatrix();
+        final LUDecomposition luDecomposition = new LUDecomposition(M);
+        RealMatrix L = luDecomposition.getL();
+        RealMatrix U = luDecomposition.getU();
+        RealMatrix P = luDecomposition.getP();
+
+//        System.out.println(new TetradMatrix(L.multiply(U)));
+//        System.out.println(new TetradMatrix(m));
+//        System.out.println(new TetradMatrix(L));
+//        System.out.println(new TetradMatrix(U));
+//        System.out.println(new TetradMatrix(P));
+
+        double sum = 0.0;
+
+        for (int i = 0; i < L.getRowDimension(); i++) {
+            sum += FastMath.log(L.getEntry(i, i));
+        }
+
+        for (int i = 0; i < U.getRowDimension(); i++) {
+            sum += FastMath.log(U.getEntry(i, i));
+        }
+
+//        for (int i = 0; i < P.getRowDimension(); i++) {
+//            sum += log(P.getEntry(i, i));
+//        }
+
+        return sum;
     }
 
     private int[] append(int[] parents, int i) {

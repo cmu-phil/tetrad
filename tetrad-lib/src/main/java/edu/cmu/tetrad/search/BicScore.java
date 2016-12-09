@@ -93,12 +93,12 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     @Override
     public double localScore(int node, int parents[]) {
 
-        if (!(variables.get(node) instanceof  DiscreteVariable)) {
+        if (!(variables.get(node) instanceof DiscreteVariable)) {
             throw new IllegalArgumentException("Not discrete: " + variables.get(node));
         }
 
         for (int t : parents) {
-            if (!(variables.get(t) instanceof  DiscreteVariable)) {
+            if (!(variables.get(t) instanceof DiscreteVariable)) {
                 throw new IllegalArgumentException("Not discrete: " + variables.get(t));
             }
         }
@@ -185,14 +185,18 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         //Finally, compute the score
         double lnL = 0.0;
 
+        int N = 0;
+
+        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            int rowCount = n_j[rowIndex];
+            N += rowCount;
+        }
+
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
             for (int childValue = 0; childValue < c; childValue++) {
                 int cellCount = n_jk[rowIndex][childValue];
-                int rowCount = n_j[rowIndex];
-
                 if (cellCount == 0) continue;
-
-                lnL += cellCount * Math.log(cellCount / (double) rowCount);
+                lnL += cellCount * Math.log(cellCount / (double) N);
             }
         }
 

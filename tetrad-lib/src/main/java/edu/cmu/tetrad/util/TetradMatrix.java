@@ -359,7 +359,7 @@ public class TetradMatrix implements TetradSerializable {
 //        return new TetradMatrix(new QRDecomposition(apacheData).getSolver().getInverse());
 //
 //            return new TetradMatrix(new SingularValueDecomposition(apacheData).getSolver().getInverse());
-            return new TetradMatrix(new LUDecomposition(apacheData).getSolver().getInverse());
+            return new TetradMatrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse());
         }
 
     }

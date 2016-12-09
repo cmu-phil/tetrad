@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SemBicScoreImages2;
+import edu.cmu.tetrad.search.SemBicScoreImages3;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -31,13 +32,7 @@ public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataModel> dataModels = new ArrayList<>();
-
-        for (DataSet dataSet : dataSets) {
-            dataModels.add(dataSet);
-        }
-
-        SemBicScoreImages2 score = new SemBicScoreImages2(dataModels);
+        SemBicScoreImages3 score = new SemBicScoreImages3(dataSets);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(test);

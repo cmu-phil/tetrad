@@ -24,8 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -61,12 +62,6 @@ public class ConditionalGaussianLikelihood {
 
     // The AD Tree used to count discrete cells.
     private AdLeafTree adTree;
-
-    // Score used for multinomial cases
-    private BicScore score;
-
-//    // True if by assumption the denominator for problems like P(C | X) = P(X | C) P(C) / P(X) is mixed.
-//    private boolean denominatorMixed = true;
 
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
@@ -133,7 +128,6 @@ public class ConditionalGaussianLikelihood {
 
         this.dataSet = useErsatzVariables();
         this.adTree = AdTrees.getAdLeafTree(this.dataSet);
-        this.score = new BicScore(this.dataSet);
     }
 
     private DataSet useErsatzVariables() {
@@ -210,13 +204,10 @@ public class ConditionalGaussianLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        if (target instanceof DiscreteVariable) {// && !X.isEmpty()) {
-            return likelihoodConditionalMultinomial(X, A, (DiscreteVariable) target);
-        } else {
-            Ret ret1 = likelihoodJoint(XPlus, APlus);
-            Ret ret2 = likelihoodJoint(X, A);
-            return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
-        }
+        Ret ret1 = likelihoodJoint(XPlus, APlus, target);
+        Ret ret2 = likelihoodJoint(X, A, target);
+
+        return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
     }
 
     public double getPenaltyDiscount() {
@@ -233,7 +224,21 @@ public class ConditionalGaussianLikelihood {
 
     // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
-    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+        A = new ArrayList<>(A);
+        X = new ArrayList<>(X);
+
+        if (target instanceof DiscreteVariable) {
+            for (ContinuousVariable x : new ArrayList<>(X)) {
+                final Node variable = dataSet.getVariable(x.getName());
+
+                if (variable != null) {
+                    A.add((DiscreteVariable) variable);
+                    X.remove(x);
+                }
+            }
+        }
+
         int k = X.size();
 
         int[] continuousCols = new int[k];
@@ -291,7 +296,21 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, TetradMatrix sigma) {
-        return -0.5 * (log(sigma.det()) - k - k * log(2.0 * Math.PI));
+        return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * log(2.0 * Math.PI);
+    }
+
+    private double logdet(TetradMatrix m) {
+        RealMatrix M = m.getRealMatrix();
+        final double tol = 1e-9;
+        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
+
+        double sum = 0.0;
+
+        for (int i = 0; i < LT.getRowDimension(); i++) {
+            sum += FastMath.log(LT.getEntry(i, i));
+        }
+
+        return 2.0 * sum;
     }
 
 //    // For cases like P(C | X). This is a ratio of joints, but if the numerator is conditional Gaussian,
@@ -400,41 +419,8 @@ public class ConditionalGaussianLikelihood {
 //        return new Ret(lnL, dof);
 //    }
 
-    private Ret likelihoodConditionalMultinomial(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable T) {
-        List<DiscreteVariable> W = new ArrayList<>(A);
-
-        for (ContinuousVariable x : X) {
-            DiscreteVariable w = (DiscreteVariable) dataSet.getVariable(x.getName());
-            W.add(w);
-        }
-
-        int t = dataSet.getColumn(T);
-
-        int[] c = new int[W.size()];
-
-        for (int i = 0; i < W.size(); i++) c[i] = dataSet.getColumn(W.get(i));
-
-        double lnL = score.getLikelihood(t, c);
-        int dof = score.getDof(t, c);
-
-        return new Ret(lnL, dof);
-    }
-
-    private double p(List<TetradMatrix> x, int u, double N) {
-        return x.get(u).rows() / N;
-    }
-
     private TetradMatrix cov(TetradMatrix x) {
         return new TetradMatrix(new Covariance(x.getRealMatrix(), true).getCovarianceMatrix());
-    }
-
-    private double prob(Double factor, TetradMatrix inv, TetradVector x) {
-        return factor * Math.exp(-0.5 * inv.times(x).dotProduct(x));
-    }
-
-    // Calculates the means of the columns of x.
-    private TetradVector means(TetradMatrix x) {
-        return x.sum(1).scalarMult(1.0 / x.rows());
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cell.
