@@ -1,9 +1,12 @@
 language: java
+
 jdk:
 - oraclejdk8
+
 branches:
   only:
   - development
+
 env:
   global:
   - SONATYPE_USERNAME=travis
@@ -11,3 +14,6 @@ env:
 
 after_success:
 - mvn deploy --settings settings.xml -DskipTests=true -B
+
+before_script:
+  - echo "MAVEN_OPTS='-Xmx3g'" > ~/.mavenrc

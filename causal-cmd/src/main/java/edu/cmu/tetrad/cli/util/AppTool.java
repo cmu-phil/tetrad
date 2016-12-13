@@ -65,7 +65,24 @@ public class AppTool {
         }
 
         HelpFormatter formatter = new HelpFormatter();
+        formatter.setWidth(-1);
         formatter.printHelp(cmdLineSyntax, options, true);
+    }
+
+    public static void showHelp(Options options, String footer) {
+        String title = jarTitle();
+        String version = jarVersion();
+
+        String cmdLineSyntax;
+        if (title == null || version == null) {
+            cmdLineSyntax = "java -jar causal-cmd.jar";
+        } else {
+            cmdLineSyntax = String.format("java -jar %s-%s.jar", title, version);
+        }
+
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.setWidth(-1);
+        formatter.printHelp(cmdLineSyntax, null, options, footer, true);
     }
 
     public static void showHelp(String algorithmName, Options options) {

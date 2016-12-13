@@ -166,7 +166,7 @@ public class TestGFci {
 //        RandomUtil.getInstance().setSeed(new Date().getTime());
         RandomUtil.getInstance().setSeed(19444322L);
 
-        int numNodes = 20;
+        int numNodes = 15;
         int numLatents = 5;
         int numIterations = 10;
 

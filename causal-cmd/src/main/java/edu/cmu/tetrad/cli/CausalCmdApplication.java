@@ -18,15 +18,15 @@
  */
 package edu.cmu.tetrad.cli;
 
-import edu.cmu.tetrad.cli.search.FgscCli;
-import edu.cmu.tetrad.cli.search.FgsdCli;
-import edu.cmu.tetrad.cli.search.GfcicCli;
+import edu.cmu.tetrad.cli.search.FGEScCli;
+import edu.cmu.tetrad.cli.search.FGESdCli;
+import edu.cmu.tetrad.cli.search.GFCIcCli;
 import edu.cmu.tetrad.cli.simulation.data.BayesNetRandomForwardCli;
 import edu.cmu.tetrad.cli.simulation.data.SemRandomForwardCli;
 import edu.cmu.tetrad.cli.util.AppTool;
 import edu.cmu.tetrad.cli.util.Args;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -45,8 +45,8 @@ public class CausalCmdApplication {
     private static final String SIM_DATA_OPT = "simulate-data";
     private static final String VERSION_OPT = "version";
 
-    private static final Map<String, AlgorithmType> ALGO_TYPES = new HashMap<>();
-    private static final Map<String, SimulationType> SIM_TYPES = new HashMap<>();
+    private static final Map<String, AlgorithmType> ALGO_TYPES = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private static final Map<String, SimulationType> SIM_TYPES = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     static {
         populateMainOptions();
@@ -69,7 +69,7 @@ public class CausalCmdApplication {
         optGrp.setRequired(true);
         MAIN_OPTIONS.addOptionGroup(optGrp);
 
-        MAIN_OPTIONS.addOption(null, VERSION_OPT, false, "Version.");
+        MAIN_OPTIONS.addOption(null, VERSION_OPT, false, "Show software version.");
     }
 
     private static String algorithmCmd() {
@@ -100,6 +100,10 @@ public class CausalCmdApplication {
 
     private static AlgorithmCli getAlgorithmCli(String[] args) {
         String algorithm = Args.getOptionValue(args, ALGO_OPT);
+        if (algorithm == null) {
+            algorithm = "";
+        }
+
         AlgorithmType algorithmType = ALGO_TYPES.get(algorithm);
         if (algorithmType == null) {
             return null;
@@ -107,19 +111,19 @@ public class CausalCmdApplication {
 
         args = Args.removeOption(args, ALGO_OPT);
         switch (algorithmType) {
-            case FGSC:
-                return new FgscCli(args);
-            case FGSD:
-                return new FgsdCli(args);
+            case FGESC:
+                return new FGEScCli(args);
+            case FGESD:
+                return new FGESdCli(args);
             case GFCIC:
-                return new GfcicCli(args);
+                return new GFCIcCli(args);
             default:
                 return null;
         }
     }
 
     private static void showHelp() {
-        AppTool.showHelp(MAIN_OPTIONS);
+        AppTool.showHelp(MAIN_OPTIONS, "Additional parameters are available when using --algorithm <arg> or --simulate-data <arg>.");
     }
 
     private static void runAlgorithm(String[] args) {
@@ -133,6 +137,10 @@ public class CausalCmdApplication {
 
     private static SimulationCli getSimulationCli(String[] args) {
         String simulation = Args.getOptionValue(args, SIM_DATA_OPT);
+        if (simulation == null) {
+            simulation = "";
+        }
+
         SimulationType simulationType = SIM_TYPES.get(simulation);
         if (simulationType == null) {
             return null;
@@ -163,7 +171,7 @@ public class CausalCmdApplication {
      */
     public static void main(String[] args) {
         if (Args.hasLongOption(args, VERSION_OPT)) {
-            System.out.println(AppTool.jarVersion());
+            System.out.println(AppTool.jarTitle() + " version " + AppTool.jarVersion());
         } else {
             boolean algoOpt = Args.hasLongOption(args, ALGO_OPT);
             boolean simDataOpt = Args.hasLongOption(args, SIM_DATA_OPT);

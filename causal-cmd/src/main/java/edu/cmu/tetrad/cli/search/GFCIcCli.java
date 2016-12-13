@@ -33,16 +33,17 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 /**
+ * Command-line interface for GFCI continuous.
  *
  * Sep 14, 2016 3:30:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class GfcicCli extends FgscCli {
+public class GFCIcCli extends FGEScCli {
 
     protected double alpha;
 
-    public GfcicCli(String[] args) {
+    public GFCIcCli(String[] args) {
         super(args);
     }
 
