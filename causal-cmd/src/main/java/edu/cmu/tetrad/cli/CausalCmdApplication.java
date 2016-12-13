@@ -69,7 +69,7 @@ public class CausalCmdApplication {
         optGrp.setRequired(true);
         MAIN_OPTIONS.addOptionGroup(optGrp);
 
-        MAIN_OPTIONS.addOption(null, VERSION_OPT, false, "Version.");
+        MAIN_OPTIONS.addOption(null, VERSION_OPT, false, "Show software version.");
     }
 
     private static String algorithmCmd() {
@@ -123,7 +123,7 @@ public class CausalCmdApplication {
     }
 
     private static void showHelp() {
-        AppTool.showHelp(MAIN_OPTIONS);
+        AppTool.showHelp(MAIN_OPTIONS, "Additional parameters are available when using --algorithm <arg> or --simulate-data <arg>.");
     }
 
     private static void runAlgorithm(String[] args) {
@@ -137,6 +137,10 @@ public class CausalCmdApplication {
 
     private static SimulationCli getSimulationCli(String[] args) {
         String simulation = Args.getOptionValue(args, SIM_DATA_OPT);
+        if (simulation == null) {
+            simulation = "";
+        }
+
         SimulationType simulationType = SIM_TYPES.get(simulation);
         if (simulationType == null) {
             return null;
@@ -167,7 +171,7 @@ public class CausalCmdApplication {
      */
     public static void main(String[] args) {
         if (Args.hasLongOption(args, VERSION_OPT)) {
-            System.out.println(AppTool.jarVersion());
+            System.out.println(AppTool.jarTitle() + " version " + AppTool.jarVersion());
         } else {
             boolean algoOpt = Args.hasLongOption(args, ALGO_OPT);
             boolean simDataOpt = Args.hasLongOption(args, SIM_DATA_OPT);
