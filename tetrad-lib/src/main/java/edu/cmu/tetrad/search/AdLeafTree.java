@@ -143,6 +143,10 @@ public class AdLeafTree {
         return rows;
     }
 
+    public void setColumn(DiscreteVariable var, int[] col) {
+        discreteData[dataSet.getColumn(var)] = col;
+    }
+
     private List<Vary> getVaries(List<Vary> varies, int v) {
         List<Vary> _varies = new ArrayList<>();
 

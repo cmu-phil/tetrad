@@ -253,6 +253,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                     double sum = 0.0;
 
                     double r = RandomUtil.getInstance().nextDouble();
+                    mixedData.setInt(i, mixedIndex, 0);
 
                     for (int k = 0; k < bayesIm.getNumColumns(bayesIndex); k++) {
                         double probability = bayesIm.getProbability(bayesIndex, rowIndex, k);

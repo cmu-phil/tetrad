@@ -25,12 +25,10 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -43,9 +41,9 @@ public class TestConditionalGaussianSimulation {
     public void test1() {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 2, 4);
+        parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);
         parameters.set("penaltyDiscount", 1);
         parameters.set("alpha", 0.001);
@@ -56,14 +54,14 @@ public class TestConditionalGaussianSimulation {
         parameters.set("maxCategories", 5);
         parameters.set("percentDiscrete", 50);
 
-        parameters.set("numCategoriesToDiscretize", 3);
+        parameters.set("numCategoriesToDiscretize", 8);
 
         parameters.set("intervalBetweenRecordings", 20);
 
         parameters.set("varLow", 1.);
-        parameters.set("varHigh", 3.);
-        parameters.set("coefLow", .1);
-        parameters.set("coefHigh", 1);
+        parameters.set("varHigh", 2.);
+        parameters.set("coefLow", .5);
+        parameters.set("coefHigh", 1.5);
         parameters.set("coefSymmetric", true);
         parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
@@ -88,11 +86,11 @@ public class TestConditionalGaussianSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
-        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
+//        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
+        simulations.add(new ConditionalGaussianSimulation2(new RandomForward()));
 //        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
@@ -104,7 +102,7 @@ public class TestConditionalGaussianSimulation {
         comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.setTabDelimitedTables(true);
+        comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
