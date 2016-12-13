@@ -229,16 +229,19 @@ public class ConditionalGaussianLikelihood {
         A = new ArrayList<>(A);
         X = new ArrayList<>(X);
 
-        if (target instanceof DiscreteVariable) {
-            for (ContinuousVariable x : new ArrayList<>(X)) {
-                final Node variable = dataSet.getVariable(x.getName());
+//        if (target instanceof DiscreteVariable) {
+//            for (ContinuousVariable x : new ArrayList<>(X)) {
+//                final Node variable = dataSet.getVariable(x.getName());
+//
+//                if (variable != null) {
+//                    A.add((DiscreteVariable) variable);
+//                    X.remove(x);
+//                }
+//            }
+//        }
 
-                if (variable != null) {
-                    A.add((DiscreteVariable) variable);
-                    X.remove(x);
-                }
-            }
-        }
+        List<DiscreteVariable> A2 = new ArrayList<>();
+        A2.remove(target);
 
         int k = X.size();
 
@@ -249,6 +252,7 @@ public class ConditionalGaussianLikelihood {
         double c1 = 0, c2 = 0;
 
         List<List<Integer>> cells = adTree.getCellLeaves(A);
+        List<List<Integer>> cells2 = adTree.getCellLeaves(A2);
 
         for (List<Integer> cell : cells) {
             int a = cell.size();
@@ -257,6 +261,13 @@ public class ConditionalGaussianLikelihood {
             if (A.size() > 0) {
                 c1 += a * multinomialLikelihood(a, N);
             }
+        }
+
+        double c2a = 0.0;
+
+        for (List<Integer> cell : cells) {
+            int a = cell.size();
+            if (a == 0) continue;
 
             if (X.size() > 0) {
                 double v;
@@ -276,18 +287,55 @@ public class ConditionalGaussianLikelihood {
                         throw new IllegalArgumentException();
                     }
 
-                    c2 += a * v;
+                    c2a += a * v;
                 } catch (Exception e) {
                     // No contribution.
                 }
             }
         }
 
-        final double lnL = c1 + c2;
+        double c2b = Double.NEGATIVE_INFINITY;
+
+        for (List<Integer> cell : cells2) {
+            int a = cell.size();
+            if (a == 0) continue;
+
+            if (X.size() > 0) {
+                double v;
+
+                try {
+
+                    // Determinant will be zero if data are linearly dependent.
+                    if (a <= continuousCols.length) {
+                        throw new IllegalArgumentException();
+                    }
+
+                    TetradMatrix cov = cov(getSubsample(continuousCols, cell));
+                    v = gaussianLikelihood(k, cov);
+
+                    // Double check.
+                    if (Double.isInfinite(v)) {
+                        throw new IllegalArgumentException();
+                    }
+
+                    c2b += a * v;
+                } catch (Exception e) {
+                    // No contribution.
+                }
+            }
+        }
+
         int p = (int) getPenaltyDiscount();
 
-        // Only count dof for continuous cells that contributed to the likelihood calculation.
-        final int dof = p * f(A) * h(X) + f(A);
+        final int dofa = p * f(A) * h(X) + f(A);
+        final int dofb = p * f(A2) * h(X) + f(A);
+
+        double bic1 = c1 + c2a - dofa * log(mixedDataSet.getNumRows());
+        double bic2 = c1 + c2b - dofb * log(mixedDataSet.getNumRows());
+
+        int dof = bic1 > bic2 ? dofa : dofb;
+        final double lnL = c1 + (bic1 > bic2 ? c2a : c2b);
+
         return new Ret(lnL, dof);
     }
 
