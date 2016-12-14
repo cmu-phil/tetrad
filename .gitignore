@@ -11,3 +11,5 @@ tetrad.iml
 *.iml
 analysis/AnalysisScriptAlpha.java
 analysis/TestFunctions.java
+tetrad-gui/build
+tetrad-gui/build/**
