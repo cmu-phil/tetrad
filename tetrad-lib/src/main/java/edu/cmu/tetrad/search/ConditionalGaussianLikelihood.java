@@ -205,7 +205,6 @@ public class ConditionalGaussianLikelihood {
             for (List<Integer> cell : cells) {
                 int a = cell.size();
                 if (a == 0) continue;
-
                 c1 += a * multinomialLikelihood(a, N);
             }
         }
