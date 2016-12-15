@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -27,10 +26,6 @@ import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,6 +34,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.prefs.Preferences;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -47,6 +45,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class LoadDataDialog extends JPanel {
+
     private final JTabbedPane pane;
     private transient DataModel[] dataModels;
 
@@ -54,7 +53,7 @@ final class LoadDataDialog extends JPanel {
     private JRadioButton comment2RadioButton;
     private StringTextField commentStringField;
 
-    private JRadioButton delimiter1RadioButton;          
+    private JRadioButton delimiter1RadioButton;
     private JRadioButton delimiter2RadioButton;
     private JRadioButton delimiter3RadioButton;
 
@@ -79,7 +78,6 @@ final class LoadDataDialog extends JPanel {
     private int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
-
     public LoadDataDialog(final File... files) {
         if (files.length == 0) {
             throw new IllegalArgumentException("Must specify at least one file.");
@@ -101,6 +99,7 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
+        // File type button group
         ButtonGroup group1 = new ButtonGroup();
         group1.add(tabularRadioButton);
         group1.add(covarianceRadioButton);
@@ -114,7 +113,6 @@ final class LoadDataDialog extends JPanel {
         } else {
             throw new IllegalStateException("Unexpected preference.");
         }
-
 
         covarianceRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -161,6 +159,7 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
+        // Comment marker
         ButtonGroup group2 = new ButtonGroup();
         group2.add(comment1RadioButton);
         group2.add(comment2RadioButton);
@@ -201,7 +200,6 @@ final class LoadDataDialog extends JPanel {
 //        delimiter4RadioButton = new JRadioButton("Other: ");
 //        delimiterStringField = new StringTextField("", 4);
 
-
         delimiter1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
@@ -232,6 +230,7 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
+        // Delimiter
         ButtonGroup group3 = new ButtonGroup();
         group3.add(delimiter1RadioButton);
         group3.add(delimiter2RadioButton);
@@ -270,6 +269,7 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
+        // Quote character
         ButtonGroup group4 = new ButtonGroup();
         group4.add(quote1RadioButton);
         group4.add(quote2RadioButton);
@@ -367,6 +367,7 @@ final class LoadDataDialog extends JPanel {
         id2RadioButton.setEnabled(idsSuppliedPreference);
         idStringField.setEditable(idsSuppliedPreference);
 
+        // Case ID's provided
         ButtonGroup group5 = new ButtonGroup();
         group5.add(id1RadioButton);
         group5.add(id2RadioButton);
@@ -374,7 +375,6 @@ final class LoadDataDialog extends JPanel {
 
 //
 //        varNamesCheckBox.setSelected(true);
-
 //        Missing value marker
         missing1RadioButton = new JRadioButton("*");
         missing2RadioButton = new JRadioButton("?");
@@ -410,6 +410,7 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
+        // Missing value marker
         ButtonGroup group6 = new ButtonGroup();
         group6.add(missing1RadioButton);
         group6.add(missing2RadioButton);
@@ -440,7 +441,6 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
-
         maxIntegralDiscreteIntField = new IntTextField(0, 3);
 
         int maxIntegralPreference = Preferences.userRoot().getInt("dataLoaderMaxIntegral", 0);
@@ -451,8 +451,7 @@ final class LoadDataDialog extends JPanel {
                 if (value >= 0) {
                     Preferences.userRoot().putInt("dataLoaderMaxIntegral", value);
                     return value;
-                }
-                else {
+                } else {
                     return oldValue;
                 }
             }
@@ -479,7 +478,6 @@ final class LoadDataDialog extends JPanel {
         fileNameLabel.setFont(new Font("Dialog", Font.BOLD, 12));
 
         // Construct button groups.
-
         idStringField.setText("ID");
 //        delimiterStringField.setText(";");
 
@@ -493,8 +491,7 @@ final class LoadDataDialog extends JPanel {
 
         if (tabularRadioButton.isSelected()) {
             enableTabularObjects();
-        }
-        else if (covarianceRadioButton.isSelected()) {
+        } else if (covarianceRadioButton.isSelected()) {
             enableCovarianceObjects();
         }
 
@@ -556,7 +553,6 @@ final class LoadDataDialog extends JPanel {
         add(e, BorderLayout.CENTER);
 
         // Listeners.
-
         previousButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -651,16 +647,18 @@ final class LoadDataDialog extends JPanel {
         if (selectedComponent instanceof RegularDataPanel) {
             DataModel dataModel = ((RegularDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, tabbedPane, files,
                     progressLabel);
-            if (dataModel == null) throw new NullPointerException("Data not loaded.");
+            if (dataModel == null) {
+                throw new NullPointerException("Data not loaded.");
+            }
             addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-        }
-        else if (selectedComponent instanceof FastDataPanel) {
+        } else if (selectedComponent instanceof FastDataPanel) {
             DataModel dataModel = ((FastDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, tabbedPane, files,
                     progressLabel);
-            if (dataModel == null) throw new NullPointerException("Data not loaded.");
+            if (dataModel == null) {
+                throw new NullPointerException("Data not loaded.");
+            }
             addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-        }
-        else {
+        } else {
             throw new IllegalStateException("Just regular and fast data loaders.");
         }
     }
@@ -684,7 +682,6 @@ final class LoadDataDialog extends JPanel {
         maxIntegralDiscreteIntField.setEnabled(true);
         varNamesCheckBox.setEnabled(true);
 
-
         if (idsSupplied.isSelected()) {
             id1RadioButton.setEnabled(true);
             id2RadioButton.setEnabled(true);
@@ -693,12 +690,13 @@ final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
-
     public DataModelList getDataModels() {
         DataModelList dataModelList = new DataModelList();
 
         for (DataModel dataModel : dataModels) {
-            if (dataModel != null) dataModelList.add(dataModel);
+            if (dataModel != null) {
+                dataModelList.add(dataModel);
+            }
         }
 
         return dataModelList;
@@ -730,8 +728,7 @@ final class LoadDataDialog extends JPanel {
 
             textArea.setCaretPosition(0);
             in.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             textArea.append("<<<ERROR READING FILE>>>");
             textArea.setEditable(false);
         }
@@ -756,8 +753,6 @@ final class LoadDataDialog extends JPanel {
 //            textArea.append("<<<ERROR READING FILE>>>");
 //        }
 //    }
-
-
     private String getCommentString() {
         if (comment1RadioButton.isSelected()) {
             return "//";
@@ -820,7 +815,9 @@ final class LoadDataDialog extends JPanel {
     }
 
     private void addDataModel(DataModel dataModel, int index, String name) {
-        if (dataModel == null) throw new NullPointerException();
+        if (dataModel == null) {
+            throw new NullPointerException();
+        }
 
         dataModel.setName(name);
         this.dataModels[index] = dataModel;
@@ -830,5 +827,3 @@ final class LoadDataDialog extends JPanel {
         return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
     }
 }
-
-
