@@ -462,10 +462,10 @@ final class LoadDataDialog extends JPanel {
         final JTabbedPane tabbedPane = new JTabbedPane();
         JScrollPane scroll1 = new JScrollPane(fileTextArea);
         scroll1.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("File", scroll1);
+        tabbedPane.addTab("Preview of selected file", scroll1);
         JScrollPane scroll2 = new JScrollPane(anomaliesTextArea);
         scroll2.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("Loading Log", scroll2);
+        tabbedPane.addTab("File loading log", scroll2);
 
         final JLabel progressLabel = new JLabel(getProgressString(0, files.length, dataModels));
         progressLabel.setFont(new Font("Dialog", Font.BOLD, 12));
