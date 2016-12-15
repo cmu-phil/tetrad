@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -26,11 +25,10 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.prefs.Preferences;
+import javax.swing.*;
 
 /**
  * New data loading action.
@@ -40,7 +38,7 @@ import java.util.prefs.Preferences;
 final class LoadDataAction extends AbstractAction {
 
     /**
-     * The dataEditor into which data is loaded.                          -
+     * The dataEditor into which data is loaded. -
      */
     private DataEditor dataEditor;
 
@@ -73,11 +71,14 @@ final class LoadDataAction extends AbstractAction {
 //                return;
 //            }
 //        }
-
         JFileChooser chooser = getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        // Sets the file chooser to allow multiple file selections
         chooser.setMultiSelectionEnabled(true);
-        int _ret = chooser.showOpenDialog(this.dataEditor);
+        // Customize dialog title bar text
+        chooser.setDialogTitle("Choose data files (choose multiple files with Ctrl or Shift key)");
+        // The second argument sets both the title for the dialog window and the label for the approve button
+        int _ret = chooser.showDialog(this.dataEditor, "Choose");
 
         if (_ret == JFileChooser.CANCEL_OPTION) {
             return;
@@ -142,7 +143,6 @@ final class LoadDataAction extends AbstractAction {
     }
 
     //======================= private methods =========================//
-
     /**
      * States whether the data is empty.
      */
@@ -160,17 +160,13 @@ final class LoadDataAction extends AbstractAction {
         return true;
     }
 
-
     private static JFileChooser getJFileChooser() {
         JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
+        String sessionSaveLocation
+                = Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         return chooser;
     }
 }
-
-
-
