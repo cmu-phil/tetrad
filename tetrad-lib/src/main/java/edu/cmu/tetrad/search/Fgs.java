@@ -558,6 +558,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     int child = hashIndices.get(y);
                     int parent = hashIndices.get(x);
                     double bump = score.localScoreDiff(parent, child);
+                    double bump2 = score.localScoreDiff(child, parent);
+
+                    bump = bump > bump2 ? bump : bump2;
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
