@@ -258,7 +258,7 @@ public class TestFges {
     }
 
     @Test
-    public void testFromGraphSimpleFgsMb() {
+    public void testFromGraphSimpleFgesMb() {
 
         // This may fail if faithfulness is assumed but should pass if not.
 
@@ -279,9 +279,9 @@ public class TestFges {
         g.addDirectedEdge(x4, x3);
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        FgesMb2 fgs = new FgesMb2(new GraphScore(g));
+        FgesMb2 fges = new FgesMb2(new GraphScore(g));
 //        fges.setHeuristicSpeedup(false);
-        Graph pattern2 = fgs.search(x1);
+        Graph pattern2 = fges.search(x1);
 
 //        System.out.println(pattern1);
 //        System.out.println(pattern2);
@@ -395,7 +395,7 @@ public class TestFges {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test = new FisherZ();
 
-        Algorithm fges  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs(score);
+        Algorithm fges  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
 
         Graph fgesGraph = fges.search(dataSet, parameters);
 
@@ -904,7 +904,7 @@ public class TestFges {
 
     //    @Test
     public void testBestAlgorithms() {
-        String[] algorithms = {"SemFGES", "BDeuFGES", "MixedFGES", "PC", "PCS", "CPC", "MGMFgs", "MGMPcs"};
+        String[] algorithms = {"SemFGES", "BDeuFGES", "MixedFGES", "PC", "PCS", "CPC", "MGMFges", "MGMPcs"};
         String[] statLabels = {"AP", "AR", "OP", "OR", "SUM", "McAdj", "McOr", "F1Adj", "F1Or", "E"};
 
         int numMeasures = 30;

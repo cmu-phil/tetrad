@@ -1072,7 +1072,7 @@ public class PerformanceTests {
         Graph estPattern;
         long elapsed;
 
-        FgesMb2 fgs;
+        FgesMb2 fges;
         List<Node> vars;
 
         if (continuous) {
@@ -1120,13 +1120,13 @@ public class PerformanceTests {
             System.out.println(new Date());
             System.out.println("\nStarting FGES-MB");
 
-            fgs = new FgesMb2(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-            fgs.setOut(System.out);
+            fges = new FgesMb2(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
-            fgs.setMaxIndegree(maxIndegree);
-            fgs.setCycleBound(-1);
+            fges.setMaxIndegree(maxIndegree);
+            fges.setCycleBound(-1);
         } else {
             init(new File("FgesMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
@@ -1165,13 +1165,13 @@ public class PerformanceTests {
 
             long time4 = System.currentTimeMillis();
 
-            fgs = new FgesMb2(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-            fgs.setOut(System.out);
+            fges = new FgesMb2(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
-            fgs.setMaxIndegree(maxIndegree);
-            fgs.setCycleBound(-1);
+            fges.setMaxIndegree(maxIndegree);
+            fges.setCycleBound(-1);
 
             long timeb = System.currentTimeMillis();
 
@@ -1189,7 +1189,7 @@ public class PerformanceTests {
             System.out.println("Target = " + target);
             long timea = System.currentTimeMillis();
 
-            estPattern = fgs.search(target);
+            estPattern = fges.search(target);
 
             long timed = System.currentTimeMillis();
 

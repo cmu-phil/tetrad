@@ -114,13 +114,13 @@ public final class GFciMax implements GraphSearch {
         fges.setMaxDegree(maxDegree);
         fges.setOut(out);
         graph = fges.search();
-        Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxDegree);
+        Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
+        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxDegree);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -133,7 +133,7 @@ public final class GFciMax implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
                     if (sepsets.getSepset(a, c) != null) {
                         graph.removeEdge(a, c);
                     }
@@ -142,9 +142,9 @@ public final class GFciMax implements GraphSearch {
         }
 
 //        modifiedR0(fgesGraph);
-        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, maxDegree);
+        sepsets = new SepsetsMinScore(fgesGraph, independenceTest, maxDegree);
 
-        addColliders(graph, fgsGraph);
+        addColliders(graph, fgesGraph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setVerbose(verbose);
@@ -192,7 +192,7 @@ public final class GFciMax implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph) {
+    public void modifiedR0(Graph fgesGraph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -212,10 +212,10 @@ public final class GFciMax implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgsGraph.isDefCollider(a, b, c)) {
+                if (fgesGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
@@ -374,7 +374,7 @@ public final class GFciMax implements GraphSearch {
         logger.log("info", "Finishing BK Orientation.");
     }
 
-    private void addColliders(Graph graph, final Graph fgsGraph) {
+    private void addColliders(Graph graph, final Graph fgesGraph) {
         List<Node> nodes = graph.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
@@ -396,7 +396,7 @@ public final class GFciMax implements GraphSearch {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        doNode(graph, fgsGraph, nodes.get(i));
+                        doNode(graph, fgesGraph, nodes.get(i));
                     }
 
                     return true;
@@ -420,7 +420,7 @@ public final class GFciMax implements GraphSearch {
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
     }
 
-    private void doNode(Graph graph, Graph fgsGraph, Node b) {
+    private void doNode(Graph graph, Graph fgesGraph, Node b) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {

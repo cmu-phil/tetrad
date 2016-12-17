@@ -110,7 +110,7 @@ public final class FgesMb2 {
     /**
      * The totalScore for discrete searches.
      */
-    private Score fgsScore;
+    private Score fgesScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -195,7 +195,7 @@ public final class FgesMb2 {
      */
     public FgesMb2(Score score) {
         if (score == null) throw new NullPointerException();
-        setFgsScore(score);
+        setFgesScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
@@ -292,7 +292,7 @@ public final class FgesMb2 {
         if (targets == null) throw new NullPointerException();
 
         for (Node target : targets) {
-            if (!fgsScore.getVariables().contains(target)) throw new IllegalArgumentException(
+            if (!fgesScore.getVariables().contains(target)) throw new IllegalArgumentException(
                     "Target is not one of the variables for the fgesScore."
             );
         }
@@ -302,7 +302,7 @@ public final class FgesMb2 {
         topGraphs.clear();
 
         lookupArrows = new ConcurrentHashMap<>();
-        final List<Node> nodes = new ArrayList<>(fgsScore.getVariables());
+        final List<Node> nodes = new ArrayList<>(fgesScore.getVariables());
 
         if (adjacencies != null) {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
@@ -352,7 +352,7 @@ public final class FgesMb2 {
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
-        final List<Node> nodes = fgsScore.getVariables();
+        final List<Node> nodes = fgesScore.getVariables();
 
         this.effectEdgesGraph = new EdgeListGraphSingleConnections();
 
@@ -363,14 +363,14 @@ public final class FgesMb2 {
         final Set emptySet = new HashSet();
 
         for (final Node target : targets) {
-            for (final Node x : fgsScore.getVariables()) {
+            for (final Node x : fgesScore.getVariables()) {
                 if (targets.contains(x)) {
                     continue;
                 }
 
                 int child = hashIndices.get(target);
                 int parent = hashIndices.get(x);
-                double bump = fgsScore.localScoreDiff(parent, child);
+                double bump = fgesScore.localScoreDiff(parent, child);
 
                 if (bump > 0) {
                     synchronized (effectEdgesGraph) {
@@ -388,7 +388,7 @@ public final class FgesMb2 {
                         protected Boolean compute() {
                             Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                            for (final Node y : fgsScore.getVariables()) {
+                            for (final Node y : fgesScore.getVariables()) {
                                 if (x == y) continue;
 
                                 MbTask mbTask = new MbTask(x, y, target);
@@ -439,7 +439,7 @@ public final class FgesMb2 {
                 int child2 = hashIndices.get(x);
                 int parent2 = hashIndices.get(y);
 
-                double bump2 = fgsScore.localScoreDiff(parent2, child2);
+                double bump2 = fgesScore.localScoreDiff(parent2, child2);
 
                 if (bump2 > 0) {
                     synchronized (effectEdgesGraph) {
@@ -472,7 +472,7 @@ public final class FgesMb2 {
 
         int child = hashIndices.get(y);
         int parent = hashIndices.get(x);
-        double bump = fgsScore.localScoreDiff(parent, child);
+        double bump = fgesScore.localScoreDiff(parent, child);
 
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return;
 
@@ -650,8 +650,8 @@ public final class FgesMb2 {
      * @deprecated Use the getters on the individual scores instead.
      */
     public double getPenaltyDiscount() {
-        if (fgsScore instanceof ISemBicScore) {
-            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
+        if (fgesScore instanceof ISemBicScore) {
+            return ((ISemBicScore) fgesScore).getPenaltyDiscount();
         } else {
             return 2.0;
         }
@@ -661,8 +661,8 @@ public final class FgesMb2 {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setSamplePrior(double samplePrior) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
+        if (fgesScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgesScore).setSamplePrior(samplePrior);
         }
     }
 
@@ -670,8 +670,8 @@ public final class FgesMb2 {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setStructurePrior(double expectedNumParents) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
+        if (fgesScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgesScore).setStructurePrior(expectedNumParents);
         }
     }
 
@@ -681,8 +681,8 @@ public final class FgesMb2 {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        if (fgsScore instanceof ISemBicScore) {
-            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
+        if (fgesScore instanceof ISemBicScore) {
+            ((ISemBicScore) fgesScore).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -706,8 +706,8 @@ public final class FgesMb2 {
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
-    private void setFgsScore(Score totalScore) {
-        this.fgsScore = totalScore;
+    private void setFgesScore(Score totalScore) {
+        this.fgesScore = totalScore;
 
         this.variables = new ArrayList<>();
 
@@ -719,7 +719,7 @@ public final class FgesMb2 {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxIndegree = fgsScore.getMaxDegree();
+        this.maxIndegree = fgesScore.getMaxDegree();
     }
 
     final int[] count = new int[1];
@@ -771,7 +771,7 @@ public final class FgesMb2 {
 
                     int child = hashIndices.get(y);
                     int parent = hashIndices.get(x);
-                    double bump = fgsScore.localScoreDiff(parent, child);
+                    double bump = fgesScore.localScoreDiff(parent, child);
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
@@ -2024,7 +2024,7 @@ public final class FgesMb2 {
             }
 
             int yIndex = hashIndices.get(y);
-            _score += fgsScore.localScore(yIndex, parentIndices);
+            _score += fgesScore.localScore(yIndex, parentIndices);
         }
 
         return _score;
@@ -2043,7 +2043,7 @@ public final class FgesMb2 {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        return fgsScore.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+        return fgesScore.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
     }
 
     private List<Node> getVariables() {

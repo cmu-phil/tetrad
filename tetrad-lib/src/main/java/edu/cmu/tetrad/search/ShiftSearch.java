@@ -180,9 +180,9 @@ public class ShiftSearch {
     }
 
     private double getAvgBic(List<DataModel> dataSets) {
-        SemBicScoreImages fgsScore = new SemBicScoreImages(dataSets);
-        fgsScore.setPenaltyDiscount(c);
-        Fges images = new Fges(fgsScore);
+        SemBicScoreImages fgesScore = new SemBicScoreImages(dataSets);
+        fgesScore.setPenaltyDiscount(c);
+        Fges images = new Fges(fgesScore);
         images.setKnowledge(knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();

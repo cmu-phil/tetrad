@@ -10,9 +10,9 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.io.PrintStream;
 import java.util.List;
 
@@ -21,18 +21,18 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fgs(ScoreWrapper score) {
+    public Fges(ScoreWrapper score) {
         this.score = score;
     }
 
-    public Fgs(ScoreWrapper score, Algorithm initialGraph) {
+    public Fges(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
         this.initialGraph = initialGraph;
     }
@@ -45,8 +45,8 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        Fges search
-                = new Fges(score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.Fges search
+                = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));

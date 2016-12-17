@@ -502,19 +502,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         switch (name) {
             case FGES:
-                algorithm = new Fgs(scoreWrapper);
+                algorithm = new Fges(scoreWrapper);
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fgs(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
 //                } else {
-//                algorithm = new Fgs(scoreWrapper);
+//                algorithm = new Fges(scoreWrapper);
 //                }
                 break;
-//            case FgsMeasurement:
+//            case FgesMeasurement:
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new FgsMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                    algorithm = new FgesMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
 //                } else {
-//                    algorithm = new FgsMeasurement(scoreWrapper);
+//                    algorithm = new FgesMeasurement(scoreWrapper);
 //                }
 //                break;
             case PC:

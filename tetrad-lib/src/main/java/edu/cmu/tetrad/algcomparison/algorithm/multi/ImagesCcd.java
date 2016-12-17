@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;

@@ -55,11 +55,11 @@ public class HsimRobustCompare {
 
             //then run FGES
             BDeuScore oscore = new BDeuScore(oData);
-            Fges ofgs = new Fges(oscore);
-            ofgs.setVerbose(false);
-            ofgs.setNumPatternsToStore(0);
-            ofgs.setPenaltyDiscount(penaltyDiscount);
-            Graph oGraphOut = ofgs.search();
+            Fges fges = new Fges(oscore);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setPenaltyDiscount(penaltyDiscount);
+            Graph oGraphOut = fges.search();
             if (verbose) System.out.println(oGraphOut);
 
             //calculate FGES errors
@@ -72,10 +72,10 @@ public class HsimRobustCompare {
 
             ////let's do the full simulated data set first: a dag in the FGES pattern fit to the data set.
             PatternToDag pickdag = new PatternToDag(oGraphOut);
-            Graph fgsDag = pickdag.patternToDagMeek();
+            Graph fgesDag = pickdag.patternToDagMeek();
 
-            Dag fgsdag2 = new Dag(fgsDag);
-            BayesPm simBayesPm = new BayesPm(fgsdag2, bayesPm);
+            Dag fgesdag2 = new Dag(fgesDag);
+            BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);
             DirichletBayesIm simIM = DirichletBayesIm.symmetricDirichletIm(simBayesPm, 1.0);
             DirichletEstimator simEstimator = new DirichletEstimator();
             DirichletBayesIm fittedIM = simEstimator.estimate(simIM, oData);
@@ -88,13 +88,13 @@ public class HsimRobustCompare {
             //calculate errors for all simulated output graphs
             ////full simulation errors first
             BDeuScore simscore = new BDeuScore(simData);
-            Fges simfgs = new Fges(simscore);
-            simfgs.setVerbose(false);
-            simfgs.setNumPatternsToStore(0);
-            simfgs.setPenaltyDiscount(penaltyDiscount);
-            Graph simGraphOut = simfgs.search();
+            Fges simfges = new Fges(simscore);
+            simfges.setVerbose(false);
+            simfges.setNumPatternsToStore(0);
+            simfges.setPenaltyDiscount(penaltyDiscount);
+            Graph simGraphOut = simfges.search();
             //simErrors = new double[5];
-            simErrors = HsimUtils.errorEval(simGraphOut, fgsdag2);
+            simErrors = HsimUtils.errorEval(simGraphOut, fgesdag2);
             //System.out.println("Full resim errors are: " + simErrors[0] + " " + simErrors[1] + " " + simErrors[2] + " " + simErrors[3] + " " + simErrors[4]);
 
             //compare errors. perhaps report differences between original and simulated errors.

@@ -162,7 +162,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        pcs.setVerbose(false);
 //        Graph graph = pcs.search();
 
-//        WFgs fges = new WFgs(ds);
+//        WFges fges = new WFges(ds);
 //        fges.setMaxIndegree(-1);
 //        fges.setAlpha(4);
 //        Graph graph = fges.search();

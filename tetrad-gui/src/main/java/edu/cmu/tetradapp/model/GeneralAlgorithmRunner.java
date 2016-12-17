@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
@@ -35,7 +35,6 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -61,7 +60,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     private DataWrapper dataWrapper;
     private String name;
-    private Algorithm algorithm = new Fgs(new BdeuScore());
+    private Algorithm algorithm = new Fges(new BdeuScore());
     private Parameters parameters;
     private Graph sourceGraph;
     private Graph initialGraph;

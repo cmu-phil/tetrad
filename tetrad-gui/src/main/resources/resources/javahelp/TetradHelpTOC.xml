@@ -54,8 +54,8 @@
                 <tocitem text="EB" target="eb"/>
                 <tocitem text="FAS" target="fas"/>
                 <tocitem text="FCI" target="fci"/>
-                <tocitem text="FGES" target="fgs"/>
-                <tocitem text="FGESMB" target="fgsmb"/>
+                <tocitem text="FGES" target="fges"/>
+                <tocitem text="FGESMB" target="fgesmb"/>
                 <tocitem text="CCDMAX" target="ccdmax"/>
                 <tocitem text="GFCI" target="gfci"/>
                 <tocitem text="GLASSO" target="glasso"/>

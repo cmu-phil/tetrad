@@ -1452,7 +1452,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="TsFGES" acronym="TsFGES" help="fgs"-->
+            <!--<model name="TsFGES" acronym="TsFGES" help="fges"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1479,7 +1479,7 @@
             <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.WFgsRunner</model-class>-->
+            <!--<model-class>edu.cmu.tetradapp.model.WFgesRunner</model-class>-->
             <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->

@@ -1436,7 +1436,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="WFGS" acronym="WFGS" help="wfges" category="forbid_latent_common_causes Searches">-->
+            <!--<model name="WFGES" acronym="WFGES" help="wfges" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->

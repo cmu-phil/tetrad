@@ -117,7 +117,7 @@ public final class GPc implements GraphSearch {
 
     private SepsetProducer sepsets;
     private long elapsedTime;
-    private int fgsDepth = -1;
+    private int fgesDepth = -1;
 
     //============================CONSTRUCTORS============================//
 
@@ -157,14 +157,14 @@ public final class GPc implements GraphSearch {
         fges.setVerbose(verbose);
         fges.setNumPatternsToStore(0);
 //        fges.setHeuristicSpeedup(heuristicSpeedup);
-//        fges.setMaxDegree(fgsDepth);
+//        fges.setMaxDegree(fgesDepth);
         graph = fges.search();
 
-        Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
+        Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
 
 //        System.out.println("GFCI: FGES done");
 
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxIndegree);
 //        ((SepsetsGreedy) sepsets).setMaxDegree(3);
 //        sepsets = new SepsetsConservative(fgesGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgesGraph, independenceTest, null, maxIndegree);
@@ -174,7 +174,7 @@ public final class GPc implements GraphSearch {
 //        System.out.println("GFCI: Look inside triangles starting");
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -187,7 +187,7 @@ public final class GPc implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
                     if (sepsets.getSepset(a, c) != null) {
                         graph.removeEdge(a, c);
                     }
@@ -259,7 +259,7 @@ public final class GPc implements GraphSearch {
 ////            }
 ////        }
 
-        modifiedR0(fgsGraph);
+        modifiedR0(fgesGraph);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(false);
@@ -327,7 +327,7 @@ public final class GPc implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph) {
+    public void modifiedR0(Graph fgesGraph) {
         graph.reorientAllWith(Endpoint.TAIL);
         pcOrientBk(knowledge, graph, graph.getNodes());
 
@@ -347,10 +347,10 @@ public final class GPc implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgsGraph.isDefCollider(a, b, c)) {
+                if (fgesGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
@@ -533,12 +533,12 @@ public final class GPc implements GraphSearch {
         this.structurePrior = structurePrior;
     }
 
-    public int getFgsDepth() {
-        return fgsDepth;
+    public int getFgesDepth() {
+        return fgesDepth;
     }
 
-    public void setFgsDepth(int fgsDepth) {
-        this.fgsDepth = fgsDepth;
+    public void setFgesDepth(int fgesDepth) {
+        this.fgesDepth = fgesDepth;
     }
 }
 

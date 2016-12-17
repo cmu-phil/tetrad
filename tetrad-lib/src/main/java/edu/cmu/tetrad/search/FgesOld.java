@@ -96,7 +96,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
     /**
      * The score for discrete searches.
      */
-    private Score fgsScore;
+    private Score fgesScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -175,8 +175,8 @@ public final class FgesOld implements GraphSearch, GraphScorer {
         if (dataSet.isDiscrete()) {
             setScore(new BDeuScore(dataSet));
         } else {
-            SemBicScore fgsScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-            setScore(fgsScore);
+            SemBicScore fgesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            setScore(fgesScore);
         }
 
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -206,9 +206,9 @@ public final class FgesOld implements GraphSearch, GraphScorer {
         }
     }
 
-    public FgesOld(Score fgsScore) {
-        if (fgsScore == null) throw new NullPointerException();
-        setScore(fgsScore);
+    public FgesOld(Score fgesScore) {
+        if (fgesScore == null) throw new NullPointerException();
+        setScore(fgesScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
@@ -330,8 +330,8 @@ public final class FgesOld implements GraphSearch, GraphScorer {
      * @deprecated Use the getters on the individual scores instead.
      */
     public double getPenaltyDiscount() {
-        if (fgsScore instanceof ISemBicScore) {
-            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
+        if (fgesScore instanceof ISemBicScore) {
+            return ((ISemBicScore) fgesScore).getPenaltyDiscount();
         } else {
             return 2.0;
         }
@@ -342,8 +342,8 @@ public final class FgesOld implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        if (fgsScore instanceof ISemBicScore) {
-            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
+        if (fgesScore instanceof ISemBicScore) {
+            ((ISemBicScore) fgesScore).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -497,16 +497,16 @@ public final class FgesOld implements GraphSearch, GraphScorer {
      * True iff edges that cause linear dependence are ignored.
      */
     public boolean isIgnoreLinearDependent() {
-        if (fgsScore instanceof SemBicScore) {
-            return ((SemBicScore) fgsScore).isIgnoreLinearDependent();
+        if (fgesScore instanceof SemBicScore) {
+            return ((SemBicScore) fgesScore).isIgnoreLinearDependent();
         }
 
         throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
     }
 
     public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        if (fgsScore instanceof SemBicScore) {
-            ((SemBicScore) fgsScore).setIgnoreLinearDependent(ignoreLinearDependent);
+        if (fgesScore instanceof SemBicScore) {
+            ((SemBicScore) fgesScore).setIgnoreLinearDependent(ignoreLinearDependent);
         } else {
             throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
         }
@@ -523,7 +523,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
 
     //Sets the discrete scoring function to use.
     private void setScore(Score score) {
-        this.fgsScore = score;
+        this.fgesScore = score;
 
         this.variables = new ArrayList<>();
 
@@ -593,9 +593,9 @@ public final class FgesOld implements GraphSearch, GraphScorer {
 
                             int child = hashIndices.get(y);
                             int parent = hashIndices.get(x);
-                            double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
+                            double bump = fgesScore.localScoreDiff(parent, child, new int[]{});
 
-                            if (isHeuristicSpeedup() && fgsScore.isEffectEdge(bump)) {
+                            if (isHeuristicSpeedup() && fgesScore.isEffectEdge(bump)) {
                                 final Edge edge = Edges.undirectedEdge(x, y);
                                 if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
                                     continue;
@@ -1029,7 +1029,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
                     addArrow(a, b, naYX, T, bump);
                 }
 
-                if (isHeuristicSpeedup() && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
+                if (isHeuristicSpeedup() && union.isEmpty() && fgesScore.isEffectEdge(bump) &&
                         !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
                     effectEdgesGraph.addUndirectedEdge(a, b);
                 }
@@ -1155,8 +1155,8 @@ public final class FgesOld implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setSamplePrior(double samplePrior) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
+        if (fgesScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgesScore).setSamplePrior(samplePrior);
         }
     }
 
@@ -1164,8 +1164,8 @@ public final class FgesOld implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setStructurePrior(double expectedNumParents) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
+        if (fgesScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgesScore).setStructurePrior(expectedNumParents);
         }
     }
 
@@ -1701,7 +1701,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
             }
 
             int yIndex = hashIndices.get(y);
-            score += fgsScore.localScore(yIndex, parentIndices);
+            score += fgesScore.localScore(yIndex, parentIndices);
         }
 
         return score;
@@ -1720,7 +1720,7 @@ public final class FgesOld implements GraphSearch, GraphScorer {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        return fgsScore.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+        return fgesScore.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
     }
 
     private List<Node> getVariables() {

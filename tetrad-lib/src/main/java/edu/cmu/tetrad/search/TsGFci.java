@@ -152,17 +152,17 @@ public final class TsGFci implements GraphSearch {
             setScore();
         }
 
-        TsFges2 fgs = new TsFges2(score);
-        fgs.setKnowledge(getKnowledge());
-        fgs.setVerbose(verbose);
-        fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
-        graph = fgs.search();
-        Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
+        TsFges2 fges = new TsFges2(score);
+        fges.setKnowledge(getKnowledge());
+        fges.setVerbose(verbose);
+        fges.setNumPatternsToStore(0);
+        fges.setFaithfulnessAssumed(faithfulnessAssumed);
+        graph = fges.search();
+        Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
 
 //        System.out.println("GFCI: FGES done");
 
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxIndegree);
 //        ((SepsetsGreedy) sepsets).setMaxDegree(3);
 //        sepsets = new SepsetsConservative(fgesGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgesGraph, independenceTest, null, maxIndegree);
@@ -172,7 +172,7 @@ public final class TsGFci implements GraphSearch {
 //        System.out.println("GFCI: Look inside triangles starting");
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -185,7 +185,7 @@ public final class TsGFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
                     if (sepsets.getSepset(a, c) != null) {
                         graph.removeEdge(a, c);
                         /** removing similar edges to enforce repeating structure **/
@@ -231,7 +231,7 @@ public final class TsGFci implements GraphSearch {
 
 //        System.out.println("GFCI: Look inside triangles done");
 
-        modifiedR0(fgsGraph);
+        modifiedR0(fgesGraph);
 
 //    modifiedR0(fgesGraph, map);
 
@@ -307,7 +307,7 @@ public final class TsGFci implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph) {
+    public void modifiedR0(Graph fgesGraph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -327,7 +327,7 @@ public final class TsGFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgsGraph.isDefCollider(a, b, c)) {
+                if (fgesGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                     /** orienting similar pairs to enforce repeating structure **/
@@ -335,7 +335,7 @@ public final class TsGFci implements GraphSearch {
                     orientSimilarPairs(graph, knowledge, c, b, Endpoint.ARROW);
                     /** **/
 
-                } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
