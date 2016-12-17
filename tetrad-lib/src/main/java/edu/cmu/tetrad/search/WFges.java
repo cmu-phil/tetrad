@@ -13,7 +13,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class WFgs implements GraphSearch {
+public class WFges implements GraphSearch {
 
     private List<Node> searchVariables;
     private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
@@ -21,7 +21,7 @@ public class WFgs implements GraphSearch {
     private double penaltyDiscount;
     private SemBicScore score;
 
-    public WFgs(DataSet data) {
+    public WFges(DataSet data) {
         if (data == null) throw new NullPointerException("Data was not provided.");
 
         this.searchVariables = data.getVariables();

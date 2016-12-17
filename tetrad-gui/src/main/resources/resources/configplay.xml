@@ -1436,7 +1436,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="FGS" acronym="FGS" help="fgs"-->
+            <!--<model name="FGES" acronym="FGES" help="fgs"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->

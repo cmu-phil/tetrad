@@ -41,7 +41,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner, GraphSource,
         PropertyChangeListener, IGesRunner, Indexable {
     static final long serialVersionUID = 23L;
 
@@ -156,7 +156,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             }
 
 //            if (list.size() != 1) {
-//                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or graph " +
+//                throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or graph " +
 //                        "as input. For multiple data sets as input, use IMaGES.");
 //            }
 
@@ -164,26 +164,26 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 double penalty = getParams().getDouble("penaltyDiscount", 4);
 
                 if (params.getBoolean("firstNontriangular", false)) {
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    fgsScore.setPenaltyDiscount(penalty);
-                    fges = new Fges(fgsScore);
+                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    fgesScore.setPenaltyDiscount(penalty);
+                    fges = new Fges(fgesScore);
                 } else {
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    fgsScore.setPenaltyDiscount(penalty);
-                    fges = new Fges(fgsScore);
+                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    fgesScore.setPenaltyDiscount(penalty);
+                    fges = new Fges(fgesScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = getParams().getDouble("structurePrior", 1);
                 double samplePrior = getParams().getDouble("samplePrior", 1);
 
-                BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-                fgsScore.setSamplePrior(samplePrior);
-                fgsScore.setStructurePrior(structurePrior);
+                BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+                fgesScore.setSamplePrior(samplePrior);
+                fgesScore.setStructurePrior(structurePrior);
 
                 if (params.getBoolean("firstNontriangular", false)) {
-                    fges = new Fges(fgsScore);
+                    fges = new Fges(fgesScore);
                 } else {
-                    fges = new Fges(fgsScore);
+                    fges = new Fges(fgesScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

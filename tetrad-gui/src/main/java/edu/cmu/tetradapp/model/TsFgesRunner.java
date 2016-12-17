@@ -47,7 +47,7 @@ import java.util.Map;
  * @author Daniel Malinsky
  */
 
-public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, GraphSource,
         PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel, Unmarshallable {
     static final long serialVersionUID = 23L;
     private LinkedHashMap<String, String> allParamSettings;
@@ -57,36 +57,36 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient TsFgs2 fgs;
+    private transient TsFges2 fges;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
 
-    public TsFgsRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFgesRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
     }
 
-    public TsFgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public TsFgesRunner(DataWrapper[] dataWrappers, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public TsFgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
+    public TsFgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public TsFgsRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public TsFgsRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFgesRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public TsFgsRunner(GraphWrapper graphWrapper, Parameters params) {
+    public TsFgesRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -125,9 +125,9 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            fgs = new TsFgs2(gesScore);
-            fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-            fgs.setVerbose(true);
+            fges = new TsFges2(gesScore);
+            fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+            fges.setVerbose(true);
         } else {
             double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
@@ -141,24 +141,24 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    fgs = new TsFgs2(gesScore);
+                    fges = new TsFges2(gesScore);
                 } else if (dataSet.isDiscrete()) {
                     double samplePrior = getParams().getDouble("samplePrior", 1);
                     double structurePrior = getParams().getDouble("structurePrior", 1);
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
-                    fgs = new TsFgs2(score);
+                    fges = new TsFges2(score);
                 } else {
                     MixedBicScore gesScore = new MixedBicScore(dataSet);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
-                    fgs = new TsFgs2(gesScore);
+                    fges = new TsFges2(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                fgs = new TsFgs2(gesScore);
+                fges = new TsFges2(gesScore);
             }
             else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
@@ -171,7 +171,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -179,26 +179,26 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                     double penalty = getParams().getDouble("penaltyDiscount", 4);
 
                     if (params.getBoolean("firstNontriangular", false)) {
-                        SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                        fgsScore.setPenaltyDiscount(penalty);
-                        fgs = new TsFgs2(fgsScore);
+                        SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                        fgesScore.setPenaltyDiscount(penalty);
+                        fges = new TsFges2(fgesScore);
                     } else {
-                        SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                        fgsScore.setPenaltyDiscount(penalty);
-                        fgs = new TsFgs2(fgsScore);
+                        SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                        fgesScore.setPenaltyDiscount(penalty);
+                        fges = new TsFges2(fgesScore);
                     }
                 } else if (allDiscrete(list)) {
                     double structurePrior = getParams().getDouble("structurePrior", 1);
                     double samplePrior = getParams().getDouble("samplePrior", 1);
 
-                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-                    fgsScore.setSamplePrior(samplePrior);
-                    fgsScore.setStructurePrior(structurePrior);
+                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+                    fgesScore.setSamplePrior(samplePrior);
+                    fgesScore.setStructurePrior(structurePrior);
 
                     if (params.getBoolean("firstNontriangular", false)) {
-                        fgs = new TsFgs2(fgsScore);
+                        fges = new TsFges2(fgesScore);
                     } else {
-                        fgs = new TsFgs2(fgsScore);
+                        fges = new TsFges2(fgesScore);
                     }
                 } else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -208,13 +208,13 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
             }
         }
 
-        fgs.setInitialGraph(initialGraph);
-        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
-        fgs.setVerbose(true);
-//        fgs.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
+        fges.setInitialGraph(initialGraph);
+        fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+        fges.setVerbose(true);
+//        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
 //        * there is no setHeuristicSpeedup option in Fgs2 and so likewise TsFgs2. *
-        Graph graph = fgs.search();
+        Graph graph = fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -226,7 +226,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
         setResultGraph(graph);
 
-        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
+        this.topGraphs = new ArrayList<>(fges.getTopGraphs());
 
         if (topGraphs.isEmpty()) {
 
@@ -369,7 +369,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
     @Override
     public String getAlgorithmName() {
-        return "FGS";
+        return "FGES";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -398,15 +398,15 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
     }
 
     public String getBayesFactorsReport(Graph dag) {
-        if (fgs == null) {
+        if (fges == null) {
             return "Please re-run IMaGES.";
         } else {
-            return fgs.logEdgeBayesFactorsString(dag);
+            return fges.logEdgeBayesFactorsString(dag);
         }
     }
 
     public GraphScorer getGraphScorer() {
-        return fgs;
+        return fges;
     }
 }
 

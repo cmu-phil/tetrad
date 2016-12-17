@@ -171,7 +171,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.Test));
 
-        descriptions.add(new AlgorithmDescription(AlgName.FgsMb, AlgType.search_for_Markov_blankets, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.FgesMb, AlgType.search_for_Markov_blankets, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.search_for_Markov_blankets, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.produce_undirected_graphs, OracleType.Test));
 
@@ -581,12 +581,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case FAS:
                 algorithm = new FAS(independenceWrapper);
                 break;
-            case FgsMb:
+            case FgesMb:
                 algorithm = new FgesMb(scoreWrapper);
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new FgsMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                    algorithm = new FgesMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
 //                } else {
-//                    algorithm = new FgsMb(scoreWrapper);
+//                    algorithm = new FgesMb(scoreWrapper);
 //                }
                 break;
             case MBFS:
@@ -996,7 +996,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum AlgName {
         PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
-        FgsMb, MBFS, Wfgs, JCPC, /*FgsMeasurement,*/
+        FgesMb, MBFS, Wfges, JCPC, /*FgsMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,

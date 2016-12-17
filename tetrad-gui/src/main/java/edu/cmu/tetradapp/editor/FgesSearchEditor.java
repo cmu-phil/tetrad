@@ -73,7 +73,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(WFgsRunner runner) {
+    public FgesSearchEditor(WFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -85,7 +85,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(TsFgsRunner runner) {
+    public FgesSearchEditor(TsFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -157,7 +157,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                 try {
                     storeLatestWorkbenchGraph();
                     getAlgorithmRunner().execute();
-                    IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
+                    IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
                     arrangeGraphs();
                     gesDisplay.resetGraphs(runner.getTopGraphs());
                 } catch (Exception e) {
@@ -555,7 +555,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private List<ScoredGraph> arrangeGraphs() {
-        IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
+        IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
@@ -879,14 +879,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
         AlgorithmRunner algorithmRunner = getAlgorithmRunner();
 
-        if (algorithmRunner instanceof  IFgsRunner) {
-            IFgsRunner fgsRunner = ((IFgsRunner) algorithmRunner);
-            return new FgesIndTestParamsEditor(params, fgsRunner.getType());
+        if (algorithmRunner instanceof IFgesRunner) {
+            IFgesRunner fgesRunner = ((IFgesRunner) algorithmRunner);
+            return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         if (algorithmRunner instanceof FgesMbRunner) {
-            FgesMbRunner fgsRunner = ((FgesMbRunner) algorithmRunner);
-            return new FgesIndTestParamsEditor(params, fgsRunner.getType());
+            FgesMbRunner fgesRunner = ((FgesMbRunner) algorithmRunner);
+            return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         throw new IllegalArgumentException();

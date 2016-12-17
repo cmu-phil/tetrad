@@ -775,8 +775,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof IFgsRunner) {
-                return new FgesIndTestParamsEditor(params, ((IFgsRunner) getAlgorithmRunner()).getType());
+            if (getAlgorithmRunner() instanceof IFgesRunner) {
+                return new FgesIndTestParamsEditor(params, ((IFgesRunner) getAlgorithmRunner()).getType());
             }
         }
 

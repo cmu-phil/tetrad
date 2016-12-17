@@ -152,7 +152,7 @@ public final class TsGFci implements GraphSearch {
             setScore();
         }
 
-        TsFgs2 fgs = new TsFgs2(score);
+        TsFges2 fgs = new TsFges2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);

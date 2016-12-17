@@ -46,7 +46,7 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, GraphSource,
         PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel, Unmarshallable {
     static final long serialVersionUID = 23L;
     private LinkedHashMap<String, String> allParamSettings;
@@ -58,7 +58,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public WFgesRunner(DataWrapper[] dataWrappers, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
@@ -86,9 +86,9 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
-        WFgs fgs = new WFgs(dataSet);
-        fgs.setPenaltyDiscount(penaltyDiscount);
-        Graph graph = fgs.search();
+        WFges fges = new WFges(dataSet);
+        fges.setPenaltyDiscount(penaltyDiscount);
+        Graph graph = fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -241,7 +241,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     @Override
     public String getAlgorithmName() {
-        return "FGS";
+        return "FGES";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

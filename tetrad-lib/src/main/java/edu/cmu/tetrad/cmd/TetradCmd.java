@@ -505,7 +505,7 @@ public final class TetradCmd {
             runCfci();
         } else if ("ccd".equalsIgnoreCase(algorithmName)) {
             runCcd();
-        } else if ("fgs".equalsIgnoreCase(algorithmName)) {
+        } else if ("fges".equalsIgnoreCase(algorithmName)) {
             runFgs();
         } else if ("bayes_est".equalsIgnoreCase(algorithmName)) {
             runBayesEst();
@@ -660,9 +660,9 @@ public final class TetradCmd {
         Fges fges;
 
         if (useCovariance) {
-            SemBicScore fgsScore = new SemBicScore(covarianceMatrix);
-            fgsScore.setPenaltyDiscount(penaltyDiscount);
-            fges = new Fges(fgsScore);
+            SemBicScore fgesScore = new SemBicScore(covarianceMatrix);
+            fgesScore.setPenaltyDiscount(penaltyDiscount);
+            fges = new Fges(fgesScore);
 
         } else {
             if (data.isDiscrete()) {

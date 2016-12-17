@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -9,47 +8,25 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author jdramsey
  */
-public class MixedFgsDiscretingContinuousVariables implements Algorithm {
+public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
-
-    public MixedFgsDiscretingContinuousVariables(ScoreWrapper score) {
-        this.score = score;
-    }
-
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        Discretizer discretizer = new Discretizer(DataUtils.getContinuousDataSet(dataSet));
-        List<Node> nodes = dataSet.getVariables();
-
-        for (Node node : nodes) {
-            if (node instanceof ContinuousVariable) {
-                discretizer.equalIntervals(node, parameters.getInt("numCategories"));
-            }
-        }
-
-        dataSet = discretizer.discretize();
-        DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
-        Fges fges = new Fges(score.getScore(_dataSet, parameters));
+    public Graph search(DataModel Dk, Parameters parameters) {
+        DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
+        mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        Fges fges = new Fges(score);
         Graph p = fges.search();
-        return convertBack(_dataSet, p);
-    }
-
-
-    @Override
-    public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
-    }
-
-    @Override
-    public String getDescription() {
-        return "FGS after discretizing the continuous variables in the data set using " + score.getDescription();
+        return convertBack(mixedDataSet, p);
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -75,6 +52,15 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
         return p2;
     }
 
+    public Graph getComparisonGraph(Graph graph) {
+        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+    }
+
+    public String getDescription() {
+        return "FGS2, using the SEM BIC score, treating all discrete variables as " +
+                "continuous";
+    }
+
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
@@ -82,8 +68,10 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
-        parameters.add("numCategories");
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
         return parameters;
     }
 }
+
+
