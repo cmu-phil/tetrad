@@ -41,11 +41,11 @@ import java.util.List;
  *
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
-public class FgsMbRunner extends AbstractAlgorithmRunner implements
+public class FgesMbRunner extends AbstractAlgorithmRunner implements
         IndTestProducer, GraphSource, IFgsRunner, Indexable {
     static final long serialVersionUID = 23L;
 
-    private transient FgsMb2 fgs;
+    private transient FgesMb2 fgs;
     private int index;
     private ArrayList<ScoredGraph> topGraphs;
 
@@ -57,8 +57,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FgsMbRunner(DataWrapper dataWrapper, Parameters params,
-                       KnowledgeBoxModel knowledgeBoxModel) {
+    public FgesMbRunner(DataWrapper dataWrapper, Parameters params,
+                        KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -67,58 +67,58 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FgsMbRunner(DataWrapper dataWrapper, Parameters params) {
+    public FgesMbRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(Graph graph, Parameters params) {
+    public FgesMbRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(GraphWrapper dagWrapper, Parameters params) {
+    public FgesMbRunner(GraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public FgesMbRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(DagWrapper dagWrapper, Parameters params) {
+    public FgesMbRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     /**
      * Constructs a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public FgesMbRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public FgsMbRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public FgesMbRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FgsMbRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public FgesMbRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FgsMbRunner(IndependenceFactsModel model, Parameters params) {
+    public FgesMbRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public FgsMbRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgesMbRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -161,7 +161,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             target = gesScore.getVariable(targetName);
-            fgs = new FgsMb2(gesScore);
+            fgs = new FgesMb2(gesScore);
             fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
             fgs.setVerbose(true);
@@ -172,7 +172,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                 target = score.getVariable(targetName);
                 score.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
-                fgs = new FgsMb2(score);
+                fgs = new FgesMb2(score);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((Parameters) getParameters()).getSamplePrior();
                 double structurePrior = 1;//((Parameters) getParameters()).getStructurePrior();
@@ -180,7 +180,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 target = score.getVariable(targetName);
-                fgs = new FgsMb2(score);
+                fgs = new FgesMb2(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -189,7 +189,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             gesScore.setPenaltyDiscount(params.getDouble("alpha", 0.001));
             gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
             target = gesScore.getVariable(targetName);
-            fgs = new FgsMb2(gesScore);
+            fgs = new FgesMb2(gesScore);
         }
         else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
@@ -213,12 +213,12 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     target = fgsScore.getVariable(targetName);
-                    fgs = new FgsMb2(fgsScore);
+                    fgs = new FgesMb2(fgsScore);
                 } else {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     target = fgsScore.getVariable(targetName);
-                    fgs = new FgsMb2(fgsScore);
+                    fgs = new FgesMb2(fgsScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = getParams().getDouble("structurePrior", 1);
@@ -230,9 +230,9 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 target = fgsScore.getVariable(targetName);
 
                 if (params.getBoolean("firstNontriangular", false)) {
-                    fgs = new FgsMb2(fgsScore);
+                    fgs = new FgesMb2(fgsScore);
                 } else {
-                    fgs = new FgsMb2(fgsScore);
+                    fgs = new FgesMb2(fgsScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -427,7 +427,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    public FgsRunner.Type getType() {
+    public FgesRunner.Type getType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -441,29 +441,29 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsRunner.Type type;
+        FgesRunner.Type type;
 
         if (model instanceof Graph) {
-            type = FgsRunner.Type.GRAPH;
+            type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = FgsRunner.Type.CONTINUOUS;
+            type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (allDiscrete(list)) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }

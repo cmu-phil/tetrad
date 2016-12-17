@@ -47,16 +47,16 @@ public class HsimRun {
             double penaltyDiscount = 2.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             score.setPenaltyDiscount(penaltyDiscount);
-            Fgs fgs = new Fgs(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
+            Fges fges = new Fges(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
 //            fgs.setAlpha(penaltyDiscount);
             //fgs.setOut(out);
             //fgs.setFaithfulnessAssumed(true);
             //fgs.setMaxIndegree(1);
             //fgs.setCycleBound(5);
 
-            Graph estGraph = fgs.search();
+            Graph estGraph = fges.search();
             System.out.println(estGraph);
 
             Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
@@ -103,16 +103,16 @@ public class HsimRun {
 
             SemBicScore _score = new SemBicScore(new CovarianceMatrix(dataSetOut));
             _score.setPenaltyDiscount(2.0);
-            Fgs fgsOut = new Fgs(_score);
-            fgsOut.setVerbose(false);
-            fgsOut.setNumPatternsToStore(0);
+            Fges fgesOut = new Fges(_score);
+            fgesOut.setVerbose(false);
+            fgesOut.setNumPatternsToStore(0);
 //            fgsOut.setAlpha(2.0);
             //fgsOut.setOut(out);
             //fgsOut.setFaithfulnessAssumed(true);
             // fgsOut.setMaxIndegree(1);
             // fgsOut.setCycleBound(5);
 
-            Graph estGraphOut = fgsOut.search();
+            Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);
 
         SearchGraphUtils.graphComparison(estGraphOut, estGraph, System.out);

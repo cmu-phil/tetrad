@@ -147,7 +147,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
-                return new FgsIndTestParamsEditor(params, gesRunner.getType());
+                return new FgesIndTestParamsEditor(params, gesRunner.getType());
             }
         }
 

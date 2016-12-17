@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.FgsRunner;
+import edu.cmu.tetradapp.model.FgesRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -39,8 +39,8 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 
-class FgsIndTestParamsEditor extends JComponent {
-    private final FgsRunner.Type type;
+class FgesIndTestParamsEditor extends JComponent {
+    private final FgesRunner.Type type;
     private final Parameters params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
@@ -53,14 +53,14 @@ class FgsIndTestParamsEditor extends JComponent {
      */
     private final JCheckBox faithfulnessAssumed;
 
-    public FgsIndTestParamsEditor(Parameters params, FgsRunner.Type type) {
+    public FgesIndTestParamsEditor(Parameters params, FgesRunner.Type type) {
         this.params = params;
         this.type = type;
 
         NumberFormat nf = new DecimalFormat("0.0####");
         NumberFormat smallNf = new DecimalFormat("0.0E0");
 
-        if (type == FgsRunner.Type.DISCRETE) {
+        if (type == FgesRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
                     getFgsIndTestParams().getDouble("samplePrior", 1),  5, nf, smallNf, 1e-4);
 
@@ -168,7 +168,7 @@ class FgsIndTestParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (type == FgsRunner.Type.DISCRETE) {
+        if (type == FgesRunner.Type.DISCRETE) {
             Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("BDeu:"));
             b0.add(Box.createHorizontalGlue());
@@ -213,7 +213,7 @@ class FgsIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             add(b4b);
-        } else if (type == FgsRunner.Type.CONTINUOUS || type == FgsRunner.Type.MIXED){
+        } else if (type == FgesRunner.Type.CONTINUOUS || type == FgesRunner.Type.MIXED){
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
@@ -237,7 +237,7 @@ class FgsIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             add(b4b);
-        } else if (type == FgsRunner.Type.GRAPH) {
+        } else if (type == FgesRunner.Type.GRAPH) {
             Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num Patterns to Save"));
             b8.add(Box.createHorizontalGlue());

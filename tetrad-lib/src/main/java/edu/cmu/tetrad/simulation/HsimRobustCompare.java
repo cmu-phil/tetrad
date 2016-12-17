@@ -7,14 +7,12 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BDeuScore;
-import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.util.RandomUtil;
 
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +55,7 @@ public class HsimRobustCompare {
 
             //then run FGS
             BDeuScore oscore = new BDeuScore(oData);
-            Fgs ofgs = new Fgs(oscore);
+            Fges ofgs = new Fges(oscore);
             ofgs.setVerbose(false);
             ofgs.setNumPatternsToStore(0);
             ofgs.setPenaltyDiscount(penaltyDiscount);
@@ -90,7 +88,7 @@ public class HsimRobustCompare {
             //calculate errors for all simulated output graphs
             ////full simulation errors first
             BDeuScore simscore = new BDeuScore(simData);
-            Fgs simfgs = new Fgs(simscore);
+            Fges simfgs = new Fges(simscore);
             simfgs.setVerbose(false);
             simfgs.setNumPatternsToStore(0);
             simfgs.setPenaltyDiscount(penaltyDiscount);

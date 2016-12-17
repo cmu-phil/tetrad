@@ -61,7 +61,7 @@ public class MbSearchEditor extends AbstractSearchEditor
     public MbSearchEditor(MbfsRunner runner) {
         super(runner, "Result MB forbid_latent_common_causes");
     }
-    public MbSearchEditor(FgsMbRunner runner) {
+    public MbSearchEditor(FgesMbRunner runner) {
         super(runner, "Result MB forbid_latent_common_causes");
     }
 

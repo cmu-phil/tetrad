@@ -352,7 +352,7 @@ public class TestPc {
                     search = new Cpc(test);
                     break;
                 case 2:
-                    search = new Fgs(score);
+                    search = new Fges(score);
                     break;
                 case 3:
                     search = new Fci(test);
@@ -736,7 +736,7 @@ public class TestPc {
                     out = search.search();
                     break;
                 case 2:
-                    search = new Fgs(score);
+                    search = new Fges(score);
                     out = search.search();
                     break;
                 case 3:

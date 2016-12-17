@@ -398,8 +398,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
-            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+            FgesRunner fgesRunner = ((FgesRunner) getAlgorithmRunner());
+            return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
 //        if (params instanceof LagIndTestParams) {

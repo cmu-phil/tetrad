@@ -98,7 +98,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         log();
     }
 
-    public ScoredGraphsWrapper(FgsRunner runner, Parameters parameters) {
+    public ScoredGraphsWrapper(FgesRunner runner, Parameters parameters) {
         this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
     }
 

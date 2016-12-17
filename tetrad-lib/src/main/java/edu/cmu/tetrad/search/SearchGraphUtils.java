@@ -30,7 +30,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * Graph utilities for search algorithm. Lots of orientation method, for instance.
@@ -3184,7 +3183,7 @@ public final class SearchGraphUtils {
                 dataSets.add(_dataModel);
             }
 
-            Fgs images = new Fgs(new SemBicScoreImages(dataSets));
+            Fges images = new Fges(new SemBicScoreImages(dataSets));
 
             images.setBoundGraph(graph);
             images.setKnowledge(knowledge);
@@ -3202,7 +3201,7 @@ public final class SearchGraphUtils {
                 throw new NullPointerException();
             }
 
-            Fgs ges = new Fgs(score);
+            Fges ges = new Fges(score);
 
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);
@@ -3211,7 +3210,7 @@ public final class SearchGraphUtils {
             ICovarianceMatrix cov = (CovarianceMatrix) dataModel;
             Score score = new SemBicScore(cov);
 
-            Fgs ges = new Fgs(score);
+            Fges ges = new Fges(score);
 
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);

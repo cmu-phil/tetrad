@@ -75,7 +75,7 @@ public class TestLingamPattern {
 
         DataSet dataSet = simulateDataNonNormal(semIm, sampleSize, variableDistributions);
         Score score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        Graph estPattern = new Fgs(score).search();
+        Graph estPattern = new Fges(score).search();
 
         LingamPattern lingam = new LingamPattern(estPattern, dataSet);
         lingam.search();

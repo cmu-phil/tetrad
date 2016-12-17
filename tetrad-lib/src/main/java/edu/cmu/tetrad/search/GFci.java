@@ -101,14 +101,14 @@ public final class GFci implements GraphSearch {
 
         this.graph = new EdgeListGraphSingleConnections(nodes);
 
-        Fgs fgs = new Fgs(score);
-        fgs.setKnowledge(getKnowledge());
-        fgs.setVerbose(verbose);
-        fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
-        fgs.setMaxDegree(maxDegree);
-        fgs.setOut(out);
-        graph = fgs.search();
+        Fges fges = new Fges(score);
+        fges.setKnowledge(getKnowledge());
+        fges.setVerbose(verbose);
+        fges.setNumPatternsToStore(0);
+        fges.setFaithfulnessAssumed(faithfulnessAssumed);
+        fges.setMaxDegree(maxDegree);
+        fges.setOut(out);
+        graph = fges.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxDegree);

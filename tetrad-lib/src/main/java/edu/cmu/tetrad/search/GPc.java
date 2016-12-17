@@ -152,13 +152,13 @@ public final class GPc implements GraphSearch {
             setScore();
         }
 
-        Fgs fgs = new Fgs(score);
-        fgs.setKnowledge(getKnowledge());
-        fgs.setVerbose(verbose);
-        fgs.setNumPatternsToStore(0);
+        Fges fges = new Fges(score);
+        fges.setKnowledge(getKnowledge());
+        fges.setVerbose(verbose);
+        fges.setNumPatternsToStore(0);
 //        fgs.setHeuristicSpeedup(heuristicSpeedup);
 //        fgs.setMaxDegree(fgsDepth);
-        graph = fgs.search();
+        graph = fges.search();
 
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 

@@ -241,7 +241,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
      * implemented in the extending class.
      */
 //    public FgsRunner.Type getType() { return FgsRunner.getType(); }
-    public FgsRunner.Type getType() {
+    public FgesRunner.Type getType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -255,32 +255,32 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsRunner.Type type;
+        FgesRunner.Type type;
 
         if (model instanceof Graph) {
-            type = FgsRunner.Type.GRAPH;
+            type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
-                type = FgsRunner.Type.MIXED;
+                type = FgesRunner.Type.MIXED;
 //                throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = FgsRunner.Type.CONTINUOUS;
+            type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (allDiscrete(list)) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
-                type = FgsRunner.Type.MIXED;
+                type = FgesRunner.Type.MIXED;
 //                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         } else {

@@ -11,7 +11,7 @@ import java.util.List;
  * Created by jdramsey on 2/22/16.
  */
 public interface IFgsRunner {
-    FgsRunner.Type getType();
+    FgesRunner.Type getType();
 
     List<ScoredGraph> getTopGraphs();
 

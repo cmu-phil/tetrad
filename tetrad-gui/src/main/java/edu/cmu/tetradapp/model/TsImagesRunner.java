@@ -47,7 +47,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         PropertyChangeListener, IGesRunner, Indexable {
     static final long serialVersionUID = 23L;
 
-    public FgsRunner.Type getType() {
+    public FgesRunner.Type getType() {
         return type;
     }
 
@@ -56,7 +56,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
     private int index;
     private transient TsGFci fgs;
     private Graph graph;
-    private FgsRunner.Type type;
+    private FgesRunner.Type type;
 
     //============================CONSTRUCTORS============================//
 
@@ -223,7 +223,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    private FgsRunner.Type computeType() {
+    private FgesRunner.Type computeType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -238,26 +238,26 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         }
 
         if (model instanceof Graph) {
-            type = FgsRunner.Type.GRAPH;
+            type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = FgsRunner.Type.CONTINUOUS;
+            type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (allDiscrete(list)) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }

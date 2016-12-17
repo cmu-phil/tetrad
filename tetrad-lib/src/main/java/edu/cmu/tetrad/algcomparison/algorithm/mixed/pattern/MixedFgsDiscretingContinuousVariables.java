@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -36,8 +36,8 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
 
         dataSet = discretizer.discretize();
         DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
-        Fgs fgs = new Fgs(score.getScore(_dataSet, parameters));
-        Graph p = fgs.search();
+        Fges fges = new Fges(score.getScore(_dataSet, parameters));
+        Graph p = fges.search();
         return convertBack(_dataSet, p);
     }
 

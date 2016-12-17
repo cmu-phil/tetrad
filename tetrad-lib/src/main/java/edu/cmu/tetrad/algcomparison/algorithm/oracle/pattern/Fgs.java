@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import java.io.PrintStream;
@@ -44,8 +45,8 @@ public class Fgs implements Algorithm, TakesInitialGraph, HasKnowledge {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fgs search
-                = new edu.cmu.tetrad.search.Fgs(score.getScore(dataSet, parameters));
+        Fges search
+                = new Fges(score.getScore(dataSet, parameters));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));

@@ -158,7 +158,7 @@ public class Comparison2 {
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS) {
                 if (score == null) throw new IllegalArgumentException("Score not set.");
-                Fgs search = new Fgs(score);
+                Fges search = new Fges(score);
                 //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
@@ -430,7 +430,7 @@ public class Comparison2 {
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fgs search = new Fgs(score);
+            Fges search = new Fges(score);
             //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));

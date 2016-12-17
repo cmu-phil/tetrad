@@ -160,7 +160,7 @@ public class DMSearch {
 
         if (useFgs) {
             Score score = new SemBicScore(cov);
-            Fgs fgs = new Fgs(score);
+            Fges fges = new Fges(score);
 
             pattern = recursiveFgs(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
@@ -634,12 +634,12 @@ public class DMSearch {
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penalty);
-        Fgs fgs = new Fgs(score);
-        fgs.setKnowledge(knowledge);
+        Fges fges = new Fges(score);
+        fges.setKnowledge(knowledge);
 //        fgs.setMaxIndegree(this.gesDepth);
 //        fgs.setIgnoreLinearDependent(true);
 
-        Graph pattern = fgs.search();
+        Graph pattern = fges.search();
 
         //Saves GES output in case is needed.
         File file = new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty + "_.txt");

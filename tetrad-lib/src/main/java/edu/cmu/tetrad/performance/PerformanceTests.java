@@ -378,7 +378,7 @@ public class PerformanceTests {
         SemBicScore semBicScore = new SemBicScore(cov);
         semBicScore.setPenaltyDiscount(penaltyDiscount);
 
-        Fgs pcStable = new Fgs(semBicScore);
+        Fges pcStable = new Fges(semBicScore);
 
         Graph estPattern = pcStable.search();
 
@@ -879,16 +879,16 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs fgs = new Fgs(score);
+                Fges fges = new Fges(score);
 //                fgs.setVerbose(false);
-                fgs.setNumPatternsToStore(0);
-                fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setCycleBound(-1);
+                fges.setNumPatternsToStore(0);
+                fges.setOut(System.out);
+                fges.setFaithfulnessAssumed(faithfulness);
+                fges.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
 
-                estPattern = fgs.search();
+                estPattern = fges.search();
 
                 long timec = System.currentTimeMillis();
 
@@ -922,16 +922,16 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs fgs = new Fgs(score);
+                Fges fges = new Fges(score);
 //                fgs.setVerbose(false);
-                fgs.setNumPatternsToStore(0);
-                fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setCycleBound(-1);
+                fges.setNumPatternsToStore(0);
+                fges.setOut(System.out);
+                fges.setFaithfulnessAssumed(faithfulness);
+                fges.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
 
-                estPattern = fgs.search();
+                estPattern = fges.search();
 
                 long timec = System.currentTimeMillis();
 
@@ -1072,7 +1072,7 @@ public class PerformanceTests {
         Graph estPattern;
         long elapsed;
 
-        FgsMb2 fgs;
+        FgesMb2 fgs;
         List<Node> vars;
 
         if (continuous) {
@@ -1120,7 +1120,7 @@ public class PerformanceTests {
             System.out.println(new Date());
             System.out.println("\nStarting FGS-MB");
 
-            fgs = new FgsMb2(score);
+            fgs = new FgesMb2(score);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
@@ -1165,7 +1165,7 @@ public class PerformanceTests {
 
             long time4 = System.currentTimeMillis();
 
-            fgs = new FgsMb2(score);
+            fgs = new FgesMb2(score);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);

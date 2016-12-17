@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
@@ -24,8 +24,8 @@ public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
         mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(mixedDataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        Fgs fgs = new Fgs(score);
-        Graph p = fgs.search();
+        Fges fges = new Fges(score);
+        Graph p = fges.search();
         return convertBack(mixedDataSet, p);
     }
 
