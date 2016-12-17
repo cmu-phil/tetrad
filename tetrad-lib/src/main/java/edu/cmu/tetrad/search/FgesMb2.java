@@ -293,7 +293,7 @@ public final class FgesMb2 {
 
         for (Node target : targets) {
             if (!fgsScore.getVariables().contains(target)) throw new IllegalArgumentException(
-                    "Target is not one of the variables for the fgsScore."
+                    "Target is not one of the variables for the fgesScore."
             );
         }
 

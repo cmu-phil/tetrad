@@ -506,7 +506,7 @@ public final class TetradCmd {
         } else if ("ccd".equalsIgnoreCase(algorithmName)) {
             runCcd();
         } else if ("fges".equalsIgnoreCase(algorithmName)) {
-            runFgs();
+            runFges();
         } else if ("bayes_est".equalsIgnoreCase(algorithmName)) {
             runBayesEst();
         } else if ("fofc".equalsIgnoreCase(algorithmName)) {
@@ -638,13 +638,13 @@ public final class TetradCmd {
         writeGraph(resultGraph);
     }
 
-    private void runFgs() {
+    private void runFges() {
         if (this.data == null && this.covarianceMatrix == null) {
             throw new IllegalStateException("Data did not load correctly.");
         }
 
         if (verbose) {
-            systemPrint("FGS");
+            systemPrint("FGES");
             systemPrint(getKnowledge().toString());
             systemPrint(getVariables().toString());
 

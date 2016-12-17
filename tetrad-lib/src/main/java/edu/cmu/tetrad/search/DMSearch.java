@@ -33,7 +33,7 @@ public class DMSearch {
     private int minDiscount = 4;
 
     //If true, use GES, else use PC.
-    private boolean useFgs = true;
+    private boolean useFges = true;
 
     //Lets the user select a subset of the inputs in the dataset to search over.
     //If not subseting, should be set to the entire input set.
@@ -112,8 +112,8 @@ public class DMSearch {
         this.gesDiscount = discount;
     }
 
-    public void setUseFgs(boolean set) {
-        this.useFgs = set;
+    public void setUseFges(boolean set) {
+        this.useFges = set;
     }
 
 
@@ -158,11 +158,11 @@ public class DMSearch {
 
         Graph pattern = new EdgeListGraph();
 
-        if (useFgs) {
+        if (useFges) {
             Score score = new SemBicScore(cov);
             Fges fges = new Fges(score);
 
-            pattern = recursiveFgs(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
+            pattern = recursiveFges(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
             this.cov = new CovarianceMatrixOnTheFly(data);
 //            PC pc = new PC(new IndTestFisherZ(cov, this.alphaPC));
@@ -624,7 +624,7 @@ public class DMSearch {
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveFgs(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
+    private Graph recursiveFges(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
 
         for (Edge edge : previousGES.getEdges()) {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
@@ -636,8 +636,8 @@ public class DMSearch {
         score.setPenaltyDiscount(penalty);
         Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
-//        fgs.setMaxIndegree(this.gesDepth);
-//        fgs.setIgnoreLinearDependent(true);
+//        fges.setMaxIndegree(this.gesDepth);
+//        fges.setIgnoreLinearDependent(true);
 
         Graph pattern = fges.search();
 
@@ -656,7 +656,7 @@ public class DMSearch {
 
         if (penalty > minPenalty) {
             applyDmSearch(pattern, inputString, penalty);
-            return (recursiveFgs(pattern, knowledge, penalty - 1, minPenalty, data, inputString));
+            return (recursiveFges(pattern, knowledge, penalty - 1, minPenalty, data, inputString));
         } else {
             applyDmSearch(pattern, inputString, penalty);
             return (pattern);

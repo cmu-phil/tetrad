@@ -213,7 +213,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fges.setVerbose(true);
 //        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
-//        * there is no setHeuristicSpeedup option in Fgs2 and so likewise TsFgs2. *
+//        * there is no setHeuristicSpeedup option in Fges2 and so likewise TsFges2. *
         Graph graph = fges.search();
 
         if (getSourceGraph() != null) {
@@ -240,7 +240,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-//    public FgsRunner.Type getType() { return FgsRunner.getType(); }
+//    public FgesRunner.Type getType() { return FgesRunner.getType(); }
     public FgesRunner.Type getType() {
         Object model = getDataModel();
 

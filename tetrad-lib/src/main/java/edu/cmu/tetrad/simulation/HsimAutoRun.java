@@ -155,7 +155,7 @@ public class HsimAutoRun {
                 DataWriter.writeRectangularData(newDataSet, fileWriter, delimiter);
                 fileWriter.close();
             }
-        //=======Run FGS on the output data, and compare it to the original learned graph
+        //=======Run FGES on the output data, and compare it to the original learned graph
             //Path dataFileOut = Paths.get(filenameOut);
             //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
 
@@ -166,13 +166,13 @@ public class HsimAutoRun {
             fgesOut.setVerbose(false);
             fgesOut.setNumPatternsToStore(0);
             fgesOut.setPenaltyDiscount(2.0);
-            //fgsOut.setOut(out);
-            //fgsOut.setFaithfulnessAssumed(true);
-            // fgsOut.setMaxIndegree(1);
-            // fgsOut.setCycleBound(5);
+            //fgesOut.setOut(out);
+            //fgesOut.setFaithfulnessAssumed(true);
+            // fgesOut.setMaxIndegree(1);
+            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
-            //if (verbose) System.out.println(" bugchecking: fgs estGraphOut: " + estGraphOut);
+            //if (verbose) System.out.println(" bugchecking: fges estGraphOut: " + estGraphOut);
 
             //doing the replaceNodes trick to fix some bugs
             estGraphOut = GraphUtils.replaceNodes(estGraphOut,estDAG.getNodes());

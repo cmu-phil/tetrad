@@ -18,9 +18,9 @@ import java.util.List;
 
 /**
  * generate data from random graph, generated from parameters.
- * calculate errors from FGS output for the data and graph
+ * calculate errors from FGES output for the data and graph
  * create resimulated data and hybrid resimulated data with various parameters
- * calculate errors of FGS on the resimulated and hsim data
+ * calculate errors of FGES on the resimulated and hsim data
  * compare errors across all data sets. which simulated data errors are closest to original?
  */
 public class HsimRobustCompare {
@@ -53,7 +53,7 @@ public class HsimRobustCompare {
             //System.out.println(oData);
             //System.out.println(odag);
 
-            //then run FGS
+            //then run FGES
             BDeuScore oscore = new BDeuScore(oData);
             Fges ofgs = new Fges(oscore);
             ofgs.setVerbose(false);
@@ -62,7 +62,7 @@ public class HsimRobustCompare {
             Graph oGraphOut = ofgs.search();
             if (verbose) System.out.println(oGraphOut);
 
-            //calculate FGS errors
+            //calculate FGES errors
             oErrors = new double[5];
             oErrors = HsimUtils.errorEval(oGraphOut, odag);
             if (verbose) System.out.println(oErrors[0] + " " + oErrors[1] + " " + oErrors[2] +
@@ -70,7 +70,7 @@ public class HsimRobustCompare {
 
             //create various simulated data sets
 
-            ////let's do the full simulated data set first: a dag in the FGS pattern fit to the data set.
+            ////let's do the full simulated data set first: a dag in the FGES pattern fit to the data set.
             PatternToDag pickdag = new PatternToDag(oGraphOut);
             Graph fgsDag = pickdag.patternToDagMeek();
 

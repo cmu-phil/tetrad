@@ -50,11 +50,11 @@ public class HsimRun {
             Fges fges = new Fges(score);
             fges.setVerbose(false);
             fges.setNumPatternsToStore(0);
-//            fgs.setAlpha(penaltyDiscount);
-            //fgs.setOut(out);
-            //fgs.setFaithfulnessAssumed(true);
-            //fgs.setMaxIndegree(1);
-            //fgs.setCycleBound(5);
+//            fges.setAlpha(penaltyDiscount);
+            //fges.setOut(out);
+            //fges.setFaithfulnessAssumed(true);
+            //fges.setMaxIndegree(1);
+            //fges.setCycleBound(5);
 
             Graph estGraph = fges.search();
             System.out.println(estGraph);
@@ -95,7 +95,7 @@ public class HsimRun {
             //write output to a new file
             DataWriter.writeRectangularData(newDataSet, new FileWriter(filenameOut), delimiter);
 
-        //=======Run FGS on the output data, and compare it to the original learned graph
+        //=======Run FGES on the output data, and compare it to the original learned graph
         Path dataFileOut = Paths.get(filenameOut);
         edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
 
@@ -106,11 +106,11 @@ public class HsimRun {
             Fges fgesOut = new Fges(_score);
             fgesOut.setVerbose(false);
             fgesOut.setNumPatternsToStore(0);
-//            fgsOut.setAlpha(2.0);
-            //fgsOut.setOut(out);
-            //fgsOut.setFaithfulnessAssumed(true);
-            // fgsOut.setMaxIndegree(1);
-            // fgsOut.setCycleBound(5);
+//            fgesOut.setAlpha(2.0);
+            //fgesOut.setOut(out);
+            //fgesOut.setFaithfulnessAssumed(true);
+            // fgesOut.setMaxIndegree(1);
+            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);

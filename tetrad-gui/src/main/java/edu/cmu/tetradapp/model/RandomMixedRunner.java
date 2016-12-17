@@ -145,7 +145,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
         fges.setPenaltyDiscount(12);
         Graph graph = fges.search();
 
-//        WFgs fges = new WFgs(ds);
+//        WFges fges = new WFges(ds);
 //        fges.setAlpha(4);
 //        Graph g = fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
@@ -167,7 +167,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        fges.setAlpha(4);
 //        Graph graph = fges.search();
 
-//        WFgs fges = new WFgs(ds);
+//        WFges fges = new WFges(ds);
 //        fges.setMaxIndegree(5);
 //        fges.setAlpha(8);
 //        Graph g =  fges.search();
@@ -177,7 +177,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        Graph graph = pc.search();
 
 //        ConditionalGaussianScore score = new ConditionalGaussianScore(ds);
-//        Fgs fges = new Fgs(score);
+//        Fges fges = new Fges(score);
 //        fges.setMaxIndegree(-1);
 //        Graph graph = fges.search();
 

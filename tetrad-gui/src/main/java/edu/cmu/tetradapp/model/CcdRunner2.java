@@ -235,11 +235,11 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
 //
-//                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-//                    fgsScore.setSamplePrior(samplePrior);
-//                    fgsScore.setStructurePrior(structurePrior);
+//                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+//                    fgesScore.setSamplePrior(samplePrior);
+//                    fgesScore.setStructurePrior(structurePrior);
 //
-//                    gfci = new GFci(fgsScore);
+//                    gfci = new GFci(fgesScore);
 //                }
                 else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

@@ -160,14 +160,14 @@ public final class TsGFci implements GraphSearch {
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-//        System.out.println("GFCI: FGS done");
+//        System.out.println("GFCI: FGES done");
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
 //        ((SepsetsGreedy) sepsets).setMaxDegree(3);
-//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservative(fgesGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservativeMajority(fgesGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMaxPValue(fgesGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMinScore(fgesGraph, independenceTest, null, maxIndegree);
 //
 //        System.out.println("GFCI: Look inside triangles starting");
 
@@ -202,17 +202,17 @@ public final class TsGFci implements GraphSearch {
 //            Node a = edge.getNode1();
 //            Node c = edge.getNode2();
 //
-//            Edge e = fgsGraph.getEdge(a, c);
+//            Edge e = fgesGraph.getEdge(a, c);
 //
 //            if (e != null && e.isDirected()) {
 //
 //                // Only the ones that are in triangles.
-//                Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
-//                _adj.retainAll(fgsGraph.getAdjacentNodes(c));
+//                Set<Node> _adj = new HashSet<>(fgesGraph.getAdjacentNodes(a));
+//                _adj.retainAll(fgesGraph.getAdjacentNodes(c));
 //                if (_adj.isEmpty()) continue;
 //
 //                Node f = Edges.getDirectedEdgeHead(e);
-//                List<Node> adj = fgsGraph.getAdjacentNodes(f);
+//                List<Node> adj = fgesGraph.getAdjacentNodes(f);
 //                adj.remove(Edges.getDirectedEdgeTail(e));
 //
 //                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
@@ -233,7 +233,7 @@ public final class TsGFci implements GraphSearch {
 
         modifiedR0(fgsGraph);
 
-//    modifiedR0(fgsGraph, map);
+//    modifiedR0(fgesGraph, map);
 
 //        System.out.println("GFCI: R0 done");
 

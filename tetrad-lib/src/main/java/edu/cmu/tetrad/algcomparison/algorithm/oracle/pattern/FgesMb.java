@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * FGES (the heuristic version).
  *
  * @author jdramsey
  */
@@ -69,7 +69,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FGS (Fast Greedy Search) using " + score.getDescription();
+        return "FGES (Fast Greedy Search) using " + score.getDescription();
     }
 
     @Override

@@ -996,7 +996,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum AlgName {
         PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
-        FgesMb, MBFS, Wfges, JCPC, /*FgsMeasurement,*/
+        FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
         IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,

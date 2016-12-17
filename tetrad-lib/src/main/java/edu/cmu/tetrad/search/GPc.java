@@ -156,20 +156,20 @@ public final class GPc implements GraphSearch {
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(verbose);
         fges.setNumPatternsToStore(0);
-//        fgs.setHeuristicSpeedup(heuristicSpeedup);
-//        fgs.setMaxDegree(fgsDepth);
+//        fges.setHeuristicSpeedup(heuristicSpeedup);
+//        fges.setMaxDegree(fgsDepth);
         graph = fges.search();
 
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-//        System.out.println("GFCI: FGS done");
+//        System.out.println("GFCI: FGES done");
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
 //        ((SepsetsGreedy) sepsets).setMaxDegree(3);
-//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservative(fgesGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservativeMajority(fgesGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMaxPValue(fgesGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMinScore(fgesGraph, independenceTest, null, maxIndegree);
 //
 //        System.out.println("GFCI: Look inside triangles starting");
 
@@ -202,8 +202,8 @@ public final class GPc implements GraphSearch {
 //                Node x = edge.getNode1();
 //                Node y = edge.getNode2();
 //
-//                List<Node> adjx = fgsGraph.getAdjacentNodes(x);
-//                List<Node> adjy = fgsGraph.getAdjacentNodes(y);
+//                List<Node> adjx = fgesGraph.getAdjacentNodes(x);
+//                List<Node> adjy = fgesGraph.getAdjacentNodes(y);
 //
 //                adjx.remove(y);
 //                adjy.remove(x);
@@ -249,8 +249,8 @@ public final class GPc implements GraphSearch {
 ////            Node a = edge.getNode1();
 ////            Node c = edge.getNode2();
 ////
-////            Set<Node> x = new HashSet<>(fgsGraph.getAdjacentNodes(a));
-////            x.retainAll(fgsGraph.getAdjacentNodes(c));
+////            Set<Node> x = new HashSet<>(fgesGraph.getAdjacentNodes(a));
+////            x.retainAll(fgesGraph.getAdjacentNodes(c));
 ////
 ////            if (!x.isEmpty()) {
 ////                if (sepsets.getSepset(a, c) != null) {

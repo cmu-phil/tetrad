@@ -141,7 +141,7 @@ public final class GFciMax implements GraphSearch {
             }
         }
 
-//        modifiedR0(fgsGraph);
+//        modifiedR0(fgesGraph);
         sepsets = new SepsetsMinScore(fgsGraph, independenceTest, maxDegree);
 
         addColliders(graph, fgsGraph);
@@ -434,7 +434,7 @@ public final class GFciMax implements GraphSearch {
             Node a = adjacentNodes.get(combination[0]);
             Node c = adjacentNodes.get(combination[1]);
 
-//            if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+//            if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
             // S actually has to be non-null here, but the compiler doesn't know that.
             List<Node> S = sepsets.getSepset(a, c);
             if (S != null && !S.contains(b)) {

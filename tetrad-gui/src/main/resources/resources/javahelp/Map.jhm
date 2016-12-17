@@ -89,8 +89,8 @@
     <mapID target="eb" url="manual/boxes/search/eb.html"/>
     <mapID target="fas" url="manual/boxes/search/fas.html"/>
     <mapID target="fci" url="manual/boxes/search/fci.html"/>
-    <mapID target="fgs" url="manual/boxes/search/fgs.html"/>
-    <mapID target="fgsmb" url="manual/boxes/search/fgsmb.html"/>
+    <mapID target="fges" url="manual/boxes/search/fgs.html"/>
+    <mapID target="fgesmb" url="manual/boxes/search/fgsmb.html"/>
     <mapID target="ccdmax" url="manual/boxes/search/ccdmax.html"/>
     <mapID target="gfci" url="manual/boxes/search/gfci.html"/>
     <mapID target="glasso" url="manual/boxes/search/glasso.html"/>
@@ -120,7 +120,7 @@
     <mapID target="tsfci" url="manual/boxes/search/tsfci.html"/>
     <mapID target="tsgfci" url="manual/boxes/search/tsgfci.html"/>
     <mapID target="tsimages" url="manual/boxes/search/tsimages.html"/>
-    <mapID target="wfgs" url="manual/boxes/search/wfgs.html"/>
+    <mapID target="wfges" url="manual/boxes/search/wfgs.html"/>
 
 
     <mapID target="bdeu" url="manual/boxes/search/bdeu.html"/>

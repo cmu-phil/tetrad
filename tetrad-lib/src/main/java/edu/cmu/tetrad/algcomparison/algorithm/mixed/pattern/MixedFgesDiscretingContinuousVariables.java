@@ -49,7 +49,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS after discretizing the continuous variables in the data set using " + score.getDescription();
+        return "FGES after discretizing the continuous variables in the data set using " + score.getDescription();
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

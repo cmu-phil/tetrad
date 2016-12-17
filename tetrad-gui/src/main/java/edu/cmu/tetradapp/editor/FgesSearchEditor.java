@@ -67,7 +67,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     //=========================CONSTRUCTORS============================//
 
     /**
-     * Opens up an editor to let the user view the given FgsRunner.
+     * Opens up an editor to let the user view the given FgesRunner.
      */
     public FgesSearchEditor(FgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
@@ -641,7 +641,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            }
 
             String bayesFactorsReport = ((FgesRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
-//            String bootstrapEdgeCountsReport = ((ImaFgsRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
+//            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
 
             JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
 
@@ -699,7 +699,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                     new WatchedProcess(owner) {
                         public void watch() {
                             int n = numBootstraps.getValue();
-//                            String bootstrapEdgeCountsReport = ((ImaFgsRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
+//                            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
 //                            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
                         }
                     };

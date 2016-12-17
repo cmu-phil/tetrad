@@ -90,12 +90,12 @@ public class FGEScCli extends AbstractAlgorithmCli {
 
     @Override
     public Algorithm getAlgorithm(IKnowledge knowledge) {
-        Fgs fgs = new Fgs(new SemBicScore());
+        Fgs fges = new Fgs(new SemBicScore());
         if (knowledge != null) {
-            fgs.setKnowledge(knowledge);
+            fges.setKnowledge(knowledge);
         }
 
-        return fgs;
+        return fges;
     }
 
     @Override

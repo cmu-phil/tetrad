@@ -57,7 +57,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS2, using the SEM BIC score, treating all discrete variables as " +
+        return "FGES2, using the SEM BIC score, treating all discrete variables as " +
                 "continuous";
     }
 

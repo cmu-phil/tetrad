@@ -59,7 +59,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Joseph Ramsey
  */
-public class TestFgs {
+public class TestFges {
 
 
     private PrintStream out = System.out;
@@ -105,7 +105,7 @@ public class TestFgs {
         fges.setNumPatternsToStore(0);
         fges.setOut(out);
         fges.setFaithfulnessAssumed(true);
-//        fgs.setMaxIndegree(1);
+//        fges.setMaxIndegree(1);
         fges.setCycleBound(5);
 
         Graph estPattern = fges.search();
@@ -226,7 +226,7 @@ public class TestFgs {
 
 
     @Test
-    public void testFromGraphSimpleFgs() {
+    public void testFromGraphSimpleFges() {
 
         // This may fail if faithfulness is assumed but should pass if not.
 
@@ -280,7 +280,7 @@ public class TestFgs {
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
         FgesMb2 fgs = new FgesMb2(new GraphScore(g));
-//        fgs.setHeuristicSpeedup(false);
+//        fges.setHeuristicSpeedup(false);
         Graph pattern2 = fgs.search(x1);
 
 //        System.out.println(pattern1);
@@ -290,19 +290,19 @@ public class TestFgs {
     }
 
     @Test
-    public void testFgsMbFromGraph() {
+    public void testFgesMbFromGraph() {
         int numNodes = 20;
         int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            GraphScore fgsScore = new GraphScore(dag);
+            GraphScore fgesScore = new GraphScore(dag);
 
-            Fges fges = new Fges(fgsScore);
+            Fges fges = new Fges(fgesScore);
             Graph pattern1 = fges.search();
 
-            Node x1 = fgsScore.getVariable("X1");
+            Node x1 = fgesScore.getVariable("X1");
 
             Set<Node> mb = new HashSet<>();
             mb.add(x1);
@@ -315,8 +315,8 @@ public class TestFgs {
 
             Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
 
-            FgesMb2 fgsMb = new FgesMb2(fgsScore);
-            Graph mb2 = fgsMb.search(x1);
+            FgesMb2 fgesMb = new FgesMb2(fgesScore);
+            Graph mb2 = fgesMb.search(x1);
 
             assertEquals(mb1, mb2);
         }
@@ -395,12 +395,12 @@ public class TestFgs {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test = new FisherZ();
 
-        Algorithm fgs  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs(score);
+        Algorithm fges  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs(score);
 
-        Graph fgsGraph = fgs.search(dataSet, parameters);
+        Graph fgesGraph = fges.search(dataSet, parameters);
 
-        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgsGraph, test);
-        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgsGraph, test);
+        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgesGraph, test);
+        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgesGraph, test);
 
     }
 
@@ -800,9 +800,9 @@ public class TestFgs {
 
                 long start = System.currentTimeMillis();
 
-//            Graph pattern = searchSemFgs(Dk);
-//            Graph pattern = searchBdeuFgs(Dk, k);
-                Graph pattern = searchMixedFgs(Dk, penalty);
+//            Graph pattern = searchSemFges(Dk);
+//            Graph pattern = searchBdeuFges(Dk, k);
+                Graph pattern = searchMixedFges(Dk, penalty);
 
                 long stop = System.currentTimeMillis();
 
@@ -826,7 +826,7 @@ public class TestFgs {
         }
     }
 
-    private Graph searchSemFgs(DataSet Dk, double penalty) {
+    private Graph searchSemFges(DataSet Dk, double penalty) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
         score.setPenaltyDiscount(penalty);
@@ -834,7 +834,7 @@ public class TestFgs {
         return fges.search();
     }
 
-    private Graph searchBdeuFgs(DataSet Dk, int k) {
+    private Graph searchBdeuFges(DataSet Dk, int k) {
         Discretizer discretizer = new Discretizer(Dk);
         List<Node> nodes = Dk.getVariables();
 
@@ -853,14 +853,14 @@ public class TestFgs {
         return fges.search();
     }
 
-    private Graph searchMixedFgs(DataSet dk, double penalty) {
+    private Graph searchMixedFges(DataSet dk, double penalty) {
         MixedBicScore score = new MixedBicScore(dk);
         score.setPenaltyDiscount(penalty);
         Fges fges = new Fges(score);
         return fges.search();
     }
 
-    public Graph searchMGMFgs(DataSet ds, double penalty) {
+    public Graph searchMGMFges(DataSet ds, double penalty) {
         MGM m = new MGM(ds, new double[]{0.1, 0.1, 0.1});
         //m.setVerbose(this.verbose);
         Graph gm = m.search();
@@ -904,7 +904,7 @@ public class TestFgs {
 
     //    @Test
     public void testBestAlgorithms() {
-        String[] algorithms = {"SemFGS", "BDeuFGS", "MixedFGS", "PC", "PCS", "CPC", "MGMFgs", "MGMPcs"};
+        String[] algorithms = {"SemFGES", "BDeuFGES", "MixedFGES", "PC", "PCS", "CPC", "MGMFgs", "MGMPcs"};
         String[] statLabels = {"AP", "AR", "OP", "OR", "SUM", "McAdj", "McOr", "F1Adj", "F1Or", "E"};
 
         int numMeasures = 30;
@@ -1008,16 +1008,16 @@ public class TestFgs {
 
             switch (t) {
                 case 0:
-                    out = searchSemFgs(data, penalty);
+                    out = searchSemFges(data, penalty);
                     break;
                 case 1:
-                    out = searchBdeuFgs(data, numCategories);
+                    out = searchBdeuFges(data, numCategories);
                     break;
                 case 2:
-                    out = searchMixedFgs(data, penalty);
+                    out = searchMixedFges(data, penalty);
                     break;
                 case 6:
-                    out = searchMGMFgs(data, penalty);
+                    out = searchMGMFges(data, penalty);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -1374,7 +1374,7 @@ public class TestFgs {
     }
 
     public static void main(String... args) {
-        new TestFgs().testBestAlgorithms();
+        new TestFges().testBestAlgorithms();
     }
 }
 

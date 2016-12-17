@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS.
+ * Implements a conditional Gaussian BIC score for FGES.
  *
  * @author Joseph Ramsey
  */
