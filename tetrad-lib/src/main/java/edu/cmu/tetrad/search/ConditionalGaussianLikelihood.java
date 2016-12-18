@@ -66,6 +66,12 @@ public class ConditionalGaussianLikelihood {
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
 
+    // "Cell" consisting of all rows.
+    private final ArrayList<Integer> all;
+
+    // A constant.
+    private static double LOGMATH2PI = log(2.0 * Math.PI);
+
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
      * for it.
@@ -128,6 +134,10 @@ public class ConditionalGaussianLikelihood {
 
         this.dataSet = useErsatzVariables();
         this.adTree = AdTrees.getAdLeafTree(this.dataSet);
+
+        all = new ArrayList<>();
+        for (int i = 0; i < dataSet.getNumRows(); i++) all.add(i);
+
     }
 
     private DataSet useErsatzVariables() {
@@ -258,24 +268,16 @@ public class ConditionalGaussianLikelihood {
             }
 
             if (X.size() > 0) {
-                double v;
-
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
-                    if (a <= continuousCols.length) {
-                        throw new IllegalArgumentException();
+                    if (a > continuousCols.length + 10) {
+                        TetradMatrix cov = cov(getSubsample(continuousCols, cell));
+                        c2 += a * gaussianLikelihood(k, cov);
+                    } else {
+                        TetradMatrix cov = cov(getSubsample(continuousCols, all));
+                        c2 += a * gaussianLikelihood(k, cov);
                     }
-
-                    TetradMatrix cov = cov(getSubsample(continuousCols, cell));
-                    v = gaussianLikelihood(k, cov);
-
-                    // Double check.
-                    if (Double.isInfinite(v)) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    c2 += a * v;
                 } catch (Exception e) {
                     // No contribution.
                 }
@@ -296,7 +298,7 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, TetradMatrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * log(2.0 * Math.PI);
+        return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * LOGMATH2PI;
     }
 
     private double logdet(TetradMatrix m) {
