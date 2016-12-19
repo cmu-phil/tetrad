@@ -541,7 +541,8 @@ final class LoadDataDialog extends JPanel {
         c.setBorder(new TitledBorder("Source File and Loading Log"));
 
         Box a = Box.createHorizontalBox();
-        a.add(pane);
+        // No need to use tabbed pane - Zhou
+        a.add(r1);
         a.add(c);
         setLayout(new BorderLayout());
 
