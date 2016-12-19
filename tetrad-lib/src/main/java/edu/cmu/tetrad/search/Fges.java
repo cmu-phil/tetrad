@@ -52,7 +52,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fgs implements GraphSearch, GraphScorer {
+public final class Fges implements GraphSearch, GraphScorer {
 
 
     /**
@@ -184,7 +184,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * values in case of conditional independence. See Chickering (2002),
      * locally consistent scoring criterion.
      */
-    public Fgs(Score score) {
+    public Fges(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());

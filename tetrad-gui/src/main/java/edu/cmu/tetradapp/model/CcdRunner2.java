@@ -216,7 +216,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -226,20 +226,20 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 if (allContinuous(list)) {
                     double penalty = 4;//params.getPenaltyDiscount();
 
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    fgsScore.setPenaltyDiscount(penalty);
-                    IndependenceTest test = new IndTestScore(fgsScore);
+                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    fgesScore.setPenaltyDiscount(penalty);
+                    IndependenceTest test = new IndTestScore(fgesScore);
                     ccd = new CcdMax(test);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
 //
-//                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-//                    fgsScore.setSamplePrior(samplePrior);
-//                    fgsScore.setStructurePrior(structurePrior);
+//                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+//                    fgesScore.setSamplePrior(samplePrior);
+//                    fgesScore.setStructurePrior(structurePrior);
 //
-//                    gfci = new GFci(fgsScore);
+//                    gfci = new GFci(fgesScore);
 //                }
                 else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

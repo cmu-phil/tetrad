@@ -55,41 +55,41 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class FgsSearchEditor extends AbstractSearchEditor
+public class FgesSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, Indexable, DoNotScroll {
 
     //    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
     private boolean alreadyLaidOut = false;
-    private FgsDisplay gesDisplay;
-    private FgsIndTestParamsEditor paramsEditor;
+    private FgesDisplay gesDisplay;
+    private FgesIndTestParamsEditor paramsEditor;
 
     //=========================CONSTRUCTORS============================//
 
     /**
-     * Opens up an editor to let the user view the given FgsRunner.
+     * Opens up an editor to let the user view the given FgesRunner.
      */
-    public FgsSearchEditor(FgsRunner runner) {
+    public FgesSearchEditor(FgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgsSearchEditor(WFgsRunner runner) {
+    public FgesSearchEditor(WFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgsSearchEditor(FgsMbRunner runner) {
+    public FgesSearchEditor(FgesMbRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgsSearchEditor(ImagesRunner runner) {
+    public FgesSearchEditor(ImagesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgsSearchEditor(TsFgsRunner runner) {
+    public FgesSearchEditor(TsFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgsSearchEditor(TsImagesRunner runner) {
+    public FgesSearchEditor(TsImagesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -157,7 +157,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 try {
                     storeLatestWorkbenchGraph();
                     getAlgorithmRunner().execute();
-                    IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
+                    IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
                     arrangeGraphs();
                     gesDisplay.resetGraphs(runner.getTopGraphs());
                 } catch (Exception e) {
@@ -358,7 +358,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     protected void addSpecialMenus(JMenuBar menuBar) {
-        if (!(getAlgorithmRunner() instanceof FgsRunner)) {
+        if (!(getAlgorithmRunner() instanceof FgesRunner)) {
             JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
@@ -431,9 +431,9 @@ public class FgsSearchEditor extends AbstractSearchEditor
                             return;
                         }
 
-                        if (runner instanceof FgsRunner) {
-                            GraphScorer scorer = ((FgsRunner) runner).getGraphScorer();
-                            Graph _graph = ((FgsRunner) runner).getTopGraphs().get(getIndex()).getGraph();
+                        if (runner instanceof FgesRunner) {
+                            GraphScorer scorer = ((FgesRunner) runner).getGraphScorer();
+                            Graph _graph = ((FgesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
 
                             ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
                             GraphWorkbench workbench = getWorkbench();
@@ -527,10 +527,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
     //==============================PRIVATE METHODS=============================//
 
-    private FgsDisplay gesDisplay() {
+    private FgesDisplay gesDisplay() {
         Graph resultGraph = resultGraph();
         List<ScoredGraph> topGraphs = arrangeGraphs();
-        FgsDisplay display = new FgsDisplay(resultGraph, topGraphs, this);
+        FgesDisplay display = new FgesDisplay(resultGraph, topGraphs, this);
         this.gesDisplay = display;
 
         // Superfluous?
@@ -555,7 +555,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     private List<ScoredGraph> arrangeGraphs() {
-        IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
+        IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
@@ -598,7 +598,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-        FgsRunner runner = (FgsRunner) getAlgorithmRunner();
+        FgesRunner runner = (FgesRunner) getAlgorithmRunner();
 
         if (runner.getTopGraphs().isEmpty()) {
             throw new IllegalArgumentException("No patterns were recorded. Please adjust the number of " +
@@ -640,8 +640,8 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //                throw new IllegalArgumentException("");
 //            }
 
-            String bayesFactorsReport = ((FgsRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
-//            String bootstrapEdgeCountsReport = ((ImaFgsRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
+            String bayesFactorsReport = ((FgesRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
+//            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
 
             JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
 
@@ -699,7 +699,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                     new WatchedProcess(owner) {
                         public void watch() {
                             int n = numBootstraps.getValue();
-//                            String bootstrapEdgeCountsReport = ((ImaFgsRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
+//                            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
 //                            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
                         }
                     };
@@ -879,14 +879,14 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         AlgorithmRunner algorithmRunner = getAlgorithmRunner();
 
-        if (algorithmRunner instanceof  IFgsRunner) {
-            IFgsRunner fgsRunner = ((IFgsRunner) algorithmRunner);
-            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+        if (algorithmRunner instanceof IFgesRunner) {
+            IFgesRunner fgesRunner = ((IFgesRunner) algorithmRunner);
+            return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
-        if (algorithmRunner instanceof  FgsMbRunner) {
-            FgsMbRunner fgsRunner = ((FgsMbRunner) algorithmRunner);
-            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+        if (algorithmRunner instanceof FgesMbRunner) {
+            FgesMbRunner fgesRunner = ((FgesMbRunner) algorithmRunner);
+            return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         throw new IllegalArgumentException();

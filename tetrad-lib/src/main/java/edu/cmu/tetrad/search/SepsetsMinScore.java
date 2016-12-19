@@ -31,7 +31,7 @@ import java.util.Set;
 
 /**
  * One is often faced with the following problem. We start by estimating the adjacencies using
- * FGS followed by FAS. But if X is not adjacent to Z in the resulting graph, and you ask for
+ * FGES followed by FAS. But if X is not adjacent to Z in the resulting graph, and you ask for
  * a sepset, one must be given. So we return a conditioning set that minimizes a score (is as
  * close to independence as possible, or independent).
  *

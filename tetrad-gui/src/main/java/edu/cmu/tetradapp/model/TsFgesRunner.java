@@ -44,22 +44,50 @@ import java.util.Map;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
  *
  * @author Ricardo Silva
+ * @author Daniel Malinsky
  */
 
-public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, GraphSource,
         PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel, Unmarshallable {
     static final long serialVersionUID = 23L;
     private LinkedHashMap<String, String> allParamSettings;
 
+    public enum Type {CONTINUOUS, DISCRETE, MIXED, GRAPH}
+
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
+    private transient TsFges2 fges;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public TsFgesRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
+    }
+
+    public TsFgesRunner(DataWrapper[] dataWrappers, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
+    }
+
+    public TsFgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
+        if (graph == this) throw new IllegalArgumentException();
+        this.initialGraph = graph.getGraph();
+    }
+
+    public TsFgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
+        if (graph == this) throw new IllegalArgumentException();
+        this.initialGraph = graph.getGraph();
+    }
+
+    public TsFgesRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
+    }
+
+    public TsFgesRunner(GraphWrapper graphWrapper, Parameters params) {
+        super(graphWrapper.getGraph(), params, null);
     }
 
     /**
@@ -67,8 +95,8 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      *
      * @see TetradSerializableUtils
      */
-    public static PcRunner serializableInstance() {
-        return PcRunner.serializableInstance();
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -79,40 +107,6 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      */
     public void execute() {
         System.out.println("A");
-
-        DataSet dataSet = (DataSet) getDataModel();
-
-        Parameters params = getParams();
-
-        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
-
-        WFgs fgs = new WFgs(dataSet);
-        fgs.setPenaltyDiscount(penaltyDiscount);
-        Graph graph = fgs.search();
-
-        if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        } else {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
-        }
-
-        setResultGraph(graph);
-
-        this.topGraphs = new ArrayList<>();
-        topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-        setIndex(topGraphs.size() - 1);
-    }
-
-    /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
-     */
-    public FgsRunner.Type getType() {
-        if (true) {
-            return FgsRunner.Type.CONTINUOUS;
-        }
 
         Object model = getDataModel();
 
@@ -127,32 +121,166 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsRunner.Type type;
+        Parameters params = getParams();
 
         if (model instanceof Graph) {
-            type = FgsRunner.Type.GRAPH;
+            GraphScore gesScore = new GraphScore((Graph) model);
+            fges = new TsFges2(gesScore);
+            fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+            fges.setVerbose(true);
+        } else {
+            double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
+
+            if (model instanceof DataSet) {
+                DataSet dataSet = (DataSet) model;
+
+                if (dataSet.isContinuous()) {
+                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
+//                    SvrScore gesScore = new SvrScore((DataSet) model);
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    System.out.println("Score done");
+                    fges = new TsFges2(gesScore);
+                } else if (dataSet.isDiscrete()) {
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    BDeuScore score = new BDeuScore(dataSet);
+                    score.setSamplePrior(samplePrior);
+                    score.setStructurePrior(structurePrior);
+                    fges = new TsFges2(score);
+                } else {
+                    MixedBicScore gesScore = new MixedBicScore(dataSet);
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    fges = new TsFges2(gesScore);
+                }
+            } else if (model instanceof ICovarianceMatrix) {
+                SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+                gesScore.setPenaltyDiscount(penaltyDiscount);
+                gesScore.setPenaltyDiscount(penaltyDiscount);
+                fges = new TsFges2(gesScore);
+            }
+            else if (model instanceof DataModelList) {
+                DataModelList list = (DataModelList) model;
+
+                for (DataModel dataModel : list) {
+                    if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
+                        throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
+                                "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
+                    }
+                }
+
+                if (list.size() != 1) {
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
+                            "as input. For multiple data sets as input, use IMaGES.");
+                }
+
+                if (allContinuous(list)) {
+                    double penalty = getParams().getDouble("penaltyDiscount", 4);
+
+                    if (params.getBoolean("firstNontriangular", false)) {
+                        SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                        fgesScore.setPenaltyDiscount(penalty);
+                        fges = new TsFges2(fgesScore);
+                    } else {
+                        SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                        fgesScore.setPenaltyDiscount(penalty);
+                        fges = new TsFges2(fgesScore);
+                    }
+                } else if (allDiscrete(list)) {
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+
+                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+                    fgesScore.setSamplePrior(samplePrior);
+                    fgesScore.setStructurePrior(structurePrior);
+
+                    if (params.getBoolean("firstNontriangular", false)) {
+                        fges = new TsFges2(fgesScore);
+                    } else {
+                        fges = new TsFges2(fgesScore);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+                }
+            } else {
+                System.out.println("No viable input.");
+            }
+        }
+
+        fges.setInitialGraph(initialGraph);
+        fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+        fges.setVerbose(true);
+//        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
+//        * there is no setHeuristicSpeedup option in Fges2 and so likewise TsFges2. *
+        Graph graph = fges.search();
+
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        } else {
+            GraphUtils.circleLayout(graph, 200, 200, 150);
+        }
+
+        setResultGraph(graph);
+
+        this.topGraphs = new ArrayList<>(fges.getTopGraphs());
+
+        if (topGraphs.isEmpty()) {
+
+            topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
+        }
+
+        setIndex(topGraphs.size() - 1);
+    }
+
+    /**
+     * Executes the algorithm, producing (at least) a result workbench. Must be
+     * implemented in the extending class.
+     */
+//    public FgesRunner.Type getType() { return FgesRunner.getType(); }
+    public FgesRunner.Type getType() {
+        Object model = getDataModel();
+
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
+        }
+
+        if (model == null) {
+            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
+                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
+                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
+                    "file when you save the session. It can, however, be recreated from the saved seed.");
+        }
+
+        FgesRunner.Type type;
+
+        if (model instanceof Graph) {
+            type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
-                type = FgsRunner.Type.MIXED;
+                type = FgesRunner.Type.MIXED;
 //                throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = FgsRunner.Type.CONTINUOUS;
+            type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
-                type = FgsRunner.Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (allDiscrete(list)) {
-                type = FgsRunner.Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
-                type = FgsRunner.Type.MIXED;
+                type = FgesRunner.Type.MIXED;
 //                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         } else {
@@ -241,7 +369,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     @Override
     public String getAlgorithmName() {
-        return "FGS";
+        return "FGES";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -267,6 +395,18 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     public List<ScoredGraph> getTopGraphs() {
         return this.topGraphs;
+    }
+
+    public String getBayesFactorsReport(Graph dag) {
+        if (fges == null) {
+            return "Please re-run IMaGES.";
+        } else {
+            return fges.logEdgeBayesFactorsString(dag);
+        }
+    }
+
+    public GraphScorer getGraphScorer() {
+        return fges;
     }
 }
 

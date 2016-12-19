@@ -651,7 +651,7 @@ public class TestDM {
 
         DMSearch search = new DMSearch();
 
-        search.setUseFgs(false);
+        search.setUseFges(false);
 
         search.setInputs(new int[]{0, 1});
         search.setOutputs(new int[]{2, 3, 4});
@@ -1206,7 +1206,7 @@ public class TestDM {
         if (useGES == false) {
 
             search.setAlphaPC(.05);
-            search.setUseFgs(useGES);
+            search.setUseFges(useGES);
 
             search.setData(data);
             search.setTrueInputs(trueInputs);

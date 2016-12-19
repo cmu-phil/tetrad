@@ -12,7 +12,7 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * FGES (the heuristic version).
  *
  * @author jdramsey
  */

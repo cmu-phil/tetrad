@@ -1404,7 +1404,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="FGS" acronym="FGS" help="fgs"-->
+            <!--<model name="FGES" acronym="FGES" help="fges"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1416,11 +1416,11 @@
             <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.FgsRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--<model-class>edu.cmu.tetradapp.model.FgesRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="TsFGS" acronym="TsFGS" help="fgs"-->
+            <!--<model name="TsFGES" acronym="TsFGES" help="fges"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1432,11 +1432,11 @@
             <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.TsFgsRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--<model-class>edu.cmu.tetradapp.model.TsFgesRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="WFGS" acronym="WFGS" help="wfgs" category="forbid_latent_common_causes Searches">-->
+            <!--<model name="WFGES" acronym="WFGES" help="wfges" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1447,11 +1447,11 @@
             <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.WFgsRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--<model-class>edu.cmu.tetradapp.model.WFgesRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="IMaGES" acronym="IMaGES" help="fgs"-->
+            <!--<model name="IMaGES" acronym="IMaGES" help="fges"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1464,10 +1464,10 @@
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
             <!--<model-class>edu.cmu.tetradapp.model.ImagesRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="TsIMaGES" acronym="TsIMaGES" help="fgs"-->
+            <!--<model name="TsIMaGES" acronym="TsIMaGES" help="fges"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1480,7 +1480,7 @@
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
             <!--<model-class>edu.cmu.tetradapp.model.TsImagesRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
             <!--Heuristic Best Significant Model Search-->
@@ -1600,7 +1600,7 @@
             <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
             <!--</params-editor-class>-->
             <!--</model>-->
-            <!--<model name="FGSMB" acronym="FGSMB" help="fgsmb"-->
+            <!--<model name="FGESMB" acronym="FGESMB" help="fgesmb"-->
             <!--category="Feature selection searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1612,9 +1612,9 @@
             <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.FgsMbRunner-->
+            <!--<model-class>edu.cmu.tetradapp.model.FgesMbRunner-->
             <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="CEFS" acronym="CEFS" help="cef"-->

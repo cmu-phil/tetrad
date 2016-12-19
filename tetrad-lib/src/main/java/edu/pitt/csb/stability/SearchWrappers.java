@@ -61,17 +61,17 @@ public class SearchWrappers {
         }
     }
 
-    public static class FgsWrapper extends DataGraphSearch{
-        public FgsWrapper(double...params){
+    public static class FgesWrapper extends DataGraphSearch{
+        public FgesWrapper(double...params){
             super(params);
         }
 
-        public FgsWrapper copy() {return new FgsWrapper(searchParams);}
+        public FgesWrapper copy() {return new FgesWrapper(searchParams);}
 
         public Graph search(DataSet ds){
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)));
             score.setPenaltyDiscount(searchParams[0]);
-            Fgs fg = new Fgs(score);
+            Fges fg = new Fges(score);
             return fg.search();
         }
     }

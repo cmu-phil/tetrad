@@ -9,19 +9,19 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * "Whimsical"FGS. Handles mixed, continuous, and discrete data.
+ * "Whimsical"FGES. Handles mixed, continuous, and discrete data.
  *
  * @author Joseph Ramsey
  */
-public class WFgs implements GraphSearch {
+public class WFges implements GraphSearch {
 
     private List<Node> searchVariables;
     private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
-    private Fgs fgs;
+    private Fges fges;
     private double penaltyDiscount;
     private SemBicScore score;
 
-    public WFgs(DataSet data) {
+    public WFges(DataSet data) {
         if (data == null) throw new NullPointerException("Data was not provided.");
 
         this.searchVariables = data.getVariables();
@@ -42,7 +42,7 @@ public class WFgs implements GraphSearch {
 
         SemBicScore score = new SemBicScore(covariances);
         this.score = score;
-        this.fgs = new Fgs(score);
+        this.fges = new Fges(score);
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -77,7 +77,7 @@ public class WFgs implements GraphSearch {
 
     public Graph search() {
         score.setPenaltyDiscount(penaltyDiscount);
-        Graph g = fgs.search();
+        Graph g = fges.search();
 
         Graph out = new EdgeListGraph(searchVariables);
 

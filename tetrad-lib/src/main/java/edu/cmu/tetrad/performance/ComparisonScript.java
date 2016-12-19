@@ -51,7 +51,7 @@ public class ComparisonScript {
 
         /** add algorithm to compare to the list algList. comment out those you don't want to consider. **/
         //algList.add(ComparisonParameters.Algorithm.PC);
-        //algList.add(ComparisonParameters.Algorithm.FGS);
+        //algList.add(ComparisonParameters.Algorithm.FGES);
         //algList.add(ComparisonParameters.Algorithm.FCI);
         algList.add(ComparisonParameters.Algorithm.TsFCI);
 

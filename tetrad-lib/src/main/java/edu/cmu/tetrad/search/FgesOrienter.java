@@ -50,7 +50,7 @@ import java.util.concurrent.*;
  *         of the edges in the oriented graph
  * @author AJ Sedgewick, 5/2015
  */
-public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
+public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter {
 
     /**
      * The covariance matrix for continuous data.
@@ -179,7 +179,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     /**
      * The data set must either be all continuous or all discrete.
      */
-    public FgsOrienter(DataSet dataSet) {
+    public FgesOrienter(DataSet dataSet) {
         out.println("GES constructor");
 
         if (dataSet.isDiscrete()) {
@@ -210,7 +210,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     /**
      * Continuous case--where a covariance matrix is already available.
      */
-    public FgsOrienter(ICovarianceMatrix covMatrix) {
+    public FgesOrienter(ICovarianceMatrix covMatrix) {
         out.println("GES(orient) constructor");
 
         setCovMatrix(covMatrix);

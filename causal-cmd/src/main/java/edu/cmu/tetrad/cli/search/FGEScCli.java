@@ -19,7 +19,7 @@
 package edu.cmu.tetrad.cli.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.cli.AbstractAlgorithmCli;
 import edu.cmu.tetrad.cli.AlgorithmType;
@@ -90,12 +90,12 @@ public class FGEScCli extends AbstractAlgorithmCli {
 
     @Override
     public Algorithm getAlgorithm(IKnowledge knowledge) {
-        Fgs fgs = new Fgs(new SemBicScore());
+        Fges fges = new Fges(new SemBicScore());
         if (knowledge != null) {
-            fgs.setKnowledge(knowledge);
+            fges.setKnowledge(knowledge);
         }
 
-        return fgs;
+        return fges;
     }
 
     @Override

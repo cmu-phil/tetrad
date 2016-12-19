@@ -4,69 +4,75 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.PrintStream;
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * FGES (the heuristic version).
  *
  * @author jdramsey
  */
-public class FgsMeasurement implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FgsMeasurement(ScoreWrapper score) {
+    public Fges(ScoreWrapper score) {
         this.score = score;
     }
 
-    public FgsMeasurement(ScoreWrapper score, Algorithm initialGraph) {
+    public Fges(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
         this.initialGraph = initialGraph;
     }
 
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
-        DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
-        dataSet = dataSet.copy();
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        Graph initial = null;
 
-        dataSet = DataUtils.standardizeData(dataSet);
-        double variance = parameters.getDouble("measurementVariance");
-
-        if (variance > 0) {
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                    double d = dataSet.getDouble(i, j);
-                    double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
-                    dataSet.setDouble(i, j, d + norm);
-                }
-            }
+        if (initialGraph != null) {
+            initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.Fges search
+                = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
+        search.setMaxDegree(parameters.getInt("maxDegree"));
+
+        Object obj = parameters.get("printStedu.cmream");
+        if (obj instanceof PrintStream) {
+            search.setOut((PrintStream) obj);
+        }
+
+        if (initial != null) {
+            search.setInitialGraph(initial);
+        }
 
         return search.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
+//        return new EdgeListGraph(graph);
         return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "FGS adding measuremnt noise using " + score.getDescription();
+        return "FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
     }
 
     @Override
@@ -78,8 +84,8 @@ public class FgsMeasurement implements Algorithm, TakesInitialGraph, HasKnowledg
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
         parameters.add("faithfulnessAssumed");
+        parameters.add("maxDegree");
         parameters.add("verbose");
-        parameters.add("measurementVariance");
         return parameters;
     }
 
@@ -92,4 +98,5 @@ public class FgsMeasurement implements Algorithm, TakesInitialGraph, HasKnowledg
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
 }

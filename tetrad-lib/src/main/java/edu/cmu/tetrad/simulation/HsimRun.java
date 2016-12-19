@@ -47,16 +47,16 @@ public class HsimRun {
             double penaltyDiscount = 2.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             score.setPenaltyDiscount(penaltyDiscount);
-            Fgs fgs = new Fgs(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-//            fgs.setAlpha(penaltyDiscount);
-            //fgs.setOut(out);
-            //fgs.setFaithfulnessAssumed(true);
-            //fgs.setMaxIndegree(1);
-            //fgs.setCycleBound(5);
+            Fges fges = new Fges(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+//            fges.setAlpha(penaltyDiscount);
+            //fges.setOut(out);
+            //fges.setFaithfulnessAssumed(true);
+            //fges.setMaxIndegree(1);
+            //fges.setCycleBound(5);
 
-            Graph estGraph = fgs.search();
+            Graph estGraph = fges.search();
             System.out.println(estGraph);
 
             Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
@@ -95,7 +95,7 @@ public class HsimRun {
             //write output to a new file
             DataWriter.writeRectangularData(newDataSet, new FileWriter(filenameOut), delimiter);
 
-        //=======Run FGS on the output data, and compare it to the original learned graph
+        //=======Run FGES on the output data, and compare it to the original learned graph
         Path dataFileOut = Paths.get(filenameOut);
         edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
 
@@ -103,16 +103,16 @@ public class HsimRun {
 
             SemBicScore _score = new SemBicScore(new CovarianceMatrix(dataSetOut));
             _score.setPenaltyDiscount(2.0);
-            Fgs fgsOut = new Fgs(_score);
-            fgsOut.setVerbose(false);
-            fgsOut.setNumPatternsToStore(0);
-//            fgsOut.setAlpha(2.0);
-            //fgsOut.setOut(out);
-            //fgsOut.setFaithfulnessAssumed(true);
-            // fgsOut.setMaxIndegree(1);
-            // fgsOut.setCycleBound(5);
+            Fges fgesOut = new Fges(_score);
+            fgesOut.setVerbose(false);
+            fgesOut.setNumPatternsToStore(0);
+//            fgesOut.setAlpha(2.0);
+            //fgesOut.setOut(out);
+            //fgesOut.setFaithfulnessAssumed(true);
+            // fgesOut.setMaxIndegree(1);
+            // fgesOut.setCycleBound(5);
 
-            Graph estGraphOut = fgsOut.search();
+            Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);
 
         SearchGraphUtils.graphComparison(estGraphOut, estGraph, System.out);
