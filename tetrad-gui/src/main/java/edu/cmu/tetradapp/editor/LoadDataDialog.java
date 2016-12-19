@@ -85,7 +85,7 @@ final class LoadDataDialog extends JPanel {
 
         this.dataModels = new DataModel[files.length];
 
-        // Tabular/covariance.
+        // File type: tabular/covariance.
         JRadioButton tabularRadioButton = new JRadioButton("Tabular Data");
         JRadioButton covarianceRadioButton = new JRadioButton("Covariance Data");
 
@@ -459,14 +459,16 @@ final class LoadDataDialog extends JPanel {
 
         final JTextArea fileTextArea = new JTextArea();
         final JTextArea anomaliesTextArea = new JTextArea();
+
         final JTabbedPane tabbedPane = new JTabbedPane();
         JScrollPane scroll1 = new JScrollPane(fileTextArea);
-        scroll1.setPreferredSize(new Dimension(500, 400));
+        scroll1.setPreferredSize(new Dimension(500, 200));
+
         tabbedPane.addTab("Preview of selected file", scroll1);
         JScrollPane scroll2 = new JScrollPane(anomaliesTextArea);
-        scroll2.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("File loading log", scroll2);
+        scroll2.setPreferredSize(new Dimension(500, 200));
 
+        tabbedPane.addTab("File loading log", scroll2);
         final JLabel progressLabel = new JLabel(getProgressString(0, files.length, dataModels));
         progressLabel.setFont(new Font("Dialog", Font.BOLD, 12));
         JButton previousButton = new JButton("Previous");
@@ -496,12 +498,13 @@ final class LoadDataDialog extends JPanel {
         }
 
         // Layout.
+        // No need to show the fast tab in new design  - Zhou
         RegularDataPanel r1 = new RegularDataPanel(files);
-        FastDataPanel r2 = new FastDataPanel(files);
+        //FastDataPanel r2 = new FastDataPanel(files);
 
         pane = new JTabbedPane();
         pane.add("Regular", r1);
-        pane.add("Fast", r2);
+        //pane.add("Fast", r2);
 
         Box c = Box.createVerticalBox();
 
@@ -509,6 +512,7 @@ final class LoadDataDialog extends JPanel {
 //        JScrollPane scrollPane = new JScrollPane(tabbedPane);
 //        scrollPane.setPreferredSize(new Dimension(500, 400));
 //        c1.add(scrollPane);
+
         c1.add(tabbedPane);
         c.add(c1);
 

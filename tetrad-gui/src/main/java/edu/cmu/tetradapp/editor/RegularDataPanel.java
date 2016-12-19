@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -28,16 +27,15 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.prefs.Preferences;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -46,10 +44,14 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class RegularDataPanel extends JPanel {
+
     private transient DataModel[] dataModels;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
+
+    private JRadioButton contRadioButton;
+    private JRadioButton discRadioButton;
 
     private JRadioButton comment1RadioButton;
     private JRadioButton comment2RadioButton;
@@ -84,7 +86,6 @@ final class RegularDataPanel extends JPanel {
     private final int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
-
     public RegularDataPanel(final File... files) {
         if (files.length == 0) {
             throw new IllegalArgumentException("Must specify at least one file.");
@@ -120,7 +121,6 @@ final class RegularDataPanel extends JPanel {
             throw new IllegalStateException("Unexpected preference.");
         }
 
-
         covarianceRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
@@ -130,6 +130,21 @@ final class RegularDataPanel extends JPanel {
                 }
             }
         });
+
+//------------------------------------------
+        // Added by Zhou
+        // Data type: continuous or discrete
+        contRadioButton = new JRadioButton("Continuous");
+        // Continuous radion button is selected by default
+        contRadioButton.setSelected(true);
+
+        discRadioButton = new JRadioButton("Discrete");
+
+        // Only UI for now, no listener
+        ButtonGroup dataTypeBtnGroup = new ButtonGroup();
+        dataTypeBtnGroup.add(contRadioButton);
+        dataTypeBtnGroup.add(discRadioButton);
+//------------------------------------------
 
         // Comment prefix.
         comment1RadioButton = new JRadioButton("//");
@@ -205,7 +220,6 @@ final class RegularDataPanel extends JPanel {
         delimiter3RadioButton = new JRadioButton("Comma");
 //        delimiter4RadioButton = new JRadioButton("Other: ");
 //        delimiterStringField = new StringTextField("", 4);
-
 
         delimiter1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -379,7 +393,6 @@ final class RegularDataPanel extends JPanel {
 
 //
 //        varNamesCheckBox.setSelected(true);
-
 //        Missing value marker
         missing1RadioButton = new JRadioButton("*");
         missing2RadioButton = new JRadioButton("?");
@@ -445,7 +458,6 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-
         maxIntegralDiscreteIntField = new IntTextField(0, 3);
 
         int maxIntegralPreference = Preferences.userRoot().getInt("dataLoaderMaxIntegral", 0);
@@ -456,8 +468,7 @@ final class RegularDataPanel extends JPanel {
                 if (value >= 0) {
                     Preferences.userRoot().putInt("dataLoaderMaxIntegral", value);
                     return value;
-                }
-                else {
+                } else {
                     return oldValue;
                 }
             }
@@ -484,7 +495,6 @@ final class RegularDataPanel extends JPanel {
         fileNameLabel.setFont(new Font("Dialog", Font.BOLD, 12));
 
         // Construct button groups.
-
         idStringField.setText("ID");
 //        delimiterStringField.setText(";");
 
@@ -493,8 +503,7 @@ final class RegularDataPanel extends JPanel {
 
         if (tabularRadioButton.isSelected()) {
             enableTabularObjects();
-        }
-        else if (covarianceRadioButton.isSelected()) {
+        } else if (covarianceRadioButton.isSelected()) {
             enableCovarianceObjects();
         }
 
@@ -512,6 +521,14 @@ final class RegularDataPanel extends JPanel {
         b2.add(covarianceRadioButton);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
+
+        // Data type - Added by Zhou
+        Box b17 = Box.createHorizontalBox();
+        b1.add(new JLabel("Data Type:"));
+        b2.add(contRadioButton);
+        b2.add(discRadioButton);
+        b2.add(Box.createHorizontalGlue());
+        b.add(b17);
 
         Box b5 = Box.createHorizontalBox();
         b5.add(new JLabel("Delimiter"));
@@ -602,14 +619,11 @@ final class RegularDataPanel extends JPanel {
         b16.add(this.logEmptyTokens);
         b16.add(Box.createHorizontalGlue());
 
-
         b.add(b16);
-
 
         b.add(Box.createVerticalGlue());
 //        b.setBorder(new EmptyBorder(0, 0, 0, 3));
         b.setBorder(new TitledBorder("Data Loading Parameters"));
-
 
         tabularRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -649,7 +663,6 @@ final class RegularDataPanel extends JPanel {
         maxIntegralLabel2.setEnabled(true);
         maxIntegralDiscreteIntField.setEnabled(true);
         varNamesCheckBox.setEnabled(true);
-
 
         if (idsSupplied.isSelected()) {
             id1RadioButton.setEnabled(true);
@@ -827,8 +840,6 @@ final class RegularDataPanel extends JPanel {
         return maxIntegralDiscreteIntField.getValue();
     }
 
-
-
     public DataModel loadData(int fileIndex, JTextArea anomaliesTextArea, JTabbedPane tabbedPane, File[] files, JLabel progressLabel) {
         anomaliesTextArea.setText("");
 
@@ -867,23 +878,21 @@ final class RegularDataPanel extends JPanel {
             }
 
 //            addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
-
             anomaliesTextArea.setCaretPosition(
                     anomaliesTextArea.getText().length());
 
             progressLabel.setText(getProgressString(fileIndex, files.length, dataModels));
 
             return dataModel;
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             out.println(e1.getMessage());
-            out.println("\nIf that message was unhelpful, " +
-                    "\nplease copy and paste the (Java) " +
-                    "\nerror below to Joe Ramsey, " +
-                    "\njdramsey@andrew.cmu.edu, " +
-                    "\nso a better error message " +
-                    "\ncan be put at that location." +
-                    "\nThanks!");
+            out.println("\nIf that message was unhelpful, "
+                    + "\nplease copy and paste the (Java) "
+                    + "\nerror below to Joe Ramsey, "
+                    + "\njdramsey@andrew.cmu.edu, "
+                    + "\nso a better error message "
+                    + "\ncan be put at that location."
+                    + "\nThanks!");
 
             out.println();
             e1.printStackTrace(out);
@@ -896,5 +905,3 @@ final class RegularDataPanel extends JPanel {
     }
 
 }
-
-
