@@ -444,10 +444,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
             count++;
         }
 
-        double v = d;
-//        v /= (sampleSize - 1);
-        v /= (count - 1);
-        return v;
+        return d / sampleSize;
     }
 
     public void setMatrix(TetradMatrix matrix) {

@@ -79,6 +79,7 @@ public class ConditionalGaussianSimulation2 implements Simulation {
             graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }

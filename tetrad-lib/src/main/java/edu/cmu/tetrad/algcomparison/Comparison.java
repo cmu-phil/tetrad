@@ -195,13 +195,13 @@ public class Comparison {
             for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
                 DataType algDataType = algorithmWrapper.getDataType();
                 DataType simDataType = simulationWrapper.getDataType();
-                if (algDataType == DataType.Mixed || (algDataType == simDataType)) {
-                    algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
-                            algorithmWrapper, simulationWrapper));
-                } else {
-                    System.out.println("Type mismatch; skipping algorithm/simulation " + algorithmWrapper.getDescription()
+                if (!(algDataType == DataType.Mixed || (algDataType == simDataType))) {
+                    System.out.println("Type mismatch: " + algorithmWrapper.getDescription()
                             + " / " + simulationWrapper.getDescription());
                 }
+
+                algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
+                        algorithmWrapper, simulationWrapper));
             }
         }
 
