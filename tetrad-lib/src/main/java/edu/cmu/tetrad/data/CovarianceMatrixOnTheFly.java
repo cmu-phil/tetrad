@@ -467,7 +467,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return matrix.rows();
+        return getVariables().size();
     }
 
     /**
