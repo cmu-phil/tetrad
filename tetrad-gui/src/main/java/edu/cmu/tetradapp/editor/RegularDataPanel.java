@@ -454,13 +454,6 @@ final class RegularDataPanel extends JPanel {
         scroll2.setPreferredSize(new Dimension(500, 400));
         tabbedPane.addTab("Loading Log", scroll2);
 
-        final JLabel progressLabel = new JLabel(getProgressString(0, files.length, dataModels));
-        progressLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-        JButton previousButton = new JButton("Previous");
-        JButton nextButton = new JButton("Next");
-        JButton loadButton = new JButton("Load");
-        JButton loadAllButton = new JButton("Load All");
-
         final JLabel fileNameLabel = new JLabel("File: " + files[fileIndex].getName());
         fileNameLabel.setFont(new Font("Dialog", Font.BOLD, 12));
 

@@ -22,9 +22,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -33,7 +30,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -49,32 +45,6 @@ final class LoadDataDialog extends JPanel {
     private final RegularDataPanel dataParams;
     private transient DataModel[] dataModels;
 
-    private JRadioButton comment1RadioButton;
-    private JRadioButton comment2RadioButton;
-    private StringTextField commentStringField;
-
-    private JRadioButton delimiter1RadioButton;
-    private JRadioButton delimiter2RadioButton;
-    private JRadioButton delimiter3RadioButton;
-
-    //    private JRadioButton delimiter4RadioButton;
-    //    private StringTextField delimiterStringField;
-    private JRadioButton quote1RadioButton;
-
-    private JCheckBox varNamesCheckBox;
-    private JCheckBox idsSupplied;
-    private JRadioButton id1RadioButton;
-    private JRadioButton id2RadioButton;
-    private StringTextField idStringField;
-
-    private JRadioButton missing1RadioButton;
-    private JRadioButton missing2RadioButton;
-    private StringTextField missingStringField;
-
-    private IntTextField maxIntegralDiscreteIntField;
-    private JLabel maxIntegralLabel1;
-    private JLabel maxIntegralLabel2;
-
     private int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
@@ -86,425 +56,32 @@ final class LoadDataDialog extends JPanel {
 
         this.dataModels = new DataModel[files.length];
 
-        // Show all the initially selected files as a list of radio buttons - Zhou
-        JPanel allFiles = new JPanel();
-        allFiles.setLayout(new BoxLayout(allFiles, BoxLayout.PAGE_AXIS));
-        for (int i = 0; i < files.length; i++) {
-            final JRadioButton file = new JRadioButton(files[i].getName());
-            allFiles.add(file);
-        }
+        final JTabbedPane tabbedPane = new JTabbedPane();
 
-        // File type: tabular/covariance.
-        JRadioButton tabularRadioButton = new JRadioButton("Tabular Data");
-        JRadioButton covarianceRadioButton = new JRadioButton("Covariance Data");
-
-        tabularRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataTabularPreference", "tabular");
-
-                }
-            }
-        });
-
-        // File type button group
-        ButtonGroup group1 = new ButtonGroup();
-        group1.add(tabularRadioButton);
-        group1.add(covarianceRadioButton);
-
-        String tabularPreference = Preferences.userRoot().get("loadDataTabularPreference", "tabular");
-
-        if ("tabular".equals(tabularPreference)) {
-            tabularRadioButton.setSelected(true);
-        } else if ("covariance".equals(tabularPreference)) {
-            covarianceRadioButton.setSelected(true);
-        } else {
-            throw new IllegalStateException("Unexpected preference.");
-        }
-
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataTabularPreference", "covariance");
-
-                }
-            }
-        });
-
-        // Comment prefix.
-        comment1RadioButton = new JRadioButton("//");
-        comment2RadioButton = new JRadioButton("#");
-        JRadioButton comment3RadioButton = new JRadioButton("Other: ");
-
-        comment1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "//");
-
-                }
-            }
-        });
-
-        comment2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "#");
-
-                }
-            }
-        });
-
-        comment3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "Other");
-
-                }
-            }
-        });
-
-        // Comment marker
-        ButtonGroup group2 = new ButtonGroup();
-        group2.add(comment1RadioButton);
-        group2.add(comment2RadioButton);
-        group2.add(comment3RadioButton);
-
-        String commentPreference = Preferences.userRoot().get("loadDataCommentPreference", "//");
-
-        if ("//".equals(commentPreference)) {
-            comment1RadioButton.setSelected(true);
-        } else if ("#".equals(commentPreference)) {
-            comment2RadioButton.setSelected(true);
-        } else {
-            comment3RadioButton.setSelected(true);
-        }
-
-        // Comment string field
-        String otherCommentPreference = Preferences.userRoot().get("dataLoaderCommentString", "@");
-        commentStringField = new StringTextField(otherCommentPreference, 4);
-
-        commentStringField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-        commentStringField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-        // Delimiter
-        delimiter1RadioButton = new JRadioButton("Whitespace");
-        delimiter2RadioButton = new JRadioButton("Tab");
-        delimiter3RadioButton = new JRadioButton("Comma");
-//        delimiter4RadioButton = new JRadioButton("Other: ");
-//        delimiterStringField = new StringTextField("", 4);
-
-        delimiter1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
-
-                }
-            }
-        });
-
-        delimiter2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
-
-                }
-            }
-        });
-
-        delimiter3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Comma");
-
-                }
-            }
-        });
-
-        // Delimiter
-        ButtonGroup group3 = new ButtonGroup();
-        group3.add(delimiter1RadioButton);
-        group3.add(delimiter2RadioButton);
-        group3.add(delimiter3RadioButton);
-
-        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Whitespace");
-
-        if ("Whitespace".equals(delimiterPreference)) {
-            delimiter1RadioButton.setSelected(true);
-        } else if ("Tab".equals(delimiterPreference)) {
-            delimiter2RadioButton.setSelected(true);
-        } else {
-            delimiter3RadioButton.setSelected(true);
-        }
-
-        // Quote char
-        quote1RadioButton = new JRadioButton("\"");
-        JRadioButton quote2RadioButton = new JRadioButton("'");
-
-        quote1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "\"");
-
-                }
-            }
-        });
-
-        quote2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "'");
-                }
-            }
-        });
-
-        // Quote character
-        ButtonGroup group4 = new ButtonGroup();
-        group4.add(quote1RadioButton);
-        group4.add(quote2RadioButton);
-
-        String quotePreference = Preferences.userRoot().get("loadDataQuotePreference", "\"");
-
-        if ("\"".equals(quotePreference)) {
-            quote1RadioButton.setSelected(true);
-        } else if ("'".equals(quotePreference)) {
-            quote2RadioButton.setSelected(true);
-        }
-
-        // Log empty tokens
-        JCheckBox logEmptyTokens = new JCheckBox("Log Empty Tokens");
-        logEmptyTokens.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        logEmptyTokens.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "deselected");
-                }
-            }
-        });
-
-        String logEmptyTokensPreference = Preferences.userRoot().get("loadDataLogEmptyTokens", "\"");
-
-        if ("selected".equals(logEmptyTokensPreference)) {
-            logEmptyTokens.setSelected(true);
-        } else {
-            logEmptyTokens.setSelected(false);
-        }
-
-        // Var names checkbox.
-        varNamesCheckBox = new JCheckBox("Variable names in first row of data");
-        varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        varNamesCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataVarNames", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataVarNames", "deselected");
-                }
-            }
-        });
-
-        varNamesCheckBox.setSelected(Preferences.userRoot().get("loadDataVarNames", "selected").equals("selected"));
-
-        // Ids Supplied.
-        idsSupplied = new JCheckBox("Case ID's provided");
-        idsSupplied.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "deselected");
-                }
-            }
-        });
-
-        boolean idsSuppliedPreference = "selected".equals(Preferences.userRoot().get("loadDataIdsSuppliedPreference", "deselected"));
-        idsSupplied.setSelected(idsSuppliedPreference);
-
-        // ID radio buttons
-        id1RadioButton = new JRadioButton("Unlabeled first column");
-        id2RadioButton = new JRadioButton("Column labeled: ");
-        idStringField = new StringTextField("", 4);
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox button = (JCheckBox) e.getSource();
-                boolean selected = button.isSelected();
-
-                id1RadioButton.setEnabled(selected);
-                id2RadioButton.setEnabled(selected);
-                idStringField.setEditable(selected);
-            }
-        });
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        // Case ID's provided
-        ButtonGroup group5 = new ButtonGroup();
-        group5.add(id1RadioButton);
-        group5.add(id2RadioButton);
-        id1RadioButton.setSelected(true);
-
-//
-//        varNamesCheckBox.setSelected(true);
-//        Missing value marker
-        missing1RadioButton = new JRadioButton("*");
-        missing2RadioButton = new JRadioButton("?");
-        JRadioButton missing3RadioButton = new JRadioButton("Other: ");
-
-        missing1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "*");
-
-                }
-            }
-        });
-
-        missing2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "?");
-
-                }
-            }
-        });
-
-        missing3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "Other");
-
-                }
-            }
-        });
-
-        // Missing value marker
-        ButtonGroup group6 = new ButtonGroup();
-        group6.add(missing1RadioButton);
-        group6.add(missing2RadioButton);
-        group6.add(missing3RadioButton);
-        missing1RadioButton.setSelected(true);
-
-        String missingPreference = Preferences.userRoot().get("loadDataMissingPreference", "*");
-
-        if ("*".equals(missingPreference)) {
-            missing1RadioButton.setSelected(true);
-        } else if ("?".equals(missingPreference)) {
-            missing2RadioButton.setSelected(true);
-        } else {
-            missing3RadioButton.setSelected(true);
-        }
-
-        String otherMissingPreference = Preferences.userRoot().get("dataLoaderOtherMissingPreference", "");
-
-        // Missing string field
-        missingStringField = new StringTextField(otherMissingPreference, 6);
-        String missingStringText = Preferences.userRoot().get("dataLoaderMissingString", "Missing");
-        missingStringField.setText(missingStringText);
-
-        missingStringField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-        maxIntegralDiscreteIntField = new IntTextField(0, 3);
-
-        int maxIntegralPreference = Preferences.userRoot().getInt("dataLoaderMaxIntegral", 0);
-        maxIntegralDiscreteIntField.setValue(maxIntegralPreference);
-
-        maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (value >= 0) {
-                    Preferences.userRoot().putInt("dataLoaderMaxIntegral", value);
-                    return value;
-                } else {
-                    return oldValue;
-                }
-            }
-        });
-
-        final JTextArea fileTextArea = new JTextArea();
         final JTextArea anomaliesTextArea = new JTextArea();
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        JScrollPane scroll1 = new JScrollPane(fileTextArea);
-        scroll1.setPreferredSize(new Dimension(500, 200));
+        // Each tab is a preview of a file - Zhou
+        for (File file : files) {
+            final JTextArea fileTextArea = new JTextArea();
 
-        tabbedPane.addTab("Preview of selected file", scroll1);
-        JScrollPane scroll2 = new JScrollPane(anomaliesTextArea);
-        scroll2.setPreferredSize(new Dimension(500, 200));
+            // Setup file text area.
+            // fileTextArea.setEditable(false);
+            fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            setText(file, fileTextArea);
 
-        tabbedPane.addTab("File loading log", scroll2);
+            final JScrollPane scroll = new JScrollPane(fileTextArea);
+            scroll.setPreferredSize(new Dimension(500, 200));
+            tabbedPane.addTab(file.getName(), scroll);
+        }
+
         final JLabel progressLabel = new JLabel(getProgressString(0, files.length, dataModels));
         progressLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-        JButton previousButton = new JButton("Previous");
-        JButton nextButton = new JButton("Next");
-        JButton loadButton = new JButton("Load");
-        JButton loadAllButton = new JButton("Load All");
 
-        final JLabel fileNameLabel = new JLabel("File: " + files[fileIndex].getName());
-        fileNameLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-
-        // Construct button groups.
-        idStringField.setText("ID");
-//        delimiterStringField.setText(";");
-
-        // Setup file text area.
-//        fileTextArea.setEditable(false);
-        fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        setText(files[fileIndex], fileTextArea);
-
-        maxIntegralLabel1 = new JLabel("Integral columns with up to ");
-        maxIntegralLabel2 = new JLabel(" values are discrete.");
-
-        if (tabularRadioButton.isSelected()) {
-            enableTabularObjects();
-        } else if (covarianceRadioButton.isSelected()) {
-            enableCovarianceObjects();
+        String loadBtnText = "Load";
+        if (files.length > 1) {
+            loadBtnText = "Load All";
         }
+        JButton loadButton = new JButton(loadBtnText);
 
         // Layout.
         dataParams = new RegularDataPanel(files);
@@ -512,9 +89,6 @@ final class LoadDataDialog extends JPanel {
         Box c = Box.createVerticalBox();
 
         Box c1 = Box.createHorizontalBox();
-//        JScrollPane scrollPane = new JScrollPane(tabbedPane);
-//        scrollPane.setPreferredSize(new Dimension(500, 400));
-//        c1.add(scrollPane);
 
         c1.add(tabbedPane);
         c.add(c1);
@@ -522,36 +96,22 @@ final class LoadDataDialog extends JPanel {
         Box c2 = Box.createHorizontalBox();
         c2.add(Box.createHorizontalGlue());
 
-        if (files.length > 1) {
-            c2.add(progressLabel);
-        }
-
         c2.add(Box.createHorizontalStrut(10));
-
-        if (files.length > 1) {
-            c2.add(previousButton);
-            c2.add(nextButton);
-        }
-
-        c2.add(loadButton);
-
-        if (files.length > 1) {
-            c2.add(loadAllButton);
-        }
 
         c2.setBorder(new EmptyBorder(4, 4, 4, 4));
         c.add(c2);
-        c.setBorder(new TitledBorder("Source File and Loading Log"));
+        c.setBorder(new TitledBorder("Data File Preview"));
 
         Box a = Box.createHorizontalBox();
-        a.add(allFiles);
-// No need to use tabbed pane - Zhou
+        // The data loading params apply to all slected files
+        // the users should know that the selected files should share these settings - Zhou
         a.add(dataParams);
         a.add(c);
+        a.add(loadButton);
         setLayout(new BorderLayout());
 
         Box d = Box.createHorizontalBox();
-        d.add(fileNameLabel);
+
         d.add(Box.createHorizontalGlue());
 
         Box e = Box.createVerticalBox();
@@ -562,60 +122,7 @@ final class LoadDataDialog extends JPanel {
         add(e, BorderLayout.CENTER);
 
         // Listeners.
-        previousButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-                if (fileIndex > 0) {
-                    fileIndex--;
-                }
-
-                setText(files[fileIndex], fileTextArea);
-                progressLabel.setText(getProgressString(fileIndex, files.length, dataModels));
-
-                tabbedPane.setSelectedIndex(0);
-                fileNameLabel.setText("File: " + files[fileIndex].getName());
-            }
-        });
-
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-                if (fileIndex < files.length - 1) {
-                    fileIndex++;
-                }
-
-                setText(files[fileIndex], fileTextArea);
-                progressLabel.setText(getProgressString(fileIndex, files.length, dataModels));
-
-                tabbedPane.setSelectedIndex(0);
-                fileNameLabel.setText("File: " + files[fileIndex].getName());
-            }
-        });
-
         loadButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
-
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        Window owner = (Window) getTopLevelAncestor();
-
-                        new WatchedProcess(owner) {
-                            public void watch() {
-                                loadDataSelect(fileIndex, anomaliesTextArea, files, progressLabel);
-//                                DataModel dataModel = loadDataSelect(anomaliesTextArea, tabbedPane, files, progressLabel);
-//                                if (dataModel == null) throw new NullPointerException("Data not loaded.");
-//                                addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        loadAllButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Window owner = (Window) getTopLevelAncestor();
 
@@ -635,17 +142,6 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
-        tabularRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableTabularObjects();
-            }
-        });
-
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableCovarianceObjects();
-            }
-        });
     }
 
     private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files, JLabel progressLabel) {
@@ -657,32 +153,6 @@ final class LoadDataDialog extends JPanel {
             throw new NullPointerException("Data not loaded.");
         }
         addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-    }
-
-    private void enableCovarianceObjects() {
-        idsSupplied.setEnabled(false);
-        id1RadioButton.setEnabled(false);
-        id2RadioButton.setEnabled(false);
-        idStringField.setEnabled(false);
-        maxIntegralLabel1.setEnabled(false);
-        maxIntegralLabel2.setEnabled(false);
-        maxIntegralDiscreteIntField.setEnabled(false);
-        varNamesCheckBox.setEnabled(false);
-    }
-
-    private void enableTabularObjects() {
-        idsSupplied.setEnabled(true);
-        idStringField.setEnabled(true);
-        maxIntegralLabel1.setEnabled(true);
-        maxIntegralLabel2.setEnabled(true);
-        maxIntegralDiscreteIntField.setEnabled(true);
-        varNamesCheckBox.setEnabled(true);
-
-        if (idsSupplied.isSelected()) {
-            id1RadioButton.setEnabled(true);
-            id2RadioButton.setEnabled(true);
-            idStringField.setEnabled(true);
-        }
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -749,67 +219,6 @@ final class LoadDataDialog extends JPanel {
 //            textArea.append("<<<ERROR READING FILE>>>");
 //        }
 //    }
-    private String getCommentString() {
-        if (comment1RadioButton.isSelected()) {
-            return "//";
-        } else if (comment2RadioButton.isSelected()) {
-            return "#";
-        } else {
-            return commentStringField.getText();
-        }
-    }
-
-    private DelimiterType getDelimiterType() {
-        if (delimiter1RadioButton.isSelected()) {
-            return DelimiterType.WHITESPACE;
-        } else if (delimiter2RadioButton.isSelected()) {
-            return DelimiterType.TAB;
-        } else if (delimiter3RadioButton.isSelected()) {
-            return DelimiterType.COMMA;
-        } else {
-//            return delimiterStringField.getText();
-            throw new IllegalArgumentException("Unexpected delimiter selection.");
-        }
-    }
-
-    private char getQuoteChar() {
-        if (quote1RadioButton.isSelected()) {
-            return '"';
-        } else {
-            return '\'';
-        }
-    }
-
-    private boolean isVarNamesFirstRow() {
-        return varNamesCheckBox.isSelected();
-    }
-
-    private boolean isIdsSupplied() {
-        return idsSupplied.isSelected();
-    }
-
-    private String getIdLabel() {
-        if (id1RadioButton.isSelected()) {
-            return null;
-        } else {
-            return idStringField.getText();
-        }
-    }
-
-    private String getMissingValue() {
-        if (missing1RadioButton.isSelected()) {
-            return "*";
-        } else if (missing2RadioButton.isSelected()) {
-            return "?";
-        } else {
-            return missingStringField.getText();
-        }
-    }
-
-    private int getMaxDiscrete() {
-        return maxIntegralDiscreteIntField.getValue();
-    }
-
     private void addDataModel(DataModel dataModel, int index, String name) {
         if (dataModel == null) {
             throw new NullPointerException();
