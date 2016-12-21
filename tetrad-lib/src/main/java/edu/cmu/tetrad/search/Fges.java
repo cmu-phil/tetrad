@@ -54,7 +54,6 @@ import java.util.concurrent.*;
  */
 public final class Fges implements GraphSearch, GraphScorer {
 
-
     /**
      * Internal.
      */
@@ -175,7 +174,11 @@ public final class Fges implements GraphSearch, GraphScorer {
     private int maxDegree = -1;
 
     // The minimum score difference for adding an edge.
-    private double minScoreDifference;
+    private double minScoreDifference = 0.0;
+
+    // True if the first step of adding an edge to an empty graph should be scored in both directions
+    // for each edge with the maximum score chosen.
+    private boolean symmetricFirstStep = false;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
@@ -500,6 +503,15 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.minScoreDifference = minScoreDifference;
     }
 
+    public boolean isSymmetricFirstStep() {
+        return symmetricFirstStep;
+    }
+
+    public void setSymmetricFirstStep(boolean symmetricFirstStep) {
+        this.symmetricFirstStep = symmetricFirstStep;
+    }
+
+
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
@@ -569,18 +581,20 @@ public final class Fges implements GraphSearch, GraphScorer {
                     int child = hashIndices.get(y);
                     int parent = hashIndices.get(x);
                     double bump = score.localScoreDiff(parent, child);
-                    double bump2 = score.localScoreDiff(child, parent);
 
-                    bump = bump > bump2 ? bump : bump2;
+                    if (symmetricFirstStep) {
+                        double bump2 = score.localScoreDiff(child, parent);
+                        bump = bump > bump2 ? bump : bump2;
+                    }
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
-                    if (bump > 0) {
+                    if (bump > minScoreDifference) {
                         final Edge edge = Edges.undirectedEdge(x, y);
                         effectEdgesGraph.addEdge(edge);
                     }
 
-                    if (bump > 0.0) {
+                    if (bump > minScoreDifference) {
                         addArrow(x, y, emptySet, emptySet, bump);
                         addArrow(y, x, emptySet, emptySet, bump);
                     }

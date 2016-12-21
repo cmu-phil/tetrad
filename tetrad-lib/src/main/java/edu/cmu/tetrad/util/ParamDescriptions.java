@@ -157,6 +157,10 @@ public class ParamDescriptions {
         put("initializationMode", new ParamDescription("Bayes PM initialization mode",
                 "manualRetain"));
 
+        put("symmetricFirstStep", new ParamDescription("True if the first step of the " +
+                "algorithms should check scores in both directions and take the max",
+                false));
+
     }
 
     public static ParamDescriptions instance() {
