@@ -154,6 +154,9 @@ public class ParamDescriptions {
         put("minScoreDifference", new ParamDescription("The minimum score difference for adding an " +
                 "edge to the graph", 0, 0.0, Double.MAX_VALUE));
 
+        put("initializationMode", new ParamDescription("Bayes PM initialization mode",
+                "manualRetain"));
+
     }
 
     public static ParamDescriptions instance() {
