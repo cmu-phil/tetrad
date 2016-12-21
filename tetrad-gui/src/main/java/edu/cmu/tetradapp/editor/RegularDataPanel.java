@@ -840,7 +840,7 @@ final class RegularDataPanel extends JPanel {
         return maxIntegralDiscreteIntField.getValue();
     }
 
-    public DataModel loadData(int fileIndex, JTextArea anomaliesTextArea, JTabbedPane tabbedPane, File[] files, JLabel progressLabel) {
+    public DataModel loadData(int fileIndex, JTextArea anomaliesTextArea, File[] files, JLabel progressLabel) {
         anomaliesTextArea.setText("");
 
         TextAreaOutputStream out1
@@ -851,10 +851,6 @@ final class RegularDataPanel extends JPanel {
         TetradLogger.getInstance().setForceLog(true);
 
         try {
-
-            // Select the "Anomalies" tab.
-            tabbedPane.setSelectedIndex(1);
-
             DataReader reader = new DataReader();
 
             reader.setCommentMarker(getCommentString());

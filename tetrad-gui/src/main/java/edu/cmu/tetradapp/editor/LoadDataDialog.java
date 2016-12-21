@@ -644,20 +644,13 @@ final class LoadDataDialog extends JPanel {
         });
     }
 
-    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, JTabbedPane tabbedPane, File[] files, JLabel progressLabel) {
+    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files, JLabel progressLabel) {
         System.out.println("File index = " + fileIndex);
 
         Component selectedComponent = pane.getSelectedComponent();
 
         if (selectedComponent instanceof RegularDataPanel) {
-            DataModel dataModel = ((RegularDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, tabbedPane, files,
-                    progressLabel);
-            if (dataModel == null) {
-                throw new NullPointerException("Data not loaded.");
-            }
-            addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-        } else if (selectedComponent instanceof FastDataPanel) {
-            DataModel dataModel = ((FastDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, tabbedPane, files,
+            DataModel dataModel = ((RegularDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, files,
                     progressLabel);
             if (dataModel == null) {
                 throw new NullPointerException("Data not loaded.");
