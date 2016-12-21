@@ -46,7 +46,7 @@ import javax.swing.border.TitledBorder;
  */
 final class LoadDataDialog extends JPanel {
 
-    private final JTabbedPane pane;
+    private final RegularDataPanel dataParams;
     private transient DataModel[] dataModels;
 
     private JRadioButton comment1RadioButton;
@@ -498,13 +498,7 @@ final class LoadDataDialog extends JPanel {
         }
 
         // Layout.
-        // No need to show the fast tab in new design  - Zhou
-        RegularDataPanel r1 = new RegularDataPanel(files);
-        //FastDataPanel r2 = new FastDataPanel(files);
-
-        pane = new JTabbedPane();
-        pane.add("Regular", r1);
-        //pane.add("Fast", r2);
+        dataParams = new RegularDataPanel(files);
 
         Box c = Box.createVerticalBox();
 
@@ -542,7 +536,7 @@ final class LoadDataDialog extends JPanel {
 
         Box a = Box.createHorizontalBox();
         // No need to use tabbed pane - Zhou
-        a.add(r1);
+        a.add(dataParams);
         a.add(c);
         setLayout(new BorderLayout());
 
@@ -600,7 +594,7 @@ final class LoadDataDialog extends JPanel {
 
                         new WatchedProcess(owner) {
                             public void watch() {
-                                loadDataSelect(fileIndex, anomaliesTextArea, tabbedPane, files, progressLabel);
+                                loadDataSelect(fileIndex, anomaliesTextArea, files, progressLabel);
 //                                DataModel dataModel = loadDataSelect(anomaliesTextArea, tabbedPane, files, progressLabel);
 //                                if (dataModel == null) throw new NullPointerException("Data not loaded.");
 //                                addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
@@ -622,7 +616,7 @@ final class LoadDataDialog extends JPanel {
                         new WatchedProcess(owner) {
                             public void watch() {
                                 for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-                                    loadDataSelect(fileIndex, anomaliesTextArea, tabbedPane, files, progressLabel);
+                                    loadDataSelect(fileIndex, anomaliesTextArea, files, progressLabel);
                                 }
                             }
                         };
@@ -647,18 +641,12 @@ final class LoadDataDialog extends JPanel {
     private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files, JLabel progressLabel) {
         System.out.println("File index = " + fileIndex);
 
-        Component selectedComponent = pane.getSelectedComponent();
-
-        if (selectedComponent instanceof RegularDataPanel) {
-            DataModel dataModel = ((RegularDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, files,
-                    progressLabel);
-            if (dataModel == null) {
-                throw new NullPointerException("Data not loaded.");
-            }
-            addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-        } else {
-            throw new IllegalStateException("Just regular and fast data loaders.");
+        DataModel dataModel = dataParams.loadData(fileIndex, anomaliesTextArea, files,
+                progressLabel);
+        if (dataModel == null) {
+            throw new NullPointerException("Data not loaded.");
         }
+        addDataModel(dataModel, fileIndex, files[fileIndex].getName());
     }
 
     private void enableCovarianceObjects() {
