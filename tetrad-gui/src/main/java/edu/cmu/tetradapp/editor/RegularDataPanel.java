@@ -107,10 +107,6 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        ButtonGroup group1 = new ButtonGroup();
-        group1.add(tabularRadioButton);
-        group1.add(covarianceRadioButton);
-
         String tabularPreference = Preferences.userRoot().get("loadDataTabularPreference", "tabular");
 
         if ("tabular".equals(tabularPreference)) {
@@ -139,11 +135,6 @@ final class RegularDataPanel extends JPanel {
         contRadioButton.setSelected(true);
 
         discRadioButton = new JRadioButton("Discrete");
-
-        // Only UI for now, no listener
-        ButtonGroup dataTypeBtnGroup = new ButtonGroup();
-        dataTypeBtnGroup.add(contRadioButton);
-        dataTypeBtnGroup.add(discRadioButton);
 //------------------------------------------
 
         // Comment prefix.
@@ -180,11 +171,6 @@ final class RegularDataPanel extends JPanel {
                 }
             }
         });
-
-        ButtonGroup group2 = new ButtonGroup();
-        group2.add(comment1RadioButton);
-        group2.add(comment2RadioButton);
-        group2.add(comment3RadioButton);
 
         String commentPreference = Preferences.userRoot().get("loadDataCommentPreference", "//");
 
@@ -251,11 +237,6 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        ButtonGroup group3 = new ButtonGroup();
-        group3.add(delimiter1RadioButton);
-        group3.add(delimiter2RadioButton);
-        group3.add(delimiter3RadioButton);
-
         String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Whitespace");
 
         if ("Whitespace".equals(delimiterPreference)) {
@@ -288,10 +269,6 @@ final class RegularDataPanel extends JPanel {
                 }
             }
         });
-
-        ButtonGroup group4 = new ButtonGroup();
-        group4.add(quote1RadioButton);
-        group4.add(quote2RadioButton);
 
         String quotePreference = Preferences.userRoot().get("loadDataQuotePreference", "\"");
 
@@ -386,9 +363,6 @@ final class RegularDataPanel extends JPanel {
         id2RadioButton.setEnabled(idsSuppliedPreference);
         idStringField.setEditable(idsSuppliedPreference);
 
-        ButtonGroup group5 = new ButtonGroup();
-        group5.add(id1RadioButton);
-        group5.add(id2RadioButton);
         id1RadioButton.setSelected(true);
 
 //
@@ -428,10 +402,6 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        ButtonGroup group6 = new ButtonGroup();
-        group6.add(missing1RadioButton);
-        group6.add(missing2RadioButton);
-        group6.add(missing3RadioButton);
         missing1RadioButton.setSelected(true);
 
         String missingPreference = Preferences.userRoot().get("loadDataMissingPreference", "*");
@@ -512,38 +482,29 @@ final class RegularDataPanel extends JPanel {
 
         Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("File Type:"));
+        b1.add(Box.createRigidArea(new Dimension(20, 1)));
+        b1.add(tabularRadioButton);
+        b1.add(covarianceRadioButton);
         b1.add(Box.createHorizontalGlue());
         b.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(Box.createRigidArea(new Dimension(20, 1)));
-        b2.add(tabularRadioButton);
-        b2.add(covarianceRadioButton);
-        b2.add(Box.createHorizontalGlue());
-        b.add(b2);
-
         // Data type - Added by Zhou
         Box b17 = Box.createHorizontalBox();
-        b1.add(new JLabel("Data Type:"));
-        b2.add(contRadioButton);
-        b2.add(discRadioButton);
-        b2.add(Box.createHorizontalGlue());
+        b17.add(new JLabel("Data Type:"));
+        b17.add(Box.createRigidArea(new Dimension(20, 1)));
+        b17.add(contRadioButton);
+        b17.add(discRadioButton);
+        b17.add(Box.createHorizontalGlue());
         b.add(b17);
 
         Box b5 = Box.createHorizontalBox();
-        b5.add(new JLabel("Delimiter"));
+        b5.add(new JLabel("Delimiter:"));
+        b5.add(Box.createRigidArea(new Dimension(20, 1)));
+        b5.add(delimiter1RadioButton);
+        b5.add(delimiter2RadioButton);
+        b5.add(delimiter3RadioButton);
         b5.add(Box.createHorizontalGlue());
         b.add(b5);
-
-        Box b6 = Box.createHorizontalBox();
-        b6.add(Box.createRigidArea(new Dimension(20, 1)));
-        b6.add(delimiter1RadioButton);
-        b6.add(delimiter2RadioButton);
-        b6.add(delimiter3RadioButton);
-//        b6.add(delimiter4RadioButton);
-//        b6.add(delimiterStringField);
-        b6.add(Box.createHorizontalGlue());
-        b.add(b6);
 
         Box b9 = Box.createHorizontalBox();
 //        b9.add(new JLabel("Variable names in first row of data"));
@@ -566,30 +527,22 @@ final class RegularDataPanel extends JPanel {
         b.add(b11);
 
         Box b3 = Box.createHorizontalBox();
-        b3.add(new JLabel("Comment Marker"));
+        b3.add(new JLabel("Comment Marker:"));
+        b3.add(Box.createRigidArea(new Dimension(20, 1)));
+        b3.add(comment1RadioButton);
+        b3.add(comment2RadioButton);
+        b3.add(comment3RadioButton);
+        b3.add(commentStringField);
         b3.add(Box.createHorizontalGlue());
         b.add(b3);
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createRigidArea(new Dimension(20, 1)));
-        b4.add(comment1RadioButton);
-        b4.add(comment2RadioButton);
-        b4.add(comment3RadioButton);
-        b4.add(commentStringField);
-        b4.add(Box.createHorizontalGlue());
-        b.add(b4);
-
         Box b7 = Box.createHorizontalBox();
-        b7.add(new JLabel("Quote Character"));
+        b7.add(new JLabel("Quote Character:"));
+        b7.add(Box.createRigidArea(new Dimension(20, 1)));
+        b7.add(quote1RadioButton);
+        b7.add(quote2RadioButton);
         b7.add(Box.createHorizontalGlue());
         b.add(b7);
-
-        Box b8 = Box.createHorizontalBox();
-        b8.add(Box.createRigidArea(new Dimension(20, 1)));
-        b8.add(quote1RadioButton);
-        b8.add(quote2RadioButton);
-        b8.add(Box.createHorizontalGlue());
-        b.add(b8);
 
         Box b12 = Box.createHorizontalBox();
         b12.add(new JLabel("Missing value marker (other than blank field):"));
