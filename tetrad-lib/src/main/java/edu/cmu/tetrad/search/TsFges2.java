@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -51,8 +53,9 @@ import java.util.concurrent.*;
  *
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
+ * @author Daniel Malinsky
  */
-public final class Fgs implements GraphSearch, GraphScorer {
+public final class TsFges2 implements GraphSearch, GraphScorer {
 
 
     /**
@@ -167,12 +170,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Mode mode = Mode.heuristicSpeedup;
 
     /**
-     * True if one-edge faithfulness is assumed. Speedse the algorithm up.
+     * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
     private boolean faithfulnessAssumed = true;
 
-    // Bounds the degree of the graph.
-    private int maxDegree = -1;
+    // Bounds the indegree of the graph.
+    private int maxIndegree = -1;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
@@ -184,7 +187,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * values in case of conditional independence. See Chickering (2002),
      * locally consistent scoring criterion.
      */
-    public Fgs(Score score) {
+    public TsFges2(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -196,7 +199,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
+        this.faithfulnessAssumed = true;
     }
 
     /**
@@ -476,17 +479,17 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * The maximum of parents any nodes can have in output pattern.
      * @return -1 for unlimited.
      */
-    public int getMaxDegree() {
-        return maxDegree;
+    public int getMaxIndegree() {
+        return maxIndegree;
     }
 
     /**
      * The maximum of parents any nodes can have in output pattern.
-     * @param maxDegree -1 for unlimited.
+     * @param maxIndegree -1 for unlimited.
      */
-    public void setMaxDegree(int maxDegree) {
-        if (maxDegree < -1) throw new IllegalArgumentException();
-        this.maxDegree = maxDegree;
+    public void setMaxIndegree(int maxIndegree) {
+        if (maxIndegree < -1) throw new IllegalArgumentException();
+        this.maxIndegree = maxIndegree;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -505,7 +508,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxDegree = score.getMaxDegree();
+        this.maxIndegree = score.getMaxDegree();
     }
 
     final int[] count = new int[1];
@@ -558,9 +561,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     int child = hashIndices.get(y);
                     int parent = hashIndices.get(x);
                     double bump = score.localScoreDiff(parent, child);
-                    double bump2 = score.localScoreDiff(child, parent);
-
-                    bump = bump > bump2 ? bump : bump2;
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
@@ -693,8 +693,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                         for (Node n : graph.getAdjacentNodes(y)) {
                             for (Node m : graph.getAdjacentNodes(n)) {
-                                if (m == y) continue;
-
                                 if (graph.isAdjacentTo(y, m)) {
                                     continue;
                                 }
@@ -708,8 +706,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
                         }
 
                         for (Node x : g) {
-                            if (x == y) throw new IllegalArgumentException();
-
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                                     continue;
@@ -846,8 +842,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
-        int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
-
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
@@ -858,9 +852,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             if (graph.isAdjacentTo(x, y)) {
                 continue;
             }
-
-            if (graph.getDegree(x) > maxDegree - 1) continue;
-            if (graph.getDegree(y) > maxDegree - 1) continue;
 
             if (!arrow.getNaYX().equals(getNaYX(x, y))) {
                 continue;
@@ -1111,8 +1102,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
 
-        if (a == b) throw new IllegalArgumentException();
-
         if (existsKnowledge()) {
             if (getKnowledge().isForbidden(a.getName(), b.getName())) {
                 return;
@@ -1123,13 +1112,16 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (!isClique(naYX)) return;
 
         List<Node> TNeighbors = getTNeighbors(a, b);
+        int _maxIndegree = maxIndegree == -1 ? 1000 : maxIndegree;
+
+        final int _max = Math.min(TNeighbors.size(), _maxIndegree - graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<Node>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:
-        for (int i = 0; i <= TNeighbors.size(); i++) {
+        for (int i = 0; i <= _max; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
 
@@ -1400,7 +1392,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX,
                               Map<Node, Integer> hashIndices) {
-        if (x == y) throw new IllegalArgumentException();
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
@@ -1433,6 +1424,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return false;
 
         graph.addDirectedEdge(x, y);
+        /** Adding similar edges to enforce repeating structure **/
+        addSimilarEdges(x, y);
+        /** **/
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
@@ -1456,9 +1450,15 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         for (Node _t : T) {
             graph.removeEdge(_t, y);
+            /** removing similar edges to enforce repeating structure **/
+            removeSimilarEdges(_t, y);
+            /** **/
             if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) continue;
 
             graph.addDirectedEdge(_t, y);
+            /** Adding similar edges to enforce repeating structure **/
+            addSimilarEdges(_t, y);
+            /** **/
 
             if (verbose) {
                 String message = "--- Directing " + graph.getEdge(_t, y);
@@ -1489,6 +1489,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         graph.removeEdge(oldxy);
         removedEdges.add(Edges.undirectedEdge(x, y));
+        /** removing similar edges to enforce repeating structure **/
+        removeSimilarEdges(x, y);
+        /** **/
 
 //        if (verbose) {
         int numEdges = graph.getNumEdges();
@@ -1511,6 +1514,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
             graph.removeEdge(oldyh);
 
             graph.addEdge(Edges.directedEdge(y, h));
+            /** removing similar edges (which should be undirected) and adding similar directed edges **/
+            removeSimilarEdges(y, h);
+            addSimilarEdges(y, h);
+            /** **/
 
             if (verbose) {
                 TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
@@ -1524,6 +1531,11 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 graph.removeEdge(oldxh);
 
                 graph.addEdge(Edges.directedEdge(x, h));
+
+                /** removing similar edges (which should be undirected) and adding similar directed edges **/
+                removeSimilarEdges(x, h);
+                addSimilarEdges(x, h);
+                /** **/
 
                 if (verbose) {
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
@@ -1832,8 +1844,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                                     Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
-        if (x == y) throw new IllegalArgumentException();
-        if (parents.contains(y)) throw new IllegalArgumentException();
+        if (parents.contains(x)) return Double.NaN;//throw new IllegalArgumentException();
 
         int[] parentIndices = new int[parents.size()];
 
@@ -1913,6 +1924,137 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         return builder.toString();
     }
+
+    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    private List<List<Node>> returnSimilarPairs(Node x, Node y) {
+        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
+        if(x.getName().equals("time") || y.getName().equals("time")){
+            return new ArrayList<>();
+        }
+//        System.out.println("Knowledge within returnSimilar : " + knowledge);
+        int ntiers = knowledge.getNumTiers();
+        int indx_tier = knowledge.isInWhichTier(x);
+        int indy_tier = knowledge.isInWhichTier(y);
+        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int indx_comp = -1;
+        int indy_comp = -1;
+        List tier_x = knowledge.getTier(indx_tier);
+//        Collections.sort(tier_x);
+        List tier_y = knowledge.getTier(indy_tier);
+//        Collections.sort(tier_y);
+
+        int i;
+        for(i = 0; i < tier_x.size(); ++i) {
+            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+                indx_comp = i;
+                break;
+            }
+        }
+
+        for(i = 0; i < tier_y.size(); ++i) {
+            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+                indy_comp = i;
+                break;
+            }
+        }
+
+        System.out.println("original independence: " + x + " and " + y);
+
+        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
+        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
+
+
+        List<Node> simListX = new ArrayList<>();
+        List<Node> simListY = new ArrayList<>();
+
+        for(i = 0; i < ntiers - tier_diff; ++i) {
+            if(knowledge.getTier(i).size()==1) continue;
+            String A;
+            Node x1;
+            String B;
+            Node y1;
+            if (indx_tier >= indy_tier) {
+                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+//                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i);
+//                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = graph.getNode(A);
+                y1 = graph.getNode(B);
+                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+                simListX.add(x1);
+                simListY.add(y1);
+            } else {
+                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
+                //System.out.println();
+                List tmp_tier1 = knowledge.getTier(i);
+//                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i + tier_diff);
+//                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = graph.getNode(A);
+                y1 = graph.getNode(B);
+                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+                simListX.add(x1);
+                simListY.add(y1);
+            }
+        }
+
+        List<List<Node>> pairList = new ArrayList<>();
+        pairList.add(simListX);
+        pairList.add(simListY);
+        return(pairList);
+    }
+
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+    public void addSimilarEdges(Node x, Node y){
+        List<List<Node>> simList = returnSimilarPairs(x,y);
+        if(simList.isEmpty()) return;
+        List<Node> x1List = simList.get(0);
+        List<Node> y1List = simList.get(1);
+        Iterator itx = x1List.iterator();
+        Iterator ity = y1List.iterator();
+        while(itx.hasNext() && ity.hasNext()){
+            Node x1 = (Node)itx.next();
+            Node y1 = (Node)ity.next();
+            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
+            System.out.println("adding edge between x = " + x1 + " and y = " + y1);
+            graph.addDirectedEdge(x1, y1);
+        }
+    }
+
+    public void removeSimilarEdges(Node x, Node y){
+        List<List<Node>> simList = returnSimilarPairs(x,y);
+        if(simList.isEmpty()) return;
+        List<Node> x1List = simList.get(0);
+        List<Node> y1List = simList.get(1);
+        Iterator itx = x1List.iterator();
+        Iterator ity = y1List.iterator();
+        while(itx.hasNext() && ity.hasNext()){
+            Node x1 = (Node)itx.next();
+            Node y1 = (Node)ity.next();
+            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
+            System.out.println("removing edge between x = " + x1 + " and y = " + y1);
+            Edge oldxy = graph.getEdge(x1, y1);
+            graph.removeEdge(oldxy);
+            removedEdges.add(Edges.undirectedEdge(x1, y1));
+        }
+    }
+
 }
 
 

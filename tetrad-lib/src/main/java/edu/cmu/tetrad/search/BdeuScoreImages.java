@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements the continuous BIC score for FGS.
+ * Implements the continuous BIC score for FGES.
  *
  * @author Joseph Ramsey
  */

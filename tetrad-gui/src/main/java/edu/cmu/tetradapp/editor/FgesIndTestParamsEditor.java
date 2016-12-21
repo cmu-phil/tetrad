@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.FgsRunner;
+import edu.cmu.tetradapp.model.FgesRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -39,8 +39,8 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 
-class FgsIndTestParamsEditor extends JComponent {
-    private final FgsRunner.Type type;
+class FgesIndTestParamsEditor extends JComponent {
+    private final FgesRunner.Type type;
     private final Parameters params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
@@ -53,21 +53,21 @@ class FgsIndTestParamsEditor extends JComponent {
      */
     private final JCheckBox faithfulnessAssumed;
 
-    public FgsIndTestParamsEditor(Parameters params, FgsRunner.Type type) {
+    public FgesIndTestParamsEditor(Parameters params, FgesRunner.Type type) {
         this.params = params;
         this.type = type;
 
         NumberFormat nf = new DecimalFormat("0.0####");
         NumberFormat smallNf = new DecimalFormat("0.0E0");
 
-        if (type == FgsRunner.Type.DISCRETE) {
+        if (type == FgesRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
-                    getFgsIndTestParams().getDouble("samplePrior", 1),  5, nf, smallNf, 1e-4);
+                    getFgesIndTestParams().getDouble("samplePrior", 1),  5, nf, smallNf, 1e-4);
 
             this.cellPriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().set("samplePrior", value);
+                        getFgesIndTestParams().set("samplePrior", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -77,11 +77,11 @@ class FgsIndTestParamsEditor extends JComponent {
             });
 
             this.structurePriorField = new DoubleTextField(
-                    getFgsIndTestParams().getDouble("structurePrior", 1), 5, nf);
+                    getFgesIndTestParams().getDouble("structurePrior", 1), 5, nf);
             this.structurePriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().set("structurePrior", value);
+                        getFgesIndTestParams().set("structurePrior", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -112,11 +112,11 @@ class FgsIndTestParamsEditor extends JComponent {
             });
         } else {
             this.penaltyDiscount = new DoubleTextField(
-                    getFgsIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
+                    getFgesIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
             this.penaltyDiscount.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().set("penaltyDiscount", value);
+                        getFgesIndTestParams().set("penaltyDiscount", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -127,11 +127,11 @@ class FgsIndTestParamsEditor extends JComponent {
         }
 
         this.numPatternsToSave = new IntTextField(
-                getFgsIndTestParams().getInt("numPatternsToSave", 1), 5);
+                getFgesIndTestParams().getInt("numPatternsToSave", 1), 5);
         this.numPatternsToSave.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getFgsIndTestParams().set("numPatternsToSave", value);
+                    getFgesIndTestParams().set("numPatternsToSave", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -140,11 +140,11 @@ class FgsIndTestParamsEditor extends JComponent {
             }
         });
 
-        this.depth = new IntTextField(getFgsIndTestParams().getInt("depth", -1), 4);
+        this.depth = new IntTextField(getFgesIndTestParams().getInt("depth", -1), 4);
         this.depth.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getFgsIndTestParams().set("depth", value);
+                    getFgesIndTestParams().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -154,11 +154,11 @@ class FgsIndTestParamsEditor extends JComponent {
         });
 
         faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(getFgsIndTestParams().getBoolean("faithfulnessAssumed", true));
+        faithfulnessAssumed.setSelected(getFgesIndTestParams().getBoolean("faithfulnessAssumed", true));
         faithfulnessAssumed.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                getFgsIndTestParams().set("faithfulnessAssumed", source.isSelected());
+                getFgesIndTestParams().set("faithfulnessAssumed", source.isSelected());
             }
         });
 
@@ -168,7 +168,7 @@ class FgsIndTestParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (type == FgsRunner.Type.DISCRETE) {
+        if (type == FgesRunner.Type.DISCRETE) {
             Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("BDeu:"));
             b0.add(Box.createHorizontalGlue());
@@ -213,7 +213,7 @@ class FgsIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             add(b4b);
-        } else if (type == FgsRunner.Type.CONTINUOUS || type == FgsRunner.Type.MIXED){
+        } else if (type == FgesRunner.Type.CONTINUOUS || type == FgesRunner.Type.MIXED){
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
@@ -237,7 +237,7 @@ class FgsIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             add(b4b);
-        } else if (type == FgsRunner.Type.GRAPH) {
+        } else if (type == FgesRunner.Type.GRAPH) {
             Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num Patterns to Save"));
             b8.add(Box.createHorizontalGlue());
@@ -261,7 +261,7 @@ class FgsIndTestParamsEditor extends JComponent {
 
     }
 
-    private Parameters getFgsIndTestParams() {
+    private Parameters getFgesIndTestParams() {
         return params;
     }
 

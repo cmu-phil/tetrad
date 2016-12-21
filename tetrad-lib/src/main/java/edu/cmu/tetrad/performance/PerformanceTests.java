@@ -342,8 +342,8 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFgs(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
-        init(new File("long.fgs." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
+    public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
+        init(new File("long.fges." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGES algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -378,7 +378,7 @@ public class PerformanceTests {
         SemBicScore semBicScore = new SemBicScore(cov);
         semBicScore.setPenaltyDiscount(penaltyDiscount);
 
-        Fgs pcStable = new Fgs(semBicScore);
+        Fges pcStable = new Fges(semBicScore);
 
         Graph estPattern = pcStable.search();
 
@@ -393,9 +393,9 @@ public class PerformanceTests {
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
+        out.println("Elapsed (running FGES) " + (time4 - time3) + " ms");
 
-        out.println("Total elapsed (cov + FGS) " + (time4 - time2) + " ms");
+        out.println("Total elapsed (cov + FGES) " + (time4 - time2) + " ms");
 
         final Graph truePattern = SearchGraphUtils.patternForDag(dag);
 
@@ -764,15 +764,15 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFgsComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
-        testFgs(numVars, edgeFactor, numCases, numRuns, true);
+    public void testFgesComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
+        testFges(numVars, edgeFactor, numCases, numRuns, true);
     }
 
-    public void testFgsComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
-        testFgs(numVars, edgeFactor, numCases, numRuns, false);
+    public void testFgesComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
+        testFges(numVars, edgeFactor, numCases, numRuns, false);
     }
 
-    private void testFgs(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
+    private void testFges(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
         out.println(new Date());
 
 //        RandomUtil.getInstance().setSeed(4828384343999L);
@@ -789,7 +789,7 @@ public class PerformanceTests {
         List<Long> elapsedTimes = new ArrayList<>();
 
         if (continuous) {
-            init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
+            init(new File("fges.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             out.println("Num vars = " + numVars);
             out.println("Num edges = " + (int) (numVars * edgeFactor));
@@ -799,7 +799,7 @@ public class PerformanceTests {
             out.println();
 
         } else {
-            init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+            init(new File("fges.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             out.println("Num vars = " + numVars);
             out.println("Num edges = " + (int) (numVars * edgeFactor));
@@ -875,25 +875,25 @@ public class PerformanceTests {
                 score.setPenaltyDiscount(penaltyDiscount);
 
                 System.out.println(new Date());
-                System.out.println("\nStarting FGS");
+                System.out.println("\nStarting FGES");
 
                 long timea = System.currentTimeMillis();
 
-                Fgs fgs = new Fgs(score);
-//                fgs.setVerbose(false);
-                fgs.setNumPatternsToStore(0);
-                fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setCycleBound(-1);
+                Fges fges = new Fges(score);
+//                fges.setVerbose(false);
+                fges.setNumPatternsToStore(0);
+                fges.setOut(System.out);
+                fges.setFaithfulnessAssumed(faithfulness);
+                fges.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
 
-                estPattern = fgs.search();
+                estPattern = fges.search();
 
                 long timec = System.currentTimeMillis();
 
-                out.println("Time for FGS constructor " + (timeb - timea) + " ms");
-                out.println("Time for FGS search " + (timec - timea) + " ms");
+                out.println("Time for FGES constructor " + (timeb - timea) + " ms");
+                out.println("Time for FGES search " + (timec - timea) + " ms");
                 out.println();
                 out.flush();
 
@@ -918,32 +918,32 @@ public class PerformanceTests {
                 score.setSamplePrior(1);
 
                 System.out.println(new Date());
-                System.out.println("\nStarting FGS");
+                System.out.println("\nStarting FGES");
 
                 long timea = System.currentTimeMillis();
 
-                Fgs fgs = new Fgs(score);
-//                fgs.setVerbose(false);
-                fgs.setNumPatternsToStore(0);
-                fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setCycleBound(-1);
+                Fges fges = new Fges(score);
+//                fges.setVerbose(false);
+                fges.setNumPatternsToStore(0);
+                fges.setOut(System.out);
+                fges.setFaithfulnessAssumed(faithfulness);
+                fges.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
 
-                estPattern = fgs.search();
+                estPattern = fges.search();
 
                 long timec = System.currentTimeMillis();
 
                 out.println("Time consructing BDeu score " + (timea - time3) + " ms");
-                out.println("Time for FGS constructor " + (timeb - timea) + " ms");
-                out.println("Time for FGS search " + (timec - timea) + " ms");
+                out.println("Time for FGES constructor " + (timeb - timea) + " ms");
+                out.println("Time for FGES search " + (timec - timea) + " ms");
                 out.println();
 
                 elapsed = timec - timea;
             }
 
-            System.out.println("Done with FGS");
+            System.out.println("Done with FGES");
 
             System.out.println(new Date());
 
@@ -1023,15 +1023,15 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFgsMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
-        testFgsMb(numVars, edgeFactor, numCases, numRuns, true);
+    public void testFgesMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
+        testFgesMb(numVars, edgeFactor, numCases, numRuns, true);
     }
 
-    public void testFgsMbComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
-        testFgsMb(numVars, edgeFactor, numCases, numRuns, false);
+    public void testFgesMbComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
+        testFgesMb(numVars, edgeFactor, numCases, numRuns, false);
     }
 
-    private void testFgsMb(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
+    private void testFgesMb(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
 
         double penaltyDiscount = 4.0;
         int structurePrior = 10;
@@ -1072,11 +1072,11 @@ public class PerformanceTests {
         Graph estPattern;
         long elapsed;
 
-        FgsMb2 fgs;
+        FgesMb2 fges;
         List<Node> vars;
 
         if (continuous) {
-            init(new File("FgsMb.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
+            init(new File("FgesMb.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             out.println("Num vars = " + numVars);
             out.println("Num edges = " + (int) (numVars * edgeFactor));
@@ -1118,17 +1118,17 @@ public class PerformanceTests {
             score.setPenaltyDiscount(penaltyDiscount);
 
             System.out.println(new Date());
-            System.out.println("\nStarting FGS-MB");
+            System.out.println("\nStarting FGES-MB");
 
-            fgs = new FgsMb2(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-            fgs.setOut(System.out);
-//            fgs.setHeuristicSpeedup(faithfulness);
-            fgs.setMaxIndegree(maxIndegree);
-            fgs.setCycleBound(-1);
+            fges = new FgesMb2(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setOut(System.out);
+//            fges.setHeuristicSpeedup(faithfulness);
+            fges.setMaxIndegree(maxIndegree);
+            fges.setCycleBound(-1);
         } else {
-            init(new File("FgsMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+            init(new File("FgesMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             out.println("Num vars = " + numVars);
             out.println("Num edges = " + (int) (numVars * edgeFactor));
@@ -1161,22 +1161,22 @@ public class PerformanceTests {
             score.setSamplePrior(samplePrior);
 
             System.out.println(new Date());
-            System.out.println("\nStarting FGS");
+            System.out.println("\nStarting FGES");
 
             long time4 = System.currentTimeMillis();
 
-            fgs = new FgsMb2(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-            fgs.setOut(System.out);
-//            fgs.setHeuristicSpeedup(faithfulness);
-            fgs.setMaxIndegree(maxIndegree);
-            fgs.setCycleBound(-1);
+            fges = new FgesMb2(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setOut(System.out);
+//            fges.setHeuristicSpeedup(faithfulness);
+            fges.setMaxIndegree(maxIndegree);
+            fges.setCycleBound(-1);
 
             long timeb = System.currentTimeMillis();
 
             out.println("Time consructing BDeu score " + (time4 - time3) + " ms");
-            out.println("Time for FGS-MB constructor " + (timeb - time4) + " ms");
+            out.println("Time for FGES-MB constructor " + (timeb - time4) + " ms");
             out.println();
         }
 
@@ -1189,7 +1189,7 @@ public class PerformanceTests {
             System.out.println("Target = " + target);
             long timea = System.currentTimeMillis();
 
-            estPattern = fgs.search(target);
+            estPattern = fges.search(target);
 
             long timed = System.currentTimeMillis();
 
@@ -1208,10 +1208,10 @@ public class PerformanceTests {
 
             long timec = System.currentTimeMillis();
 
-            out.println("Time for FGS-MB search " + (timec - timea) + " ms");
+            out.println("Time for FGES-MB search " + (timec - timea) + " ms");
             out.println();
 
-            System.out.println("Done with FGS");
+            System.out.println("Done with FGES");
 
             System.out.println(new Date());
 
@@ -1690,7 +1690,7 @@ public class PerformanceTests {
 //
 //            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
 //
-//            out6.println("FCI.FGS.PAG");
+//            out6.println("FCI.FGES.PAG");
 //
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
@@ -2370,40 +2370,40 @@ public class PerformanceTests {
                     performanceTests.testCpcStable(numVars, edgeFactor, numCases, alpha);
                     break;
                 }
-                case "TestFgsComparisonContinuous": {
+                case "TestFgesComparisonContinuous": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
                     final int numCases = Integer.parseInt(args[3]);
                     final int numRuns = Integer.parseInt(args[4]);
 
-                    performanceTests.testFgsComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
+                    performanceTests.testFgesComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
                     break;
                 }
-                case "TestFgsComparisonDiscrete": {
+                case "TestFgesComparisonDiscrete": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
                     final int numCases = Integer.parseInt(args[3]);
                     final int numRuns = Integer.parseInt(args[4]);
 
-                    performanceTests.testFgsComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
+                    performanceTests.testFgesComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
                     break;
                 }
-                case "TestFgsMbComparisonContinuous": {
+                case "TestFgesMbComparisonContinuous": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
                     final int numCases = Integer.parseInt(args[3]);
                     final int numRuns = Integer.parseInt(args[4]);
 
-                    performanceTests.testFgsMbComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
+                    performanceTests.testFgesMbComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
                     break;
                 }
-                case "TestFgsMbComparisonDiscrete": {
+                case "TestFgesMbComparisonDiscrete": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
                     final int numCases = Integer.parseInt(args[3]);
                     final int numRuns = Integer.parseInt(args[4]);
 
-                    performanceTests.testFgsMbComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
+                    performanceTests.testFgesMbComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
                     break;
                 }
                 default:
@@ -2428,7 +2428,7 @@ public class PerformanceTests {
 //        performanceTests.testPcStable(20000, 1, 1000, .00001);
         performanceTests.testPcMax(5000, 1, 1000, .0001);
 //        performanceTests.testPcMax(5000, 5, 1000, .0001);
-//        performanceTests.testFgs(5000, 5, 1000, 4);
+//        performanceTests.testFges(5000, 5, 1000, 4);
 
 //        performanceTests.testPcStable(10000, 1, 1000, .0001);
 //        performanceTests.testPcMax(10000, 1, 1000, .0001);

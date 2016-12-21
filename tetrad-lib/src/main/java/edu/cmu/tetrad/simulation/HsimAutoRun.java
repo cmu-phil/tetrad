@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.BDeuScore;
-import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.PatternToDag;
 
 import java.io.FileWriter;
@@ -83,12 +83,12 @@ public class HsimAutoRun {
 
             //ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
             double penaltyDiscount = 2.0;
-            Fgs fgs = new Fgs(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-            fgs.setPenaltyDiscount(penaltyDiscount);
+            Fges fges = new Fges(score);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setPenaltyDiscount(penaltyDiscount);
 
-            Graph estGraph = fgs.search();
+            Graph estGraph = fges.search();
             //if (verbose) System.out.println(estGraph);
 
             Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
@@ -155,24 +155,24 @@ public class HsimAutoRun {
                 DataWriter.writeRectangularData(newDataSet, fileWriter, delimiter);
                 fileWriter.close();
             }
-        //=======Run FGS on the output data, and compare it to the original learned graph
+        //=======Run FGES on the output data, and compare it to the original learned graph
             //Path dataFileOut = Paths.get(filenameOut);
             //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
 
             //DataSet dataSetOut = dataReaderOut.readInData(eVars);
 
             BDeuScore newscore = new BDeuScore(newDataSet);
-            Fgs fgsOut = new Fgs(newscore);
-            fgsOut.setVerbose(false);
-            fgsOut.setNumPatternsToStore(0);
-            fgsOut.setPenaltyDiscount(2.0);
-            //fgsOut.setOut(out);
-            //fgsOut.setFaithfulnessAssumed(true);
-            // fgsOut.setMaxIndegree(1);
-            // fgsOut.setCycleBound(5);
+            Fges fgesOut = new Fges(newscore);
+            fgesOut.setVerbose(false);
+            fgesOut.setNumPatternsToStore(0);
+            fgesOut.setPenaltyDiscount(2.0);
+            //fgesOut.setOut(out);
+            //fgesOut.setFaithfulnessAssumed(true);
+            // fgesOut.setMaxIndegree(1);
+            // fgesOut.setCycleBound(5);
 
-            Graph estGraphOut = fgsOut.search();
-            //if (verbose) System.out.println(" bugchecking: fgs estGraphOut: " + estGraphOut);
+            Graph estGraphOut = fgesOut.search();
+            //if (verbose) System.out.println(" bugchecking: fges estGraphOut: " + estGraphOut);
 
             //doing the replaceNodes trick to fix some bugs
             estGraphOut = GraphUtils.replaceNodes(estGraphOut,estDAG.getNodes());

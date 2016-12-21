@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS.
+ * Implements a conditional Gaussian BIC score for FGES.
  *
  * @author Joseph Ramsey
  */

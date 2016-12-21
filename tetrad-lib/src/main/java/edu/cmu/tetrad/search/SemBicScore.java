@@ -35,7 +35,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.log;
 
 /**
- * Implements the continuous BIC score for FGS.
+ * Implements the continuous BIC score for FGES.
  *
  * @author Joseph Ramsey
  */
@@ -54,7 +54,7 @@ public class SemBicScore implements Score {
     private double penaltyDiscount = 1.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGS
+    // ignored by FGES
     private boolean ignoreLinearDependent = false;
 
     // The printstream output should be sent to.

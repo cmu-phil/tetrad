@@ -197,15 +197,15 @@ public class Comparison {
             PcMax search = new PcMax(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fgs search = new Fgs(score);
+            Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS2) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES2) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fgs search = new Fgs(score);
+            Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
