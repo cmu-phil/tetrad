@@ -174,6 +174,9 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Bounds the degree of the graph.
     private int maxDegree = -1;
 
+    // The minimum score difference for adding an edge.
+    private double minScoreDifference;
+
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //===========================CONSTRUCTORS=============================//
@@ -487,6 +490,14 @@ public final class Fges implements GraphSearch, GraphScorer {
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) throw new IllegalArgumentException();
         this.maxDegree = maxDegree;
+    }
+
+    public double getMinScoreDifference() {
+        return minScoreDifference;
+    }
+
+    public void setMinScoreDifference(double minScoreDifference) {
+        this.minScoreDifference = minScoreDifference;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -1157,7 +1168,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > 0.0) {
+                if (bump > minScoreDifference) {
                     addArrow(a, b, naYX, T, bump);
                 }
 

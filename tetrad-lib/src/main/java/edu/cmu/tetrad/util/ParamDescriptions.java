@@ -150,6 +150,10 @@ public class ParamDescriptions {
         put("numCategoriesToDiscretize", new ParamDescription(
                 "The number of categories used to discretize continuous variables",
                 3, 1, Integer.MAX_VALUE));
+
+        put("minScoreDifference", new ParamDescription("The minimum score difference for adding an " +
+                "edge to the graph", 0, 0.0, Double.MAX_VALUE));
+
     }
 
     public static ParamDescriptions instance() {

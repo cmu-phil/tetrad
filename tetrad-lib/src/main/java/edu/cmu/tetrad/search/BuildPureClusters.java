@@ -161,7 +161,6 @@ public final class BuildPureClusters {
             independenceTest = new IndTestGSquare(dataSet, alpha);
             tetradTest = new DiscreteTetradTest(dataSet, alpha);
         } else {
-            numVariables = getCovarianceMatrix().getSize();
             independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
             TestType type;
 

@@ -264,16 +264,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
-                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++) {
-                    List<DataSet> dataSets = new ArrayList<>();
+                for (DataModel dataModel : getDataModelList()) {
+                    DataSet dataSet = (DataSet) dataModel;
 
-                    for (DataModel dataModel : getDataModelList()) {
-                        DataSet dataSet = (DataSet) dataModel;
-
-                        if (!dataSet.isContinuous()) {
-                            throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
-                        }
+                    if (!dataSet.isContinuous()) {
+                        throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
                     }
+
+                    graphList.add(algorithm.search(dataSet, parameters));
                 }
             } else {
                 for (DataModel data : getDataModelList()) {

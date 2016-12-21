@@ -51,6 +51,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
+        search.setMinScoreDifference(parameters.getDouble("minScoreDifference"));
 
         Object obj = parameters.get("printStedu.cmream");
         if (obj instanceof PrintStream) {
@@ -86,6 +87,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
         parameters.add("verbose");
+        parameters.add("minScoreDifference");
         return parameters;
     }
 
