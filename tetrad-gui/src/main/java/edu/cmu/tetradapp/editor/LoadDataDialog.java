@@ -79,11 +79,20 @@ final class LoadDataDialog extends JPanel {
 
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(final File... files) {
+        // Do we need this? Since you can't get to this data loader dialog if not file is selected - Zhou
         if (files.length == 0) {
             throw new IllegalArgumentException("Must specify at least one file.");
         }
 
         this.dataModels = new DataModel[files.length];
+
+        // Show all the initially selected files as a list of radio buttons - Zhou
+        JPanel allFiles = new JPanel();
+        allFiles.setLayout(new BoxLayout(allFiles, BoxLayout.PAGE_AXIS));
+        for (int i = 0; i < files.length; i++) {
+            final JRadioButton file = new JRadioButton(files[i].getName());
+            allFiles.add(file);
+        }
 
         // File type: tabular/covariance.
         JRadioButton tabularRadioButton = new JRadioButton("Tabular Data");
@@ -535,7 +544,8 @@ final class LoadDataDialog extends JPanel {
         c.setBorder(new TitledBorder("Source File and Loading Log"));
 
         Box a = Box.createHorizontalBox();
-        // No need to use tabbed pane - Zhou
+        a.add(allFiles);
+// No need to use tabbed pane - Zhou
         a.add(dataParams);
         a.add(c);
         setLayout(new BorderLayout());
