@@ -62,13 +62,12 @@ final class RegularDataPanel extends JPanel {
     private JRadioButton delimiter2RadioButton;
     private JRadioButton delimiter3RadioButton;
 
-    //    private JRadioButton delimiter4RadioButton;
-    //    private StringTextField delimiterStringField;
     private JRadioButton quote1RadioButton;
     private JRadioButton quote2RadioButton;
 
     private JCheckBox varNamesCheckBox;
     private JCheckBox idsSupplied;
+    private JRadioButton idNoneRadioButton;
     private JRadioButton id1RadioButton;
     private JRadioButton id2RadioButton;
     private StringTextField idStringField;
@@ -233,7 +232,8 @@ final class RegularDataPanel extends JPanel {
         Box firstRowVarNamesBox = Box.createHorizontalBox();
 
         varNamesCheckBox = new JCheckBox("Variable names in first row of data");
-        varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+        //varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+
         // Listener
         varNamesCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -258,52 +258,17 @@ final class RegularDataPanel extends JPanel {
         // Case ID's provided
         Box caseIdProvidedBox = Box.createHorizontalBox();
 
-        idsSupplied = new JCheckBox("Case ID's provided");
-        idsSupplied.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "deselected");
-                }
-            }
-        });
-
-        boolean idsSuppliedPreference = "selected".equals(Preferences.userRoot().get("loadDataIdsSuppliedPreference", "deselected"));
-        idsSupplied.setSelected(idsSuppliedPreference);
-
         // ID radio buttons
+        idNoneRadioButton = new JRadioButton("None");
         id1RadioButton = new JRadioButton("Unlabeled first column");
         id2RadioButton = new JRadioButton("Column labeled: ");
         idStringField = new StringTextField("", 4);
 
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox button = (JCheckBox) e.getSource();
-                boolean selected = button.isSelected();
-
-                id1RadioButton.setEnabled(selected);
-                id2RadioButton.setEnabled(selected);
-                idStringField.setEditable(selected);
-            }
-        });
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
         id1RadioButton.setSelected(true);
 
+        caseIdProvidedBox.add(new JLabel("Case IDs:"));
         caseIdProvidedBox.add(Box.createRigidArea(new Dimension(20, 1)));
-        caseIdProvidedBox.add(idsSupplied);
+        caseIdProvidedBox.add(idNoneRadioButton);
         caseIdProvidedBox.add(id1RadioButton);
         caseIdProvidedBox.add(id2RadioButton);
         caseIdProvidedBox.add(idStringField);
@@ -572,6 +537,7 @@ final class RegularDataPanel extends JPanel {
         dataLoadingParamsContainer.setBorder(new TitledBorder("Set Data Loading Parameters"));
 
         setLayout(new BorderLayout());
+
         add(dataLoadingParamsContainer, BorderLayout.CENTER);
     }
 
@@ -593,12 +559,6 @@ final class RegularDataPanel extends JPanel {
         maxIntegralLabel2.setEnabled(true);
         maxIntegralDiscreteIntField.setEnabled(true);
         varNamesCheckBox.setEnabled(true);
-
-        if (idsSupplied.isSelected()) {
-            id1RadioButton.setEnabled(true);
-            id2RadioButton.setEnabled(true);
-            idStringField.setEnabled(true);
-        }
     }
 
     public DataModel[] getDataModels() {
