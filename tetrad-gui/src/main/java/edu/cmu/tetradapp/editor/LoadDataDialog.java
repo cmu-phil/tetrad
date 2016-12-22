@@ -65,8 +65,8 @@ final class LoadDataDialog extends JPanel {
             final JTextArea fileTextArea = new JTextArea();
 
             // Setup file text area.
-            // Do we want the users to edit in the preview area? - Zhou
-            // fileTextArea.setEditable(false);
+            // We don't want the users to edit in the preview area - Zhou
+            fileTextArea.setEditable(false);
             fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
             setText(file, fileTextArea);
 
