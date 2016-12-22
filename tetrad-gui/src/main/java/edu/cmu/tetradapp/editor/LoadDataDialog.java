@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -42,7 +41,8 @@ import javax.swing.border.TitledBorder;
  */
 final class LoadDataDialog extends JPanel {
 
-    private final RegularDataPanel dataParams;
+    private RegularDataPanel dataParamsBox;
+
     private transient DataModel[] dataModels;
 
     private int fileIndex = 0;
@@ -56,7 +56,7 @@ final class LoadDataDialog extends JPanel {
 
         this.dataModels = new DataModel[files.length];
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane previewTabbedPane = new JTabbedPane();
 
         final JTextArea anomaliesTextArea = new JTextArea();
 
@@ -71,55 +71,28 @@ final class LoadDataDialog extends JPanel {
             setText(file, fileTextArea);
 
             final JScrollPane scroll = new JScrollPane(fileTextArea);
-            scroll.setPreferredSize(new Dimension(500, 200));
-            tabbedPane.addTab(file.getName(), scroll);
+            scroll.setPreferredSize(new Dimension(500, 400));
+            previewTabbedPane.addTab(file.getName(), scroll);
         }
 
+        // Data loading params
+        // The data loading params apply to all slected files
+        // the users should know that the selected files should share these settings - Zhou
+        dataParamsBox = new RegularDataPanel(files);
+
+        // Data file preview
+        Box dataPreviewBox = Box.createVerticalBox();
+        dataPreviewBox.add(previewTabbedPane);
+        dataPreviewBox.setBorder(new TitledBorder("Data File Preview"));
+
+        // Load button
         String loadBtnText = "Load";
         if (files.length > 1) {
             loadBtnText = "Load All";
         }
         JButton loadButton = new JButton(loadBtnText);
 
-        // Layout.
-        dataParams = new RegularDataPanel(files);
-
-        Box c = Box.createVerticalBox();
-
-        Box c1 = Box.createHorizontalBox();
-
-        c1.add(tabbedPane);
-        c.add(c1);
-
-        Box c2 = Box.createHorizontalBox();
-        c2.add(Box.createHorizontalGlue());
-
-        c2.add(Box.createHorizontalStrut(10));
-
-        c2.setBorder(new EmptyBorder(4, 4, 4, 4));
-        c.add(c2);
-        c.setBorder(new TitledBorder("Data File Preview"));
-
-        Box a = Box.createHorizontalBox();
-        // The data loading params apply to all slected files
-        // the users should know that the selected files should share these settings - Zhou
-        a.add(dataParams);
-        a.add(c);
-        a.add(loadButton);
-        setLayout(new BorderLayout());
-
-        Box d = Box.createHorizontalBox();
-
-        d.add(Box.createHorizontalGlue());
-
-        Box e = Box.createVerticalBox();
-        e.add(d);
-        e.add(Box.createVerticalStrut(10));
-        e.add(a);
-
-        add(e, BorderLayout.CENTER);
-
-        // Listeners.
+        // Load button listener
         loadButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Window owner = (Window) getTopLevelAncestor();
@@ -140,12 +113,41 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
+        // Loading log info
+        Box loadingLogBox = Box.createVerticalBox();
+        loadingLogBox.setBorder(new TitledBorder("Data Loading Log"));
+
+        JScrollPane loadingLogScrollPane = new JScrollPane(anomaliesTextArea);
+        loadingLogScrollPane.setPreferredSize(new Dimension(400, 200));
+
+        loadingLogBox.add("File loading log", loadingLogScrollPane);
+
+        // Data loading area, contains data params, load button, and loading log
+        Box dataLoadingBox = Box.createVerticalBox();
+        dataLoadingBox.add(dataParamsBox);
+        dataLoadingBox.add(loadButton);
+        dataLoadingBox.add(loadingLogBox);
+
+        // Container contains data loading params, preview, and load button
+        Box container = Box.createHorizontalBox();
+
+        container.add(dataPreviewBox);
+        container.add(dataLoadingBox);
+
+        setLayout(new BorderLayout());
+
+        // Must have this section otherwise the File Loader dialog will be empty - Zhou
+        Box e = Box.createVerticalBox();
+        e.add(Box.createVerticalStrut(10));
+        e.add(container);
+
+        add(e, BorderLayout.CENTER);
     }
 
     private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files) {
         System.out.println("File index = " + fileIndex);
 
-        DataModel dataModel = dataParams.loadData(fileIndex, anomaliesTextArea, files);
+        DataModel dataModel = dataParamsBox.loadData(fileIndex, anomaliesTextArea, files);
         if (dataModel == null) {
             throw new NullPointerException("Data not loaded.");
         }

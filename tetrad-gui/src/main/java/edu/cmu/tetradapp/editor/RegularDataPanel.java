@@ -470,7 +470,7 @@ final class RegularDataPanel extends JPanel {
             enableCovarianceObjects();
         }
 
-        // Layout.
+        // Data loading params layout
         Box b = Box.createVerticalBox();
 
         Box b1 = Box.createHorizontalBox();
@@ -615,10 +615,6 @@ final class RegularDataPanel extends JPanel {
             id2RadioButton.setEnabled(true);
             idStringField.setEnabled(true);
         }
-    }
-
-    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
-        return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
     }
 
     public DataModel[] getDataModels() {
