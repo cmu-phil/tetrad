@@ -786,7 +786,7 @@ final class RegularDataPanel extends JPanel {
         return maxIntegralDiscreteIntField.getValue();
     }
 
-    public DataModel loadData(int fileIndex, JTextArea anomaliesTextArea, File[] files, JLabel progressLabel) {
+    public DataModel loadData(int fileIndex, JTextArea anomaliesTextArea, File[] files) {
         anomaliesTextArea.setText("");
 
         TextAreaOutputStream out1
@@ -822,8 +822,6 @@ final class RegularDataPanel extends JPanel {
 //            addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
             anomaliesTextArea.setCaretPosition(
                     anomaliesTextArea.getText().length());
-
-            progressLabel.setText(getProgressString(fileIndex, files.length, dataModels));
 
             return dataModel;
         } catch (Exception e1) {

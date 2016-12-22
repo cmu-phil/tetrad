@@ -65,6 +65,7 @@ final class LoadDataDialog extends JPanel {
             final JTextArea fileTextArea = new JTextArea();
 
             // Setup file text area.
+            // Do we want the users to edit in the preview area? - Zhou
             // fileTextArea.setEditable(false);
             fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
             setText(file, fileTextArea);
@@ -73,9 +74,6 @@ final class LoadDataDialog extends JPanel {
             scroll.setPreferredSize(new Dimension(500, 200));
             tabbedPane.addTab(file.getName(), scroll);
         }
-
-        final JLabel progressLabel = new JLabel(getProgressString(0, files.length, dataModels));
-        progressLabel.setFont(new Font("Dialog", Font.BOLD, 12));
 
         String loadBtnText = "Load";
         if (files.length > 1) {
@@ -133,7 +131,7 @@ final class LoadDataDialog extends JPanel {
                         new WatchedProcess(owner) {
                             public void watch() {
                                 for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-                                    loadDataSelect(fileIndex, anomaliesTextArea, files, progressLabel);
+                                    loadDataSelect(fileIndex, anomaliesTextArea, files);
                                 }
                             }
                         };
@@ -144,11 +142,10 @@ final class LoadDataDialog extends JPanel {
 
     }
 
-    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files, JLabel progressLabel) {
+    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files) {
         System.out.println("File index = " + fileIndex);
 
-        DataModel dataModel = dataParams.loadData(fileIndex, anomaliesTextArea, files,
-                progressLabel);
+        DataModel dataModel = dataParams.loadData(fileIndex, anomaliesTextArea, files);
         if (dataModel == null) {
             throw new NullPointerException("Data not loaded.");
         }
@@ -228,7 +225,4 @@ final class LoadDataDialog extends JPanel {
         this.dataModels[index] = dataModel;
     }
 
-    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
-        return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
-    }
 }
