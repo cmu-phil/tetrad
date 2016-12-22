@@ -132,6 +132,8 @@ final class LoadDataDialog extends JPanel {
         Box container = Box.createHorizontalBox();
 
         container.add(dataPreviewBox);
+        // Add some gap between preview and data loading params
+        container.add(Box.createHorizontalStrut(10));
         container.add(dataLoadingBox);
 
         setLayout(new BorderLayout());

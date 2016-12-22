@@ -93,7 +93,12 @@ final class RegularDataPanel extends JPanel {
 
         this.dataModels = new DataModel[files.length];
 
-        // Tabular/covariance.
+        // Data loading params layout
+        Box dataLoadingParamsContainer = Box.createVerticalBox();
+
+        // Tabular/covariance
+        Box fileTypeBox = Box.createHorizontalBox();
+
         tabularRadioButton = new JRadioButton("Tabular Data");
         covarianceRadioButton = new JRadioButton("Covariance Data");
 
@@ -127,17 +132,189 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-//------------------------------------------
-        // Added by Zhou
+        tabularRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                enableTabularObjects();
+            }
+        });
+
+        covarianceRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                enableCovarianceObjects();
+            }
+        });
+
+        fileTypeBox.add(new JLabel("File Type:"));
+        fileTypeBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        fileTypeBox.add(tabularRadioButton);
+        fileTypeBox.add(covarianceRadioButton);
+        fileTypeBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(fileTypeBox);
+
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Data type - moved from the old Fast tab - Zhou
+        Box dataTypeBox = Box.createHorizontalBox();
         // Data type: continuous or discrete
         contRadioButton = new JRadioButton("Continuous");
         // Continuous radion button is selected by default
         contRadioButton.setSelected(true);
 
         discRadioButton = new JRadioButton("Discrete");
-//------------------------------------------
 
-        // Comment prefix.
+        dataTypeBox.add(new JLabel("Data Type:"));
+        dataTypeBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        dataTypeBox.add(contRadioButton);
+        dataTypeBox.add(discRadioButton);
+        dataTypeBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(dataTypeBox);
+
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Value Delimiter
+        Box valueDelimiterBox = Box.createHorizontalBox();
+
+        // Value Delimiter
+        delimiter1RadioButton = new JRadioButton("Whitespace");
+        delimiter2RadioButton = new JRadioButton("Tab");
+        delimiter3RadioButton = new JRadioButton("Comma");
+
+        delimiter1RadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
+
+                }
+            }
+        });
+
+        delimiter2RadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
+
+                }
+            }
+        });
+
+        delimiter3RadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataDelimiterPreference", "Comma");
+
+                }
+            }
+        });
+
+        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Whitespace");
+
+        if ("Whitespace".equals(delimiterPreference)) {
+            delimiter1RadioButton.setSelected(true);
+        } else if ("Tab".equals(delimiterPreference)) {
+            delimiter2RadioButton.setSelected(true);
+        } else {
+            delimiter3RadioButton.setSelected(true);
+        }
+
+        valueDelimiterBox.add(new JLabel("Value Delimiter:"));
+        valueDelimiterBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        valueDelimiterBox.add(delimiter1RadioButton);
+        valueDelimiterBox.add(delimiter2RadioButton);
+        valueDelimiterBox.add(delimiter3RadioButton);
+        valueDelimiterBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(valueDelimiterBox);
+
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Var names in first row of data
+        Box firstRowVarNamesBox = Box.createHorizontalBox();
+
+        varNamesCheckBox = new JCheckBox("Variable names in first row of data");
+        varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+        // Listener
+        varNamesCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+
+                if (checkBox.isSelected()) {
+                    Preferences.userRoot().put("loadDataVarNames", "selected");
+                } else {
+                    Preferences.userRoot().put("loadDataVarNames", "deselected");
+                }
+            }
+        });
+
+        varNamesCheckBox.setSelected(Preferences.userRoot().get("loadDataVarNames", "selected").equals("selected"));
+
+        firstRowVarNamesBox.add(varNamesCheckBox);
+        firstRowVarNamesBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(firstRowVarNamesBox);
+
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Case ID's provided
+        Box caseIdProvidedBox = Box.createHorizontalBox();
+
+        idsSupplied = new JCheckBox("Case ID's provided");
+        idsSupplied.setHorizontalTextPosition(SwingConstants.LEFT);
+
+        idsSupplied.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+
+                if (checkBox.isSelected()) {
+                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "selected");
+                } else {
+                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "deselected");
+                }
+            }
+        });
+
+        boolean idsSuppliedPreference = "selected".equals(Preferences.userRoot().get("loadDataIdsSuppliedPreference", "deselected"));
+        idsSupplied.setSelected(idsSuppliedPreference);
+
+        // ID radio buttons
+        id1RadioButton = new JRadioButton("Unlabeled first column");
+        id2RadioButton = new JRadioButton("Column labeled: ");
+        idStringField = new StringTextField("", 4);
+
+        id1RadioButton.setEnabled(idsSuppliedPreference);
+        id2RadioButton.setEnabled(idsSuppliedPreference);
+        idStringField.setEditable(idsSuppliedPreference);
+
+        idsSupplied.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox button = (JCheckBox) e.getSource();
+                boolean selected = button.isSelected();
+
+                id1RadioButton.setEnabled(selected);
+                id2RadioButton.setEnabled(selected);
+                idStringField.setEditable(selected);
+            }
+        });
+
+        id1RadioButton.setEnabled(idsSuppliedPreference);
+        id2RadioButton.setEnabled(idsSuppliedPreference);
+        idStringField.setEditable(idsSuppliedPreference);
+
+        id1RadioButton.setSelected(true);
+
+        caseIdProvidedBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        caseIdProvidedBox.add(idsSupplied);
+        caseIdProvidedBox.add(id1RadioButton);
+        caseIdProvidedBox.add(id2RadioButton);
+        caseIdProvidedBox.add(idStringField);
+        caseIdProvidedBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(caseIdProvidedBox);
+
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Comment Marker
+        Box commentMarkerBox = Box.createHorizontalBox();
+
         comment1RadioButton = new JRadioButton("//");
         comment2RadioButton = new JRadioButton("#");
         comment3RadioButton = new JRadioButton("Other: ");
@@ -200,54 +377,20 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        // Delimiter
-        delimiter1RadioButton = new JRadioButton("Whitespace");
-        delimiter2RadioButton = new JRadioButton("Tab");
-        delimiter3RadioButton = new JRadioButton("Comma");
-//        delimiter4RadioButton = new JRadioButton("Other: ");
-//        delimiterStringField = new StringTextField("", 4);
+        commentMarkerBox.add(new JLabel("Comment Marker:"));
+        commentMarkerBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        commentMarkerBox.add(comment1RadioButton);
+        commentMarkerBox.add(comment2RadioButton);
+        commentMarkerBox.add(comment3RadioButton);
+        commentMarkerBox.add(commentStringField);
+        commentMarkerBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(commentMarkerBox);
 
-        delimiter1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
 
-                }
-            }
-        });
+        // Quote Character
+        Box quoteCharBox = Box.createHorizontalBox();
 
-        delimiter2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
-
-                }
-            }
-        });
-
-        delimiter3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Comma");
-
-                }
-            }
-        });
-
-        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Whitespace");
-
-        if ("Whitespace".equals(delimiterPreference)) {
-            delimiter1RadioButton.setSelected(true);
-        } else if ("Tab".equals(delimiterPreference)) {
-            delimiter2RadioButton.setSelected(true);
-        } else {
-            delimiter3RadioButton.setSelected(true);
-        }
-
-        // Quote char
         quote1RadioButton = new JRadioButton("\"");
         quote2RadioButton = new JRadioButton("'");
 
@@ -278,96 +421,18 @@ final class RegularDataPanel extends JPanel {
             quote2RadioButton.setSelected(true);
         }
 
-        // Log empty tokens
-        logEmptyTokens = new JCheckBox("Log Empty Tokens");
-        logEmptyTokens.setHorizontalTextPosition(SwingConstants.LEFT);
+        quoteCharBox.add(new JLabel("Quote Character:"));
+        quoteCharBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        quoteCharBox.add(quote1RadioButton);
+        quoteCharBox.add(quote2RadioButton);
+        quoteCharBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(quoteCharBox);
 
-        logEmptyTokens.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
 
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "deselected");
-                }
-            }
-        });
+        //  Missing value marker
+        Box missingValueMarkerBox = Box.createHorizontalBox();
 
-        String logEmptyTokensPreference = Preferences.userRoot().get("loadDataLogEmptyTokens", "\"");
-
-        if ("selected".equals(logEmptyTokensPreference)) {
-            logEmptyTokens.setSelected(true);
-        } else {
-            logEmptyTokens.setSelected(false);
-        }
-
-        // Var names checkbox.
-        varNamesCheckBox = new JCheckBox("Variable names in first row of data");
-        varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        varNamesCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataVarNames", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataVarNames", "deselected");
-                }
-            }
-        });
-
-        varNamesCheckBox.setSelected(Preferences.userRoot().get("loadDataVarNames", "selected").equals("selected"));
-
-        // Ids Supplied.
-        idsSupplied = new JCheckBox("Case ID's provided");
-        idsSupplied.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "deselected");
-                }
-            }
-        });
-
-        boolean idsSuppliedPreference = "selected".equals(Preferences.userRoot().get("loadDataIdsSuppliedPreference", "deselected"));
-        idsSupplied.setSelected(idsSuppliedPreference);
-
-        // ID radio buttons
-        id1RadioButton = new JRadioButton("Unlabeled first column");
-        id2RadioButton = new JRadioButton("Column labeled: ");
-        idStringField = new StringTextField("", 4);
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox button = (JCheckBox) e.getSource();
-                boolean selected = button.isSelected();
-
-                id1RadioButton.setEnabled(selected);
-                id2RadioButton.setEnabled(selected);
-                idStringField.setEditable(selected);
-            }
-        });
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        id1RadioButton.setSelected(true);
-
-//
-//        varNamesCheckBox.setSelected(true);
-//        Missing value marker
         missing1RadioButton = new JRadioButton("*");
         missing2RadioButton = new JRadioButton("?");
         missing3RadioButton = new JRadioButton("Other: ");
@@ -428,6 +493,23 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
+        missingValueMarkerBox.add(new JLabel("Missing value marker (other than blank field):"));
+        missingValueMarkerBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        missingValueMarkerBox.add(missing1RadioButton);
+        missingValueMarkerBox.add(missing2RadioButton);
+        missingValueMarkerBox.add(missing3RadioButton);
+        missingValueMarkerBox.add(missingStringField);
+        missingValueMarkerBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(missingValueMarkerBox);
+
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Max number of disc columns
+        Box maxIntegralDiscreteBox = Box.createHorizontalBox();
+
+        maxIntegralLabel1 = new JLabel("Integral columns with up to ");
+        maxIntegralLabel2 = new JLabel(" values are discrete.");
+
         maxIntegralDiscreteIntField = new IntTextField(0, 3);
 
         int maxIntegralPreference = Preferences.userRoot().getInt("dataLoaderMaxIntegral", 0);
@@ -444,151 +526,53 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        final JTextArea fileTextArea = new JTextArea();
-        final JTextArea anomaliesTextArea = new JTextArea();
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        JScrollPane scroll1 = new JScrollPane(fileTextArea);
-        scroll1.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("File", scroll1);
-        JScrollPane scroll2 = new JScrollPane(anomaliesTextArea);
-        scroll2.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("Loading Log", scroll2);
+        maxIntegralDiscreteBox.add(maxIntegralLabel1);
+        maxIntegralDiscreteBox.add(maxIntegralDiscreteIntField);
+        maxIntegralDiscreteBox.add(maxIntegralLabel2);
+        maxIntegralDiscreteBox.add(Box.createHorizontalGlue());
+        dataLoadingParamsContainer.add(maxIntegralDiscreteBox);
 
-        final JLabel fileNameLabel = new JLabel("File: " + files[fileIndex].getName());
-        fileNameLabel.setFont(new Font("Dialog", Font.BOLD, 12));
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
 
-        // Construct button groups.
-        idStringField.setText("ID");
-//        delimiterStringField.setText(";");
+        // Log empty tokens
+        Box logEmptyTokensBox = Box.createHorizontalBox();
 
-        maxIntegralLabel1 = new JLabel("Integral columns with up to ");
-        maxIntegralLabel2 = new JLabel(" values are discrete.");
+        logEmptyTokens = new JCheckBox("Log Empty Tokens");
+        logEmptyTokens.setHorizontalTextPosition(SwingConstants.LEFT);
 
-        if (tabularRadioButton.isSelected()) {
-            enableTabularObjects();
-        } else if (covarianceRadioButton.isSelected()) {
-            enableCovarianceObjects();
+        logEmptyTokens.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+
+                if (checkBox.isSelected()) {
+                    Preferences.userRoot().put("loadDataLogEmptyTokens", "selected");
+                } else {
+                    Preferences.userRoot().put("loadDataLogEmptyTokens", "deselected");
+                }
+            }
+        });
+
+        String logEmptyTokensPreference = Preferences.userRoot().get("loadDataLogEmptyTokens", "\"");
+
+        if ("selected".equals(logEmptyTokensPreference)) {
+            logEmptyTokens.setSelected(true);
+        } else {
+            logEmptyTokens.setSelected(false);
         }
 
-        // Data loading params layout
-        Box b = Box.createVerticalBox();
+        logEmptyTokensBox.add(this.logEmptyTokens);
+        logEmptyTokensBox.add(Box.createHorizontalGlue());
 
-        Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel("File Type:"));
-        b1.add(Box.createRigidArea(new Dimension(20, 1)));
-        b1.add(tabularRadioButton);
-        b1.add(covarianceRadioButton);
-        b1.add(Box.createHorizontalGlue());
-        b.add(b1);
+        dataLoadingParamsContainer.add(logEmptyTokensBox);
 
-        // Data type - Added by Zhou
-        Box b17 = Box.createHorizontalBox();
-        b17.add(new JLabel("Data Type:"));
-        b17.add(Box.createRigidArea(new Dimension(20, 1)));
-        b17.add(contRadioButton);
-        b17.add(discRadioButton);
-        b17.add(Box.createHorizontalGlue());
-        b.add(b17);
+        dataLoadingParamsContainer.add(Box.createVerticalGlue());
 
-        Box b5 = Box.createHorizontalBox();
-        b5.add(new JLabel("Delimiter:"));
-        b5.add(Box.createRigidArea(new Dimension(20, 1)));
-        b5.add(delimiter1RadioButton);
-        b5.add(delimiter2RadioButton);
-        b5.add(delimiter3RadioButton);
-        b5.add(Box.createHorizontalGlue());
-        b.add(b5);
-
-        Box b9 = Box.createHorizontalBox();
-//        b9.add(new JLabel("Variable names in first row of data"));
-        b9.add(varNamesCheckBox);
-        b9.add(Box.createHorizontalGlue());
-        b.add(b9);
-
-        Box b10 = Box.createHorizontalBox();
-//        b10.add(new JLabel("Case ID's provided"));
-        b10.add(idsSupplied);
-        b10.add(Box.createHorizontalGlue());
-        b.add(b10);
-
-        Box b11 = Box.createHorizontalBox();
-        b11.add(Box.createRigidArea(new Dimension(20, 1)));
-        b11.add(id1RadioButton);
-        b11.add(id2RadioButton);
-        b11.add(idStringField);
-        b11.add(Box.createHorizontalGlue());
-        b.add(b11);
-
-        Box b3 = Box.createHorizontalBox();
-        b3.add(new JLabel("Comment Marker:"));
-        b3.add(Box.createRigidArea(new Dimension(20, 1)));
-        b3.add(comment1RadioButton);
-        b3.add(comment2RadioButton);
-        b3.add(comment3RadioButton);
-        b3.add(commentStringField);
-        b3.add(Box.createHorizontalGlue());
-        b.add(b3);
-
-        Box b7 = Box.createHorizontalBox();
-        b7.add(new JLabel("Quote Character:"));
-        b7.add(Box.createRigidArea(new Dimension(20, 1)));
-        b7.add(quote1RadioButton);
-        b7.add(quote2RadioButton);
-        b7.add(Box.createHorizontalGlue());
-        b.add(b7);
-
-        Box b12 = Box.createHorizontalBox();
-        b12.add(new JLabel("Missing value marker (other than blank field):"));
-        b12.add(Box.createHorizontalGlue());
-        b.add(b12);
-
-        Box b13 = Box.createHorizontalBox();
-        b13.add(Box.createRigidArea(new Dimension(20, 1)));
-        b13.add(missing1RadioButton);
-        b13.add(missing2RadioButton);
-        b13.add(missing3RadioButton);
-        b13.add(missingStringField);
-        b13.add(Box.createHorizontalGlue());
-        b.add(b13);
-        b.add(Box.createVerticalStrut(5));
-
-        Box b14 = Box.createHorizontalBox();
-        b14.add(maxIntegralLabel1);
-        b14.add(maxIntegralDiscreteIntField);
-        b14.add(maxIntegralLabel2);
-        b14.add(Box.createHorizontalGlue());
-
-        b.add(b14);
-        b.add(Box.createVerticalStrut(5));
-
-        Box b16 = Box.createHorizontalBox();
-        b16.add(this.logEmptyTokens);
-        b16.add(Box.createHorizontalGlue());
-
-        b.add(b16);
-
-        b.add(Box.createVerticalGlue());
-//        b.setBorder(new EmptyBorder(0, 0, 0, 3));
-        b.setBorder(new TitledBorder("Data Loading Parameters"));
-
-        tabularRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableTabularObjects();
-            }
-        });
-
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableCovarianceObjects();
-            }
-        });
-
-        b.add(Box.createVerticalGlue());
-        b.setBorder(new EmptyBorder(0, 0, 0, 3));
-        b.setBorder(new TitledBorder("Data Loading Parameters"));
+        dataLoadingParamsContainer.add(Box.createVerticalGlue());
+        dataLoadingParamsContainer.setBorder(new EmptyBorder(0, 0, 0, 3));
+        dataLoadingParamsContainer.setBorder(new TitledBorder("Set Data Loading Parameters"));
 
         setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        add(dataLoadingParamsContainer, BorderLayout.CENTER);
     }
 
     private void enableCovarianceObjects() {
