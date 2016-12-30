@@ -22,7 +22,6 @@ public class SemBicTest implements IndependenceWrapper {
         SemBicScore score = new SemBicScore(DataUtils.getCovMatrix(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndTestScore indTestScore = new IndTestScore(score);
-        indTestScore.setMinScoreDifference(parameters.getDouble("minScoreDifference"));
         return indTestScore;
     }
 
@@ -40,7 +39,6 @@ public class SemBicTest implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add("penaltyDiscount");
-        params.add("minScoreDifference");
         return params;
     }
 }

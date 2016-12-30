@@ -45,7 +45,6 @@ public class IndTestScore implements IndependenceTest {
     private final List<Node> variables;
     private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
-    private double minScoreDifference;
 
     public  IndTestScore(Score score) {
         if (score == null) throw new NullPointerException();
@@ -77,7 +76,7 @@ public class IndTestScore implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
         this.bump = v;
-        return v < minScoreDifference;
+        return v < 0;
     }
 
     private int[] varIndices(List<Node> z) {
@@ -199,10 +198,6 @@ public class IndTestScore implements IndependenceTest {
      */
     public double getScore() {
         return bump;
-    }
-
-    public void setMinScoreDifference(double minScoreDifference) {
-        this.minScoreDifference = minScoreDifference;
     }
 }
 

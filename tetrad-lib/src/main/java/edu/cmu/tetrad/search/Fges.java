@@ -173,9 +173,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Bounds the degree of the graph.
     private int maxDegree = -1;
 
-    // The minimum score difference for adding an edge.
-    private double minScoreDifference = 0.0;
-
     // True if the first step of adding an edge to an empty graph should be scored in both directions
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
@@ -495,14 +492,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.maxDegree = maxDegree;
     }
 
-    public double getMinScoreDifference() {
-        return minScoreDifference;
-    }
-
-    public void setMinScoreDifference(double minScoreDifference) {
-        this.minScoreDifference = minScoreDifference;
-    }
-
     public boolean isSymmetricFirstStep() {
         return symmetricFirstStep;
     }
@@ -589,12 +578,12 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
-                    if (bump > minScoreDifference) {
+                    if (bump > 0) {
                         final Edge edge = Edges.undirectedEdge(x, y);
                         effectEdgesGraph.addEdge(edge);
                     }
 
-                    if (bump > minScoreDifference) {
+                    if (bump > 0) {
                         addArrow(x, y, emptySet, emptySet, bump);
                         addArrow(y, x, emptySet, emptySet, bump);
                     }
@@ -1182,7 +1171,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > minScoreDifference) {
+                if (bump > 0) {
                     addArrow(a, b, naYX, T, bump);
                 }
 

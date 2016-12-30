@@ -23,17 +23,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest2;
-import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore2;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore3;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -49,14 +43,13 @@ public class TestConditionalGaussianSimulation {
 
         parameters.set("numRuns", 1);
 
-        parameters.set("numMeasures", 1000);
-        parameters.set("avgDegree", 2, 4);
+        parameters.set("numMeasures", 300);
+        parameters.set("avgDegree", 2, 4, 6);
 
         parameters.set("sampleSize", 1000);
         parameters.set("depth", -1);
 
-        parameters.set("penaltyDiscount", 1);
-        parameters.set("minScoreDifference", 0);//2 * Math.log(1000));
+        parameters.set("penaltyDiscount", 2);
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -92,7 +85,6 @@ public class TestConditionalGaussianSimulation {
 
         statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
-        statistics.add(new ParameterColumn("minScoreDifference"));
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -113,7 +105,7 @@ public class TestConditionalGaussianSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Fges(new SemBicScore3()));
+//        algorithms.add(new Fges(new SemBicScore3()));
 //        algorithms.add(new Fges(new SemBicScore2()));
 //        algorithms.add(new PcMax(new SemBicTest()));
 //        algorithms.add(new PcMax(new SemBicTest2()));
