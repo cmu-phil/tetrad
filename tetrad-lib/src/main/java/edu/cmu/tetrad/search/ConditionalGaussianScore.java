@@ -125,13 +125,11 @@ public class ConditionalGaussianScore implements Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return 0;
+    public boolean getAlternativePenalty() {
+        return false;
     }
 
-    @Override
-    public void setParameter1(double alpha) {
+    public void setAlternativePenalty(double alpha) {
 
     }
 

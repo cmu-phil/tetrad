@@ -45,8 +45,9 @@ public class IndTestScore implements IndependenceTest {
     private final List<Node> variables;
     private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
+    private double minScoreDifference;
 
-    public IndTestScore(Score score) {
+    public  IndTestScore(Score score) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
@@ -55,19 +56,6 @@ public class IndTestScore implements IndependenceTest {
         for (int i = 0; i < variables.size(); i++) {
             this.variablesHash.put(variables.get(i), i);
         }
-    }
-
-    public IndTestScore(Score score, double parameter1) {
-        if (score == null) throw new NullPointerException();
-        this.score = score;
-        this.variables = score.getVariables();
-        this.variablesHash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            this.variablesHash.put(variables.get(i), i);
-        }
-
-        score.setParameter1(parameter1);
     }
 
     /**
@@ -89,7 +77,7 @@ public class IndTestScore implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
         this.bump = v;
-        return v < 0;
+        return v < minScoreDifference;
     }
 
     private int[] varIndices(List<Node> z) {
@@ -174,14 +162,13 @@ public class IndTestScore implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return score.getParameter1();
+        return -1;
     }
 
     /**
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
-        score.setParameter1(alpha);
     }
 
     /**
@@ -214,6 +201,9 @@ public class IndTestScore implements IndependenceTest {
         return bump;
     }
 
+    public void setMinScoreDifference(double minScoreDifference) {
+        this.minScoreDifference = minScoreDifference;
+    }
 }
 
 

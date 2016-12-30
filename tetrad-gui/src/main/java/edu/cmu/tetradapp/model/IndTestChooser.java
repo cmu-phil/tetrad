@@ -152,8 +152,7 @@ final class IndTestChooser {
                     params.getDouble("alpha", 0.001), 1);
         }
         if (IndTestType.SEM_BIC == testType) {
-            return new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
-                    params.getDouble("alpha", 0.001));
+            return new IndTestScore(new SemBicScore2(new CovarianceMatrixOnTheFly(dataSet)));
         }
 
         {
@@ -185,7 +184,7 @@ final class IndTestChooser {
         if (IndTestType.SEM_BIC == testType) {
             List<DataModel> dataModels = new ArrayList<>();
             for (DataSet dataSet : dataSets) dataModels.add(dataSet);
-            return new IndTestScore(new SemBicScoreImages(dataModels), params.getDouble("alpha", 0.001));
+            return new IndTestScore(new SemBicScoreImages(dataModels));
         }
 
         {

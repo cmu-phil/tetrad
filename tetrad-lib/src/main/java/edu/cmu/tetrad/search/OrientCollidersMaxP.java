@@ -186,6 +186,28 @@ public final class OrientCollidersMaxP {
 
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
         List<Node> adja = graph.getAdjacentNodes(a);
+        List<Node> adjc = graph.getAdjacentNodes(c);
+
+//        if (adja.size() <= 2) {
+//            List<Node> bAdj = graph.getAdjacentNodes(b);
+//
+//            for (Node ba : bAdj) {
+//                if (!adja.contains(ba) && ba != a && ba != c) {
+//                    adja.add(ba);
+//                }
+//            }
+//        }
+//
+//        if (adjc.size() <= 2) {
+//            List<Node> bAdj = graph.getAdjacentNodes(b);
+//
+//            for (Node ba : bAdj) {
+//                if (!adjc.contains(ba) && ba != a && ba != c) {
+//                    adjc.add(ba);
+//                }
+//            }
+//        }
+
         double score = Double.POSITIVE_INFINITY;
         List<Node> S = null;
 
@@ -202,8 +224,6 @@ public final class OrientCollidersMaxP {
                 S = s;
             }
         }
-
-        List<Node> adjc = graph.getAdjacentNodes(c);
 
         DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
         int[] comb3;

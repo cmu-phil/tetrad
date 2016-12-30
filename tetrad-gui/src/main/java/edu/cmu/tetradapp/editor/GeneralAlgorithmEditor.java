@@ -680,7 +680,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 scoreWrapper = new DiscreteBicScore();
                 break;
             case SEM_BIC:
-                scoreWrapper = new SemBicScore();
+                scoreWrapper = new SemBicScore2();
                 break;
             case D_SEPARATION:
                 scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
@@ -716,7 +716,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 independenceWrapper = new GSquare();
                 break;
             case SEM_BIC:
-                independenceWrapper = new SemBicTest();
+                independenceWrapper = new SemBicTest2();
                 break;
             case D_SEPARATION:
                 independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));

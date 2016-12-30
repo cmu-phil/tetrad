@@ -86,28 +86,25 @@ public class SemBicScore implements Score {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
         try {
-            double s2 = getCovariances().getValue(i, i);
+            double s = getCovariances().getValue(i, i);
             int k = parents.length;
 
             TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
-            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
+            s -= covxx.inverse().times(covxy).dotProduct(covxy);
 
-            if (s2 <= 0) {
+            if (s <= 0) {
                 if (isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
+                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s / getCovariances().getValue(i, i)));
                 }
 
                 return Double.NaN;
             }
 
             int n = getSampleSize();
-//            n = n - 1;
-            int  p = (k * (k + 1)) / 2 + 1;
-//            int p = k + 1;
-            s2 = ((n) / (double) (n - p)) * s2;
-
-            return -n * log(s2) - getPenaltyDiscount() * p * (log(n));// - log(2.0 * PI));
+            int p = k + 1;
+            s = ((n) / (double) (n - p)) * s;
+            return -n * log(s) - getPenaltyDiscount() * p * (log(n) - log(2 * PI));
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -246,26 +243,6 @@ public class SemBicScore implements Score {
     public List<Node> getVariables() {
         return variables;
     }
-
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-        this.penaltyDiscount = alpha;
-    }
-
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int p) {
-//        double q = 1.0 / covariances.getVariables().size();
-//        double prior = p * Math.log(q) + (getSampleSize() - p) * Math.log(1.0 - q);
-//        return -getSampleSize() * Math.log(residualVariance)
-//                - getPenaltyDiscount() * (p + 1) * Math.log(getSampleSize())
-//                ;//+ prior;
-//    }
-
 
     private TetradMatrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
         return cov.getSelection(rows, cols);

@@ -43,10 +43,6 @@ public interface Score {
 
     boolean isEffectEdge(double bump);
 
-    double getParameter1();
-
-    void setParameter1(double alpha);
-
     int getSampleSize();
 
     Node getVariable(String targetName);

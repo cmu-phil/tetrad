@@ -1201,7 +1201,7 @@ public class Comparison {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
                     } else {
                         table.setToken(t + 1, initialColumn + statIndex,
-                                Math.abs(stat) < 0.1 ? smallNf.format(stat) : nf.format(stat));
+                                Math.abs(stat) < Math.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
                     }
                 }
 

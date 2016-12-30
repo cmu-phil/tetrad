@@ -252,13 +252,11 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         return bump > 0;//lastBumpThreshold;
     }
 
-    @Override
-    public double getParameter1() {
+    public double getAlternativePenalty() {
         return 0;
     }
 
-    @Override
-    public void setParameter1(double alpha) {
+    public void setAlternativePenalty(double alpha) {
 
     }
 

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.sem;
 
+import cern.jet.random.StudentT;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
@@ -28,7 +29,9 @@ import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
 import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
@@ -57,6 +60,8 @@ public final class LargeScaleSimulation {
     private double coefHigh = 1.5;
     private double varLow = 1.0;
     private double varHigh = 3.0;
+    private double meanLow = 0;
+    private double meanHigh = 0;
     private PrintStream out = System.out;
     private int[] tierIndices;
     private boolean verbose = false;
@@ -340,8 +345,9 @@ public final class LargeScaleSimulation {
         int s = 0;
         int shockIndex = 0;
         int recordingIndex = 0;
+//        double[] shock = getUncorrelatedNonGausianShocks(1)[0];
         double[] shock = getUncorrelatedGaussianShocks(1)[0];
-
+//
 
         while (s < sampleSize) {
             if ((++shockIndex) % intervalBetweenShocks == 0) {
@@ -401,7 +407,7 @@ public final class LargeScaleSimulation {
 
         Distribution edgeCoefDist = new Split(coefLow, coefHigh);
         Distribution errorCovarDist = new Uniform(varLow, varHigh);
-        Distribution meanDist = new Uniform(-1.0, 1.0);
+        Distribution meanDist = new Uniform(meanLow, meanHigh);
 
         for (Edge edge : graph.getEdges()) {
             Node tail = Edges.getDirectedEdgeTail(edge);
@@ -490,6 +496,11 @@ public final class LargeScaleSimulation {
     public void setVarRange(double varLow, double varHigh) {
         this.varLow = varLow;
         this.varHigh = varHigh;
+    }
+
+    public void setMeanRange(double meanLow, double meanHigh) {
+        this.meanLow = meanLow;
+        this.meanHigh = meanHigh;
     }
 
     public void setOut(PrintStream out) {
@@ -742,6 +753,24 @@ public final class LargeScaleSimulation {
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < numVars; j++) {
                 shocks[i][j] = normal.sample() * sqrt(errorVars[j]);
+            }
+        }
+
+        return shocks;
+    }
+
+    public double[][] getUncorrelatedNonGausianShocks(int sampleSize) {
+        TDistribution normal = new TDistribution(new Well1024a(++seed), 2);
+//        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
+
+        int numVars = variableNodes.size();
+        setupModel(numVars);
+
+        double[][] shocks = new double[sampleSize][numVars];
+
+        for (int i = 0; i < sampleSize; i++) {
+            for (int j = 0; j < numVars; j++) {
+                shocks[i][j] = normal.sample();// * sqrt(errorVars[j]);
             }
         }
 

@@ -136,13 +136,11 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
+    public boolean getAlternativePenalty() {
+        return false;
     }
 
-    @Override
-    public void setParameter1(double alpha) {
+    public void setAlternativePenalty(double alpha) {
         //
     }
 
