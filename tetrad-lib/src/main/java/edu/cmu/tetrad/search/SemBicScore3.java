@@ -42,7 +42,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScore implements Score {
+public class SemBicScore3 implements Score {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
@@ -72,7 +72,7 @@ public class SemBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(ICovarianceMatrix covariances) {
+    public SemBicScore3(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -106,6 +106,7 @@ public class SemBicScore implements Score {
 
             int n = getSampleSize();
             int k = 2 * p + 1;
+            s = ((n) / (double) (n - k)) * s;
             return -n * log(s) - getPenaltyDiscount() * k * log(n);
         } catch (Exception e) {
             boolean removedOne = true;

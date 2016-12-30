@@ -32,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.independence.SemBicTest2;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore2;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore3;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -48,14 +49,14 @@ public class TestConditionalGaussianSimulation {
 
         parameters.set("numRuns", 1);
 
-        parameters.set("numMeasures", 2000);
-        parameters.set("avgDegree", 2, 4, 6, 8, 10);//, 14, 16, 18, 20);
+        parameters.set("numMeasures", 1000);
+        parameters.set("avgDegree", 2, 4);
 
         parameters.set("sampleSize", 1000);
         parameters.set("depth", -1);
 
         parameters.set("penaltyDiscount", 1);
-        parameters.set("minScoreDifference", 20);
+        parameters.set("minScoreDifference", 0);//2 * Math.log(1000));
         parameters.set("maxDegree", 1000);
         parameters.set("maxIndegree", 1000);
         parameters.set("maxOutdegree", 1000);
@@ -112,9 +113,10 @@ public class TestConditionalGaussianSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Fges(new SemBicScore2()));
-        algorithms.add(new PcMax(new SemBicTest()));
-        algorithms.add(new PcMax(new SemBicTest2()));
+        algorithms.add(new Fges(new SemBicScore3()));
+//        algorithms.add(new Fges(new SemBicScore2()));
+//        algorithms.add(new PcMax(new SemBicTest()));
+//        algorithms.add(new PcMax(new SemBicTest2()));
 //        algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
 //        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
