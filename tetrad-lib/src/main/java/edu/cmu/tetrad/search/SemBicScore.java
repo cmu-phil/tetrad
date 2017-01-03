@@ -89,16 +89,16 @@ public class SemBicScore implements Score {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
         try {
-            double s = getCovariances().getValue(i, i);
+            double s2 = getCovariances().getValue(i, i);
             int p = parents.length;
 
             TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
-            s -= covxx.inverse().times(covxy).dotProduct(covxy);
+            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
-            if (s <= 0) {
+            if (s2 <= 0) {
                 if (isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s / getCovariances().getValue(i, i)));
+                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
                 }
 
                 return Double.NaN;
@@ -106,8 +106,8 @@ public class SemBicScore implements Score {
 
             int n = getSampleSize();
             int k = 2 * p + 1;
-            s = ((n) / (double) (n - k)) * s;
-            return -n * log(s) - getPenaltyDiscount() * k * log(n);
+            s2 = ((n) / (double) (n - k)) * s2;
+            return -(n) * log(s2) - getPenaltyDiscount() * k * log(1000);
         } catch (Exception e) {
             boolean removedOne = true;
 

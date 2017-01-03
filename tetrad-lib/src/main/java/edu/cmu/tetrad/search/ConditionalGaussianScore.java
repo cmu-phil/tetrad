@@ -71,7 +71,7 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + getStructurePrior(parents);
+        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + getStructurePrior(parents);
     }
 
     private double getStructurePrior(int[] parents) {

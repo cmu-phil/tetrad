@@ -35,13 +35,8 @@ import static java.lang.Math.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
- <<<<<<< HEAD
  * the continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
  * be less than maximal. For an algorithm like FGS this is fine.
- =======
- * the continuous variables are jointly Gaussian conditional on the discrete variables; in all other cases, it will
- * be less than maximal. For an algorithm like FGES this is fine.
- >>>>>>> 0031bda0387f30996b1180ba17a0aeee69ad44f7
  *
  * @author Joseph Ramsey
  */
@@ -75,7 +70,7 @@ public class ConditionalGaussianLikelihood {
     private final ArrayList<Integer> all;
 
     // A constant.
-    private static double LOGMATH2PI = log(2.0 * Math.PI);
+    private static double LOG2PI = log(2.0 * Math.PI);
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
@@ -276,7 +271,7 @@ public class ConditionalGaussianLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
-                    if (a > continuousCols.length + 10) {
+                    if (a > continuousCols.length + 5) {
                         TetradMatrix cov = cov(getSubsample(continuousCols, cell));
                         c2 += a * gaussianLikelihood(k, cov);
                     } else {
@@ -290,10 +285,7 @@ public class ConditionalGaussianLikelihood {
         }
 
         final double lnL = c1 + c2;
-        int p = (int) getPenaltyDiscount();
-
-        // Only count dof for continuous cells that contributed to the likelihood calculation.
-        final int dof = p * f(A) * h(X) + f(A);
+        final int dof = f(A) * h(X) + f(A);
         return new Ret(lnL, dof);
     }
 
@@ -303,7 +295,7 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, TetradMatrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * LOGMATH2PI;
+        return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
     }
 
     private double logdet(TetradMatrix m) {
