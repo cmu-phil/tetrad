@@ -21,8 +21,7 @@ public class SemBicTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         SemBicScore score = new SemBicScore(DataUtils.getCovMatrix(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        IndTestScore indTestScore = new IndTestScore(score);
-        return indTestScore;
+        return new IndTestScore(score);
     }
 
     @Override

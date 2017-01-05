@@ -21,17 +21,18 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Implements a conditional Gaussian BIC score for FGES.
  *
  * @author Joseph Ramsey
  */
-public class ConditionalGaussianScore implements Score {
+public class SemBicScore2 implements Score {
 
     private DataSet dataSet;
 
@@ -39,15 +40,14 @@ public class ConditionalGaussianScore implements Score {
     private List<Node> variables;
 
     // Likelihood function
-    private ConditionalGaussianLikelihood likelihood;
+    private SemLikelihood2 likelihood;
 
     private double penaltyDiscount = 1;
-    private int numCategoriesToDiscretize = 3;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet) {
+    public SemBicScore2(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -55,30 +55,26 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
 
-        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
+        this.likelihood = new SemLikelihood2(new CovarianceMatrixOnTheFly(dataSet));
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
-//        likelihood.setPenaltyDiscount(penaltyDiscount);
-
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
+        SemLikelihood2.Ret ret = likelihood.getLikelihood(i, parents);
 
         int N = dataSet.getNumRows();
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + getStructurePrior(parents);
-//        return 2.0 * lik - k * Math.log(N);// + getStructurePrior(parents);
+        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N);
     }
 
     private double getStructurePrior(int[] parents) {
         int i = parents.length + 1;
         int c = dataSet.getNumColumns();
-        double p = 3.0 / (double) c;
+        double p = 2 / (double) c;
         return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
     }
 
@@ -156,10 +152,6 @@ public class ConditionalGaussianScore implements Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
-        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 }
 

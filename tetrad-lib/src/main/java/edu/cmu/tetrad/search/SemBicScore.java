@@ -107,7 +107,7 @@ public class SemBicScore implements Score {
             int n = getSampleSize();
             int k = 2 * p + 1;
             s2 = ((n) / (double) (n - k)) * s2;
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(1000);
+            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
         } catch (Exception e) {
             boolean removedOne = true;
 

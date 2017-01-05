@@ -49,6 +49,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
     private int numCategoriesToDiscretize = 3;
+    private double penaltyDiscount;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha) {
         this.data = data;
@@ -237,5 +238,9 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 }

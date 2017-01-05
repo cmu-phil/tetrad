@@ -123,7 +123,7 @@ public final class CcdMax implements GraphSearch {
 
     private Graph fastAdjacencySearch() {
         long start = System.currentTimeMillis();
-    
+
         FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
         fas.setDepth(getDepth());
         fas.setKnowledge(knowledge);
@@ -167,6 +167,38 @@ public final class CcdMax implements GraphSearch {
                                     addFeedback(graph, c, d);
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void orientTwoShieldConstructs2(Graph graph) {
+
+        EDGE:
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            System.out.println("\nEdge " + edge + " x = " + x + " y = " + y);
+
+            for (Node a : graph.getAdjacentNodes(x)) {
+                if (a == y) continue;
+
+                for (Node b : graph.getAdjacentNodes(y)) {
+                    if (b == x) continue;
+                    if (a == b) continue;
+
+                    System.out.println("a = " + a + " b = " + b);
+
+                    if (sepset(graph, a, b, set(), set(x, y)) != null) {
+                        System.out.println("a _||_ b | S, S excludes + " + x + " and " + y);
+                        if (sepset(graph, a, b, set(x, y), set()) != null) {
+                            System.out.println("a _||_ b | S, S includes + " + x + " and " + y);
+                            System.out.println("Orienting 2 cycle " + x + " <=> " + y);
+                            addFeedback(graph, x, y);
+                            continue EDGE;
                         }
                     }
                 }
@@ -280,7 +312,7 @@ public final class CcdMax implements GraphSearch {
         for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
 
-            if ( graph.isDefCollider(x, y, z)) {
+            if (graph.isDefCollider(x, y, z)) {
                 return true;
             }
 
@@ -452,7 +484,6 @@ public final class CcdMax implements GraphSearch {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
 
-                WHILE:
                 while ((choice = gen.next()) != null) {
                     Set<Node> v2 = GraphUtils.asSet(choice, adj);
                     v2.addAll(containing);
@@ -460,13 +491,13 @@ public final class CcdMax implements GraphSearch {
                     v2.remove(a);
                     v2.remove(c);
 
-                    if (isForbidden(a, c, new ArrayList<>(v2)))
-
+                    if (!isForbidden(a, c, new ArrayList<>(v2))) {
                         getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
-                    double p2 = getIndependenceTest().getScore();
+                        double p2 = getIndependenceTest().getScore();
 
-                    if (p2 < 0) {
-                        return new ArrayList<>(v2);
+                        if (p2 < 0) {
+                            return new ArrayList<>(v2);
+                        }
                     }
                 }
             }
