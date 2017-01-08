@@ -883,7 +883,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
             // Necessary condition for it to be a clique later (after possible edge removals) is that it be a clique
             // now.
-            if (!isClique(union, graph)) continue;
+            if (!GraphUtils.isClique(union, graph)) continue;
 
             if (existsKnowledge()) {
                 if (!validSetByKnowledge(b, s)) {
@@ -992,7 +992,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             Set<Node> diff = new HashSet<>(naYX);
             diff.removeAll(h);
 
-            if (!isClique(diff, graph)) continue;
+            if (!GraphUtils.isClique(diff, graph)) continue;
 
             if (existsKnowledge()) {
                 if (!validSetByKnowledge(b, h)) {
@@ -1278,7 +1278,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private boolean validDelete(Node y, Set<Node> h, Set<Node> naXY, Graph graph) {
         Set<Node> set = new HashSet<>(naXY);
         set.removeAll(h);
-        return isClique(set, graph) && allNeighbors(y, set, graph);
+        return GraphUtils.isClique(set, graph) && allNeighbors(y, set, graph);
     }
 
     // Adds edges required by knowledge.
@@ -1377,20 +1377,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         }
 
         return nayx;
-    }
-
-    // Returns true iif the given set forms a clique in the given graph.
-    private static boolean isClique(Set<Node> nodes, Graph graph) {
-        List<Node> _nodes = new ArrayList<>(nodes);
-        for (int i = 0; i < _nodes.size() - 1; i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     // Returns true is a path consisting of undirected and directed edges toward 'to' exists of
