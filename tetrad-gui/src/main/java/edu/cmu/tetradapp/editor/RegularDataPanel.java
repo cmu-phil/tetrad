@@ -79,7 +79,6 @@ final class RegularDataPanel extends JPanel {
     private JRadioButton missing4RadioButton;
     private StringTextField missingStringField;
 
-    private JCheckBox logEmptyTokens;
     private IntTextField maxIntegralDiscreteIntField;
     private JLabel maxIntegralLabel1;
     private JLabel maxIntegralLabel2;
@@ -564,37 +563,6 @@ final class RegularDataPanel extends JPanel {
 
         dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
 
-        // Log empty tokens
-        Box logEmptyTokensBox = Box.createHorizontalBox();
-
-        // Checkbox is on left of text by default
-        logEmptyTokens = new JCheckBox("Log Empty Tokens");
-
-        logEmptyTokens.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "deselected");
-                }
-            }
-        });
-
-        String logEmptyTokensPreference = Preferences.userRoot().get("loadDataLogEmptyTokens", "\"");
-
-        if ("selected".equals(logEmptyTokensPreference)) {
-            logEmptyTokens.setSelected(true);
-        } else {
-            logEmptyTokens.setSelected(false);
-        }
-
-        logEmptyTokensBox.add(this.logEmptyTokens);
-        logEmptyTokensBox.add(Box.createHorizontalGlue());
-
-        dataLoadingParamsContainer.add(logEmptyTokensBox);
-
         dataLoadingParamsContainer.add(Box.createVerticalGlue());
 
         dataLoadingParamsContainer.add(Box.createVerticalGlue());
@@ -708,10 +676,6 @@ final class RegularDataPanel extends JPanel {
 
     public StringTextField getMissingStringField() {
         return missingStringField;
-    }
-
-    public JCheckBox getLogEmptyTokens() {
-        return logEmptyTokens;
     }
 
     public IntTextField getMaxIntegralDiscreteIntField() {
