@@ -124,17 +124,25 @@ final class LoadDataDialog extends JPanel {
 
         // Data loading area, contains data params, load button, and loading log
         Box dataLoadingBox = Box.createVerticalBox();
+
         dataLoadingBox.add(dataParamsBox);
-        dataLoadingBox.add(loadButton);
+
         dataLoadingBox.add(loadingLogBox);
 
-        // Container contains data loading params, preview, and load button
-        Box container = Box.createHorizontalBox();
+        Box container = Box.createVerticalBox();
 
-        container.add(dataPreviewBox);
+        // Container contains data loading params, preview, and load button
+        Box panelContainer = Box.createHorizontalBox();
+
+        panelContainer.add(dataPreviewBox);
         // Add some gap between preview and data loading params
-        container.add(Box.createHorizontalStrut(10));
-        container.add(dataLoadingBox);
+        panelContainer.add(Box.createHorizontalStrut(10));
+        panelContainer.add(dataLoadingBox);
+
+        // Put the panels and buttons together
+        container.add(panelContainer);
+        container.add(Box.createVerticalStrut(20));
+        container.add(loadButton);
 
         setLayout(new BorderLayout());
 

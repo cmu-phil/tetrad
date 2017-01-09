@@ -102,7 +102,7 @@ final class LoadDataAction extends AbstractAction {
         final LoadDataDialog dialog = new LoadDataDialog(files);
 
         int ret = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), dialog,
-                "File Loader", JOptionPane.OK_CANCEL_OPTION,
+                "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new String[]{"Save", "Cancel"},
                 "Save");
 
