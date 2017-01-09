@@ -71,7 +71,7 @@ final class LoadDataDialog extends JPanel {
             setText(file, fileTextArea);
 
             final JScrollPane scroll = new JScrollPane(fileTextArea);
-            scroll.setPreferredSize(new Dimension(500, 400));
+            scroll.setPreferredSize(new Dimension(500, 200));
             previewTabbedPane.addTab(file.getName(), scroll);
         }
 
@@ -83,7 +83,7 @@ final class LoadDataDialog extends JPanel {
         // Data file preview
         Box dataPreviewBox = Box.createVerticalBox();
         dataPreviewBox.add(previewTabbedPane);
-        dataPreviewBox.setBorder(new TitledBorder("Data File Preview"));
+        dataPreviewBox.setBorder(new TitledBorder("Choose a Data File to Preview"));
 
         // Load button
         String loadBtnText = "Load";

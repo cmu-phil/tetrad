@@ -64,6 +64,7 @@ final class RegularDataPanel extends JPanel {
 
     private JRadioButton quote1RadioButton;
     private JRadioButton quote2RadioButton;
+    private JRadioButton quote3RadioButton;
 
     private JCheckBox varNamesCheckBox;
     private JCheckBox idsSupplied;
@@ -75,6 +76,7 @@ final class RegularDataPanel extends JPanel {
     private JRadioButton missing1RadioButton;
     private JRadioButton missing2RadioButton;
     private JRadioButton missing3RadioButton;
+    private JRadioButton missing4RadioButton;
     private StringTextField missingStringField;
 
     private JCheckBox logEmptyTokens;
@@ -95,7 +97,7 @@ final class RegularDataPanel extends JPanel {
         // Data loading params layout
         Box dataLoadingParamsContainer = Box.createVerticalBox();
 
-        // Tabular/covariance
+        // File type: Tabular/covariance
         Box fileTypeBox = Box.createHorizontalBox();
 
         tabularRadioButton = new JRadioButton("Tabular Data");
@@ -110,6 +112,10 @@ final class RegularDataPanel extends JPanel {
                 }
             }
         });
+
+        ButtonGroup group1 = new ButtonGroup();
+        group1.add(tabularRadioButton);
+        group1.add(covarianceRadioButton);
 
         String tabularPreference = Preferences.userRoot().get("loadDataTabularPreference", "tabular");
 
@@ -231,8 +237,8 @@ final class RegularDataPanel extends JPanel {
         // Var names in first row of data
         Box firstRowVarNamesBox = Box.createHorizontalBox();
 
+        // Checkbox is on left of text by default
         varNamesCheckBox = new JCheckBox("Variable names in first row of data");
-        //varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 
         // Listener
         varNamesCheckBox.addActionListener(new ActionListener() {
@@ -358,6 +364,7 @@ final class RegularDataPanel extends JPanel {
 
         quote1RadioButton = new JRadioButton("\"");
         quote2RadioButton = new JRadioButton("'");
+        quote3RadioButton = new JRadioButton("None");
 
         quote1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -378,18 +385,30 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
+        quote3RadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataQuotePreference", "");
+                }
+            }
+        });
+
         String quotePreference = Preferences.userRoot().get("loadDataQuotePreference", "\"");
 
         if ("\"".equals(quotePreference)) {
             quote1RadioButton.setSelected(true);
         } else if ("'".equals(quotePreference)) {
             quote2RadioButton.setSelected(true);
+        } else if ("".equals(quotePreference)) {
+            quote3RadioButton.setSelected(true);
         }
 
         quoteCharBox.add(new JLabel("Quote Character:"));
         quoteCharBox.add(Box.createRigidArea(new Dimension(20, 1)));
         quoteCharBox.add(quote1RadioButton);
         quoteCharBox.add(quote2RadioButton);
+        quoteCharBox.add(quote3RadioButton);
         quoteCharBox.add(Box.createHorizontalGlue());
         dataLoadingParamsContainer.add(quoteCharBox);
 
@@ -398,15 +417,16 @@ final class RegularDataPanel extends JPanel {
         //  Missing value marker
         Box missingValueMarkerBox = Box.createHorizontalBox();
 
-        missing1RadioButton = new JRadioButton("*");
-        missing2RadioButton = new JRadioButton("?");
-        missing3RadioButton = new JRadioButton("Other: ");
+        missing1RadioButton = new JRadioButton("Blank");
+        missing2RadioButton = new JRadioButton("*");
+        missing3RadioButton = new JRadioButton("?");
+        missing4RadioButton = new JRadioButton("Other: ");
 
         missing1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "*");
+                    Preferences.userRoot().put("loadDataMissingPreference", "");
 
                 }
             }
@@ -416,7 +436,7 @@ final class RegularDataPanel extends JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "?");
+                    Preferences.userRoot().put("loadDataMissingPreference", "*");
 
                 }
             }
@@ -426,27 +446,40 @@ final class RegularDataPanel extends JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataMissingPreference", "?");
+
+                }
+            }
+        });
+
+        missing4RadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
                     Preferences.userRoot().put("loadDataMissingPreference", "Other");
 
                 }
             }
         });
 
+        // Blank is selected as the default
         missing1RadioButton.setSelected(true);
 
         String missingPreference = Preferences.userRoot().get("loadDataMissingPreference", "*");
 
-        if ("*".equals(missingPreference)) {
+        if ("".equals(missingPreference)) {
             missing1RadioButton.setSelected(true);
-        } else if ("?".equals(missingPreference)) {
+        } else if ("*".equals(missingPreference)) {
             missing2RadioButton.setSelected(true);
-        } else {
+        } else if ("?".equals(missingPreference)) {
             missing3RadioButton.setSelected(true);
+        } else {
+            missing4RadioButton.setSelected(true);
         }
 
         String otherMissingPreference = Preferences.userRoot().get("dataLoaderOtherMissingPreference", "");
 
-        // Missing string field
+        // Missing string field: other
         missingStringField = new StringTextField(otherMissingPreference, 6);
         String missingStringText = Preferences.userRoot().get("dataLoaderMissingString", "Missing");
         missingStringField.setText(missingStringText);
@@ -458,11 +491,12 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        missingValueMarkerBox.add(new JLabel("Missing value marker (other than blank field):"));
+        missingValueMarkerBox.add(new JLabel("Missing value marker:"));
         missingValueMarkerBox.add(Box.createRigidArea(new Dimension(20, 1)));
         missingValueMarkerBox.add(missing1RadioButton);
         missingValueMarkerBox.add(missing2RadioButton);
         missingValueMarkerBox.add(missing3RadioButton);
+        missingValueMarkerBox.add(missing4RadioButton);
         missingValueMarkerBox.add(missingStringField);
         missingValueMarkerBox.add(Box.createHorizontalGlue());
         dataLoadingParamsContainer.add(missingValueMarkerBox);
@@ -502,8 +536,8 @@ final class RegularDataPanel extends JPanel {
         // Log empty tokens
         Box logEmptyTokensBox = Box.createHorizontalBox();
 
+        // Checkbox is on left of text by default
         logEmptyTokens = new JCheckBox("Log Empty Tokens");
-        logEmptyTokens.setHorizontalTextPosition(SwingConstants.LEFT);
 
         logEmptyTokens.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
