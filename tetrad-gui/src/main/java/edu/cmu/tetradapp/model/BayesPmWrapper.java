@@ -207,7 +207,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (graphWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -294,7 +294,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            Simulation simulation) {
+                          Simulation simulation) {
         this(graphWrapper, (DataWrapper) simulation);
     }
 
@@ -359,7 +359,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
     }
 
     public BayesPmWrapper(DagWrapper dagWrapper,
-            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (dagWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -490,21 +490,21 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
     public int getNumModels() {
         return numModels;
