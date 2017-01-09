@@ -113,9 +113,10 @@ final class RegularDataPanel extends JPanel {
             }
         });
 
-        ButtonGroup group1 = new ButtonGroup();
-        group1.add(tabularRadioButton);
-        group1.add(covarianceRadioButton);
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup fileTypeBtnGrp = new ButtonGroup();
+        fileTypeBtnGrp.add(tabularRadioButton);
+        fileTypeBtnGrp.add(covarianceRadioButton);
 
         String tabularPreference = Preferences.userRoot().get("loadDataTabularPreference", "tabular");
 
@@ -167,6 +168,10 @@ final class RegularDataPanel extends JPanel {
 
         discRadioButton = new JRadioButton("Discrete");
 
+        ButtonGroup dataTypeBtnGrp = new ButtonGroup();
+        dataTypeBtnGrp.add(contRadioButton);
+        dataTypeBtnGrp.add(discRadioButton);
+
         dataTypeBox.add(new JLabel("Data Type:"));
         dataTypeBox.add(Box.createRigidArea(new Dimension(20, 1)));
         dataTypeBox.add(contRadioButton);
@@ -183,6 +188,11 @@ final class RegularDataPanel extends JPanel {
         delimiter1RadioButton = new JRadioButton("Whitespace");
         delimiter2RadioButton = new JRadioButton("Tab");
         delimiter3RadioButton = new JRadioButton("Comma");
+
+        ButtonGroup delimiterBtnGrp = new ButtonGroup();
+        delimiterBtnGrp.add(delimiter1RadioButton);
+        delimiterBtnGrp.add(delimiter2RadioButton);
+        delimiterBtnGrp.add(delimiter3RadioButton);
 
         delimiter1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -270,6 +280,11 @@ final class RegularDataPanel extends JPanel {
         id2RadioButton = new JRadioButton("Column labeled: ");
         idStringField = new StringTextField("", 4);
 
+        ButtonGroup caseIdBtnGrp = new ButtonGroup();
+        caseIdBtnGrp.add(idNoneRadioButton);
+        caseIdBtnGrp.add(id1RadioButton);
+        caseIdBtnGrp.add(id2RadioButton);
+
         id1RadioButton.setSelected(true);
 
         caseIdProvidedBox.add(new JLabel("Case IDs:"));
@@ -289,6 +304,11 @@ final class RegularDataPanel extends JPanel {
         comment1RadioButton = new JRadioButton("//");
         comment2RadioButton = new JRadioButton("#");
         comment3RadioButton = new JRadioButton("Other: ");
+
+        ButtonGroup commentMarkerBtnGrp = new ButtonGroup();
+        commentMarkerBtnGrp.add(comment1RadioButton);
+        commentMarkerBtnGrp.add(comment2RadioButton);
+        commentMarkerBtnGrp.add(comment3RadioButton);
 
         comment1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -366,6 +386,11 @@ final class RegularDataPanel extends JPanel {
         quote2RadioButton = new JRadioButton("'");
         quote3RadioButton = new JRadioButton("None");
 
+        ButtonGroup quoteCharBtnGrp = new ButtonGroup();
+        quoteCharBtnGrp.add(quote1RadioButton);
+        quoteCharBtnGrp.add(quote2RadioButton);
+        quoteCharBtnGrp.add(quote3RadioButton);
+
         quote1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
@@ -421,6 +446,12 @@ final class RegularDataPanel extends JPanel {
         missing2RadioButton = new JRadioButton("*");
         missing3RadioButton = new JRadioButton("?");
         missing4RadioButton = new JRadioButton("Other: ");
+
+        ButtonGroup missingValueMarkerBtnGrp = new ButtonGroup();
+        missingValueMarkerBtnGrp.add(missing1RadioButton);
+        missingValueMarkerBtnGrp.add(missing2RadioButton);
+        missingValueMarkerBtnGrp.add(missing3RadioButton);
+        missingValueMarkerBtnGrp.add(missing4RadioButton);
 
         missing1RadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
