@@ -39,6 +39,8 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+        search.setAssumeIid(parameters.getBoolean("assumeIID"));
+        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setKnowledge(knowledge);
@@ -82,6 +84,9 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");
+
+        parameters.add("assumeIID");
+        parameters.add("collapseTiers");
 
         return parameters;
     }

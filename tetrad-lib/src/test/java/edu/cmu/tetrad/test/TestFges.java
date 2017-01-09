@@ -575,7 +575,7 @@ public class TestFges {
                 "\n" +
                 "Graph Edges: \n" +
                 "1. ABILITY --> GPQ\n" +
-                "2. ABILITY --> PREPROD\n" +
+//                "2. ABILITY --> PREPROD\n" +
 //                "3. ABILITY --> PUBS\n" +
                 "3. GPQ --> QFJ\n" +
                 "4. PREPROD --> CITES\n" +
@@ -1016,7 +1016,7 @@ public class TestFges {
                 case 2:
                     out = searchMixedFges(data, penalty);
                     break;
-                case 6:
+                case 3:
                     out = searchMGMFges(data, penalty);
                     break;
                 default:

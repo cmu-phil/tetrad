@@ -158,6 +158,17 @@ public class ParamDescriptions {
                 "algorithms should check scores in both directions and take the max",
                 false));
 
+        put("probTwoCycle", new ParamDescription(
+                "The probability of adding a two-cycle to the graph",
+                0.0, 0.0,1.0));
+
+        put("assumeIID", new ParamDescription(
+                "True if CCD-Max should use assume the data are i.i.d.",
+                true));
+
+        put("collapseTiers", new ParamDescription(
+                "True if CCD-Max should collapse tiers in the output",
+                true));
     }
 
     public static ParamDescriptions instance() {

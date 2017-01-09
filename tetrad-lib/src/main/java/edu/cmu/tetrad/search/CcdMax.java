@@ -21,14 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
@@ -36,7 +36,7 @@ import java.util.concurrent.RecursiveTask;
  * @author Joseph Ramsey
  */
 public final class CcdMax implements GraphSearch {
-    private final IndependenceTest independenceTest;
+    private IndependenceTest independenceTest;
     private int depth = -1;
     private boolean applyOrientAwayFromCollider = false;
     private long elapsed = 0;
@@ -44,28 +44,41 @@ public final class CcdMax implements GraphSearch {
     private boolean useHeuristic = true;
     private int maxPathLength = 3;
     private boolean useOrientTowardDConnections = true;
-    private boolean orientVisibleFeedbackLoops = true;
+    private boolean orientConcurrentFeedbackLoops = true;
     private boolean doColliderOrientations = true;
+    private DataSet dataSet = null;
+    private boolean assumeIid = true;
+    private boolean collapseTiers = true;
+    private SepsetMap sepsetMap = null;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
+        this.dataSet = (DataSet) independenceTest.getData();
+        this.knowledge = new Knowledge2();
     }
 
     //======================================== PUBLIC METHODS ====================================//
 
-    /**
-     * Searches for a PAG satisfying the description in Thomas Richardson (1997), dissertation,
-     * Carnegie Mellon University. Uses a simplification of that algorithm.
-     */
     public Graph search() {
-        SepsetMap map = new SepsetMap();
+
+        if (!assumeIid) {
+            dataSet = TimeSeriesUtils.createLagData(dataSet, 1);
+            independenceTest = new IndTestFisherZ(dataSet, independenceTest.getAlpha());
+            knowledge = new Knowledge2(independenceTest.getVariableNames());
+
+            for (String s : independenceTest.getVariableNames()) {
+                String[] sx = s.split(":");
+                int lag = sx.length == 1 ? 1 : 0;//new Integer(sx[1]);
+                knowledge.addToTier(lag, s);
+            }
+        }
+
         System.out.println("FAS");
         Graph graph = fastAdjacencySearch();
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
         System.out.println("Two shield constructs");
 
-        if (orientVisibleFeedbackLoops) {
+        if (orientConcurrentFeedbackLoops) {
             orientTwoShieldConstructs(graph);
         }
 
@@ -75,19 +88,73 @@ public final class CcdMax implements GraphSearch {
             final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
             orientCollidersMaxP.setUseHeuristic(useHeuristic);
             orientCollidersMaxP.setMaxPathLength(maxPathLength);
+            orientCollidersMaxP.setKnowledge(knowledge);
             orientCollidersMaxP.orient(graph);
         }
 
-        orientAwayFromArrow(graph);
+        if (applyOrientAwayFromCollider) {
+            orientAwayFromArrow(graph);
+        }
 
         System.out.println("Toward D-connection");
 
         if (useOrientTowardDConnections) {
-            orientTowardDConnection(graph, map);
+            orientTowardDConnection(graph);
         }
 
         System.out.println("Done");
-        return graph;
+
+        if (collapseTiers) {
+            return collapseGraph(graph);
+        } else {
+            return graph;
+        }
+    }
+
+    private Graph collapseGraph(Graph graph) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (String n : independenceTest.getVariableNames()) {
+            String[] s = n.split(":");
+
+            if (s.length == 1) {
+                Node x = independenceTest.getVariable(s[0]);
+                nodes.add(x);
+            }
+        }
+
+        Graph _graph = new EdgeListGraph(nodes);
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isUndirectedEdge(edge)) continue;
+
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            String[] sx = x.getName().split(":");
+            String[] sy = y.getName().split(":");
+
+            int lagx = sx.length == 1 ? 0 : new Integer(sx[1]);
+            int lagy = sy.length == 1 ? 0 : new Integer(sy[1]);
+
+            if (!(lagx == 0 || lagy == 0)) continue;
+
+            String xName = sx[0];
+            String yName = sy[0];
+
+            Node xx = independenceTest.getVariable(xName);
+            Node yy = independenceTest.getVariable(yName);
+
+            if (xx == yy) continue;
+
+            Edge _edge = new Edge(xx, yy, edge.getEndpoint1(), edge.getEndpoint2());
+
+            if (!_graph.containsEdge(_edge)) {
+                _graph.addEdge(_edge);
+            }
+        }
+
+        return _graph;
     }
 
     /**
@@ -128,8 +195,13 @@ public final class CcdMax implements GraphSearch {
         fas.setDepth(getDepth());
         fas.setKnowledge(knowledge);
         fas.setVerbose(false);
-        fas.setRecordSepsets(false);
+
+        fas.setRecordSepsets(orientConcurrentFeedbackLoops);
         Graph graph = fas.search();
+
+        if (useOrientTowardDConnections) {
+            this.sepsetMap = fas.getSepsets();
+        }
 
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
@@ -174,39 +246,7 @@ public final class CcdMax implements GraphSearch {
         }
     }
 
-    private void orientTwoShieldConstructs2(Graph graph) {
-
-        EDGE:
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            System.out.println("\nEdge " + edge + " x = " + x + " y = " + y);
-
-            for (Node a : graph.getAdjacentNodes(x)) {
-                if (a == y) continue;
-
-                for (Node b : graph.getAdjacentNodes(y)) {
-                    if (b == x) continue;
-                    if (a == b) continue;
-
-                    System.out.println("a = " + a + " b = " + b);
-
-                    if (sepset(graph, a, b, set(), set(x, y)) != null) {
-                        System.out.println("a _||_ b | S, S excludes + " + x + " and " + y);
-                        if (sepset(graph, a, b, set(x, y), set()) != null) {
-                            System.out.println("a _||_ b | S, S includes + " + x + " and " + y);
-                            System.out.println("Orienting 2 cycle " + x + " <=> " + y);
-                            addFeedback(graph, x, y);
-                            continue EDGE;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void orientTowardDConnection(Graph graph, SepsetMap map) {
+    private void orientTowardDConnection(Graph graph) {
 
         EDGE:
         for (Edge edge : graph.getEdges()) {
@@ -259,8 +299,8 @@ public final class CcdMax implements GraphSearch {
                 if (graph.getAdjacentNodes(b).contains(a)) continue;
                 if (graph.getAdjacentNodes(c).contains(a)) continue;
 
-                List<Node> sepsetax = map.get(a, b);
-                List<Node> sepsetay = map.get(a, c);
+                List<Node> sepsetax = sepsetMap.get(a, b);
+                List<Node> sepsetay = sepsetMap.get(a, c);
 
                 if (sepsetax == null) continue;
                 if (sepsetay == null) continue;
@@ -293,6 +333,10 @@ public final class CcdMax implements GraphSearch {
         if (wouldCreateBadCollider(graph, c, b)) return;
         if (graph.getEdges(a, b).size() > 1) return;
         if (graph.getEdges(b, c).size() > 1) return;
+
+        if (knowledge.isForbidden(a.getName(), b.getName())) return;
+        if (knowledge.isForbidden(c.getName(), b.getName())) return;
+
         graph.removeEdge(a, b);
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);
@@ -336,10 +380,6 @@ public final class CcdMax implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-    public boolean isUseHeuristic() {
-        return useHeuristic;
-    }
-
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
     }
@@ -352,28 +392,24 @@ public final class CcdMax implements GraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
-    public boolean isUseOrientTowardDConnections() {
-        return useOrientTowardDConnections;
-    }
-
     public void setUseOrientTowardDConnections(boolean useOrientTowardDConnections) {
         this.useOrientTowardDConnections = useOrientTowardDConnections;
     }
 
-    public void setOrientVisibleFeedbackLoops(boolean orientVisibleFeedbackLoops) {
-        this.orientVisibleFeedbackLoops = orientVisibleFeedbackLoops;
-    }
-
-    public boolean isOrientVisibleFeedbackLoops() {
-        return orientVisibleFeedbackLoops;
-    }
-
-    public boolean isDoColliderOrientations() {
-        return doColliderOrientations;
+    public void setOrientConcurrentFeedbackLoops(boolean orientConcurrentFeedbackLoops) {
+        this.orientConcurrentFeedbackLoops = orientConcurrentFeedbackLoops;
     }
 
     public void setDoColliderOrientations(boolean doColliderOrientations) {
         this.doColliderOrientations = doColliderOrientations;
+    }
+
+    public void setAssumeIid(boolean assumeIid) {
+        this.assumeIid = assumeIid;
+    }
+
+    public void setCollapseTiers(boolean collapseTiers) {
+        this.collapseTiers = collapseTiers;
     }
 
     private class Pair {
@@ -408,13 +444,10 @@ public final class CcdMax implements GraphSearch {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
-                WHILE:
                 while ((choice = gen.next()) != null) {
                     List<Node> v2 = GraphUtils.asList(choice, adji);
 
-                    for (Node v : v2) {
-                        if (isForbidden(i, k, v2)) continue WHILE;
-                    }
+                    if (isForbidden(i, k, v2)) continue;
 
                     try {
                         getIndependenceTest().isIndependent(i, k, v2);
@@ -543,6 +576,10 @@ public final class CcdMax implements GraphSearch {
         }
 
         if (graph.isAdjacentTo(a, c)) {
+            return;
+        }
+
+        if (knowledge.isForbidden(b.getName(), c.getName())) {
             return;
         }
 

@@ -188,6 +188,14 @@ public final class OrientCollidersMaxP {
         List<Node> adja = graph.getAdjacentNodes(a);
         List<Node> adjc = graph.getAdjacentNodes(c);
 
+//        if (knowledge.isForbidden(a.getName(), b.getName())) {
+//            return;
+//        }
+//
+//        if (knowledge.isForbidden(c.getName(), b.getName())) {
+//            return;
+//        }
+
 //        if (adja.size() <= 2) {
 //            List<Node> bAdj = graph.getAdjacentNodes(b);
 //
@@ -280,6 +288,8 @@ public final class OrientCollidersMaxP {
         if (wouldCreateBadCollider(graph, c, b)) return;
         if (graph.getEdges(a, b).size() > 1) return;
         if (graph.getEdges(b, c).size() > 1) return;
+        if (knowledge.isForbidden(a.getName(), b.getName())) return;
+        if (knowledge.isForbidden(c.getName(), b.getName())) return;
         graph.removeEdge(a, b);
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);
