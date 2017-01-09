@@ -68,6 +68,7 @@ final class LoadDataDialog extends JPanel {
             // We don't want the users to edit in the preview area - Zhou
             fileTextArea.setEditable(false);
             fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            // Set the preview content
             setText(file, fileTextArea);
 
             final JScrollPane scroll = new JScrollPane(fileTextArea);
@@ -83,7 +84,7 @@ final class LoadDataDialog extends JPanel {
         // Data file preview
         Box dataPreviewBox = Box.createVerticalBox();
         dataPreviewBox.add(previewTabbedPane);
-        dataPreviewBox.setBorder(new TitledBorder("Choose a Data File to Preview"));
+        dataPreviewBox.setBorder(new TitledBorder("Data File Preview"));
 
         // Load button
         String loadBtnText = "Load";
@@ -184,13 +185,14 @@ final class LoadDataDialog extends JPanel {
             BufferedReader in = new BufferedReader(new FileReader(file));
             StringBuilder text = new StringBuilder();
             String line;
+            int nLine = 0;
 
+            // Only preview the first 20 rows
             while ((line = in.readLine()) != null) {
                 text.append(line.substring(0, line.length())).append("\n");
 
-                if (text.length() > 50000) {
-                    textArea.append("(This is a large file that begins as follows...)\n");
-                    textArea.setEditable(false);
+                nLine++;
+                if (nLine >= 20) {
                     break;
                 }
             }
@@ -209,25 +211,6 @@ final class LoadDataDialog extends JPanel {
         }
     }
 
-//    private static void setText(File file, JTextArea textArea) {
-//        try {
-//            FileReader in = new FileReader(file);
-//            CharArrayWriter out = new CharArrayWriter();
-//            int c;
-//
-//            while ((c = in.read()) != -1) {
-//                out.write(c);
-//            }
-//
-//            textArea.setText(out.toString());
-//
-//            textArea.setCaretPosition(0);
-//            in.close();
-//        }
-//        catch (IOException e) {
-//            textArea.append("<<<ERROR READING FILE>>>");
-//        }
-//    }
     private void addDataModel(DataModel dataModel, int index, String name) {
         if (dataModel == null) {
             throw new NullPointerException();
