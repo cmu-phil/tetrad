@@ -79,7 +79,7 @@ final class LoadDataDialog extends JPanel {
             setText(file, fileTextArea);
 
             final JScrollPane scroll = new JScrollPane(fileTextArea);
-            scroll.setPreferredSize(new Dimension(500, 300));
+            scroll.setPreferredSize(new Dimension(500, 240));
             previewTabbedPane.addTab(file.getName(), scroll);
         }
 

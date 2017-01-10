@@ -267,6 +267,12 @@ final class RegularDataPanel extends JPanel {
         firstRowVarNamesBox.add(Box.createHorizontalGlue());
         dataLoadingParamsContainer.add(firstRowVarNamesBox);
 
+        // Creates an invisible, fixed-height component
+        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
+
+        // Add a line separator
+        dataLoadingParamsContainer.add(new JSeparator());
+
         dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
 
         // Case ID's provided
