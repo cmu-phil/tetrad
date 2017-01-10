@@ -34,8 +34,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -149,7 +149,7 @@ final class RegularDataPanel extends JPanel {
         });
 
         fileTypeBox.add(new JLabel("File Type:"));
-        fileTypeBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         fileTypeBox.add(tabularRadioButton);
         fileTypeBox.add(covarianceRadioButton);
         fileTypeBox.add(Box.createHorizontalGlue());
@@ -171,7 +171,7 @@ final class RegularDataPanel extends JPanel {
         dataTypeBtnGrp.add(discRadioButton);
 
         dataTypeBox.add(new JLabel("Data Type:"));
-        dataTypeBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         dataTypeBox.add(contRadioButton);
         dataTypeBox.add(discRadioButton);
         dataTypeBox.add(Box.createHorizontalGlue());
@@ -233,7 +233,7 @@ final class RegularDataPanel extends JPanel {
         }
 
         valueDelimiterBox.add(new JLabel("Value Delimiter:"));
-        valueDelimiterBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
         valueDelimiterBox.add(delimiter1RadioButton);
         valueDelimiterBox.add(delimiter2RadioButton);
         valueDelimiterBox.add(delimiter3RadioButton);
@@ -270,11 +270,6 @@ final class RegularDataPanel extends JPanel {
         // Creates an invisible, fixed-height component
         dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
 
-        // Add a line separator
-        dataLoadingParamsContainer.add(new JSeparator());
-
-        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
-
         // Case ID's provided
         Box caseIdProvidedBox = Box.createHorizontalBox();
 
@@ -292,7 +287,7 @@ final class RegularDataPanel extends JPanel {
         id1RadioButton.setSelected(true);
 
         caseIdProvidedBox.add(new JLabel("Case IDs:"));
-        caseIdProvidedBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        caseIdProvidedBox.add(Box.createRigidArea(new Dimension(10, 1)));
         caseIdProvidedBox.add(idNoneRadioButton);
         caseIdProvidedBox.add(id1RadioButton);
         caseIdProvidedBox.add(id2RadioButton);
@@ -373,7 +368,7 @@ final class RegularDataPanel extends JPanel {
         });
 
         commentMarkerBox.add(new JLabel("Comment Marker:"));
-        commentMarkerBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        commentMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
         commentMarkerBox.add(comment1RadioButton);
         commentMarkerBox.add(comment2RadioButton);
         commentMarkerBox.add(comment3RadioButton);
@@ -434,7 +429,7 @@ final class RegularDataPanel extends JPanel {
         }
 
         quoteCharBox.add(new JLabel("Quote Character:"));
-        quoteCharBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        quoteCharBox.add(Box.createRigidArea(new Dimension(10, 1)));
         quoteCharBox.add(quote1RadioButton);
         quoteCharBox.add(quote2RadioButton);
         quoteCharBox.add(quote3RadioButton);
@@ -527,7 +522,7 @@ final class RegularDataPanel extends JPanel {
         });
 
         missingValueMarkerBox.add(new JLabel("Missing value marker:"));
-        missingValueMarkerBox.add(Box.createRigidArea(new Dimension(20, 1)));
+        missingValueMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
         missingValueMarkerBox.add(missing1RadioButton);
         missingValueMarkerBox.add(missing2RadioButton);
         missingValueMarkerBox.add(missing3RadioButton);
@@ -566,13 +561,9 @@ final class RegularDataPanel extends JPanel {
         maxIntegralDiscreteBox.add(Box.createHorizontalGlue());
         dataLoadingParamsContainer.add(maxIntegralDiscreteBox);
 
-        dataLoadingParamsContainer.add(Box.createVerticalStrut(5));
-
-        dataLoadingParamsContainer.add(Box.createVerticalGlue());
-
-        dataLoadingParamsContainer.add(Box.createVerticalGlue());
-        dataLoadingParamsContainer.setBorder(new EmptyBorder(0, 0, 0, 3));
-        dataLoadingParamsContainer.setBorder(new TitledBorder("Set Data Loading Parameters"));
+        // Use a titled border with 5 px inside padding - Zhou
+        String borderTitle = "Data Loading Parameters (apply to all selected files)";
+        dataLoadingParamsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         setLayout(new BorderLayout());
 

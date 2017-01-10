@@ -33,7 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -86,7 +87,9 @@ final class LoadDataDialog extends JPanel {
         // Data file preview
         Box dataPreviewBox = Box.createVerticalBox();
         dataPreviewBox.add(previewTabbedPane);
-        dataPreviewBox.setBorder(new TitledBorder("Data File Preview (showing the first 20 rows)"));
+        // Use a titled border with 5 px inside padding - Zhou
+        String borderTitle = "Data Preview (showing the first 20 rows, right click tab to close file)";
+        dataPreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Data loading params
         // The data loading params apply to all slected files
