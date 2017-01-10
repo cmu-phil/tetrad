@@ -91,17 +91,7 @@ final class LoadDataAction extends AbstractAction {
 
         // Show the data loader dialog to preview data ata and set their parameters
         final LoadDataDialog loadData = new LoadDataDialog(files);
-
-        int dataLoaderDialog = loadData.showDataLoaderDialog(files);
-
-        if (dataLoaderDialog == JOptionPane.CANCEL_OPTION) {
-            return;
-        }
-
-        if (dataLoaderDialog == JOptionPane.OK_OPTION) {
-            // Load all data and show logging dialog
-            loadData.loadDataFiles(files);
-        }
+        loadData.showDataLoaderDialog(files);
 
         boolean keepData = false;
 

@@ -64,7 +64,7 @@ final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
-    public int showDataLoaderDialog(final File... files) {
+    public void showDataLoaderDialog(final File... files) {
 
         final JTabbedPane previewTabbedPane = new JTabbedPane();
 
@@ -144,11 +144,10 @@ final class LoadDataDialog extends JPanel {
         // We don't want to do this. We want to keep the data loader dialog in the backgroud of the
         // logging info dialog and close it if all files are loaded successfully.
         // Otherwise, still keep the data loader dialog there if fail to load any files - Zhou
-        int dataLoaderDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+        // Here no need to use the returned value since we are not handling the action buttons
+        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
-
-        return dataLoaderDialog;
     }
 
     /**
