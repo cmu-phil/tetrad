@@ -118,16 +118,16 @@ final class LoadDataDialog extends JPanel {
 
         add(e, BorderLayout.CENTER);
 
-        int dialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+        int dataLoaderDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new String[]{loadBtnText, "Cancel"},
                 loadBtnText);
 
-        return dialog;
+        return dataLoaderDialog;
     }
 
     public int loadDataFiles(final File... files) {
-        int response;
+        int loggingDialog;
         final JTextArea anomaliesTextArea = new JTextArea();
         List<String> failedFiles = new ArrayList<String>();
 
@@ -153,16 +153,16 @@ final class LoadDataDialog extends JPanel {
         // Show the logging message in popup - Zhou
         if (failedFiles.size() > 0) {
 
-            response = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
+            loggingDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
                     "Failed to load " + failedFiles.size() + " data file(s)!", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null, null);
         } else {
-            response = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
+            loggingDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
                     "Data loaded successfully!", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null, null);
         }
 
-        return response;
+        return loggingDialog;
     }
 
     public DataModelList getDataModels() {
