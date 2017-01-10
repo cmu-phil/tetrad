@@ -22,14 +22,14 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetrad.util.JOptionUtils;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -45,20 +45,19 @@ final class LoadDataDialog extends JPanel {
 
     private transient DataModel[] dataModels;
 
+    private JScrollPane loadingLogScrollPane;
+
     private int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(final File... files) {
-        // Do we need this? Since you can't get to this data loader dialog if not file is selected - Zhou
-        if (files.length == 0) {
-            throw new IllegalArgumentException("Must specify at least one file.");
-        }
-
         this.dataModels = new DataModel[files.length];
+    }
+
+    //==============================PUBLIC METHODS=========================//
+    public int showDataLoaderDialog(final File... files) {
 
         final JTabbedPane previewTabbedPane = new JTabbedPane();
-
-        final JTextArea anomaliesTextArea = new JTextArea();
 
         // Each tab is a preview of a file - Zhou
         for (File file : files) {
@@ -84,51 +83,18 @@ final class LoadDataDialog extends JPanel {
         // Data file preview
         Box dataPreviewBox = Box.createVerticalBox();
         dataPreviewBox.add(previewTabbedPane);
-        dataPreviewBox.setBorder(new TitledBorder("Data File Preview"));
+        dataPreviewBox.setBorder(new TitledBorder("Data File Preview (showing the first 20 rows)"));
 
-        // Load button
+        // Show load button text based on the number of files - Zhou
         String loadBtnText = "Load";
         if (files.length > 1) {
             loadBtnText = "Load All";
         }
-        JButton loadButton = new JButton(loadBtnText);
-
-        // Load button listener
-        loadButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
-
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        Window owner = (Window) getTopLevelAncestor();
-
-                        new WatchedProcess(owner) {
-                            public void watch() {
-                                for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-                                    loadDataSelect(fileIndex, anomaliesTextArea, files);
-                                }
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        // Loading log info
-        Box loadingLogBox = Box.createVerticalBox();
-        loadingLogBox.setBorder(new TitledBorder("Data Loading Log"));
-
-        JScrollPane loadingLogScrollPane = new JScrollPane(anomaliesTextArea);
-        loadingLogScrollPane.setPreferredSize(new Dimension(400, 200));
-
-        loadingLogBox.add("File loading log", loadingLogScrollPane);
 
         // Data loading area, contains data params, load button, and loading log
         Box dataLoadingBox = Box.createVerticalBox();
 
         dataLoadingBox.add(dataParamsBox);
-
-        dataLoadingBox.add(loadingLogBox);
 
         Box container = Box.createVerticalBox();
 
@@ -140,10 +106,8 @@ final class LoadDataDialog extends JPanel {
         panelContainer.add(Box.createHorizontalStrut(10));
         panelContainer.add(dataLoadingBox);
 
-        // Put the panels and buttons together
+        // Put the panels together
         container.add(panelContainer);
-        container.add(Box.createVerticalStrut(20));
-        container.add(loadButton);
 
         setLayout(new BorderLayout());
 
@@ -153,19 +117,54 @@ final class LoadDataDialog extends JPanel {
         e.add(container);
 
         add(e, BorderLayout.CENTER);
+
+        int dialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+                "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE, null, new String[]{loadBtnText, "Cancel"},
+                loadBtnText);
+
+        return dialog;
     }
 
-    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, File[] files) {
-        System.out.println("File index = " + fileIndex);
+    public int loadDataFiles(final File... files) {
+        int response;
+        final JTextArea anomaliesTextArea = new JTextArea();
+        List<String> failedFiles = new ArrayList<String>();
 
-        DataModel dataModel = dataParamsBox.loadData(fileIndex, anomaliesTextArea, files);
-        if (dataModel == null) {
-            throw new NullPointerException("Data not loaded.");
+        // Loading log info
+        loadingLogScrollPane = new JScrollPane(anomaliesTextArea);
+        loadingLogScrollPane.setPreferredSize(new Dimension(400, 200));
+
+        // Try to load each file and store the file name for failed loadings
+        for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
+            System.out.println("File index = " + fileIndex);
+
+            DataModel dataModel = dataParamsBox.loadData(fileIndex, anomaliesTextArea, files);
+            if (dataModel == null) {
+                System.out.println("Failed to load file index = " + fileIndex);
+
+                // Add the file name to failed list
+                failedFiles.add(files[fileIndex].getName());
+            } else {
+                addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+            }
         }
-        addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+
+        // Show the logging message in popup - Zhou
+        if (failedFiles.size() > 0) {
+
+            response = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
+                    "Failed to load " + failedFiles.size() + " data file(s)!", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE, null, null, null);
+        } else {
+            response = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
+                    "Data loaded successfully!", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE, null, null, null);
+        }
+
+        return response;
     }
 
-    //==============================PUBLIC METHODS=========================//
     public DataModelList getDataModels() {
         DataModelList dataModelList = new DataModelList();
 

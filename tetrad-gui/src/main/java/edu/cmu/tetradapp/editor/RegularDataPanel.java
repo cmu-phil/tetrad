@@ -67,7 +67,6 @@ final class RegularDataPanel extends JPanel {
     private JRadioButton quote3RadioButton;
 
     private JCheckBox varNamesCheckBox;
-    private JCheckBox idsSupplied;
     private JRadioButton idNoneRadioButton;
     private JRadioButton id1RadioButton;
     private JRadioButton id2RadioButton;
@@ -575,7 +574,6 @@ final class RegularDataPanel extends JPanel {
     }
 
     private void enableCovarianceObjects() {
-        idsSupplied.setEnabled(false);
         id1RadioButton.setEnabled(false);
         id2RadioButton.setEnabled(false);
         idStringField.setEnabled(false);
@@ -586,7 +584,6 @@ final class RegularDataPanel extends JPanel {
     }
 
     private void enableTabularObjects() {
-        idsSupplied.setEnabled(true);
         idStringField.setEnabled(true);
         maxIntegralLabel1.setEnabled(true);
         maxIntegralLabel2.setEnabled(true);
@@ -644,10 +641,6 @@ final class RegularDataPanel extends JPanel {
 
     public JCheckBox getVarNamesCheckBox() {
         return varNamesCheckBox;
-    }
-
-    public JCheckBox getIdsSupplied() {
-        return idsSupplied;
     }
 
     public JRadioButton getId1RadioButton() {
@@ -729,12 +722,10 @@ final class RegularDataPanel extends JPanel {
         return varNamesCheckBox.isSelected();
     }
 
-    private boolean isIdsSupplied() {
-        return idsSupplied.isSelected();
-    }
-
     private String getIdLabel() {
-        if (id1RadioButton.isSelected()) {
+        if (idNoneRadioButton.isSelected()) {
+            return null;
+        } else if (id1RadioButton.isSelected()) {
             return null;
         } else {
             return idStringField.getText();
@@ -758,8 +749,7 @@ final class RegularDataPanel extends JPanel {
     public DataModel loadData(int fileIndex, JTextArea anomaliesTextArea, File[] files) {
         anomaliesTextArea.setText("");
 
-        TextAreaOutputStream out1
-                = new TextAreaOutputStream(anomaliesTextArea);
+        TextAreaOutputStream out1 = new TextAreaOutputStream(anomaliesTextArea);
         PrintStream out = new PrintStream(out1);
 
         TetradLogger.getInstance().addOutputStream(out);
@@ -772,7 +762,6 @@ final class RegularDataPanel extends JPanel {
             reader.setDelimiter(getDelimiterType());
             reader.setQuoteChar(getQuoteChar());
             reader.setVariablesSupplied(isVarNamesFirstRow());
-            reader.setIdsSupplied(isIdsSupplied());
             reader.setIdLabel(getIdLabel());
             reader.setMissingValueMarker(getMissingValue());
             reader.setMaxIntegralDiscrete(getMaxDiscrete());

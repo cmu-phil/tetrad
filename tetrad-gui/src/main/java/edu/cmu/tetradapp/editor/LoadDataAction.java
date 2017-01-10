@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -86,28 +85,22 @@ final class LoadDataAction extends AbstractAction {
 
         final File[] files = chooser.getSelectedFiles();
 
-        // Can this happen?
-        if (files == null) {
-            return;
-        }
-
-        if (files.length == 0) {
-            return;
-        }
-
         Preferences.userRoot().put("fileSaveLocation", files[0].getParent());
 
         DataModelList dataModelList;
 
-        final LoadDataDialog dialog = new LoadDataDialog(files);
+        // Show the data loader dialog to preview data ata and set their parameters
+        final LoadDataDialog loadData = new LoadDataDialog(files);
 
-        int ret = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), dialog,
-                "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, new String[]{"Save", "Cancel"},
-                "Save");
+        int response = loadData.showDataLoaderDialog(files);
 
-        if (ret == JOptionPane.CANCEL_OPTION) {
+        if (response == JOptionPane.CANCEL_OPTION) {
             return;
+        }
+
+        if (response == JOptionPane.OK_OPTION) {
+            // Load all data and show logging dialog
+            loadData.loadDataFiles(files);
         }
 
         boolean keepData = false;
@@ -121,7 +114,7 @@ final class LoadDataAction extends AbstractAction {
             keepData = option == 1;
         }
 
-        DataModelList _dataModelList = dialog.getDataModels();
+        DataModelList _dataModelList = loadData.getDataModels();
 
         if (_dataModelList.isEmpty()) {
 //            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
