@@ -24,6 +24,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -45,6 +47,10 @@ final class LoadDataDialog extends JPanel {
 
     private transient DataModel[] dataModels;
 
+    private JButton loadButton;
+
+    private final JTextArea anomaliesTextArea;
+
     private JScrollPane loadingLogScrollPane;
 
     private int fileIndex = 0;
@@ -52,6 +58,8 @@ final class LoadDataDialog extends JPanel {
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(final File... files) {
         this.dataModels = new DataModel[files.length];
+
+        this.anomaliesTextArea = new JTextArea();
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -71,43 +79,52 @@ final class LoadDataDialog extends JPanel {
             setText(file, fileTextArea);
 
             final JScrollPane scroll = new JScrollPane(fileTextArea);
-            scroll.setPreferredSize(new Dimension(500, 200));
+            scroll.setPreferredSize(new Dimension(500, 300));
             previewTabbedPane.addTab(file.getName(), scroll);
         }
-
-        // Data loading params
-        // The data loading params apply to all slected files
-        // the users should know that the selected files should share these settings - Zhou
-        dataParamsBox = new RegularDataPanel(files);
 
         // Data file preview
         Box dataPreviewBox = Box.createVerticalBox();
         dataPreviewBox.add(previewTabbedPane);
         dataPreviewBox.setBorder(new TitledBorder("Data File Preview (showing the first 20 rows)"));
 
+        // Data loading params
+        // The data loading params apply to all slected files
+        // the users should know that the selected files should share these settings - Zhou
+        dataParamsBox = new RegularDataPanel(files);
+
+        // Load button
         // Show load button text based on the number of files - Zhou
-        String loadBtnText = "Load";
+        String loadBtnText = "Load the selected file with the specified settings";
         if (files.length > 1) {
-            loadBtnText = "Load All";
+            loadBtnText = "Load all selected files with the specified settings";
         }
 
-        // Data loading area, contains data params, load button, and loading log
-        Box dataLoadingBox = Box.createVerticalBox();
+        loadButton = new JButton(loadBtnText);
+        loadButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        dataLoadingBox.add(dataParamsBox);
+        // Load button listener
+        loadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadDataFiles(files);
+            }
+        });
 
+        // Overall container
+        // contains data preview panel, loading params panel, and load button
         Box container = Box.createVerticalBox();
 
-        // Container contains data loading params, preview, and load button
         Box panelContainer = Box.createHorizontalBox();
 
         panelContainer.add(dataPreviewBox);
         // Add some gap between preview and data loading params
         panelContainer.add(Box.createHorizontalStrut(10));
-        panelContainer.add(dataLoadingBox);
+        panelContainer.add(dataParamsBox);
 
         // Put the panels together
         container.add(panelContainer);
+        container.add(Box.createVerticalStrut(20));
+        container.add(loadButton);
 
         setLayout(new BorderLayout());
 
@@ -118,17 +135,28 @@ final class LoadDataDialog extends JPanel {
 
         add(e, BorderLayout.CENTER);
 
+        // Dialog without dialog buttons, because we use Load button to handle data loading
+        // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
+        // will close automatically once we click one of the buttons.
+        // We don't want to do this. We want to keep the data loader dialog in the backgroud of the
+        // logging info dialog and close it if all files are loaded successfully.
+        // Otherwise, still keep the data loader dialog there if fail to load any files - Zhou
         int dataLoaderDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, new String[]{loadBtnText, "Cancel"},
-                loadBtnText);
+                JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
 
         return dataLoaderDialog;
     }
 
-    public int loadDataFiles(final File... files) {
+    /**
+     * Load selected files and show the logging dialog
+     *
+     * @param files
+     * @return
+     */
+    public int loadDataFiles(File... files) {
         int loggingDialog;
-        final JTextArea anomaliesTextArea = new JTextArea();
+
         List<String> failedFiles = new ArrayList<String>();
 
         // Loading log info
@@ -152,14 +180,25 @@ final class LoadDataDialog extends JPanel {
 
         // Show the logging message in popup - Zhou
         if (failedFiles.size() > 0) {
-
+            // Show one button only
+            String[] actions = {"Close this dialog"};
+            // Just close the logging dialog and keep the data loader dialog with settings there
+            // so users can make changes and load the data again - Zhou
             loggingDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
                     "Failed to load " + failedFiles.size() + " data file(s)!", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE, null, null, null);
+                    JOptionPane.PLAIN_MESSAGE, null, actions, actions[0]);
         } else {
+            String[] actions = {"Done with data loading"};
+            // Once done with data loading, close this logging dialog as well as the data loader dialog
             loggingDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
                     "Data loaded successfully!", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE, null, null, null);
+                    JOptionPane.PLAIN_MESSAGE, null, actions, actions[0]);
+
+            // Close the data loader dialog
+            Window w = SwingUtilities.getWindowAncestor(loadButton);
+            if (w != null) {
+                w.setVisible(false);
+            }
         }
 
         return loggingDialog;
