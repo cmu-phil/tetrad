@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -37,7 +35,8 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import org.apache.commons.lang3.ArrayUtils;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -57,13 +56,25 @@ final class LoadDataDialog extends JPanel {
 
     private final JTextArea anomaliesTextArea;
 
+    public JTextArea fileTextArea;
+
     private JScrollPane loadingLogScrollPane;
 
-    private int fileIndex = 0;
+    private int fileIndex;
+
+    private JList fileList;
+
+    private Box filePreviewBox;
+
+    private Box panelContainer;
 
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
         this.files = files;
+
+        this.fileTextArea = new JTextArea();
+
+        this.fileIndex = 0;
 
         this.dataModels = new DataModel[files.length];
 
@@ -72,78 +83,64 @@ final class LoadDataDialog extends JPanel {
 
     //==============================PUBLIC METHODS=========================//
     public void showDataLoaderDialog() {
-
-        final JTabbedPane previewTabbedPane = new JTabbedPane();
-
-        // Each tab is a preview of a file - Zhou
-        for (File file : files) {
-            final JTextArea fileTextArea = new JTextArea();
-
-            // Setup file text area.
-            // We don't want the users to edit in the preview area - Zhou
-            fileTextArea.setEditable(false);
-            fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            // Set the preview content
-            setText(file, fileTextArea);
-
-            final JScrollPane scroll = new JScrollPane(fileTextArea);
-            scroll.setPreferredSize(new Dimension(500, 240));
-            previewTabbedPane.addTab(file.getName(), scroll);
+        // Show all chosen files in a list
+        String[] filenames = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            filenames[i] = files[i].getName();
         }
 
-        // Right click mouse on tab to show the close option
-        previewTabbedPane.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
+        fileList = new JList(filenames);
+        // This mode specifies that only a single item can be selected at any point of time
+        fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        fileList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        fileList.setVisibleRowCount(-1);
 
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    Point point = e.getPoint();
-                    final int index = previewTabbedPane.indexAtLocation(point.x, point.y);
-
-                    System.out.println("Remove file of index = " + index);
-
-                    // Don't show the close option if there's only one file left
-                    if (files.length == 1) {
-                        return;
-                    }
-
-                    JPopupMenu menu = new JPopupMenu();
-                    JMenuItem close = new JMenuItem("Remove this file from the loading list");
-                    menu.add(close);
-
-                    menu.show(previewTabbedPane, point.x, point.y);
-
-                    close.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            // Close tab to show confirmation dialog
-                            int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                    "Closing this tab will remove the data file from the data loading list. Continue?",
-                                    "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                                    JOptionPane.WARNING_MESSAGE);
-
-                            if (selectedAction == JOptionPane.OK_OPTION) {
-                                // Remove the file tab
-                                previewTabbedPane.remove(index);
-                                // Also need to remove it from data structure
-                                files = ArrayUtils.remove(files, index);
-                            }
-                        }
-                    });
+        // List listener
+        // use an anonymous inner class to implement the event listener interface
+        fileList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    fileIndex = fileList.getMinSelectionIndex();
+                    // Update the border title and show preview
+                    String borderTitle = "Data Preview (only first 20 rows): " + files[fileIndex].getName();
+                    filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
+                    setText(files[fileIndex], fileTextArea);
                 }
             }
         });
 
-        // Data file preview
-        Box dataPreviewBox = Box.createVerticalBox();
-        dataPreviewBox.add(previewTabbedPane);
+        // Put the list in a scrollable area
+        JScrollPane fileListScroller = new JScrollPane(fileList);
+        fileListScroller.setPreferredSize(new Dimension(345, 80));
+        fileListScroller.setAlignmentX(LEFT_ALIGNMENT);
+
+        Box fileListBox = Box.createVerticalBox();
+        fileListBox.add(fileListScroller);
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Data Preview (showing the first 20 rows, right click tab to close file)";
-        dataPreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
+        String fileListBoxBorderTitle = "Files to load (click to preview the data)";
+        fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
         dataParamsBox = new RegularDataPanel(files);
+
+        // Specify Format
+        Box formatBox = dataParamsBox.specifyFormat();
+
+        // Next button to select options
+        JButton nextButton = new JButton("Next");
+
+        // Next button listener, not working yet
+        nextButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Specify Format
+                Box optionsBox = dataParamsBox.selectOptions();
+                panelContainer.remove(1);
+                panelContainer.add(optionsBox, 2);
+            }
+        });
 
         // Load button
         // Show load button text based on the number of files - Zhou
@@ -166,16 +163,36 @@ final class LoadDataDialog extends JPanel {
         // contains data preview panel, loading params panel, and load button
         Box container = Box.createVerticalBox();
 
-        Box panelContainer = Box.createHorizontalBox();
+        panelContainer = Box.createHorizontalBox();
 
-        panelContainer.add(dataPreviewBox);
-        // Add some gap between preview and data loading params
+        // Give index so we can remove by index later
+        panelContainer.add(fileListBox, 0);
+        // Add some gap between file list and format box
         panelContainer.add(Box.createHorizontalStrut(10));
-        panelContainer.add(dataParamsBox);
+        panelContainer.add(formatBox, 1);
+
+        filePreviewBox = Box.createHorizontalBox();
+
+        // Setup file text area.
+        // We don't want the users to edit in the preview area - Zhou
+        fileTextArea.setEditable(false);
+        fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        // Add the scrollable text area in a scroller
+        final JScrollPane filePreviewBoxScroller = new JScrollPane(fileTextArea);
+        filePreviewBoxScroller.setPreferredSize(new Dimension(700, 240));
+
+        filePreviewBox.add(filePreviewBoxScroller);
+        // Use a titled border with 5 px inside padding - Zhou
+        String previewBoxBorderTitle = "Data Preview (only first 20 rows)";
+        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Put the panels together
         container.add(panelContainer);
         container.add(Box.createVerticalStrut(20));
+        container.add(filePreviewBox);
+
+        container.add(nextButton);
         container.add(loadButton);
 
         setLayout(new BorderLayout());
