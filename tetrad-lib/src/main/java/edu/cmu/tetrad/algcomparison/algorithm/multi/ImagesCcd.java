@@ -41,12 +41,15 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
         search.setAssumeIid(parameters.getBoolean("assumeIID"));
         search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
+        search.setGaussianErrors(parameters.getBoolean("gaussianErrors"));
+        search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
+        search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
-        search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+        search.setKnowledge(knowledge);
         return search.search();
     }
 
@@ -77,14 +80,11 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.add("depth");
         parameters.add("orientVisibleFeedbackLoops");
+        parameters.add("doColliderOrientation");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
-
-        parameters.add("numRandomSelections");
-        parameters.add("randomSelectionSize");
-
         parameters.add("assumeIID");
         parameters.add("collapseTiers");
 

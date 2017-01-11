@@ -21,158 +21,101 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.TetradLogger;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.Assert.fail;
+import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.graph.Cyclic;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
+import edu.cmu.tetrad.algcomparison.score.SemBic2Score;
+import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation2;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
- * Tests the Ccd algorithm.
+ * An example script to simulate data and run a comparison analysis on it.
  *
- * @author Frank Wimberly
+ * @author jdramsey
  */
 public class TestCcd {
 
-    /**
-     * From "CcdTester".
-     */
-    public void testCcd() {
-        Node a = new ContinuousVariable("A");
-        Node b = new ContinuousVariable("B");
-        Node x = new ContinuousVariable("X");
-        Node y = new ContinuousVariable("Y");
+    public void test0() {
+        Parameters parameters = new Parameters();
 
-        Graph graph = new EdgeListGraph();
-        graph.addNode(a);
-        graph.addNode(b);
-        graph.addNode(x);
-        graph.addNode(y);
-        graph.addDirectedEdge(a, x);
-        graph.addDirectedEdge(b, y);
-        graph.addDirectedEdge(x, y);
-        graph.addDirectedEdge(y, x);
+        parameters.set("numRuns", 5);
+        parameters.set("sampleSize", 1000);
+        parameters.set("avgDegree", 2);
+        parameters.set("numMeasures", 50);
+        parameters.set("maxDegree", 1000);
+        parameters.set("maxIndegree", 1000);
+        parameters.set("maxOutdegree", 1000);
 
-        IndTestDSep test = new IndTestDSep(graph);
+        parameters.set("coefLow", .2);
+        parameters.set("coefHigh", .6);
+        parameters.set("varLow", .2);
+        parameters.set("varHigh", .4);
+        parameters.set("coefSymmetric", true);
+        parameters.set("probCycle", 1.0);
+        parameters.set("probTwoCycle", .2);
+        parameters.set("intervalBetweenShocks", 1);
+        parameters.set("intervalBetweenRecordings", 1);
 
-        Ccd ccd = new Ccd(test);
-        Graph outPag = ccd.search();
+        parameters.set("alpha", 0.001);
+        parameters.set("depth", 4);
+        parameters.set("orientVisibleFeedbackLoops", true);
+        parameters.set("doColliderOrientation", true);
+        parameters.set("useMaxPOrientationHeuristic", true);
+        parameters.set("maxPOrientationMaxPathLength", 3);
+        parameters.set("applyR1", true);
+        parameters.set("orientTowardDConnections", true);
+        parameters.set("assumeIID", false);
+        parameters.set("collapseTiers", true);
 
-        boolean b0 = PagUtils.graphInPagStep0(outPag, graph);
-        if (!b0) {
-            fail();
-        }
+        Statistics statistics = new Statistics();
 
-        boolean b1 = PagUtils.graphInPagStep1(outPag, graph);
-        if (!b1) {
-            fail();
-        }
+        statistics.add(new ParameterColumn("avgDegree"));
+        statistics.add(new ParameterColumn("numMeasures"));
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
+        statistics.add(new ElapsedTime());
 
-        boolean b2 = PagUtils.graphInPagStep2(outPag, graph);
-        if (!b2) {
-            fail();
-        }
+        Simulations simulations = new Simulations();
+        simulations.add(new LinearFisherModel(new Cyclic()));
 
-        boolean b3 = PagUtils.graphInPagStep3(outPag, graph);
-        if (!b3) {
-            fail();
-        }
+        Algorithms algorithms = new Algorithms();
+        algorithms.add(new CcdMax(new FisherZ()));
 
-        boolean b4 = PagUtils.graphInPagStep4(outPag, graph);
-        if (!b4) {
-            fail();
-        }
+        Comparison comparison = new Comparison();
 
-        boolean b5 = PagUtils.graphInPagStep5(outPag, graph);
-        if (!b5) {
-            fail();
-        }
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setParallelized(false);
+        comparison.setSaveGraphs(true);
+
+        comparison.setTabDelimitedTables(false);
+
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+//        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+//        comparison.saveToFiles("comparison", new LinearFisherModel(new RandomForward()), parameters);
+
+
     }
 
-    /**
-     * From CcdTesterC.
-     */
-//    @Test
-    public void testCcdC() {
-
-        Node a = new ContinuousVariable("A");
-        Node b = new ContinuousVariable("B");
-        Node c = new ContinuousVariable("C");
-        Node d = new ContinuousVariable("D");
-        Node e = new ContinuousVariable("E");
-
-        a.setNodeType(NodeType.MEASURED);
-        b.setNodeType(NodeType.MEASURED);
-        c.setNodeType(NodeType.MEASURED);
-        d.setNodeType(NodeType.MEASURED);
-        e.setNodeType(NodeType.MEASURED);
-
-        Graph graph = new EdgeListGraph();
-
-        graph.addNode(a);
-        graph.addNode(b);
-        graph.addNode(c);
-        graph.addNode(d);
-        graph.addNode(e);
-
-        graph.addDirectedEdge(a, b);
-        graph.addDirectedEdge(b, c);
-        graph.addDirectedEdge(c, b);
-        graph.addDirectedEdge(c, d);
-        graph.addDirectedEdge(d, c);
-        graph.addDirectedEdge(e, d);
-
-        IndTestDSep test = new IndTestDSep(graph);
-
-        Ccd ccd = new Ccd(test);
-        Graph outPag = ccd.search();
-
-        boolean b1 = PagUtils.graphInPagStep0(outPag, graph);
-        if (!b1) {
-            fail();
-        }
-
-        boolean b2 = PagUtils.graphInPagStep1(outPag, graph);
-        if (!b2) {
-            fail();
-        }
-
-        boolean b3 = PagUtils.graphInPagStep2(outPag, graph);
-        if (!b3) {
-            fail();
-        }
-
-        boolean b4 = PagUtils.graphInPagStep3(outPag, graph);
-        if (!b4) {
-            fail();
-        }
-
-        boolean b5 = PagUtils.graphInPagStep4(outPag, graph);
-        if (!b5) {
-            fail();
-        }
-
-        boolean b6 = PagUtils.graphInPagStep5(outPag, graph);
-        if (!b6) {
-            fail();
-        }
+    public static void main(String... args) {
+        new TestCcd().test0();
     }
 }
-
 
 
 

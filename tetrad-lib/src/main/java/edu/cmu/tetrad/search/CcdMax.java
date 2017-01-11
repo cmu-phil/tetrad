@@ -48,8 +48,9 @@ public final class CcdMax implements GraphSearch {
     private boolean doColliderOrientations = true;
     private DataSet dataSet = null;
     private boolean assumeIid = true;
-    private boolean collapseTiers = true;
+    private boolean collapseTiers = false;
     private SepsetMap sepsetMap = null;
+    private boolean gaussianErrors = true;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -63,13 +64,18 @@ public final class CcdMax implements GraphSearch {
     public Graph search() {
 
         if (!assumeIid) {
-            dataSet = TimeSeriesUtils.createLagData(dataSet, 1);
+            int numLags = 1;
+            dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
             independenceTest = new IndTestFisherZ(dataSet, independenceTest.getAlpha());
             knowledge = new Knowledge2(independenceTest.getVariableNames());
 
             for (String s : independenceTest.getVariableNames()) {
                 String[] sx = s.split(":");
-                int lag = sx.length == 1 ? 1 : 0;//new Integer(sx[1]);
+                int lag;
+
+                if (sx.length == 1) lag = numLags;
+                else lag = numLags - new Integer(sx[1]);
+
                 knowledge.addToTier(lag, s);
             }
         }
@@ -78,28 +84,36 @@ public final class CcdMax implements GraphSearch {
         Graph graph = fastAdjacencySearch();
         System.out.println("Two shield constructs");
 
+
         if (orientConcurrentFeedbackLoops) {
             orientTwoShieldConstructs(graph);
         }
 
         System.out.println("Max P collider orientation");
 
-        if (doColliderOrientations) {
-            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
-            orientCollidersMaxP.setUseHeuristic(useHeuristic);
-            orientCollidersMaxP.setMaxPathLength(maxPathLength);
-            orientCollidersMaxP.setKnowledge(knowledge);
-            orientCollidersMaxP.orient(graph);
-        }
+        if (gaussianErrors) {
+            if (doColliderOrientations) {
+                final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+                orientCollidersMaxP.setUseHeuristic(useHeuristic);
+                orientCollidersMaxP.setMaxPathLength(maxPathLength);
+                orientCollidersMaxP.setKnowledge(knowledge);
+                orientCollidersMaxP.orient(graph);
+            }
 
-        if (applyOrientAwayFromCollider) {
-            orientAwayFromArrow(graph);
-        }
+            if (applyOrientAwayFromCollider) {
+                orientAwayFromArrow(graph);
+            }
 
-        System.out.println("Toward D-connection");
+            System.out.println("Toward D-connection");
 
-        if (useOrientTowardDConnections) {
-            orientTowardDConnection(graph);
+            if (useOrientTowardDConnections) {
+                orientTowardDConnection(graph);
+            }
+        } else {
+            Lofs2 lofs = new Lofs2(graph, Collections.singletonList(dataSet));
+            lofs.setRule(Lofs2.Rule.R3);
+            lofs.setKnowledge(knowledge);
+            graph = lofs.orient();
         }
 
         System.out.println("Done");
@@ -126,7 +140,7 @@ public final class CcdMax implements GraphSearch {
         Graph _graph = new EdgeListGraph(nodes);
 
         for (Edge edge : graph.getEdges()) {
-            if (Edges.isUndirectedEdge(edge)) continue;
+//            if (Edges.isUndirectedEdge(edge)) continue;
 
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -151,6 +165,12 @@ public final class CcdMax implements GraphSearch {
 
             if (!_graph.containsEdge(_edge)) {
                 _graph.addEdge(_edge);
+            }
+
+            Edge undir = Edges.undirectedEdge(xx, yy);
+
+            if (_graph.getEdges(xx, yy).size() > 1 && _graph.containsEdge(undir)) {
+                _graph.removeEdge(undir);
             }
         }
 
@@ -410,6 +430,14 @@ public final class CcdMax implements GraphSearch {
 
     public void setCollapseTiers(boolean collapseTiers) {
         this.collapseTiers = collapseTiers;
+    }
+
+    public boolean isGaussianErrors() {
+        return gaussianErrors;
+    }
+
+    public void setGaussianErrors(boolean gaussianErrors) {
+        this.gaussianErrors = gaussianErrors;
     }
 
     private class Pair {

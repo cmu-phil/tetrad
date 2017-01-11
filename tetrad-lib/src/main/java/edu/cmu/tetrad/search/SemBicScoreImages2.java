@@ -148,7 +148,7 @@ public class SemBicScoreImages2 implements Score {
 
         double c = getPenaltyDiscount();
         int N = sampleSize;
-        int dof = m + 1;
+        int dof = 2 * m + 1;
         return 2.0 * lik - c * m * dof * Math.log(N);
     }
 

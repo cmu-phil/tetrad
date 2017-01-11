@@ -169,6 +169,10 @@ public class ParamDescriptions {
         put("collapseTiers", new ParamDescription(
                 "True if CCD-Max should collapse tiers in the output",
                 true));
+
+        put("gaussianErrors", new ParamDescription(
+                "True if the errors are assumed to be Gaussian",
+                true));
     }
 
     public static ParamDescriptions instance() {

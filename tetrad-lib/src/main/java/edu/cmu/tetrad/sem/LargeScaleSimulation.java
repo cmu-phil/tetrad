@@ -365,7 +365,7 @@ public final class LargeScaleSimulation {
             for (int j = 0; j < t1.length; j++) {
                 t2[j] = shock[j];
                 for (int k = 0; k < parents[j].length; k++) {
-                    t2[j] += t1[parents[j][k]] * coefs[j][k];
+                    t2[j]  = (-.8 * t2[j] + t1[parents[j][k]] * coefs[j][k]);
                 }
             }
 

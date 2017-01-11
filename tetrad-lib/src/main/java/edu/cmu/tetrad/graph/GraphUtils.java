@@ -1007,6 +1007,10 @@ public final class GraphUtils {
             }
         }
 
+//        for (Node node : graph.getNodes()) {
+//            graph.addDirectedEdge(node, node);
+//        }
+
         GraphUtils.circleLayout(graph, 200, 200, 150);
 
         return graph;

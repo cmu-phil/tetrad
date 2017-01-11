@@ -188,41 +188,13 @@ public final class OrientCollidersMaxP {
         List<Node> adja = graph.getAdjacentNodes(a);
         List<Node> adjc = graph.getAdjacentNodes(c);
 
-//        if (knowledge.isForbidden(a.getName(), b.getName())) {
-//            return;
-//        }
-//
-//        if (knowledge.isForbidden(c.getName(), b.getName())) {
-//            return;
-//        }
-
-//        if (adja.size() <= 2) {
-//            List<Node> bAdj = graph.getAdjacentNodes(b);
-//
-//            for (Node ba : bAdj) {
-//                if (!adja.contains(ba) && ba != a && ba != c) {
-//                    adja.add(ba);
-//                }
-//            }
-//        }
-//
-//        if (adjc.size() <= 2) {
-//            List<Node> bAdj = graph.getAdjacentNodes(b);
-//
-//            for (Node ba : bAdj) {
-//                if (!adjc.contains(ba) && ba != a && ba != c) {
-//                    adjc.add(ba);
-//                }
-//            }
-//        }
-
         double score = Double.POSITIVE_INFINITY;
         List<Node> S = null;
 
-        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), -1);
         int[] comb2;
 
-        while ((comb2 = cg2.next()) != null) {
+        while ((comb2 = cg1.next()) != null) {
             List<Node> s = GraphUtils.asList(comb2, adja);
             independenceTest.isIndependent(a, c, s);
             double _score = independenceTest.getScore();
@@ -233,10 +205,10 @@ public final class OrientCollidersMaxP {
             }
         }
 
-        DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), -1);
         int[] comb3;
 
-        while ((comb3 = cg3.next()) != null) {
+        while ((comb3 = cg2.next()) != null) {
             List<Node> s = GraphUtils.asList(comb3, adjc);
             independenceTest.isIndependent(c, a, s);
             double _score = independenceTest.getScore();

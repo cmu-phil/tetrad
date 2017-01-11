@@ -173,6 +173,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
             ccd = new CcdMax(test);
             ccd.setAssumeIid(false);
             ccd.setCollapseTiers(true);
+            ccd.setGaussianErrors(true);
         } else {
 
             if (model instanceof DataSet) {
@@ -190,6 +191,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     ccd = new CcdMax(test);
                     ccd.setAssumeIid(false);
                     ccd.setCollapseTiers(true);
+                    ccd.setGaussianErrors(true);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -210,6 +212,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 ccd = new CcdMax(test);
                 ccd.setAssumeIid(false);
                 ccd.setCollapseTiers(true);
+                ccd.setGaussianErrors(true);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -237,6 +240,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     ccd = new CcdMax(test);
                     ccd.setAssumeIid(false);
                     ccd.setCollapseTiers(true);
+                    ccd.setGaussianErrors(true);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
