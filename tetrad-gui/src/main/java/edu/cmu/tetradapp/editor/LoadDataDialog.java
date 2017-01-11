@@ -26,6 +26,8 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -35,6 +37,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -43,6 +46,8 @@ import javax.swing.border.EmptyBorder;
  * @author Joseph Ramsey
  */
 final class LoadDataDialog extends JPanel {
+
+    private File[] files;
 
     private RegularDataPanel dataParamsBox;
 
@@ -57,14 +62,16 @@ final class LoadDataDialog extends JPanel {
     private int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
-    public LoadDataDialog(final File... files) {
+    public LoadDataDialog(File... files) {
+        this.files = files;
+
         this.dataModels = new DataModel[files.length];
 
         this.anomaliesTextArea = new JTextArea();
     }
 
     //==============================PUBLIC METHODS=========================//
-    public void showDataLoaderDialog(final File... files) {
+    public void showDataLoaderDialog() {
 
         final JTabbedPane previewTabbedPane = new JTabbedPane();
 
@@ -83,6 +90,48 @@ final class LoadDataDialog extends JPanel {
             scroll.setPreferredSize(new Dimension(500, 240));
             previewTabbedPane.addTab(file.getName(), scroll);
         }
+
+        // Right click mouse on tab to show the close option
+        previewTabbedPane.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    Point point = e.getPoint();
+                    final int index = previewTabbedPane.indexAtLocation(point.x, point.y);
+
+                    System.out.println("Remove file of index = " + index);
+
+                    // Don't show the close option if there's only one file left
+                    if (files.length == 1) {
+                        return;
+                    }
+
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem close = new JMenuItem("Remove this file from the loading list");
+                    menu.add(close);
+
+                    menu.show(previewTabbedPane, point.x, point.y);
+
+                    close.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            // Close tab to show confirmation dialog
+                            int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                    "Closing this tab will remove the data file from the data loading list. Continue?",
+                                    "Confirm", JOptionPane.OK_CANCEL_OPTION,
+                                    JOptionPane.WARNING_MESSAGE);
+
+                            if (selectedAction == JOptionPane.OK_OPTION) {
+                                // Remove the file tab
+                                previewTabbedPane.remove(index);
+                                // Also need to remove it from data structure
+                                files = ArrayUtils.remove(files, index);
+                            }
+                        }
+                    });
+                }
+            }
+        });
 
         // Data file preview
         Box dataPreviewBox = Box.createVerticalBox();
@@ -109,7 +158,7 @@ final class LoadDataDialog extends JPanel {
         // Load button listener
         loadButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                loadDataFiles(files);
+                loadDataFiles();
             }
         });
 
@@ -156,7 +205,7 @@ final class LoadDataDialog extends JPanel {
      * @param files
      * @return
      */
-    public int loadDataFiles(File... files) {
+    public int loadDataFiles() {
         int loggingDialog;
 
         List<String> failedFiles = new ArrayList<String>();
