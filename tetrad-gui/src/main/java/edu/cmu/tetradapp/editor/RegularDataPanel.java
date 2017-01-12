@@ -885,7 +885,7 @@ final class RegularDataPanel extends JPanel {
         optionsContainer.add(maxIntegralDiscreteBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Data Loading Parameters (apply to all selected files)";
+        String borderTitle = "Select Options (apply to all selected files)";
         optionsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         setLayout(new BorderLayout());

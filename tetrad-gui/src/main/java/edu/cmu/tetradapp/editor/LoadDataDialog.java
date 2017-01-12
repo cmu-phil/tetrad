@@ -68,6 +68,16 @@ final class LoadDataDialog extends JPanel {
 
     private Box panelContainer;
 
+    private Box formatBox;
+
+    private Box optionsBox;
+
+    private Box buttonsBox;
+
+    private JButton backButton;
+
+    private JButton nextButton;
+
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
         this.files = files;
@@ -112,7 +122,7 @@ final class LoadDataDialog extends JPanel {
 
         // Put the list in a scrollable area
         JScrollPane fileListScroller = new JScrollPane(fileList);
-        fileListScroller.setPreferredSize(new Dimension(345, 80));
+        fileListScroller.setPreferredSize(new Dimension(345, 120));
         fileListScroller.setAlignmentX(LEFT_ALIGNMENT);
 
         Box fileListBox = Box.createVerticalBox();
@@ -127,26 +137,89 @@ final class LoadDataDialog extends JPanel {
         dataParamsBox = new RegularDataPanel(files);
 
         // Specify Format
-        Box formatBox = dataParamsBox.specifyFormat();
+        formatBox = dataParamsBox.specifyFormat();
+        formatBox.setPreferredSize(new Dimension(445, 120));
+        // Options settings
+        optionsBox = dataParamsBox.selectOptions();
+        formatBox.setPreferredSize(new Dimension(445, 120));
+
+        // Overall container
+        // contains data preview panel, loading params panel, and load button
+        Box container = Box.createVerticalBox();
+
+        panelContainer = Box.createHorizontalBox();
+
+        panelContainer.add(fileListBox);
+        // Add some gap between file list and format box
+        panelContainer.add(Box.createHorizontalStrut(10), 1);
+        panelContainer.add(formatBox);
+        panelContainer.add(optionsBox);
+        optionsBox.setVisible(false);
+
+        filePreviewBox = Box.createHorizontalBox();
+        filePreviewBox.setPreferredSize(new Dimension(900, 260));
+
+        // Setup file text area.
+        // We don't want the users to edit in the preview area - Zhou
+        fileTextArea.setEditable(false);
+        fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        // Add the scrollable text area in a scroller
+        final JScrollPane filePreviewBoxScroller = new JScrollPane(fileTextArea);
+        filePreviewBoxScroller.setPreferredSize(new Dimension(900, 240));
+
+        filePreviewBox.add(filePreviewBoxScroller);
+        // Use a titled border with 5 px inside padding - Zhou
+        String previewBoxBorderTitle = "Data Preview (only first 20 rows)";
+        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Next button to select options
-        JButton nextButton = new JButton("Next");
+        backButton = new JButton("Back");
 
-        // Next button listener, not working yet
+        // Back button listener
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Hide the options settings and show format
+                optionsBox.setVisible(false);
+                formatBox.setVisible(true);
+
+                // Show the back button
+                nextButton.setVisible(true);
+
+                // Hide load button
+                loadButton.setVisible(false);
+
+                // Hide back button
+                backButton.setVisible(false);
+            }
+        });
+
+        // Next button to select options
+        nextButton = new JButton("Next");
+
+        // Next button listener
         nextButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Specify Format
-                Box optionsBox = dataParamsBox.selectOptions();
-                panelContainer.remove(1);
-                panelContainer.add(optionsBox, 2);
+                // Hide the format settings and show options
+                formatBox.setVisible(false);
+                optionsBox.setVisible(true);
+
+                // Show the back button
+                backButton.setVisible(true);
+
+                // Show load button
+                loadButton.setVisible(true);
+
+                // Hide next button
+                nextButton.setVisible(false);
             }
         });
 
         // Load button
         // Show load button text based on the number of files - Zhou
-        String loadBtnText = "Load the selected file with the specified settings";
+        String loadBtnText = "Load the file with the specified settings";
         if (files.length > 1) {
-            loadBtnText = "Load all selected files with the specified settings";
+            loadBtnText = "Load all files with the specified settings";
         }
 
         loadButton = new JButton(loadBtnText);
@@ -159,41 +232,24 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
-        // Overall container
-        // contains data preview panel, loading params panel, and load button
-        Box container = Box.createVerticalBox();
+        // Buttons box
+        buttonsBox = Box.createHorizontalBox();
+        buttonsBox.add(backButton);
+        buttonsBox.add(Box.createHorizontalStrut(20), 1);
+        buttonsBox.add(nextButton);
+        buttonsBox.add(Box.createHorizontalStrut(20), 1);
+        buttonsBox.add(loadButton);
 
-        panelContainer = Box.createHorizontalBox();
-
-        // Give index so we can remove by index later
-        panelContainer.add(fileListBox, 0);
-        // Add some gap between file list and format box
-        panelContainer.add(Box.createHorizontalStrut(10));
-        panelContainer.add(formatBox, 1);
-
-        filePreviewBox = Box.createHorizontalBox();
-
-        // Setup file text area.
-        // We don't want the users to edit in the preview area - Zhou
-        fileTextArea.setEditable(false);
-        fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-        // Add the scrollable text area in a scroller
-        final JScrollPane filePreviewBoxScroller = new JScrollPane(fileTextArea);
-        filePreviewBoxScroller.setPreferredSize(new Dimension(700, 240));
-
-        filePreviewBox.add(filePreviewBoxScroller);
-        // Use a titled border with 5 px inside padding - Zhou
-        String previewBoxBorderTitle = "Data Preview (only first 20 rows)";
-        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        // Only show next button by default
+        backButton.setVisible(false);
+        loadButton.setVisible(false);
 
         // Put the panels together
         container.add(panelContainer);
         container.add(Box.createVerticalStrut(20));
         container.add(filePreviewBox);
-
-        container.add(nextButton);
-        container.add(loadButton);
+        container.add(Box.createVerticalStrut(20));
+        container.add(buttonsBox);
 
         setLayout(new BorderLayout());
 
