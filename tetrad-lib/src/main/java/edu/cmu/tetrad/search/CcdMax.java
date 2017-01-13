@@ -151,7 +151,9 @@ public final class CcdMax implements GraphSearch {
             int lagx = sx.length == 1 ? 0 : new Integer(sx[1]);
             int lagy = sy.length == 1 ? 0 : new Integer(sy[1]);
 
-            if (!(lagx == 0 || lagy == 0)) continue;
+//            if (!(lagx == 0 || lagy == 0)) continue;
+
+            if (!((!edge.pointsTowards(x) && lagy == 0) || (!edge.pointsTowards(y) && lagx == 0))) continue;
 
             String xName = sx[0];
             String yName = sy[0];
@@ -456,6 +458,7 @@ public final class CcdMax implements GraphSearch {
         public double getScore() {
             return score;
         }
+
     }
 
     private Pair maxPSepset(Node i, Node k, Graph graph) {
