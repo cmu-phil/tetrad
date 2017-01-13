@@ -155,12 +155,7 @@ public class Comparison {
             List<Integer> _dims = new ArrayList<>();
             List<String> varyingParameters = new ArrayList<>();
 
-            for (String name : algorithm.getParameters()) {
-                if (parameters.getNumValues(name) > 1) {
-                    _dims.add(parameters.getNumValues(name));
-                    varyingParameters.add(name);
-                }
-            }
+
 
             if (varyingParameters.isEmpty()) {
                 algorithmWrappers.add(new AlgorithmWrapper(algorithm, parameters));

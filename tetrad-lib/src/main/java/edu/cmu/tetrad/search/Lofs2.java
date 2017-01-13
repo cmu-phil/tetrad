@@ -707,18 +707,18 @@ public class Lofs2 {
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
         System.out.println("Resolving " + x + " === " + y);
 
-        String xname = x.getName();
-        String yname = y.getName();
-
-        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
-            graph.removeEdge(x, y);
-            graph.addDirectedEdge(x, y);
-            return;
-        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
-            graph.removeEdge(y, x);
-            graph.addDirectedEdge(y, x);
-            return;
-        }
+//        String xname = x.getName();
+//        String yname = y.getName();
+//
+//        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
+//            graph.removeEdge(x, y);
+//            graph.addDirectedEdge(x, y);
+//            return;
+//        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
+//            graph.removeEdge(y, x);
+//            graph.addDirectedEdge(y, x);
+//            return;
+//        }
 
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 

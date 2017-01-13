@@ -23,28 +23,16 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.CcdMaxConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
-import edu.cmu.tetrad.algcomparison.score.SemBic2Score;
-import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation2;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.LoadDatasetsFromFileWithoutGraph;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -123,32 +111,27 @@ public class TestCcd {
     }
 
     public void test1() {
-
-        // Read in Ruben's data files.
-
-
-
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 5);
-        parameters.set("sampleSize", 1000);
-        parameters.set("avgDegree", 2);
-        parameters.set("numMeasures", 50);
-        parameters.set("maxDegree", 1000);
-        parameters.set("maxIndegree", 1000);
-        parameters.set("maxOutdegree", 1000);
+//        parameters.set("numRuns", 5);
+//        parameters.set("sampleSize", 1000);
+//        parameters.set("avgDegree", 2);
+//        parameters.set("numMeasures", 50);
+//        parameters.set("maxDegree", 1000);
+//        parameters.set("maxIndegree", 1000);
+//        parameters.set("maxOutdegree", 1000);
+//
+//        parameters.set("coefLow", .2);
+//        parameters.set("coefHigh", .6);
+//        parameters.set("varLow", .2);
+//        parameters.set("varHigh", .4);
+//        parameters.set("coefSymmetric", true);
+//        parameters.set("probCycle", 1.0);
+//        parameters.set("probTwoCycle", .2);
+//        parameters.set("intervalBetweenShocks", 1);
+//        parameters.set("intervalBetweenRecordings", 1);
 
-        parameters.set("coefLow", .2);
-        parameters.set("coefHigh", .6);
-        parameters.set("varLow", .2);
-        parameters.set("varHigh", .4);
-        parameters.set("coefSymmetric", true);
-        parameters.set("probCycle", 1.0);
-        parameters.set("probTwoCycle", .2);
-        parameters.set("intervalBetweenShocks", 1);
-        parameters.set("intervalBetweenRecordings", 1);
-
-        parameters.set("alpha", 0.001);
+        parameters.set("alpha", 0.0001);
         parameters.set("depth", 4);
         parameters.set("orientVisibleFeedbackLoops", true);
         parameters.set("doColliderOrientation", true);
@@ -160,10 +143,13 @@ public class TestCcd {
         parameters.set("assumeIID", false);
         parameters.set("collapseTiers", true);
 
+        parameters.set("numRandomSelections", 60);
+        parameters.set("randomSelectionSize", 10);
+
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("avgDegree"));
-        statistics.add(new ParameterColumn("numMeasures"));
+//        statistics.add(new ParameterColumn("avgDegree"));
+//        statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -173,13 +159,15 @@ public class TestCcd {
         statistics.add(new ElapsedTime());
 
         Simulations simulations = new Simulations();
-        simulations.add(new LoadDatasetsFromFileWithoutGraph("/Users/jdramsey/Documents/" +
-                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure1_data_noise"));
-
-        simulations.add(new LinearFisherModel(new Cyclic()));
+        simulations.add(new LoadContinuousDataAndSingleGraph("/Users/jdramsey/Documents/" +
+                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure1"));
+        simulations.add(new LoadContinuousDataAndSingleGraph("/Users/jdramsey/Documents/" +
+                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure2"));
+        simulations.add(new LoadContinuousDataAndSingleGraph("/Users/jdramsey/Documents/" +
+                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure3"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new CcdMax(new FisherZ()));
+        algorithms.add(new CcdMaxConcatenated(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
