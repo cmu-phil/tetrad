@@ -39,9 +39,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setAssumeIid(parameters.getBoolean("assumeIID"));
         search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
-        search.setGaussianErrors(parameters.getBoolean("gaussianErrors"));
         search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
         search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));

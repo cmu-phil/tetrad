@@ -23,11 +23,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.CcdMaxConcatenated;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaspConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -110,46 +110,22 @@ public class TestCcd {
 
     }
 
-    public void test1() {
+    public void TestFasp() {
         Parameters parameters = new Parameters();
 
-//        parameters.set("numRuns", 5);
-//        parameters.set("sampleSize", 1000);
-//        parameters.set("avgDegree", 2);
-//        parameters.set("numMeasures", 50);
-//        parameters.set("maxDegree", 1000);
-//        parameters.set("maxIndegree", 1000);
-//        parameters.set("maxOutdegree", 1000);
-//
-//        parameters.set("coefLow", .2);
-//        parameters.set("coefHigh", .6);
-//        parameters.set("varLow", .2);
-//        parameters.set("varHigh", .4);
-//        parameters.set("coefSymmetric", true);
-//        parameters.set("probCycle", 1.0);
-//        parameters.set("probTwoCycle", .2);
-//        parameters.set("intervalBetweenShocks", 1);
-//        parameters.set("intervalBetweenRecordings", 1);
-
-        parameters.set("alpha", 0.0001);
-        parameters.set("depth", 4);
-        parameters.set("orientVisibleFeedbackLoops", true);
-        parameters.set("doColliderOrientation", true);
-        parameters.set("useMaxPOrientationHeuristic", true);
-        parameters.set("maxPOrientationMaxPathLength", 3);
-        parameters.set("applyR1", true);
-        parameters.set("orientTowardDConnections", true);
+        parameters.set("alpha", 1e-5);
+        parameters.set("depth", 3);
         parameters.set("gaussianErrors", false);
-        parameters.set("assumeIID", false);
         parameters.set("collapseTiers", true);
+        parameters.set("penaltyDiscount", 1);
 
-        parameters.set("numRandomSelections", 60);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
+
+        parameters.set("numLags", 2);
 
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn("avgDegree"));
-//        statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -167,7 +143,7 @@ public class TestCcd {
                 "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure3"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new CcdMaxConcatenated(new FisherZ()));
+        algorithms.add(new FaspConcatenated(new SemBicTest()));
 
         Comparison comparison = new Comparison();
 
@@ -187,7 +163,7 @@ public class TestCcd {
     }
 
     public static void main(String... args) {
-        new TestCcd().test1();
+        new TestCcd().TestFasp();
     }
 }
 

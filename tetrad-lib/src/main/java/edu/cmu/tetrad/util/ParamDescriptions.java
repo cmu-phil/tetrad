@@ -173,6 +173,10 @@ public class ParamDescriptions {
         put("gaussianErrors", new ParamDescription(
                 "True if the errors are assumed to be Gaussian",
                 true));
+
+        put("numLags", new ParamDescription(
+                "The number of lags for a time lag model",
+                0, 0, Integer.MAX_VALUE));
     }
 
     public static ParamDescriptions instance() {

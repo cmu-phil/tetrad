@@ -1,44 +1,53 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
+package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.CcdMax;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * FGES (the heuristic version).
+ * Wraps the IMaGES algorithm for continuous variables.
+ * </p>
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many
+ * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
  * @author jdramsey
  */
-public class CcdMax implements Algorithm, HasKnowledge {
+public class FaspConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
+    private IndependenceWrapper test;
 
-    public CcdMax(IndependenceWrapper test) {
+    public FaspConcatenated(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(List<DataSet> dataSets, Parameters parameters) {
+        DataSet dataSet = DataUtils.concatenate(dataSets);
+        dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
         IndependenceTest test = this.test.getTest(dataSet, parameters);
-        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
-        search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
-        search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
-        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+        IKnowledge knowledge = dataSet.getKnowledge();
+        edu.cmu.tetrad.search.Fasp search = new edu.cmu.tetrad.search.Fasp(test);
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
-        search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
-        search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
         return search.search();
+    }
+
+    @Override
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override
@@ -48,17 +57,19 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CCD-Max (Cyclic Discovery Search Max) using " + test.getDescription();
+        return "CCD-Max using the IMaGEs score for continuous variables";
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
+
         parameters.add("depth");
         parameters.add("orientVisibleFeedbackLoops");
         parameters.add("doColliderOrientation");
@@ -68,7 +79,10 @@ public class CcdMax implements Algorithm, HasKnowledge {
         parameters.add("orientTowardDConnections");
         parameters.add("assumeIID");
         parameters.add("collapseTiers");
-        parameters.add("gaussianErrors");
+
+        parameters.add("numRandomSelections");
+        parameters.add("randomSelectionSize");
+
         return parameters;
     }
 

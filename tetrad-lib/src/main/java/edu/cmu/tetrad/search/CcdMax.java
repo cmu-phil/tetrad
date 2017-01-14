@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
@@ -46,74 +45,44 @@ public final class CcdMax implements GraphSearch {
     private boolean useOrientTowardDConnections = true;
     private boolean orientConcurrentFeedbackLoops = true;
     private boolean doColliderOrientations = true;
-    private DataSet dataSet = null;
-    private boolean assumeIid = true;
     private boolean collapseTiers = false;
     private SepsetMap sepsetMap = null;
-    private boolean gaussianErrors = true;
 
     public CcdMax(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
-        this.dataSet = (DataSet) independenceTest.getData();
-        this.knowledge = new Knowledge2();
     }
 
     //======================================== PUBLIC METHODS ====================================//
 
     public Graph search() {
 
-        if (!assumeIid) {
-            int numLags = 1;
-            dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
-            independenceTest = new IndTestFisherZ(dataSet, independenceTest.getAlpha());
-            knowledge = new Knowledge2(independenceTest.getVariableNames());
-
-            for (String s : independenceTest.getVariableNames()) {
-                String[] sx = s.split(":");
-                int lag;
-
-                if (sx.length == 1) lag = numLags;
-                else lag = numLags - new Integer(sx[1]);
-
-                knowledge.addToTier(lag, s);
-            }
-        }
-
         System.out.println("FAS");
         Graph graph = fastAdjacencySearch();
         System.out.println("Two shield constructs");
 
+        System.out.println("Max P collider orientation");
 
         if (orientConcurrentFeedbackLoops) {
             orientTwoShieldConstructs(graph);
         }
 
-        System.out.println("Max P collider orientation");
+        if (doColliderOrientations) {
+            final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+            orientCollidersMaxP.setUseHeuristic(useHeuristic);
+            orientCollidersMaxP.setMaxPathLength(maxPathLength);
+            orientCollidersMaxP.setKnowledge(knowledge);
+            orientCollidersMaxP.orient(graph);
+        }
 
-        if (gaussianErrors) {
-            if (doColliderOrientations) {
-                final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
-                orientCollidersMaxP.setUseHeuristic(useHeuristic);
-                orientCollidersMaxP.setMaxPathLength(maxPathLength);
-                orientCollidersMaxP.setKnowledge(knowledge);
-                orientCollidersMaxP.orient(graph);
-            }
+        if (applyOrientAwayFromCollider) {
+            orientAwayFromArrow(graph);
+        }
 
-            if (applyOrientAwayFromCollider) {
-                orientAwayFromArrow(graph);
-            }
+        System.out.println("Toward D-connection");
 
-            System.out.println("Toward D-connection");
-
-            if (useOrientTowardDConnections) {
-                orientTowardDConnection(graph);
-            }
-        } else {
-            Lofs2 lofs = new Lofs2(graph, Collections.singletonList(dataSet));
-            lofs.setRule(Lofs2.Rule.R3);
-            lofs.setKnowledge(knowledge);
-            graph = lofs.orient();
+        if (useOrientTowardDConnections) {
+            orientTowardDConnection(graph);
         }
 
         System.out.println("Done");
@@ -140,8 +109,6 @@ public final class CcdMax implements GraphSearch {
         Graph _graph = new EdgeListGraph(nodes);
 
         for (Edge edge : graph.getEdges()) {
-//            if (Edges.isUndirectedEdge(edge)) continue;
-
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -151,9 +118,10 @@ public final class CcdMax implements GraphSearch {
             int lagx = sx.length == 1 ? 0 : new Integer(sx[1]);
             int lagy = sy.length == 1 ? 0 : new Integer(sy[1]);
 
-//            if (!(lagx == 0 || lagy == 0)) continue;
+            int maxInto = knowledge.getNumTiers() - 1;
 
-            if (!((!edge.pointsTowards(x) && lagy == 0) || (!edge.pointsTowards(y) && lagx == 0))) continue;
+            if (!((!edge.pointsTowards(x) && lagy < maxInto)
+                    || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
 
             String xName = sx[0];
             String yName = sy[0];
@@ -426,20 +394,8 @@ public final class CcdMax implements GraphSearch {
         this.doColliderOrientations = doColliderOrientations;
     }
 
-    public void setAssumeIid(boolean assumeIid) {
-        this.assumeIid = assumeIid;
-    }
-
     public void setCollapseTiers(boolean collapseTiers) {
         this.collapseTiers = collapseTiers;
-    }
-
-    public boolean isGaussianErrors() {
-        return gaussianErrors;
-    }
-
-    public void setGaussianErrors(boolean gaussianErrors) {
-        this.gaussianErrors = gaussianErrors;
     }
 
     private class Pair {
@@ -613,10 +569,6 @@ public final class CcdMax implements GraphSearch {
         if (knowledge.isForbidden(b.getName(), c.getName())) {
             return;
         }
-
-//        if (sepset(graph, a, c, set(), set(b)) != null) {
-//            return;
-//        }
 
         if (wouldCreateBadCollider(graph, b, c)) {
             return;

@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
@@ -16,28 +17,21 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class CcdMax implements Algorithm, HasKnowledge {
+public class Fasp implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CcdMax(IndependenceWrapper test) {
-        this.test = test;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
+        dataSet = TimeSeriesUtils.createLagData(continuousDataSet, 1);
         IndependenceTest test = this.test.getTest(dataSet, parameters);
-        edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
-        search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
-        search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
-        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+        IKnowledge knowledge = dataSet.getKnowledge();
+        edu.cmu.tetrad.search.Fasp search = new edu.cmu.tetrad.search.Fasp(test);
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
-        search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
-        search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
         return search.search();
     }
 
@@ -60,15 +54,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
-        parameters.add("orientVisibleFeedbackLoops");
-        parameters.add("doColliderOrientation");
-        parameters.add("useMaxPOrientationHeuristic");
-        parameters.add("maxPOrientationMaxPathLength");
-        parameters.add("applyR1");
-        parameters.add("orientTowardDConnections");
-        parameters.add("assumeIID");
         parameters.add("collapseTiers");
-        parameters.add("gaussianErrors");
         return parameters;
     }
 

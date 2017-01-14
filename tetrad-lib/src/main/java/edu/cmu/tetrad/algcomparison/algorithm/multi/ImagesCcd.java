@@ -39,9 +39,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setAssumeIid(parameters.getBoolean("assumeIID"));
         search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
-        search.setGaussianErrors(parameters.getBoolean("gaussianErrors"));
         search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
         search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));

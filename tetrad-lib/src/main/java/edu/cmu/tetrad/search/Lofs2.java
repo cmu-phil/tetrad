@@ -705,22 +705,20 @@ public class Lofs2 {
     }
 
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
-        System.out.println("Resolving " + x + " === " + y);
+        String xname = x.getName();
+        String yname = y.getName();
 
-//        String xname = x.getName();
-//        String yname = y.getName();
-//
-//        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
-//            graph.removeEdge(x, y);
-//            graph.addDirectedEdge(x, y);
-//            return;
-//        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
-//            graph.removeEdge(y, x);
-//            graph.addDirectedEdge(y, x);
-//            return;
-//        }
+        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
+            graph.removeEdge(x, y);
+            graph.addDirectedEdge(x, y);
+            return;
+        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
+            graph.removeEdge(y, x);
+            graph.addDirectedEdge(y, x);
+            return;
+        }
 
-        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
+//        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
         List<Node> condxMinus = Collections.emptyList();
         List<Node> condxPlus = Collections.singletonList(y);
@@ -729,8 +727,6 @@ public class Lofs2 {
 
         double px = pValue(x, condxMinus);
         double py = pValue(y, condyMinus);
-
-        System.out.println("px = " + px + " py = " + py);
 
         if (px > alpha || py > alpha) {
             return;
@@ -746,7 +742,7 @@ public class Lofs2 {
         double yMax = yPlus > yMinus ? yPlus : yMinus;
 
         double score = combinedScore(xMax, yMax);
-        TetradLogger.getInstance().log("info", "Score = " + score);
+//        TetradLogger.getInstance().log("info", "Score = " + score);
 
         double deltaX = xPlus - xMinus;
         double deltaY = yPlus - yMinus;
@@ -1697,24 +1693,18 @@ public class Lofs2 {
 
             double f = igci(xCol, yCol, 2, 1);
 
-            System.out.println(x + "===" + y + " f = " + f);
-
             graph.removeEdges(x, y);
 
             if (f < -epsilon) {
                 _graph.addDirectedEdge(x, y);
-                System.out.println("Orienting using IGCI: " + graph.getEdge(x, y));
             } else if (f > epsilon) {
                 _graph.addDirectedEdge(y, x);
-                System.out.println("Orienting using IGCI: " + graph.getEdge(x, y));
             } else {
                 if (resolveOneEdgeMaxR3(xCol, yCol) < 0) {
                     _graph.addDirectedEdge(x, y);
                 } else {
                     _graph.addDirectedEdge(y, x);
                 }
-
-                System.out.println("Orienting using non-Gaussianity: " + graph.getEdge(x, y));
             }
 
         }
@@ -2418,8 +2408,6 @@ public class Lofs2 {
 
 
     private double resolveOneEdgeMaxR3(double[] x, double[] y) {
-        System.out.println("Resolving " + x + " === " + y);
-
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
@@ -2446,8 +2434,6 @@ public class Lofs2 {
     }
 
     private double resolveOneEdgeMaxR3b(double[] x, double[] y) {
-        System.out.println("Resolving " + x + " === " + y);
-
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
         int N = x.length;
