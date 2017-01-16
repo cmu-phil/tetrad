@@ -25,13 +25,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
- * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
+ * Fast adjacency search followed by pairwise orientation. If run with time series data and
+ * knowledge, the graph can optionally be collapsed. The R3 algorithm was selected for
+ * pairwise, after trying several such algorithms. The independence test needs to return its
+ * data using the getData method.
  *
  * @author Joseph Ramsey
  */
@@ -59,6 +61,21 @@ public final class Fasp implements GraphSearch {
 
         System.out.println("R3 orientation orientation");
 
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName())) {
+                graph.removeEdge(x, y);
+                graph.addDirectedEdge(x, y);
+            } else if (knowledge.isForbidden(x.getName(), y.getName()) || knowledge.isRequired(y.getName(), x.getName())) {
+                graph.removeEdge(y, x);
+                graph.addDirectedEdge(y, x);
+            }
+        }
+
+        orientTwoShieldConstructs(graph);
+
         Lofs2 lofs = new Lofs2(graph, Collections.singletonList(dataSet));
         lofs.setRule(Lofs2.Rule.R3);
         lofs.setKnowledge(knowledge);
@@ -71,6 +88,79 @@ public final class Fasp implements GraphSearch {
         } else {
             return graph;
         }
+    }
+
+    private void orientTwoShieldConstructs(Graph graph) {
+        for (Node c : graph.getNodes()) {
+            List<Node> adj = graph.getAdjacentNodes(c);
+
+            for (int i = 0; i < adj.size(); i++) {
+                Node a = adj.get(i);
+
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node b = adj.get(j);
+                    if (a == b) continue;
+                    if (graph.isAdjacentTo(a, b)) continue;
+
+                    for (Node d : adj) {
+                        if (d == a || d == b) continue;
+
+                        if (graph.isAdjacentTo(d, a) && graph.isAdjacentTo(d, b)) {
+                            if (knowledge.isForbidden(c.getName(), d.getName()) || knowledge.isForbidden(d.getName(), c.getName())) {
+                                continue;
+                            }
+
+                            if (sepset(graph, a, b, set(c, d), set()) != null) {
+                                addFeedback(graph, c, d);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private Set<Node> set(Node... n) {
+        Set<Node> S = new HashSet<>();
+        Collections.addAll(S, n);
+        return S;
+    }
+
+    private void addFeedback(Graph graph, Node a, Node b) {
+        graph.removeEdges(a, b);
+        graph.addEdge(Edges.directedEdge(a, b));
+        graph.addEdge(Edges.directedEdge(b, a));
+    }
+
+    private List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining) {
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.addAll(graph.getAdjacentNodes(c));
+        adj.remove(c);
+        adj.remove(a);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
+            if (d <= adj.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
+                    v2.addAll(containing);
+                    v2.removeAll(notContaining);
+                    v2.remove(a);
+                    v2.remove(c);
+
+                    independenceTest.isIndependent(a, c, new ArrayList<>(v2));
+                    double p2 = independenceTest.getScore();
+
+                    if (p2 < 0) {
+                        return new ArrayList<>(v2);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private Graph collapseGraph(Graph graph) {
@@ -99,8 +189,10 @@ public final class Fasp implements GraphSearch {
 
             int maxInto = knowledge.getNumTiers() - 1;
 
-            if (!((!edge.pointsTowards(x) && lagy < maxInto)
-                    || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
+            if (graph.getEdges(x, y).size() != 2) {
+                if (!((!edge.pointsTowards(x) && lagy < maxInto)
+                        || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
+            }
 
             String xName = sx[0];
             String yName = sy[0];

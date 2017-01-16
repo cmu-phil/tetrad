@@ -705,6 +705,9 @@ public class Lofs2 {
     }
 
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
+        if (graph.getEdge(x, y).isDirected()) return;
+        if (graph.getEdges(x, y).size() > 1) return;
+
         String xname = x.getName();
         String yname = y.getName();
 
