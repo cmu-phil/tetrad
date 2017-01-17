@@ -48,7 +48,7 @@ final class LoadDataDialog extends JPanel {
 
     private File[] files;
 
-    private DataLoaderSettings dataParamsBox;
+    private DataLoaderSettings dataLoaderSettings;
 
     private transient DataModel[] dataModels;
 
@@ -58,7 +58,7 @@ final class LoadDataDialog extends JPanel {
 
     public JTextArea fileTextArea;
 
-    private JScrollPane loadingLogScrollPane;
+    private JScrollPane summaryDialogScrollPane;
 
     private int fileIndex;
 
@@ -120,7 +120,6 @@ final class LoadDataDialog extends JPanel {
 
         // Put the list in a scrollable area
         JScrollPane fileListScrollPane = new JScrollPane(fileList);
-        //fileListScroller.setPreferredSize(new Dimension(315, 140));
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         Box fileListBox = Box.createVerticalBox();
@@ -133,13 +132,13 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataParamsBox = new DataLoaderSettings(files);
+        dataLoaderSettings = new DataLoaderSettings(files);
 
         // Specify Format
-        formatBox = dataParamsBox.specifyFormat();
+        formatBox = dataLoaderSettings.specifyFormat();
         formatBox.setPreferredSize(new Dimension(475, 165));
         // Options settings
-        optionsBox = dataParamsBox.selectOptions();
+        optionsBox = dataLoaderSettings.selectOptions();
         optionsBox.setPreferredSize(new Dimension(475, 165));
 
         // Overall container
@@ -271,25 +270,25 @@ final class LoadDataDialog extends JPanel {
     }
 
     /**
-     * Load selected files and show the logging dialog
+     * Load selected files and show the result summary dialog
      *
      * @param files
      * @return
      */
     public int loadDataFiles() {
-        int loggingDialog;
+        int summaryDialog;
 
         List<String> failedFiles = new ArrayList<String>();
 
         // Loading log info
-        loadingLogScrollPane = new JScrollPane(anomaliesTextArea);
-        loadingLogScrollPane.setPreferredSize(new Dimension(400, 200));
+        summaryDialogScrollPane = new JScrollPane(anomaliesTextArea);
+        summaryDialogScrollPane.setPreferredSize(new Dimension(400, 200));
 
         // Try to load each file and store the file name for failed loadings
         for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
             System.out.println("File index = " + fileIndex);
 
-            DataModel dataModel = dataParamsBox.loadData(fileIndex, anomaliesTextArea, files);
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(fileIndex, anomaliesTextArea, files);
             if (dataModel == null) {
                 System.out.println("Failed to load file index = " + fileIndex);
 
@@ -306,13 +305,13 @@ final class LoadDataDialog extends JPanel {
             String[] actions = {"Close this dialog"};
             // Just close the logging dialog and keep the data loader dialog with settings there
             // so users can make changes and load the data again - Zhou
-            loggingDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
+            summaryDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), summaryDialogScrollPane,
                     "Failed to load " + failedFiles.size() + " data file(s)!", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, actions, actions[0]);
         } else {
             String[] actions = {"Done with data loading"};
             // Once done with data loading, close this logging dialog as well as the data loader dialog
-            loggingDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), loadingLogScrollPane,
+            summaryDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), summaryDialogScrollPane,
                     "Data loaded successfully!", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, actions, actions[0]);
 
@@ -323,7 +322,7 @@ final class LoadDataDialog extends JPanel {
             }
         }
 
-        return loggingDialog;
+        return summaryDialog;
     }
 
     public DataModelList getDataModels() {
