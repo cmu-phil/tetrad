@@ -579,7 +579,7 @@ final class RegularDataPanel extends JPanel {
         formatContainer.add(firstRowVarNamesBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Specify Format (apply to all selected files)";
+        String borderTitle = "Specify Format (apply to all files)";
         formatContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         setLayout(new BorderLayout());
@@ -885,7 +885,7 @@ final class RegularDataPanel extends JPanel {
         optionsContainer.add(maxIntegralDiscreteBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Select Options (apply to all selected files)";
+        String borderTitle = "Select Options (apply to all files)";
         optionsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         setLayout(new BorderLayout());

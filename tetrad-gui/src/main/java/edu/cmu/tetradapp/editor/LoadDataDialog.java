@@ -102,8 +102,6 @@ final class LoadDataDialog extends JPanel {
         fileList = new JList(filenames);
         // This mode specifies that only a single item can be selected at any point of time
         fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        fileList.setVisibleRowCount(-1);
 
         // List listener
         // use an anonymous inner class to implement the event listener interface
@@ -121,12 +119,13 @@ final class LoadDataDialog extends JPanel {
         });
 
         // Put the list in a scrollable area
-        JScrollPane fileListScroller = new JScrollPane(fileList);
-        fileListScroller.setPreferredSize(new Dimension(345, 120));
-        fileListScroller.setAlignmentX(LEFT_ALIGNMENT);
+        JScrollPane fileListScrollPane = new JScrollPane(fileList);
+        //fileListScroller.setPreferredSize(new Dimension(315, 140));
+        fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         Box fileListBox = Box.createVerticalBox();
-        fileListBox.add(fileListScroller);
+        fileListBox.setPreferredSize(new Dimension(315, 160));
+        fileListBox.add(fileListScrollPane);
         // Use a titled border with 5 px inside padding - Zhou
         String fileListBoxBorderTitle = "Files to load (click to preview the data)";
         fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -138,10 +137,10 @@ final class LoadDataDialog extends JPanel {
 
         // Specify Format
         formatBox = dataParamsBox.specifyFormat();
-        formatBox.setPreferredSize(new Dimension(445, 120));
+        formatBox.setPreferredSize(new Dimension(475, 160));
         // Options settings
         optionsBox = dataParamsBox.selectOptions();
-        formatBox.setPreferredSize(new Dimension(445, 120));
+        optionsBox.setPreferredSize(new Dimension(475, 160));
 
         // Overall container
         // contains data preview panel, loading params panel, and load button
@@ -165,10 +164,8 @@ final class LoadDataDialog extends JPanel {
         fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // Add the scrollable text area in a scroller
-        final JScrollPane filePreviewBoxScroller = new JScrollPane(fileTextArea);
-        filePreviewBoxScroller.setPreferredSize(new Dimension(900, 240));
-
-        filePreviewBox.add(filePreviewBoxScroller);
+        final JScrollPane filePreviewScrollPane = new JScrollPane(fileTextArea);
+        filePreviewBox.add(filePreviewScrollPane);
         // Use a titled border with 5 px inside padding - Zhou
         String previewBoxBorderTitle = "Data Preview (only first 20 rows)";
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -183,7 +180,7 @@ final class LoadDataDialog extends JPanel {
                 optionsBox.setVisible(false);
                 formatBox.setVisible(true);
 
-                // Show the back button
+                // Show the next button
                 nextButton.setVisible(true);
 
                 // Hide load button
@@ -251,6 +248,7 @@ final class LoadDataDialog extends JPanel {
         container.add(Box.createVerticalStrut(20));
         container.add(buttonsBox);
 
+        /*
         setLayout(new BorderLayout());
 
         // Must have this section otherwise the File Loader dialog will be empty - Zhou
@@ -259,7 +257,7 @@ final class LoadDataDialog extends JPanel {
         e.add(container);
 
         add(e, BorderLayout.CENTER);
-
+         */
         // Dialog without dialog buttons, because we use Load button to handle data loading
         // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
         // will close automatically once we click one of the buttons.
