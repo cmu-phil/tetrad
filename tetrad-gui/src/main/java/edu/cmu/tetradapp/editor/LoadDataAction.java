@@ -83,6 +83,7 @@ final class LoadDataAction extends AbstractAction {
             return;
         }
 
+        // Files array
         final File[] files = chooser.getSelectedFiles();
 
         Preferences.userRoot().put("fileSaveLocation", files[0].getParent());

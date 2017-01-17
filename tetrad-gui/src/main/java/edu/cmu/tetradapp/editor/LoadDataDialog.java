@@ -48,7 +48,7 @@ final class LoadDataDialog extends JPanel {
 
     private File[] files;
 
-    private RegularDataPanel dataParamsBox;
+    private DataLoaderSettings dataParamsBox;
 
     private transient DataModel[] dataModels;
 
@@ -133,7 +133,7 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataParamsBox = new RegularDataPanel(files);
+        dataParamsBox = new DataLoaderSettings(files);
 
         // Specify Format
         formatBox = dataParamsBox.specifyFormat();

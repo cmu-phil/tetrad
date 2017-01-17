@@ -43,7 +43,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author Joseph Ramsey
  */
-final class RegularDataPanel extends JPanel {
+final class DataLoaderSettings extends JPanel {
 
     private File[] files;
 
@@ -87,7 +87,7 @@ final class RegularDataPanel extends JPanel {
     private final int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
-    public RegularDataPanel(final File... files) {
+    public DataLoaderSettings(final File... files) {
         this.files = files;
 
         if (files.length == 0) {
