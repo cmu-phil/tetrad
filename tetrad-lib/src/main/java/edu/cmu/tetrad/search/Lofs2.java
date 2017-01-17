@@ -2136,7 +2136,8 @@ public class Lofs2 {
 
     private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true, true);
-        return new AndersonDarlingTest(_f).getASquaredStar();
+//        return new AndersonDarlingTest(_f).getASquaredStar();
+        return new AndersonDarlingTest(_f).getASquared();
     }
 
     private double entropy(Node node, List<Node> parents) {

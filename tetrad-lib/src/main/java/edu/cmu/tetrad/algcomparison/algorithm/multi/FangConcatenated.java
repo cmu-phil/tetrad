@@ -6,7 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.CcdMax;
+import edu.cmu.tetrad.search.Fang;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -23,12 +23,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FaspConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private IndependenceWrapper test;
 
-    public FaspConcatenated(IndependenceWrapper test) {
+    public FangConcatenated(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -38,7 +38,7 @@ public class FaspConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         IKnowledge knowledge = dataSet.getKnowledge();
-        edu.cmu.tetrad.search.Fasp search = new edu.cmu.tetrad.search.Fasp(test);
+        Fang search = new Fang(test);
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
@@ -57,7 +57,7 @@ public class FaspConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CCD-Max using the IMaGEs score for continuous variables";
+        return "FANG using " + test.getDescription();
     }
 
     @Override

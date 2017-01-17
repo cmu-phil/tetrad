@@ -37,7 +37,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fasp implements GraphSearch {
+public final class Fang implements GraphSearch {
     private IndependenceTest independenceTest;
     private int depth = -1;
     private long elapsed = 0;
@@ -45,7 +45,7 @@ public final class Fasp implements GraphSearch {
     private DataSet dataSet = null;
     private boolean collapseTiers = false;
 
-    public Fasp(IndependenceTest test) {
+    public Fang(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
         this.dataSet = (DataSet) independenceTest.getData();

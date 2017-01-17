@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FaspConcatenated;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -113,12 +113,12 @@ public class TestCcd {
     public void TestFasp() {
         Parameters parameters = new Parameters();
 
-        parameters.set("alpha", 1e-5);
+//        parameters.set("alpha", 1e-5);
         parameters.set("depth", 3);
         parameters.set("collapseTiers", true);
         parameters.set("penaltyDiscount", 1);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRandomSelections", 60);
         parameters.set("randomSelectionSize", 10);
 
         parameters.set("numLags", 1);
@@ -134,14 +134,6 @@ public class TestCcd {
         statistics.add(new ElapsedTime());
 
         Simulations simulations = new Simulations();
-
-//        simulations.add(new LoadContinuousDataAndSingleGraph("/Users/jdramsey/Documents/" +
-//                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure1"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph("/Users/jdramsey/Documents/" +
-//                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure2"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph("/Users/jdramsey/Documents/" +
-//                "LAB_NOTEBOOK.2012.04.20/data/Ruben/Structure3"));
-
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_amp"));
@@ -169,7 +161,7 @@ public class TestCcd {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new FaspConcatenated(new SemBicTest()));
+        algorithms.add(new FangConcatenated(new SemBicTest()));
 
         Comparison comparison = new Comparison();
 

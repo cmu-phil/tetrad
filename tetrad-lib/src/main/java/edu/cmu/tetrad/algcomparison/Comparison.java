@@ -202,7 +202,8 @@ public class Comparison {
 
 
         // Run all of the algorithms and compile statistics.
-        double[][][][] allStats = calcStats(algorithmSimulationWrappers, statistics, numRuns);
+        double[][][][] allStats = calcStats(algorithmSimulationWrappers, algorithmWrappers, simulationWrappers,
+                statistics, numRuns);
 
         // Print out the preliminary information for statistics types, etc.
         if (allStats != null) {
@@ -305,8 +306,8 @@ public class Comparison {
             }
 
             // Print all of the tables.
-            printStats(statTables, statistics, Mode.Average, newOrder, algorithmSimulationWrappers, algorithmWrappers,
-                    simulationWrappers, utilities);
+            printStats(statTables, statistics, Mode.Average, newOrder, algorithmSimulationWrappers,
+                    algorithmWrappers, simulationWrappers, utilities);
 
             statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables,
                     algorithmSimulationWrappers, numStats, statistics);
@@ -698,6 +699,7 @@ public class Comparison {
 
 
     private double[][][][] calcStats(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                                     List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
                                      Statistics statistics, int numRuns) {
         int numGraphTypes = 4;
 
@@ -712,7 +714,9 @@ public class Comparison {
             for (int runIndex = 0; runIndex < numRuns; runIndex++) {
                 AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(algSimIndex);
                 Run run = new Run(algSimIndex, runIndex, index++, algorithmSimulationWrapper);
-                AlgorithmTask task = new AlgorithmTask(algorithmSimulationWrappers, statistics, numGraphTypes, allStats, run);
+                AlgorithmTask task = new AlgorithmTask(algorithmSimulationWrappers,
+                        algorithmWrappers, simulationWrappers,
+                        statistics, numGraphTypes, allStats, run);
                 tasks.add(task);
             }
         }
@@ -825,14 +829,19 @@ public class Comparison {
 
     private class AlgorithmTask extends RecursiveTask<Boolean> {
         private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+        private List<AlgorithmWrapper> algorithmWrappers;
+        private List<SimulationWrapper> simulationWrappers;
         private Statistics statistics;
         private int numGraphTypes;
         private double[][][][] allStats;
         private final Run run;
 
         public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
                              Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
             this.algorithmSimulationWrappers = algorithmSimulationWrappers;
+            this.simulationWrappers = simulationWrappers;
+            this.algorithmWrappers = algorithmWrappers;
             this.statistics = statistics;
             this.numGraphTypes = numGraphTypes;
             this.allStats = allStats;
@@ -841,12 +850,15 @@ public class Comparison {
 
         @Override
         protected Boolean compute() {
-            doRun(algorithmSimulationWrappers, statistics, numGraphTypes, allStats, run);
+            doRun(algorithmSimulationWrappers, algorithmWrappers,
+                    simulationWrappers, statistics, numGraphTypes, allStats, run);
             return true;
         }
     }
 
-    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics,
+    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                       List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
+                       Statistics statistics,
                        int numGraphTypes, double[][][][] allStats, Run run) {
         System.out.println();
         System.out.println("Run " + (run.getRunIndex() + 1));
@@ -904,7 +916,10 @@ public class Comparison {
             path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
         }
 
-        printGraph(path, out, run.getRunIndex(), algorithmWrapper);
+        int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
+        int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
+
+        printGraph(path, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper);
 
         long stop = System.currentTimeMillis();
 
@@ -966,22 +981,24 @@ public class Comparison {
         }
     }
 
-    private void printGraph(String path, Graph graph, int i, AlgorithmWrapper algorithmWrapper) {
+    private void printGraph(String path, Graph graph, int i, int simIndex, int algIndex,
+                            AlgorithmWrapper algorithmWrapper) {
         if (!saveGraphs) {
             return;
         }
 
         try {
-            String description = algorithmWrapper.getDescription();
             File file;
 
             File dir = new File(filePath, "output_graphs");
             dir.mkdirs();
 
             if (path != null) {
-                file = new File(dir, path + "." + description + ".graph" + "." + (i + 1) + ".txt");
+                file = new File(dir, path + "." + simIndex + "." + algIndex + ".graph" + "."
+                        + (i + 1) + ".txt");
             } else {
-                file = new File(dir, description + ".graph" + "." + (i + 1) + ".txt");
+                file = new File(dir,  simIndex + "." + algIndex + ".graph" + "."
+                        + (i + 1) + ".txt");
             }
 
             PrintStream out = new PrintStream(file);
