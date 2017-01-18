@@ -143,18 +143,6 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        tabularRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableTabularObjects();
-            }
-        });
-
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableCovarianceObjects();
-            }
-        });
-
         fileTypeBox.add(new JLabel("File Type:"));
         fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         fileTypeBox.add(tabularRadioButton);
@@ -584,24 +572,6 @@ final class DataLoaderSettings extends JPanel {
         optionsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         return optionsContainer;
-    }
-
-    private void enableCovarianceObjects() {
-        id1RadioButton.setEnabled(false);
-        id2RadioButton.setEnabled(false);
-        idStringField.setEnabled(false);
-        maxIntegralLabel1.setEnabled(false);
-        maxIntegralLabel2.setEnabled(false);
-        maxIntegralDiscreteIntField.setEnabled(false);
-        varNamesCheckBox.setEnabled(false);
-    }
-
-    private void enableTabularObjects() {
-        idStringField.setEnabled(true);
-        maxIntegralLabel1.setEnabled(true);
-        maxIntegralLabel2.setEnabled(true);
-        maxIntegralDiscreteIntField.setEnabled(true);
-        varNamesCheckBox.setEnabled(true);
     }
 
     public DataModel[] getDataModels() {
