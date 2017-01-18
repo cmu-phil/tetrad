@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
+import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -19,7 +21,7 @@ import java.util.*;
  *
  * @author jdramsey
  */
-public class LeeHastieSimulation implements Simulation {
+public class LeeHastieSimulation implements Simulation, HasParameters {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();

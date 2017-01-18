@@ -74,7 +74,7 @@ public final class Fang implements GraphSearch {
             }
         }
 
-        orientTwoShieldConstructs(graph);
+//        bishopsHat(graph);
 
         Lofs2 lofs = new Lofs2(graph, Collections.singletonList(dataSet));
         lofs.setRule(Lofs2.Rule.R3);
@@ -90,7 +90,7 @@ public final class Fang implements GraphSearch {
         }
     }
 
-    private void orientTwoShieldConstructs(Graph graph) {
+    private void bishopsHat(Graph graph) {
         for (Node c : graph.getNodes()) {
             List<Node> adj = graph.getAdjacentNodes(c);
 
@@ -189,10 +189,12 @@ public final class Fang implements GraphSearch {
 
             int maxInto = knowledge.getNumTiers() - 1;
 
-            if (graph.getEdges(x, y).size() != 2) {
-                if (!((!edge.pointsTowards(x) && lagy < maxInto)
-                        || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
-            }
+//            if (graph.getEdges(x, y).size() != 2) {
+//                if (!((!edge.pointsTowards(x) && lagy < maxInto)
+//                        || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
+//            }
+
+            if (lagx != 0 || lagy != 0) continue;
 
             String xName = sx[0];
             String yName = sy[0];

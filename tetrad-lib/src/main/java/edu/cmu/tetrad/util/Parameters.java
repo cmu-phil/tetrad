@@ -30,6 +30,14 @@ public class Parameters implements TetradSerializable {
         return new Parameters();
     }
 
+    // Includes all of the given parameters setting with the current parameter settings.
+    public void putAll(Parameters parameters) {
+        if (parameters == null) throw new NullPointerException();
+        this.parameters.putAll(parameters.parameters);
+        this.usedParameters.addAll(parameters.usedParameters);
+        this.overriddenParameters.putAll(parameters.overriddenParameters);
+    }
+
     /**
      * Returns a list of the parameters whoese values were actually used in the course of
      * the simulation.

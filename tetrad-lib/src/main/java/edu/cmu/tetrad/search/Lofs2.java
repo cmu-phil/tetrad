@@ -708,18 +708,18 @@ public class Lofs2 {
         if (graph.getEdge(x, y).isDirected()) return;
         if (graph.getEdges(x, y).size() > 1) return;
 
-        String xname = x.getName();
-        String yname = y.getName();
-
-        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
-            graph.removeEdge(x, y);
-            graph.addDirectedEdge(x, y);
-            return;
-        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
-            graph.removeEdge(y, x);
-            graph.addDirectedEdge(y, x);
-            return;
-        }
+//        String xname = x.getName();
+//        String yname = y.getName();
+//
+//        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
+//            graph.removeEdge(x, y);
+//            graph.addDirectedEdge(x, y);
+//            return;
+//        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
+//            graph.removeEdge(y, x);
+//            graph.addDirectedEdge(y, x);
+//            return;
+//        }
 
 //        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
@@ -741,24 +741,19 @@ public class Lofs2 {
         double yPlus = score(y, condyPlus);
         double yMinus = score(y, condyMinus);
 
-        double xMax = xPlus > xMinus ? xPlus : xMinus;
-        double yMax = yPlus > yMinus ? yPlus : yMinus;
-
-        double score = combinedScore(xMax, yMax);
-//        TetradLogger.getInstance().log("info", "Score = " + score);
-
         double deltaX = xPlus - xMinus;
         double deltaY = yPlus - yMinus;
 
-        double epsilon = 0;
         graph.removeEdges(x, y);
+        double epsilon = 0;
 
-        if (deltaX < deltaY - epsilon) {
+        if (deltaX < epsilon && deltaY < epsilon) {
             graph.addDirectedEdge(x, y);
-        } else if (deltaX > deltaY + epsilon) {
             graph.addDirectedEdge(y, x);
+        } else if (deltaY > deltaX) {
+            graph.addDirectedEdge(x, y);
         } else {
-            graph.addUndirectedEdge(x, y);
+            graph.addDirectedEdge(y, x);
         }
     }
 

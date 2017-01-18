@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
@@ -14,15 +16,18 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class LoadContinuousDataAndSingleGraph implements Simulation {
+public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private String path;
     private Graph graph = null;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
+    private Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataAndSingleGraph(String path) {
         this.path = path;
+        String structure = new File(path).getName();
+        parametersValues.set("Structure", structure);
     }
 
     @Override
@@ -105,5 +110,10 @@ public class LoadContinuousDataAndSingleGraph implements Simulation {
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
+    }
+
+    @Override
+    public Parameters getParameterValues() {
+        return parametersValues;
     }
 }

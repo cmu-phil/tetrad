@@ -113,18 +113,21 @@ public class TestCcd {
     public void TestFasp() {
         Parameters parameters = new Parameters();
 
-//        parameters.set("alpha", 1e-5);
+        parameters.set("alpha", .001);
         parameters.set("depth", 3);
         parameters.set("collapseTiers", true);
         parameters.set("penaltyDiscount", 1);
 
-        parameters.set("numRandomSelections", 60);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
 
         parameters.set("numLags", 1);
 
+        parameters.set("Structure", "Placeholder");
+
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -159,6 +162,12 @@ public class TestCcd {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_amp"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
+
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp_c4"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_c4"));
+
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FangConcatenated(new SemBicTest()));

@@ -37,6 +37,7 @@ import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
@@ -307,13 +308,13 @@ public class Comparison {
 
             // Print all of the tables.
             printStats(statTables, statistics, Mode.Average, newOrder, algorithmSimulationWrappers,
-                    algorithmWrappers, simulationWrappers, utilities);
+                    algorithmWrappers, simulationWrappers, utilities, parameters);
 
             statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables,
                     algorithmSimulationWrappers, numStats, statistics);
 
             printStats(statTables, statistics, Mode.StandardDeviation, newOrder, algorithmSimulationWrappers, algorithmWrappers,
-                    simulationWrappers, utilities);
+                    simulationWrappers, utilities, parameters);
 
             statTables = calcStatTables(allStats, Mode.WorstCase, numTables, algorithmSimulationWrappers,
                     numStats, statistics);
@@ -326,7 +327,7 @@ public class Comparison {
             }
 
             printStats(statTables, statistics, Mode.WorstCase, newOrder, algorithmSimulationWrappers, algorithmWrappers,
-                    simulationWrappers, utilities);
+                    simulationWrappers, utilities, parameters);
         }
 
         out.close();
@@ -1139,7 +1140,8 @@ public class Comparison {
     private void printStats(double[][][] statTables, Statistics statistics, Mode mode, int[] newOrder,
                             List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                             List<AlgorithmWrapper> algorithmWrappers,
-                            List<SimulationWrapper> simulationWrappers, double[] utilities) {
+                            List<SimulationWrapper> simulationWrappers, double[] utilities,
+                            Parameters parameters) {
 
         if (mode == Mode.Average) {
             out.println("AVERAGE STATISTICS");
@@ -1205,6 +1207,25 @@ public class Comparison {
 
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 for (int statIndex = 0; statIndex < numStats; statIndex++) {
+                    Statistic statistic = statistics.getStatistics().get(statIndex);
+                    Algorithm algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper().getAlgorithm();
+                    Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper().getSimulation();
+
+                    if (algorithm instanceof HasParameterValues) {
+                        parameters.putAll(((HasParameterValues) algorithm).getParameterValues());
+                    }
+
+                    if (simulation instanceof HasParameterValues) {
+                        parameters.putAll(((HasParameterValues) simulation).getParameterValues());
+                    }
+
+                    Object o = parameters.get(statistic.getAbbreviation());
+
+                    if (o instanceof String) {
+                        table.setToken(t + 1, initialColumn + statIndex, (String) o);
+                        continue;
+                    }
+
                     double stat = statTables[u][newOrder[t]][statIndex];
 
                     if (stat == Double.POSITIVE_INFINITY) {
@@ -1455,6 +1476,9 @@ public class Comparison {
 
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
             this.simulation = simulation;
+
+            // There is no harm in allowing the simulation code to add parameters here; they can
+            // be displayed in the output table if desired. jdramsey 20170118
             this.parameters = new Parameters(parameters);
         }
 
