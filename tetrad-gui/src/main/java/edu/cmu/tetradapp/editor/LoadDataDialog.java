@@ -170,7 +170,7 @@ final class LoadDataDialog extends JPanel {
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Next button to select options
-        backButton = new JButton("Back");
+        backButton = new JButton("< Back");
 
         // Back button listener
         backButton.addActionListener(new ActionListener() {
@@ -191,7 +191,7 @@ final class LoadDataDialog extends JPanel {
         });
 
         // Next button to select options
-        nextButton = new JButton("Next");
+        nextButton = new JButton("Next >");
 
         // Next button listener
         nextButton.addActionListener(new ActionListener() {

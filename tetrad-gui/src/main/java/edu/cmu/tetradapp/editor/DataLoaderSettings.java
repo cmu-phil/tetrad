@@ -98,7 +98,7 @@ final class DataLoaderSettings extends JPanel {
         this.dataModels = new DataModel[files.length];
     }
 
-    public Box specifyFormat() {
+    public final Box specifyFormat() {
         // Data loading params layout
         Box formatContainer = Box.createVerticalBox();
 
@@ -273,7 +273,7 @@ final class DataLoaderSettings extends JPanel {
         return formatContainer;
     }
 
-    public Box selectOptions() {
+    public final Box selectOptions() {
         // Data loading params layout
         Box optionsContainer = Box.createVerticalBox();
 
