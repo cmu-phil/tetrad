@@ -54,6 +54,7 @@ final class DataLoaderSettings extends JPanel {
 
     private JRadioButton contRadioButton;
     private JRadioButton discRadioButton;
+    private JRadioButton mixedRadioButton;
 
     private JRadioButton comment1RadioButton;
     private JRadioButton comment2RadioButton;
@@ -165,21 +166,24 @@ final class DataLoaderSettings extends JPanel {
 
         // Data type - moved from the old Fast tab - Zhou
         Box dataTypeBox = Box.createHorizontalBox();
-        // Data type: continuous or discrete
+        // Data type: continuous, discrete, or mixed
         contRadioButton = new JRadioButton("Continuous");
+        discRadioButton = new JRadioButton("Discrete");
+        mixedRadioButton = new JRadioButton("Mixed");
+
         // Continuous radion button is selected by default
         contRadioButton.setSelected(true);
-
-        discRadioButton = new JRadioButton("Discrete");
 
         ButtonGroup dataTypeBtnGrp = new ButtonGroup();
         dataTypeBtnGrp.add(contRadioButton);
         dataTypeBtnGrp.add(discRadioButton);
+        dataTypeBtnGrp.add(mixedRadioButton);
 
         dataTypeBox.add(new JLabel("Data Type:"));
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         dataTypeBox.add(contRadioButton);
         dataTypeBox.add(discRadioButton);
+        dataTypeBox.add(mixedRadioButton);
         dataTypeBox.add(Box.createHorizontalGlue());
         formatContainer.add(dataTypeBox);
 
