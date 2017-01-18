@@ -373,7 +373,7 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        commentMarkerBox.add(new JLabel("Comment Marker:"));
+        commentMarkerBox.add(new JLabel("Comment marker:"));
         commentMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
         commentMarkerBox.add(comment1RadioButton);
         commentMarkerBox.add(comment2RadioButton);
@@ -434,7 +434,7 @@ final class DataLoaderSettings extends JPanel {
             quote3RadioButton.setSelected(true);
         }
 
-        quoteCharBox.add(new JLabel("Quote Character:"));
+        quoteCharBox.add(new JLabel("Quote character:"));
         quoteCharBox.add(Box.createRigidArea(new Dimension(10, 1)));
         quoteCharBox.add(quote1RadioButton);
         quoteCharBox.add(quote2RadioButton);
