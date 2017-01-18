@@ -61,9 +61,9 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton comment3RadioButton;
     private StringTextField commentStringField;
 
-    private JRadioButton delimiter1RadioButton;
-    private JRadioButton delimiter2RadioButton;
-    private JRadioButton delimiter3RadioButton;
+    private JRadioButton commaDelimiterRadioButton;
+    private JRadioButton tabDelimiterRadioButton;
+    private JRadioButton spaceDelimiterRadioButton;
 
     private JRadioButton quote1RadioButton;
     private JRadioButton quote2RadioButton;
@@ -105,8 +105,8 @@ final class DataLoaderSettings extends JPanel {
         // File type: Tabular/covariance
         Box fileTypeBox = Box.createHorizontalBox();
 
-        tabularRadioButton = new JRadioButton("Tabular Data");
-        covarianceRadioButton = new JRadioButton("Covariance Data");
+        tabularRadioButton = new JRadioButton("Tabular data");
+        covarianceRadioButton = new JRadioButton("Covariance data");
 
         tabularRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -143,7 +143,7 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        fileTypeBox.add(new JLabel("File Type:"));
+        fileTypeBox.add(new JLabel("File type:"));
         fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         fileTypeBox.add(tabularRadioButton);
         fileTypeBox.add(covarianceRadioButton);
@@ -167,7 +167,7 @@ final class DataLoaderSettings extends JPanel {
         dataTypeBtnGrp.add(discRadioButton);
         dataTypeBtnGrp.add(mixedRadioButton);
 
-        dataTypeBox.add(new JLabel("Data Type:"));
+        dataTypeBox.add(new JLabel("Data type:"));
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         dataTypeBox.add(contRadioButton);
         dataTypeBox.add(discRadioButton);
@@ -181,36 +181,16 @@ final class DataLoaderSettings extends JPanel {
         Box valueDelimiterBox = Box.createHorizontalBox();
 
         // Value Delimiter
-        delimiter1RadioButton = new JRadioButton("Whitespace");
-        delimiter2RadioButton = new JRadioButton("Tab");
-        delimiter3RadioButton = new JRadioButton("Comma");
+        commaDelimiterRadioButton = new JRadioButton("Comma");
+        tabDelimiterRadioButton = new JRadioButton("Tab");
+        spaceDelimiterRadioButton = new JRadioButton("Whitespace");
 
         ButtonGroup delimiterBtnGrp = new ButtonGroup();
-        delimiterBtnGrp.add(delimiter1RadioButton);
-        delimiterBtnGrp.add(delimiter2RadioButton);
-        delimiterBtnGrp.add(delimiter3RadioButton);
+        delimiterBtnGrp.add(commaDelimiterRadioButton);
+        delimiterBtnGrp.add(tabDelimiterRadioButton);
+        delimiterBtnGrp.add(spaceDelimiterRadioButton);
 
-        delimiter1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
-
-                }
-            }
-        });
-
-        delimiter2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
-
-                }
-            }
-        });
-
-        delimiter3RadioButton.addActionListener(new ActionListener() {
+        commaDelimiterRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -220,21 +200,42 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Whitespace");
+        tabDelimiterRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
 
-        if ("Whitespace".equals(delimiterPreference)) {
-            delimiter1RadioButton.setSelected(true);
+                }
+            }
+        });
+
+        spaceDelimiterRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
+
+                }
+            }
+        });
+
+        // Defaults to comma
+        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Comma");
+
+        if ("Comma".equals(delimiterPreference)) {
+            commaDelimiterRadioButton.setSelected(true);
         } else if ("Tab".equals(delimiterPreference)) {
-            delimiter2RadioButton.setSelected(true);
+            tabDelimiterRadioButton.setSelected(true);
         } else {
-            delimiter3RadioButton.setSelected(true);
+            spaceDelimiterRadioButton.setSelected(true);
         }
 
-        valueDelimiterBox.add(new JLabel("Value Delimiter:"));
+        valueDelimiterBox.add(new JLabel("Value delimiter:"));
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        valueDelimiterBox.add(delimiter1RadioButton);
-        valueDelimiterBox.add(delimiter2RadioButton);
-        valueDelimiterBox.add(delimiter3RadioButton);
+        valueDelimiterBox.add(commaDelimiterRadioButton);
+        valueDelimiterBox.add(tabDelimiterRadioButton);
+        valueDelimiterBox.add(spaceDelimiterRadioButton);
         valueDelimiterBox.add(Box.createHorizontalGlue());
         formatContainer.add(valueDelimiterBox);
 
@@ -290,7 +291,8 @@ final class DataLoaderSettings extends JPanel {
         caseIdBtnGrp.add(id1RadioButton);
         caseIdBtnGrp.add(id2RadioButton);
 
-        id1RadioButton.setSelected(true);
+        // Defaults to none
+        idNoneRadioButton.setSelected(true);
 
         caseIdProvidedBox.add(new JLabel("Case IDs:"));
         caseIdProvidedBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -602,18 +604,6 @@ final class DataLoaderSettings extends JPanel {
         return commentStringField;
     }
 
-    public JRadioButton getDelimiter1RadioButton() {
-        return delimiter1RadioButton;
-    }
-
-    public JRadioButton getDelimiter2RadioButton() {
-        return delimiter2RadioButton;
-    }
-
-    public JRadioButton getDelimiter3RadioButton() {
-        return delimiter3RadioButton;
-    }
-
     public JRadioButton getQuote1RadioButton() {
         return quote1RadioButton;
     }
@@ -681,15 +671,15 @@ final class DataLoaderSettings extends JPanel {
     }
 
     private DelimiterType getDelimiterType() {
-        if (delimiter1RadioButton.isSelected()) {
-            return DelimiterType.WHITESPACE;
-        } else if (delimiter2RadioButton.isSelected()) {
-            return DelimiterType.TAB;
-        } else if (delimiter3RadioButton.isSelected()) {
+        if (commaDelimiterRadioButton.isSelected()) {
             return DelimiterType.COMMA;
+        } else if (tabDelimiterRadioButton.isSelected()) {
+            return DelimiterType.TAB;
+        } else if (spaceDelimiterRadioButton.isSelected()) {
+            return DelimiterType.WHITESPACE;
         } else {
 //            return delimiterStringField.getText();
-            throw new IllegalArgumentException("Unexpected delimiter selection.");
+            throw new IllegalArgumentException("Unexpected Value delimiter selection.");
         }
     }
 
