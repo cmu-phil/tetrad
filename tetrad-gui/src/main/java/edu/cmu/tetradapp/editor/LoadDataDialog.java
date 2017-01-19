@@ -57,7 +57,7 @@ final class LoadDataDialog extends JPanel {
 
     private JButton loadButton;
 
-    private final JTextArea anomaliesTextArea;
+    private final JTextArea summaryTextArea;
 
     public JTextArea fileTextArea;
 
@@ -79,6 +79,12 @@ final class LoadDataDialog extends JPanel {
 
     private Box panelContainer;
 
+    private Box previewContainer;
+
+    private Box buttonsContainer;
+
+    private Box fileListBox;
+
     private Box formatBox;
 
     private Box optionsBox;
@@ -87,9 +93,15 @@ final class LoadDataDialog extends JPanel {
 
     private Box buttonsBox;
 
-    private JButton backButton;
+    private JButton step1Button;
 
-    private JButton nextButton;
+    private JButton step2ForwardButton;
+
+    private JButton step2BackwardButton;
+
+    private JButton step3Button;
+
+    private JButton finishButton;
 
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
@@ -105,11 +117,17 @@ final class LoadDataDialog extends JPanel {
 
         this.dataModels = new DataModel[files.length];
 
-        this.anomaliesTextArea = new JTextArea();
+        this.summaryTextArea = new JTextArea();
     }
 
     //==============================PUBLIC METHODS=========================//
     public void showDataLoaderDialog() {
+        // Overall container
+        // contains data preview panel, loading params panel, and load button
+        Box container = Box.createVerticalBox();
+        // Must set the size of container, otherwise summaryBox gets shrinked
+        container.setPreferredSize(new Dimension(900, 500));
+
         // Show all chosen files in a list
         for (int i = 0; i < files.length; i++) {
             // Add each file name to the list model
@@ -195,8 +213,8 @@ final class LoadDataDialog extends JPanel {
         JScrollPane fileListScrollPane = new JScrollPane(fileList);
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
-        Box fileListBox = Box.createVerticalBox();
-        fileListBox.setPreferredSize(new Dimension(315, 165));
+        fileListBox = Box.createVerticalBox();
+        fileListBox.setPreferredSize(new Dimension(315, 170));
         fileListBox.add(fileListScrollPane);
         // Use a titled border with 5 px inside padding - Zhou
         String fileListBoxBorderTitle = "File to load";
@@ -217,10 +235,7 @@ final class LoadDataDialog extends JPanel {
         optionsBox = dataLoaderSettings.selectOptions();
         optionsBox.setPreferredSize(new Dimension(475, 165));
 
-        // Overall container
-        // contains data preview panel, loading params panel, and load button
-        Box container = Box.createVerticalBox();
-
+        // Contains file list and format/options
         panelContainer = Box.createHorizontalBox();
 
         panelContainer.add(fileListBox);
@@ -230,8 +245,16 @@ final class LoadDataDialog extends JPanel {
         panelContainer.add(optionsBox);
         optionsBox.setVisible(false);
 
+        // Add to overall container
+        container.add(panelContainer);
+
+        // Preview container
+        previewContainer = Box.createVerticalBox();
+
+        // Add some padding between panelContainer and preview container
+        previewContainer.add(Box.createVerticalStrut(20));
+
         filePreviewBox = Box.createHorizontalBox();
-        filePreviewBox.setPreferredSize(new Dimension(900, 260));
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
@@ -251,114 +274,220 @@ final class LoadDataDialog extends JPanel {
         // Use a titled border with 5 px inside padding - Zhou
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
+        // Add to preview container
+        previewContainer.add(filePreviewBox);
+
+        // Add to overall container
+        container.add(previewContainer);
+
         // Result summary
         summaryBox = Box.createHorizontalBox();
-        summaryBox.setPreferredSize(new Dimension(900, 445));
-        final JScrollPane summaryScrollPane = new JScrollPane(anomaliesTextArea);
+
+        summaryTextArea.setEditable(false);
+        summaryTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        final JScrollPane summaryScrollPane = new JScrollPane(summaryTextArea);
         summaryBox.add(summaryScrollPane);
 
         // Show the default selected filename as preview border title
-        summaryBoxBorderTitle = "Loading Summary";
+        summaryBoxBorderTitle = "Step 3: Loading Summary";
 
         // Use a titled border with 5 px inside padding - Zhou
         summaryBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(summaryBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
+        // Add to overall container
+        container.add(summaryBox);
         // Hide by default
         summaryBox.setVisible(false);
 
-        // Next button to select options
-        backButton = new JButton("< Step 1");
+        // Buttons
+        // Step 1 button to specify format
+        // You'll see Step 1 button only when you are ate step 2
+        step1Button = new JButton("< Step 1");
 
-        // Back button listener
-        backButton.addActionListener(new ActionListener() {
+        // Step 1 button listener
+        step1Button.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // Hide the options settings and show format
                 optionsBox.setVisible(false);
                 formatBox.setVisible(true);
 
-                // Show the next button
-                nextButton.setVisible(true);
+                // Show the step 2 forward button
+                step2ForwardButton.setVisible(true);
 
-                // Hide load button
-                loadButton.setVisible(false);
+                // Hide the step 2 backward button
+                step2BackwardButton.setVisible(false);
+
+                // Hide step 3 button
+                step3Button.setVisible(false);
+
+                // Hide finish button
+                finishButton.setVisible(false);
 
                 // Hide back button
-                backButton.setVisible(false);
+                step1Button.setVisible(false);
             }
         });
 
-        // Next button to select options
-        nextButton = new JButton("Step 2 >");
+        // Step 2 forward button to select options
+        // You'll see Step 2 forward button only when you are ate step 1
+        step2ForwardButton = new JButton("Step 2 >");
 
-        // Next button listener
-        nextButton.addActionListener(new ActionListener() {
+        // Step 2 forward button listener
+        step2ForwardButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                // Hide the format settings and show options
+                // Hide format
                 formatBox.setVisible(false);
+
+                // Show options
                 optionsBox.setVisible(true);
 
-                // Show the back button
-                backButton.setVisible(true);
+                // Show the step 1 button
+                step1Button.setVisible(true);
 
-                // Show load button
-                loadButton.setVisible(true);
+                // Hide step 2 forward button
+                step2ForwardButton.setVisible(false);
 
-                // Hide next button
-                nextButton.setVisible(false);
+                // Show step 3 button
+                step3Button.setVisible(true);
+
+                // Hide finish button
+                finishButton.setVisible(false);
             }
         });
 
-        // Load button
-        // Show load button text based on the number of files - Zhou
-        String loadBtnText = "Load & Review";
-        loadButton = new JButton(loadBtnText);
-        loadButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Step 2 button to select options
+        // You'll see Step 2 backward button only when you are ate step 3
+        step2BackwardButton = new JButton("< Step 2");
 
-        // Load button listener
-        loadButton.addActionListener(new ActionListener() {
+        // Step 2 backward button listener
+        step2BackwardButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                // Hide panelContainer and filePreviewBox
-                panelContainer.setVisible(false);
-                filePreviewBox.setVisible(false);
+                // Show file list
+                fileListBox.setVisible(true);
 
-                // Load data files and generate reviewing summary
-                loadAndReview();
+                // Still hide format
+                formatBox.setVisible(false);
+
+                // Show options
+                optionsBox.setVisible(true);
+
+                // Show preview
+                previewContainer.setVisible(true);
+
+                // Hide summary
+                summaryBox.setVisible(false);
+
+                // Show the step 1 button
+                step1Button.setVisible(true);
+
+                // Hide step 2 backward button
+                step2BackwardButton.setVisible(false);
+
+                // Show step 3 button
+                step3Button.setVisible(true);
+
+                // Hide finish button
+                finishButton.setVisible(false);
+            }
+        });
+
+        // Step 3 button
+        step3Button = new JButton("Step 3 >");
+
+        // Step 3 button listener
+        step3Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
                 // Show result summary
                 summaryBox.setVisible(true);
+
+                // Hide all inside panelContainer
+                fileListBox.setVisible(false);
+                formatBox.setVisible(false);
+                optionsBox.setVisible(false);
+
+                // Use previewContainer instead of previewBox
+                // since the previewContainer also contains padding
+                previewContainer.setVisible(false);
+
+                // Hide step 1 button
+                step1Button.setVisible(false);
+
+                // Hide step 2 forward button
+                step2ForwardButton.setVisible(false);
+
+                // Show step 2 backward button
+                step2BackwardButton.setVisible(true);
+
+                // Hide step 3 button
+                step3Button.setVisible(false);
+
+                // Show finish button
+                finishButton.setVisible(true);
+
+                // Load data files and generate reviewing summary
+                List<String> failedFiles = loadAndReview();
+
+                // Determine if enable the finish button or not
+                if (failedFiles.size() > 0) {
+                    // Disable it
+                    finishButton.setEnabled(false);
+                } else {
+                    // Enable it
+                    finishButton.setEnabled(true);
+                }
             }
         });
 
+        // Finish button
+        finishButton = new JButton("Finish");
+
+        // Finish button listener
+        finishButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Close the data loader dialog
+                Window w = SwingUtilities.getWindowAncestor(finishButton);
+                if (w != null) {
+                    w.setVisible(false);
+                }
+            }
+        });
+
+        // Buttons container
+        buttonsContainer = Box.createVerticalBox();
+
+        // Add some padding between preview/summary and buttons container
+        buttonsContainer.add(Box.createVerticalStrut(20));
+
         // Buttons box
         buttonsBox = Box.createHorizontalBox();
-        buttonsBox.add(backButton);
-        buttonsBox.add(Box.createHorizontalStrut(20), 1);
-        buttonsBox.add(nextButton);
-        buttonsBox.add(Box.createHorizontalStrut(20), 1);
-        buttonsBox.add(loadButton);
+        buttonsBox.add(step1Button);
+        // Don't use Box.createHorizontalStrut(20)
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step2BackwardButton);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step2ForwardButton);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step3Button);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(finishButton);
 
-        // Only show next button by default
-        backButton.setVisible(false);
-        loadButton.setVisible(false);
+        // Default to only show step forward button
+        step1Button.setVisible(false);
+        step2BackwardButton.setVisible(false);
+        step3Button.setVisible(false);
+        finishButton.setVisible(false);
+        // Add to buttons container
+        buttonsContainer.add(buttonsBox);
 
-        // Put the panels together
-        container.add(panelContainer);
-        container.add(Box.createVerticalStrut(20));
-        container.add(filePreviewBox);
-        container.add(summaryBox);
-        container.add(Box.createVerticalStrut(20));
-        container.add(buttonsBox);
+        // Add to overall container
+        container.add(buttonsContainer);
 
-        /*
-        setLayout(new BorderLayout());
-
-        // Must have this section otherwise the File Loader dialog will be empty - Zhou
-        Box e = Box.createVerticalBox();
-        e.add(Box.createVerticalStrut(10));
-        e.add(container);
-
-        add(e, BorderLayout.CENTER);
-         */
         // Dialog without dialog buttons, because we use Load button to handle data loading
         // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
         // will close automatically once we click one of the buttons.
@@ -371,45 +500,19 @@ final class LoadDataDialog extends JPanel {
                 JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
     }
 
-    private void loadAndReview() {
-        List<String> failedFiles = new ArrayList<String>();
-
-        // Try to load each file and store the file name for failed loadings
-        for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-            System.out.println("File index = " + fileIndex);
-
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(fileIndex, anomaliesTextArea, files);
-            if (dataModel == null) {
-                System.out.println("Failed to load file index = " + fileIndex);
-
-                // Add the file name to failed list
-                failedFiles.add(files[fileIndex].getName());
-            } else {
-                addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-            }
-        }
-    }
-
     /**
      * Load selected files and show the result summary dialog
      *
-     * @param files
      * @return
      */
-    public int loadDataFiles() {
-        int summaryDialog;
-
+    private List<String> loadAndReview() {
         List<String> failedFiles = new ArrayList<String>();
-
-        // Loading log info
-        summaryDialogScrollPane = new JScrollPane(anomaliesTextArea);
-        summaryDialogScrollPane.setPreferredSize(new Dimension(400, 200));
 
         // Try to load each file and store the file name for failed loadings
         for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
             System.out.println("File index = " + fileIndex);
 
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(fileIndex, anomaliesTextArea, files);
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(fileIndex, summaryTextArea, files);
             if (dataModel == null) {
                 System.out.println("Failed to load file index = " + fileIndex);
 
@@ -420,30 +523,7 @@ final class LoadDataDialog extends JPanel {
             }
         }
 
-        // Show the logging message in popup - Zhou
-        if (failedFiles.size() > 0) {
-            // Show one button only
-            String[] actions = {"Close this dialog"};
-            // Just close the logging dialog and keep the data loader dialog with settings there
-            // so users can make changes and load the data again - Zhou
-            summaryDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), summaryDialogScrollPane,
-                    "Failed to load " + failedFiles.size() + " data file(s)!", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE, null, actions, actions[0]);
-        } else {
-            String[] actions = {"Done with data loading"};
-            // Once done with data loading, close this logging dialog as well as the data loader dialog
-            summaryDialog = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), summaryDialogScrollPane,
-                    "Data loaded successfully!", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE, null, actions, actions[0]);
-
-            // Close the data loader dialog
-            Window w = SwingUtilities.getWindowAncestor(loadButton);
-            if (w != null) {
-                w.setVisible(false);
-            }
-        }
-
-        return summaryDialog;
+        return failedFiles;
     }
 
     public DataModelList getDataModels() {
