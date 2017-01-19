@@ -26,6 +26,8 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -37,6 +39,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -64,7 +67,13 @@ final class LoadDataDialog extends JPanel {
 
     private JList fileList;
 
+    private DefaultListModel fileListModel;
+
     private Box filePreviewBox;
+
+    private String previewBoxBorderTitle;
+
+    private String defaulyPreviewBoxBorderTitle;
 
     private Box panelContainer;
 
@@ -84,7 +93,11 @@ final class LoadDataDialog extends JPanel {
 
         this.fileTextArea = new JTextArea();
 
+        this.fileListModel = new DefaultListModel();
+
         this.fileIndex = 0;
+
+        this.defaulyPreviewBoxBorderTitle = "Data Preview (only first 20 rows): ";
 
         this.dataModels = new DataModel[files.length];
 
@@ -94,14 +107,16 @@ final class LoadDataDialog extends JPanel {
     //==============================PUBLIC METHODS=========================//
     public void showDataLoaderDialog() {
         // Show all chosen files in a list
-        String[] filenames = new String[files.length];
         for (int i = 0; i < files.length; i++) {
-            filenames[i] = files[i].getName();
+            // Add each file name to the list model
+            fileListModel.addElement(files[i].getName());
         }
 
-        fileList = new JList(filenames);
+        fileList = new JList(fileListModel);
         // This mode specifies that only a single item can be selected at any point of time
         fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // Default to select the first file and show its preview
+        fileList.setSelectedIndex(0);
 
         // List listener
         // use an anonymous inner class to implement the event listener interface
@@ -110,10 +125,63 @@ final class LoadDataDialog extends JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     fileIndex = fileList.getMinSelectionIndex();
-                    // Update the border title and show preview
-                    String borderTitle = "Data Preview (only first 20 rows): " + files[fileIndex].getName();
-                    filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
-                    setText(files[fileIndex], fileTextArea);
+                    if (fileIndex < 0) {
+                        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+                        fileTextArea.setText("");
+                    } else {
+                        // Update the border title and show preview
+                        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + files[fileIndex].getName();
+                        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+                        setText(files[fileIndex], fileTextArea);
+                    }
+                }
+            }
+        });
+
+        // Right click mouse on file name to show the close option
+        fileList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // Don't show the close option if there's only one file left
+                    if (files.length == 1) {
+                        return;
+                    }
+
+                    final int index = fileList.getSelectedIndex();
+
+                    // Don't show the close option if selection is empty
+                    if (index == -1) {
+                        return;
+                    }
+
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem close = new JMenuItem("Remove this selected file from the loading list");
+                    menu.add(close);
+
+                    Point point = e.getPoint();
+                    menu.show(fileList, point.x, point.y);
+
+                    close.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            // Close tab to show confirmation dialog
+                            int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                    "Are you sure you want to remove this data file from the data loading list?",
+                                    "Confirm", JOptionPane.OK_CANCEL_OPTION,
+                                    JOptionPane.WARNING_MESSAGE);
+
+                            if (selectedAction == JOptionPane.OK_OPTION) {
+                                // Remove the file from list model
+                                fileListModel.remove(index);
+
+                                System.out.println("Removed file of index = " + index + " from data loading list");
+
+                                // Also need to remove it from data structure
+                                files = ArrayUtils.remove(files, index);
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -162,11 +230,17 @@ final class LoadDataDialog extends JPanel {
         fileTextArea.setEditable(false);
         fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
+        // Set the default preview for the default selected file
+        setText(files[0], fileTextArea);
+
         // Add the scrollable text area in a scroller
         final JScrollPane filePreviewScrollPane = new JScrollPane(fileTextArea);
         filePreviewBox.add(filePreviewScrollPane);
+
+        // Show the default selected filename as preview border title
+        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + files[0].getName();
+
         // Use a titled border with 5 px inside padding - Zhou
-        String previewBoxBorderTitle = "Data Preview (only first 20 rows)";
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Next button to select options
