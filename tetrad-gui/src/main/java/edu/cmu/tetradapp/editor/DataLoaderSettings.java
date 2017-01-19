@@ -267,7 +267,10 @@ final class DataLoaderSettings extends JPanel {
         formatContainer.add(firstRowVarNamesBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Specify Format (apply to all files)";
+        String borderTitle = "Step 1: Specify Format";
+        if (files.length > 1) {
+            borderTitle = borderTitle + " (apply to all files)";
+        }
         formatContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         return formatContainer;
@@ -570,7 +573,10 @@ final class DataLoaderSettings extends JPanel {
         optionsContainer.add(maxIntegralDiscreteBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Select Options (apply to all files)";
+        String borderTitle = "Step 2: Select Options";
+        if (files.length > 1) {
+            borderTitle = borderTitle + " (apply to all files)";
+        }
         optionsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         return optionsContainer;

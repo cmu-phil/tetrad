@@ -144,11 +144,6 @@ final class LoadDataDialog extends JPanel {
                 super.mouseClicked(e);
 
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    // Don't show the close option if there's only one file left
-                    if (files.length == 1) {
-                        return;
-                    }
-
                     final int index = fileList.getSelectedIndex();
 
                     // Don't show the close option if selection is empty
@@ -165,20 +160,26 @@ final class LoadDataDialog extends JPanel {
 
                     close.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            // Close tab to show confirmation dialog
-                            int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                    "Are you sure you want to remove this data file from the data loading list?",
-                                    "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                                    JOptionPane.WARNING_MESSAGE);
+                            // Can't remove if there's only one file left
+                            if (files.length == 1) {
+                                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                                        "You can't remove when there's only one file.");
+                            } else {
+                                // Close tab to show confirmation dialog
+                                int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                        "Are you sure you want to remove this data file from the data loading list?",
+                                        "Confirm", JOptionPane.OK_CANCEL_OPTION,
+                                        JOptionPane.WARNING_MESSAGE);
 
-                            if (selectedAction == JOptionPane.OK_OPTION) {
-                                // Remove the file from list model
-                                fileListModel.remove(index);
+                                if (selectedAction == JOptionPane.OK_OPTION) {
+                                    // Remove the file from list model
+                                    fileListModel.remove(index);
 
-                                System.out.println("Removed file of index = " + index + " from data loading list");
+                                    System.out.println("Removed file of index = " + index + " from data loading list");
 
-                                // Also need to remove it from data structure
-                                files = ArrayUtils.remove(files, index);
+                                    // Also need to remove it from data structure
+                                    files = ArrayUtils.remove(files, index);
+                                }
                             }
                         }
                     });
@@ -194,7 +195,10 @@ final class LoadDataDialog extends JPanel {
         fileListBox.setPreferredSize(new Dimension(315, 165));
         fileListBox.add(fileListScrollPane);
         // Use a titled border with 5 px inside padding - Zhou
-        String fileListBoxBorderTitle = "Files to load (click to preview the data)";
+        String fileListBoxBorderTitle = "File to load";
+        if (files.length > 1) {
+            fileListBoxBorderTitle = "Files to load (right click to remove selected file)";
+        }
         fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Data loading params
@@ -244,7 +248,7 @@ final class LoadDataDialog extends JPanel {
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Next button to select options
-        backButton = new JButton("< Back");
+        backButton = new JButton("< Step 1");
 
         // Back button listener
         backButton.addActionListener(new ActionListener() {
@@ -265,7 +269,7 @@ final class LoadDataDialog extends JPanel {
         });
 
         // Next button to select options
-        nextButton = new JButton("Next >");
+        nextButton = new JButton("Step 2 >");
 
         // Next button listener
         nextButton.addActionListener(new ActionListener() {
