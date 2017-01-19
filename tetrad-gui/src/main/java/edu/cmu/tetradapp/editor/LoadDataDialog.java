@@ -73,6 +73,8 @@ final class LoadDataDialog extends JPanel {
 
     private String previewBoxBorderTitle;
 
+    private String summaryBoxBorderTitle;
+
     private String defaulyPreviewBoxBorderTitle;
 
     private Box panelContainer;
@@ -80,6 +82,8 @@ final class LoadDataDialog extends JPanel {
     private Box formatBox;
 
     private Box optionsBox;
+
+    private Box summaryBox;
 
     private Box buttonsBox;
 
@@ -247,6 +251,21 @@ final class LoadDataDialog extends JPanel {
         // Use a titled border with 5 px inside padding - Zhou
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
+        // Result summary
+        summaryBox = Box.createHorizontalBox();
+        summaryBox.setPreferredSize(new Dimension(900, 445));
+        final JScrollPane summaryScrollPane = new JScrollPane(anomaliesTextArea);
+        summaryBox.add(summaryScrollPane);
+
+        // Show the default selected filename as preview border title
+        summaryBoxBorderTitle = "Loading Summary";
+
+        // Use a titled border with 5 px inside padding - Zhou
+        summaryBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(summaryBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Hide by default
+        summaryBox.setVisible(false);
+
         // Next button to select options
         backButton = new JButton("< Step 1");
 
@@ -291,18 +310,22 @@ final class LoadDataDialog extends JPanel {
 
         // Load button
         // Show load button text based on the number of files - Zhou
-        String loadBtnText = "Load the file with the specified settings";
-        if (files.length > 1) {
-            loadBtnText = "Load all files with the specified settings";
-        }
-
+        String loadBtnText = "Load & Review";
         loadButton = new JButton(loadBtnText);
         loadButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Load button listener
         loadButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                loadDataFiles();
+                // Hide panelContainer and filePreviewBox
+                panelContainer.setVisible(false);
+                filePreviewBox.setVisible(false);
+
+                // Load data files and generate reviewing summary
+                loadAndReview();
+
+                // Show result summary
+                summaryBox.setVisible(true);
             }
         });
 
@@ -322,6 +345,7 @@ final class LoadDataDialog extends JPanel {
         container.add(panelContainer);
         container.add(Box.createVerticalStrut(20));
         container.add(filePreviewBox);
+        container.add(summaryBox);
         container.add(Box.createVerticalStrut(20));
         container.add(buttonsBox);
 
@@ -345,6 +369,25 @@ final class LoadDataDialog extends JPanel {
         JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+    }
+
+    private void loadAndReview() {
+        List<String> failedFiles = new ArrayList<String>();
+
+        // Try to load each file and store the file name for failed loadings
+        for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
+            System.out.println("File index = " + fileIndex);
+
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(fileIndex, anomaliesTextArea, files);
+            if (dataModel == null) {
+                System.out.println("Failed to load file index = " + fileIndex);
+
+                // Add the file name to failed list
+                failedFiles.add(files[fileIndex].getName());
+            } else {
+                addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+            }
+        }
     }
 
     /**
