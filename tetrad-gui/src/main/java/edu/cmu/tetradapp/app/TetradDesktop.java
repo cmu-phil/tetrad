@@ -24,13 +24,17 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.*;
-import edu.cmu.tetradapp.app.hpc.ComputingAccountManager;
+import edu.cmu.tetradapp.app.hpc.HpcAccountManager;
+import edu.cmu.tetradapp.app.hpc.HpcJobManager;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.*;
 import edu.pitt.dbmi.tetrad.db.TetradDatabaseApplication;
-import edu.pitt.dbmi.tetrad.db.service.ComputingAccountService;
+import edu.pitt.dbmi.tetrad.db.service.HpcAccountService;
+import edu.pitt.dbmi.tetrad.db.service.HpcJobInfoService;
+import edu.pitt.dbmi.tetrad.db.service.HpcJobLogDetailService;
+import edu.pitt.dbmi.tetrad.db.service.HpcJobLogService;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -87,7 +91,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      */
     private TetradLogArea logArea;
 
-    private final ComputingAccountManager computingAccountManager;
+    private final HpcAccountManager hpcAccountManager;
+    
+    private final HpcJobManager hpcJobManager;
 
     /**
      * Constructs a new desktop.
@@ -117,10 +123,17 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 	// HPC account manager
 	final org.hibernate.Session session = TetradDatabaseApplication
 		.getSessionFactory().openSession();
-	final ComputingAccountService computingAccountService = new ComputingAccountService(
+	final HpcAccountService computingAccountService = new HpcAccountService(
 		session);
-	this.computingAccountManager = new ComputingAccountManager(
+	this.hpcAccountManager = new HpcAccountManager(
 		computingAccountService);
+	
+	// HPC Job Manager
+	final HpcJobLogService hpcJobLogService = new HpcJobLogService(session);
+	final HpcJobLogDetailService hpcJobLogDetailService = new HpcJobLogDetailService(session);
+	final HpcJobInfoService hpcJobInfoService = new HpcJobInfoService(session);
+	int processors = Runtime.getRuntime().availableProcessors();
+	this.hpcJobManager = new HpcJobManager(hpcJobLogService, hpcJobLogDetailService, hpcJobInfoService, processors);
 
     }
 
@@ -716,8 +729,12 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     }
 
-    public ComputingAccountManager getComputingAccountManager() {
-        return computingAccountManager;
+    public HpcAccountManager getHpcAccountManager() {
+        return hpcAccountManager;
+    }
+
+    public HpcJobManager getHpcJobManager() {
+        return hpcJobManager;
     }
 
 }

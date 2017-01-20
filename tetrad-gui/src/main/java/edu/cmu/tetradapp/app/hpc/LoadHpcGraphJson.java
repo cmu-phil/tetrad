@@ -37,7 +37,7 @@ import edu.pitt.dbmi.ccd.rest.client.dto.algo.ResultFile;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
 import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
-import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 /**
  * 
@@ -57,7 +57,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 
     private String jsonFileName = null;
 
-    private ComputingAccount computingAccount = null;
+    private HpcAccount computingAccount = null;
 
     public LoadHpcGraphJson(GraphEditable graphEditable, String title) {
 	super(title);
@@ -72,7 +72,7 @@ public class LoadHpcGraphJson extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
-	ComputingAccountManager manager = desktop.getComputingAccountManager();
+	HpcAccountManager manager = desktop.getHpcAccountManager();
 
 	JComponent comp = buildHpcJsonChooserComponent(manager);
 	int option = JOptionPane.showConfirmDialog(
@@ -106,6 +106,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 		Graph graph = JsonUtils.parseJSONObjectToTetradGraph(json);
 		GraphUtils.circleLayout(graph, 300, 300, 150);
 		graphEditable.setGraph(graph);
+		graphEditable.setName(jsonFileName);
 	    } catch (Exception e1) {
 		// TODO Auto-generated catch block
 		e1.printStackTrace();
@@ -121,11 +122,11 @@ public class LoadHpcGraphJson extends AbstractAction {
     }
 
     private JComponent buildHpcJsonChooserComponent(
-	    final ComputingAccountManager manager) {
+	    final HpcAccountManager manager) {
 	// Get ComputingAccount from DB
-	final DefaultListModel<ComputingAccount> listModel = new DefaultListModel<ComputingAccount>();
+	final DefaultListModel<HpcAccount> listModel = new DefaultListModel<HpcAccount>();
 
-	for (ComputingAccount account : manager.getComputingAccounts()) {
+	for (HpcAccount account : manager.getHpcAccounts()) {
 	    listModel.addElement(account);
 	}
 
@@ -194,7 +195,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 	splitPane.setRightComponent(jsonResultListPanel);
 
 	// Center Panel
-	final JList<ComputingAccount> accountList = new JList<>(listModel);
+	final JList<HpcAccount> accountList = new JList<>(listModel);
 	accountList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	accountList.setLayoutOrientation(JList.VERTICAL);
 	accountList.setSelectedIndex(-1);

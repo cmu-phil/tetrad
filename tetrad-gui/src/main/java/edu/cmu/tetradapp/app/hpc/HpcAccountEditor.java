@@ -21,7 +21,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
-import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 /**
  * 
@@ -30,23 +30,23 @@ import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class ComputingAccountEditor extends JPanel {
+public class HpcAccountEditor extends JPanel {
 
     private static final long serialVersionUID = -3028667139958773226L;
 
     private final JComponent parentComponent;
     
-    private final DefaultListModel<ComputingAccount> listModel;
+    private final DefaultListModel<HpcAccount> listModel;
 
-    private final ComputingAccountManager manager;
+    private final HpcAccountManager manager;
 
-    private final ComputingAccount computingAccount;
+    private final HpcAccount computingAccount;
 
-    public ComputingAccountEditor(
+    public HpcAccountEditor(
 	    final JComponent parentComponent,
-	    final DefaultListModel<ComputingAccount> listModel,
-	    final ComputingAccountManager manager,
-	    final ComputingAccount computingAccount) {
+	    final DefaultListModel<HpcAccount> listModel,
+	    final HpcAccountManager manager,
+	    final HpcAccount computingAccount) {
 	this.parentComponent = parentComponent;
 	this.listModel = listModel;
 	this.manager = manager;
@@ -272,7 +272,7 @@ public class ComputingAccountEditor extends JPanel {
 		button.setText("Testing...");
 		parentComponent.updateUI();
 		button.setEnabled(false);
-		boolean success = ComputingAccountUtils
+		boolean success = HpcAccountUtils
 			.testConnection(computingAccount);
 		// Pop-up the test result
 		JOptionPane.showMessageDialog(null, ""

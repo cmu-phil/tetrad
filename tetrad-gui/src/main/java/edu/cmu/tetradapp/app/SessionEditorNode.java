@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.*;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
@@ -106,6 +105,8 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.simulationStudy = simulationStudy;
         displayComp.setName(modelNode.getSessionName());
+        
+        System.out.println("modelNode.getSessionName(): " + modelNode.getButtonType());
 
         if (displayComp instanceof NoteDisplayComp) {
             createParamObjects(this);
@@ -126,6 +127,7 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             });
         } else {
+            // Any node type except notes
             setDisplayComp(displayComp);
             setLayout(new BorderLayout());
             add((JComponent) getSessionDisplayComp(), BorderLayout.CENTER);

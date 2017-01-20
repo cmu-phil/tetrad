@@ -7,7 +7,7 @@ import org.apache.http.client.ClientProtocolException;
 
 import edu.pitt.dbmi.ccd.rest.client.RestHttpsClient;
 import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
-import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 /**
  * 
@@ -16,9 +16,9 @@ import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class ComputingAccountUtils {
+public class HpcAccountUtils {
 
-    public static boolean testConnection(final ComputingAccount computingAccount) {
+    public static boolean testConnection(final HpcAccount computingAccount) {
 	final String username = computingAccount.getUsername();
 	final String password = computingAccount.getPassword();
 	final String scheme = computingAccount.getScheme();

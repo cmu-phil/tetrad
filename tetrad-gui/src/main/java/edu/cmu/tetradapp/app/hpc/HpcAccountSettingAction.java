@@ -22,7 +22,7 @@ import javax.swing.event.ListSelectionListener;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.pitt.dbmi.tetrad.db.entity.ComputingAccount;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 /**
  * 
@@ -42,7 +42,7 @@ public class HpcAccountSettingAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
-	ComputingAccountManager manager = desktop.getComputingAccountManager();
+	HpcAccountManager manager = desktop.getHpcAccountManager();
 
 	JComponent comp = buildHpcAccountSettingComponent(manager);
 	JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
@@ -51,11 +51,11 @@ public class HpcAccountSettingAction extends AbstractAction {
     }
     
     private static JComponent buildHpcAccountSettingComponent(
-	    final ComputingAccountManager manager) {
+	    final HpcAccountManager manager) {
 	// Get ComputingAccount from DB
-	final DefaultListModel<ComputingAccount> listModel = new DefaultListModel<ComputingAccount>();
+	final DefaultListModel<HpcAccount> listModel = new DefaultListModel<HpcAccount>();
 	
-	for (ComputingAccount account : manager.getComputingAccounts()) {
+	for (HpcAccount account : manager.getHpcAccounts()) {
 	    listModel.addElement(account);
 	}
 	
@@ -67,14 +67,14 @@ public class HpcAccountSettingAction extends AbstractAction {
 
 	// Right pane -> ComputingAccountEditor
 	final JPanel accountDetailPanel = new JPanel(new BorderLayout());
-	accountDetailPanel.add(new ComputingAccountEditor(splitPane, listModel, manager,
-		new ComputingAccount()), BorderLayout.CENTER);
+	accountDetailPanel.add(new HpcAccountEditor(splitPane, listModel, manager,
+		new HpcAccount()), BorderLayout.CENTER);
 	
 	splitPane.setLeftComponent(leftPanel);
 	splitPane.setRightComponent(accountDetailPanel);
 	
 	// Center Panel
-	final JList<ComputingAccount> accountList = new JList<>(listModel);
+	final JList<HpcAccount> accountList = new JList<>(listModel);
 	accountList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	accountList.setLayoutOrientation(JList.VERTICAL);
 	accountList.setSelectedIndex(-1);
@@ -89,10 +89,10 @@ public class HpcAccountSettingAction extends AbstractAction {
 		// Show or remove the detail
 		accountDetailPanel.removeAll();
 		if (selectedIndex > -1) {
-		    ComputingAccount computingAccount = listModel
+		    HpcAccount computingAccount = listModel
 			    .get(selectedIndex);
 		    System.out.println(computingAccount);
-		    accountDetailPanel.add(new ComputingAccountEditor(splitPane, listModel, manager,
+		    accountDetailPanel.add(new HpcAccountEditor(splitPane, listModel, manager,
 			    computingAccount), BorderLayout.CENTER);
 		}
 		accountDetailPanel.updateUI();
@@ -109,8 +109,8 @@ public class HpcAccountSettingAction extends AbstractAction {
 	    public void actionPerformed(ActionEvent e) {
 		// Show the empty ComputingAccountEditor
 		accountDetailPanel.removeAll();
-		accountDetailPanel.add(new ComputingAccountEditor(splitPane, listModel, manager,
-			new ComputingAccount()), BorderLayout.CENTER);
+		accountDetailPanel.add(new HpcAccountEditor(splitPane, listModel, manager,
+			new HpcAccount()), BorderLayout.CENTER);
 		accountDetailPanel.updateUI();
 	    }
 	});
@@ -126,7 +126,7 @@ public class HpcAccountSettingAction extends AbstractAction {
 		    return;
 		int selectedIndex = accountList.getSelectedIndex();
 		if (selectedIndex > -1) {
-		    ComputingAccount computingAccount = listModel
+		    HpcAccount computingAccount = listModel
 			    .get(selectedIndex);
 		    // Pop up the confirm dialog
 		    int option = JOptionPane.showConfirmDialog(
