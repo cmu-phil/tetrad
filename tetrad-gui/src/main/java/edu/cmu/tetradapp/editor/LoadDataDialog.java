@@ -289,7 +289,7 @@ final class LoadDataDialog extends JPanel {
         summaryBox.add(summaryScrollPane);
 
         // Show the default selected filename as preview border title
-        summaryBoxBorderTitle = "Step 3: Loading Summary";
+        summaryBoxBorderTitle = "Step 3: Load & Review";
 
         // Use a titled border with 5 px inside padding - Zhou
         summaryBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(summaryBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -302,7 +302,7 @@ final class LoadDataDialog extends JPanel {
         // Buttons
         // Step 1 button to specify format
         // You'll see Step 1 button only when you are ate step 2
-        step1Button = new JButton("< Step 1");
+        step1Button = new JButton("< Step 1: Specify Format");
 
         // Step 1 button listener
         step1Button.addActionListener(new ActionListener() {
@@ -331,7 +331,7 @@ final class LoadDataDialog extends JPanel {
 
         // Step 2 forward button to select options
         // You'll see Step 2 forward button only when you are ate step 1
-        step2ForwardButton = new JButton("Step 2 >");
+        step2ForwardButton = new JButton("Step 2: Select Options >");
 
         // Step 2 forward button listener
         step2ForwardButton.addActionListener(new ActionListener() {
@@ -359,7 +359,7 @@ final class LoadDataDialog extends JPanel {
 
         // Step 2 button to select options
         // You'll see Step 2 backward button only when you are ate step 3
-        step2BackwardButton = new JButton("< Step 2");
+        step2BackwardButton = new JButton("< Step 2: Select Options");
 
         // Step 2 backward button listener
         step2BackwardButton.addActionListener(new ActionListener() {
@@ -395,7 +395,7 @@ final class LoadDataDialog extends JPanel {
         });
 
         // Step 3 button
-        step3Button = new JButton("Step 3 >");
+        step3Button = new JButton("Step 3: Load & Review >");
 
         // Step 3 button listener
         step3Button.addActionListener(new ActionListener() {
