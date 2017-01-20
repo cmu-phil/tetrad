@@ -154,7 +154,7 @@ final class LoadDataDialog extends JPanel {
                         // Update the border title and show preview
                         previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + files[fileIndex].getName();
                         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-                        setText(files[fileIndex], fileTextArea);
+                        setPreview(files[fileIndex], fileTextArea);
                     }
                 }
             }
@@ -265,7 +265,7 @@ final class LoadDataDialog extends JPanel {
         fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // Set the default preview for the default selected file
-        setText(files[0], fileTextArea);
+        setPreview(files[0], fileTextArea);
 
         // Add the scrollable text area in a scroller
         final JScrollPane filePreviewScrollPane = new JScrollPane(fileTextArea);
@@ -541,7 +541,13 @@ final class LoadDataDialog extends JPanel {
         return dataModelList;
     }
 
-    private static void setText(File file, JTextArea textArea) {
+    /**
+     * Set the file preview content
+     *
+     * @param file
+     * @param textArea
+     */
+    private static void setPreview(File file, JTextArea textArea) {
         try {
             textArea.setText("");
 
@@ -551,6 +557,7 @@ final class LoadDataDialog extends JPanel {
             int nLine = 0;
 
             // Only preview the first 20 rows
+            // Will need to think about how to preview big file - Zhou
             while ((line = in.readLine()) != null) {
                 text.append(line.substring(0, line.length())).append("\n");
 
@@ -561,10 +568,6 @@ final class LoadDataDialog extends JPanel {
             }
 
             textArea.append(text.toString());
-
-            if (!textArea.isEditable()) {
-                textArea.append(". . .");
-            }
 
             textArea.setCaretPosition(0);
             in.close();
