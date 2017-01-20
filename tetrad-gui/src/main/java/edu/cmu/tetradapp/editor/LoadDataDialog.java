@@ -214,7 +214,8 @@ final class LoadDataDialog extends JPanel {
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         fileListBox = Box.createVerticalBox();
-        fileListBox.setPreferredSize(new Dimension(315, 170));
+        fileListBox.setMinimumSize(new Dimension(355, 165));
+        fileListBox.setMaximumSize(new Dimension(355, 165));
         fileListBox.add(fileListScrollPane);
         // Use a titled border with 5 px inside padding - Zhou
         String fileListBoxBorderTitle = "File to load";
@@ -230,10 +231,12 @@ final class LoadDataDialog extends JPanel {
 
         // Specify Format
         formatBox = dataLoaderSettings.specifyFormat();
-        formatBox.setPreferredSize(new Dimension(475, 165));
+        formatBox.setMinimumSize(new Dimension(535, 165));
+        formatBox.setMaximumSize(new Dimension(535, 165));
         // Options settings
         optionsBox = dataLoaderSettings.selectOptions();
-        optionsBox.setPreferredSize(new Dimension(475, 165));
+        optionsBox.setMinimumSize(new Dimension(535, 165));
+        optionsBox.setMaximumSize(new Dimension(535, 165));
 
         // Contains file list and format/options
         panelContainer = Box.createHorizontalBox();
