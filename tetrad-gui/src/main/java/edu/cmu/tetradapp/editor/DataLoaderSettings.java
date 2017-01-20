@@ -65,9 +65,9 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton tabDelimiterRadioButton;
     private JRadioButton spaceDelimiterRadioButton;
 
-    private JRadioButton quote1RadioButton;
-    private JRadioButton quote2RadioButton;
-    private JRadioButton quote3RadioButton;
+    private JRadioButton noneQuoteRadioButton;
+    private JRadioButton doubleQuoteRadioButton;
+    private JRadioButton singleQuoteRadioButton;
 
     private JCheckBox varNamesCheckBox;
     private JRadioButton idNoneRadioButton;
@@ -285,7 +285,7 @@ final class DataLoaderSettings extends JPanel {
 
         // ID radio buttons
         idNoneRadioButton = new JRadioButton("None");
-        id1RadioButton = new JRadioButton("Unlabeled first column");
+        id1RadioButton = new JRadioButton("Unlabeled 1st column");
         id2RadioButton = new JRadioButton("Column labeled: ");
         idStringField = new StringTextField("", 4);
 
@@ -392,16 +392,25 @@ final class DataLoaderSettings extends JPanel {
         // Quote Character
         Box quoteCharBox = Box.createHorizontalBox();
 
-        quote1RadioButton = new JRadioButton("\"");
-        quote2RadioButton = new JRadioButton("'");
-        quote3RadioButton = new JRadioButton("None");
+        noneQuoteRadioButton = new JRadioButton("None");
+        doubleQuoteRadioButton = new JRadioButton("\"");
+        singleQuoteRadioButton = new JRadioButton("'");
 
         ButtonGroup quoteCharBtnGrp = new ButtonGroup();
-        quoteCharBtnGrp.add(quote1RadioButton);
-        quoteCharBtnGrp.add(quote2RadioButton);
-        quoteCharBtnGrp.add(quote3RadioButton);
+        quoteCharBtnGrp.add(noneQuoteRadioButton);
+        quoteCharBtnGrp.add(doubleQuoteRadioButton);
+        quoteCharBtnGrp.add(singleQuoteRadioButton);
 
-        quote1RadioButton.addActionListener(new ActionListener() {
+        noneQuoteRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataQuotePreference", "");
+                }
+            }
+        });
+
+        doubleQuoteRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -411,7 +420,7 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        quote2RadioButton.addActionListener(new ActionListener() {
+        singleQuoteRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -420,30 +429,21 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        quote3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "");
-                }
-            }
-        });
-
         String quotePreference = Preferences.userRoot().get("loadDataQuotePreference", "\"");
 
         if ("\"".equals(quotePreference)) {
-            quote1RadioButton.setSelected(true);
+            doubleQuoteRadioButton.setSelected(true);
         } else if ("'".equals(quotePreference)) {
-            quote2RadioButton.setSelected(true);
+            singleQuoteRadioButton.setSelected(true);
         } else if ("".equals(quotePreference)) {
-            quote3RadioButton.setSelected(true);
+            noneQuoteRadioButton.setSelected(true);
         }
 
         quoteCharBox.add(new JLabel("Quote character:"));
         quoteCharBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        quoteCharBox.add(quote1RadioButton);
-        quoteCharBox.add(quote2RadioButton);
-        quoteCharBox.add(quote3RadioButton);
+        quoteCharBox.add(noneQuoteRadioButton);
+        quoteCharBox.add(doubleQuoteRadioButton);
+        quoteCharBox.add(singleQuoteRadioButton);
         quoteCharBox.add(Box.createHorizontalGlue());
         optionsContainer.add(quoteCharBox);
 
@@ -610,14 +610,6 @@ final class DataLoaderSettings extends JPanel {
         return commentStringField;
     }
 
-    public JRadioButton getQuote1RadioButton() {
-        return quote1RadioButton;
-    }
-
-    public JRadioButton getQuote2RadioButton() {
-        return quote2RadioButton;
-    }
-
     public JCheckBox getVarNamesCheckBox() {
         return varNamesCheckBox;
     }
@@ -690,7 +682,7 @@ final class DataLoaderSettings extends JPanel {
     }
 
     private char getQuoteChar() {
-        if (quote1RadioButton.isSelected()) {
+        if (doubleQuoteRadioButton.isSelected()) {
             return '"';
         } else {
             return '\'';
