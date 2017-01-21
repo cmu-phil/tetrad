@@ -638,6 +638,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case R3:
                 algorithm = new R3(new SingleGraphAlg(runner.getSourceGraph()));
+                ((R3) algorithm).setKnowledge(runner.getKnowledge());
                 break;
             case R4:
                 algorithm = new R4(new SingleGraphAlg(runner.getSourceGraph()));

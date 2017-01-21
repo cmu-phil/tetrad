@@ -82,7 +82,7 @@ public class TestCcd {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleRecall());
         statistics.add(new ElapsedTime());
 
@@ -110,7 +110,7 @@ public class TestCcd {
 
     }
 
-    public void TestFasp() {
+    public void TestFang() {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", .001);
@@ -134,6 +134,7 @@ public class TestCcd {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
+        statistics.add(new TwoCycleFalsePositive());
         statistics.add(new ElapsedTime());
 
         Simulations simulations = new Simulations();
@@ -168,6 +169,11 @@ public class TestCcd {
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_c4"));
 
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p2n6"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p6n2"));
+
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FangConcatenated(new SemBicTest()));
@@ -175,7 +181,7 @@ public class TestCcd {
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(false);
-        comparison.setShowSimulationIndices(false);
+        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
@@ -190,7 +196,7 @@ public class TestCcd {
     }
 
     public static void main(String... args) {
-        new TestCcd().TestFasp();
+        new TestCcd().TestFang();
     }
 }
 

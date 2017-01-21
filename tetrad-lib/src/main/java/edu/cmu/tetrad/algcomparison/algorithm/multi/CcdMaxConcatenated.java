@@ -49,7 +49,11 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
 
-        return search.search();
+        Graph search1 = search.search();
+
+
+
+        return search1;
     }
 
     @Override

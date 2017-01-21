@@ -351,6 +351,7 @@ public final class LargeScaleSimulation {
 
         while (s < sampleSize) {
             if ((++shockIndex) % intervalBetweenShocks == 0) {
+//                shock = getUncorrelatedNonGausianShocks(1)[0];
                 shock = getUncorrelatedGaussianShocks(1)[0];
             }
 

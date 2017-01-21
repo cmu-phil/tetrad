@@ -708,18 +708,18 @@ public class Lofs2 {
         if (graph.getEdge(x, y).isDirected()) return;
         if (graph.getEdges(x, y).size() > 1) return;
 
-//        String xname = x.getName();
-//        String yname = y.getName();
-//
-//        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
-//            graph.removeEdge(x, y);
-//            graph.addDirectedEdge(x, y);
-//            return;
-//        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
-//            graph.removeEdge(y, x);
-//            graph.addDirectedEdge(y, x);
-//            return;
-//        }
+        String xname = x.getName();
+        String yname = y.getName();
+
+        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
+            graph.removeEdge(x, y);
+            graph.addDirectedEdge(x, y);
+            return;
+        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
+            graph.removeEdge(y, x);
+            graph.addDirectedEdge(y, x);
+            return;
+        }
 
 //        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
