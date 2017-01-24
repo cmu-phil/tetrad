@@ -561,6 +561,11 @@ final class LoadDataDialog extends JPanel {
             while ((line = in.readLine()) != null) {
                 text.append(line.substring(0, line.length())).append("\n");
 
+                if (text.length() > 50000) {
+                    textArea.append("(This file is too big to show the preview ...)\n");
+                    break;
+                }
+
                 nLine++;
                 if (nLine >= 20) {
                     break;
@@ -573,7 +578,6 @@ final class LoadDataDialog extends JPanel {
             in.close();
         } catch (IOException e) {
             textArea.append("<<<ERROR READING FILE>>>");
-            textArea.setEditable(false);
         }
     }
 
