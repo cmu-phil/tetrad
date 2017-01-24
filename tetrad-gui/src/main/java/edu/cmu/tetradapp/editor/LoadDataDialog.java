@@ -53,21 +53,17 @@ final class LoadDataDialog extends JPanel {
 
     private DataLoaderSettings dataLoaderSettings;
 
-    private transient DataModel[] dataModels;
-
-    private JButton loadButton;
+    private final transient DataModel[] dataModels;
 
     private final JTextArea summaryTextArea;
 
     public JTextArea fileTextArea;
 
-    private JScrollPane summaryDialogScrollPane;
-
     private int fileIndex;
 
     private JList fileList;
 
-    private DefaultListModel fileListModel;
+    private final DefaultListModel fileListModel;
 
     private Box filePreviewBox;
 
@@ -75,7 +71,7 @@ final class LoadDataDialog extends JPanel {
 
     private String summaryBoxBorderTitle;
 
-    private String defaulyPreviewBoxBorderTitle;
+    private final String defaulyPreviewBoxBorderTitle;
 
     private Box panelContainer;
 
@@ -129,9 +125,9 @@ final class LoadDataDialog extends JPanel {
         container.setPreferredSize(new Dimension(900, 500));
 
         // Show all chosen files in a list
-        for (int i = 0; i < files.length; i++) {
+        for (File file : files) {
             // Add each file name to the list model
-            fileListModel.addElement(files[i].getName());
+            fileListModel.addElement(file.getName());
         }
 
         fileList = new JList(fileListModel);
@@ -162,6 +158,7 @@ final class LoadDataDialog extends JPanel {
 
         // Right click mouse on file name to show the close option
         fileList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
@@ -181,6 +178,7 @@ final class LoadDataDialog extends JPanel {
                     menu.show(fileList, point.x, point.y);
 
                     close.addActionListener(new ActionListener() {
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             // Can't remove if there's only one file left
                             if (files.length == 1) {
@@ -253,6 +251,7 @@ final class LoadDataDialog extends JPanel {
 
         // Preview container
         previewContainer = Box.createVerticalBox();
+        previewContainer.setPreferredSize(new Dimension(900, 315));
 
         // Add some padding between panelContainer and preview container
         previewContainer.add(Box.createVerticalStrut(20));
@@ -512,17 +511,17 @@ final class LoadDataDialog extends JPanel {
         List<String> failedFiles = new ArrayList<String>();
 
         // Try to load each file and store the file name for failed loadings
-        for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-            System.out.println("File index = " + fileIndex);
+        for (int i = 0; i < files.length; i++) {
+            System.out.println("File index = " + i);
 
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(fileIndex, summaryTextArea, files);
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, summaryTextArea, files);
             if (dataModel == null) {
-                System.out.println("Failed to load file index = " + fileIndex);
+                System.out.println("Failed to load file index = " + i);
 
                 // Add the file name to failed list
-                failedFiles.add(files[fileIndex].getName());
+                failedFiles.add(files[i].getName());
             } else {
-                addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+                addDataModel(dataModel, i, files[i].getName());
             }
         }
 
@@ -551,31 +550,31 @@ final class LoadDataDialog extends JPanel {
         try {
             textArea.setText("");
 
-            BufferedReader in = new BufferedReader(new FileReader(file));
-            StringBuilder text = new StringBuilder();
-            String line;
-            int nLine = 0;
+            try (BufferedReader in = new BufferedReader(new FileReader(file))) {
+                StringBuilder text = new StringBuilder();
+                String line;
+                int nLine = 0;
 
-            // Only preview the first 20 rows
-            // Will need to think about how to preview big file - Zhou
-            while ((line = in.readLine()) != null) {
-                text.append(line.substring(0, line.length())).append("\n");
+                // Only preview the first 20 rows
+                // Will need to think about how to preview big file - Zhou
+                while ((line = in.readLine()) != null) {
+                    text.append(line.substring(0, line.length())).append("\n");
 
-                if (text.length() > 50000) {
-                    textArea.append("(This file is too big to show the preview ...)\n");
-                    break;
+                    if (text.length() > 50000) {
+                        textArea.append("(This file is too big to show the preview ...)\n");
+                        break;
+                    }
+
+                    nLine++;
+                    if (nLine >= 20) {
+                        break;
+                    }
                 }
 
-                nLine++;
-                if (nLine >= 20) {
-                    break;
-                }
+                textArea.append(text.toString());
+
+                textArea.setCaretPosition(0);
             }
-
-            textArea.append(text.toString());
-
-            textArea.setCaretPosition(0);
-            in.close();
         } catch (IOException e) {
             textArea.append("<<<ERROR READING FILE>>>");
         }

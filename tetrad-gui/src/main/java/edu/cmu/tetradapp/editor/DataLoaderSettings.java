@@ -109,6 +109,7 @@ final class DataLoaderSettings extends JPanel {
         covarianceRadioButton = new JRadioButton("Covariance data");
 
         tabularRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -134,6 +135,7 @@ final class DataLoaderSettings extends JPanel {
         }
 
         covarianceRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -191,6 +193,7 @@ final class DataLoaderSettings extends JPanel {
         delimiterBtnGrp.add(spaceDelimiterRadioButton);
 
         commaDelimiterRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -201,6 +204,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         tabDelimiterRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -211,6 +215,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         spaceDelimiterRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -249,6 +254,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Listener
         varNamesCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
 
@@ -321,6 +327,7 @@ final class DataLoaderSettings extends JPanel {
         commentMarkerBtnGrp.add(comment3RadioButton);
 
         comment1RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -331,6 +338,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         comment2RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -341,6 +349,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         comment3RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -365,6 +374,7 @@ final class DataLoaderSettings extends JPanel {
         commentStringField = new StringTextField(otherCommentPreference, 4);
 
         commentStringField.setFilter(new StringTextField.Filter() {
+            @Override
             public String filter(String value, String oldValue) {
                 Preferences.userRoot().put("dataLoaderMaxIntegral", value);
                 return value;
@@ -372,6 +382,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         commentStringField.setFilter(new StringTextField.Filter() {
+            @Override
             public String filter(String value, String oldValue) {
                 Preferences.userRoot().put("dataLoaderMaxIntegral", value);
                 return value;
@@ -402,6 +413,7 @@ final class DataLoaderSettings extends JPanel {
         quoteCharBtnGrp.add(singleQuoteRadioButton);
 
         noneQuoteRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -411,6 +423,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         doubleQuoteRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -421,6 +434,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         singleQuoteRadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -464,6 +478,7 @@ final class DataLoaderSettings extends JPanel {
         missingValueMarkerBtnGrp.add(missing4RadioButton);
 
         missing1RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -474,6 +489,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         missing2RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -484,6 +500,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         missing3RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -494,6 +511,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         missing4RadioButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
@@ -526,6 +544,7 @@ final class DataLoaderSettings extends JPanel {
         missingStringField.setText(missingStringText);
 
         missingStringField.setFilter(new StringTextField.Filter() {
+            @Override
             public String filter(String value, String oldValue) {
                 Preferences.userRoot().put("dataLoaderMaxIntegral", value);
                 return value;
@@ -556,6 +575,7 @@ final class DataLoaderSettings extends JPanel {
         maxIntegralDiscreteIntField.setValue(maxIntegralPreference);
 
         maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
+            @Override
             public int filter(int value, int oldValue) {
                 if (value >= 0) {
                     Preferences.userRoot().putInt("dataLoaderMaxIntegral", value);
