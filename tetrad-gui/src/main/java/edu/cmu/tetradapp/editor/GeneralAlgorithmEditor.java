@@ -59,24 +59,12 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
-import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
-import edu.pitt.dbmi.ccd.rest.client.RestHttpsClient;
-import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
-import edu.pitt.dbmi.ccd.rest.client.dto.data.DataFile;
-import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
-import edu.pitt.dbmi.ccd.rest.client.service.data.DataUploadService;
-import edu.pitt.dbmi.ccd.rest.client.service.data.RemoteDataFileService;
-import edu.pitt.dbmi.ccd.rest.client.service.jobqueue.JobQueueService;
-import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
-import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
 import edu.pitt.dbmi.tetrad.db.entity.DataValidation;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
-import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
-import edu.pitt.dbmi.tetrad.db.entity.HpcJobLogDetail;
 import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
 
 import javax.help.CSH;
@@ -95,12 +83,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.prefs.Preferences;
 
 /**
  * Edits some algorithm to search for Markov blanket patterns.
@@ -809,7 +793,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	    // FileDelimiter
 	    String fileDelimiter = "tab"; // Pre-determined
 	    algorithmParamRequest.setFileDelimiter(fileDelimiter);
-	    
+
 	    // Default Data Validation Parameters
 	    DataValidation dataValidation = new DataValidation();
 	    dataValidation.setUniqueVarName(true);
@@ -838,12 +822,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
 	    algorithmParamRequest.setAlgorithmParameters(AlgorithmParameters);
 
-	    JvmOption jvmOption = new JvmOption();
-	    jvmOption.setParameter("maxHeapSize");
-	    jvmOption.setValue("5"); // This value shouldn't be hard-code
-	    List<JvmOption> jvmOptions = new ArrayList<>();
-	    jvmOptions.add(jvmOption);
-	    algorithmParamRequest.setJvmOptions(jvmOptions);
+	    String maxHeapSize = null;
+	    do {
+		maxHeapSize = JOptionPane.showInputDialog(progressDialog,
+			"Enter Your Request Java Max Heap Size (GB):", "5");
+	    } while (maxHeapSize != null && !StringUtils.isNumeric(maxHeapSize));
+
+	    if (maxHeapSize != null) {
+		JvmOption jvmOption = new JvmOption();
+		jvmOption.setParameter("maxHeapSize");
+		jvmOption.setValue(maxHeapSize);
+		List<JvmOption> jvmOptions = new ArrayList<>();
+		jvmOptions.add(jvmOption);
+		algorithmParamRequest.setJvmOptions(jvmOptions);
+	    }
 
 	    progressTextArea.replaceRange("Done", progressTextLength,
 		    progressTextArea.getText().length());
@@ -885,334 +877,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	    progressDialog.dispose();
 	}
 
-	/*
-	 * final String username = hpcAccount.getUsername(); final String
-	 * password = hpcAccount.getPassword(); final String scheme =
-	 * hpcAccount.getScheme(); final String hostname =
-	 * hpcAccount.getHostname(); final int port = hpcAccount.getPort();
-	 * 
-	 * try { RestHttpsClient restClient = new RestHttpsClient(username,
-	 * password, scheme, hostname, port);
-	 * 
-	 * // Authentication Progress String authMessage =
-	 * String.format("1/%1$d Connecting to %2$s", totalProcesses, hostname);
-	 * progressTextArea.append(authMessage); progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Authenticating...");
-	 * progressTextArea.updateUI();
-	 * 
-	 * UserService userService = new UserService(restClient, scheme,
-	 * hostname, port); // JWT token is valid for 1 hour JsonWebToken
-	 * jsonWebToken = userService.requestJWT();
-	 * progressTextArea.replaceRange("Done", progressTextLength,
-	 * progressTextArea.getText().length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * // Data Preparation Progress String dataMessage =
-	 * String.format("2/%1$d Data Preparation", totalProcesses);
-	 * progressTextArea.append(dataMessage); progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Preparing..."); progressTextArea.updateUI();
-	 * 
-	 * DataUploadService dataUploadService = new DataUploadService(
-	 * restClient, 4, scheme, hostname, port);
-	 * 
-	 * 
-	 * // File file = Files.createTempFile("Tetrad-data-", ".txt"); //
-	 * System.out.println(file.toAbsolutePath().toString()); List<String>
-	 * tempLine = new ArrayList<>();
-	 * 
-	 * // Header List<Node> variables = dataModel.getVariables(); if
-	 * ((variables == null || variables.isEmpty()) &&
-	 * runner.getSourceGraph() != null) { variables =
-	 * runner.getSourceGraph().getNodes(); }
-	 * 
-	 * String vars = StringUtils.join(variables.toArray(), tab);
-	 * tempLine.add(vars);
-	 * 
-	 * // Data DataSet dataSet = (DataSet) dataModel; for (int i = 0; i <
-	 * dataSet.getNumRows(); i++) { String line = null; for (int j = 0; j <
-	 * dataSet.getNumColumns(); j++) { String cell = null; if
-	 * (dataSet.isContinuous()) { cell = String.valueOf(dataSet.getDouble(i,
-	 * j)); } else { cell = String.valueOf(dataSet.getInt(i, j)); } if (line
-	 * == null) { line = cell; } else { line = line + "\t" + cell; } }
-	 * tempLine.add(line); }
-	 * 
-	 * for (String line : tempLine) { System.out.println(line); }
-	 * 
-	 * Files.write(file, tempLine);
-	 * 
-	 * // ~File
-	 * 
-	 * 
-	 * // Get file's MD5 hash and use it as its identifier String md5 =
-	 * MessageDigestHash.computeMD5Hash(file);
-	 * 
-	 * progressTextArea.replaceRange("Done", progressTextLength,
-	 * progressTextArea.getText().length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * // Data Uploading Progress String dataUploadMessage = String.format(
-	 * "3/%1$d Uploading Data to %2$s", totalProcesses, hostname);
-	 * progressTextArea.append(dataUploadMessage);
-	 * progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Uploading..."); progressTextArea.updateUI();
-	 * 
-	 * // Check any file up there with this md5 hash RemoteDataFileService
-	 * remoteDataService = new RemoteDataFileService( restClient, scheme,
-	 * hostname, port);
-	 * 
-	 * long datasetFileId = -1;
-	 * 
-	 * Set<DataFile> dataFiles = remoteDataService
-	 * .retrieveDataFileInfo(jsonWebToken); for (DataFile dataFile :
-	 * dataFiles) { String remoteMd5 = dataFile.getMd5checkSum();
-	 * 
-	 * if (md5.equals(remoteMd5)) {
-	 * 
-	 * progressTextArea.replaceRange("Skipped", progressTextLength,
-	 * progressTextArea.getText() .length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * datasetFileId = dataFile.getId();
-	 * 
-	 * // Data Summarizing Progress String dataSummarizeMessage =
-	 * String.format( "4/%1$d Summarizing Data", totalProcesses);
-	 * progressTextArea.append(dataSummarizeMessage);
-	 * progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Summarizing...");
-	 * progressTextArea.updateUI();
-	 * 
-	 * if (dataFile.getFileSummary().getVariableType() == null) { String
-	 * variableType = "continuous"; if (dataModel.isDiscrete()) {
-	 * variableType = "discrete"; }
-	 * 
-	 * String fileDelimiter = Preferences.userRoot()
-	 * .get("loadDataDelimiterPreference", "Tab") .toLowerCase(); if
-	 * (!fileDelimiter.equalsIgnoreCase("tab")) { fileDelimiter = "comma"; }
-	 * 
-	 * remoteDataService.summarizeDataFile(datasetFileId, variableType,
-	 * fileDelimiter, jsonWebToken); }
-	 * 
-	 * progressTextArea.replaceRange("Summarized", progressTextLength,
-	 * progressTextArea.getText() .length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * break; } }
-	 * 
-	 * // If not, upload the file if (datasetFileId == -1) {
-	 * dataUploadService.startUpload(file, jsonWebToken);
-	 * 
-	 * int progress; while ((progress =
-	 * dataUploadService.getUploadJobStatus(file
-	 * .toAbsolutePath().toString())) < 100) {
-	 * System.out.println("Upload Progress: " + progress + "%");
-	 * progressTextArea.replaceRange("" + progress + "%",
-	 * progressTextLength, progressTextArea.getText() .length());
-	 * progressTextArea.updateUI(); Thread.sleep(500); }
-	 * 
-	 * progressTextArea.replaceRange("Uploaded", progressTextLength,
-	 * progressTextArea.getText().length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * dataFiles = remoteDataService .retrieveDataFileInfo(jsonWebToken);
-	 * for (DataFile dataFile : dataFiles) { String remoteMd5 =
-	 * dataFile.getMd5checkSum();
-	 * 
-	 * if (md5.equals(remoteMd5)) {
-	 * 
-	 * datasetFileId = dataFile.getId();
-	 * 
-	 * // Data Summarizing Progress String dataSummarizeMessage =
-	 * String.format( "4/%1$d Summarizing Data", totalProcesses);
-	 * progressTextArea.append(dataSummarizeMessage);
-	 * progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText() .length();
-	 * 
-	 * progressTextArea.append("Summarizing...");
-	 * progressTextArea.updateUI();
-	 * 
-	 * if (dataFile.getFileSummary().getVariableType() == null) { String
-	 * variableType = "continuous"; if (dataModel.isDiscrete()) {
-	 * variableType = "discrete"; }
-	 * 
-	 * String fileDelimiter = Preferences.userRoot()
-	 * .get("loadDataDelimiterPreference", "Tab") .toLowerCase(); if
-	 * (!fileDelimiter.equalsIgnoreCase("tab")) { fileDelimiter = "comma"; }
-	 * 
-	 * remoteDataService.summarizeDataFile(datasetFileId, variableType,
-	 * fileDelimiter, jsonWebToken); }
-	 * 
-	 * progressTextArea.replaceRange("Summarized", progressTextLength,
-	 * progressTextArea.getText() .length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * break; } }
-	 * 
-	 * }
-	 * 
-	 * // Check if there is a prior knowledge String knowledgeUploadMessage
-	 * = String.format( "5/%1$d Uploading Prior Knowledge to %2$s",
-	 * totalProcesses, hostname);
-	 * progressTextArea.append(knowledgeUploadMessage);
-	 * progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Uploading..."); progressTextArea.updateUI();
-	 * 
-	 * long priorKnowledgeFileId = -1; Knowledge2 knowledge =
-	 * (Knowledge2)dataModel.getKnowledge(); if (knowledge != null &&
-	 * !knowledge.isEmpty()) { prior =
-	 * Files.createTempFile(file.getFileName().toString(), ".prior");
-	 * knowledge.saveKnowledge(Files.newBufferedWriter(prior));
-	 * 
-	 * // Get prior knowledge file Id md5 =
-	 * MessageDigestHash.computeMD5Hash(prior);
-	 * 
-	 * dataFiles = remoteDataService
-	 * .retrievePriorKnowledgeFileInfo(jsonWebToken); for (DataFile dataFile
-	 * : dataFiles) { String remoteMd5 = dataFile.getMd5checkSum();
-	 * 
-	 * if (md5.equals(remoteMd5)) { priorKnowledgeFileId = dataFile.getId();
-	 * break; } }
-	 * 
-	 * if (priorKnowledgeFileId == -1) { // Upload prior knowledge file
-	 * dataUploadService.startUpload(prior, jsonWebToken);
-	 * 
-	 * dataFiles = remoteDataService
-	 * .retrievePriorKnowledgeFileInfo(jsonWebToken); for (DataFile dataFile
-	 * : dataFiles) { String remoteMd5 = dataFile.getMd5checkSum();
-	 * 
-	 * if (md5.equals(remoteMd5)) { priorKnowledgeFileId = dataFile.getId();
-	 * break; } } } progressTextArea.replaceRange("Uploaded",
-	 * progressTextLength, progressTextArea.getText().length()); } else {
-	 * progressTextArea.replaceRange("Skipped", progressTextLength,
-	 * progressTextArea.getText().length()); }
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * String algorithmName = AbstractAlgorithmRequest.FGES; Algorithm
-	 * algorithm = runner.getAlgorithm(); System.out.println("Algorithm: " +
-	 * algorithm.getDescription()); AlgName name = (AlgName)
-	 * algNamesDropdown.getSelectedItem(); switch (name) { case FGES:
-	 * algorithmName = AbstractAlgorithmRequest.FGES; if
-	 * (dataModel.isDiscrete()) { algorithmName =
-	 * AbstractAlgorithmRequest.FGES_DISCRETE; } break; case GFCI:
-	 * algorithmName = AbstractAlgorithmRequest.GFCI; if
-	 * (dataModel.isDiscrete()) { algorithmName =
-	 * AbstractAlgorithmRequest.GFCI_DISCRETE; } break; default: return; }
-	 * 
-	 * edu.pitt.dbmi.ccd.rest.client.dto.algo.AlgorithmParamRequest
-	 * paramRequest = new
-	 * edu.pitt.dbmi.ccd.rest.client.dto.algo.AlgorithmParamRequest();
-	 * paramRequest.setDatasetFileId(datasetFileId);
-	 * 
-	 * Map<String, Object> dataValidation = new HashMap<>();
-	 * dataValidation.put("skipUniqueVarName", false);
-	 * if(dataModel.isContinuous()) {
-	 * dataValidation.put("skipNonzeroVariance", false); } else {
-	 * dataValidation.put("skipCategoryLimit", false); }
-	 * paramRequest.setDataValidation(dataValidation);
-	 * 
-	 * Map<String, Object> AlgorithmParameters = new HashMap<>();
-	 * 
-	 * Parameters parameters = runner.getParameters(); List<String>
-	 * parameterNames = runner.getAlgorithm().getParameters(); for (String
-	 * parameter : parameterNames) { Object value =
-	 * parameters.get(parameter); System.out.println("parameter: " +
-	 * parameter + "\tvalue: " + value); if (value != null) {
-	 * AlgorithmParameters.put(parameter, value); } } if
-	 * (priorKnowledgeFileId > -1) {
-	 * AlgorithmParameters.put("priorKnowledgeFileId",priorKnowledgeFileId);
-	 * //System.out.println("parameter: priorKnowledgeFileId\tvalue: " +
-	 * priorKnowledgeFileId); }
-	 * 
-	 * paramRequest.setAlgorithmParameters(AlgorithmParameters);
-	 * 
-	 * Map<String, Object> jvmOptions = new HashMap<>();
-	 * jvmOptions.put("maxHeapSize", 5);
-	 * paramRequest.setJvmOptions(jvmOptions);
-	 * 
-	 * JobQueueService jobQueueService = new JobQueueService(restClient,
-	 * scheme, hostname, port);
-	 * 
-	 * // Submit a job String submitJobMessage = String
-	 * .format("6/%1$d Submitting a job to %2$s", totalProcesses, hostname);
-	 * progressTextArea.append(submitJobMessage);
-	 * progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Submitting...");
-	 * progressTextArea.updateUI();
-	 * 
-	 * JobInfo jobInfo = jobQueueService.addToRemoteQueue(algorithmName,
-	 * paramRequest, jsonWebToken);
-	 * 
-	 * JobInfo job; while ((job =
-	 * jobQueueService.getJobStatus(jobInfo.getId(), jsonWebToken)) != null)
-	 * { System.out.println("job.getStatus(): " + job.getStatus());
-	 * progressTextArea.replaceRange(job.getStatus() == 0 ? "Queued" :
-	 * "Running", progressTextLength, progressTextArea .getText().length());
-	 * progressTextArea.updateUI(); Thread.sleep(5000); }
-	 * 
-	 * progressTextArea.replaceRange("Finnished", progressTextLength,
-	 * progressTextArea.getText().length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * // Download result String downloadResultMessage = String.format(
-	 * "7/%1$d Downloading a result from %2$s", totalProcesses, hostname);
-	 * progressTextArea.append(downloadResultMessage);
-	 * progressTextArea.append(tab);
-	 * 
-	 * progressTextLength = progressTextArea.getText().length();
-	 * 
-	 * progressTextArea.append("Downloading...");
-	 * progressTextArea.updateUI();
-	 * 
-	 * ResultService resultService = new ResultService(restClient, scheme,
-	 * hostname, port);
-	 * 
-	 * // Download result Thread.sleep(5000); String text =
-	 * resultService.downloadAlgorithmResultFile
-	 * (jobInfo.getResultFileName(), jsonWebToken); String json
-	 * =resultService
-	 * .downloadAlgorithmResultFile(jobInfo.getResultJsonFileName(),
-	 * jsonWebToken); System.out.println("Result File: " + text);
-	 * System.out.println("Json Result File: " + json);
-	 * 
-	 * progressTextArea.replaceRange("Downloaded",
-	 * progressTextLength,progressTextArea.getText().length());
-	 * progressTextArea.append(newline); progressTextArea.updateUI();
-	 * 
-	 * Graph graph = JsonUtils.parseJSONObjectToTetradGraph(json);
-	 * List<Graph> graphs = new ArrayList<>(); graphs.add(graph);
-	 * 
-	 * runner.getGraphs().add(graph); graphEditor.replace(graphs);
-	 * graphEditor.validate(); firePropertyChange("modelChanged",
-	 * null,null); pane.setSelectedComponent(graphEditor);
-	 * 
-	 * } catch (Exception e) { e.printStackTrace(); } finally {
-	 * progressDialog.setVisible(false); progressDialog.dispose(); }
-	 */
-
     }
 
     public void setAlgorithmResult(String jsonResult) {
 	Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
 	List<Graph> graphs = new ArrayList<>();
 	graphs.add(graph);
+	int size = runner.getGraphs().size();
+	for(int index=0;index<size;index++){
+	    runner.getGraphs().remove(index);
+	}
 	runner.getGraphs().add(graph);
 	graphEditor.replace(graphs);
 	graphEditor.validate();
@@ -1742,7 +1416,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
 	// Remote search mode
 
-	if (graphs == null || graphs.isEmpty()) {
+	if (hpcJobInfo == null && (graphs == null || graphs.isEmpty())) {
 	    int option = JOptionPane.showConfirmDialog(this,
 		    "You have not performed a search. Close anyway?", "Close?",
 		    JOptionPane.YES_NO_OPTION);

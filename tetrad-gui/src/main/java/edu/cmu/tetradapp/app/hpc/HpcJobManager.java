@@ -33,6 +33,8 @@ public class HpcJobManager {
     private final HpcJobLogDetailService hpcJobLogDetailService;
 
     private final HpcJobInfoService hpcJobInfoService;
+    
+    private final int simultaneousUpload;
 
     private final ExecutorService executorService;
 
@@ -47,6 +49,8 @@ public class HpcJobManager {
     private final JsonWebTokenManager jsonWebTokenManager;
 
     private final Map<HpcAccount, Set<HpcJobInfo>> activeHpcJobInfoMap;
+    
+    private final Map<HpcAccount, HpcAccountService> hpcAccountServiceMap;
 
     public HpcJobManager(final HpcJobLogService hpcJobLogService,
 	    final HpcJobLogDetailService hpcJobLogDetailService,
@@ -55,13 +59,20 @@ public class HpcJobManager {
 	this.hpcJobLogService = hpcJobLogService;
 	this.hpcJobLogDetailService = hpcJobLogDetailService;
 	this.hpcJobInfoService = hpcJobInfoService;
+	this.simultaneousUpload = simultaneousUpload;
 	this.jsonWebTokenManager = new JsonWebTokenManager();
+	
 	executorService = Executors.newFixedThreadPool(simultaneousUpload);
+	
 	uploadFileProgressMap = new HashMap<>();
 	activeHpcJobInfoMap = new HashMap<>();
 	hpcResultMap = new HashMap<>();
+	hpcAccountServiceMap = new HashMap<>();
+	
 	resumePreProcessJobs();
+	
 	this.timer = new Timer();
+	
 	startHpcJobScheduler();
 	resumeActiveHpcJobInfos();
     }
@@ -237,7 +248,11 @@ public class HpcJobManager {
 	Set<HpcJobInfo> hpcJobInfos = activeHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
 	    hpcJobInfos.remove(hpcJobInfo);
-	    activeHpcJobInfoMap.put(hpcAccount, hpcJobInfos);
+	    if (hpcJobInfos.isEmpty()) {
+		activeHpcJobInfoMap.remove(hpcAccount);
+	    } else {
+		activeHpcJobInfoMap.put(hpcAccount, hpcJobInfos);
+	    }
 	}
 	hpcResultMap.remove(hpcJobInfo);
     }
@@ -246,4 +261,17 @@ public class HpcJobManager {
 	return activeHpcJobInfoMap;
     }
 
+    public HpcAccountService getHpcAccountService(final HpcAccount hpcAccount) throws Exception{
+	HpcAccountService hpcAccountService = hpcAccountServiceMap.get(hpcAccount);
+	if(hpcAccountService == null){
+	    hpcAccountService = new HpcAccountService(hpcAccount, simultaneousUpload);
+	    hpcAccountServiceMap.put(hpcAccount, hpcAccountService);
+	}
+	return hpcAccountService;
+    }
+    
+    public void removeHpcAccountService(final HpcAccount hpcAccount) {
+	hpcAccountServiceMap.remove(hpcAccount);
+    }
+    
 }

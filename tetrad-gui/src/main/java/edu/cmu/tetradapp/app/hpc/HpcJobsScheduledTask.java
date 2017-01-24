@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.TimerTask;
 
 import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
-import edu.pitt.dbmi.ccd.rest.client.RestHttpsClient;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.ResultFile;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
@@ -61,29 +60,26 @@ public class HpcJobsScheduledTask extends TimerTask {
 		if (hpcJobInfo.getPid() != null) {
 		    long pid = hpcJobInfo.getPid().longValue();
 		    hpcJobInfoMap.put(pid, hpcJobInfo);
+
 		    System.out.println("id: " + hpcJobInfo.getId() + " : "
 			    + hpcJobInfo.getAlgorithmName() + ": pid: " + pid
 			    + " : " + hpcJobInfo.getResultFileName());
+
 		} else {
+
 		    System.out.println("id: " + hpcJobInfo.getId() + " : "
 			    + hpcJobInfo.getAlgorithmName() + ": no pid! : "
 			    + hpcJobInfo.getResultFileName());
+
 		    hpcJobInfos.remove(hpcJobInfo);
 		}
 	    }
 
-	    final String username = hpcAccount.getUsername();
-	    final String password = hpcAccount.getPassword();
-	    final String scheme = hpcAccount.getScheme();
-	    final String hostname = hpcAccount.getHostname();
-	    final int port = hpcAccount.getPort();
-
-	    RestHttpsClient restClient;
 	    try {
-		restClient = new RestHttpsClient(username, password, scheme,
-			hostname, port);
-		JobQueueService jobQueueService = new JobQueueService(
-			restClient, scheme, hostname, port);
+		HpcAccountService hpcAccountService = hpcJobManager
+			.getHpcAccountService(hpcAccount);
+
+		JobQueueService jobQueueService = hpcAccountService.getJobQueueService();
 		List<JobInfo> jobInfos = jobQueueService
 			.getActiveJobs(getJsonWebToken(hpcAccount));
 
@@ -127,16 +123,18 @@ public class HpcJobsScheduledTask extends TimerTask {
 		}
 
 		if (hpcJobInfos.size() > 0) {
-		    ResultService resultService = new ResultService(restClient,
-			    scheme, hostname, port);
+		    ResultService resultService = hpcAccountService.getResultService();
+
 		    Set<ResultFile> resultFiles = resultService
 			    .listAlgorithmResultFiles(getJsonWebToken(hpcAccount));
+
 		    Set<String> resultFileNames = new HashSet<>();
 		    for (ResultFile resultFile : resultFiles) {
 			resultFileNames.add(resultFile.getName());
 			System.out.println(hpcAccount.getConnectionName()
 				+ " Result : " + resultFile.getName());
 		    }
+
 		    for (HpcJobInfo hpcJobInfo : hpcJobInfos) {// Job is done or
 							       // killed or
 							       // time-out
@@ -206,15 +204,62 @@ public class HpcJobsScheduledTask extends TimerTask {
 
 				editor.setAlgorithmErrorResult(error);
 			    } else {
-				recentStatus = 6; // Error Result Downloaded
-				String log = "Result not found";
-				hpcJobManager.logHpcJobLogDetail(hpcJobLog,
-					recentStatus, "Result not found");
 
-				System.out.println(hpcJobInfo
-					.getAlgorithmName()
-					+ " : id : "
-					+ hpcJobInfo.getId() + " : " + log);
+				Thread.sleep(5000);
+
+				// Try again
+				String json = resultService
+					.downloadAlgorithmResultFile(
+						resultJsonFileName,
+						getJsonWebToken(hpcAccount));
+				System.out.println("json: \n" + json);
+
+				String error = resultService
+					.downloadAlgorithmResultFile(
+						errorResultFileName,
+						getJsonWebToken(hpcAccount));
+				System.out.println("error: \n" + error);
+
+				if (!json.toLowerCase().contains("not found")) {
+				    recentStatus = 5; // Result Downloaded
+
+				    String log = "Result downloaded";
+				    hpcJobManager.logHpcJobLogDetail(hpcJobLog,
+					    recentStatus, log);
+
+				    System.out.println(hpcJobInfo
+					    .getAlgorithmName()
+					    + " : id : "
+					    + hpcJobInfo.getId() + " : " + log);
+
+				    editor.setAlgorithmResult(json);
+				}
+				if (!error.toLowerCase().contains("not found")) {
+				    recentStatus = 6; // Error Result Downloaded
+
+				    String log = "Error Result downloaded";
+				    hpcJobManager.logHpcJobLogDetail(hpcJobLog,
+					    recentStatus, log);
+
+				    System.out.println(hpcJobInfo
+					    .getAlgorithmName()
+					    + " : id : "
+					    + hpcJobInfo.getId() + " : " + log);
+
+				    editor.setAlgorithmErrorResult(error);
+
+				} else {
+				    recentStatus = 7; // Result Not Found
+				    String log = resultJsonFileName
+					    + " not found";
+				    hpcJobManager.logHpcJobLogDetail(hpcJobLog,
+					    recentStatus, log);
+
+				    System.out.println(hpcJobInfo
+					    .getAlgorithmName()
+					    + " : id : "
+					    + hpcJobInfo.getId() + " : " + log);
+				}
 
 			    }
 

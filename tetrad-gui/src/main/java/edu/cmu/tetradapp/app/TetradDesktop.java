@@ -63,7 +63,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     /**
      * Margin for desktop when unmaximized.
      */
-    private static final int MARGIN = 10;
+    private static final int MARGIN = 0;
 
     /**
      * The desktop pane in which all of the session editors are located.
