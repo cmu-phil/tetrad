@@ -34,7 +34,12 @@ import java.awt.event.ActionEvent;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-final class TetradInternalFrame extends JInternalFrame {
+public class TetradInternalFrame extends JInternalFrame {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 907395289049591825L;
 
     /**
      * Constructs a new frame which will throw up a warning dialog if someone

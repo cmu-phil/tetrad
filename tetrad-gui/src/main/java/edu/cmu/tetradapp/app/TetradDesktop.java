@@ -31,10 +31,6 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.*;
 import edu.pitt.dbmi.tetrad.db.TetradDatabaseApplication;
-import edu.pitt.dbmi.tetrad.db.service.HpcAccountService;
-import edu.pitt.dbmi.tetrad.db.service.HpcJobInfoService;
-import edu.pitt.dbmi.tetrad.db.service.HpcJobLogDetailService;
-import edu.pitt.dbmi.tetrad.db.service.HpcJobLogService;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -59,6 +55,11 @@ import java.util.prefs.Preferences;
  */
 public final class TetradDesktop extends JPanel implements DesktopControllable,
 	PropertyChangeListener {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3415072280557904460L;
 
     /**
      * Margin for desktop when unmaximized.
@@ -100,7 +101,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      */
     public TetradDesktop() {
 	setBackground(new Color(204, 204, 204));
-	sessionNodeKeys = new ArrayList();
+	sessionNodeKeys = new ArrayList<>();
+	
 	// Create the desktop pane.
 	this.desktopPane = new JDesktopPane();
 
@@ -110,6 +112,16 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 	desktopPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
 	desktopPane.addPropertyChangeListener(this);
 
+	// HPC account manager
+	final org.hibernate.Session session = TetradDatabaseApplication
+		.getSessionFactory().openSession();
+	this.hpcAccountManager = new HpcAccountManager(session);
+	
+	// HPC Job Manager
+	int processors = Runtime.getRuntime().availableProcessors();
+	this.hpcJobManager = new HpcJobManager(session, processors);
+	
+	
 	this.setupDesktop();
 	Preferences.userRoot().putBoolean("displayLogging", false);
 	// setDisplayLogging(Preferences.userRoot().getBoolean("displayLogging",
@@ -120,25 +132,15 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 	// Bug in Swing for 1.7.
 	// System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-	// HPC account manager
-	final org.hibernate.Session session = TetradDatabaseApplication
-		.getSessionFactory().openSession();
-	final HpcAccountService computingAccountService = new HpcAccountService(
-		session);
-	this.hpcAccountManager = new HpcAccountManager(
-		computingAccountService);
-	
-	// HPC Job Manager
-	final HpcJobLogService hpcJobLogService = new HpcJobLogService(session);
-	final HpcJobLogDetailService hpcJobLogDetailService = new HpcJobLogDetailService(session);
-	final HpcJobInfoService hpcJobInfoService = new HpcJobInfoService(session);
-	int processors = Runtime.getRuntime().availableProcessors();
-	this.hpcJobManager = new HpcJobManager(hpcJobLogService, hpcJobLogDetailService, hpcJobInfoService, processors);
-
     }
 
     // ===========================PUBLIC METHODS============================//
 
+    public void buildHpcJobActivityPane() {
+	
+    }
+    
+    
     public void newSessionEditor() {
 	String newName = getNewSessionName();
 	SessionEditor editor = new SessionEditor(newName);
@@ -189,7 +191,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     public void addEditorWindow(EditorWindowIndirectRef windowRef, int layer) {
 	final EditorWindow window = (EditorWindow) windowRef;
 
-	Dimension desktopSize = desktopPane.getSize();
+//	Dimension desktopSize = desktopPane.getSize();
 	Dimension preferredSize = window.getPreferredSize();
 
 	// int x = desktopSize.width / 2 - preferredSize.width / 2;
@@ -283,7 +285,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 		    .hasNext();) {
 		SessionEditor sessionEditor = i.next();
 		if (sessionEditor.getName().equals(name)) {
-		    JInternalFrame frame = framesMap.get(sessionEditor);
+//		    JInternalFrame frame = framesMap.get(sessionEditor);
 		    i.remove();
 		}
 	    }
@@ -401,7 +403,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 	}
     }
 
-    private void setMainTitle(String name) {
+    public void setMainTitle(String name) {
 	JFrame jFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 	jFrame.setTitle(name + " - " + "Tetrad "
 		+ Version.currentViewableVersion().toString());
@@ -594,7 +596,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * @param desiredSize
      *            the desired dimensions of the frame.
      */
-    private static void setGoodBounds(JInternalFrame frame,
+    public static void setGoodBounds(JInternalFrame frame,
 	    JDesktopPane desktopPane, Dimension desiredSize) {
 	RandomUtil randomUtil = RandomUtil.getInstance();
 	Dimension desktopSize = desktopPane.getSize();

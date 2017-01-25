@@ -16,17 +16,15 @@ public class HpcAccountManager {
 
     private final HpcAccountService hpcAccountService;
 
-    public HpcAccountManager(
-	    final HpcAccountService hpcAccountService) {
-	this.hpcAccountService = hpcAccountService;
+    public HpcAccountManager(final org.hibernate.Session session) {
+	this.hpcAccountService = new HpcAccountService(session);
     }
 
     public List<HpcAccount> getHpcAccounts() {
-	List<HpcAccount> hpcAccounts = hpcAccountService
-		.get();
+	List<HpcAccount> hpcAccounts = hpcAccountService.get();
 	return hpcAccounts;
     }
-    
+
     public void saveAccount(final HpcAccount hpcAccount) {
 	hpcAccountService.update(hpcAccount);
     }
@@ -34,5 +32,5 @@ public class HpcAccountManager {
     public void removeAccount(final HpcAccount hpcAccount) {
 	hpcAccountService.remove(hpcAccount);
     }
-    
+
 }
