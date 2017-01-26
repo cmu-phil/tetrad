@@ -146,6 +146,10 @@ public class ParamDescriptions {
         put("completeRuleSetUsed", new ParamDescription(
                 "Yes if the complete FCI rule set should be used",
                 false));
+
+        put("maxDistinctValuesDiscrete", new ParamDescription(
+                "The maximum number of distinct values in a column for discrete variables",
+                0, 0, Integer.MAX_VALUE));
     }
 
     public static ParamDescriptions instance() {
