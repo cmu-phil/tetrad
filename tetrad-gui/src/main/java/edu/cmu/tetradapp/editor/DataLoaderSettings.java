@@ -69,7 +69,9 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton doubleQuoteRadioButton;
     private JRadioButton singleQuoteRadioButton;
 
-    private JCheckBox varNamesCheckBox;
+    private JRadioButton firstRowVarNamesYesRadioButton;
+    private JRadioButton firstRowVarNamesNoRadioButton;
+
     private JRadioButton idNoneRadioButton;
     private JRadioButton id1RadioButton;
     private JRadioButton id2RadioButton;
@@ -175,11 +177,12 @@ final class DataLoaderSettings extends JPanel {
         dataTypeBox.add(discRadioButton);
         dataTypeBox.add(mixedRadioButton);
         dataTypeBox.add(Box.createHorizontalGlue());
+
         formatContainer.add(dataTypeBox);
 
         formatContainer.add(Box.createVerticalStrut(5));
 
-        // Value Delimiter
+        // Value Delimiter box
         Box valueDelimiterBox = Box.createHorizontalBox();
 
         // Value Delimiter
@@ -249,27 +252,56 @@ final class DataLoaderSettings extends JPanel {
         // Var names in first row of data
         Box firstRowVarNamesBox = Box.createHorizontalBox();
 
-        // Checkbox is on left of text by default
-        varNamesCheckBox = new JCheckBox("Variable names in first row of data");
+        // Yes/No buttons
+        firstRowVarNamesYesRadioButton = new JRadioButton("Yes");
+        firstRowVarNamesNoRadioButton = new JRadioButton("No");
 
-        // Listener
-        varNamesCheckBox.addActionListener(new ActionListener() {
+        // Button group
+        ButtonGroup firstRowVarNamesBtnGrp = new ButtonGroup();
+        firstRowVarNamesBtnGrp.add(firstRowVarNamesYesRadioButton);
+        firstRowVarNamesBtnGrp.add(firstRowVarNamesNoRadioButton);
+
+        // Make Yes button selected by default
+        firstRowVarNamesYesRadioButton.setSelected(true);
+
+        firstRowVarNamesYesRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataVarNames", "Yes");
 
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataVarNames", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataVarNames", "deselected");
                 }
             }
         });
 
-        varNamesCheckBox.setSelected(Preferences.userRoot().get("loadDataVarNames", "selected").equals("selected"));
+        firstRowVarNamesNoRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    Preferences.userRoot().put("loadDataVarNames", "No");
 
-        firstRowVarNamesBox.add(varNamesCheckBox);
+                }
+            }
+        });
+
+        // Defaults to Yes
+        String firstRowVarNamesPreference = Preferences.userRoot().get("loadDataVarNames", "Yes");
+
+        if ("Yes".equals(firstRowVarNamesPreference)) {
+            firstRowVarNamesYesRadioButton.setSelected(true);
+        } else {
+            firstRowVarNamesNoRadioButton.setSelected(true);
+        }
+
+        // Add to firstRowVarNamesBox
+        firstRowVarNamesBox.add(new JLabel("Variable names in first row of data:"));
+        valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        firstRowVarNamesBox.add(firstRowVarNamesYesRadioButton);
+        firstRowVarNamesBox.add(firstRowVarNamesNoRadioButton);
         firstRowVarNamesBox.add(Box.createHorizontalGlue());
+
         formatContainer.add(firstRowVarNamesBox);
 
         // Use a titled border with 5 px inside padding - Zhou
@@ -567,7 +599,7 @@ final class DataLoaderSettings extends JPanel {
         Box maxIntegralDiscreteBox = Box.createHorizontalBox();
 
         maxIntegralLabel1 = new JLabel("Integral columns with up to ");
-        maxIntegralLabel2 = new JLabel(" values are discrete.");
+        maxIntegralLabel2 = new JLabel(" distinct values are discrete.");
 
         maxIntegralDiscreteIntField = new IntTextField(0, 3);
 
@@ -628,10 +660,6 @@ final class DataLoaderSettings extends JPanel {
 
     public StringTextField getCommentStringField() {
         return commentStringField;
-    }
-
-    public JCheckBox getVarNamesCheckBox() {
-        return varNamesCheckBox;
     }
 
     public JRadioButton getId1RadioButton() {
@@ -710,7 +738,13 @@ final class DataLoaderSettings extends JPanel {
     }
 
     private boolean isVarNamesFirstRow() {
-        return varNamesCheckBox.isSelected();
+        if (firstRowVarNamesYesRadioButton.isSelected()) {
+            return true;
+        } else if (firstRowVarNamesNoRadioButton.isSelected()) {
+            return false;
+        } else {
+            throw new IllegalArgumentException("Unexpected Variable Names in First Row selection.");
+        }
     }
 
     private String getIdLabel() {
