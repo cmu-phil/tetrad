@@ -1117,7 +1117,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         Set<Node> naYX = getNaYX(a, b);
-        if (!isClique(naYX)) return;
+        if (!GraphUtils.isClique(naYX, this.graph)) return;
 
         List<Node> TNeighbors = getTNeighbors(a, b);
 
@@ -1149,7 +1149,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     break FOR;
                 }
 
-                if (!isClique(union)) continue;
+                if (!GraphUtils.isClique(union, this.graph)) continue;
                 newCliques.add(union);
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
@@ -1552,7 +1552,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
-        boolean clique = isClique(union);
+        boolean clique = GraphUtils.isClique(union, this.graph);
         boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, cycleBound);
         return clique && noCycle && !violatesKnowledge;
     }
@@ -1574,7 +1574,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         Set<Node> diff = new HashSet<>(naYX);
         diff.removeAll(H);
-        return isClique(diff) && !violatesKnowledge;
+        return GraphUtils.isClique(diff, this.graph) && !violatesKnowledge;
     }
 
     // Adds edges required by knowledge.
@@ -1669,21 +1669,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         return nayx;
     }
 
-    Set<Edge> cliqueEdges = new HashSet<>();
-
-    // Returns true iif the given set forms a clique in the given graph.
-    private boolean isClique(Set<Node> nodes) {
-        List<Node> _nodes = new ArrayList<>(nodes);
-        for (int i = 0; i < _nodes.size() - 1; i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
 
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
