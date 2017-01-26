@@ -728,12 +728,12 @@ public class Lofs2 {
         List<Node> condyMinus = Collections.emptyList();
         List<Node> condyPlus = Collections.singletonList(x);
 
-        double px = pValue(x, condxMinus);
-        double py = pValue(y, condyMinus);
+//        double px = pValue(x, condxMinus);
+//        double py = pValue(y, condyMinus);
 
-        if (px > alpha || py > alpha) {
-            return;
-        }
+//        if (px > alpha || py > alpha) {
+//            return;
+//        }
 
         double xPlus = score(x, condxPlus);
         double xMinus = score(x, condxMinus);
@@ -741,16 +741,19 @@ public class Lofs2 {
         double yPlus = score(y, condyPlus);
         double yMinus = score(y, condyMinus);
 
+//        if (!(xPlus > 0.8 && xMinus > 0.8 && yPlus > 0.8 && yMinus > 0.8)) return;
+
         double deltaX = xPlus - xMinus;
         double deltaY = yPlus - yMinus;
 
         graph.removeEdges(x, y);
-        double epsilon = 0;
+//        double epsilon = 0;
 
         if (deltaX < epsilon && deltaY < epsilon) {
             graph.addDirectedEdge(x, y);
             graph.addDirectedEdge(y, x);
-        } else if (deltaY > deltaX) {
+        } else
+        if (deltaY > deltaX) {
             graph.addDirectedEdge(x, y);
         } else {
             graph.addDirectedEdge(y, x);
@@ -1988,7 +1991,7 @@ public class Lofs2 {
 
     private double score(Node y, List<Node> parents) {
         if (score == Lofs.Score.andersonDarling) {
-            return andersonDarlingPASquareStar(y, parents);
+            return andersonDarlingPASquare(y, parents);
         } else if (score == Lofs.Score.kurtosis) {
             return Math.abs(StatUtils.kurtosis(residuals(y, parents, true, true)));
         } else if (score == Lofs.Score.entropy) {
@@ -2129,7 +2132,7 @@ public class Lofs2 {
         return _f;
     }
 
-    private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
+    private double andersonDarlingPASquare(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true, true);
 //        return new AndersonDarlingTest(_f).getASquaredStar();
         return new AndersonDarlingTest(_f).getASquared();

@@ -59,13 +59,29 @@ public final class CcdMax implements GraphSearch {
 
         System.out.println("FAS");
         Graph graph = fastAdjacencySearch();
-        System.out.println("Two shield constructs");
 
-        System.out.println("Max P collider orientation");
+        System.out.println("Orienting from background knowledge");
+
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName())) {
+                graph.removeEdge(x, y);
+                graph.addDirectedEdge(x, y);
+            } else if (knowledge.isForbidden(x.getName(), y.getName()) || knowledge.isRequired(y.getName(), x.getName())) {
+                graph.removeEdge(y, x);
+                graph.addDirectedEdge(y, x);
+            }
+        }
+
+        System.out.println("Bishop's hat");
 
         if (orientConcurrentFeedbackLoops) {
             orientTwoShieldConstructs(graph);
         }
+
+        System.out.println("Max P collider orientation");
 
         if (doColliderOrientations) {
             final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
@@ -74,6 +90,8 @@ public final class CcdMax implements GraphSearch {
             orientCollidersMaxP.setKnowledge(knowledge);
             orientCollidersMaxP.orient(graph);
         }
+
+        System.out.println("Orient away from collider");
 
         if (applyOrientAwayFromCollider) {
             orientAwayFromArrow(graph);
@@ -220,6 +238,15 @@ public final class CcdMax implements GraphSearch {
                         if (graph.isAdjacentTo(d, a) && graph.isAdjacentTo(d, b)) {
                             if (sepset(graph, a, b, set(), set(c, d)) != null) {
                                 if ((graph.getEdges().size() == 2 || Edges.isDirectedEdge(graph.getEdge(c, d)))) {
+                                    continue;
+                                }
+
+                                if (
+                                        graph.getEdge(a, c).pointsTowards(a)
+                                        || graph.getEdge(a, d).pointsTowards(a)
+                                        || graph.getEdge(b, c).pointsTowards(b)
+                                        || graph.getEdge(b, d).pointsTowards(b)
+                                        ) {
                                     continue;
                                 }
 
@@ -601,15 +628,15 @@ public final class CcdMax implements GraphSearch {
             }
         }
 
-        if (!allOriented) {
-            for (Edge e : undirectedEdges) {
-                Node d = Edges.traverse(c, e);
-                Edge f = graph.getEdge(c, d);
-
-                graph.removeEdge(f);
-                graph.addEdge(e);
-            }
-        }
+//        if (!allOriented) {
+//            for (Edge e : undirectedEdges) {
+//                Node d = Edges.traverse(c, e);
+//                Edge f = graph.getEdge(c, d);
+//
+//                graph.removeEdge(f);
+//                graph.addEdge(e);
+//            }
+//        }
     }
 }
 

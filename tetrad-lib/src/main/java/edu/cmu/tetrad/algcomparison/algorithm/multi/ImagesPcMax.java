@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SemBicScoreImages2;
 import edu.cmu.tetrad.search.SemBicScoreImages3;
 import edu.cmu.tetrad.util.Parameters;
 

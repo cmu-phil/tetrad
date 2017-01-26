@@ -41,15 +41,18 @@ public final class Fang implements GraphSearch {
     private IndependenceTest independenceTest;
     private int depth = -1;
     private long elapsed = 0;
+    private double r3Cutoff = 0.0;
     private IKnowledge knowledge = new Knowledge2();
     private DataSet dataSet = null;
     private boolean collapseTiers = false;
+    private List<DataSet> dataSets = null;
 
-    public Fang(IndependenceTest test) {
+    public Fang(IndependenceTest test, List<DataSet> dataSets) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
         this.dataSet = (DataSet) independenceTest.getData();
         this.knowledge = new Knowledge2();
+        this.dataSets = dataSets;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -74,19 +77,40 @@ public final class Fang implements GraphSearch {
             }
         }
 
-//        bishopsHat(graph);
+        List<Node> tier0 = new ArrayList<>();
 
-        Lofs2 lofs = new Lofs2(graph, Collections.singletonList(dataSet));
-        lofs.setRule(Lofs2.Rule.R3);
-        lofs.setKnowledge(knowledge);
-        graph = lofs.orient();
+        for (Node node : graph.getNodes()) {
+            if (getLag(node) == 0) {
+                tier0.add(node);
+            }
+        }
+
+        Graph graph2 = new EdgeListGraph(tier0);
+
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getNode1() == edge.getNode2()) continue;
+
+            if (getLag(edge.getNode1()) == 0 && getLag(edge.getNode2()) == 0) {
+                graph2.addEdge(edge);
+            }
+        }
+
+
+//        bishopsHat(graph);
+//        Graph graph2 = graph;
+
+        Lofs2 lofs = new Lofs2(graph2, dataSets);//.singletonList(dataSet));
+        lofs.setRule(Lofs2.Rule.RSkew);
+//        lofs.setKnowledge(knowledge);
+        lofs.setEpsilon(r3Cutoff);
+        graph2 = lofs.orient();
 
         System.out.println("Done");
 
         if (collapseTiers) {
-            return collapseGraph(graph);
+            return collapseGraph2(graph2);
         } else {
-            return graph;
+            return graph2;
         }
     }
 
@@ -180,6 +204,57 @@ public final class Fang implements GraphSearch {
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
+            int lagx = getLag(edge.getNode1());
+            int lagy = getLag(edge.getNode2());
+
+//            if (graph.getEdges(x, y).size() != 2) {
+//            if (!((!edge.pointsTowards(x) && lagy < maxInto)
+//                    || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
+//            }
+
+            if (lagx != 0 || lagy != 0) continue;
+
+            String xName = getName(x);
+            String yName = getName(y);
+
+            Node xx = independenceTest.getVariable(xName);
+            Node yy = independenceTest.getVariable(yName);
+
+            if (xx == yy) continue;
+
+            Edge _edge = new Edge(xx, yy, edge.getEndpoint1(), edge.getEndpoint2());
+
+            if (!_graph.containsEdge(_edge)) {
+                _graph.addEdge(_edge);
+            }
+
+            Edge undir = Edges.undirectedEdge(xx, yy);
+
+            if (_graph.getEdges(xx, yy).size() > 1 && _graph.containsEdge(undir)) {
+                _graph.removeEdge(undir);
+            }
+        }
+
+        return _graph;
+    }
+
+    private Graph collapseGraph2(Graph graph) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (String n : independenceTest.getVariableNames()) {
+            String[] s = n.split(":");
+
+            if (s.length == 1) {
+                Node x = independenceTest.getVariable(s[0]);
+                nodes.add(x);
+            }
+        }
+
+        Graph _graph = new EdgeListGraph(nodes);
+
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
 
             String[] sx = x.getName().split(":");
             String[] sy = y.getName().split(":");
@@ -189,12 +264,8 @@ public final class Fang implements GraphSearch {
 
             int maxInto = knowledge.getNumTiers() - 1;
 
-//            if (graph.getEdges(x, y).size() != 2) {
-//                if (!((!edge.pointsTowards(x) && lagy < maxInto)
-//                        || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
-//            }
-
-            if (lagx != 0 || lagy != 0) continue;
+            if (!((!edge.pointsTowards(x) && lagy < maxInto)
+                    || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
 
             String xName = sx[0];
             String yName = sy[0];
@@ -218,6 +289,15 @@ public final class Fang implements GraphSearch {
         }
 
         return _graph;
+    }
+
+    private String getName(Node x) {
+        return x.getName().split(":")[0];
+    }
+
+    private int getLag(Node y) {
+        String[] sy1 = y.getName().split(":");
+        return sy1.length == 1 ? 0 : new Integer(sy1[1]);
     }
 
     /**
@@ -268,6 +348,14 @@ public final class Fang implements GraphSearch {
 
     public void setCollapseTiers(boolean collapseTiers) {
         this.collapseTiers = collapseTiers;
+    }
+
+    public double getR3Cutoff() {
+        return r3Cutoff;
+    }
+
+    public void setR3Cutoff(double r3Cutoff) {
+        this.r3Cutoff = r3Cutoff;
     }
 }
 

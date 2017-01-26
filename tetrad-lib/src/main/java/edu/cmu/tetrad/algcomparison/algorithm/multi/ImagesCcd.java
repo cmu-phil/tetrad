@@ -35,7 +35,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             dataModels.add(dataSet);
         }
 
-        SemBicScoreImages2 score = new SemBicScoreImages2(dataModels);
+        SemBicScoreImages score = new SemBicScoreImages(dataModels);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);

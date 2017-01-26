@@ -74,7 +74,6 @@ public class SemBicScoreImages2 implements Score {
             throw new NullPointerException();
         }
 
-        this.penaltyDiscount = 2;
         this.variables = dataModels.get(0).getVariables();
 
         covariances = new ArrayList<>();

@@ -6,10 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.CcdMax;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SemBicScoreImages2;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -35,7 +32,25 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
+//        List<DataModel> dataModels = new ArrayList<>();
+//        IKnowledge knowledge = null;
+//
+//        for (DataSet dataSet : dataSets) {
+//            dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
+//            dataModels.add(dataSet);
+//
+//            if (knowledge == null) {
+//                knowledge = dataSet.getKnowledge();
+//            }
+//        }
+//
+//        SemBicScoreImages images = new SemBicScoreImages(dataModels);
+//        images.setPenaltyDiscount(1);
+//        IndependenceTest test = new IndTestScore(images);
+
         DataSet dataSet = DataUtils.concatenate(dataSets);
+        dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
+        IKnowledge knowledge = dataSet.getKnowledge();
 
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);

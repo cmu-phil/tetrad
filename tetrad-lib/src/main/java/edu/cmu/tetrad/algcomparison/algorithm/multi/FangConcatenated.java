@@ -34,12 +34,15 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
+        List<DataSet> _dataSets = new ArrayList<>();
+        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
+
         DataSet dataSet = DataUtils.concatenate(dataSets);
 //        dataSet = DataUtils.standardizeData(dataSet);
         dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         IKnowledge knowledge = dataSet.getKnowledge();
-        Fang search = new Fang(test);
+        Fang search = new Fang(test, _dataSets);
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
@@ -58,7 +61,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG using " + test.getDescription();
+        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation) using " + test.getDescription();
     }
 
     @Override
@@ -72,13 +75,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("penaltyDiscount");
 
         parameters.add("depth");
-        parameters.add("orientVisibleFeedbackLoops");
-        parameters.add("doColliderOrientation");
-        parameters.add("useMaxPOrientationHeuristic");
-        parameters.add("maxPOrientationMaxPathLength");
-        parameters.add("applyR1");
-        parameters.add("orientTowardDConnections");
-        parameters.add("assumeIID");
+        parameters.add("numLags");
         parameters.add("collapseTiers");
 
         parameters.add("numRandomSelections");

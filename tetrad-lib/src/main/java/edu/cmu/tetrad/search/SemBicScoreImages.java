@@ -101,7 +101,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         this.semBicScores = semBicScores;
         this.variables = variables;
         this.sampleSize = semBicScores.get(0).getSampleSize();
-        setAlternativePenalty(2.0);
     }
 
 
@@ -250,10 +249,10 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     }
 
     // Calculates the BIC score.
-    private double score(double residualVariance, int n, int p, double c) {
-        return -n * Math.log(residualVariance) - c * (p + 1) * Math.log(n);
-    }
-
+//    private double score(double residualVariance, int n, int p, double c) {
+//        return -n * Math.log(residualVariance) - c * (2 * p + 1) * Math.log(n);
+//    }
+//
     private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
     }

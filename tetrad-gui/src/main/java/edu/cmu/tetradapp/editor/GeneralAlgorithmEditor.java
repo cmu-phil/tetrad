@@ -27,6 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesCcd;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
@@ -162,6 +163,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.Test));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -577,6 +579,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case CCD_MAX:
                 algorithm = new CcdMax(independenceWrapper);
+                break;
+            case FANG:
+                algorithm = new Fang(independenceWrapper);
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -1003,7 +1008,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, Tahn
     }
 
     private enum OracleType {None, Test, Score, Both}

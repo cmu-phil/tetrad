@@ -177,6 +177,10 @@ public class ParamDescriptions {
         put("numLags", new ParamDescription(
                 "The number of lags for a time lag model",
                 0, 0, Integer.MAX_VALUE));
+
+        put("r3Cutoff", new ParamDescription(
+                "Cutoff for bidirected edge orientation for R3.",
+                0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions instance() {
