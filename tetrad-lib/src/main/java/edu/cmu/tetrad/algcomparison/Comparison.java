@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
@@ -94,7 +95,7 @@ public class Comparison {
         }
 
         for (File dir : dirs) {
-            simulations.add(new LoadContinuousDataAndGraphs(dir.getAbsolutePath()));
+            simulations.add(new LoadDataAndGraphs(dir.getAbsolutePath()));
         }
 
         compareFromSimulations(filePath, simulations, algorithms, statistics, parameters);
