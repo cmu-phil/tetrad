@@ -114,13 +114,13 @@ public class TestCcd {
     public void TestFang() {
         Parameters parameters = new Parameters();
 
-        parameters.set("numLags", 1);
+        parameters.set("numLags", 0);
 
-//        parameters.set("alpha", .001);
+        parameters.set("alpha", .00000001);
         parameters.set("collapseTiers", true);
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 4);
 
-        parameters.set("numRandomSelections", 2);
+        parameters.set("numRandomSelections", 1);
         parameters.set("randomSelectionSize", 10);
 
         parameters.set("depth", 4);

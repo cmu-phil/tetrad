@@ -108,7 +108,7 @@ public final class Fang implements GraphSearch {
         System.out.println("Done");
 
         if (collapseTiers) {
-            return collapseGraph2(graph2);
+            return collapseGraph(graph2);
         } else {
             return graph2;
         }
@@ -228,11 +228,11 @@ public final class Fang implements GraphSearch {
                 _graph.addEdge(_edge);
             }
 
-            Edge undir = Edges.undirectedEdge(xx, yy);
-
-            if (_graph.getEdges(xx, yy).size() > 1 && _graph.containsEdge(undir)) {
-                _graph.removeEdge(undir);
-            }
+//            Edge undir = Edges.undirectedEdge(xx, yy);
+//
+//            if (_graph.getEdges(xx, yy).size() > 1 && _graph.containsEdge(undir)) {
+//                _graph.removeEdge(undir);
+//            }
         }
 
         return _graph;

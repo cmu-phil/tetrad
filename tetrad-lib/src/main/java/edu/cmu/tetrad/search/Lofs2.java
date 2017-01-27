@@ -28,6 +28,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -752,8 +753,7 @@ public class Lofs2 {
         if (deltaX < epsilon && deltaY < epsilon) {
             graph.addDirectedEdge(x, y);
             graph.addDirectedEdge(y, x);
-        } else
-        if (deltaY > deltaX) {
+        } else if (deltaY > deltaX) {
             graph.addDirectedEdge(x, y);
         } else {
             graph.addDirectedEdge(y, x);
@@ -1311,11 +1311,12 @@ public class Lofs2 {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+        List<DataSet> _dataSets = new ArrayList<>();
+        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
+        DataSet dataSet = DataUtils.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataUtils.standardizeData(dataSet);
+//        dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
-        Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
 
@@ -1324,6 +1325,8 @@ public class Lofs2 {
         }
 
         for (Edge edge : graph.getEdges()) {
+            System.out.print("\n" + edge);
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1338,31 +1341,86 @@ public class Lofs2 {
                 yData = correctSkews(yData);
             }
 
+            double xp = new AndersonDarlingTest(xData).getP();
+            double yp = new AndersonDarlingTest(xData).getP();
+
+            double sum1 = 0;
+            double sum2 = 0;
+
+            double[] yx = new double[xData.length];
+            double[] yy = new double[yData.length];
+
             for (int i = 0; i < xData.length; i++) {
                 double x0 = xData[i];
                 double y0 = yData[i];
 
                 double termX = g(x0) * y0 - x0 * g(y0);
+                sum1 += g(x0) * y0;
+                sum2 += x0 * g(y0);
+
+                yx[i] = g(x0) * y0;
+                yy[i] = x0 * g(y0);
 
                 sumX += termX;
                 countX++;
             }
 
             double R = sumX / countX;
+            sum1 = sum1 / countX;
+            sum2 = sum2 / countX;
 
             double rhoX = regressionCoef(xData, yData);
             R *= rhoX;
 
-            if (R > 0) {
-                _graph.addDirectedEdge(x, y);
+            System.out.print(" R = " + R + " " + " sum1 = " + sum1 + " sum2 = " + sum2);
+
+            double alpha = .8;
+            double epsilon = alpha;
+
+            double delta = .05;
+            int n = yx.length;
+
+            double mx = StatUtils.mean(yx);
+            double my = StatUtils.mean(yy);
+            double varx = StatUtils.variance(yx);
+            double vary = StatUtils.variance(yy);
+            double sp = (varx + vary) / 2.0;
+            double tp = (mx - my) / (sp * Math.sqrt(2.0 / n));
+
+            double ta1 = 2 * (1.0 - new TDistribution(2 * n - 2).cumulativeProbability(Math.abs(tp)));
+
+            double[] xd = new double[yx.length];
+
+            for (int i = 0; i < yx.length; i++) {
+                xd[i] = yx[i] - yy[i];
+            }
+
+            double xdm = StatUtils.mean(xd);
+            double xds = StatUtils.variance(xd);
+
+            double t2 = xdm / (xds / Math.sqrt(n));
+            double ta2 = 2 * (1.0 - new TDistribution(yx.length - 1).cumulativeProbability(Math.abs(t2)));
+
+
+            double t3 = (mx - my) / Math.sqrt((varx / n) + (vary / n));
+            double ta3 = 2 * (1.0 - new TDistribution(yx.length - 1).cumulativeProbability(Math.abs(t3)));
+
+            graph.removeEdge(edge);
+
+            if (xp < alpha && yp < alpha && ta3 > epsilon) {
+//                if (sum1 > epsilon && sum2 > epsilon && Math.abs(sum1 - sum2) < delta) {
+                graph.addDirectedEdge(x, y);
+                graph.addDirectedEdge(y, x);
+            } else if (R > 0) {
+                graph.addDirectedEdge(x, y);
             } else if (R < 0) {
-                _graph.addDirectedEdge(y, x);
+                graph.addDirectedEdge(y, x);
             } else {
-                _graph.addUndirectedEdge(x, y);
+                graph.addUndirectedEdge(x, y);
             }
         }
 
-        return _graph;
+        return graph;
     }
 
     private double g(double x) {
