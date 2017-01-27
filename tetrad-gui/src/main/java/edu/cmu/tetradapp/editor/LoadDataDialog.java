@@ -439,6 +439,9 @@ final class LoadDataDialog extends JPanel {
                     // Disable it
                     finishButton.setEnabled(false);
                 } else {
+                    // Load all files since all can be loaded successfully
+                    loadAll();
+
                     // Enable it
                     finishButton.setEnabled(true);
                 }
@@ -512,20 +515,32 @@ final class LoadDataDialog extends JPanel {
 
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < files.length; i++) {
-            System.out.println("File index = " + i);
-
             DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, summaryTextArea, files);
             if (dataModel == null) {
-                System.out.println("Failed to load file index = " + i);
+                System.out.println("File index = " + i + " cannot be loaded due to error");
 
                 // Add the file name to failed list
                 failedFiles.add(files[i].getName());
             } else {
-                addDataModel(dataModel, i, files[i].getName());
+                System.out.println("File index = " + i + " can be loaded successfully, but wi will only be loaded once all files can be loaded together");
             }
         }
 
         return failedFiles;
+    }
+
+    /**
+     * Add all files to model once all can be loaded successfully
+     */
+    private void loadAll() {
+        // Try to load each file and store the file name for failed loading
+        for (int i = 0; i < files.length; i++) {
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, summaryTextArea, files);
+
+            addDataModel(dataModel, i, files[i].getName());
+
+            System.out.println("File index = " + i + " has been loaded successfully");
+        }
     }
 
     public DataModelList getDataModels() {
