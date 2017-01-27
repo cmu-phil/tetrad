@@ -510,7 +510,7 @@ final class LoadDataDialog extends JPanel {
     private List<String> loadAndReview() {
         List<String> failedFiles = new ArrayList<String>();
 
-        // Try to load each file and store the file name for failed loadings
+        // Try to load each file and store the file name for failed loading
         for (int i = 0; i < files.length; i++) {
             System.out.println("File index = " + i);
 

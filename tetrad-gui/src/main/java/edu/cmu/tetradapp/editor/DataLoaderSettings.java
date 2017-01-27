@@ -28,11 +28,8 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.PrintStream;
-import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -77,10 +74,10 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton idLabeledColRadioButton;
     private StringTextField idStringField;
 
-    private JRadioButton missing1RadioButton;
-    private JRadioButton missing2RadioButton;
-    private JRadioButton missing3RadioButton;
-    private JRadioButton missing4RadioButton;
+    private JRadioButton missingValueBlankRadioButton;
+    private JRadioButton missingValueStarRadioButton;
+    private JRadioButton missingValueQuestionRadioButton;
+    private JRadioButton missingValueOtherRadioButton;
     private StringTextField missingStringField;
 
     private IntTextField maxIntegralDiscreteIntField;
@@ -100,6 +97,7 @@ final class DataLoaderSettings extends JPanel {
         this.dataModels = new DataModel[files.length];
     }
 
+    // Step 1 items
     public final Box specifyFormat() {
         // Data loading params layout
         Box formatContainer = Box.createVerticalBox();
@@ -110,43 +108,15 @@ final class DataLoaderSettings extends JPanel {
         tabularRadioButton = new JRadioButton("Tabular data");
         covarianceRadioButton = new JRadioButton("Covariance data");
 
-        tabularRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataTabularPreference", "tabular");
-
-                }
-            }
-        });
-
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup fileTypeBtnGrp = new ButtonGroup();
         fileTypeBtnGrp.add(tabularRadioButton);
         fileTypeBtnGrp.add(covarianceRadioButton);
 
-        String tabularPreference = Preferences.userRoot().get("loadDataTabularPreference", "tabular");
+        // Tabular data is selected by default
+        tabularRadioButton.setSelected(true);
 
-        if ("tabular".equals(tabularPreference)) {
-            tabularRadioButton.setSelected(true);
-        } else if ("covariance".equals(tabularPreference)) {
-            covarianceRadioButton.setSelected(true);
-        } else {
-            throw new IllegalStateException("Unexpected preference.");
-        }
-
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataTabularPreference", "covariance");
-
-                }
-            }
-        });
-
+        // Add to file type box
         fileTypeBox.add(new JLabel("File type:"));
         fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         fileTypeBox.add(tabularRadioButton);
@@ -154,6 +124,7 @@ final class DataLoaderSettings extends JPanel {
         fileTypeBox.add(Box.createHorizontalGlue());
         formatContainer.add(fileTypeBox);
 
+        // Add to format container
         formatContainer.add(Box.createVerticalStrut(5));
 
         // Data type - moved from the old Fast tab - Zhou
@@ -163,13 +134,13 @@ final class DataLoaderSettings extends JPanel {
         discRadioButton = new JRadioButton("Discrete");
         mixedRadioButton = new JRadioButton("Mixed");
 
-        // Continuous radion button is selected by default
-        contRadioButton.setSelected(true);
-
         ButtonGroup dataTypeBtnGrp = new ButtonGroup();
         dataTypeBtnGrp.add(contRadioButton);
         dataTypeBtnGrp.add(discRadioButton);
         dataTypeBtnGrp.add(mixedRadioButton);
+
+        // Continuous radion button is selected by default
+        contRadioButton.setSelected(true);
 
         dataTypeBox.add(new JLabel("Data type:"));
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -195,49 +166,8 @@ final class DataLoaderSettings extends JPanel {
         delimiterBtnGrp.add(tabDelimiterRadioButton);
         delimiterBtnGrp.add(spaceDelimiterRadioButton);
 
-        commaDelimiterRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Comma");
-
-                }
-            }
-        });
-
-        tabDelimiterRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
-
-                }
-            }
-        });
-
-        spaceDelimiterRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
-
-                }
-            }
-        });
-
         // Defaults to comma
-        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Comma");
-
-        if ("Comma".equals(delimiterPreference)) {
-            commaDelimiterRadioButton.setSelected(true);
-        } else if ("Tab".equals(delimiterPreference)) {
-            tabDelimiterRadioButton.setSelected(true);
-        } else {
-            spaceDelimiterRadioButton.setSelected(true);
-        }
+        commaDelimiterRadioButton.setSelected(true);
 
         valueDelimiterBox.add(new JLabel("Value delimiter:"));
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -264,37 +194,6 @@ final class DataLoaderSettings extends JPanel {
         // Make Yes button selected by default
         firstRowVarNamesYesRadioButton.setSelected(true);
 
-        firstRowVarNamesYesRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataVarNames", "Yes");
-
-                }
-            }
-        });
-
-        firstRowVarNamesNoRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataVarNames", "No");
-
-                }
-            }
-        });
-
-        // Defaults to Yes
-        String firstRowVarNamesPreference = Preferences.userRoot().get("loadDataVarNames", "Yes");
-
-        if ("Yes".equals(firstRowVarNamesPreference)) {
-            firstRowVarNamesYesRadioButton.setSelected(true);
-        } else {
-            firstRowVarNamesNoRadioButton.setSelected(true);
-        }
-
         // Add to firstRowVarNamesBox
         firstRowVarNamesBox.add(new JLabel("Variable names in first row of data:"));
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -314,6 +213,7 @@ final class DataLoaderSettings extends JPanel {
         return formatContainer;
     }
 
+    // Step 2 items
     public final Box selectOptions() {
         // Data loading params layout
         Box optionsContainer = Box.createVerticalBox();
@@ -358,68 +258,11 @@ final class DataLoaderSettings extends JPanel {
         commentMarkerBtnGrp.add(commentPondRadioButton);
         commentMarkerBtnGrp.add(commentOtherRadioButton);
 
-        commentDoubleSlashRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "//");
-
-                }
-            }
-        });
-
-        commentPondRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "#");
-
-                }
-            }
-        });
-
-        commentOtherRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "Other");
-
-                }
-            }
-        });
-
-        String commentPreference = Preferences.userRoot().get("loadDataCommentPreference", "//");
-
-        if ("//".equals(commentPreference)) {
-            commentDoubleSlashRadioButton.setSelected(true);
-        } else if ("#".equals(commentPreference)) {
-            commentPondRadioButton.setSelected(true);
-        } else {
-            commentOtherRadioButton.setSelected(true);
-        }
-
         // Comment string field
-        String otherCommentPreference = Preferences.userRoot().get("dataLoaderCommentString", "@");
-        commentStringField = new StringTextField(otherCommentPreference, 4);
+        commentStringField = new StringTextField("@", 4);
 
-        commentStringField.setFilter(new StringTextField.Filter() {
-            @Override
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-        commentStringField.setFilter(new StringTextField.Filter() {
-            @Override
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
+        // Select double slash by default
+        commentDoubleSlashRadioButton.setSelected(true);
 
         commentMarkerBox.add(new JLabel("Comment marker:"));
         commentMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -444,46 +287,8 @@ final class DataLoaderSettings extends JPanel {
         quoteCharBtnGrp.add(doubleQuoteRadioButton);
         quoteCharBtnGrp.add(singleQuoteRadioButton);
 
-        noneQuoteRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "");
-                }
-            }
-        });
-
-        doubleQuoteRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "\"");
-
-                }
-            }
-        });
-
-        singleQuoteRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "'");
-                }
-            }
-        });
-
-        String quotePreference = Preferences.userRoot().get("loadDataQuotePreference", "\"");
-
-        if ("\"".equals(quotePreference)) {
-            doubleQuoteRadioButton.setSelected(true);
-        } else if ("'".equals(quotePreference)) {
-            singleQuoteRadioButton.setSelected(true);
-        } else if ("".equals(quotePreference)) {
-            noneQuoteRadioButton.setSelected(true);
-        }
+        // Select None by default
+        noneQuoteRadioButton.setSelected(true);
 
         quoteCharBox.add(new JLabel("Quote character:"));
         quoteCharBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -498,97 +303,30 @@ final class DataLoaderSettings extends JPanel {
         //  Missing value marker
         Box missingValueMarkerBox = Box.createHorizontalBox();
 
-        missing1RadioButton = new JRadioButton("Blank");
-        missing2RadioButton = new JRadioButton("*");
-        missing3RadioButton = new JRadioButton("?");
-        missing4RadioButton = new JRadioButton("Other: ");
+        missingValueBlankRadioButton = new JRadioButton("Blank");
+        missingValueStarRadioButton = new JRadioButton("*");
+        missingValueQuestionRadioButton = new JRadioButton("?");
+        missingValueOtherRadioButton = new JRadioButton("Other: ");
 
         ButtonGroup missingValueMarkerBtnGrp = new ButtonGroup();
-        missingValueMarkerBtnGrp.add(missing1RadioButton);
-        missingValueMarkerBtnGrp.add(missing2RadioButton);
-        missingValueMarkerBtnGrp.add(missing3RadioButton);
-        missingValueMarkerBtnGrp.add(missing4RadioButton);
-
-        missing1RadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "");
-
-                }
-            }
-        });
-
-        missing2RadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "*");
-
-                }
-            }
-        });
-
-        missing3RadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "?");
-
-                }
-            }
-        });
-
-        missing4RadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "Other");
-
-                }
-            }
-        });
-
-        // Blank is selected as the default
-        missing1RadioButton.setSelected(true);
-
-        String missingPreference = Preferences.userRoot().get("loadDataMissingPreference", "*");
-
-        if ("".equals(missingPreference)) {
-            missing1RadioButton.setSelected(true);
-        } else if ("*".equals(missingPreference)) {
-            missing2RadioButton.setSelected(true);
-        } else if ("?".equals(missingPreference)) {
-            missing3RadioButton.setSelected(true);
-        } else {
-            missing4RadioButton.setSelected(true);
-        }
-
-        String otherMissingPreference = Preferences.userRoot().get("dataLoaderOtherMissingPreference", "");
+        missingValueMarkerBtnGrp.add(missingValueBlankRadioButton);
+        missingValueMarkerBtnGrp.add(missingValueStarRadioButton);
+        missingValueMarkerBtnGrp.add(missingValueQuestionRadioButton);
+        missingValueMarkerBtnGrp.add(missingValueOtherRadioButton);
 
         // Missing string field: other
-        missingStringField = new StringTextField(otherMissingPreference, 6);
-        String missingStringText = Preferences.userRoot().get("dataLoaderMissingString", "Missing");
-        missingStringField.setText(missingStringText);
+        missingStringField = new StringTextField("", 6);
+        missingStringField.setText("Missing");
 
-        missingStringField.setFilter(new StringTextField.Filter() {
-            @Override
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
+        // Blank is selected as the default
+        missingValueBlankRadioButton.setSelected(true);
 
         missingValueMarkerBox.add(new JLabel("Missing value marker:"));
         missingValueMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        missingValueMarkerBox.add(missing1RadioButton);
-        missingValueMarkerBox.add(missing2RadioButton);
-        missingValueMarkerBox.add(missing3RadioButton);
-        missingValueMarkerBox.add(missing4RadioButton);
+        missingValueMarkerBox.add(missingValueBlankRadioButton);
+        missingValueMarkerBox.add(missingValueStarRadioButton);
+        missingValueMarkerBox.add(missingValueQuestionRadioButton);
+        missingValueMarkerBox.add(missingValueOtherRadioButton);
         missingValueMarkerBox.add(missingStringField);
         missingValueMarkerBox.add(Box.createHorizontalGlue());
         optionsContainer.add(missingValueMarkerBox);
@@ -603,14 +341,13 @@ final class DataLoaderSettings extends JPanel {
 
         maxIntegralDiscreteIntField = new IntTextField(0, 3);
 
-        int maxIntegralPreference = Preferences.userRoot().getInt("dataLoaderMaxIntegral", 0);
-        maxIntegralDiscreteIntField.setValue(maxIntegralPreference);
+        // 0 by default
+        maxIntegralDiscreteIntField.setValue(0);
 
         maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
             @Override
             public int filter(int value, int oldValue) {
                 if (value >= 0) {
-                    Preferences.userRoot().putInt("dataLoaderMaxIntegral", value);
                     return value;
                 } else {
                     return oldValue;
@@ -652,18 +389,6 @@ final class DataLoaderSettings extends JPanel {
 
     public StringTextField getIdStringField() {
         return idStringField;
-    }
-
-    public JRadioButton getMissing1RadioButton() {
-        return missing1RadioButton;
-    }
-
-    public JRadioButton getMissing2RadioButton() {
-        return missing2RadioButton;
-    }
-
-    public JRadioButton getMissing3RadioButton() {
-        return missing3RadioButton;
     }
 
     public StringTextField getMissingStringField() {
@@ -738,9 +463,9 @@ final class DataLoaderSettings extends JPanel {
     }
 
     private String getMissingValue() {
-        if (missing1RadioButton.isSelected()) {
+        if (missingValueStarRadioButton.isSelected()) {
             return "*";
-        } else if (missing2RadioButton.isSelected()) {
+        } else if (missingValueQuestionRadioButton.isSelected()) {
             return "?";
         } else {
             return missingStringField.getText();
@@ -751,10 +476,10 @@ final class DataLoaderSettings extends JPanel {
         return maxIntegralDiscreteIntField.getValue();
     }
 
-    public DataModel loadDataWithSettings(int fileIndex, JTextArea anomaliesTextArea, File[] files) {
-        anomaliesTextArea.setText("");
+    public DataModel loadDataWithSettings(int fileIndex, JTextArea summaryTextArea, File[] files) {
+        summaryTextArea.setText("");
 
-        TextAreaOutputStream out1 = new TextAreaOutputStream(anomaliesTextArea);
+        TextAreaOutputStream out1 = new TextAreaOutputStream(summaryTextArea);
         PrintStream out = new PrintStream(out1);
 
         TetradLogger.getInstance().addOutputStream(out);
@@ -783,7 +508,7 @@ final class DataLoaderSettings extends JPanel {
             }
 
 //            addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
-            anomaliesTextArea.setCaretPosition(anomaliesTextArea.getText().length());
+            summaryTextArea.setCaretPosition(summaryTextArea.getText().length());
 
             return dataModel;
         } catch (Exception e1) {
