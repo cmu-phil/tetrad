@@ -56,9 +56,9 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton discRadioButton;
     private JRadioButton mixedRadioButton;
 
-    private JRadioButton comment1RadioButton;
-    private JRadioButton comment2RadioButton;
-    private JRadioButton comment3RadioButton;
+    private JRadioButton commentDoubleSlashRadioButton;
+    private JRadioButton commentPondRadioButton;
+    private JRadioButton commentOtherRadioButton;
     private StringTextField commentStringField;
 
     private JRadioButton commaDelimiterRadioButton;
@@ -73,8 +73,8 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton firstRowVarNamesNoRadioButton;
 
     private JRadioButton idNoneRadioButton;
-    private JRadioButton id1RadioButton;
-    private JRadioButton id2RadioButton;
+    private JRadioButton idUnlabeledFirstColRadioButton;
+    private JRadioButton idLabeledColRadioButton;
     private StringTextField idStringField;
 
     private JRadioButton missing1RadioButton;
@@ -323,14 +323,14 @@ final class DataLoaderSettings extends JPanel {
 
         // ID radio buttons
         idNoneRadioButton = new JRadioButton("None");
-        id1RadioButton = new JRadioButton("Unlabeled 1st column");
-        id2RadioButton = new JRadioButton("Column labeled: ");
+        idUnlabeledFirstColRadioButton = new JRadioButton("Unlabeled 1st column");
+        idLabeledColRadioButton = new JRadioButton("Column labeled: ");
         idStringField = new StringTextField("", 4);
 
         ButtonGroup caseIdBtnGrp = new ButtonGroup();
         caseIdBtnGrp.add(idNoneRadioButton);
-        caseIdBtnGrp.add(id1RadioButton);
-        caseIdBtnGrp.add(id2RadioButton);
+        caseIdBtnGrp.add(idUnlabeledFirstColRadioButton);
+        caseIdBtnGrp.add(idLabeledColRadioButton);
 
         // Defaults to none
         idNoneRadioButton.setSelected(true);
@@ -338,8 +338,8 @@ final class DataLoaderSettings extends JPanel {
         caseIdProvidedBox.add(new JLabel("Case IDs:"));
         caseIdProvidedBox.add(Box.createRigidArea(new Dimension(10, 1)));
         caseIdProvidedBox.add(idNoneRadioButton);
-        caseIdProvidedBox.add(id1RadioButton);
-        caseIdProvidedBox.add(id2RadioButton);
+        caseIdProvidedBox.add(idUnlabeledFirstColRadioButton);
+        caseIdProvidedBox.add(idLabeledColRadioButton);
         caseIdProvidedBox.add(idStringField);
         caseIdProvidedBox.add(Box.createHorizontalGlue());
         optionsContainer.add(caseIdProvidedBox);
@@ -349,16 +349,16 @@ final class DataLoaderSettings extends JPanel {
         // Comment Marker
         Box commentMarkerBox = Box.createHorizontalBox();
 
-        comment1RadioButton = new JRadioButton("//");
-        comment2RadioButton = new JRadioButton("#");
-        comment3RadioButton = new JRadioButton("Other: ");
+        commentDoubleSlashRadioButton = new JRadioButton("//");
+        commentPondRadioButton = new JRadioButton("#");
+        commentOtherRadioButton = new JRadioButton("Other: ");
 
         ButtonGroup commentMarkerBtnGrp = new ButtonGroup();
-        commentMarkerBtnGrp.add(comment1RadioButton);
-        commentMarkerBtnGrp.add(comment2RadioButton);
-        commentMarkerBtnGrp.add(comment3RadioButton);
+        commentMarkerBtnGrp.add(commentDoubleSlashRadioButton);
+        commentMarkerBtnGrp.add(commentPondRadioButton);
+        commentMarkerBtnGrp.add(commentOtherRadioButton);
 
-        comment1RadioButton.addActionListener(new ActionListener() {
+        commentDoubleSlashRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
@@ -369,7 +369,7 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        comment2RadioButton.addActionListener(new ActionListener() {
+        commentPondRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
@@ -380,7 +380,7 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        comment3RadioButton.addActionListener(new ActionListener() {
+        commentOtherRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
@@ -394,11 +394,11 @@ final class DataLoaderSettings extends JPanel {
         String commentPreference = Preferences.userRoot().get("loadDataCommentPreference", "//");
 
         if ("//".equals(commentPreference)) {
-            comment1RadioButton.setSelected(true);
+            commentDoubleSlashRadioButton.setSelected(true);
         } else if ("#".equals(commentPreference)) {
-            comment2RadioButton.setSelected(true);
+            commentPondRadioButton.setSelected(true);
         } else {
-            comment3RadioButton.setSelected(true);
+            commentOtherRadioButton.setSelected(true);
         }
 
         // Comment string field
@@ -423,9 +423,9 @@ final class DataLoaderSettings extends JPanel {
 
         commentMarkerBox.add(new JLabel("Comment marker:"));
         commentMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        commentMarkerBox.add(comment1RadioButton);
-        commentMarkerBox.add(comment2RadioButton);
-        commentMarkerBox.add(comment3RadioButton);
+        commentMarkerBox.add(commentDoubleSlashRadioButton);
+        commentMarkerBox.add(commentPondRadioButton);
+        commentMarkerBox.add(commentOtherRadioButton);
         commentMarkerBox.add(commentStringField);
         commentMarkerBox.add(Box.createHorizontalGlue());
         optionsContainer.add(commentMarkerBox);
@@ -646,28 +646,8 @@ final class DataLoaderSettings extends JPanel {
         return covarianceRadioButton;
     }
 
-    public JRadioButton getComment1RadioButton() {
-        return comment1RadioButton;
-    }
-
-    public JRadioButton getComment2RadioButton() {
-        return comment2RadioButton;
-    }
-
-    public JRadioButton getComment3RadioButton() {
-        return comment3RadioButton;
-    }
-
     public StringTextField getCommentStringField() {
         return commentStringField;
-    }
-
-    public JRadioButton getId1RadioButton() {
-        return id1RadioButton;
-    }
-
-    public JRadioButton getId2RadioButton() {
-        return id2RadioButton;
     }
 
     public StringTextField getIdStringField() {
@@ -707,9 +687,9 @@ final class DataLoaderSettings extends JPanel {
     }
 
     private String getCommentString() {
-        if (comment1RadioButton.isSelected()) {
+        if (commentDoubleSlashRadioButton.isSelected()) {
             return "//";
-        } else if (comment2RadioButton.isSelected()) {
+        } else if (commentPondRadioButton.isSelected()) {
             return "#";
         } else {
             return commentStringField.getText();
@@ -750,7 +730,7 @@ final class DataLoaderSettings extends JPanel {
     private String getIdLabel() {
         if (idNoneRadioButton.isSelected()) {
             return null;
-        } else if (id1RadioButton.isSelected()) {
+        } else if (idUnlabeledFirstColRadioButton.isSelected()) {
             return null;
         } else {
             return idStringField.getText();
