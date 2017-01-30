@@ -146,7 +146,8 @@ final class DataLoaderSettings extends JPanel {
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         dataTypeBox.add(contRadioButton);
         dataTypeBox.add(discRadioButton);
-        dataTypeBox.add(mixedRadioButton);
+        // Hide mixed option for now until we have that in fast data reader - Zhou
+        //dataTypeBox.add(mixedRadioButton);
         dataTypeBox.add(Box.createHorizontalGlue());
 
         formatContainer.add(dataTypeBox);
@@ -300,6 +301,8 @@ final class DataLoaderSettings extends JPanel {
 
         optionsContainer.add(Box.createVerticalStrut(5));
 
+        /* Hide missing value marker for now - Zhou
+
         //  Missing value marker
         Box missingValueMarkerBox = Box.createHorizontalBox();
 
@@ -332,6 +335,9 @@ final class DataLoaderSettings extends JPanel {
         optionsContainer.add(missingValueMarkerBox);
 
         optionsContainer.add(Box.createVerticalStrut(5));
+         */
+
+ /* Hide this since mixed data is not ready - Zhou
 
         // Max number of disc columns
         Box maxIntegralDiscreteBox = Box.createHorizontalBox();
@@ -360,7 +366,7 @@ final class DataLoaderSettings extends JPanel {
         maxIntegralDiscreteBox.add(maxIntegralLabel2);
         maxIntegralDiscreteBox.add(Box.createHorizontalGlue());
         optionsContainer.add(maxIntegralDiscreteBox);
-
+         */
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Step 2: Select Options";
         if (files.length > 1) {
