@@ -78,7 +78,7 @@ final class LoadDataDialog extends JPanel {
 
     private Box container;
 
-    private Box panelContainer;
+    private Box stepContainer;
 
     private Box previewContainer;
 
@@ -295,23 +295,23 @@ final class LoadDataDialog extends JPanel {
         optionsBox.setMaximumSize(new Dimension(535, 165));
 
         // Contains file list and format/options
-        panelContainer = Box.createHorizontalBox();
+        stepContainer = Box.createHorizontalBox();
 
-        panelContainer.add(fileListBox);
+        stepContainer.add(fileListBox);
         // Add some gap between file list and format box
-        panelContainer.add(Box.createHorizontalStrut(10), 1);
-        panelContainer.add(formatBox);
-        panelContainer.add(optionsBox);
+        stepContainer.add(Box.createHorizontalStrut(10), 1);
+        stepContainer.add(formatBox);
+        stepContainer.add(optionsBox);
         optionsBox.setVisible(false);
 
         // Add to overall container
-        container.add(panelContainer);
+        container.add(stepContainer);
 
         // Preview container
         previewContainer = Box.createVerticalBox();
         previewContainer.setPreferredSize(new Dimension(900, 315));
 
-        // Add some padding between panelContainer and preview container
+        // Add some padding between stepContainer and preview container
         previewContainer.add(Box.createVerticalStrut(10));
 
         filePreviewBox = Box.createHorizontalBox();
@@ -465,7 +465,7 @@ final class LoadDataDialog extends JPanel {
                 // Show result summary
                 summaryBox.setVisible(true);
 
-                // Hide all inside panelContainer
+                // Hide all inside stepContainer
                 fileListBox.setVisible(false);
                 formatBox.setVisible(false);
                 optionsBox.setVisible(false);
