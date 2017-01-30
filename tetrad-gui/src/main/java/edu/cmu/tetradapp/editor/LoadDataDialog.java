@@ -129,7 +129,7 @@ final class LoadDataDialog extends JPanel {
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
         // Must set the size of container, otherwise summaryBox gets shrinked
-        container.setPreferredSize(new Dimension(900, 530));
+        container.setPreferredSize(new Dimension(900, 540));
 
         // Show all chosen files in a list
         for (File file : files) {
@@ -219,8 +219,8 @@ final class LoadDataDialog extends JPanel {
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         fileListBox = Box.createVerticalBox();
-        fileListBox.setMinimumSize(new Dimension(355, 165));
-        fileListBox.setMaximumSize(new Dimension(355, 165));
+        fileListBox.setMinimumSize(new Dimension(355, 315));
+        fileListBox.setMaximumSize(new Dimension(355, 315));
         fileListBox.add(fileListScrollPane);
 
         // Add gap between file list and add new file button
@@ -287,34 +287,36 @@ final class LoadDataDialog extends JPanel {
 
         // Specify Format
         formatBox = dataLoaderSettings.specifyFormat();
-        formatBox.setMinimumSize(new Dimension(535, 165));
-        formatBox.setMaximumSize(new Dimension(535, 165));
+
         // Options settings
         optionsBox = dataLoaderSettings.selectOptions();
-        optionsBox.setMinimumSize(new Dimension(535, 165));
-        optionsBox.setMaximumSize(new Dimension(535, 165));
 
         // Contains file list and format/options
         stepContainer = Box.createHorizontalBox();
+        stepContainer.setMinimumSize(new Dimension(900, 165));
+        stepContainer.setMaximumSize(new Dimension(900, 165));
 
-        stepContainer.add(fileListBox);
-        // Add some gap between file list and format box
-        stepContainer.add(Box.createHorizontalStrut(10), 1);
         stepContainer.add(formatBox);
         stepContainer.add(optionsBox);
         optionsBox.setVisible(false);
+
+        // Add some padding between stepContainer and preview container
+        stepContainer.add(Box.createVerticalStrut(10));
 
         // Add to overall container
         container.add(stepContainer);
 
         // Preview container
-        previewContainer = Box.createVerticalBox();
+        previewContainer = Box.createHorizontalBox();
         previewContainer.setPreferredSize(new Dimension(900, 315));
 
-        // Add some padding between stepContainer and preview container
-        previewContainer.add(Box.createVerticalStrut(10));
+        previewContainer.add(fileListBox);
+        // Add some gap between file list and format box
+        previewContainer.add(Box.createHorizontalStrut(10), 1);
 
         filePreviewBox = Box.createHorizontalBox();
+        filePreviewBox.setMinimumSize(new Dimension(535, 315));
+        filePreviewBox.setMaximumSize(new Dimension(535, 315));
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
