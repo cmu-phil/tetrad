@@ -34,6 +34,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -50,6 +51,8 @@ import org.apache.commons.lang3.ArrayUtils;
 final class LoadDataDialog extends JPanel {
 
     private File[] files;
+
+    private File[] newFilesArr;
 
     private DataLoaderSettings dataLoaderSettings;
 
@@ -73,6 +76,8 @@ final class LoadDataDialog extends JPanel {
 
     private final String defaulyPreviewBoxBorderTitle;
 
+    private Box container;
+
     private Box panelContainer;
 
     private Box previewContainer;
@@ -88,6 +93,8 @@ final class LoadDataDialog extends JPanel {
     private Box summaryBox;
 
     private Box buttonsBox;
+
+    private JButton addFileButton;
 
     private JButton step1Button;
 
@@ -120,9 +127,9 @@ final class LoadDataDialog extends JPanel {
     public void showDataLoaderDialog() {
         // Overall container
         // contains data preview panel, loading params panel, and load button
-        Box container = Box.createVerticalBox();
+        container = Box.createVerticalBox();
         // Must set the size of container, otherwise summaryBox gets shrinked
-        container.setPreferredSize(new Dimension(900, 500));
+        container.setPreferredSize(new Dimension(900, 530));
 
         // Show all chosen files in a list
         for (File file : files) {
@@ -215,6 +222,57 @@ final class LoadDataDialog extends JPanel {
         fileListBox.setMinimumSize(new Dimension(355, 165));
         fileListBox.setMaximumSize(new Dimension(355, 165));
         fileListBox.add(fileListScrollPane);
+
+        // Add gap between file list and add new file button
+        fileListBox.add(Box.createVerticalStrut(10));
+
+        // Add new files button
+        addFileButton = new JButton("Add more files to the above loading list ...");
+
+        // Add file button listener
+        addFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Show file chooser
+                JFileChooser fileChooser = new JFileChooser();
+                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+                fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
+                fileChooser.resetChoosableFileFilters();
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                // Only allow to add one file at a time
+                fileChooser.setMultiSelectionEnabled(true);
+                // Customize dialog title bar text
+                fileChooser.setDialogTitle("Add more files");
+                // The second argument sets both the title for the dialog window and the label for the approve button
+                int _ret = fileChooser.showDialog(container, "Choose");
+
+                if (_ret == JFileChooser.CANCEL_OPTION) {
+                    return;
+                }
+
+                // File array that contains only one file
+                final File[] newFiles = fileChooser.getSelectedFiles();
+
+                // Add the selected new file to existing files array
+                // A list is a better choice but considering the old implementation
+                // I'll keep using array - Zhou
+                newFilesArr = new File[files.length + newFiles.length];
+                System.arraycopy(files, 0, newFilesArr, 0, files.length);
+                System.arraycopy(newFiles, 0, newFilesArr, files.length, newFiles.length);
+
+                // Update the files array
+                files = newFilesArr;
+
+                // Add newly added files to the file list model
+                for (File newFile : newFiles) {
+                    // Add each file name to the list model
+                    fileListModel.addElement(newFile.getName());
+                }
+            }
+        });
+
+        fileListBox.add(addFileButton);
+
         // Use a titled border with 5 px inside padding - Zhou
         String fileListBoxBorderTitle = "File to load";
         if (files.length > 1) {
@@ -254,7 +312,7 @@ final class LoadDataDialog extends JPanel {
         previewContainer.setPreferredSize(new Dimension(900, 315));
 
         // Add some padding between panelContainer and preview container
-        previewContainer.add(Box.createVerticalStrut(20));
+        previewContainer.add(Box.createVerticalStrut(10));
 
         filePreviewBox = Box.createHorizontalBox();
 
