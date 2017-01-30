@@ -109,7 +109,7 @@ final class LoadDataDialog extends JPanel {
 
         this.fileIndex = 0;
 
-        this.defaulyPreviewBoxBorderTitle = "Data Preview (only first 20 rows): ";
+        this.defaulyPreviewBoxBorderTitle = "Raw Data Preview (only first 20 rows): ";
 
         this.dataModels = new DataModel[files.length];
 
