@@ -58,7 +58,7 @@ final class LoadDataDialog extends JPanel {
 
     private final transient DataModel[] dataModels;
 
-    private final JTextArea summaryTextArea;
+    private JTextArea validationResultTextArea;
 
     public JTextArea fileTextArea;
 
@@ -66,13 +66,17 @@ final class LoadDataDialog extends JPanel {
 
     private JList fileList;
 
+    private JList validationFileList;
+
     private final DefaultListModel fileListModel;
 
     private Box filePreviewBox;
 
+    private Box fileReviewBox;
+
     private String previewBoxBorderTitle;
 
-    private String summaryBoxBorderTitle;
+    private String summaryContainerBorderTitle;
 
     private final String defaulyPreviewBoxBorderTitle;
 
@@ -90,7 +94,9 @@ final class LoadDataDialog extends JPanel {
 
     private Box optionsBox;
 
-    private Box summaryBox;
+    private Box summaryContainer;
+
+    private Box filesToValidateBox;
 
     private Box buttonsBox;
 
@@ -104,7 +110,7 @@ final class LoadDataDialog extends JPanel {
 
     private JButton step3Button;
 
-    private JButton finishButton;
+    private JButton loadButton;
 
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
@@ -120,7 +126,7 @@ final class LoadDataDialog extends JPanel {
 
         this.dataModels = new DataModel[files.length];
 
-        this.summaryTextArea = new JTextArea();
+        this.validationResultTextArea = new JTextArea();
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -128,7 +134,7 @@ final class LoadDataDialog extends JPanel {
         // Overall container
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
-        // Must set the size of container, otherwise summaryBox gets shrinked
+        // Must set the size of container, otherwise summaryContainer gets shrinked
         container.setPreferredSize(new Dimension(900, 510));
 
         // Data loading params
@@ -347,23 +353,68 @@ final class LoadDataDialog extends JPanel {
         container.add(previewContainer);
 
         // Result summary
-        summaryBox = Box.createHorizontalBox();
+        summaryContainer = Box.createHorizontalBox();
 
-        summaryTextArea.setEditable(false);
-        summaryTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        final JScrollPane summaryScrollPane = new JScrollPane(summaryTextArea);
-        summaryBox.add(summaryScrollPane);
+        // A list of files to review
+        filesToValidateBox = Box.createVerticalBox();
+        filesToValidateBox.setMinimumSize(new Dimension(305, 500));
+        filesToValidateBox.setMaximumSize(new Dimension(305, 500));
+
+        // Create a new list with the same model: fileListModel
+        validationFileList = new JList(fileListModel);
+        // This mode specifies that only a single item can be selected at any point of time
+        validationFileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // Default to select the first file and show its preview
+        validationFileList.setSelectedIndex(0);
+
+        // List listener
+        validationFileList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    fileIndex = validationFileList.getMinSelectionIndex();
+                    setValidationResult(fileIndex, validationResultTextArea);
+                }
+            }
+        });
+
+        // Put the list in a scrollable area
+        JScrollPane filesToReviewScrollPane = new JScrollPane(validationFileList);
+        filesToReviewScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+
+        filesToValidateBox.add(filesToReviewScrollPane);
+
+        summaryContainer.add(filesToValidateBox);
+
+        // Add gap between file list and review conent
+        summaryContainer.add(Box.createHorizontalStrut(10), 1);
+
+        // Review content, contains errors or summary of loading
+        fileReviewBox = Box.createHorizontalBox();
+        fileReviewBox.setMinimumSize(new Dimension(568, 500));
+        fileReviewBox.setMaximumSize(new Dimension(568, 500));
+
+        validationResultTextArea.setEditable(false);
+        validationResultTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        // Set the default content of validation for the default selected file index 0
+        setValidationResult(0, validationResultTextArea);
+
+        final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextArea);
+        fileReviewBox.add(summaryScrollPane);
+
+        summaryContainer.add(fileReviewBox);
 
         // Show the default selected filename as preview border title
-        summaryBoxBorderTitle = "Step 3: Load & Review";
+        summaryContainerBorderTitle = "Step 3: Validate";
 
         // Use a titled border with 5 px inside padding - Zhou
-        summaryBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(summaryBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        summaryContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(summaryContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Add to overall container
-        container.add(summaryBox);
+        container.add(summaryContainer);
         // Hide by default
-        summaryBox.setVisible(false);
+        summaryContainer.setVisible(false);
 
         // Buttons
         // Step 1 button to specify format
@@ -388,7 +439,7 @@ final class LoadDataDialog extends JPanel {
                 step3Button.setVisible(false);
 
                 // Hide finish button
-                finishButton.setVisible(false);
+                loadButton.setVisible(false);
 
                 // Hide back button
                 step1Button.setVisible(false);
@@ -419,7 +470,7 @@ final class LoadDataDialog extends JPanel {
                 step3Button.setVisible(true);
 
                 // Hide finish button
-                finishButton.setVisible(false);
+                loadButton.setVisible(false);
             }
         });
 
@@ -444,7 +495,7 @@ final class LoadDataDialog extends JPanel {
                 previewContainer.setVisible(true);
 
                 // Hide summary
-                summaryBox.setVisible(false);
+                summaryContainer.setVisible(false);
 
                 // Show the step 1 button
                 step1Button.setVisible(true);
@@ -456,12 +507,12 @@ final class LoadDataDialog extends JPanel {
                 step3Button.setVisible(true);
 
                 // Hide finish button
-                finishButton.setVisible(false);
+                loadButton.setVisible(false);
             }
         });
 
         // Step 3 button
-        step3Button = new JButton("Step 3: Load & Review >");
+        step3Button = new JButton("Step 3: Validate >");
 
         // Step 3 button listener
         step3Button.addActionListener(new ActionListener() {
@@ -469,7 +520,7 @@ final class LoadDataDialog extends JPanel {
             public void actionPerformed(ActionEvent e) {
 
                 // Show result summary
-                summaryBox.setVisible(true);
+                summaryContainer.setVisible(true);
 
                 // Hide all inside settingsContainer
                 fileListBox.setVisible(false);
@@ -493,7 +544,7 @@ final class LoadDataDialog extends JPanel {
                 step3Button.setVisible(false);
 
                 // Show finish button
-                finishButton.setVisible(true);
+                loadButton.setVisible(true);
 
                 // Load data files and generate reviewing summary
                 List<String> failedFiles = loadAndReview();
@@ -501,26 +552,26 @@ final class LoadDataDialog extends JPanel {
                 // Determine if enable the finish button or not
                 if (failedFiles.size() > 0) {
                     // Disable it
-                    finishButton.setEnabled(false);
+                    loadButton.setEnabled(false);
                 } else {
                     // Load all files since all can be loaded successfully
                     loadAll();
 
                     // Enable it
-                    finishButton.setEnabled(true);
+                    loadButton.setEnabled(true);
                 }
             }
         });
 
-        // Finish button
-        finishButton = new JButton("Finish");
+        // Load button
+        loadButton = new JButton("Load");
 
         // Finish button listener
-        finishButton.addActionListener(new ActionListener() {
+        loadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Close the data loader dialog
-                Window w = SwingUtilities.getWindowAncestor(finishButton);
+                Window w = SwingUtilities.getWindowAncestor(loadButton);
                 if (w != null) {
                     w.setVisible(false);
                 }
@@ -544,13 +595,13 @@ final class LoadDataDialog extends JPanel {
         buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonsBox.add(step3Button);
         buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonsBox.add(finishButton);
+        buttonsBox.add(loadButton);
 
         // Default to only show step forward button
         step1Button.setVisible(false);
         step2BackwardButton.setVisible(false);
         step3Button.setVisible(false);
-        finishButton.setVisible(false);
+        loadButton.setVisible(false);
         // Add to buttons container
         buttonsContainer.add(buttonsBox);
 
@@ -570,7 +621,7 @@ final class LoadDataDialog extends JPanel {
     }
 
     /**
-     * Load selected files and show the result summary dialog
+     * Validate files with specified settings
      *
      * @return
      */
@@ -579,7 +630,7 @@ final class LoadDataDialog extends JPanel {
 
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < files.length; i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, summaryTextArea, files);
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, files);
             if (dataModel == null) {
                 System.out.println("File index = " + i + " cannot be loaded due to error");
 
@@ -599,7 +650,7 @@ final class LoadDataDialog extends JPanel {
     private void loadAll() {
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < files.length; i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, summaryTextArea, files);
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, files);
 
             addDataModel(dataModel, i, files[i].getName());
 
@@ -617,6 +668,16 @@ final class LoadDataDialog extends JPanel {
         }
 
         return dataModelList;
+    }
+
+    /**
+     * Set the validation result content for a given file index
+     *
+     * @param fileIndex
+     * @param textArea
+     */
+    private void setValidationResult(int fileIndex, JTextArea textArea) {
+        textArea.setText(files[fileIndex].getName());
     }
 
     /**

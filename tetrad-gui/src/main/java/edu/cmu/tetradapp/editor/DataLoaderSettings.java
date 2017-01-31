@@ -23,13 +23,10 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import edu.cmu.tetradapp.util.TextAreaOutputStream;
 import java.awt.*;
 import java.io.File;
-import java.io.PrintStream;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -84,7 +81,7 @@ final class DataLoaderSettings extends JPanel {
     private JLabel maxIntegralLabel1;
     private JLabel maxIntegralLabel2;
 
-    private final int fileIndex = 0;
+    private int fileIndex;
 
     private Dimension labelSize;
 
@@ -620,15 +617,14 @@ final class DataLoaderSettings extends JPanel {
         return maxIntegralDiscreteIntField.getValue();
     }
 
-    public DataModel loadDataWithSettings(int fileIndex, JTextArea summaryTextArea, File[] files) {
-        summaryTextArea.setText("");
-
-        TextAreaOutputStream out1 = new TextAreaOutputStream(summaryTextArea);
-        PrintStream out = new PrintStream(out1);
-
-        TetradLogger.getInstance().addOutputStream(out);
-        TetradLogger.getInstance().setForceLog(true);
-
+    /**
+     * Will use Kevin's fast data reader once it's ready - Zhou
+     *
+     * @param fileIndex
+     * @param files
+     * @return DataModel on success or null on failure
+     */
+    public DataModel loadDataWithSettings(int fileIndex, File[] files) {
         try {
             DataReader reader = new DataReader();
 
@@ -637,8 +633,8 @@ final class DataLoaderSettings extends JPanel {
             reader.setQuoteChar(getQuoteChar());
             reader.setVariablesSupplied(isVarNamesFirstRow());
             reader.setIdLabel(getIdLabel());
-            reader.setMissingValueMarker(getMissingValue());
-            reader.setMaxIntegralDiscrete(getMaxDiscrete());
+            //reader.setMissingValueMarker(getMissingValue());
+            //reader.setMaxIntegralDiscrete(getMaxDiscrete());
 
             DataModel dataModel;
 
@@ -651,26 +647,10 @@ final class DataLoaderSettings extends JPanel {
                 dataModel = reader.parseCovariance(files[fileIndex]);
             }
 
-//            addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
-            summaryTextArea.setCaretPosition(summaryTextArea.getText().length());
-
             return dataModel;
         } catch (Exception e1) {
-            out.println(e1.getMessage());
-            out.println("\nIf that message was unhelpful, "
-                    + "\nplease copy and paste the (Java) "
-                    + "\nerror below to Joe Ramsey, "
-                    + "\njdramsey@andrew.cmu.edu, "
-                    + "\nso a better error message "
-                    + "\ncan be put at that location."
-                    + "\nThanks!");
-
-            out.println();
-            e1.printStackTrace(out);
+            e1.printStackTrace();
         }
-
-        TetradLogger.getInstance().removeOutputStream(out);
-        TetradLogger.getInstance().setForceLog(false);
 
         return null;
     }

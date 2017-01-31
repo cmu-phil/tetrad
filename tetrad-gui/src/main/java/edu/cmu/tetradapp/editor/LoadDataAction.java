@@ -84,14 +84,14 @@ final class LoadDataAction extends AbstractAction {
         }
 
         // Files array
-        final File[] files = chooser.getSelectedFiles();
+        File[] files = chooser.getSelectedFiles();
 
         Preferences.userRoot().put("fileSaveLocation", files[0].getParent());
 
         DataModelList dataModelList;
 
         // Show the data loader dialog to preview data ata and set their parameters
-        final LoadDataDialog loadData = new LoadDataDialog(files);
+        LoadDataDialog loadData = new LoadDataDialog(files);
         loadData.showDataLoaderDialog();
 
         boolean keepData = false;
