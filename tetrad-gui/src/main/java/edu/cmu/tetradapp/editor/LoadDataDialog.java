@@ -78,7 +78,7 @@ final class LoadDataDialog extends JPanel {
 
     private Box container;
 
-    private Box stepContainer;
+    private Box settingsContainer;
 
     private Box previewContainer;
 
@@ -129,7 +129,41 @@ final class LoadDataDialog extends JPanel {
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
         // Must set the size of container, otherwise summaryBox gets shrinked
-        container.setPreferredSize(new Dimension(900, 540));
+        container.setPreferredSize(new Dimension(900, 510));
+
+        // Data loading params
+        // The data loading params apply to all slected files
+        // the users should know that the selected files should share these settings - Zhou
+        dataLoaderSettings = new DataLoaderSettings(files);
+
+        // Specify Format
+        formatBox = dataLoaderSettings.specifyFormat();
+
+        formatBox.setPreferredSize(new Dimension(900, 145));
+        formatBox.setMaximumSize(new Dimension(900, 145));
+
+        // Options settings
+        optionsBox = dataLoaderSettings.selectOptions();
+
+        optionsBox.setPreferredSize(new Dimension(900, 145));
+        optionsBox.setMaximumSize(new Dimension(900, 145));
+
+        // Contains file list and format/options
+        settingsContainer = Box.createVerticalBox();
+
+        settingsContainer.add(formatBox);
+        settingsContainer.add(optionsBox);
+        optionsBox.setVisible(false);
+
+        // Add some padding between settingsContainer and preview container
+        settingsContainer.add(Box.createVerticalStrut(10));
+
+        // Add to overall container
+        container.add(settingsContainer);
+
+        // Preview container, contains file list and raw data preview
+        previewContainer = Box.createHorizontalBox();
+        previewContainer.setPreferredSize(new Dimension(900, 310));
 
         // Show all chosen files in a list
         for (File file : files) {
@@ -219,8 +253,8 @@ final class LoadDataDialog extends JPanel {
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         fileListBox = Box.createVerticalBox();
-        fileListBox.setMinimumSize(new Dimension(355, 315));
-        fileListBox.setMaximumSize(new Dimension(355, 315));
+        fileListBox.setMinimumSize(new Dimension(325, 310));
+        fileListBox.setMaximumSize(new Dimension(325, 310));
         fileListBox.add(fileListScrollPane);
 
         // Add gap between file list and add new file button
@@ -276,47 +310,17 @@ final class LoadDataDialog extends JPanel {
         // Use a titled border with 5 px inside padding - Zhou
         String fileListBoxBorderTitle = "File to load";
         if (files.length > 1) {
-            fileListBoxBorderTitle = "Files to load (right click to remove selected file)";
+            fileListBoxBorderTitle = "Files (right click to remove selected file)";
         }
         fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
-        // Data loading params
-        // The data loading params apply to all slected files
-        // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new DataLoaderSettings(files);
-
-        // Specify Format
-        formatBox = dataLoaderSettings.specifyFormat();
-
-        // Options settings
-        optionsBox = dataLoaderSettings.selectOptions();
-
-        // Contains file list and format/options
-        stepContainer = Box.createHorizontalBox();
-        stepContainer.setMinimumSize(new Dimension(900, 165));
-        stepContainer.setMaximumSize(new Dimension(900, 165));
-
-        stepContainer.add(formatBox);
-        stepContainer.add(optionsBox);
-        optionsBox.setVisible(false);
-
-        // Add some padding between stepContainer and preview container
-        stepContainer.add(Box.createVerticalStrut(10));
-
-        // Add to overall container
-        container.add(stepContainer);
-
-        // Preview container
-        previewContainer = Box.createHorizontalBox();
-        previewContainer.setPreferredSize(new Dimension(900, 315));
 
         previewContainer.add(fileListBox);
         // Add some gap between file list and format box
         previewContainer.add(Box.createHorizontalStrut(10), 1);
 
         filePreviewBox = Box.createHorizontalBox();
-        filePreviewBox.setMinimumSize(new Dimension(535, 315));
-        filePreviewBox.setMaximumSize(new Dimension(535, 315));
+        filePreviewBox.setMinimumSize(new Dimension(565, 315));
+        filePreviewBox.setMaximumSize(new Dimension(565, 315));
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
@@ -467,7 +471,7 @@ final class LoadDataDialog extends JPanel {
                 // Show result summary
                 summaryBox.setVisible(true);
 
-                // Hide all inside stepContainer
+                // Hide all inside settingsContainer
                 fileListBox.setVisible(false);
                 formatBox.setVisible(false);
                 optionsBox.setVisible(false);
