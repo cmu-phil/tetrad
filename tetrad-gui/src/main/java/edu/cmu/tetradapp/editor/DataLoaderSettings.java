@@ -86,6 +86,8 @@ final class DataLoaderSettings extends JPanel {
 
     private final int fileIndex = 0;
 
+    private Dimension labelSize;
+
     //================================CONSTRUCTOR=======================//
     public DataLoaderSettings(final File... files) {
         this.files = files;
@@ -95,6 +97,9 @@ final class DataLoaderSettings extends JPanel {
         }
 
         this.dataModels = new DataModel[files.length];
+
+        // All labels should share the save size - Zhou
+        this.labelSize = new Dimension(200, 30);
     }
 
     // Step 1 items
@@ -106,7 +111,7 @@ final class DataLoaderSettings extends JPanel {
         Box fileTypeBox = Box.createHorizontalBox();
 
         tabularRadioButton = new JRadioButton("Tabular data");
-        covarianceRadioButton = new JRadioButton("Covariance data");
+        covarianceRadioButton = new JRadioButton("Covariance data (lower triangle)");
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup fileTypeBtnGrp = new ButtonGroup();
@@ -116,15 +121,34 @@ final class DataLoaderSettings extends JPanel {
         // Tabular data is selected by default
         tabularRadioButton.setSelected(true);
 
+        // Add label into this label box to size
+        Box fileTypeLabelBox = Box.createHorizontalBox();
+        fileTypeLabelBox.setPreferredSize(labelSize);
+
+        fileTypeLabelBox.add(new JLabel("File type:"));
+
+        // Option 1
+        Box fileTypeOption1Box = Box.createHorizontalBox();
+        fileTypeOption1Box.setPreferredSize(new Dimension(200, 30));
+        fileTypeOption1Box.add(tabularRadioButton);
+
+        // Option 2
+        Box fileTypeOption2Box = Box.createHorizontalBox();
+        // Make this longer since the text is long - Zhou
+        fileTypeOption2Box.setPreferredSize(new Dimension(300, 30));
+        fileTypeOption2Box.add(covarianceRadioButton);
+
         // Add to file type box
-        fileTypeBox.add(new JLabel("File type:"));
+        fileTypeBox.add(fileTypeLabelBox);
         fileTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        fileTypeBox.add(tabularRadioButton);
-        fileTypeBox.add(covarianceRadioButton);
+        fileTypeBox.add(fileTypeOption1Box);
+        fileTypeBox.add(fileTypeOption2Box);
         fileTypeBox.add(Box.createHorizontalGlue());
-        formatContainer.add(fileTypeBox);
 
         // Add to format container
+        formatContainer.add(fileTypeBox);
+
+        // Vertical gap
         formatContainer.add(Box.createVerticalStrut(5));
 
         // Data type - moved from the old Fast tab - Zhou
@@ -142,10 +166,25 @@ final class DataLoaderSettings extends JPanel {
         // Continuous radion button is selected by default
         contRadioButton.setSelected(true);
 
-        dataTypeBox.add(new JLabel("Data type:"));
+        // Add label into this label box to size
+        Box dataTypeLabelBox = Box.createHorizontalBox();
+        dataTypeLabelBox.setPreferredSize(labelSize);
+        dataTypeLabelBox.add(new JLabel("Data type:"));
+
+        // Option 1
+        Box dataTypeOption1Box = Box.createHorizontalBox();
+        dataTypeOption1Box.setPreferredSize(new Dimension(200, 30));
+        dataTypeOption1Box.add(contRadioButton);
+
+        // Option 2
+        Box dataTypeOption2Box = Box.createHorizontalBox();
+        dataTypeOption2Box.setPreferredSize(new Dimension(200, 30));
+        dataTypeOption2Box.add(discRadioButton);
+
+        dataTypeBox.add(dataTypeLabelBox);
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        dataTypeBox.add(contRadioButton);
-        dataTypeBox.add(discRadioButton);
+        dataTypeBox.add(dataTypeOption1Box);
+        dataTypeBox.add(dataTypeOption2Box);
         // Hide mixed option for now until we have that in fast data reader - Zhou
         //dataTypeBox.add(mixedRadioButton);
         dataTypeBox.add(Box.createHorizontalGlue());
@@ -170,12 +209,33 @@ final class DataLoaderSettings extends JPanel {
         // Defaults to comma
         commaDelimiterRadioButton.setSelected(true);
 
-        valueDelimiterBox.add(new JLabel("Value delimiter:"));
+        // Add label into this label box to size
+        Box valueDelimiterLabelBox = Box.createHorizontalBox();
+        valueDelimiterLabelBox.setPreferredSize(labelSize);
+        valueDelimiterLabelBox.add(new JLabel("Value delimiter:"));
+
+        // Option 1
+        Box valueDelimiterOption1Box = Box.createHorizontalBox();
+        valueDelimiterOption1Box.setPreferredSize(new Dimension(200, 30));
+        valueDelimiterOption1Box.add(commaDelimiterRadioButton);
+
+        // Option 2
+        Box valueDelimiterOption2Box = Box.createHorizontalBox();
+        valueDelimiterOption2Box.setPreferredSize(new Dimension(200, 30));
+        valueDelimiterOption2Box.add(tabDelimiterRadioButton);
+
+        // Option 3
+        Box valueDelimiterOption3Box = Box.createHorizontalBox();
+        valueDelimiterOption3Box.setPreferredSize(new Dimension(200, 30));
+        valueDelimiterOption3Box.add(spaceDelimiterRadioButton);
+
+        valueDelimiterBox.add(valueDelimiterLabelBox);
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        valueDelimiterBox.add(commaDelimiterRadioButton);
-        valueDelimiterBox.add(tabDelimiterRadioButton);
-        valueDelimiterBox.add(spaceDelimiterRadioButton);
+        valueDelimiterBox.add(valueDelimiterOption1Box);
+        valueDelimiterBox.add(valueDelimiterOption2Box);
+        valueDelimiterBox.add(valueDelimiterOption3Box);
         valueDelimiterBox.add(Box.createHorizontalGlue());
+
         formatContainer.add(valueDelimiterBox);
 
         formatContainer.add(Box.createVerticalStrut(5));
@@ -195,11 +255,26 @@ final class DataLoaderSettings extends JPanel {
         // Make Yes button selected by default
         firstRowVarNamesYesRadioButton.setSelected(true);
 
+        // Add label into this label box to size
+        Box firstRowVarNamesLabelBox = Box.createHorizontalBox();
+        firstRowVarNamesLabelBox.setPreferredSize(labelSize);
+        firstRowVarNamesLabelBox.add(new JLabel("First row variable names:"));
+
+        // Option 1
+        Box firstRowVarNamesOption1Box = Box.createHorizontalBox();
+        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(200, 30));
+        firstRowVarNamesOption1Box.add(firstRowVarNamesYesRadioButton);
+
+        // Option 2
+        Box firstRowVarNamesOption2Box = Box.createHorizontalBox();
+        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(200, 30));
+        firstRowVarNamesOption2Box.add(firstRowVarNamesNoRadioButton);
+
         // Add to firstRowVarNamesBox
-        firstRowVarNamesBox.add(new JLabel("Variable names in first row of data:"));
-        valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        firstRowVarNamesBox.add(firstRowVarNamesYesRadioButton);
-        firstRowVarNamesBox.add(firstRowVarNamesNoRadioButton);
+        firstRowVarNamesBox.add(firstRowVarNamesLabelBox);
+        firstRowVarNamesBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        firstRowVarNamesBox.add(firstRowVarNamesOption1Box);
+        firstRowVarNamesBox.add(firstRowVarNamesOption2Box);
         firstRowVarNamesBox.add(Box.createHorizontalGlue());
 
         formatContainer.add(firstRowVarNamesBox);
@@ -236,13 +311,34 @@ final class DataLoaderSettings extends JPanel {
         // Defaults to none
         idNoneRadioButton.setSelected(true);
 
-        caseIdProvidedBox.add(new JLabel("Case IDs:"));
+        // Add label into this label box to size
+        Box caseIdProvidedLabelBox = Box.createHorizontalBox();
+        caseIdProvidedLabelBox.setPreferredSize(labelSize);
+        caseIdProvidedLabelBox.add(new JLabel("Case IDs:"));
+
+        // Option 1
+        Box caseIdProvidedOption1Box = Box.createHorizontalBox();
+        caseIdProvidedOption1Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption1Box.add(idNoneRadioButton);
+
+        // Option 2
+        Box caseIdProvidedOption2Box = Box.createHorizontalBox();
+        caseIdProvidedOption2Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption2Box.add(idUnlabeledFirstColRadioButton);
+
+        // Option 3
+        Box caseIdProvidedOption3Box = Box.createHorizontalBox();
+        caseIdProvidedOption3Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption3Box.add(idLabeledColRadioButton);
+        caseIdProvidedOption3Box.add(idStringField);
+
+        caseIdProvidedBox.add(caseIdProvidedLabelBox);
         caseIdProvidedBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        caseIdProvidedBox.add(idNoneRadioButton);
-        caseIdProvidedBox.add(idUnlabeledFirstColRadioButton);
-        caseIdProvidedBox.add(idLabeledColRadioButton);
-        caseIdProvidedBox.add(idStringField);
+        caseIdProvidedBox.add(caseIdProvidedOption1Box);
+        caseIdProvidedBox.add(caseIdProvidedOption2Box);
+        caseIdProvidedBox.add(caseIdProvidedOption3Box);
         caseIdProvidedBox.add(Box.createHorizontalGlue());
+
         optionsContainer.add(caseIdProvidedBox);
 
         optionsContainer.add(Box.createVerticalStrut(5));
@@ -265,13 +361,34 @@ final class DataLoaderSettings extends JPanel {
         // Select double slash by default
         commentDoubleSlashRadioButton.setSelected(true);
 
-        commentMarkerBox.add(new JLabel("Comment marker:"));
+        // Add label into this label box to size
+        Box commentMarkerLabelBox = Box.createHorizontalBox();
+        commentMarkerLabelBox.setPreferredSize(labelSize);
+        commentMarkerLabelBox.add(new JLabel("Comment marker:"));
+
+        // Option 1
+        Box commentMarkerOption1Box = Box.createHorizontalBox();
+        commentMarkerOption1Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption1Box.add(commentDoubleSlashRadioButton);
+
+        // Option 2
+        Box commentMarkerOption2Box = Box.createHorizontalBox();
+        commentMarkerOption2Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption2Box.add(commentPondRadioButton);
+
+        // Option 3
+        Box commentMarkerOption3Box = Box.createHorizontalBox();
+        commentMarkerOption3Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption3Box.add(commentOtherRadioButton);
+        commentMarkerOption3Box.add(commentStringField);
+
+        commentMarkerBox.add(commentMarkerLabelBox);
         commentMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        commentMarkerBox.add(commentDoubleSlashRadioButton);
-        commentMarkerBox.add(commentPondRadioButton);
-        commentMarkerBox.add(commentOtherRadioButton);
-        commentMarkerBox.add(commentStringField);
+        commentMarkerBox.add(commentMarkerOption1Box);
+        commentMarkerBox.add(commentMarkerOption2Box);
+        commentMarkerBox.add(commentMarkerOption3Box);
         commentMarkerBox.add(Box.createHorizontalGlue());
+
         optionsContainer.add(commentMarkerBox);
 
         optionsContainer.add(Box.createVerticalStrut(5));
@@ -291,12 +408,33 @@ final class DataLoaderSettings extends JPanel {
         // Select None by default
         noneQuoteRadioButton.setSelected(true);
 
-        quoteCharBox.add(new JLabel("Quote character:"));
+        // Add label into this label box to size
+        Box quoteCharLabelBox = Box.createHorizontalBox();
+        quoteCharLabelBox.setPreferredSize(labelSize);
+        quoteCharLabelBox.add(new JLabel("Quote character:"));
+
+        // Option 1
+        Box quoteCharOption1Box = Box.createHorizontalBox();
+        quoteCharOption1Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption1Box.add(noneQuoteRadioButton);
+
+        // Option 2
+        Box quoteCharOption2Box = Box.createHorizontalBox();
+        quoteCharOption2Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption2Box.add(doubleQuoteRadioButton);
+
+        // Option 3
+        Box quoteCharOption3Box = Box.createHorizontalBox();
+        quoteCharOption3Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption3Box.add(singleQuoteRadioButton);
+
+        quoteCharBox.add(quoteCharLabelBox);
         quoteCharBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        quoteCharBox.add(noneQuoteRadioButton);
-        quoteCharBox.add(doubleQuoteRadioButton);
-        quoteCharBox.add(singleQuoteRadioButton);
+        quoteCharBox.add(quoteCharOption1Box);
+        quoteCharBox.add(quoteCharOption2Box);
+        quoteCharBox.add(quoteCharOption3Box);
         quoteCharBox.add(Box.createHorizontalGlue());
+
         optionsContainer.add(quoteCharBox);
 
         optionsContainer.add(Box.createVerticalStrut(5));

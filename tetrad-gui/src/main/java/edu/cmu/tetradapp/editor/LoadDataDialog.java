@@ -261,7 +261,7 @@ final class LoadDataDialog extends JPanel {
         fileListBox.add(Box.createVerticalStrut(10));
 
         // Add new files button
-        addFileButton = new JButton("Add more files to the above loading list ...");
+        addFileButton = new JButton("Add more files to the loading list ...");
 
         // Add file button listener
         addFileButton.addActionListener(new ActionListener() {
