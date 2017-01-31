@@ -99,7 +99,7 @@ final class DataLoaderSettings extends JPanel {
         this.dataModels = new DataModel[files.length];
 
         // All labels should share the save size - Zhou
-        this.labelSize = new Dimension(200, 30);
+        this.labelSize = new Dimension(180, 30);
     }
 
     // Step 1 items

@@ -253,8 +253,8 @@ final class LoadDataDialog extends JPanel {
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         fileListBox = Box.createVerticalBox();
-        fileListBox.setMinimumSize(new Dimension(325, 310));
-        fileListBox.setMaximumSize(new Dimension(325, 310));
+        fileListBox.setMinimumSize(new Dimension(305, 310));
+        fileListBox.setMaximumSize(new Dimension(305, 310));
         fileListBox.add(fileListScrollPane);
 
         // Add gap between file list and add new file button
@@ -319,8 +319,8 @@ final class LoadDataDialog extends JPanel {
         previewContainer.add(Box.createHorizontalStrut(10), 1);
 
         filePreviewBox = Box.createHorizontalBox();
-        filePreviewBox.setMinimumSize(new Dimension(565, 315));
-        filePreviewBox.setMaximumSize(new Dimension(565, 315));
+        filePreviewBox.setMinimumSize(new Dimension(585, 315));
+        filePreviewBox.setMaximumSize(new Dimension(585, 315));
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
