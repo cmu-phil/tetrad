@@ -13,7 +13,7 @@ public class ExploreComparison {
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous);
-        params.setAlgorithm(ComparisonParameters.Algorithm.FGS2);
+        params.setAlgorithm(ComparisonParameters.Algorithm.FGES2);
 //        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
         params.setScore(ComparisonParameters.ScoreType.SemBic);
 //        params.setOneEdgeFaithfulnessAssumed(false);

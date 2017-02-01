@@ -1111,7 +1111,7 @@ public final class GraphUtils {
      * @return true if <code>set</code> is a clique in <code>graph</code>. </p>
      * R. Silva, June 2004
      */
-    public static boolean isClique(Set<Node> set, Graph graph) {
+    public static boolean isClique(Collection<Node> set, Graph graph) {
         List<Node> setv = new LinkedList<>(set);
         for (int i = 0; i < setv.size() - 1; i++) {
             for (int j = i + 1; j < setv.size(); j++) {

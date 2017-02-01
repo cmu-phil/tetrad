@@ -7,22 +7,20 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BDeuScore;
-import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.util.RandomUtil;
 
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * generate data from random graph, generated from parameters.
- * calculate errors from FGS output for the data and graph
+ * calculate errors from FGES output for the data and graph
  * create resimulated data and hybrid resimulated data with various parameters
- * calculate errors of FGS on the resimulated and hsim data
+ * calculate errors of FGES on the resimulated and hsim data
  * compare errors across all data sets. which simulated data errors are closest to original?
  */
 public class HsimRobustCompare {
@@ -55,16 +53,16 @@ public class HsimRobustCompare {
             //System.out.println(oData);
             //System.out.println(odag);
 
-            //then run FGS
+            //then run FGES
             BDeuScore oscore = new BDeuScore(oData);
-            Fgs ofgs = new Fgs(oscore);
-            ofgs.setVerbose(false);
-            ofgs.setNumPatternsToStore(0);
-            ofgs.setPenaltyDiscount(penaltyDiscount);
-            Graph oGraphOut = ofgs.search();
+            Fges fges = new Fges(oscore);
+            fges.setVerbose(false);
+            fges.setNumPatternsToStore(0);
+            fges.setPenaltyDiscount(penaltyDiscount);
+            Graph oGraphOut = fges.search();
             if (verbose) System.out.println(oGraphOut);
 
-            //calculate FGS errors
+            //calculate FGES errors
             oErrors = new double[5];
             oErrors = HsimUtils.errorEval(oGraphOut, odag);
             if (verbose) System.out.println(oErrors[0] + " " + oErrors[1] + " " + oErrors[2] +
@@ -72,12 +70,12 @@ public class HsimRobustCompare {
 
             //create various simulated data sets
 
-            ////let's do the full simulated data set first: a dag in the FGS pattern fit to the data set.
+            ////let's do the full simulated data set first: a dag in the FGES pattern fit to the data set.
             PatternToDag pickdag = new PatternToDag(oGraphOut);
-            Graph fgsDag = pickdag.patternToDagMeek();
+            Graph fgesDag = pickdag.patternToDagMeek();
 
-            Dag fgsdag2 = new Dag(fgsDag);
-            BayesPm simBayesPm = new BayesPm(fgsdag2, bayesPm);
+            Dag fgesdag2 = new Dag(fgesDag);
+            BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);
             DirichletBayesIm simIM = DirichletBayesIm.symmetricDirichletIm(simBayesPm, 1.0);
             DirichletEstimator simEstimator = new DirichletEstimator();
             DirichletBayesIm fittedIM = simEstimator.estimate(simIM, oData);
@@ -90,13 +88,13 @@ public class HsimRobustCompare {
             //calculate errors for all simulated output graphs
             ////full simulation errors first
             BDeuScore simscore = new BDeuScore(simData);
-            Fgs simfgs = new Fgs(simscore);
-            simfgs.setVerbose(false);
-            simfgs.setNumPatternsToStore(0);
-            simfgs.setPenaltyDiscount(penaltyDiscount);
-            Graph simGraphOut = simfgs.search();
+            Fges simfges = new Fges(simscore);
+            simfges.setVerbose(false);
+            simfges.setNumPatternsToStore(0);
+            simfges.setPenaltyDiscount(penaltyDiscount);
+            Graph simGraphOut = simfges.search();
             //simErrors = new double[5];
-            simErrors = HsimUtils.errorEval(simGraphOut, fgsdag2);
+            simErrors = HsimUtils.errorEval(simGraphOut, fgesdag2);
             //System.out.println("Full resim errors are: " + simErrors[0] + " " + simErrors[1] + " " + simErrors[2] + " " + simErrors[3] + " " + simErrors[4]);
 
             //compare errors. perhaps report differences between original and simulated errors.

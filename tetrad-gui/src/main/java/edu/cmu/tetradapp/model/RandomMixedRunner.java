@@ -137,17 +137,17 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 
         DataSet ds = (DataSet) getDataModelList().get(0);
 
-//        WGfci fgs = new WGfci(ds);
-//        fgs.setAlpha(4);
-//        Graph graph = fgs.search();
+//        WGfci fges = new WGfci(ds);
+//        fges.setAlpha(4);
+//        Graph graph = fges.search();
 
-        WFgs fgs = new WFgs(ds);
-        fgs.setPenaltyDiscount(12);
-        Graph graph = fgs.search();
+        WFges fges = new WFges(ds);
+        fges.setPenaltyDiscount(12);
+        Graph graph = fges.search();
 
-//        WFgs fgs = new WFgs(ds);
-//        fgs.setAlpha(4);
-//        Graph g = fgs.search();
+//        WFges fges = new WFges(ds);
+//        fges.setAlpha(4);
+//        Graph g = fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
 //        pc.setInitialGraph(g);
@@ -162,24 +162,24 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        pcs.setVerbose(false);
 //        Graph graph = pcs.search();
 
-//        WFgs fgs = new WFgs(ds);
-//        fgs.setMaxIndegree(-1);
-//        fgs.setAlpha(4);
-//        Graph graph = fgs.search();
+//        WFges fges = new WFges(ds);
+//        fges.setMaxIndegree(-1);
+//        fges.setAlpha(4);
+//        Graph graph = fges.search();
 
-//        WFgs fgs = new WFgs(ds);
-//        fgs.setMaxIndegree(5);
-//        fgs.setAlpha(8);
-//        Graph g =  fgs.search();
+//        WFges fges = new WFges(ds);
+//        fges.setMaxIndegree(5);
+//        fges.setAlpha(8);
+//        Graph g =  fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
 //        pc.setInitialGraph(g);
 //        Graph graph = pc.search();
 
 //        ConditionalGaussianScore score = new ConditionalGaussianScore(ds);
-//        Fgs fgs = new Fgs(score);
-//        fgs.setMaxIndegree(-1);
-//        Graph graph = fgs.search();
+//        Fges fges = new Fges(score);
+//        fges.setMaxIndegree(-1);
+//        Graph graph = fges.search();
 
         GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
 

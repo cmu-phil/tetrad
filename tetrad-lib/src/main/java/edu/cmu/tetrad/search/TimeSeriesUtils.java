@@ -171,7 +171,7 @@ public class TimeSeriesUtils {
             throw new IllegalArgumentException("Mixed data set");
         }
 
-        Fgs search = new Fgs(score);
+        Fges search = new Fges(score);
         search.setKnowledge(knowledge);
         Graph graph = search.search();
 

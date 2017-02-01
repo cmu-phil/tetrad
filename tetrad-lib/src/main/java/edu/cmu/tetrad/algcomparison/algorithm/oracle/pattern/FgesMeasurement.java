@@ -7,68 +7,67 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * FGES (the heuristic version).
  *
  * @author jdramsey
  */
-public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
-    private String targetName;
 
-    public FgsMb(ScoreWrapper score) {
+    public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
     }
 
-    public FgsMb(ScoreWrapper score, Algorithm initialGraph) {
+    public FgesMeasurement(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
         this.initialGraph = initialGraph;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
+    public Graph search(DataModel dataModel, Parameters parameters) {
+        DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
+        dataSet = dataSet.copy();
 
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+        dataSet = DataUtils.standardizeData(dataSet);
+        double variance = parameters.getDouble("measurementVariance");
+
+        if (variance > 0) {
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    double d = dataSet.getDouble(i, j);
+                    double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                    dataSet.setDouble(i, j, d + norm);
+                }
+            }
         }
 
-        Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
-        edu.cmu.tetrad.search.FgsMb2 search
-                = new edu.cmu.tetrad.search.FgsMb2(score);
+        Fges search = new Fges(score.getScore(dataSet, parameters));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
-        }
-
-        this.targetName = parameters.getString("targetName");
-        Node target = score.getVariable(targetName);
-
-        return search.search(Collections.singletonList(target));
+        return search.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(targetName);
-        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
+        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "FGS (Fast Greedy Search) using " + score.getDescription();
+        return "FGES adding measuremnt noise using " + score.getDescription();
     }
 
     @Override
@@ -79,8 +78,9 @@ public class FgsMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
-        parameters.add("targetName");
         parameters.add("faithfulnessAssumed");
+        parameters.add("verbose");
+        parameters.add("measurementVariance");
         return parameters;
     }
 

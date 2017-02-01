@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * "Whimsical"FGS. Handles mixed, continuous, and discrete data.
+ * "Whimsical"FGES. Handles mixed, continuous, and discrete data.
  *
  * @author Joseph Ramsey
  */

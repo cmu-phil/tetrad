@@ -25,7 +25,6 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -79,7 +78,7 @@ public class TestConditionalGaussianSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fgs(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
 //        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Simulations simulations = new Simulations();

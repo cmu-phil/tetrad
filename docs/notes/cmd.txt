@@ -31,22 +31,22 @@ covariance matrix for input to the algorithm.
 a covariance matrix, this may be omitted, since the data must be continuous.
 
 “-algorithm” must be followed by either “pc”, "cpc", "fci", "cfci", "ccd",
-"fgs", "bayes_est", "randomDag".
+"fges", "bayes_est", "randomDag".
 
 “-maxDegree” is by default -1 (unlimited) but may be followed by any integer >= -1.
-This is effective for PC, CPC, FCI, and CFCI, not FGS.
+This is effective for PC, CPC, FCI, and CFCI, not FGES.
 
 “-significance” is by default 0.05 but may be set to any number in the range
-[0.0, 1.0]. This is effective for PC, CPC FCI, and CFCI, not FGS.
+[0.0, 1.0]. This is effective for PC, CPC FCI, and CFCI, not FGES.
 
 "-sampleprior" is by detault 10 but may be set to any positive number; this
-is used for FGS.
+is used for FGES.
 
 "-structureprior" is by default 1 but may be set to any positive number; this
-is used for FGS.
+is used for FGES.
 
 "-penaltydiscount" is by default 1 but may be set to any positive number; this
-is used for FGS.
+is used for FGES.
 
 "- graphxml" followed by a filename will write graphical output to that file
 in XML format.
@@ -55,7 +55,7 @@ in XML format.
 in text format.
 
 "-initialgraphtxt" followed by a file name will read in an initial graph.
-This is only used for FGS.
+This is only used for FGES.
 
 "-nodsep" for FCI indicates that the D-Sep search should not be run.
 

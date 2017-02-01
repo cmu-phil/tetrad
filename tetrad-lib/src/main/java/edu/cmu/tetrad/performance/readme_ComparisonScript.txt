@@ -57,7 +57,7 @@ For mode 3):
 
 In ComparisonScript.java set parameters.isNoData(true) (it is false by default). You can change numTrials to change the number of random graphs to try, the default is 100.
 
-In this mode you want to see perfect performance everywhere: perfect precision and recall, etc. If you see any deviation from this, there must be a mistake somewhere. Note that this procedure compares, for example, the output of PC or FGS with a true graph specified by DagToPattern. FCI or GFCI would be compared with the output of DagToPag. If you want to examine an algorithm which searches for something other than a standard Pattern or PAG, you have to add the appropriate method in Comparison2.java. Just search for “DagToPag” and you’ll see where it goes.
+In this mode you want to see perfect performance everywhere: perfect precision and recall, etc. If you see any deviation from this, there must be a mistake somewhere. Note that this procedure compares, for example, the output of PC or FGES with a true graph specified by DagToPattern. FCI or GFCI would be compared with the output of DagToPag. If you want to examine an algorithm which searches for something other than a standard Pattern or PAG, you have to add the appropriate method in Comparison2.java. Just search for “DagToPag” and you’ll see where it goes.
 
 Note also that some algorithms are quite slow running directly on graphs. Start with small variable sets.
 

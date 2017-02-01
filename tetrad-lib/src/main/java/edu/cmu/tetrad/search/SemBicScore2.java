@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the continuous BIC score for FGS.
+ * Implements the continuous BIC score for FGES.
  *
  * @author Joseph Ramsey
  */
@@ -55,7 +55,7 @@ public class SemBicScore2 implements Score {
     private double penaltyDiscount = 2.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGS
+    // ignored by FGES
     private boolean ignoreLinearDependent = false;
 
     // The printstream output should be sent to.
