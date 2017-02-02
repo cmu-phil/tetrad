@@ -26,6 +26,8 @@ import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -117,6 +119,64 @@ final class DataLoaderSettings extends JPanel {
 
         // Tabular data is selected by default
         tabularRadioButton.setSelected(true);
+
+        // Event listener
+        tabularRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                // Just enable disabled buttons, do not change the previous selections - Zhou
+                if (button.isSelected()) {
+                    // Enable the discrete radio button if it's disabled by clicking covariance data
+                    if (!discRadioButton.isEnabled()) {
+                        discRadioButton.setEnabled(true);
+                    }
+
+                    // Enable No for variable names in first row
+                    if (!firstRowVarNamesNoRadioButton.isEnabled()) {
+                        firstRowVarNamesNoRadioButton.setEnabled(true);
+                    }
+
+                    // Enable case Id options
+                    if (!idUnlabeledFirstColRadioButton.isEnabled()) {
+                        idUnlabeledFirstColRadioButton.setEnabled(true);
+                    }
+
+                    if (!idLabeledColRadioButton.isEnabled()) {
+                        idLabeledColRadioButton.setEnabled(true);
+                    }
+
+                    if (!idStringField.isEnabled()) {
+                        idStringField.setEnabled(true);
+                    }
+                }
+            }
+        });
+
+        // Event listener
+        covarianceRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    // When Covariance data is selected, data type can only be Continuous,
+                    //will disallow the users to choose Discrete
+                    discRadioButton.setEnabled(false);
+
+                    // variable names in first row is also checked with Yes for covariance data,
+                    // and we disable the No radio button
+                    firstRowVarNamesYesRadioButton.setSelected(true);
+                    firstRowVarNamesNoRadioButton.setEnabled(false);
+
+                    // select None for Case IDs, disable other options,
+                    // since no Case ID should be in covariance data
+                    idNoneRadioButton.setSelected(true);
+                    idUnlabeledFirstColRadioButton.setEnabled(false);
+                    idLabeledColRadioButton.setEnabled(false);
+                    idStringField.setEnabled(false);
+                }
+            }
+        });
 
         // Add label into this label box to size
         Box fileTypeLabelBox = Box.createHorizontalBox();
