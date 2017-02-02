@@ -98,7 +98,7 @@ final class DataLoaderSettings extends JPanel {
         this.dataModels = new DataModel[files.length];
 
         // All labels should share the save size - Zhou
-        this.labelSize = new Dimension(180, 30);
+        this.labelSize = new Dimension(220, 30);
     }
 
     // Step 1 items
@@ -488,7 +488,7 @@ final class DataLoaderSettings extends JPanel {
         // Add label into this label box to size
         Box quoteCharLabelBox = Box.createHorizontalBox();
         quoteCharLabelBox.setPreferredSize(labelSize);
-        quoteCharLabelBox.add(new JLabel("Quote character:"));
+        quoteCharLabelBox.add(new JLabel("Variable name quote character:"));
 
         // Option 1
         Box quoteCharOption1Box = Box.createHorizontalBox();
