@@ -145,9 +145,13 @@ final class DataLoaderSettings extends JPanel {
         // Add to format container
         formatContainer.add(fileTypeBox);
 
-        // Vertical gap
-        formatContainer.add(Box.createVerticalStrut(5));
+        // Add seperator line
+        JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator1.setForeground(Color.LIGHT_GRAY);
+        formatContainer.add(separator1);
 
+        // Vertical gap
+        //formatContainer.add(Box.createVerticalStrut(5));
         // Data type - moved from the old Fast tab - Zhou
         Box dataTypeBox = Box.createHorizontalBox();
         // Data type: continuous, discrete, or mixed
@@ -188,8 +192,12 @@ final class DataLoaderSettings extends JPanel {
 
         formatContainer.add(dataTypeBox);
 
-        formatContainer.add(Box.createVerticalStrut(5));
+        // Add seperator line
+        JSeparator separator2 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator2.setForeground(Color.LIGHT_GRAY);
+        formatContainer.add(separator2);
 
+        //formatContainer.add(Box.createVerticalStrut(5));
         // Value Delimiter box
         Box valueDelimiterBox = Box.createHorizontalBox();
 
@@ -235,8 +243,12 @@ final class DataLoaderSettings extends JPanel {
 
         formatContainer.add(valueDelimiterBox);
 
-        formatContainer.add(Box.createVerticalStrut(5));
+        // Add seperator line
+        JSeparator separator3 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator3.setForeground(Color.LIGHT_GRAY);
+        formatContainer.add(separator3);
 
+        //formatContainer.add(Box.createVerticalStrut(5));
         // Var names in first row of data
         Box firstRowVarNamesBox = Box.createHorizontalBox();
 
@@ -338,8 +350,12 @@ final class DataLoaderSettings extends JPanel {
 
         optionsContainer.add(caseIdProvidedBox);
 
-        optionsContainer.add(Box.createVerticalStrut(5));
+        // Add seperator line
+        JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator1.setForeground(Color.LIGHT_GRAY);
+        optionsContainer.add(separator1);
 
+        //optionsContainer.add(Box.createVerticalStrut(5));
         // Comment Marker
         Box commentMarkerBox = Box.createHorizontalBox();
 
@@ -388,8 +404,12 @@ final class DataLoaderSettings extends JPanel {
 
         optionsContainer.add(commentMarkerBox);
 
-        optionsContainer.add(Box.createVerticalStrut(5));
+        // Add seperator line
+        JSeparator separator2 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator2.setForeground(Color.LIGHT_GRAY);
+        optionsContainer.add(separator2);
 
+        //optionsContainer.add(Box.createVerticalStrut(5));
         // Quote Character
         Box quoteCharBox = Box.createHorizontalBox();
 
