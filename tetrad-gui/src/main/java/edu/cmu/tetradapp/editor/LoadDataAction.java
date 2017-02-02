@@ -71,7 +71,7 @@ final class LoadDataAction extends AbstractAction {
 //            }
 //        }
         JFileChooser chooser = getJFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         // Sets the file chooser to allow multiple file selections
         chooser.setMultiSelectionEnabled(true);
         // Customize dialog title bar text
