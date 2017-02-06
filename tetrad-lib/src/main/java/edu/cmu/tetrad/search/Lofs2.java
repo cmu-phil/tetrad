@@ -43,7 +43,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
-import static edu.cmu.tetrad.util.StatUtils.median;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
@@ -102,7 +102,6 @@ public class Lofs2 {
             DataSet dataSet = ColtDataSet.makeContinuousData(variables, dataSets.get(i).getDoubleData());
             dataSets2.add(dataSet);
         }
-
 
         this.dataSets = dataSets2;
     }
@@ -1278,8 +1277,8 @@ public class Lofs2 {
             double[] yData = data[_j];
 
             if (empirical) {
-                xData = correctSkews(xData);
-                yData = correctSkews(yData);
+                xData = correctSkewnesses(xData);
+                yData = correctSkewnesses(yData);
             }
 
             for (int i = 0; i < xData.length; i++) {
@@ -1312,10 +1311,10 @@ public class Lofs2 {
     // @param empirical True if the skew signs are estimated empirically.
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
         List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
+        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);// DataUtils.standardizeData(dataSet));
         DataSet dataSet = DataUtils.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-//        dataSet = DataUtils.standardizeData(dataSet);
+        dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         List<Node> nodes = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -1324,100 +1323,90 @@ public class Lofs2 {
             nodesHash.put(nodes.get(i), i);
         }
 
-        for (Edge edge : graph.getEdges()) {
-            System.out.print("\n" + edge);
+//        if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
+//            graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
+//        }
 
+        for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
-
-            double sumX = 0.0;
-            int countX = 0;
 
             double[] xData = data[nodesHash.get(edge.getNode1())];
             double[] yData = data[nodesHash.get(edge.getNode2())];
 
             if (empirical) {
-                xData = correctSkews(xData);
-                yData = correctSkews(yData);
+                xData = correctSkewnesses(xData);
+                yData = correctSkewnesses(yData);
             }
 
-            double xp = new AndersonDarlingTest(xData).getP();
-            double yp = new AndersonDarlingTest(xData).getP();
-
-            double sum1 = 0;
-            double sum2 = 0;
-
-            double[] yx = new double[xData.length];
+            double[] xx = new double[xData.length];
             double[] yy = new double[yData.length];
 
+            double corrxy = StatUtils.correlation(xData, yData);
+
             for (int i = 0; i < xData.length; i++) {
-                double x0 = xData[i];
-                double y0 = yData[i];
+                double xi = xData[i];
+                double yi = yData[i];
 
-                double termX = g(x0) * y0 - x0 * g(y0);
-                sum1 += g(x0) * y0;
-                sum2 += x0 * g(y0);
+                double s1 = g(xi) * yi;
+                double s2 = xi * g(yi);
 
-                yx[i] = g(x0) * y0;
-                yy[i] = x0 * g(y0);
-
-                sumX += termX;
-                countX++;
+                xx[i] = s1;
+                yy[i] = s2;
             }
 
-            double R = sumX / countX;
-            sum1 = sum1 / countX;
-            sum2 = sum2 / countX;
+            double mxx = mean(xx);
+            double myy = mean(yy);
 
-            double rhoX = regressionCoef(xData, yData);
-            R *= rhoX;
+            double R = regressionCoef(xData, yData);
 
-            System.out.print(" R = " + R + " " + " sum1 = " + sum1 + " sum2 = " + sum2);
+            double[] D = new double[xx.length];
 
-            double alpha = .8;
-            double epsilon = alpha;
-
-            double delta = .05;
-            int n = yx.length;
-
-            double mx = StatUtils.mean(yx);
-            double my = StatUtils.mean(yy);
-            double varx = StatUtils.variance(yx);
-            double vary = StatUtils.variance(yy);
-            double sp = (varx + vary) / 2.0;
-            double tp = (mx - my) / (sp * Math.sqrt(2.0 / n));
-
-            double ta1 = 2 * (1.0 - new TDistribution(2 * n - 2).cumulativeProbability(Math.abs(tp)));
-
-            double[] xd = new double[yx.length];
-
-            for (int i = 0; i < yx.length; i++) {
-                xd[i] = yx[i] - yy[i];
+            for (int i = 0; i < xx.length; i++) {
+                D[i] = xx[i] - yy[i];
             }
 
-            double xdm = StatUtils.mean(xd);
-            double xds = StatUtils.variance(xd);
+            double md = mean(D);
+            double sd = sd(D);
+            int n = xx.length;
 
-            double t2 = xdm / (xds / Math.sqrt(n));
-            double ta2 = 2 * (1.0 - new TDistribution(yx.length - 1).cumulativeProbability(Math.abs(t2)));
+            double td = (md - 0.0) / (sd / sqrt(n));
+            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(Math.abs(td)));
 
-
-            double t3 = (mx - my) / Math.sqrt((varx / n) + (vary / n));
-            double ta3 = 2 * (1.0 - new TDistribution(yx.length - 1).cumulativeProbability(Math.abs(t3)));
+//            double varxx = variance(xx);
+//            double varyy = variance(yy);
+//            double sp = (varxx + varyy) / 2.0;
+//            double tp = (mxx - myy) / (sp * sqrt(2.0 / n));
+//            double ta = 2 * (1.0 - new TDistribution(2 * n - 2).cumulativeProbability(Math.abs(tp)));
 
             graph.removeEdge(edge);
 
-            if (xp < alpha && yp < alpha && ta3 > epsilon) {
-//                if (sum1 > epsilon && sum2 > epsilon && Math.abs(sum1 - sum2) < delta) {
+            double xa = new AndersonDarlingTest(xData).getP();
+            double ya = new AndersonDarlingTest(yData).getP();
+
+            System.out.println("Edge " + edge + ": corr(x, y) = " + corrxy + " xa = " + xa + " ya = " + ya +
+                    " td = " + td + " mxx = " + mxx + " myy = " + myy);
+
+            double alpha = 0.01;
+
+            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || tda > alpha)) {
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(y, x);
-            } else if (R > 0) {
+                System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
+                        " td = " + td + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
+            } else if (mxx > myy) {
                 graph.addDirectedEdge(x, y);
-            } else if (R < 0) {
+            } else if (myy > mxx) {
                 graph.addDirectedEdge(y, x);
             } else {
                 graph.addUndirectedEdge(x, y);
             }
+
+            // 1-10
+            // 2-3
+            // 11-17
+            // 12-20
+            // 15-19
         }
 
         return graph;
@@ -1425,6 +1414,10 @@ public class Lofs2 {
 
     private double g(double x) {
         return Math.log(Math.cosh(Math.max(x, 0)));
+    }
+
+    private double g2(double x) {
+        return Math.log(Math.cosh(Math.max(-x, 0)));
     }
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
@@ -1578,7 +1571,7 @@ public class Lofs2 {
         return ret;
     }
 
-    private double[] correctSkews(double[] data) {
+    private double[] correctSkewnesses(double[] data) {
         double skewness = StatUtils.skewness(data);
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(skewness);
@@ -1659,13 +1652,14 @@ public class Lofs2 {
         }
 
         Regression regression2 = new RegressionDataset(bothData, v);
-
         RegressionResult result;
+
         try {
             result = regression2.regress(v.get(0), v.get(1));
         } catch (Exception e) {
             return Double.NaN;
         }
+
         return result.getCoef()[1];
     }
 
@@ -1795,10 +1789,10 @@ public class Lofs2 {
                 break;
 
             case 2:
-                double meanx = StatUtils.mean(x);
-                double stdx = StatUtils.sd(x);
-                double meany = StatUtils.mean(y);
-                double stdy = StatUtils.sd(y);
+                double meanx = mean(x);
+                double stdx = sd(x);
+                double meany = mean(y);
+                double stdy = sd(y);
 
                 // Gaussian reference measure
                 for (int i = 0; i < x.length; i++) {
@@ -2323,10 +2317,10 @@ public class Lofs2 {
 
         graph.removeEdges(x, y);
 
-        double sdX = StatUtils.sd(resX);
-        double sdXY = StatUtils.sd(resXY);
-        double sdY = StatUtils.sd(resY);
-        double sdYX = StatUtils.sd(resYX);
+        double sdX = sd(resX);
+        double sdXY = sd(resXY);
+        double sdY = sd(resY);
+        double sdYX = sd(resYX);
 
         double abs1 = abs(sdX - sdXY);
         double abs2 = abs(sdY - sdYX);

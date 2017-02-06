@@ -11,23 +11,23 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey, rubens (November 2016)
  */
-public class TwoCycleFalsePositive implements Statistic {
+public class TwoCycleFalseNegative implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "2CFP";
+        return "2CFN";
     }
 
     @Override
     public String getDescription() {
-        return "2-cycle false positive";
+        return "2-cycle false negative";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        return (double) adjConfusion.getTwoCycleFp();
+        return (double) adjConfusion.getTwoCycleFn();
 
     }
 

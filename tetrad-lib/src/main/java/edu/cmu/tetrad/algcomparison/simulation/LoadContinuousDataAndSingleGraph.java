@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.sem.Parameter;
@@ -40,6 +42,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             File[] files = dir.listFiles();
 
             for (File file : files) {
+                if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 DataReader reader = new DataReader();
                 reader.setVariablesSupplied(true);
@@ -65,6 +68,11 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file);
+
+//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
+//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
+//            }
+
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 

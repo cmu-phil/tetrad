@@ -39,13 +39,18 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
         DataSet dataSet = DataUtils.concatenate(dataSets);
 //        dataSet = DataUtils.standardizeData(dataSet);
-        dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
+//        dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         IKnowledge knowledge = dataSet.getKnowledge();
         Fang search = new Fang(test, _dataSets);
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
+        search.setAlpha(parameters.getDouble("alpha"));
         search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
+        return getGraph(search);
+    }
+
+    private Graph getGraph(Fang search) {
         return search.search();
     }
 

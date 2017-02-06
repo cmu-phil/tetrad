@@ -265,4 +265,8 @@ public class Parameters implements TetradSerializable {
     public void set(String name, String value) {
         parameters.put(name, new String[]{value});
     }
+
+    public Set<String> getParametersNames() {
+        return parameters.keySet();
+    }
 }

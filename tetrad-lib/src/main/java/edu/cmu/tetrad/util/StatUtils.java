@@ -2014,6 +2014,12 @@ public final class StatUtils {
 
         return loga0 + log(sum);
     }
+
+    public static double sum(double[] x) {
+        double sum = 0.0;
+        for (double xx : x) sum += xx;
+        return sum;
+    }
 }
 
 

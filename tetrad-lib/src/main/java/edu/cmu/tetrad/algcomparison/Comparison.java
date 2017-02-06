@@ -156,7 +156,14 @@ public class Comparison {
             List<Integer> _dims = new ArrayList<>();
             List<String> varyingParameters = new ArrayList<>();
 
+            final List<String> parameters1 = algorithm.getParameters();
 
+            for (String name : parameters1) {
+                if (parameters.getNumValues(name) > 1) {
+                    _dims.add(parameters.getNumValues(name));
+                    varyingParameters.add(name);
+                }
+            }
 
             if (varyingParameters.isEmpty()) {
                 algorithmWrappers.add(new AlgorithmWrapper(algorithm, parameters));
@@ -665,10 +672,12 @@ public class Comparison {
         List<Integer> _dims = new ArrayList<>();
         List<String> varyingParams = new ArrayList<>();
 
-        for (String params : simulation.getParameters()) {
-            if (parameters.getNumValues(params) > 1) {
-                _dims.add(parameters.getNumValues(params));
-                varyingParams.add(params);
+        final List<String> parameters1 = simulation.getParameters();
+        for (String param : parameters1) {
+            final int numValues = parameters.getNumValues(param);
+            if (numValues > 1) {
+                _dims.add(numValues);
+                varyingParams.add(param);
             }
         }
 
@@ -695,6 +704,7 @@ public class Comparison {
                 simulationWrappers.add(wrapper);
             }
         }
+
         return simulationWrappers;
     }
 
@@ -1208,8 +1218,11 @@ public class Comparison {
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 for (int statIndex = 0; statIndex < numStats; statIndex++) {
                     Statistic statistic = statistics.getStatistics().get(statIndex);
-                    Algorithm algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper().getAlgorithm();
-                    Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper().getSimulation();
+                    final AlgorithmWrapper algorithmWrapper = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
+                    final SimulationWrapper simulationWrapper = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper();
+
+                    Algorithm algorithm = algorithmWrapper.getAlgorithm();
+                    Simulation simulation = simulationWrapper.getSimulation();
 
                     if (algorithm instanceof HasParameterValues) {
                         parameters.putAll(((HasParameterValues) algorithm).getParameterValues());
@@ -1219,10 +1232,12 @@ public class Comparison {
                         parameters.putAll(((HasParameterValues) simulation).getParameterValues());
                     }
 
-                    Object o = parameters.get(statistic.getAbbreviation());
+                    final String abbreviation = statistic.getAbbreviation();
 
-                    if (o instanceof String) {
-                        table.setToken(t + 1, initialColumn + statIndex, (String) o);
+                    Object[] o = parameters.getValues(abbreviation);
+
+                    if (o.length == 1 && o[0] instanceof String) {
+                        table.setToken(t + 1, initialColumn + statIndex, (String) o[0]);
                         continue;
                     }
 

@@ -345,14 +345,14 @@ public final class LargeScaleSimulation {
         int s = 0;
         int shockIndex = 0;
         int recordingIndex = 0;
-//        double[] shock = getUncorrelatedNonGausianShocks(1)[0];
-        double[] shock = getUncorrelatedGaussianShocks(1)[0];
+        double[] shock = getUncorrelatedNonGausianShocks(1)[0];
+//        double[] shock = getUncorrelatedGaussianShocks(1)[0];
 //
 
         while (s < sampleSize) {
             if ((++shockIndex) % intervalBetweenShocks == 0) {
-//                shock = getUncorrelatedNonGausianShocks(1)[0];
-                shock = getUncorrelatedGaussianShocks(1)[0];
+                shock = getUncorrelatedNonGausianShocks(1)[0];
+//                shock = getUncorrelatedGaussianShocks(1)[0];
             }
 
             if ((++recordingIndex) % intervalBetweenRecordings == 0) {
@@ -761,7 +761,8 @@ public final class LargeScaleSimulation {
     }
 
     public double[][] getUncorrelatedNonGausianShocks(int sampleSize) {
-        TDistribution normal = new TDistribution(new Well1024a(++seed), 2);
+        TDistribution normal = new TDistribution(new Well1024a(++seed), 6);
+//       BetaDistribution normal = new BetaDistribution(new Well1024a(++seed), 1, 2);
 //        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
 
         int numVars = variableNodes.size();
