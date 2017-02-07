@@ -22,11 +22,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.TDistribution;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.mean;
 import static edu.cmu.tetrad.util.StatUtils.sd;
@@ -40,13 +42,26 @@ import static java.lang.Math.*;
  * @author Joseph Ramsey
  */
 public final class Fang implements GraphSearch {
-    private int depth = -1;
+
+    // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
+
+    // The data sets being analyzed. They must all have the same variables and the same
+    // number of records.
     private List<DataSet> dataSets = null;
+
+    // nonGaussian[i] is true iff the i'th variable is judged non-Gaussian by the
+    // Anderson-Darling test.
     private boolean[] nonGaussian;
 
-    private double alpha = 0.05;
+    // For the Fast Adjacency Search.
+    private int depth = 5;
+
+    // For the SEM BIC score, for the Fast Adjacency Search.
     private double penaltyDiscount = 6;
+
+    // For the T tests of equality and the Anderson-Darling tests.
+    private double alpha = 0.05;
 
     public Fang(List<DataSet> dataSets) {
         this.dataSets = dataSets;
@@ -54,6 +69,10 @@ public final class Fang implements GraphSearch {
 
     //======================================== PUBLIC METHODS ====================================//
 
+    /**
+     * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with
+     * two-cycles.
+     */
     public Graph search() {
         long start = System.currentTimeMillis();
 
@@ -108,11 +127,9 @@ public final class Fang implements GraphSearch {
                     yyh[k] = xi * h(yi);
                 }
 
-                double[] Dg = new double[xxg.length];
                 double[] Dh = new double[xxg.length];
 
                 for (int k = 0; k < xxg.length; k++) {
-                    Dg[k] = xxg[k] - yyg[k];
                     Dh[k] = xxh[k] - yyh[k];
                 }
 
@@ -151,7 +168,6 @@ public final class Fang implements GraphSearch {
         this.elapsed = stop - start;
 
         return graph;
-
     }
 
     /**
@@ -163,6 +179,7 @@ public final class Fang implements GraphSearch {
 
     /**
      * @param depth The depth of search for the Fast Adjacency Search.
+     *              The default is 5. Making this too high may results in statistical errors.
      */
     public void setDepth(int depth) {
         this.depth = depth;
@@ -175,18 +192,38 @@ public final class Fang implements GraphSearch {
         return elapsed;
     }
 
+    /**
+     * @return The alpha value used for T tests of equality and non-Gaussianity tests.
+     */
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * @param alpha The alpha value used for T tests of equality and non-Gaussianity tests.
+     *              The default is 0.05.
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * @return Returns the penalty discount used for the adjacency search.
+     */
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    /**
+     * @param penaltyDiscount Sets the penalty discount used for the adjacency search.
+     *                        The default is 6, deliberately high to remove weak edges from
+     *                        the graph.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
     //======================================== PRIVATE METHODS ====================================//
-
-
-
 
     private boolean isNonGaussian(int i) {
         return nonGaussian[i];
@@ -198,14 +235,6 @@ public final class Fang implements GraphSearch {
 
     private double h(double x) {
         return x < 0 ? 0 : x;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 }
 
