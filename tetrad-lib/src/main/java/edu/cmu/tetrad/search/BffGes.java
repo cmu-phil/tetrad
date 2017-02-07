@@ -497,7 +497,7 @@ public final class BffGes implements Bff {
         List<Node> naYXT = new LinkedList<>(subset);
         naYXT.addAll(findNaYX(x, y, graph));
 
-        return isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
+        return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
 
     }
 
@@ -508,7 +508,7 @@ public final class BffGes implements Bff {
                                        Graph graph) {
         List<Node> naYXH = findNaYX(x, y, graph);
         naYXH.removeAll(h);
-        return isClique(naYXH, graph);
+        return GraphUtils.isClique(naYXH, graph);
     }
 
     /**
@@ -643,21 +643,6 @@ public final class BffGes implements Bff {
 //
 //        return score1 - score2;
 //    }
-
-    /**
-     * @return true iif the given set forms a clique in the given graph.
-     */
-    private static boolean isClique(List<Node> set, Graph graph) {
-        List<Node> setv = new LinkedList<>(set);
-        for (int i = 0; i < setv.size() - 1; i++) {
-            for (int j = i + 1; j < setv.size(); j++) {
-                if (!graph.isAdjacentTo(setv.get(i), setv.get(j))) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
     /**
      * Verifies if every semidirected path from y to x contains a node in naYXT.
