@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import org.apache.commons.math3.distribution.TDistribution;
 
 import java.util.*;
 
@@ -32,25 +33,22 @@ import static edu.cmu.tetrad.util.StatUtils.sd;
 import static java.lang.Math.*;
 
 /**
- * Fast adjacency search followed by pairwise orientation. If run with time series data and
- * knowledge, the graph can optionally be collapsed. The R3 algorithm was selected for
- * pairwise, after trying several such algorithms. The independence test needs to return its
- * data using the getData method.
+ * Fast adjacency search followed by robust skew orientation. Checks are done for adding
+ * two-cycles. The two-cycle checks do not require non-Gaussianity. The robust skew
+ * orientation of edges left or right does.
  *
  * @author Joseph Ramsey
  */
 public final class Fang implements GraphSearch {
-    private IndependenceTest independenceTest;
     private int depth = -1;
     private long elapsed = 0;
-    private IKnowledge knowledge = new Knowledge2();
     private List<DataSet> dataSets = null;
-    private double alpha = 0.05;
+    private boolean[] nonGaussian;
 
-    public Fang(IndependenceTest test, List<DataSet> dataSets) {
-        if (test == null) throw new NullPointerException();
-        this.independenceTest = test;
-        this.knowledge = new Knowledge2();
+    private double alpha = 0.05;
+    private double penaltyDiscount = 6;
+
+    public Fang(List<DataSet> dataSets) {
         this.dataSets = dataSets;
     }
 
@@ -59,9 +57,14 @@ public final class Fang implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        System.out.println("FAS");
+        List<DataSet> _dataSets = new ArrayList<>();
+        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
 
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+        DataSet dataSet = DataUtils.concatenate(_dataSets);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        score.setPenaltyDiscount(penaltyDiscount);
+        IndependenceTest test = new IndTestScore(score, dataSet);
 
         final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         List<Node> variables = cov.getVariables();
@@ -69,13 +72,19 @@ public final class Fang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-        FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
+        nonGaussian = new boolean[colData.length];
+
+        for (int i = 0; i < colData.length; i++) {
+            nonGaussian[i] = new AndersonDarlingTest(colData[i]).getP() < alpha;
+        }
+
+        final int n = dataSet.getNumRows();
+        double T = abs(new TDistribution(n).inverseCumulativeProbability(alpha / 2.0));
+
+        FasStableConcurrent fas = new FasStableConcurrent(null, test);
         fas.setDepth(getDepth());
-        fas.setKnowledge(knowledge);
         fas.setVerbose(false);
         Graph graph0 = fas.search();
-
-        System.out.println("Robust Skew");
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
@@ -107,26 +116,13 @@ public final class Fang implements GraphSearch {
                     Dh[k] = xxh[k] - yyh[k];
                 }
 
-                double mdg = mean(Dg);
-                double sdg = sd(Dg);
-
                 double mdh = mean(Dh);
                 double sdh = sd(Dh);
-
-                int n = xxg.length;
 
                 double mxxg = mean(xxg);
                 double myyg = mean(yyg);
                 double mxxh = mean(xxh);
                 double myyh = mean(yyh);
-
-                double tdg = (mdg - 0.0) / (sdg / sqrt(n));
-                double tdxg = (mxxg - 0.0) / (sdg / sqrt(n));
-                double tdyg = (myyg - 0.0) / (sdg / sqrt(n));
-//                double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(Math.abs(tdg)));
-//
-//                double xa = new AndersonDarlingTest(xData).getP();
-//                double ya = new AndersonDarlingTest(yData).getP();
 
                 double tdh = (mdh - 0.0) / (sdh / sqrt(n));
                 double tdxh = (mxxh - 0.0) / (sdh / sqrt(n));
@@ -137,16 +133,12 @@ public final class Fang implements GraphSearch {
                     Node y = variables.get(j);
                     graph.removeEdge(x, y);
 
-                    System.out.println("Edge " + x + "--" + y + " tdg = " + tdg + " mxxg = " + mxxg + " myyg = " + myyg);
-
-                    if (signum(tdxh) == -signum(tdyh) || abs(tdh) < 1.96 || abs(tdxh) < 1.96 || abs(tdyg) < 1.96) {
+                    if (signum(tdxh) == -signum(tdyh) || abs(tdxh) < T || abs(tdyh) < T || abs(tdh) < T) {
                         graph.addDirectedEdge(x, y);
                         graph.addDirectedEdge(y, x);
-                        System.out.println("\n    ORIENTING " + x + "--" + y + " AS A TWO CYCLE: " + "xa = " +
-                                " tdg = " + tdg + " mxxg = " + mxxg + " myyg = " + myyg + "\n");
-                    } else if (tdg > 1.96) {
+                    } else if (isNonGaussian(i) && isNonGaussian(j) && mxxg > myyg) {
                         graph.addDirectedEdge(x, y);
-                    } else if (tdg < -1.96) {
+                    } else if (isNonGaussian(i) && isNonGaussian(j) && myyg > mxxg) {
                         graph.addDirectedEdge(y, x);
                     } else {
                         graph.addUndirectedEdge(x, y);
@@ -158,17 +150,8 @@ public final class Fang implements GraphSearch {
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
-        System.out.println("Done");
         return graph;
 
-    }
-
-    private double g(double x) {
-        return log(Math.cosh(Math.max(x, 0)));
-    }
-
-    private double h(double x) {
-        return x < 0 ? 0 : x;
     }
 
     /**
@@ -192,22 +175,37 @@ public final class Fang implements GraphSearch {
         return elapsed;
     }
 
-    //======================================== PRIVATE METHODS ====================================//
-
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
     public double getAlpha() {
         return alpha;
     }
 
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+    }
+
+    //======================================== PRIVATE METHODS ====================================//
+
+
+
+
+    private boolean isNonGaussian(int i) {
+        return nonGaussian[i];
+    }
+
+    private double g(double x) {
+        return log(Math.cosh(Math.max(x, 0)));
+    }
+
+    private double h(double x) {
+        return x < 0 ? 0 : x;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 }
 

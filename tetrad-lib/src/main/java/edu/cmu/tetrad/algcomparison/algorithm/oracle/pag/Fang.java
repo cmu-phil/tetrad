@@ -31,12 +31,11 @@ public class Fang implements Algorithm {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         dataSet = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt("numLags"));
-        IndependenceTest test = this.test.getTest(dataSet, parameters);
-        IKnowledge knowledge = dataSet.getKnowledge();
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(test,
-                Collections.singletonList((DataSet) dataSet));
-        search.setKnowledge(knowledge);
+        edu.cmu.tetrad.search.Fang search =
+                new edu.cmu.tetrad.search.Fang(Collections.singletonList((DataSet) dataSet));
         search.setDepth(parameters.getInt("depth"));
+        search.setAlpha(parameters.getInt("alpha"));
+        search.setPenaltyDiscount(parameters.getInt("penaltyDiscount"));
         return search.search();
     }
 
