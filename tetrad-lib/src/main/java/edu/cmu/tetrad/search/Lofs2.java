@@ -1371,7 +1371,7 @@ public class Lofs2 {
             int n = xx.length;
 
             double td = (md - 0.0) / (sd / sqrt(n));
-            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(Math.abs(td)));
+            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(abs(td)));
 
 //            double varxx = variance(xx);
 //            double varyy = variance(yy);
@@ -1389,11 +1389,11 @@ public class Lofs2 {
 
             double alpha = 0.01;
 
-            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || tda > alpha)) {
+            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || abs(td) < 1.96)) {
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(y, x);
                 System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
-                        " td = " + td + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
+                        " td = " + td + " tda = " + tda + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
             } else if (mxx > myy) {
                 graph.addDirectedEdge(x, y);
             } else if (myy > mxx) {

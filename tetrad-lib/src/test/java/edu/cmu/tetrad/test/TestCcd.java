@@ -119,7 +119,7 @@ public class TestCcd {
 
         parameters.set("alpha", .0001);
         parameters.set("collapseTiers", true);
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 3);
 
         parameters.set("numRandomSelections", 1);
         parameters.set("randomSelectionSize", 10);

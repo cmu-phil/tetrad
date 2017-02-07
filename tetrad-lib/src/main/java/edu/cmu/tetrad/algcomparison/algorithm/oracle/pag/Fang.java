@@ -37,8 +37,6 @@ public class Fang implements Algorithm {
                 Collections.singletonList((DataSet) dataSet));
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
-        search.setR3Cutoff(parameters.getDouble("r3Cutoff"));
-        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
         return search.search();
     }
 

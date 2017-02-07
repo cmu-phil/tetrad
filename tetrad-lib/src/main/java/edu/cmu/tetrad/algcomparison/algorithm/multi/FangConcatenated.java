@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fang;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -46,7 +45,6 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setAlpha(parameters.getDouble("alpha"));
-        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
         return getGraph(search);
     }
 

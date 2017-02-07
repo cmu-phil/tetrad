@@ -24,18 +24,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.TDistribution;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.mean;
 import static edu.cmu.tetrad.util.StatUtils.sd;
-import static java.lang.Math.abs;
-import static java.lang.Math.signum;
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 
 /**
  * Fast adjacency search followed by pairwise orientation. If run with time series data and
@@ -49,17 +43,13 @@ public final class Fang implements GraphSearch {
     private IndependenceTest independenceTest;
     private int depth = -1;
     private long elapsed = 0;
-    private double r3Cutoff = 0.0;
     private IKnowledge knowledge = new Knowledge2();
-    private DataSet dataSet = null;
-    private boolean collapseTiers = false;
     private List<DataSet> dataSets = null;
     private double alpha = 0.05;
 
     public Fang(IndependenceTest test, List<DataSet> dataSets) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
-        this.dataSet = (DataSet) independenceTest.getData();
         this.knowledge = new Knowledge2();
         this.dataSets = dataSets;
     }
@@ -67,6 +57,7 @@ public final class Fang implements GraphSearch {
     //======================================== PUBLIC METHODS ====================================//
 
     public Graph search() {
+        long start = System.currentTimeMillis();
 
         System.out.println("FAS");
 
@@ -78,401 +69,106 @@ public final class Fang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-        int method = 3;
+        FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
+        fas.setDepth(getDepth());
+        fas.setKnowledge(knowledge);
+        fas.setVerbose(false);
+        Graph graph0 = fas.search();
 
-        if (method == 1) {
-            TetradMatrix submatrix = cov.getMatrix();
+        System.out.println("Robust Skew");
 
-            TetradMatrix inverse;
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
+                if (i == j) continue;
 
-            try {
-                inverse = submatrix.inverse();
-            } catch (Exception e) {
-                throw new IllegalArgumentException();
-            }
+                final double[] xData = colData[i];
+                final double[] yData = colData[j];
 
-            for (int i = 0; i < inverse.rows(); i++) {
-                for (int j = 0; j < inverse.columns(); j++) {
-                    if (i == j) continue;
-                    final Node x1 = variables.get(i);
-                    final Node x2 = variables.get(j);
-                    if (graph.isAdjacentTo(x1, x2)) continue;
+                double[] xxg = new double[xData.length];
+                double[] yyg = new double[yData.length];
+                double[] xxh = new double[xData.length];
+                double[] yyh = new double[yData.length];
 
-                    double a = -1.0 * inverse.get(i, j);
-                    double v0 = inverse.get(i, i);
-                    double v1 = inverse.get(j, j);
-                    double b = Math.sqrt(v0 * v1);
+                for (int k = 0; k < xxg.length; k++) {
+                    double xi = xData[k];
+                    double yi = yData[k];
 
-                    double r = a / b;
-
-                    double fisherZ = Math.sqrt(cov.getSampleSize() - 3 - (variables.size() - 2)) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-                    double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
-
-                    System.out.println("X1 = " + x1 + " X2 = " + x2 + " p = " + p);
-
-                    if (p < .00001) {
-                        graph.addUndirectedEdge(x1, x2);
-                    }
+                    xxg[k] = g(xi) * yi;
+                    yyg[k] = xi * g(yi);
+                    xxh[k] = h(xi) * yi;
+                    yyh[k] = xi * h(yi);
                 }
-            }
-        } else if (method == 2) {
-            for (int i = 0; i < variables.size(); i++) {
-                for (int j = 0; j < variables.size(); j++) {
-                    if (i == j) continue;
-                    if (graph.isAdjacentTo(variables.get(i), variables.get(j))) continue;
 
-                    double[] xx = new double[colData[i].length];
-                    double[] yy = new double[colData[j].length];
+                double[] Dg = new double[xxg.length];
+                double[] Dh = new double[xxg.length];
 
-                    for (int k = 0; k < xx.length; k++) {
-                        double xi = colData[i][k];
-                        double yi = colData[j][k];
+                for (int k = 0; k < xxg.length; k++) {
+                    Dg[k] = xxg[k] - yyg[k];
+                    Dh[k] = xxh[k] - yyh[k];
+                }
 
-                        double s1 = g(xi) * yi;
-                        double s2 = xi * g(yi);
+                double mdg = mean(Dg);
+                double sdg = sd(Dg);
 
-                        xx[k] = s1;
-                        yy[k] = s2;
-                    }
+                double mdh = mean(Dh);
+                double sdh = sd(Dh);
 
-                    double[] D =                    new double[xx.length];
+                int n = xxg.length;
 
-                    for (int k = 0; k < xx.length; k++) {
-                        D[k] = xx[k] - yy[k];
-                    }
+                double mxxg = mean(xxg);
+                double myyg = mean(yyg);
+                double mxxh = mean(xxh);
+                double myyh = mean(yyh);
 
-                    double md = mean(D);
-                    double sd = sd(D);
-                    int n = xx.length;
+                double tdg = (mdg - 0.0) / (sdg / sqrt(n));
+                double tdxg = (mxxg - 0.0) / (sdg / sqrt(n));
+                double tdyg = (myyg - 0.0) / (sdg / sqrt(n));
+//                double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(Math.abs(tdg)));
+//
+//                double xa = new AndersonDarlingTest(xData).getP();
+//                double ya = new AndersonDarlingTest(yData).getP();
 
-                    double td = (md - 0.0) / (sd / sqrt(n));
-//                    double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(Math.abs(td)));
+                double tdh = (mdh - 0.0) / (sdh / sqrt(n));
+                double tdxh = (mxxh - 0.0) / (sdh / sqrt(n));
+                double tdyh = (myyh - 0.0) / (sdh / sqrt(n));
 
-                    if (abs(td) > 10) {/// abs(mean(xx) - mean(yy)) > 0.15) {
-                        graph.addUndirectedEdge(variables.get(i), variables.get(j));
+                if (abs(tdh) > 12 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
+                    Node x = variables.get(i);
+                    Node y = variables.get(j);
+                    graph.removeEdge(x, y);
+
+                    System.out.println("Edge " + x + "--" + y + " tdg = " + tdg + " mxxg = " + mxxg + " myyg = " + myyg);
+
+                    if (signum(tdxh) == -signum(tdyh) || abs(tdh) < 1.96 || abs(tdxh) < 1.96 || abs(tdyg) < 1.96) {
+                        graph.addDirectedEdge(x, y);
+                        graph.addDirectedEdge(y, x);
+                        System.out.println("\n    ORIENTING " + x + "--" + y + " AS A TWO CYCLE: " + "xa = " +
+                                " tdg = " + tdg + " mxxg = " + mxxg + " myyg = " + myyg + "\n");
+                    } else if (tdg > 1.96) {
+                        graph.addDirectedEdge(x, y);
+                    } else if (tdg < -1.96) {
+                        graph.addDirectedEdge(y, x);
                     } else {
-                        List<Node> other = new ArrayList<>(variables);
-                        other.remove(variables.get(i));
-                        other.remove(variables.get(j));
-
-                        boolean independent = independenceTest.isIndependent(variables.get(i), variables.get(j), other);
-
-                        if (!independent) {
-                            graph.addUndirectedEdge(variables.get(i), variables.get(j));
-                        }
+                        graph.addUndirectedEdge(x, y);
                     }
                 }
             }
-        } else if (method == 3) {
-            long start = System.currentTimeMillis();
-
-            FasStableConcurrent fas = new FasStableConcurrent(null, independenceTest);
-            fas.setDepth(getDepth());
-            fas.setKnowledge(knowledge);
-            fas.setVerbose(false);
-//            graph = fas.search();
-            graph = new EdgeListGraph(variables);
-
-            long stop = System.currentTimeMillis();
-            this.elapsed = stop - start;
-
-            for (int i = 0; i < variables.size(); i++) {
-                for (int j = 0; j < variables.size(); j++) {
-                    if (i == j) continue;
-                    if (graph.isAdjacentTo(variables.get(i), variables.get(j))) continue;
-
-                    double[] xx = new double[colData[i].length];
-                    double[] yy = new double[colData[j].length];
-
-                    for (int k = 0; k < xx.length; k++) {
-                        double xi = colData[i][k];
-                        double yi = colData[j][k];
-
-                        double s1 = g(xi) * yi;
-                        double s2 = xi * g(yi);
-
-                        xx[k] = s1;
-                        yy[k] = s2;
-                    }
-
-
-                    double[] D = new double[xx.length];
-
-                    for (int k = 0; k < xx.length; k++) {
-                        D[k] = xx[k] - yy[k];
-                    }
-
-                    double md = mean(D);
-                    double sd = sd(D);
-                    int n = xx.length;
-
-                    double td = (md - 0.0) / (sd / sqrt(n));
-//                    double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(Math.abs(td)));
-
-                    if (abs(td) > 7) {
-                        graph.addUndirectedEdge(variables.get(i), variables.get(j));
-                    }
-
-//                    if (abs(mean(xx) - mean(yy)) > 0.1) {
-//                        graph.addUndirectedEdge(variables.get(i), variables.get(j));
-//                    }
-//                    else {
-//                        List<Node> other = new ArrayList<>(variables);
-//                        other.remove(variables.get(i));
-//                        other.remove(variables.get(j));
-//
-//                        boolean independent = independenceTest.isIndependent(variables.get(i), variables.get(j), other);
-//
-//                        if (!independent) {
-//                            graph.addUndirectedEdge(variables.get(i), variables.get(j));
-//                        }
-//                    }
-                }
-            }
-
         }
 
-        System.out.println("R3 orientation orientation");
-
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName())) {
-                graph.removeEdge(x, y);
-                graph.addDirectedEdge(x, y);
-            } else if (knowledge.isForbidden(x.getName(), y.getName()) || knowledge.isRequired(y.getName(), x.getName())) {
-                graph.removeEdge(y, x);
-                graph.addDirectedEdge(y, x);
-            }
-        }
-
-        List<Node> tier0 = new ArrayList<>();
-
-        for (Node node : graph.getNodes()) {
-            if (getLag(node) == 0) {
-                tier0.add(node);
-            }
-        }
-
-        Graph graph2 = new EdgeListGraph(tier0);
-
-        for (Edge edge : graph.getEdges()) {
-            if (edge.getNode1() == edge.getNode2()) continue;
-
-            if (getLag(edge.getNode1()) == 0 && getLag(edge.getNode2()) == 0) {
-                graph2.addEdge(edge);
-            }
-        }
-
-
-//        bishopsHat(graph);
-//        Graph graph2 = graph;
-
-        Lofs2 lofs = new Lofs2(graph2, dataSets);//.singletonList(dataSet));
-        lofs.setRule(Lofs2.Rule.RSkew);
-//        lofs.setKnowledge(knowledge);
-        lofs.setEpsilon(r3Cutoff);
-        lofs.setAlpha(alpha);
-        graph2 = lofs.orient();
+        long stop = System.currentTimeMillis();
+        this.elapsed = stop - start;
 
         System.out.println("Done");
+        return graph;
 
-        if (collapseTiers) {
-            return collapseGraph(graph2);
-        } else {
-            return graph2;
-        }
     }
 
     private double g(double x) {
-        return Math.log(Math.cosh(Math.max(x, 0)));
+        return log(Math.cosh(Math.max(x, 0)));
     }
 
-    private void bishopsHat(Graph graph) {
-        for (Node c : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(c);
-
-            for (int i = 0; i < adj.size(); i++) {
-                Node a = adj.get(i);
-
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node b = adj.get(j);
-                    if (a == b) continue;
-                    if (graph.isAdjacentTo(a, b)) continue;
-
-                    for (Node d : adj) {
-                        if (d == a || d == b) continue;
-
-                        if (graph.isAdjacentTo(d, a) && graph.isAdjacentTo(d, b)) {
-                            if (knowledge.isForbidden(c.getName(), d.getName()) || knowledge.isForbidden(d.getName(), c.getName())) {
-                                continue;
-                            }
-
-                            if (sepset(graph, a, b, set(c, d), set()) != null) {
-                                addFeedback(graph, c, d);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private Set<Node> set(Node... n) {
-        Set<Node> S = new HashSet<>();
-        Collections.addAll(S, n);
-        return S;
-    }
-
-    private void addFeedback(Graph graph, Node a, Node b) {
-        graph.removeEdges(a, b);
-        graph.addEdge(Edges.directedEdge(a, b));
-        graph.addEdge(Edges.directedEdge(b, a));
-    }
-
-    private List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining) {
-        List<Node> adj = graph.getAdjacentNodes(a);
-        adj.addAll(graph.getAdjacentNodes(c));
-        adj.remove(c);
-        adj.remove(a);
-
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
-            if (d <= adj.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
-                    v2.addAll(containing);
-                    v2.removeAll(notContaining);
-                    v2.remove(a);
-                    v2.remove(c);
-
-                    independenceTest.isIndependent(a, c, new ArrayList<>(v2));
-                    double p2 = independenceTest.getScore();
-
-                    if (p2 < 0) {
-                        return new ArrayList<>(v2);
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private Graph collapseGraph(Graph graph) {
-        List<Node> nodes = new ArrayList<>();
-
-        for (String n : independenceTest.getVariableNames()) {
-            String[] s = n.split(":");
-
-            if (s.length == 1) {
-                Node x = independenceTest.getVariable(s[0]);
-                nodes.add(x);
-            }
-        }
-
-        Graph _graph = new EdgeListGraph(nodes);
-
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-            int lagx = getLag(edge.getNode1());
-            int lagy = getLag(edge.getNode2());
-
-//            if (graph.getEdges(x, y).size() != 2) {
-//            if (!((!edge.pointsTowards(x) && lagy < maxInto)
-//                    || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
-//            }
-
-            if (lagx != 0 || lagy != 0) continue;
-
-            String xName = getName(x);
-            String yName = getName(y);
-
-            Node xx = independenceTest.getVariable(xName);
-            Node yy = independenceTest.getVariable(yName);
-
-            if (xx == yy) continue;
-
-            Edge _edge = new Edge(xx, yy, edge.getEndpoint1(), edge.getEndpoint2());
-
-            if (!_graph.containsEdge(_edge)) {
-                _graph.addEdge(_edge);
-            }
-
-//            Edge undir = Edges.undirectedEdge(xx, yy);
-//
-//            if (_graph.getEdges(xx, yy).size() > 1 && _graph.containsEdge(undir)) {
-//                _graph.removeEdge(undir);
-//            }
-        }
-
-        return _graph;
-    }
-
-    private Graph collapseGraph2(Graph graph) {
-        List<Node> nodes = new ArrayList<>();
-
-        for (String n : independenceTest.getVariableNames()) {
-            String[] s = n.split(":");
-
-            if (s.length == 1) {
-                Node x = independenceTest.getVariable(s[0]);
-                nodes.add(x);
-            }
-        }
-
-        Graph _graph = new EdgeListGraph(nodes);
-
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            String[] sx = x.getName().split(":");
-            String[] sy = y.getName().split(":");
-
-            int lagx = sx.length == 1 ? 0 : new Integer(sx[1]);
-            int lagy = sy.length == 1 ? 0 : new Integer(sy[1]);
-
-            int maxInto = knowledge.getNumTiers() - 1;
-
-            if (!((!edge.pointsTowards(x) && lagy < maxInto)
-                    || (!edge.pointsTowards(y) && lagx < maxInto))) continue;
-
-            String xName = sx[0];
-            String yName = sy[0];
-
-            Node xx = independenceTest.getVariable(xName);
-            Node yy = independenceTest.getVariable(yName);
-
-            if (xx == yy) continue;
-
-            Edge _edge = new Edge(xx, yy, edge.getEndpoint1(), edge.getEndpoint2());
-
-            if (!_graph.containsEdge(_edge)) {
-                _graph.addEdge(_edge);
-            }
-
-            Edge undir = Edges.undirectedEdge(xx, yy);
-
-            if (_graph.getEdges(xx, yy).size() > 1 && _graph.containsEdge(undir)) {
-                _graph.removeEdge(undir);
-            }
-        }
-
-        return _graph;
-    }
-
-    private String getName(Node x) {
-        return x.getName().split(":")[0];
-    }
-
-    private int getLag(Node y) {
-        String[] sy1 = y.getName().split(":");
-        return sy1.length == 1 ? 0 : new Integer(sy1[1]);
+    private double h(double x) {
+        return x < 0 ? 0 : x;
     }
 
     /**
@@ -504,18 +200,6 @@ public final class Fang implements GraphSearch {
 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    public void setCollapseTiers(boolean collapseTiers) {
-        this.collapseTiers = collapseTiers;
-    }
-
-    public double getR3Cutoff() {
-        return r3Cutoff;
-    }
-
-    public void setR3Cutoff(double r3Cutoff) {
-        this.r3Cutoff = r3Cutoff;
     }
 
     public double getAlpha() {
