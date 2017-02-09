@@ -1,20 +1,15 @@
 package edu.cmu.tetradapp.app.hpc;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.http.client.ClientProtocolException;
-
-import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
+import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
 import edu.pitt.dbmi.ccd.rest.client.dto.data.DataFile;
-import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.data.DataUploadService;
 import edu.pitt.dbmi.ccd.rest.client.service.data.RemoteDataFileService;
 import edu.pitt.dbmi.ccd.rest.client.service.jobqueue.JobQueueService;
@@ -34,18 +29,19 @@ import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
  */
 public class HpcJobPreProcessTask implements Runnable {
 
-    private final HpcJobManager hpcJobManager;
-
     private final HpcJobInfo hpcJobInfo;
 
-    public HpcJobPreProcessTask(final HpcJobManager hpcJobManager,
-	    final HpcJobInfo hpcJobInfo) {
-	this.hpcJobManager = hpcJobManager;
+    public HpcJobPreProcessTask(final HpcJobInfo hpcJobInfo) {
 	this.hpcJobInfo = hpcJobInfo;
     }
 
     @Override
     public void run() {
+	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
+	final HpcAccountManager hpcAccountManager = desktop
+		.getHpcAccountManager();
+	final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
+
 	HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 
 	AlgorithmParamRequest algorParamReq = hpcJobInfo
@@ -56,7 +52,7 @@ public class HpcJobPreProcessTask implements Runnable {
 	try {
 	    HpcAccountService hpcAccountService = hpcJobManager
 		    .getHpcAccountService(hpcAccount);
-	    
+
 	    HpcJobLog hpcJobLog = hpcJobManager.getHpcJobLog(hpcJobInfo);
 
 	    String log = "Initiated connection to "
@@ -68,7 +64,7 @@ public class HpcJobPreProcessTask implements Runnable {
 	    System.out.println(log);
 	    Path file = Paths.get(datasetPath);
 	    // Get file's MD5 hash and use it as its identifier
-	    String md5 = MessageDigestHash.computeMD5Hash(file);
+	    String md5 = algorParamReq.getDatasetMd5();
 
 	    Path prior = null;
 	    if (priorKnowledgePath != null) {
@@ -78,29 +74,31 @@ public class HpcJobPreProcessTask implements Runnable {
 	    }
 
 	    // Check if this dataset already exists with this md5 hash
-	    RemoteDataFileService remoteDataService = hpcAccountService.getRemoteDataService();
+	    RemoteDataFileService remoteDataService = hpcAccountService
+		    .getRemoteDataService();
 
-	    DataFile dataFile = getRemoteDataFile(remoteDataService,
-		    hpcAccount, md5);
-	    DataUploadService dataUploadService = hpcAccountService.getDataUploadService();
+	    DataFile dataFile = HpcAccountUtils.getRemoteDataFile(
+		    hpcAccountManager, remoteDataService, hpcAccount, md5);
+	    DataUploadService dataUploadService = hpcAccountService
+		    .getDataUploadService();
 
 	    // If not, upload the file
 	    if (dataFile == null) {
 		log = "Started uploading " + file.getFileName().toString();
 		System.out.println(log);
-		dataUploadService
-			.startUpload(file, getJsonWebToken(hpcAccount));
+		dataUploadService.startUpload(file, HpcAccountUtils
+			.getJsonWebToken(hpcAccountManager, hpcAccount));
 		hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 		int progress;
 		while ((progress = dataUploadService.getUploadJobStatus(file
 			.toAbsolutePath().toString())) < 100) {
-		    System.out.println("Uploading "
-			    + file.toAbsolutePath().toString() + " Progress: "
-			    + progress + "%");
+		    //System.out.println("Uploading "
+			//    + file.toAbsolutePath().toString() + " Progress: "
+			//    + progress + "%");
 		    hpcJobManager.updateUploadFileProgress(datasetPath,
 			    progress);
-		    Thread.sleep(100);
+		    Thread.sleep(10);
 		}
 
 		log = "Finished uploading " + file.getFileName().toString();
@@ -108,10 +106,14 @@ public class HpcJobPreProcessTask implements Runnable {
 		hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 		// Get remote datafile
-		dataFile = getRemoteDataFile(remoteDataService, hpcAccount, md5);
+		dataFile = HpcAccountUtils.getRemoteDataFile(hpcAccountManager,
+			remoteDataService, hpcAccount, md5);
 
-		summarizeDataset(remoteDataService, algorParamReq,
-			dataFile.getId(), getJsonWebToken(hpcAccount));
+		HpcAccountUtils
+			.summarizeDataset(remoteDataService, algorParamReq,
+				dataFile.getId(), HpcAccountUtils
+					.getJsonWebToken(hpcAccountManager,
+						hpcAccount));
 		log = "Summarized " + file.getFileName().toString();
 		System.out.println(log);
 		hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
@@ -121,8 +123,10 @@ public class HpcJobPreProcessTask implements Runnable {
 		hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 		if (dataFile.getFileSummary().getVariableType() == null) {
-		    summarizeDataset(remoteDataService, algorParamReq,
-			    dataFile.getId(), getJsonWebToken(hpcAccount));
+		    HpcAccountUtils.summarizeDataset(remoteDataService,
+			    algorParamReq, dataFile.getId(), HpcAccountUtils
+				    .getJsonWebToken(hpcAccountManager,
+					    hpcAccount));
 		    log = "Summarized " + file.getFileName().toString();
 		    System.out.println(log);
 		    hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1,
@@ -136,15 +140,16 @@ public class HpcJobPreProcessTask implements Runnable {
 	    // Prior Knowledge File
 	    if (prior != null) {
 		// Get prior knowledge file Id
-		md5 = MessageDigestHash.computeMD5Hash(prior);
+		md5 = algorParamReq.getPriorKnowledgeMd5();
 
-		priorKnowledgeFile = getRemotePriorKnowledgeFile(
-			remoteDataService, hpcAccount, md5);
+		priorKnowledgeFile = HpcAccountUtils
+			.getRemotePriorKnowledgeFile(hpcAccountManager,
+				remoteDataService, hpcAccount, md5);
 
 		if (priorKnowledgeFile == null) {
 		    // Upload prior knowledge file
-		    dataUploadService.startUpload(prior,
-			    getJsonWebToken(hpcAccount));
+		    dataUploadService.startUpload(prior, HpcAccountUtils
+			    .getJsonWebToken(hpcAccountManager, hpcAccount));
 
 		    log = "Started uploading Prior Knowledge File";
 		    System.out.println(log);
@@ -154,16 +159,17 @@ public class HpcJobPreProcessTask implements Runnable {
 		    while ((progress = dataUploadService
 			    .getUploadJobStatus(prior.toAbsolutePath()
 				    .toString())) < 100) {
-			System.out.println("Uploading "
-				+ prior.toAbsolutePath().toString()
-				+ " Progress: " + progress + "%");
+			//System.out.println("Uploading "
+			//	+ prior.toAbsolutePath().toString()
+			//	+ " Progress: " + progress + "%");
 			hpcJobManager.updateUploadFileProgress(
 				priorKnowledgePath, progress);
-			Thread.sleep(100);
+			Thread.sleep(10);
 		    }
 
-		    priorKnowledgeFile = getRemotePriorKnowledgeFile(
-			    remoteDataService, hpcAccount, md5);
+		    priorKnowledgeFile = HpcAccountUtils
+			    .getRemotePriorKnowledgeFile(hpcAccountManager,
+				    remoteDataService, hpcAccount, md5);
 
 		    log = "Finished uploading Prior Knowledge File";
 		    System.out.println(log);
@@ -216,9 +222,11 @@ public class HpcJobPreProcessTask implements Runnable {
 
 	    // Submit a job
 	    String algorithmName = hpcJobInfo.getAlgorithmName();
-	    JobQueueService jobQueueService = hpcAccountService.getJobQueueService();
+	    JobQueueService jobQueueService = hpcAccountService
+		    .getJobQueueService();
 	    JobInfo jobInfo = jobQueueService.addToRemoteQueue(algorithmName,
-		    paramRequest, getJsonWebToken(hpcAccount));
+		    paramRequest, HpcAccountUtils.getJsonWebToken(
+			    hpcAccountManager, hpcAccount));
 
 	    // Log the job submission
 	    hpcJobInfo.setSubmittedTime(new Date(System.currentTimeMillis()));
@@ -227,7 +235,7 @@ public class HpcJobPreProcessTask implements Runnable {
 	    hpcJobInfo.setResultFileName(jobInfo.getResultFileName());
 	    hpcJobInfo.setResultJsonFileName(jobInfo.getResultJsonFileName());
 	    hpcJobInfo.setErrorResultFileName(jobInfo.getErrorResultFileName());
-
+	    
 	    hpcJobManager.updateHpcJobInfo(hpcJobInfo);
 
 	    log = "Submitted job to " + hpcAccount.getConnectionName();
@@ -239,70 +247,13 @@ public class HpcJobPreProcessTask implements Runnable {
 		    + " : " + hpcJobInfo.getAlgorithmName() + " : "
 		    + hpcJobInfo.getResultFileName());
 
-	    hpcJobManager.addNewMonitoredHpcJob(hpcJobInfo);
+	    hpcJobManager.addNewSubmittedHpcJob(hpcJobInfo);
 
 	} catch (Exception e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
 
-    }
-
-    private void summarizeDataset(
-	    final RemoteDataFileService remoteDataService,
-	    final AlgorithmParamRequest algorParamReq,
-	    final long datasetFileId, final JsonWebToken jsonWebToken)
-	    throws ClientProtocolException, URISyntaxException, IOException {
-	String variableType = "continuous";
-	if (algorParamReq.getVariableType().equalsIgnoreCase("discrete")) {
-	    variableType = "discrete";
-	}
-
-	String fileDelimiter = "tab";
-	if (!algorParamReq.getFileDelimiter().equalsIgnoreCase("tab")) {
-	    fileDelimiter = "comma";
-	}
-
-	remoteDataService.summarizeDataFile(datasetFileId, variableType,
-		fileDelimiter, jsonWebToken);
-    }
-
-    private JsonWebToken getJsonWebToken(final HpcAccount hpcAccount)
-	    throws Exception {
-	return hpcJobManager.getJsonWebTokenManager().getJsonWebToken(
-		hpcAccount);
-    }
-
-    private DataFile getRemoteDataFile(
-	    final RemoteDataFileService remoteDataService,
-	    final HpcAccount hpcAccount, String md5)
-	    throws ClientProtocolException, URISyntaxException, IOException,
-	    Exception {
-	Set<DataFile> dataFiles = remoteDataService
-		.retrieveDataFileInfo(getJsonWebToken(hpcAccount));
-	for (DataFile dataFile : dataFiles) {
-	    String remoteMd5 = dataFile.getMd5checkSum();
-	    if (md5.equalsIgnoreCase(remoteMd5)) {
-		return dataFile;
-	    }
-	}
-	return null;
-    }
-
-    private DataFile getRemotePriorKnowledgeFile(
-	    final RemoteDataFileService remoteDataService,
-	    final HpcAccount hpcAccount, String md5)
-	    throws ClientProtocolException, URISyntaxException, IOException,
-	    Exception {
-	Set<DataFile> priorFiles = remoteDataService
-		.retrievePriorKnowledgeFileInfo(getJsonWebToken(hpcAccount));
-	for (DataFile priorFile : priorFiles) {
-	    String remoteMd5 = priorFile.getMd5checkSum();
-	    if (md5.equalsIgnoreCase(remoteMd5)) {
-		return priorFile;
-	    }
-	}
-	return null;
     }
 
 }

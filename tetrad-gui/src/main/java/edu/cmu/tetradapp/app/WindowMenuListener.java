@@ -26,8 +26,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import edu.cmu.tetradapp.app.hpc.HpcAccountManager;
-import edu.cmu.tetradapp.app.hpc.HpcJobActivityFrame;
-import edu.cmu.tetradapp.app.hpc.HpcJobActivityMenuListener;
+import edu.cmu.tetradapp.app.hpc.HpcJobActivityAction;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 import java.awt.event.ActionEvent;
@@ -40,6 +39,7 @@ import java.util.*;
  * titles, the corresponding internal frame is moved to the front.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
  */
 final class WindowMenuListener implements MenuListener, ActionListener {
 
@@ -58,11 +58,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      * A map from menu items to the internal frames they represent, used to
      * determine which session editor to navigate to.
      */
-    private Hashtable itemsToFrames;
+    private Hashtable<JMenuItem, JInternalFrame> itemsToFrames;
 
     private final TetradDesktop desktop;
-    
-    private final HpcJobActivityMenuListener hpcJobActivityMenuListener;
     
     /**
      * Constructs the window menu listener.  Requires to be told which object
@@ -82,9 +80,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
 
         this.windowMenu = windowMenu;
         this.desktop = desktop;
-        itemsToFrames = new Hashtable();
-        
-        hpcJobActivityMenuListener = new HpcJobActivityMenuListener(desktop);
+        itemsToFrames = new Hashtable<>();
     }
 
     /**
@@ -115,17 +111,15 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         itemsToFrames.clear();
 
         JInternalFrame[] layer0Frames = desktop.getDesktopPane().getAllFramesInLayer(0);
-        List titles = new ArrayList();
-        Map titlesToFrames = new HashMap();
+        List<String> titles = new ArrayList<>();
+        Map<String, JInternalFrame> titlesToFrames = new HashMap<>();
 
         for (JInternalFrame layer0Frame : layer0Frames) {
-            if(!(layer0Frame instanceof HpcJobActivityFrame)){// Do not add HpcJobActivityFrame into the list
-                String title = layer0Frame.getTitle();
-                title = ((title == null) ||
-                        title.equals("")) ? "[untitled]" : title;
-                titles.add(title);
-                titlesToFrames.put(title, layer0Frame);
-            }
+            String title = layer0Frame.getTitle();
+            title = ((title == null) ||
+                    title.equals("")) ? "[untitled]" : title;
+            titles.add(title);
+            titlesToFrames.put(title, layer0Frame);
         }
 
         Collections.sort(titles);
@@ -144,9 +138,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         if(hpcAccounts != null && !hpcAccounts.isEmpty()){
             this.windowMenu.addSeparator();
             String title = "HPC Job Activity";
-            JMenuItem item = new JMenuItem(title);
+            JMenuItem item = new JMenuItem(new HpcJobActivityAction(title));
             this.windowMenu.add(item);
-            item.addActionListener(hpcJobActivityMenuListener);
+            //item.addActionListener(hpcJobActivityMenuListener);
         }
     }
 
@@ -162,6 +156,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         Object item = e.getSource();
         JInternalFrame frame = (JInternalFrame) itemsToFrames.get(item);
         frame.moveToFront();
+        if(frame.getContentPane().getComponents().length > 0){
+            desktop.setMainTitle(frame.getContentPane().getComponent(0).getName());
+        }
     }
 
     /**

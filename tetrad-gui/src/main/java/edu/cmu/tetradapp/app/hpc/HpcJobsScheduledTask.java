@@ -8,10 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 
+import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.ResultFile;
-import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.jobqueue.JobQueueService;
 import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
@@ -27,34 +28,46 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
  */
 public class HpcJobsScheduledTask extends TimerTask {
 
-    private final HpcJobManager hpcJobManager;
-
-    public HpcJobsScheduledTask(final HpcJobManager hpcJobManager) {
-	this.hpcJobManager = hpcJobManager;
+    public HpcJobsScheduledTask() {
     }
 
     // Pooling job status from HPC nodes
     @Override
     public void run() {
+	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
+	while (desktop == null) {
+	    try {
+		Thread.sleep(1000);
+	    } catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
+	}
+	final HpcAccountManager hpcAccountManager = desktop
+		.getHpcAccountManager();
+	final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
+
 	System.out.println("HpcJobsScheduledTask: "
 		+ new Date(System.currentTimeMillis()));
 
-	// Load active jobs: Status (0 = Submitted; 1 = Running; 2 Kill Request)
-	Map<HpcAccount, Set<HpcJobInfo>> activeHpcJobInfos = hpcJobManager
-		.getActiveHpcJobInfoMap();
-	if (activeHpcJobInfos.size() == 0) {
+	// Load active jobs: Status (0 = Submitted; 1 = Running; 2 = Kill
+	// Request)
+	Map<HpcAccount, Set<HpcJobInfo>> submittedHpcJobInfos = hpcJobManager
+		.getSubmittedHpcJobInfoMap();
+	if (submittedHpcJobInfos.size() == 0) {
 	    System.out.println("Active job pool is empty!");
 	} else {
 	    System.out.println("Active job pool has "
-		    + activeHpcJobInfos.keySet().size() + " hpcAccount(s)");
+		    + submittedHpcJobInfos.keySet().size() + " hpcAccount"
+		    + (submittedHpcJobInfos.keySet().size() > 1 ? "s" : ""));
 	}
 
-	for (HpcAccount hpcAccount : activeHpcJobInfos.keySet()) {
+	for (HpcAccount hpcAccount : submittedHpcJobInfos.keySet()) {
 
 	    System.out.println("HpcJobsScheduledTask: "
 		    + hpcAccount.getConnectionName());
 
-	    Set<HpcJobInfo> hpcJobInfos = activeHpcJobInfos.get(hpcAccount);
+	    Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfos.get(hpcAccount);
 	    Map<Long, HpcJobInfo> hpcJobInfoMap = new HashMap<>();
 	    for (HpcJobInfo hpcJobInfo : hpcJobInfos) {
 		if (hpcJobInfo.getPid() != null) {
@@ -79,9 +92,11 @@ public class HpcJobsScheduledTask extends TimerTask {
 		HpcAccountService hpcAccountService = hpcJobManager
 			.getHpcAccountService(hpcAccount);
 
-		JobQueueService jobQueueService = hpcAccountService.getJobQueueService();
+		JobQueueService jobQueueService = hpcAccountService
+			.getJobQueueService();
 		List<JobInfo> jobInfos = jobQueueService
-			.getActiveJobs(getJsonWebToken(hpcAccount));
+			.getActiveJobs(HpcAccountUtils.getJsonWebToken(
+				hpcAccountManager, hpcAccount));
 
 		for (JobInfo jobInfo : jobInfos) {
 		    System.out.println("Remote pid: " + jobInfo.getId() + " : "
@@ -122,11 +137,15 @@ public class HpcJobsScheduledTask extends TimerTask {
 		    }
 		}
 
+		// Download finished jobs' results
 		if (hpcJobInfos.size() > 0) {
-		    ResultService resultService = hpcAccountService.getResultService();
+		    ResultService resultService = hpcAccountService
+			    .getResultService();
 
 		    Set<ResultFile> resultFiles = resultService
-			    .listAlgorithmResultFiles(getJsonWebToken(hpcAccount));
+			    .listAlgorithmResultFiles(HpcAccountUtils
+				    .getJsonWebToken(hpcAccountManager,
+					    hpcAccount));
 
 		    Set<String> resultFileNames = new HashSet<>();
 		    for (ResultFile resultFile : resultFiles) {
@@ -173,7 +192,10 @@ public class HpcJobsScheduledTask extends TimerTask {
 				String json = resultService
 					.downloadAlgorithmResultFile(
 						resultJsonFileName,
-						getJsonWebToken(hpcAccount));
+						HpcAccountUtils
+							.getJsonWebToken(
+								hpcAccountManager,
+								hpcAccount));
 
 				String log = "Result downloaded";
 				hpcJobManager.logHpcJobLogDetail(hpcJobLog,
@@ -191,7 +213,10 @@ public class HpcJobsScheduledTask extends TimerTask {
 				String error = resultService
 					.downloadAlgorithmResultFile(
 						errorResultFileName,
-						getJsonWebToken(hpcAccount));
+						HpcAccountUtils
+							.getJsonWebToken(
+								hpcAccountManager,
+								hpcAccount));
 
 				String log = "Error Result downloaded";
 				hpcJobManager.logHpcJobLogDetail(hpcJobLog,
@@ -211,13 +236,19 @@ public class HpcJobsScheduledTask extends TimerTask {
 				String json = resultService
 					.downloadAlgorithmResultFile(
 						resultJsonFileName,
-						getJsonWebToken(hpcAccount));
+						HpcAccountUtils
+							.getJsonWebToken(
+								hpcAccountManager,
+								hpcAccount));
 				System.out.println("json: \n" + json);
 
 				String error = resultService
 					.downloadAlgorithmResultFile(
 						errorResultFileName,
-						getJsonWebToken(hpcAccount));
+						HpcAccountUtils
+							.getJsonWebToken(
+								hpcAccountManager,
+								hpcAccount));
 				System.out.println("error: \n" + error);
 
 				if (!json.toLowerCase().contains("not found")) {
@@ -277,12 +308,6 @@ public class HpcJobsScheduledTask extends TimerTask {
 
 	}
 
-    }
-
-    private JsonWebToken getJsonWebToken(final HpcAccount hpcAccount)
-	    throws Exception {
-	return hpcJobManager.getJsonWebTokenManager().getJsonWebToken(
-		hpcAccount);
     }
 
 }

@@ -15,9 +15,12 @@ import edu.pitt.dbmi.tetrad.db.service.HpcAccountService;
 public class HpcAccountManager {
 
     private final HpcAccountService hpcAccountService;
+    
+    private final JsonWebTokenManager jsonWebTokenManager;
 
     public HpcAccountManager(final org.hibernate.Session session) {
 	this.hpcAccountService = new HpcAccountService(session);
+	this.jsonWebTokenManager = new JsonWebTokenManager();
     }
 
     public List<HpcAccount> getHpcAccounts() {
@@ -31,6 +34,10 @@ public class HpcAccountManager {
 
     public void removeAccount(final HpcAccount hpcAccount) {
 	hpcAccountService.remove(hpcAccount);
+    }
+
+    public JsonWebTokenManager getJsonWebTokenManager() {
+	return jsonWebTokenManager;
     }
 
 }

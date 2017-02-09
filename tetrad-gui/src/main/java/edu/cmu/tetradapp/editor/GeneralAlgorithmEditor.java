@@ -59,6 +59,7 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
@@ -699,6 +700,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
 	    Files.write(file, tempLine);
 
+	    // Get file's MD5 hash and use it as its identifier
+	    String datasetMd5 = MessageDigestHash.computeMD5Hash(file);
+	    
 	    progressTextArea.replaceRange("Done", progressTextLength,
 		    progressTextArea.getText().length());
 	    progressTextArea.append(newline);
@@ -734,7 +738,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 		progressTextArea.append(newline);
 		progressTextArea.updateUI();
 	    }
+	    // Get knowledge file's MD5 hash and use it as its identifier
+	    String priorKnowledgeMd5 = null;
+	    if(prior != null){
+		priorKnowledgeMd5 = MessageDigestHash.computeMD5Hash(prior);
+	    }
 
+	    
 	    // *******************************************
 	    // Algorithm Parameter Preparation Progress *
 	    // *******************************************
@@ -777,10 +787,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	    String datasetPath = file.toAbsolutePath().toString();
 	    System.out.println(datasetPath);
 	    algorithmParamRequest.setDatasetPath(datasetPath);
+	    algorithmParamRequest.setDatasetMd5(datasetMd5);
 	    if (prior != null) {
 		String priorKnowledgePath = prior.toAbsolutePath().toString();
 		System.out.println(priorKnowledgePath);
 		algorithmParamRequest.setPriorKnowledgePath(priorKnowledgePath);
+		algorithmParamRequest.setPriorKnowledgeMd5(priorKnowledgeMd5);
 	    }
 
 	    // VariableType
@@ -891,7 +903,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	graphEditor.replace(graphs);
 	graphEditor.validate();
 	firePropertyChange("modelChanged", null, null);
-	pane.setSelectedComponent(graphEditor);
+	//pane.setSelectedComponent(graphEditor);
     }
 
     public void setAlgorithmErrorResult(String errorResult) {

@@ -32,11 +32,8 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
-import edu.pitt.dbmi.ccd.rest.client.RestHttpsClient;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.ResultFile;
-import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
-import edu.pitt.dbmi.ccd.rest.client.service.user.UserService;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 /**
@@ -57,7 +54,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 
     private String jsonFileName = null;
 
-    private HpcAccount computingAccount = null;
+    private HpcAccount hpcAccount = null;
 
     public LoadHpcGraphJson(GraphEditable graphEditable, String title) {
 	super(title);
@@ -72,36 +69,26 @@ public class LoadHpcGraphJson extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
-	HpcAccountManager manager = desktop.getHpcAccountManager();
-
-	JComponent comp = buildHpcJsonChooserComponent(manager);
+	final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+	final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
+	
+	JComponent comp = buildHpcJsonChooserComponent(desktop);
 	int option = JOptionPane.showConfirmDialog(
 		JOptionUtils.centeringComp(), comp,
 		"High-Performance Computing Account Json Results Chooser",
 		JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
 	if (option == JOptionPane.OK_OPTION && jsonFileName != null
-		&& computingAccount != null) {
-	    final String username = computingAccount.getUsername();
-	    final String password = computingAccount.getPassword();
-	    final String scheme = computingAccount.getScheme();
-	    final String hostname = computingAccount.getHostname();
-	    final int port = computingAccount.getPort();
+		&& hpcAccount != null) {
 
 	    try {
-		RestHttpsClient restClient = new RestHttpsClient(username,
-			password, scheme, hostname, port);
-
-		UserService userService = new UserService(restClient, scheme,
-			hostname, port);
-		// JWT token is valid for 1 hour
-		JsonWebToken jsonWebToken = userService.requestJWT();
-
-		ResultService resultService = new ResultService(restClient,
-			scheme, hostname, port);
+		HpcAccountService hpcAccountService = hpcJobManager
+			.getHpcAccountService(hpcAccount);
+		
+		ResultService resultService = hpcAccountService.getResultService();
 
 		String json = resultService.downloadAlgorithmResultFile(
-			jsonFileName, jsonWebToken);
+			jsonFileName, HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 
 		Graph graph = JsonUtils.parseJSONObjectToTetradGraph(json);
 		GraphUtils.circleLayout(graph, 300, 300, 150);
@@ -117,16 +104,17 @@ public class LoadHpcGraphJson extends AbstractAction {
 	    System.out
 		    .println("Option: jsonFileName " + (jsonFileName != null));
 	    System.out.println("Option: computingAccount "
-		    + (computingAccount != null));
+		    + (hpcAccount != null));
 	}
     }
 
-    private JComponent buildHpcJsonChooserComponent(
-	    final HpcAccountManager manager) {
+    private JComponent buildHpcJsonChooserComponent(final TetradDesktop desktop) {
+	final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+	final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
 	// Get ComputingAccount from DB
 	final DefaultListModel<HpcAccount> listModel = new DefaultListModel<HpcAccount>();
 
-	for (HpcAccount account : manager.getHpcAccounts()) {
+	for (HpcAccount account : hpcAccountManager.getHpcAccounts()) {
 	    listModel.addElement(account);
 	}
 
@@ -210,7 +198,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 		// Show or remove the json list
 		if (selectedIndex > -1) {
 		    jsonFileName = null;
-		    computingAccount = listModel.get(selectedIndex);
+		    hpcAccount = listModel.get(selectedIndex);
 
 		    TableColumnModel columnModel = jsonResultTable
 			    .getColumnModel();
@@ -222,26 +210,14 @@ public class LoadHpcGraphJson extends AbstractAction {
 		    
 		    jsonResultTable.clearSelection();
 
-		    final String username = computingAccount.getUsername();
-		    final String password = computingAccount.getPassword();
-		    final String scheme = computingAccount.getScheme();
-		    final String hostname = computingAccount.getHostname();
-		    final int port = computingAccount.getPort();
-
 		    try {
-			RestHttpsClient restClient = new RestHttpsClient(
-				username, password, scheme, hostname, port);
+			HpcAccountService hpcAccountService = hpcJobManager
+				.getHpcAccountService(hpcAccount);
 
-			UserService userService = new UserService(restClient,
-				scheme, hostname, port);
-			// JWT token is valid for 1 hour
-			JsonWebToken jsonWebToken = userService.requestJWT();
-
-			ResultService resultService = new ResultService(
-				restClient, scheme, hostname, port);
+			ResultService resultService = hpcAccountService.getResultService();
 
 			Set<ResultFile> results = resultService
-				.listAlgorithmResultFiles(jsonWebToken);
+				.listAlgorithmResultFiles(HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 
 			Vector<Vector<String>> jsonFiles = new Vector<>();
 

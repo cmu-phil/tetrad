@@ -38,19 +38,19 @@ public class HpcAccountEditor extends JPanel {
     
     private final DefaultListModel<HpcAccount> listModel;
 
-    private final HpcAccountManager manager;
+    private final HpcAccountManager hpcAccountManager;
 
-    private final HpcAccount computingAccount;
+    private final HpcAccount hpcAccount;
 
     public HpcAccountEditor(
 	    final JComponent parentComponent,
 	    final DefaultListModel<HpcAccount> listModel,
-	    final HpcAccountManager manager,
-	    final HpcAccount computingAccount) {
+	    final HpcAccountManager hpcAccountManager,
+	    final HpcAccount hpcAccount) {
 	this.parentComponent = parentComponent;
 	this.listModel = listModel;
-	this.manager = manager;
-	this.computingAccount = computingAccount;
+	this.hpcAccountManager = hpcAccountManager;
+	this.hpcAccount = hpcAccount;
 	initiateUI();
     }
 
@@ -78,7 +78,7 @@ public class HpcAccountEditor extends JPanel {
 	connBox.add(connLabel);
 
 	final JTextField connField = new JTextField(20);
-	connField.setText(computingAccount.getConnectionName());
+	connField.setText(hpcAccount.getConnectionName());
 	connField.addKeyListener(new KeyListener() {
 
 	    @Override
@@ -87,7 +87,7 @@ public class HpcAccountEditor extends JPanel {
 
 	    @Override
 	    public void keyReleased(KeyEvent e) {
-		computingAccount.setConnectionName(connField.getText());
+		hpcAccount.setConnectionName(connField.getText());
 	    }
 
 	    @Override
@@ -106,7 +106,7 @@ public class HpcAccountEditor extends JPanel {
 	userBox.add(userLabel);
 
 	final JTextField userField = new JTextField(20);
-	userField.setText(computingAccount.getUsername());
+	userField.setText(hpcAccount.getUsername());
 	userField.addKeyListener(new KeyListener() {
 
 	    @Override
@@ -115,7 +115,7 @@ public class HpcAccountEditor extends JPanel {
 
 	    @Override
 	    public void keyReleased(KeyEvent e) {
-		computingAccount.setUsername(userField.getText());
+		hpcAccount.setUsername(userField.getText());
 	    }
 
 	    @Override
@@ -134,7 +134,7 @@ public class HpcAccountEditor extends JPanel {
 	passBox.add(passLabel);
 
 	final JPasswordField passField = new JPasswordField(20);
-	passField.setText(computingAccount.getPassword());
+	passField.setText(hpcAccount.getPassword());
 	passField.addKeyListener(new KeyListener() {
 
 	    @Override
@@ -143,7 +143,7 @@ public class HpcAccountEditor extends JPanel {
 
 	    @Override
 	    public void keyReleased(KeyEvent e) {
-		computingAccount.setPassword(new String(passField.getPassword()));
+		hpcAccount.setPassword(new String(passField.getPassword()));
 	    }
 
 	    @Override
@@ -163,7 +163,7 @@ public class HpcAccountEditor extends JPanel {
 
 	final JRadioButton httpRadioButton = new JRadioButton("http");
 	final JRadioButton httpsRadioButton = new JRadioButton("https");
-	if (computingAccount.getScheme().equalsIgnoreCase("https")) {
+	if (hpcAccount.getScheme().equalsIgnoreCase("https")) {
 	    httpsRadioButton.setSelected(true);
 	} else {
 	    httpRadioButton.setSelected(true);
@@ -180,9 +180,9 @@ public class HpcAccountEditor extends JPanel {
 	    @Override
 	    public void actionPerformed(ActionEvent e) {
 		if (httpRadioButton.isSelected()) {
-		    computingAccount.setScheme("http");
+		    hpcAccount.setScheme("http");
 		} else {
-		    computingAccount.setScheme("https");
+		    hpcAccount.setScheme("https");
 		}
 	    }
 	};
@@ -199,7 +199,7 @@ public class HpcAccountEditor extends JPanel {
 	hostBox.add(hostLabel);
 
 	final JTextField hostField = new JTextField(20);
-	hostField.setText(computingAccount.getHostname());
+	hostField.setText(hpcAccount.getHostname());
 	hostField.addKeyListener(new KeyListener() {
 
 	    @Override
@@ -208,7 +208,7 @@ public class HpcAccountEditor extends JPanel {
 
 	    @Override
 	    public void keyReleased(KeyEvent e) {
-		computingAccount.setHostname(hostField.getText());
+		hpcAccount.setHostname(hostField.getText());
 	    }
 
 	    @Override
@@ -227,7 +227,7 @@ public class HpcAccountEditor extends JPanel {
 	portBox.add(portLabel);
 
 	final JTextField portField = new JTextField(20);
-	portField.setText(String.valueOf(computingAccount.getPort()));
+	portField.setText(String.valueOf(hpcAccount.getPort()));
 	portField.addKeyListener(new KeyListener() {
 
 	    @Override
@@ -238,7 +238,7 @@ public class HpcAccountEditor extends JPanel {
 	    public void keyReleased(KeyEvent e) {
 		try {
 		    int port = Integer.parseInt(portField.getText());
-		    computingAccount.setPort(port);
+		    hpcAccount.setPort(port);
 		} catch (NumberFormatException e1) {
 		    // TODO Auto-generated catch block
 		    if (portField.getText().trim().length() > 0) {
@@ -273,16 +273,16 @@ public class HpcAccountEditor extends JPanel {
 		parentComponent.updateUI();
 		button.setEnabled(false);
 		boolean success = HpcAccountUtils
-			.testConnection(computingAccount);
+			.testConnection(hpcAccountManager, hpcAccount);
 		// Pop-up the test result
 		JOptionPane.showMessageDialog(null, ""
-			+ computingAccount + " Connection "
+			+ hpcAccount + " Connection "
 			+ (success ? "Successful" : "Failed"),
 			"HPC Account Setting", JOptionPane.INFORMATION_MESSAGE);
 		button.setEnabled(true);
 		button.setText("Test Connection");
-		computingAccount.setLastLoginDate(new Date());
-		manager.saveAccount(computingAccount);
+		hpcAccount.setLastLoginDate(new Date());
+		hpcAccountManager.saveAccount(hpcAccount);
 	    }
 	});
 	JButton saveButton = new JButton("Save");
@@ -294,9 +294,9 @@ public class HpcAccountEditor extends JPanel {
 		button.setText("Saving...");
 		parentComponent.updateUI();
 		button.setEnabled(false);
-		manager.saveAccount(computingAccount);
-		if (listModel.indexOf(computingAccount) == -1) {
-		    listModel.addElement(computingAccount);
+		hpcAccountManager.saveAccount(hpcAccount);
+		if (listModel.indexOf(hpcAccount) == -1) {
+		    listModel.addElement(hpcAccount);
 		}
 		button.setEnabled(true);
 		button.setText("Save");
