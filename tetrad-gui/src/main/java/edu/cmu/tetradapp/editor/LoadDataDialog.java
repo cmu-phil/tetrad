@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.pitt.dbmi.data.validation.DataValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,7 +33,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -626,21 +627,34 @@ final class LoadDataDialog extends JPanel {
      * @return
      */
     private List<String> loadAndReview() {
-        List<String> failedFiles = new ArrayList<String>();
+        List<String> failedFiles = new LinkedList<>();
 
-        // Try to load each file and store the file name for failed loading
         for (int i = 0; i < files.length; i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, files);
-            if (dataModel == null) {
-                System.out.println("File index = " + i + " cannot be loaded due to error");
-
-                // Add the file name to failed list
-                failedFiles.add(files[i].getName());
-            } else {
-                System.out.println("File index = " + i + " can be loaded successfully, but wi will only be loaded once all files can be loaded together");
+            DataValidation validation = dataLoaderSettings.validateDataWithSettings(i, files);
+            validation.validate();
+            if (validation.hasErrors()) {
+                failedFiles.addAll(validation.getErrors());
+            }
+            if (validation.hasInfos()) {
+                failedFiles.addAll(validation.getInfos());
             }
         }
 
+        System.out.println(failedFiles);
+//        // Try to load each file and store the file name for failed loading
+//        for (int i = 0; i < files.length; i++) {
+//
+//            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, files);
+//            if (dataModel == null) {
+//                System.out.println("File index = " + i + " cannot be loaded due to error");
+//
+//                // Add the file name to failed list
+//                failedFiles.add(files[i].getName());
+//            } else {
+//                System.out.println("File index = " + i + " can be loaded successfully, but wi will only be loaded once all files can be loaded together");
+//            }
+//
+//        }
         return failedFiles;
     }
 

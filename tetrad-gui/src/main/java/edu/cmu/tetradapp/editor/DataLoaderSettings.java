@@ -25,6 +25,9 @@ import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.pitt.dbmi.data.validation.DataValidation;
+import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
+import edu.pitt.dbmi.data.validation.file.TabularDataFileValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -181,7 +184,6 @@ final class DataLoaderSettings extends JPanel {
         // Add label into this label box to size
         Box fileTypeLabelBox = Box.createHorizontalBox();
         fileTypeLabelBox.setPreferredSize(labelSize);
-
         fileTypeLabelBox.add(new JLabel("File type:"));
 
         // Option 1
@@ -642,6 +644,21 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
+    private char getDelimiterTypeChar(DelimiterType delimiterType) {
+        switch (delimiterType.toString()) {
+            case "Whitespace":
+                return ' ';
+            case "Tab":
+                return '\t';
+            case "Comma":
+                return ',';
+            case "Colon":
+                return ':';
+            default:
+                throw new IllegalArgumentException("Unexpected Value delimiter selection.");
+        }
+    }
+
     private DelimiterType getDelimiterType() {
         if (commaDelimiterRadioButton.isSelected()) {
             return DelimiterType.COMMA;
@@ -695,6 +712,25 @@ final class DataLoaderSettings extends JPanel {
 
     private int getMaxDiscrete() {
         return maxIntegralDiscreteIntField.getValue();
+    }
+
+    public DataValidation validateDataWithSettings(int fileIndex, File[] files) {
+        File dataFile = files[fileIndex];
+        char delimiter = getDelimiterTypeChar(getDelimiterType());
+        char quoteChar = getQuoteChar();
+        String comment = getCommentString();
+        boolean hasHeader = isVarNamesFirstRow();
+
+        if (tabularRadioButton.isSelected()) {
+            TabularDataFileValidation validation = new ContinuousTabularDataFileValidation(dataFile, delimiter);
+            validation.setCommentMarker(comment);
+            validation.setHasHeader(hasHeader);
+            validation.setQuoteCharacter(quoteChar);
+
+            return validation;
+        } else {
+            throw new UnsupportedOperationException("Not yet supported!");
+        }
     }
 
     /**

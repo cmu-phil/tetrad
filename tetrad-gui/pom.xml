@@ -111,6 +111,11 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+        <dependency>
+            <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>data-reader</artifactId>
+            <version>0.01</version>
+        </dependency>
     </dependencies>
 
     <!--<distributionManagement>-->
