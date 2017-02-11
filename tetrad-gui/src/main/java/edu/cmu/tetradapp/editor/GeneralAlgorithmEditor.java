@@ -163,7 +163,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
@@ -581,7 +581,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new CcdMax(independenceWrapper);
                 break;
             case FANG:
-                algorithm = new Fang(independenceWrapper);
+                algorithm = new FangConcatenated();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -842,7 +842,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox box = (JComboBox) testDropdown;
-                String name = box.getSelectedItem().toString();
+//                String name = box.getSelectedItem().toString();
 //                helpSet.setHomeID(name.toLowerCase());
                 helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();
@@ -855,7 +855,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox box = (JComboBox) scoreDropdown;
-                String name = box.getSelectedItem().toString();
+//                String name = box.getSelectedItem().toString();
 //                helpSet.setHomeID(name.toLowerCase());
                 helpSet.setHomeID("under_construction");
                 HelpBroker broker = helpSet.createHelpBroker();

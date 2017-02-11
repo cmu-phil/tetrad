@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.mean;
-import static edu.cmu.tetrad.util.StatUtils.sd;
 import static java.lang.Math.*;
 
 /**
@@ -77,7 +76,7 @@ public final class Fang implements GraphSearch {
         long start = System.currentTimeMillis();
 
         List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
+        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.center(dataSet));
 
         DataSet dataSet = DataUtils.concatenate(_dataSets);
 
@@ -87,78 +86,111 @@ public final class Fang implements GraphSearch {
 
         final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         List<Node> variables = cov.getVariables();
-        Graph graph = new EdgeListGraph(variables);
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
         nonGaussian = new boolean[colData.length];
 
         for (int i = 0; i < colData.length; i++) {
-            nonGaussian[i] = new AndersonDarlingTest(colData[i]).getP() < alpha;
+            final double p = new AndersonDarlingTest(colData[i]).getP();
+            nonGaussian[i] = p < alpha;
         }
 
         final int n = dataSet.getNumRows();
-        double T = abs(new TDistribution(n).inverseCumulativeProbability(alpha / 2.0));
+        double T = new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
 
         FasStableConcurrent fas = new FasStableConcurrent(null, test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         Graph graph0 = fas.search();
+        Graph graph = new EdgeListGraph(variables);
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
-                if (i == j) continue;
+                Node X = variables.get(i);
+                Node Y = variables.get(j);
 
                 final double[] xData = colData[i];
                 final double[] yData = colData[j];
 
-                double[] xxg = new double[xData.length];
-                double[] yyg = new double[yData.length];
-                double[] xxh = new double[xData.length];
-                double[] yyh = new double[yData.length];
+                double[] xg = new double[n];
+                double[] yg = new double[n];
+                double[] p1 = new double[n];
+                double[] p2 = new double[n];
+                double[] p3 = new double[n];
+                double[] p4 = new double[n];
+                double[] xy = new double[n];
+                double[] dh = new double[n];
+                double[] dg = new double[n];
 
-                for (int k = 0; k < xxg.length; k++) {
-                    double xi = xData[k];
-                    double yi = yData[k];
+                int n1 = 0;
+                int n2 = 0;
+                int n3 = 0;
+                int n4 = 0;
 
-                    xxg[k] = g(xi) * yi;
-                    yyg[k] = xi * g(yi);
-                    xxh[k] = h(xi) * yi;
-                    yyh[k] = xi * h(yi);
+                for (int k = 0; k < xg.length; k++) {
+                    double x = xData[k];
+                    double y = yData[k];
+
+                    xg[k] = g(x) * y;
+                    yg[k] = x * g(y);
+                    p1[k] = pos(x) * y;
+                    p2[k] = x * pos(y);
+                    p3[k] = -pos(-x) * y;
+                    p4[k] = x * -pos(-y);
+
+                    if (p1[k] != 0) n1++;
+                    if (p2[k] != 0) n2++;
+                    if (p3[k] != 0) n3++;
+                    if (p4[k] != 0) n4++;
+
+                    xy[k] = x * y;
+                    dg[k] = xg[k] - yg[k];
+                    dh[k] = p1[k] - p2[k];
                 }
 
-                double[] Dh = new double[xxg.length];
+                double tdh = (mean(dh) - 0.0) / (sd(dh, n) / sqrt(n));
+                double tdp1 = (mean(p1, n1) - 0.0) / (sd(p1, n1) / sqrt(n1));
+                double tdp2 = (mean(p2, n2) - 0.0) / (sd(p2, n2) / sqrt(n2));
+                double tdp3 = (mean(p3, n3) - 0.0) / (sd(p3, n3) / sqrt(n3));
+                double tdp4 = (mean(p4, n4) - 0.0) / (sd(p4, n4) / sqrt(n4));
+                double tdxy = (mean(xy, n) - 0.0) / (sd(xy, n) / sqrt(n));
+                double tdg = (mean(dg, n) - 0.0) / (sd(dg, n) / sqrt(n));
 
-                for (int k = 0; k < xxg.length; k++) {
-                    Dh[k] = xxh[k] - yyh[k];
-                }
+                boolean ng = isNonGaussian(i) || isNonGaussian(j);
 
-                double mdh = mean(Dh);
-                double sdh = sd(Dh);
+                int numZero = 0;
 
-                double mxxg = mean(xxg);
-                double myyg = mean(yyg);
-                double mxxh = mean(xxh);
-                double myyh = mean(yyh);
+                if (abs(tdp1) < T) numZero++;
+                if (abs(tdp2) < T) numZero++;
+                if (abs(tdp3) < T) numZero++;
+                if (abs(tdp4) < T) numZero++;
 
-                double tdh = (mdh - 0.0) / (sdh / sqrt(n));
-                double tdxh = (mxxh - 0.0) / (sdh / sqrt(n));
-                double tdyh = (myyh - 0.0) / (sdh / sqrt(n));
+                int numNonZero = 0;
+
+                if (abs(tdp1) > T) numNonZero++;
+                if (abs(tdp2) > T) numNonZero++;
+                if (abs(tdp3) > T) numNonZero++;
+                if (abs(tdp4) > T) numNonZero++;
 
                 if (abs(tdh) > 12 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
-                    Node x = variables.get(i);
-                    Node y = variables.get(j);
-                    graph.removeEdge(x, y);
-
-                    if (signum(tdxh) == -signum(tdyh) || abs(tdxh) < T || abs(tdyh) < T || abs(tdh) < T) {
-                        graph.addDirectedEdge(x, y);
-                        graph.addDirectedEdge(y, x);
-                    } else if (isNonGaussian(i) && isNonGaussian(j) && mxxg > myyg) {
-                        graph.addDirectedEdge(x, y);
-                    } else if (isNonGaussian(i) && isNonGaussian(j) && myyg > mxxg) {
-                        graph.addDirectedEdge(y, x);
-                    } else {
-                        graph.addUndirectedEdge(x, y);
+                    if (signum(tdp1) == -signum(tdxy)
+                            || signum(tdp1) == -signum(tdxy)
+                            || signum(tdp3) == -signum(tdxy)
+                            || signum(tdp3) == -signum(tdxy)) {
+                        graph.addDirectedEdge(X, Y);
+                        graph.addDirectedEdge(Y, X);
+                    } else if (abs(tdxy) > T && numZero > 0 && numNonZero > 0) {
+//                            (abs(tdp1) < T || abs(tdp2) < T || abs(tdp3) < T || abs(tdp4) < T)) {
+                        graph.addDirectedEdge(X, Y);
+                        graph.addDirectedEdge(Y, X);
+                    } else if (ng && abs(tdg) < T) {
+                        graph.addDirectedEdge(X, Y);
+                        graph.addDirectedEdge(Y, X);
+                    } else if (ng && tdg >= T) {
+                        graph.addDirectedEdge(X, Y);
+                    } else if (ng && tdg <= T) {
+                        graph.addDirectedEdge(Y, X);
                     }
                 }
             }
@@ -167,12 +199,15 @@ public final class Fang implements GraphSearch {
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
+        System.out.println(graph);
+
         return graph;
     }
 
     /**
      * @return The depth of search for the Fast Adjacency Search.
      */
+
     public int getDepth() {
         return depth;
     }
@@ -233,8 +268,27 @@ public final class Fang implements GraphSearch {
         return log(Math.cosh(Math.max(x, 0)));
     }
 
-    private double h(double x) {
+    private double pos(double x) {
         return x < 0 ? 0 : x;
+    }
+
+    public static double sd(double array[], int N) {
+        return Math.pow(ssx(array, N) / (N - 1), .5);
+    }
+
+    public static double ssx(double array[], int N) {
+
+        int i;
+        double difference;
+        double meanValue = mean(array, N);
+        double sum = 0.0;
+
+        for (i = 0; i < N; i++) {
+            difference = array[i] - meanValue;
+            sum += difference * difference;
+        }
+
+        return sum;
     }
 }
 

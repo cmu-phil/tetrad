@@ -23,15 +23,13 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.CcdMaxConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataSmithSim;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -41,7 +39,7 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class TestCcd {
+public class TestFang {
 
     public void test0() {
         Parameters parameters = new Parameters();
@@ -112,24 +110,15 @@ public class TestCcd {
 
     }
 
-    public void TestFang() {
+    public void TestRuben() {
         Parameters parameters = new Parameters();
 
-        parameters.set("alpha", .01);
-        parameters.set("collapseTiers", true);
-        parameters.set("penaltyDiscount", 6);
+        parameters.set("alpha", .001);
+        parameters.set("penaltyDiscount", 5);
+        parameters.set("depth", 4);
 
-        parameters.set("numRandomSelections", 1);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
-
-        parameters.set("depth", 5);
-        parameters.set("orientVisibleFeedbackLoops", true);
-        parameters.set("doColliderOrientation", true);
-        parameters.set("useMaxPOrientationHeuristic", false);
-        parameters.set("maxPOrientationMaxPathLength", 3);
-        parameters.set("applyR1", true);
-        parameters.set("orientTowardDConnections", false);
-
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
@@ -188,7 +177,7 @@ public class TestCcd {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/ComplexMatrix_1"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new FangConcatenated(new SemBicTest()));
+        algorithms.add(new FangConcatenated());
 
         Comparison comparison = new Comparison();
 
@@ -207,73 +196,75 @@ public class TestCcd {
 
     }
 
-    public void Test3() {
+    public void TestSmith() {
         Parameters parameters = new Parameters();
 
-        parameters.set("numLags", 0);
-
-        parameters.set("alpha", .1);
-        parameters.set("collapseTiers", true);
+        parameters.set("alpha", 1);
         parameters.set("penaltyDiscount", 2);
+        parameters.set("depth", 3);
 
-        parameters.set("numRandomSelections", 1);
+        // The mmost 1.0's.
+//        parameters.set("alpha", 1);
+//        parameters.set("penaltyDiscount", 2);
+//        parameters.set("depth", 3);
+
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
 
-        parameters.set("depth", 4);
-        parameters.set("orientVisibleFeedbackLoops", true);
-        parameters.set("doColliderOrientation", true);
-        parameters.set("useMaxPOrientationHeuristic", false);
-        parameters.set("maxPOrientationMaxPathLength", 3);
-        parameters.set("applyR1", true);
-        parameters.set("orientTowardDConnections", false);
-
-        parameters.set("numMeasures", 10);
-        parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2);
-        parameters.set("maxDegree", 100);
-        parameters.set("maxIndegree", 100);
-        parameters.set("maxOutdegree", 100);
-        parameters.set("connected", true);
-
-        parameters.set("coefLow", 0.3);
-        parameters.set("coefHigh", 0.5);
-        parameters.set("varLow", 1);
-        parameters.set("varHigh", 3);
-        parameters.set("verbose", false);
-        parameters.set("coefSymmetric", true);
-        parameters.set("numRuns", 1);
-        parameters.set("percentDiscrete", 0);
-        parameters.set("numCategories", 4);
-        parameters.set("differentGraphs", false);
-        parameters.set("sampleSize", 1000);
-        parameters.set("intervalBetweenShocks", 2);
-        parameters.set("intervalBetweenRecordings", 2);
-        parameters.set("fisherEpsilon", 0.0001);
+//        parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("avgDegree"));
+//        statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new TwoCyclePrecision());
-        statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
-        statistics.add(new TwoCycleFalseNegative());
-        statistics.add(new TwoCycleTruePositive());
+//        statistics.add(new TwoCyclePrecision());
+//        statistics.add(new TwoCycleRecall());
+//        statistics.add(new TwoCycleFalsePositive());
+//        statistics.add(new TwoCycleFalseNegative());
+//        statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LinearFisherModel(new RandomForward()));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/1"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/2"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/3"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/4"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/5"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/6"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/7"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/8"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/9"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/10"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/11"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/12"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/13"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/14"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/15"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/16"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/17"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/18"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/19"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/20"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/21"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/22"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/23"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/24"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/25"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/26"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/27"));
+        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/28"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new FangConcatenated(new SemBicTest()));
+//        algorithms.add(new ImagesSemBic());
+        algorithms.add(new FangConcatenated());
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
@@ -289,7 +280,7 @@ public class TestCcd {
     }
 
     public static void main(String... args) {
-        new TestCcd().TestFang();
+        new TestFang().TestSmith();
     }
 }
 

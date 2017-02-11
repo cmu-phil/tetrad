@@ -107,18 +107,12 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
-        int count = 0;
 
         for (SemBicScore score : semBicScores) {
-            double _score = score.localScoreDiff(x, y, z);
-
-            if (!Double.isNaN(_score)) {
-                sum += _score;
-                count++;
-            }
+            sum += score.localScoreDiff(x, y, z);
         }
 
-        return sum / count;
+        return sum / semBicScores.size();
     }
 
     @Override

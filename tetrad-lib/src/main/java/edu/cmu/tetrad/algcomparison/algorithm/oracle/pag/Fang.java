@@ -2,16 +2,16 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,10 +57,10 @@ public class Fang implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
-        parameters.add("numLags");
         parameters.add("depth");
-        parameters.add("r3Cutoff");
-        parameters.add("collapseTiers");
+        parameters.add("alpha");
+        parameters.add("penaltyDiscount");
         return parameters;
     }
+
 }

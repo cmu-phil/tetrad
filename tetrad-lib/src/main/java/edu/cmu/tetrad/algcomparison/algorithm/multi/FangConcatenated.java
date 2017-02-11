@@ -25,10 +25,8 @@ import java.util.List;
 public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
-    private IndependenceWrapper test;
 
-    public FangConcatenated(IndependenceWrapper test) {
-        this.test = test;
+    public FangConcatenated() {
     }
 
     @Override
@@ -58,7 +56,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation) using " + test.getDescription();
+        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
     }
 
     @Override
@@ -72,8 +70,8 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("penaltyDiscount");
 
         parameters.add("depth");
-        parameters.add("numLags");
-        parameters.add("collapseTiers");
+        parameters.add("alpha");
+        parameters.add("penaltyDiscount");
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");

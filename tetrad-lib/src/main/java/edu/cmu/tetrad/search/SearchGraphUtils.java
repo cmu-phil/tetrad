@@ -1159,7 +1159,7 @@ public final class SearchGraphUtils {
                 Node node1 = nextUndirected.getNode1();
                 Node node2 = nextUndirected.getNode2();
 
-                graph.removeEdge(node1, node2);
+                graph.removeEdges(node1, node2);
                 graph.addUndirectedEdge(node1, node2);
             }
         }
@@ -2199,7 +2199,7 @@ public final class SearchGraphUtils {
 //        IndTestDSep test = new IndTestDSep(dag);
 //        return new PC(test).search();
 //
-        Graph pattern = new EdgeListGraphSingleConnections(dag);
+        Graph pattern = new EdgeListGraph(dag);
         SearchGraphUtils.basicPattern(pattern, false);
         MeekRules rules = new MeekRules();
         rules.orientImplied(pattern);
