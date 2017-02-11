@@ -54,10 +54,10 @@ public final class Fang implements GraphSearch {
     private boolean[] nonGaussian;
 
     // For the Fast Adjacency Search.
-    private int depth = 5;
+    private int depth = -1;
 
     // For the SEM BIC score, for the Fast Adjacency Search.
-    private double penaltyDiscount = 6;
+    private double penaltyDiscount = 1;
 
     // For the T tests of equality and the Anderson-Darling tests.
     private double alpha = 0.05;
@@ -181,7 +181,6 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
                     } else if (abs(tdxy) > T && numZero > 0 && numNonZero > 0) {
-//                            (abs(tdp1) < T || abs(tdp2) < T || abs(tdp3) < T || abs(tdp4) < T)) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
                     } else if (ng && abs(tdg) < T) {
@@ -272,12 +271,11 @@ public final class Fang implements GraphSearch {
         return x < 0 ? 0 : x;
     }
 
-    public static double sd(double array[], int N) {
+    private static double sd(double array[], int N) {
         return Math.pow(ssx(array, N) / (N - 1), .5);
     }
 
-    public static double ssx(double array[], int N) {
-
+    private static double ssx(double array[], int N) {
         int i;
         double difference;
         double meanValue = mean(array, N);
