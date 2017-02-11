@@ -280,7 +280,7 @@ public class TestFang {
     }
 
     public static void main(String... args) {
-        new TestFang().TestSmith();
+        new TestFang().TestRuben();
     }
 }
 

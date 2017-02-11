@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ public final class Fang implements GraphSearch {
      * two-cycles. Runs the fast adjacency search (FAS, Spirtes et al., 2000) follows by a modification
      * of the robust skew rule (Pairwise Likelihood Ratios for Estimation of Non-Gaussian Structural
      * Equation Models, Smith and Hyvarinen), together with some heuristics for orienting two-cycles.
+     *
      * @return the graph. Some of the edges may be undirected (though it shouldn't be many in most cases)
      * and some of the adjacencies may be two-cycles.
      */
@@ -91,8 +93,8 @@ public final class Fang implements GraphSearch {
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
 
-        final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-        List<Node> variables = cov.getVariables();
+//        final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+        List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
@@ -156,46 +158,48 @@ public final class Fang implements GraphSearch {
                     dh[k] = p1[k] - p2[k];
                 }
 
+                double cov = mean(xy, n);
+
+                double cov1 = mean(p1, n1);
+                double cov2 = mean(p2, n2);
+                double cov3 = mean(p3, n3);
+                double cov4 = mean(p4, n4);
+
                 double tdh = (mean(dh) - 0.0) / (sd(dh, n) / sqrt(n));
-                double tdp1 = (mean(p1, n1) - 0.0) / (sd(p1, n1) / sqrt(n1));
-                double tdp2 = (mean(p2, n2) - 0.0) / (sd(p2, n2) / sqrt(n2));
-                double tdp3 = (mean(p3, n3) - 0.0) / (sd(p3, n3) / sqrt(n3));
-                double tdp4 = (mean(p4, n4) - 0.0) / (sd(p4, n4) / sqrt(n4));
-                double tdxy = (mean(xy, n) - 0.0) / (sd(xy, n) / sqrt(n));
                 double tdg = (mean(dg, n) - 0.0) / (sd(dg, n) / sqrt(n));
 
                 boolean ng = isNonGaussian(i) || isNonGaussian(j);
 
                 int numZero = 0;
 
-                if (abs(tdp1) < T) numZero++;
-                if (abs(tdp2) < T) numZero++;
-                if (abs(tdp3) < T) numZero++;
-                if (abs(tdp4) < T) numZero++;
+                if (abs(cov1) < T) numZero++;
+                if (abs(cov2) < T) numZero++;
+                if (abs(cov3) < T) numZero++;
+                if (abs(cov4) < T) numZero++;
 
                 int numNonZero = 0;
 
-                if (abs(tdp1) > T) numNonZero++;
-                if (abs(tdp2) > T) numNonZero++;
-                if (abs(tdp3) > T) numNonZero++;
-                if (abs(tdp4) > T) numNonZero++;
+                if (abs(cov1) > T) numNonZero++;
+                if (abs(cov2) > T) numNonZero++;
+                if (abs(cov3) > T) numNonZero++;
+                if (abs(cov4) > T) numNonZero++;
 
-                if (abs(tdh) > 12 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
-                    if (signum(tdp1) == -signum(tdxy)
-                            || signum(tdp1) == -signum(tdxy)
-                            || signum(tdp3) == -signum(tdxy)
-                            || signum(tdp3) == -signum(tdxy)) {
+                if (abs(tdg) > 10 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
+                    if (signum(cov1) == -signum(cov)
+                            || signum(cov2) == -signum(cov)
+                            || signum(cov3) == -signum(cov)
+                            || signum(cov4) == -signum(cov)) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
-                    } else if (abs(tdxy) > T && numZero > 0 && numNonZero > 0) {
+                    } else if (numZero > 0 && numNonZero > 0) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
                     } else if (ng && abs(tdg) < T) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
-                    } else if (ng && tdg >= T) {
+                    } else if (ng && tdg > T) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (ng && tdg <= T) {
+                    } else if (ng && tdg < -T) {
                         graph.addDirectedEdge(Y, X);
                     }
                 }
