@@ -93,7 +93,6 @@ public final class Fang implements GraphSearch {
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
 
-//        final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
@@ -122,27 +121,22 @@ public final class Fang implements GraphSearch {
                 final double[] xData = colData[i];
                 final double[] yData = colData[j];
 
-                double[] xg = new double[n];
-                double[] yg = new double[n];
                 double[] p1 = new double[n];
                 double[] p2 = new double[n];
                 double[] p3 = new double[n];
                 double[] p4 = new double[n];
                 double[] xy = new double[n];
-                double[] dh = new double[n];
-                double[] dg = new double[n];
+                double[] r = new double[n];
 
                 int n1 = 0;
                 int n2 = 0;
                 int n3 = 0;
                 int n4 = 0;
 
-                for (int k = 0; k < xg.length; k++) {
+                for (int k = 0; k < n; k++) {
                     double x = xData[k];
                     double y = yData[k];
 
-                    xg[k] = g(x) * y;
-                    yg[k] = x * g(y);
                     p1[k] = pos(x) * y;
                     p2[k] = x * pos(y);
                     p3[k] = -pos(-x) * y;
@@ -154,8 +148,7 @@ public final class Fang implements GraphSearch {
                     if (p4[k] != 0) n4++;
 
                     xy[k] = x * y;
-                    dg[k] = xg[k] - yg[k];
-                    dh[k] = p1[k] - p2[k];
+                    r[k] = g(x) * y - x * g(y);
                 }
 
                 double cov = mean(xy, n);
@@ -165,26 +158,29 @@ public final class Fang implements GraphSearch {
                 double cov3 = mean(p3, n3);
                 double cov4 = mean(p4, n4);
 
-                double tdh = (mean(dh) - 0.0) / (sd(dh, n) / sqrt(n));
-                double tdg = (mean(dg, n) - 0.0) / (sd(dg, n) / sqrt(n));
+                double t1 = (mean(p1, n) - 0.0) / (sd(r, n) / sqrt(n));
+                double t2 = (mean(p2, n) - 0.0) / (sd(r, n) / sqrt(n));
+                double t3 = (mean(p3, n) - 0.0) / (sd(r, n) / sqrt(n));
+                double t4 = (mean(p4, n) - 0.0) / (sd(r, n) / sqrt(n));
+                double tr = (mean(r, n) - 0.0) / (sd(r, n) / sqrt(n));
 
                 boolean ng = isNonGaussian(i) || isNonGaussian(j);
 
                 int numZero = 0;
 
-                if (abs(cov1) < T) numZero++;
-                if (abs(cov2) < T) numZero++;
-                if (abs(cov3) < T) numZero++;
-                if (abs(cov4) < T) numZero++;
+                if (abs(t1) < T) numZero++;
+                if (abs(t2) < T) numZero++;
+                if (abs(t3) < T) numZero++;
+                if (abs(t4) < T) numZero++;
 
                 int numNonZero = 0;
 
-                if (abs(cov1) > T) numNonZero++;
-                if (abs(cov2) > T) numNonZero++;
-                if (abs(cov3) > T) numNonZero++;
-                if (abs(cov4) > T) numNonZero++;
+                if (abs(t1) > T) numNonZero++;
+                if (abs(t2) > T) numNonZero++;
+                if (abs(t3) > T) numNonZero++;
+                if (abs(t4) > T) numNonZero++;
 
-                if (abs(tdg) > 10 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
+                if (abs(tr) > 10 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
                     if (signum(cov1) == -signum(cov)
                             || signum(cov2) == -signum(cov)
                             || signum(cov3) == -signum(cov)
@@ -194,13 +190,15 @@ public final class Fang implements GraphSearch {
                     } else if (numZero > 0 && numNonZero > 0) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
-                    } else if (ng && abs(tdg) < T) {
+                    } else if (ng && abs(tr) < T) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
-                    } else if (ng && tdg > T) {
+                    } else if (ng && tr > T) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (ng && tdg < -T) {
+                    } else if (ng && tr < -T) {
                         graph.addDirectedEdge(Y, X);
+                    } else {
+                        graph.addUndirectedEdge(X, Y);
                     }
                 }
             }
