@@ -62,6 +62,9 @@ public final class Fang implements GraphSearch {
     // For the T tests of equality and the Anderson-Darling tests.
     private double alpha = 0.05;
 
+    /**
+     * @param dataSets These datasets must all have the same variables, in the same order.
+     */
     public Fang(List<DataSet> dataSets) {
         this.dataSets = dataSets;
     }
@@ -70,7 +73,11 @@ public final class Fang implements GraphSearch {
 
     /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with
-     * two-cycles.
+     * two-cycles. Runs the fast adjacency search (FAS, Spirtes et al., 2000) follows by a modification
+     * of the robust skew rule (Pairwise Likelihood Ratios for Estimation of Non-Gaussian Structural
+     * Equation Models, Smith and Hyvarinen), together with some heuristics for orienting two-cycles.
+     * @return the graph. Some of the edges may be undirected (though it shouldn't be many in most cases)
+     * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
         long start = System.currentTimeMillis();
@@ -204,16 +211,15 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @return The depth of search for the Fast Adjacency Search.
+     * @return The depth of search for the Fast Adjacency Search (FAS).
      */
-
     public int getDepth() {
         return depth;
     }
 
     /**
-     * @param depth The depth of search for the Fast Adjacency Search.
-     *              The default is 5. Making this too high may results in statistical errors.
+     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1.
+     *              unlimited. Making this too high may results in statistical errors.
      */
     public void setDepth(int depth) {
         this.depth = depth;
@@ -227,7 +233,8 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @return The alpha value used for T tests of equality and non-Gaussianity tests.
+     * @return The alpha value used for T tests of equality and non-Gaussianity tests,
+     * by default 0.05.
      */
     public double getAlpha() {
         return alpha;
@@ -235,14 +242,16 @@ public final class Fang implements GraphSearch {
 
     /**
      * @param alpha The alpha value used for T tests of equality and non-Gaussianity tests.
-     *              The default is 0.05.
+     *              The default is 0.05. The test used for non-Gaussianity is the Anderson-
+     *              Darling test.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * @return Returns the penalty discount used for the adjacency search.
+     * @return Returns the penalty discount used for the adjacency search. The default is 1,
+     * though a higher value is recommended, say, 2, 3, or 4.
      */
     public double getPenaltyDiscount() {
         return penaltyDiscount;
@@ -250,8 +259,8 @@ public final class Fang implements GraphSearch {
 
     /**
      * @param penaltyDiscount Sets the penalty discount used for the adjacency search.
-     *                        The default is 6, deliberately high to remove weak edges from
-     *                        the graph.
+     *                        The default is 1, though a higher value is recommended, say,
+     *                        2, 3, or 4.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
