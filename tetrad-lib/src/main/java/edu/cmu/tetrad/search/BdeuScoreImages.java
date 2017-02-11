@@ -191,16 +191,6 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     @Override
-    public double getParameter1() {
-        return 0;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-
-    }
-
-    @Override
     public int getSampleSize() {
         return scores.get(0).getSampleSize();
     }

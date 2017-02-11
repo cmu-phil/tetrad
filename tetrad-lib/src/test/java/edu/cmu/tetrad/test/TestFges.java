@@ -865,7 +865,7 @@ public class TestFges {
         //m.setVerbose(this.verbose);
         Graph gm = m.search();
         DataSet dataSet = MixedUtils.makeContinuousData(ds);
-        SemBicScore2 score = new SemBicScore2(new CovarianceMatrixOnTheFly(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penalty);
         Fges fg = new Fges(score);
         fg.setBoundGraph(gm);

@@ -173,7 +173,6 @@ public class PerformanceTestsDan {
 
             final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
             final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
-            scoreGfci.setParameter1(penaltyDiscount);
 
             out6.println("GFCI.PAG");
 

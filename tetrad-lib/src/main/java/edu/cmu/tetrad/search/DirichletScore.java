@@ -301,16 +301,6 @@ public class DirichletScore implements LocalDiscreteScore, Score {
     }
 
     @Override
-    public double getParameter1() {
-        return 0;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-
-    }
-
-    @Override
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();
     }

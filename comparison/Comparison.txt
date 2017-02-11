@@ -1,0 +1,187 @@
+Sat Feb 11 18:21:42 EST 2017
+
+Statistics:
+
+Structure = Extra column for Structure
+AP = Adjacency Precision
+AR = Adjacency Recall
+AHP = Arrowhead precision
+AHR = Arrowhead recall
+2CP = 2-cycle precision
+2CR = 2-cycle recall
+2CFP = 2-cycle false positive
+2CFN = 2-cycle false negative
+2CTP = 2-cycle true positive
+E = Elapsed Time in Seconds
+
+Parameters:
+
+
+Simulation:
+
+Simulation 1:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 2:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 3:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 4:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 5:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 6:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 7:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 8:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 9:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 10:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 11:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 12:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 13:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 14:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 15:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 16:
+Load data sets and graphs from a directory.
+
+
+
+Simulation 17:
+Load data sets and graphs from a directory.
+
+
+
+Algorithms:
+
+1. FANG (Fast Adjacency search followed by Non-Gaussian orientation)
+
+Weighting of statistics:
+
+U = 
+
+Note that f for each statistic is a function that maps the statistic to the 
+interval [0, 1], with higher being better.
+
+
+AVERAGE STATISTICS
+
+All edges
+
+  Sim              Structure    AP    AR   AHP   AHR   2CP   2CR  2CFP  2CFN  2CTP     E
+    1         Structure1_amp  1.00  1.00  1.00  1.00     �     �  0.00  0.00  0.00  0.09
+    2       Structure1_contr  1.00  1.00  0.83  0.83     �     �  0.00  0.00  0.00  0.06
+    3         Structure2_amp  0.98  1.00  0.98  1.00  1.00  1.00  0.00  0.00  1.00  0.04
+    4       Structure2_contr  0.89  1.00  0.91  1.00  1.00  1.00  0.00  0.00  1.00  0.04
+    5     Structure3_amp_amp  1.00  1.00  1.00  1.00     �     �  0.00  0.00  0.00  0.08
+    6   Structure3_amp_contr  1.00  1.00  0.89  0.89     �     �  0.00  0.00  0.00  0.08
+    7   Structure3_contr_amp  1.00  1.00  0.88  0.91  0.00     �  0.30  0.00  0.00  0.08
+    8     Structure4_amp_amp  1.00  1.00  1.00  1.00     �     �  0.00  0.00  0.00  0.09
+    9   Structure4_amp_contr  1.00  1.00  0.90  0.90     �     �  0.00  0.00  0.00  0.09
+   10   Structure4_contr_amp  1.00  1.00  0.90  0.90     �     �  0.00  0.00  0.00  0.08
+   11         Structure5_amp  1.00  1.00  1.00  0.97  1.00  0.80  0.00  0.20  0.80  0.07
+   12       Structure5_contr  0.96  1.00  0.97  1.00  1.00  1.00  0.00  0.00  1.00  0.07
+   13      Structure2_amp_c4  1.00  1.00  1.00  1.00  1.00  1.00  0.00  0.00  1.00  0.04
+   14    Structure2_contr_c4  0.81  1.00  0.82  1.00  0.88  1.00  0.30  0.00  1.00  0.04
+   15  Structure2_contr_p2n6  1.00  1.00  1.00  0.90  1.00  0.50  0.00  0.50  0.50  0.04
+   16  Structure2_contr_p6n2  1.00  1.00  1.00  0.84  1.00  0.20  0.00  0.80  0.20  0.04
+   17        ComplexMatrix_1  0.97  0.95  0.91  0.94  0.57  0.88  3.70  0.60  4.40  0.58
+
+STANDARD DEVIATIONS
+
+All edges
+
+  Sim              Structure    AP    AR       AHP       AHR   2CP   2CR  2CFP  2CFN  2CTP        E
+    1         Structure1_amp  0.00  0.00      0.00      0.00     �     �  0.00  0.00  0.00     0.05
+    2       Structure1_contr  0.00  0.00  1.17E-16  1.17E-16     �     �  0.00  0.00  0.00     0.01
+    3         Structure2_amp  0.06  0.00      0.05      0.00  0.00  0.00  0.00  0.00  0.00  7.14E-3
+    4       Structure2_contr  0.14  0.00      0.12      0.00  0.00  0.00  0.00  0.00  0.00  4.64E-3
+    5     Structure3_amp_amp  0.00  0.00      0.00      0.00     �     �  0.00  0.00  0.00  9.29E-3
+    6   Structure3_amp_contr  0.00  0.00  2.34E-16  2.34E-16     �     �  0.00  0.00  0.00  9.28E-3
+    7   Structure3_contr_amp  0.00  0.00      0.02      0.05     �     �  0.67  0.00  0.00     0.01
+    8     Structure4_amp_amp  0.00  0.00      0.00      0.00     �     �  0.00  0.00  0.00     0.01
+    9   Structure4_amp_contr  0.00  0.00  1.17E-16  1.17E-16     �     �  0.00  0.00  0.00     0.01
+   10   Structure4_contr_amp  0.00  0.00  1.17E-16  1.17E-16     �     �  0.00  0.00  0.00  3.41E-3
+   11         Structure5_amp  0.00  0.00      0.00      0.05     �  0.42  0.00  0.42  0.42  4.43E-3
+   12       Structure5_contr  0.06  0.00      0.05      0.00  0.00  0.00  0.00  0.00  0.00  4.88E-3
+   13      Structure2_amp_c4  0.00  0.00      0.00      0.00  0.00  0.00  0.00  0.00  0.00  5.50E-3
+   14    Structure2_contr_c4  0.11  0.00      0.13      0.00  0.25  0.00  0.67  0.00  0.00  5.69E-3
+   15  Structure2_contr_p2n6  0.00  0.00      0.00      0.11     �  0.53  0.00  0.53  0.53  3.35E-3
+   16  Structure2_contr_p6n2  0.00  0.00      0.00      0.08     �  0.42  0.00  0.42  0.42  7.96E-3
+   17        ComplexMatrix_1  0.02  0.02      0.04      0.02  0.14  0.10  1.70  0.52  0.52     0.02
+
+WORST CASE
+
+All edges
+
+  Sim              Structure    AP    AR   AHP   AHR   2CP   2CR  2CFP  2CFN  2CTP     E
+    1         Structure1_amp  1.00  1.00  1.00  1.00     �     �  0.00  0.00  0.00  0.06
+    2       Structure1_contr  1.00  1.00  0.83  0.83     �     �  0.00  0.00  0.00  0.04
+    3         Structure2_amp  0.80  1.00  0.83  1.00  1.00  1.00  0.00  0.00  1.00  0.03
+    4       Structure2_contr  0.67  1.00  0.71  1.00  1.00  1.00  0.00  0.00  1.00  0.03
+    5     Structure3_amp_amp  1.00  1.00  1.00  1.00     �     �  0.00  0.00  0.00  0.07
+    6   Structure3_amp_contr  1.00  1.00  0.89  0.89     �     �  0.00  0.00  0.00  0.07
+    7   Structure3_contr_amp  1.00  1.00  0.82  0.89     �     �  0.00  0.00  0.00  0.07
+    8     Structure4_amp_amp  1.00  1.00  1.00  1.00     �     �  0.00  0.00  0.00  0.08
+    9   Structure4_amp_contr  1.00  1.00  0.90  0.90     �     �  0.00  0.00  0.00  0.08
+   10   Structure4_contr_amp  1.00  1.00  0.90  0.90     �     �  0.00  0.00  0.00  0.07
+   11         Structure5_amp  1.00  1.00  1.00  0.88     �  0.00  0.00  0.00  0.00  0.06
+   12       Structure5_contr  0.88  1.00  0.89  1.00  1.00  1.00  0.00  0.00  1.00  0.06
+   13      Structure2_amp_c4  1.00  1.00  1.00  1.00  1.00  1.00  0.00  0.00  1.00  0.03
+   14    Structure2_contr_c4  0.67  1.00  0.56  1.00  0.33  1.00  0.00  0.00  1.00  0.03
+   15  Structure2_contr_p2n6  1.00  1.00  1.00  0.80  1.00  0.00  0.00  0.00  0.00  0.03
+   16  Structure2_contr_p6n2  1.00  1.00  1.00  0.80     �  0.00  0.00  0.00  0.00  0.03
+   17        ComplexMatrix_1  0.96  0.91  0.87  0.90  0.44  0.80  1.00  0.00  4.00  0.56
+

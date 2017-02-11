@@ -236,16 +236,6 @@ public class SemBicScoreImages2 implements Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-        this.penaltyDiscount = alpha;
-    }
-
     // Calculates the BIC score.
     private double score(double residualVariance, int n, double logn, int p, double c) {
         int cols = getCovariances(0).getDimension();

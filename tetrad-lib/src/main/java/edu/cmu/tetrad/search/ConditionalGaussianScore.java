@@ -126,16 +126,6 @@ public class ConditionalGaussianScore implements Score {
     }
 
     @Override
-    public double getParameter1() {
-        return 0;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-
-    }
-
-    @Override
     public Node getVariable(String targetName) {
         for (Node node : variables) {
             if (node.getName().equals(targetName)) {

@@ -101,7 +101,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         this.semBicScores = semBicScores;
         this.variables = variables;
         this.sampleSize = semBicScores.get(0).getSampleSize();
-        setParameter1(2.0);
     }
 
 
@@ -235,19 +234,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     @Override
     public List<Node> getVariables() {
         return variables;
-    }
-
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
-    }
-
-    @Override
-    public void setParameter1(double value) {
-            this.penaltyDiscount = value;
-        for (SemBicScore score : semBicScores) {
-            score.setParameter1(value);
-        }
     }
 
     @Override
