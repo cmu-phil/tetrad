@@ -128,11 +128,6 @@ public final class Fang implements GraphSearch {
                 double[] xy = new double[n];
                 double[] r = new double[n];
 
-                int n1 = 0;
-                int n2 = 0;
-                int n3 = 0;
-                int n4 = 0;
-
                 for (int k = 0; k < n; k++) {
                     double x = xData[k];
                     double y = yData[k];
@@ -142,21 +137,15 @@ public final class Fang implements GraphSearch {
                     p3[k] = -pos(-x) * y;
                     p4[k] = x * -pos(-y);
 
-                    if (p1[k] != 0) n1++;
-                    if (p2[k] != 0) n2++;
-                    if (p3[k] != 0) n3++;
-                    if (p4[k] != 0) n4++;
-
                     xy[k] = x * y;
                     r[k] = g(x) * y - x * g(y);
                 }
 
                 double cov = mean(xy, n);
-
-                double cov1 = mean(p1, n1);
-                double cov2 = mean(p2, n2);
-                double cov3 = mean(p3, n3);
-                double cov4 = mean(p4, n4);
+                double cov1 = mean(p1, n);
+                double cov2 = mean(p2, n);
+                double cov3 = mean(p3, n);
+                double cov4 = mean(p4, n);
 
                 double t1 = (mean(p1, n) - 0.0) / (sd(r, n) / sqrt(n));
                 double t2 = (mean(p2, n) - 0.0) / (sd(r, n) / sqrt(n));
@@ -190,7 +179,7 @@ public final class Fang implements GraphSearch {
                     } else if (numZero > 0 && numNonZero > 0) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
-                    } else if (ng && abs(tr) < T) {
+                    } else if (ng && abs(tr) <= T) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
                     } else if (ng && tr > T) {
