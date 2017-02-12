@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import javax.swing.*;
 
-import edu.cmu.tetradapp.app.hpc.LoadHpcGraphJson;
+import edu.cmu.tetradapp.app.hpc.action.LoadHpcGraphJsonAction;
 
 
 /**
@@ -48,7 +48,7 @@ final class GraphFileMenu extends JMenu {
         load.add(new LoadGraphJson(editable, "Json..."));
         // Load from remote HPC servers
         load.addSeparator();
-        load.add(new LoadHpcGraphJson(editable, "Remote Json from HPC..."));
+        load.add(new LoadHpcGraphJsonAction(editable, "Remote Json from HPC..."));
         
         JMenu save = new JMenu("Save...");
         add(save);

@@ -50,7 +50,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.app.TetradDesktop;
-import edu.cmu.tetradapp.app.hpc.HpcJobManager;
+import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
@@ -902,8 +902,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	runner.getGraphs().add(graph);
 	graphEditor.replace(graphs);
 	graphEditor.validate();
+	System.out.println("Remote graph result assigned to runner!");
 	firePropertyChange("modelChanged", null, null);
-	//pane.setSelectedComponent(graphEditor);
+	pane.setSelectedComponent(graphEditor);
     }
 
     public void setAlgorithmErrorResult(String errorResult) {

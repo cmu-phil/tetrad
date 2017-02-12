@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.manager;
 
 import java.util.List;
 

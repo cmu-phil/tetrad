@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.action;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -21,6 +21,8 @@ import javax.swing.event.ListSelectionListener;
 
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.app.hpc.editor.HpcAccountEditor;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 

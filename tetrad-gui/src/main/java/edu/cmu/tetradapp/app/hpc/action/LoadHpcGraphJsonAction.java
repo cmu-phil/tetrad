@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.action;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -29,6 +29,10 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountService;
+import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
+import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.editor.GraphEditable;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
@@ -43,7 +47,7 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class LoadHpcGraphJson extends AbstractAction {
+public class LoadHpcGraphJsonAction extends AbstractAction {
 
     private static final long serialVersionUID = 3640705055173728331L;
 
@@ -56,7 +60,7 @@ public class LoadHpcGraphJson extends AbstractAction {
 
     private HpcAccount hpcAccount = null;
 
-    public LoadHpcGraphJson(GraphEditable graphEditable, String title) {
+    public LoadHpcGraphJsonAction(GraphEditable graphEditable, String title) {
 	super(title);
 
 	if (graphEditable == null) {

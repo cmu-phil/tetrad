@@ -25,8 +25,8 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import edu.cmu.tetradapp.app.hpc.HpcAccountManager;
-import edu.cmu.tetradapp.app.hpc.HpcJobActivityAction;
+import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 import java.awt.event.ActionEvent;

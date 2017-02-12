@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.task;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountService;
+import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
+import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
 import edu.pitt.dbmi.ccd.rest.client.dto.data.DataFile;
@@ -38,6 +42,13 @@ public class HpcJobPreProcessTask implements Runnable {
     @Override
     public void run() {
 	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
+	while (desktop == null) {
+	    try {
+		Thread.sleep(1000);
+	    } catch (InterruptedException e) {
+		e.printStackTrace();
+	    }
+	}
 	final HpcAccountManager hpcAccountManager = desktop
 		.getHpcAccountManager();
 	final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
@@ -66,11 +77,17 @@ public class HpcJobPreProcessTask implements Runnable {
 	    // Get file's MD5 hash and use it as its identifier
 	    String md5 = algorParamReq.getDatasetMd5();
 
+	    // Initiate data uploading progress
+	    hpcJobManager.updateUploadFileProgress(datasetPath, 0);
+
 	    Path prior = null;
 	    if (priorKnowledgePath != null) {
 		log = "priorKnowledgePath: " + priorKnowledgePath;
 		System.out.println(log);
 		prior = Paths.get(priorKnowledgePath);
+
+		// Initiate prior knowledge uploading progress
+		hpcJobManager.updateUploadFileProgress(priorKnowledgePath, 0);
 	    }
 
 	    // Check if this dataset already exists with this md5 hash
@@ -93,13 +110,15 @@ public class HpcJobPreProcessTask implements Runnable {
 		int progress;
 		while ((progress = dataUploadService.getUploadJobStatus(file
 			.toAbsolutePath().toString())) < 100) {
-		    //System.out.println("Uploading "
-			//    + file.toAbsolutePath().toString() + " Progress: "
-			//    + progress + "%");
+		    // System.out.println("Uploading "
+		    // + file.toAbsolutePath().toString() + " Progress: "
+		    // + progress + "%");
 		    hpcJobManager.updateUploadFileProgress(datasetPath,
 			    progress);
 		    Thread.sleep(10);
 		}
+
+		hpcJobManager.updateUploadFileProgress(datasetPath, progress);
 
 		log = "Finished uploading " + file.getFileName().toString();
 		System.out.println(log);
@@ -159,13 +178,13 @@ public class HpcJobPreProcessTask implements Runnable {
 		    while ((progress = dataUploadService
 			    .getUploadJobStatus(prior.toAbsolutePath()
 				    .toString())) < 100) {
-			//System.out.println("Uploading "
-			//	+ prior.toAbsolutePath().toString()
-			//	+ " Progress: " + progress + "%");
 			hpcJobManager.updateUploadFileProgress(
 				priorKnowledgePath, progress);
 			Thread.sleep(10);
 		    }
+
+		    hpcJobManager.updateUploadFileProgress(priorKnowledgePath,
+			    progress);
 
 		    priorKnowledgeFile = HpcAccountUtils
 			    .getRemotePriorKnowledgeFile(hpcAccountManager,
@@ -235,11 +254,11 @@ public class HpcJobPreProcessTask implements Runnable {
 	    hpcJobInfo.setResultFileName(jobInfo.getResultFileName());
 	    hpcJobInfo.setResultJsonFileName(jobInfo.getResultJsonFileName());
 	    hpcJobInfo.setErrorResultFileName(jobInfo.getErrorResultFileName());
-	    
+
 	    hpcJobManager.updateHpcJobInfo(hpcJobInfo);
 
 	    log = "Submitted job to " + hpcAccount.getConnectionName();
-
+	    System.out.println(log);
 	    hpcJobManager.logHpcJobLogDetail(hpcJobLog, 0, log);
 
 	    System.out.println("HpcJobPreProcessTask: HpcJobInfo: id : "
@@ -254,6 +273,10 @@ public class HpcJobPreProcessTask implements Runnable {
 	    e.printStackTrace();
 	}
 
+    }
+
+    public HpcJobInfo getHpcJobInfo() {
+	return hpcJobInfo;
     }
 
 }

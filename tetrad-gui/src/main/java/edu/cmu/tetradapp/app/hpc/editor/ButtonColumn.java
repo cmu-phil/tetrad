@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.editor;
 
 import java.awt.*;
 import java.awt.event.*;

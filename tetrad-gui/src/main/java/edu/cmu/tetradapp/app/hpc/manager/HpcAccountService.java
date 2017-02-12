@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.manager;
 
 import edu.pitt.dbmi.ccd.rest.client.RestHttpsClient;
 import edu.pitt.dbmi.ccd.rest.client.service.data.DataUploadService;

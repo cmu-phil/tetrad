@@ -1,5 +1,7 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.manager;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -10,11 +12,18 @@ import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.http.client.ClientProtocolException;
+
 import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.app.hpc.task.HpcJobPreProcessTask;
+import edu.cmu.tetradapp.app.hpc.task.HpcJobsScheduledTask;
+import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.pitt.dbmi.ccd.rest.client.dto.algo.JobInfo;
+import edu.pitt.dbmi.ccd.rest.client.dto.algo.ResultFile;
 import edu.pitt.dbmi.ccd.rest.client.service.jobqueue.JobQueueService;
+import edu.pitt.dbmi.ccd.rest.client.service.result.ResultService;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
@@ -83,7 +92,7 @@ public class HpcJobManager {
 	return pendingHpcJobInfoMap;
     }
 
-    private void resumePreProcessJobs() {
+    private synchronized void resumePreProcessJobs() {
 	// Lookup on DB for HpcJobInfo with status -1 (Pending)
 
 	List<HpcJobInfo> pendingHpcJobInfo = hpcJobInfoService.findByStatus(-1);
@@ -123,7 +132,8 @@ public class HpcJobManager {
 	timer.schedule(hpcScheduledTask, 1000, TIME_INTERVAL);
     }
 
-    public void submitNewHpcJobToQueue(final HpcJobInfo hpcJobInfo,
+    public synchronized void submitNewHpcJobToQueue(
+	    final HpcJobInfo hpcJobInfo,
 	    final GeneralAlgorithmEditor generalAlgorithmEditor) {
 
 	hpcJobInfoService.add(hpcJobInfo);
@@ -214,7 +224,7 @@ public class HpcJobManager {
 	appendHpcJobLogDetail(hpcJobLogDetail);
     }
 
-    public void updateUploadFileProgress(final String datasetPath,
+    public synchronized void updateUploadFileProgress(final String datasetPath,
 	    int percentageProgress) {
 	uploadFileProgressMap.put(datasetPath, percentageProgress);
     }
@@ -248,7 +258,7 @@ public class HpcJobManager {
 	return hpcGraphResultMap.get(hpcJobInfo);
     }
 
-    public void addNewSubmittedHpcJob(final HpcJobInfo hpcJobInfo) {
+    public synchronized void addNewSubmittedHpcJob(final HpcJobInfo hpcJobInfo) {
 	HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 	System.out.println("addNewSubmittedHpcJob: connection: "
 		+ hpcAccount.getConnectionName());
@@ -266,10 +276,10 @@ public class HpcJobManager {
 	hpcJobInfos.add(hpcJobInfo);
 	submittedHpcJobInfoMap.put(hpcAccount, hpcJobInfos);
 
-	removedPendingHpcJob(hpcJobInfo);
+	removePendingHpcJob(hpcJobInfo);
     }
 
-    public void removedFinishedHpcJob(final HpcJobInfo hpcJobInfo) {
+    public synchronized void removeFinishedHpcJob(final HpcJobInfo hpcJobInfo) {
 	HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 	System.out.println("removedFinishedHpcJob: connection: "
 		+ hpcAccount.getConnectionName());
@@ -291,7 +301,7 @@ public class HpcJobManager {
 	hpcGraphResultMap.remove(hpcJobInfo);
     }
 
-    public void removedPendingHpcJob(final HpcJobInfo hpcJobInfo) {
+    public synchronized void removePendingHpcJob(final HpcJobInfo hpcJobInfo) {
 	HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 	System.out.println("removedPendingHpcJob: connection: "
 		+ hpcAccount.getConnectionName());
@@ -315,7 +325,8 @@ public class HpcJobManager {
 	return submittedHpcJobInfoMap;
     }
 
-    public void updateSubmittedHpcJobInfo(final HpcJobInfo hpcJobInfo) {
+    public synchronized void updateSubmittedHpcJobInfo(
+	    final HpcJobInfo hpcJobInfo) {
 	final HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 	Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
@@ -324,8 +335,8 @@ public class HpcJobManager {
 	}
     }
 
-    public HpcAccountService getHpcAccountService(final HpcAccount hpcAccount)
-	    throws Exception {
+    public synchronized HpcAccountService getHpcAccountService(
+	    final HpcAccount hpcAccount) throws Exception {
 	HpcAccountService hpcAccountService = hpcAccountServiceMap
 		.get(hpcAccount);
 	if (hpcAccountService == null) {
@@ -336,11 +347,11 @@ public class HpcJobManager {
 	return hpcAccountService;
     }
 
-    public void removeHpcAccountService(final HpcAccount hpcAccount) {
+    public synchronized void removeHpcAccountService(final HpcAccount hpcAccount) {
 	hpcAccountServiceMap.remove(hpcAccount);
     }
 
-    public Map<HpcAccount, Set<HpcJobInfo>> getFinishedHpcJobInfoMap() {
+    public synchronized Map<HpcAccount, Set<HpcJobInfo>> getFinishedHpcJobInfoMap() {
 	final Map<HpcAccount, Set<HpcJobInfo>> finishedHpcJobInfoMap = new HashMap<>();
 	// Lookup on DB for HpcJobInfo with status 3 (Finished); 4 (Killed);
 	// 5 (Result Downloaded); 6 (Error Result Downloaded);
@@ -390,6 +401,49 @@ public class HpcJobManager {
 
 	return null;
 
+    }
+
+    public List<JobInfo> getRemoteActiveJobs(
+	    final HpcAccountManager hpcAccountManager,
+	    final HpcAccount hpcAccount) throws ClientProtocolException,
+	    URISyntaxException, IOException, Exception {
+	HpcAccountService hpcAccountService = getHpcAccountService(hpcAccount);
+	JobQueueService jobQueueService = hpcAccountService
+		.getJobQueueService();
+	return jobQueueService.getActiveJobs(HpcAccountUtils.getJsonWebToken(
+		hpcAccountManager, hpcAccount));
+    }
+
+    public Set<ResultFile> listRemoteAlgorithmResultFiles(
+	    final HpcAccountManager hpcAccountManager,
+	    final HpcAccount hpcAccount) throws ClientProtocolException,
+	    URISyntaxException, IOException, Exception {
+	HpcAccountService hpcAccountService = getHpcAccountService(hpcAccount);
+	ResultService resultService = hpcAccountService.getResultService();
+	return resultService.listAlgorithmResultFiles(HpcAccountUtils
+		.getJsonWebToken(hpcAccountManager, hpcAccount));
+    }
+
+    public String downloadAlgorithmResultFile(
+	    final HpcAccountManager hpcAccountManager,
+	    final HpcAccount hpcAccount, final String errorResultFileName)
+	    throws ClientProtocolException, URISyntaxException, IOException,
+	    Exception {
+	HpcAccountService hpcAccountService = getHpcAccountService(hpcAccount);
+	ResultService resultService = hpcAccountService.getResultService();
+	return resultService.downloadAlgorithmResultFile(errorResultFileName,
+		HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
+    }
+
+    public synchronized void removeHpcJobInfoTransaction(
+	    final HpcJobInfo hpcJobInfo) {
+	HpcJobLog hpcJobLog = hpcJobLogService.findByHpcJobInfo(hpcJobInfo);
+	List<HpcJobLogDetail> logDetailList = hpcJobLogDetailService
+		.findByHpcJobLog(hpcJobLog);
+	for (HpcJobLogDetail logDetail : logDetailList) {
+	    hpcJobLogDetailService.remove(logDetail);
+	}
+	hpcJobLogService.remove(hpcJobLog);
     }
 
 }

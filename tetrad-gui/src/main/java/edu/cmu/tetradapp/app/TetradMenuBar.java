@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.app.hpc.HpcAccountSettingAction;
+import edu.cmu.tetradapp.app.hpc.action.HpcAccountSettingAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 

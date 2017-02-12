@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.app.hpc;
+package edu.cmu.tetradapp.app.hpc.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -21,6 +21,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
+import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 
 /**
