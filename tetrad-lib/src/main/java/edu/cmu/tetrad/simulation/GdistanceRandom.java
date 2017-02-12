@@ -18,6 +18,10 @@ public class GdistanceRandom {
     private int numEdges2;
     private boolean verbose = false;
 
+    double xdist = 2.4;
+    double ydist = 2.4;
+    double zdist = 2;
+
     //**************CONSTRUCTORS*********************//
     public GdistanceRandom(DataSet inMap) {
         setLocationMap(inMap);
@@ -55,7 +59,8 @@ public class GdistanceRandom {
 
         //run Gdistance on these two graphs
         if (verbose) System.out.println("running Gdistance on the patterns");
-        return Gdistance.distances(graph1, graph2, locationMap);
+        Gdistance gdist = new Gdistance(locationMap,xdist,ydist,zdist);
+        return gdist.distances(graph1, graph2);
     }
 
     //**********Methods for setting values of private variables**************//
