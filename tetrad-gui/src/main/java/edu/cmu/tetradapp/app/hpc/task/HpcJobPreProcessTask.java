@@ -139,6 +139,9 @@ public class HpcJobPreProcessTask implements Runnable {
 	    } else {
 		log = "Skipped uploading " + file.getFileName().toString();
 		System.out.println(log);
+
+		hpcJobManager.updateUploadFileProgress(datasetPath, -1);
+
 		hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 		if (dataFile.getFileSummary().getVariableType() == null) {

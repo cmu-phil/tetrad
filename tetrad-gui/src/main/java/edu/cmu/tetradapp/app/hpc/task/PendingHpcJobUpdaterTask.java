@@ -97,6 +97,9 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 		if (dataUploadProgress > -1 && dataUploadProgress < 100) {
 		    model.setValueAt("" + dataUploadProgress + "%", modelRow,
 			    HpcJobActivityEditor.DATA_UPLOAD_COLUMN);
+		} else if(dataUploadProgress == -1) {
+		    model.setValueAt("Skipped", modelRow,
+			    HpcJobActivityEditor.DATA_UPLOAD_COLUMN);
 		} else {
 		    model.setValueAt("Done", modelRow,
 			    HpcJobActivityEditor.DATA_UPLOAD_COLUMN);

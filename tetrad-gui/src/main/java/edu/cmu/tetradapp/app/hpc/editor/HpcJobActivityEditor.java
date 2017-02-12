@@ -67,7 +67,7 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 
     private int PENDING_TIME_INTERVAL = 100;
 
-    private int SUBMITTED_TIME_INTERVAL = 10000;
+    private int SUBMITTED_TIME_INTERVAL = 1000;
 
     private JTable jobsTable;
 
@@ -203,14 +203,14 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 	tabbedPane.add("Active Jobs", activeJobsPanel);
 
 	final KillHpcJobAction killJobAction = new KillHpcJobAction(
-		null);
+		this);
 
 	JPanel finishedJobsPanel = new JPanel(new BorderLayout());
 
 	tabbedPane.add("Finished Jobs", finishedJobsPanel);
 
 	final DeleteHpcJobInfoAction deleteJobAction = new DeleteHpcJobInfoAction(
-		null);
+		this);
 
 	ChangeListener changeListener = new ChangeListener() {
 

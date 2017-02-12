@@ -83,11 +83,14 @@ public class SubmittedHpcJobUpdaterTask extends TimerTask {
 		    .getSubmittedHpcJobInfoMap();
 	    Set<HpcJobInfo> submittedJobSet = submittedHpcJobInfoMap
 		    .get(hpcJobInfo.getHpcAccount());
-	    for (HpcJobInfo submittedJob : submittedJobSet) {
-		if (submittedJob.getId() == hpcJobInfo.getId()) {
-		    hpcJobInfo = submittedJob;
-		    System.out.println("Found submittedJob in the submittedHpcJobInfoMap id matched!");
-		    continue;
+	    if (submittedJobSet != null) {
+		for (HpcJobInfo submittedJob : submittedJobSet) {
+		    if (submittedJob.getId() == hpcJobInfo.getId()) {
+			hpcJobInfo = submittedJob;
+			System.out
+				.println("Found submittedJob in the submittedHpcJobInfoMap id matched!");
+			continue;
+		    }
 		}
 	    }
 

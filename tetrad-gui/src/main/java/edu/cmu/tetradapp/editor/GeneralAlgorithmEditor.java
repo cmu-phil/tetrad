@@ -50,6 +50,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -73,6 +74,8 @@ import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -115,7 +118,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JLabel whatYouChose;
 
     private final TetradDesktop desktop;
-    private HpcJobInfo hpcJobInfo = null;
+    private HpcJobInfo hpcJobInfo;
+
+    private String jsonResult;
+    private String errorResult;
 
     // =========================CONSTRUCTORS============================//
 
@@ -702,7 +708,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
 	    // Get file's MD5 hash and use it as its identifier
 	    String datasetMd5 = MessageDigestHash.computeMD5Hash(file);
-	    
+
 	    progressTextArea.replaceRange("Done", progressTextLength,
 		    progressTextArea.getText().length());
 	    progressTextArea.append(newline);
@@ -740,11 +746,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	    }
 	    // Get knowledge file's MD5 hash and use it as its identifier
 	    String priorKnowledgeMd5 = null;
-	    if(prior != null){
+	    if (prior != null) {
 		priorKnowledgeMd5 = MessageDigestHash.computeMD5Hash(prior);
 	    }
 
-	    
 	    // *******************************************
 	    // Algorithm Parameter Preparation Progress *
 	    // *******************************************
@@ -882,6 +887,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	    progressTextArea.append(newline);
 	    progressTextArea.updateUI();
 
+	    this.jsonResult = null;
+	    this.errorResult = null;
+
+	    JOptionPane.showMessageDialog(this,
+		    "The " + hpcJobInfo.getAlgorithmName() + " job on the "
+			    + hpcJobInfo.getHpcAccount().getConnectionName()
+			    + " node is in the queue successfully!");
+
 	} catch (IOException e1) {
 	    e1.printStackTrace();
 	} finally {
@@ -889,14 +902,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	    progressDialog.dispose();
 	}
 
+	(new HpcJobActivityAction("")).actionPerformed(null);
+
     }
 
     public void setAlgorithmResult(String jsonResult) {
-	Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
-	List<Graph> graphs = new ArrayList<>();
+	this.jsonResult = jsonResult;
+
+	// JOptionPane.showMessageDialog(null, jsonResult);
+
+	final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
+	final List<Graph> graphs = new ArrayList<>();
 	graphs.add(graph);
 	int size = runner.getGraphs().size();
-	for(int index=0;index<size;index++){
+	for (int index = 0; index < size; index++) {
 	    runner.getGraphs().remove(index);
 	}
 	runner.getGraphs().add(graph);
@@ -908,6 +927,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     public void setAlgorithmErrorResult(String errorResult) {
+	this.errorResult = errorResult;
+
+	JOptionPane.showMessageDialog(null, jsonResult);
+
 	throw new IllegalArgumentException(errorResult);
     }
 
