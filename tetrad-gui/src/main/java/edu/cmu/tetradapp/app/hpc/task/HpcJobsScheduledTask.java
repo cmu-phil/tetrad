@@ -62,6 +62,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 		    + hpcAccount.getConnectionName());
 
 	    Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfos.get(hpcAccount);
+	    // Pid-HpcJobInfo map
 	    Map<Long, HpcJobInfo> hpcJobInfoMap = new HashMap<>();
 	    for (HpcJobInfo hpcJobInfo : hpcJobInfos) {
 		if (hpcJobInfo.getPid() != null) {
@@ -118,9 +119,6 @@ public class HpcJobsScheduledTask extends TimerTask {
 
 			    hpcJobManager.logHpcJobLogDetail(hpcJobLog,
 				    remoteStatus, log);
-
-			    hpcJobInfos.remove(hpcJobInfo);
-			    hpcJobInfoMap.remove(pid);
 			}
 		    }
 		}

@@ -41,7 +41,8 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 	if (hpcJobActivityEditor.selectedTabbedPaneIndex() != 0)
 	    return;
 
-	final DefaultTableModel model  = (DefaultTableModel)hpcJobActivityEditor.getJobsTableModel();
+	final DefaultTableModel model = (DefaultTableModel) hpcJobActivityEditor
+		.getJobsTableModel();
 
 	Set<HpcJobInfo> pendingDisplayHpcJobInfoSet = hpcJobActivityEditor
 		.getPendingDisplayHpcJobInfoSet();
@@ -60,12 +61,6 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 	    final Set<HpcJobInfo> pendingDisplayHpcJobInfoSet,
 	    final DefaultTableModel model) {
 
-	Map<HpcAccount, Set<HpcJobInfo>> pendingHpcJobInfoMap = hpcJobManager
-		.getPendingHpcJobInfoMap();
-
-	Map<HpcAccount, Set<HpcJobInfo>> submittedHpcJobInfoMap = hpcJobManager
-		.getSubmittedHpcJobInfoMap();
-
 	Map<Long, Integer> rowMap = new HashMap<>();
 	for (int row = 0; row < model.getRowCount(); row++) {
 	    rowMap.put(
@@ -79,12 +74,11 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 
 	    int status = hpcJobInfo.getStatus();
 
-	    if (!rowMap.containsKey(hpcJobInfo.getId())){
+	    if (!rowMap.containsKey(hpcJobInfo.getId())) {
 		continue;
 	    }
 
 	    int modelRow = rowMap.get(hpcJobInfo.getId());
-
 
 	    // In case the job was accidentally added to the map OR the kill
 	    // request was issued
@@ -102,7 +96,7 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 
 		if (dataUploadProgress > -1 && dataUploadProgress < 100) {
 		    model.setValueAt("" + dataUploadProgress + "%", modelRow,
-			    HpcJobActivityEditor.DATA_UPLOAD_COLUMN);		    
+			    HpcJobActivityEditor.DATA_UPLOAD_COLUMN);
 		} else {
 		    model.setValueAt("Done", modelRow,
 			    HpcJobActivityEditor.DATA_UPLOAD_COLUMN);
@@ -111,12 +105,13 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 		// Prior Knowledge uploading progress
 		String priorKnowledgePath = algorParamReq
 			.getPriorKnowledgePath();
-		
+
 		int priorKnowledgeUploadProgress = -1;
 		if (priorKnowledgePath != null) {
 
-		    System.out.println("priorKnowledgePath: " + priorKnowledgePath);
-		    
+		    System.out.println("priorKnowledgePath: "
+			    + priorKnowledgePath);
+
 		    priorKnowledgeUploadProgress = hpcJobManager
 			    .getUploadFileProgress(priorKnowledgePath);
 
@@ -137,12 +132,21 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 		if (dataUploadProgress == 100
 			&& (priorKnowledgeUploadProgress == -1 || priorKnowledgeUploadProgress == 100)) {
 
-		    // Is the job still stuck in the pre-processed schedule
-		    // task?
+		    System.out.println("HpcJobInfo Id: " + hpcJobInfo.getId()
+			    + " done with both uploading");
+
+		    Map<HpcAccount, Set<HpcJobInfo>> pendingHpcJobInfoMap = hpcJobManager
+			    .getPendingHpcJobInfoMap();
+
+		    Map<HpcAccount, Set<HpcJobInfo>> submittedHpcJobInfoMap = hpcJobManager
+			    .getSubmittedHpcJobInfoMap();
+
 		    if (pendingHpcJobInfoMap != null) {
 			Set<HpcJobInfo> pendingJobSet = pendingHpcJobInfoMap
 				.get(hpcJobInfo.getHpcAccount());
 
+			// Is the job still stuck in the pre-processed schedule
+			// task?
 			long id = -1;
 			for (HpcJobInfo pendingJob : pendingJobSet) {
 			    if (pendingJob.getId() == hpcJobInfo.getId()) {
@@ -151,22 +155,17 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 			    }
 			}
 
-			if (id != -1 && submittedHpcJobInfoMap != null) {
+			// The job is not in the pre-processed schedule task
+			if (id == -1 && submittedHpcJobInfoMap != null) {
 			    Set<HpcJobInfo> submittedJobSet = submittedHpcJobInfoMap
 				    .get(hpcJobInfo.getHpcAccount());
 
-			    // Is the job in the submitted schedule task
+			    // Is the job in the submitted schedule task?
 			    for (HpcJobInfo submittedJob : submittedJobSet) {
 				if (submittedJob.getId() == hpcJobInfo.getId()) {
 
-				    // Retrieve hpcJobInfo from DB
-				    // Better get it from the memory (map)
-				    hpcJobInfo = hpcJobManager
-					    .findHpcJobInfoById(hpcJobInfo
-						    .getId());
-
 				    // Status
-				    switch (hpcJobInfo.getStatus()) {
+				    switch (submittedJob.getStatus()) {
 				    case -1:
 					model.setValueAt(
 						"Pending",
@@ -194,7 +193,7 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 				    }
 
 				    // Submitted time
-				    if (hpcJobInfo.getSubmittedTime() != null) {
+				    if (submittedJob.getSubmittedTime() != null) {
 					model.setValueAt(
 						FilePrint
 							.fileTimestamp(hpcJobInfo
@@ -206,13 +205,13 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 
 				    // Hpc Pid
 				    model.setValueAt(
-					    hpcJobInfo.getPid(),
+					    submittedJob.getPid(),
 					    modelRow,
 					    HpcJobActivityEditor.ACTIVE_HPC_JOB_ID_COLUMN);
 
 				    // last update
 				    HpcJobLog hpcJobLog = hpcJobManager
-					    .getHpcJobLog(hpcJobInfo);
+					    .getHpcJobLog(submittedJob);
 				    model.setValueAt(
 					    FilePrint.fileTimestamp(hpcJobLog
 						    .getLastUpdatedTime()
@@ -221,7 +220,7 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 					    HpcJobActivityEditor.ACTIVE_LAST_UPDATED_COLUMN);
 
 				    // Remove from the pending queue
-				    notPendingJobAnymoreSet.add(hpcJobInfo);
+				    notPendingJobAnymoreSet.add(submittedJob);
 
 				    continue;
 				}

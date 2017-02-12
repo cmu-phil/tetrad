@@ -169,9 +169,7 @@ public class HpcJobManager {
 	hpcJobInfos.add(hpcJobInfo);
 	pendingHpcJobInfoMap.put(hpcAccount, hpcJobInfos);
 
-	executorService.submit(preProcessTask);
-
-	// (new HpcJobActivityAction("")).actionPerformed(null);
+	executorService.execute(preProcessTask);
     }
 
     public void stopHpcJobScheduler() {
@@ -291,7 +289,18 @@ public class HpcJobManager {
 		.println("removedFinishedHpcJob: pid: " + hpcJobInfo.getPid());
 	Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
-	    hpcJobInfos.remove(hpcJobInfo);
+	    
+	    System.out.println("submittedHpcJobInfoMap: hpcJobInfos not null");
+	    
+	    for (HpcJobInfo jobInfo : hpcJobInfos) {
+		if (jobInfo.getId() == hpcJobInfo.getId()) {
+		    
+		    System.out.println("Found hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
+		    
+		    hpcJobInfos.remove(jobInfo);
+		}
+	    }
+
 	    if (hpcJobInfos.isEmpty()) {
 		submittedHpcJobInfoMap.remove(hpcAccount);
 	    } else {
@@ -310,9 +319,21 @@ public class HpcJobManager {
 	System.out.println("removedPendingHpcJob: status: "
 		+ hpcJobInfo.getStatus());
 	System.out.println("removedPendingHpcJob: pid: " + hpcJobInfo.getPid());
+	
 	Set<HpcJobInfo> hpcJobInfos = pendingHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
-	    hpcJobInfos.remove(hpcJobInfo);
+	    
+	    System.out.println("removedPendingHpcJob: pendingHpcJobInfoMap: hpcJobInfos not null");
+	    
+	    for (HpcJobInfo jobInfo : hpcJobInfos) {
+		if (jobInfo.getId() == hpcJobInfo.getId()) {
+		    
+		    System.out.println("removedPendingHpcJob: Found hpcJobInfo in the pendingHpcJobInfoMap & removed it!");
+		    
+		    hpcJobInfos.remove(jobInfo);
+		}
+	    }
+
 	    if (hpcJobInfos.isEmpty()) {
 		pendingHpcJobInfoMap.remove(hpcAccount);
 	    } else {
@@ -330,6 +351,16 @@ public class HpcJobManager {
 	final HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
 	Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
+	    
+	    for (HpcJobInfo jobInfo : hpcJobInfos) {
+		if (jobInfo.getId() == hpcJobInfo.getId()) {
+		    
+		    System.out.println("updateSubmittedHpcJobInfo: Found hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
+		    
+		    hpcJobInfos.remove(jobInfo);
+		}
+	    }
+	    
 	    hpcJobInfos.add(hpcJobInfo);
 	    submittedHpcJobInfoMap.put(hpcAccount, hpcJobInfos);
 	}

@@ -67,7 +67,7 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 
     private int PENDING_TIME_INTERVAL = 100;
 
-    private int SUBMITTED_TIME_INTERVAL = 1000;
+    private int SUBMITTED_TIME_INTERVAL = 10000;
 
     private JTable jobsTable;
 
@@ -652,9 +652,7 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
     public synchronized void removePendingDisplayHpcJobInfo(
 	    final Set<HpcJobInfo> removingJobSet) {
 	for (final HpcJobInfo hpcJobInfo : removingJobSet) {
-	    for (Iterator<HpcJobInfo> it = pendingDisplayHpcJobInfoSet
-		    .iterator(); it.hasNext();) {
-		final HpcJobInfo pendingJob = it.next();
+	    for (HpcJobInfo pendingJob: pendingDisplayHpcJobInfoSet) {
 		if (hpcJobInfo.getId() == pendingJob.getId()) {
 		    pendingDisplayHpcJobInfoSet.remove(pendingJob);
 		    continue;
@@ -669,6 +667,9 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 
     public synchronized void addSubmittedDisplayHpcJobInfo(
 	    final Set<HpcJobInfo> submittedJobSet) {
+	for(HpcJobInfo job : submittedJobSet){
+	    System.out.println("addSubmittedDisplayHpcJobInfo: job: " + job.getId());
+	}
 	submittedDisplayHpcJobInfoSet.addAll(submittedJobSet);
     }
 

@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import edu.cmu.tetradapp.app.hpc.editor.HpcJobActivityEditor;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
 
@@ -38,7 +39,8 @@ public class SubmittedHpcJobUpdaterTask extends TimerTask {
 	if (hpcJobActivityEditor.selectedTabbedPaneIndex() != 0)
 	    return;
 
-	final DefaultTableModel model = (DefaultTableModel)hpcJobActivityEditor.getJobsTableModel();
+	final DefaultTableModel model = (DefaultTableModel) hpcJobActivityEditor
+		.getJobsTableModel();
 
 	Set<HpcJobInfo> submittedDisplayHpcJobInfoSet = hpcJobActivityEditor
 		.getSubmittedDisplayHpcJobInfoSet();
@@ -68,48 +70,59 @@ public class SubmittedHpcJobUpdaterTask extends TimerTask {
 
 	for (HpcJobInfo hpcJobInfo : submittedDisplayHpcJobInfoSet) {
 
-	    if (!rowMap.containsKey(hpcJobInfo.getId()))
+	    Long id = hpcJobInfo.getId();
+
+	    if (!rowMap.containsKey(id)) {
+		System.out.println("hpcJobInfo not found in rowMap");
 		continue;
+	    }
 
-	    // Retrieve hpcJobInfo from DB
-	    // Better get it from the memory (map)
-	    hpcJobInfo = hpcJobManager.findHpcJobInfoById(hpcJobInfo.getId());
+	    int modelRow = rowMap.get(id);
 
-	    int rowModel = rowMap.get(hpcJobInfo.getId());
+	    Map<HpcAccount, Set<HpcJobInfo>> submittedHpcJobInfoMap = hpcJobManager
+		    .getSubmittedHpcJobInfoMap();
+	    Set<HpcJobInfo> submittedJobSet = submittedHpcJobInfoMap
+		    .get(hpcJobInfo.getHpcAccount());
+	    for (HpcJobInfo submittedJob : submittedJobSet) {
+		if (submittedJob.getId() == hpcJobInfo.getId()) {
+		    hpcJobInfo = submittedJob;
+		    System.out.println("Found submittedJob in the submittedHpcJobInfoMap id matched!");
+		    continue;
+		}
+	    }
 
 	    int status = hpcJobInfo.getStatus();
+
+	    // Status
+	    switch (hpcJobInfo.getStatus()) {
+	    case -1:
+		model.setValueAt("Pending", modelRow,
+			HpcJobActivityEditor.STATUS_COLUMN);
+		break;
+	    case 0:
+		model.setValueAt("Submitted", modelRow,
+			HpcJobActivityEditor.STATUS_COLUMN);
+		break;
+	    case 1:
+		model.setValueAt("Running", modelRow,
+			HpcJobActivityEditor.STATUS_COLUMN);
+		break;
+	    case 2:
+		model.setValueAt("Kill Request", modelRow,
+			HpcJobActivityEditor.STATUS_COLUMN);
+		break;
+	    }
+
+	    // last update
+	    HpcJobLog hpcJobLog = hpcJobManager.getHpcJobLog(hpcJobInfo);
+	    model.setValueAt(FilePrint.fileTimestamp(hpcJobLog
+		    .getLastUpdatedTime().getTime()), modelRow,
+		    HpcJobActivityEditor.ACTIVE_LAST_UPDATED_COLUMN);
 
 	    // In case the job was accidentally added to the map OR the job
 	    // was finished.
 	    if (status > 2) {
 		finishedJobSet.add(hpcJobInfo);
-	    } else {
-		// Status
-		switch (hpcJobInfo.getStatus()) {
-		case -1:
-		    model.setValueAt("Pending", rowModel,
-			    HpcJobActivityEditor.STATUS_COLUMN);
-		    break;
-		case 0:
-		    model.setValueAt("Submitted", rowModel,
-			    HpcJobActivityEditor.STATUS_COLUMN);
-		    break;
-		case 1:
-		    model.setValueAt("Running", rowModel,
-			    HpcJobActivityEditor.STATUS_COLUMN);
-		    break;
-		case 2:
-		    model.setValueAt("Kill Request", rowModel,
-			    HpcJobActivityEditor.STATUS_COLUMN);
-		    break;
-		}
-
-		// last update
-		HpcJobLog hpcJobLog = hpcJobManager.getHpcJobLog(hpcJobInfo);
-		model.setValueAt(FilePrint.fileTimestamp(hpcJobLog
-			.getLastUpdatedTime().getTime()), rowModel,
-			HpcJobActivityEditor.ACTIVE_LAST_UPDATED_COLUMN);
-
 	    }
 
 	}
