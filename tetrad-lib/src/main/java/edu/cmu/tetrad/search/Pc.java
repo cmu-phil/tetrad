@@ -40,7 +40,7 @@ import java.util.Set;
 public class Pc implements GraphSearch {
 
     /**
-     * The independence test used for the PC search.
+     * The independence test used for the PC search.g
      */
     private IndependenceTest independenceTest;
 

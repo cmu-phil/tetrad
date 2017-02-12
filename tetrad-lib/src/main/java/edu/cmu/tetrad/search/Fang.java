@@ -22,15 +22,15 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.util.StatUtils.getRanks;
 import static edu.cmu.tetrad.util.StatUtils.mean;
 import static java.lang.Math.*;
 
@@ -62,6 +62,9 @@ public final class Fang implements GraphSearch {
 
     // For the T tests of equality and the Anderson-Darling tests.
     private double alpha = 0.05;
+
+    // Knowledge the the search will obey, of forbidden and required edges.
+    private IKnowledge knowledge = new Knowledge2();
 
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
@@ -110,13 +113,31 @@ public final class Fang implements GraphSearch {
         FasStableConcurrent fas = new FasStableConcurrent(null, test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
+        fas.setKnowledge(knowledge);
         Graph graph0 = fas.search();
+        SearchGraphUtils.pcOrientbk(knowledge, graph0, graph0.getNodes());
+
         Graph graph = new EdgeListGraph(variables);
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
+
+                if (graph0.getEdge(X, Y) != null) {
+                    if (graph0.getEdge(X, Y).isDirected()) {
+                        graph.addEdge(graph0.getEdge(X, Y));
+                        continue;
+                    }
+
+                    if (shouldGo(X, Y)) {
+                        graph.addDirectedEdge(Y, X);
+                        continue;
+                    } else if (shouldGo(X, Y)) {
+                        graph.addDirectedEdge(X, Y);
+                        continue;
+                    }
+                }
 
                 final double[] xData = colData[i];
                 final double[] yData = colData[j];
@@ -169,18 +190,40 @@ public final class Fang implements GraphSearch {
                 if (abs(t3) > T) numNonZero++;
                 if (abs(t4) > T) numNonZero++;
 
-                if (abs(tr) > 10 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
-                    if (signum(cov1) == -signum(cov)
+                if (abs(tr) > 20 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
+                    if ((signum(cov1) == -signum(cov)
                             || signum(cov2) == -signum(cov)
                             || signum(cov3) == -signum(cov)
-                            || signum(cov4) == -signum(cov)) {
+                            || signum(cov4) == -signum(cov)) && !(shouldGo(X, Y) || shouldGo(Y, X))) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.RED);
+                        edge2.setLineColor(Color.RED);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (numZero > 0 && numNonZero > 0 && !(shouldGo(X, Y) || shouldGo(Y, X))) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.GREEN);
+                        edge2.setLineColor(Color.GREEN);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (ng && abs(tr) <= T && !(shouldGo(X, Y) || shouldGo(Y, X))) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.BLACK);
+                        edge2.setLineColor(Color.BLACK);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (shouldGo(X, Y)) {
                         graph.addDirectedEdge(X, Y);
-                        graph.addDirectedEdge(Y, X);
-                    } else if (numZero > 0 && numNonZero > 0) {
-                        graph.addDirectedEdge(X, Y);
-                        graph.addDirectedEdge(Y, X);
-                    } else if (ng && abs(tr) <= T) {
-                        graph.addDirectedEdge(X, Y);
+                    } else if (shouldGo(Y, X)) {
                         graph.addDirectedEdge(Y, X);
                     } else if (ng && tr > T) {
                         graph.addDirectedEdge(X, Y);
@@ -257,6 +300,20 @@ public final class Fang implements GraphSearch {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * @return the current knowledge.
+     */
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * @param knowledge Knowledge of forbidden and required edges.
+     */
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     //======================================== PRIVATE METHODS ====================================//
 
     private boolean isNonGaussian(int i) {
@@ -287,6 +344,10 @@ public final class Fang implements GraphSearch {
         }
 
         return sum;
+    }
+
+    private boolean shouldGo(Node x, Node y) {
+        return knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName());
     }
 }
 

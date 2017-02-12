@@ -261,6 +261,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         sub.add(dataSets.get(j));
                     }
 
+                    Algorithm algorithm = getAlgorithm();
+
+                    if (algorithm instanceof HasKnowledge) {
+                        ((HasKnowledge) algorithm).setKnowledge(getKnowledge());
+                    }
+
                     graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
