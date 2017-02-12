@@ -150,6 +150,11 @@ public class ParamDescriptions {
         put("maxDistinctValuesDiscrete", new ParamDescription(
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
+
+        put("extraAdjacencyThreshold", new ParamDescription(
+                "Threshold for adding in extra adjcencies for control two-cycles",
+                10.0, 0.0, Double.MAX_VALUE));
+
     }
 
     public static ParamDescriptions instance() {

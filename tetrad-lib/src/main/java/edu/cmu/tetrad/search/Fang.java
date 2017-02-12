@@ -66,6 +66,9 @@ public final class Fang implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
+    // The threshold for adding in extra adjacencies for control two-cycles.
+    private double extraAdjacencyThreshold = 10;
+
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
      */
@@ -190,7 +193,7 @@ public final class Fang implements GraphSearch {
                 if (abs(t3) > T) numNonZero++;
                 if (abs(t4) > T) numNonZero++;
 
-                if (abs(tr) > 20 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
+                if (abs(tr) > extraAdjacencyThreshold || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
                     if ((signum(cov1) == -signum(cov)
                             || signum(cov2) == -signum(cov)
                             || signum(cov3) == -signum(cov)
@@ -312,6 +315,22 @@ public final class Fang implements GraphSearch {
      */
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    /**
+     * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
+     * @return This threshold, default 10.
+     */
+    public double getExtraAdjacencyThreshold() {
+        return extraAdjacencyThreshold;
+    }
+
+    /**
+     * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
+     * @param extraAdjacencyThreshold This threshold, default 10.
+     */
+    public void setExtraAdjacencyThreshold(double extraAdjacencyThreshold) {
+        this.extraAdjacencyThreshold = extraAdjacencyThreshold;
     }
 
     //======================================== PRIVATE METHODS ====================================//
