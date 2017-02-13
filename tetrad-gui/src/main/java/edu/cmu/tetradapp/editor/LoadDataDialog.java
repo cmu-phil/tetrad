@@ -382,10 +382,10 @@ final class LoadDataDialog extends JPanel {
         });
 
         // Put the list in a scrollable area
-        JScrollPane filesToReviewScrollPane = new JScrollPane(validationFileList);
-        filesToReviewScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+        JScrollPane filesToValidateScrollPane = new JScrollPane(validationFileList);
+        filesToValidateScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
-        filesToValidateBox.add(filesToReviewScrollPane);
+        filesToValidateBox.add(filesToValidateScrollPane);
 
         summaryContainer.add(filesToValidateBox);
 
@@ -399,9 +399,6 @@ final class LoadDataDialog extends JPanel {
 
         validationResultTextArea.setEditable(false);
         validationResultTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-        // Set the default content of validation for the default selected file index 0
-        setValidationResult(getValidationOutput(0, validationResults), validationResultTextArea);
 
         final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextArea);
         validationResultsBox.add(summaryScrollPane);
@@ -630,7 +627,7 @@ final class LoadDataDialog extends JPanel {
         validationResults.clear();
 
         for (int i = 0; i < loadedFiles.size(); i++) {
-            System.out.println("Showing validation results of file index = " + i);
+            System.out.println("Validating file index = " + i);
 
             List<String> validationResult;
 
@@ -653,12 +650,13 @@ final class LoadDataDialog extends JPanel {
 
             validationResults.add(validationResult);
 
-            // Get the formatted output string
-            String output = getValidationOutput(i, validationResults);
-
-            // Show the results in scrollable area
-            setValidationResult(output, validationResultTextArea);
         }
+
+        // Display validation result of the first file by default
+        // Get the formatted output string
+        String output = getValidationOutput(0, validationResults);
+        // Show the results in scrollable area
+        setValidationResult(output, validationResultTextArea);
     }
 
     /**
@@ -698,6 +696,8 @@ final class LoadDataDialog extends JPanel {
     }
 
     private String getValidationOutput(int index, List<List<String>> resultsList) {
+        System.out.println("Getting validation output of file index = " + index);
+
         String output = "";
 
         if (resultsList.isEmpty()) {
