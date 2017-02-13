@@ -644,6 +644,14 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
+    /**
+     * Convert string delimiter to char
+     *
+     * Joe's DelimiterType uses string, while Kevin's data reader takes char
+     *
+     * @param delimiterType
+     * @return
+     */
     private char getDelimiterTypeChar(DelimiterType delimiterType) {
         switch (delimiterType.toString()) {
             case "Whitespace":
@@ -667,7 +675,6 @@ final class DataLoaderSettings extends JPanel {
         } else if (spaceDelimiterRadioButton.isSelected()) {
             return DelimiterType.WHITESPACE;
         } else {
-//            return delimiterStringField.getText();
             throw new IllegalArgumentException("Unexpected Value delimiter selection.");
         }
     }
@@ -714,15 +721,21 @@ final class DataLoaderSettings extends JPanel {
         return maxIntegralDiscreteIntField.getValue();
     }
 
-    public DataValidation validateDataWithSettings(int fileIndex, File[] files) {
-        File dataFile = files[fileIndex];
+    /**
+     * Validate each file based on the specified settings
+     *
+     * @param file
+     * @return
+     */
+    public DataValidation validateDataWithSettings(File file) {
         char delimiter = getDelimiterTypeChar(getDelimiterType());
         char quoteChar = getQuoteChar();
         String comment = getCommentString();
         boolean hasHeader = isVarNamesFirstRow();
 
         if (tabularRadioButton.isSelected()) {
-            TabularDataFileValidation validation = new ContinuousTabularDataFileValidation(dataFile, delimiter);
+            // Using Kevin's data validation
+            TabularDataFileValidation validation = new ContinuousTabularDataFileValidation(file, delimiter);
             validation.setCommentMarker(comment);
             validation.setHasHeader(hasHeader);
             validation.setQuoteCharacter(quoteChar);
@@ -734,7 +747,7 @@ final class DataLoaderSettings extends JPanel {
     }
 
     /**
-     * Will use Kevin's fast data reader once it's ready - Zhou
+     * Joe's old data reader - Zhou
      *
      * @param fileIndex
      * @param files

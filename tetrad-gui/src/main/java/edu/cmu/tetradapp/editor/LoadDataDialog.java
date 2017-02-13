@@ -33,7 +33,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -52,6 +52,10 @@ import org.apache.commons.lang3.ArrayUtils;
 final class LoadDataDialog extends JPanel {
 
     private File[] files;
+
+    private List<List<String>> validationResults;
+
+    private List<String> failedFiles;
 
     private File[] newFilesArr;
 
@@ -116,6 +120,10 @@ final class LoadDataDialog extends JPanel {
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
         this.files = files;
+
+        this.validationResults = new ArrayList<>();
+
+        this.failedFiles = new ArrayList<>();
 
         this.fileTextArea = new JTextArea();
 
@@ -547,17 +555,14 @@ final class LoadDataDialog extends JPanel {
                 // Show finish button
                 loadButton.setVisible(true);
 
-                // Load data files and generate reviewing summary
-                List<String> failedFiles = loadAndReview();
+                // Validate all files and show error messages
+                validateAllFiles();
 
                 // Determine if enable the finish button or not
                 if (failedFiles.size() > 0) {
                     // Disable it
                     loadButton.setEnabled(false);
                 } else {
-                    // Load all files since all can be loaded successfully
-                    loadAll();
-
                     // Enable it
                     loadButton.setEnabled(true);
                 }
@@ -626,36 +631,25 @@ final class LoadDataDialog extends JPanel {
      *
      * @return
      */
-    private List<String> loadAndReview() {
-        List<String> failedFiles = new LinkedList<>();
-
+    private void validateAllFiles() {
         for (int i = 0; i < files.length; i++) {
-            DataValidation validation = dataLoaderSettings.validateDataWithSettings(i, files);
+            DataValidation validation = dataLoaderSettings.validateDataWithSettings(files[i]);
             validation.validate();
             if (validation.hasErrors()) {
-                failedFiles.addAll(validation.getErrors());
+                validationResults.add(i, validation.getErrors());
+                // Also add the file name to failed list
+                // this determines if to show the Load button
+                failedFiles.add(files[i].getName());
+            } else {
+                // Make sure it's a list
+                List<String> noErrorList = new ArrayList<>();
+                noErrorList.add("No error");
+                validationResults.add(i, noErrorList);
             }
-            if (validation.hasInfos()) {
-                failedFiles.addAll(validation.getInfos());
-            }
-        }
 
-        System.out.println(failedFiles);
-//        // Try to load each file and store the file name for failed loading
-//        for (int i = 0; i < files.length; i++) {
-//
-//            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, files);
-//            if (dataModel == null) {
-//                System.out.println("File index = " + i + " cannot be loaded due to error");
-//
-//                // Add the file name to failed list
-//                failedFiles.add(files[i].getName());
-//            } else {
-//                System.out.println("File index = " + i + " can be loaded successfully, but wi will only be loaded once all files can be loaded together");
-//            }
-//
-//        }
-        return failedFiles;
+            // Update the validation results
+            setValidationResult(i, validationResultTextArea);
+        }
     }
 
     /**
@@ -691,7 +685,21 @@ final class LoadDataDialog extends JPanel {
      * @param textArea
      */
     private void setValidationResult(int fileIndex, JTextArea textArea) {
-        textArea.setText(files[fileIndex].getName());
+        System.out.println(validationResults);
+        // When we first created the validation results listener, we'll just use
+        // the file name as the result info
+        if (validationResults.isEmpty()) {
+            textArea.setText(files[fileIndex].getName());
+        } else {
+            System.out.println("Showing validation results of file index = " + fileIndex);
+            String output = "Validation result:";
+            List<String> validationResult = validationResults.get(fileIndex);
+            System.out.println(validationResult);
+            for (String err : validationResult) {
+                output = output + err;
+            }
+            textArea.setText(output);
+        }
     }
 
     /**
