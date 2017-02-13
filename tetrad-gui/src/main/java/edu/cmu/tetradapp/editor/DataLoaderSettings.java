@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -44,7 +45,7 @@ import javax.swing.border.EmptyBorder;
  */
 final class DataLoaderSettings extends JPanel {
 
-    private File[] files;
+    private final List<File> files;
 
     private transient DataModel[] dataModels;
 
@@ -91,14 +92,10 @@ final class DataLoaderSettings extends JPanel {
     private Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
-    public DataLoaderSettings(final File... files) {
+    public DataLoaderSettings(List files) {
         this.files = files;
 
-        if (files.length == 0) {
-            throw new IllegalArgumentException("Must specify at least one file.");
-        }
-
-        this.dataModels = new DataModel[files.length];
+        this.dataModels = new DataModel[files.size()];
 
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(180, 30);
@@ -352,7 +349,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Step 1: Specify Format";
-        if (files.length > 1) {
+        if (files.size() > 1) {
             borderTitle = borderTitle + " (apply to all files)";
         }
         formatContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -586,7 +583,7 @@ final class DataLoaderSettings extends JPanel {
          */
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Step 2: Select Options";
-        if (files.length > 1) {
+        if (files.size() > 1) {
             borderTitle = borderTitle + " (apply to all files)";
         }
         optionsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -753,7 +750,7 @@ final class DataLoaderSettings extends JPanel {
      * @param files
      * @return DataModel on success or null on failure
      */
-    public DataModel loadDataWithSettings(int fileIndex, File[] files) {
+    public DataModel loadDataWithSettings(int fileIndex, List<File> files) {
         try {
             DataReader reader = new DataReader();
 
@@ -769,11 +766,11 @@ final class DataLoaderSettings extends JPanel {
 
             if (tabularRadioButton.isSelected()) {
                 // dataModel = parser.parseTabular(string.toCharArray());
-                dataModel = reader.parseTabular(files[fileIndex]);
+                dataModel = reader.parseTabular(files.get(fileIndex));
             } else {
                 // String string = fileTextArea.getText();
                 // dataModel = reader.parseCovariance(string.toCharArray());
-                dataModel = reader.parseCovariance(files[fileIndex]);
+                dataModel = reader.parseCovariance(files.get(fileIndex));
             }
 
             return dataModel;

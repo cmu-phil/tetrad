@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -41,7 +43,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -51,7 +52,7 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 final class LoadDataDialog extends JPanel {
 
-    private File[] files;
+    private List<File> loadedFiles;
 
     private List<List<String>> validationResults;
 
@@ -67,8 +68,6 @@ final class LoadDataDialog extends JPanel {
 
     public JTextArea fileTextArea;
 
-    private int fileIndex;
-
     private JList fileList;
 
     private JList validationFileList;
@@ -77,7 +76,7 @@ final class LoadDataDialog extends JPanel {
 
     private Box filePreviewBox;
 
-    private Box fileReviewBox;
+    private Box validationResultsBox;
 
     private String previewBoxBorderTitle;
 
@@ -119,17 +118,18 @@ final class LoadDataDialog extends JPanel {
 
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
-        this.files = files;
+        // Add all files into the loadedFiles list - Zhou
+        this.loadedFiles = Arrays.asList(files);
 
+        // List is an Interface, you cannot instantiate an Interface
+        // ArrayList is an implementation of List which can be instantiated
+        // The default size of ArrayList if 10
         this.validationResults = new ArrayList<>();
-
         this.failedFiles = new ArrayList<>();
 
         this.fileTextArea = new JTextArea();
 
         this.fileListModel = new DefaultListModel();
-
-        this.fileIndex = 0;
 
         this.defaulyPreviewBoxBorderTitle = "Raw Data Preview (only first 20 rows): ";
 
@@ -149,7 +149,7 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new DataLoaderSettings(files);
+        dataLoaderSettings = new DataLoaderSettings(loadedFiles);
 
         // Specify Format
         formatBox = dataLoaderSettings.specifyFormat();
@@ -181,7 +181,7 @@ final class LoadDataDialog extends JPanel {
         previewContainer.setPreferredSize(new Dimension(900, 310));
 
         // Show all chosen files in a list
-        for (File file : files) {
+        for (File file : loadedFiles) {
             // Add each file name to the list model
             fileListModel.addElement(file.getName());
         }
@@ -189,7 +189,7 @@ final class LoadDataDialog extends JPanel {
         fileList = new JList(fileListModel);
         // This mode specifies that only a single item can be selected at any point of time
         fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        // Default to select the first file and show its preview
+        // Default to select the first file in the list and show its preview
         fileList.setSelectedIndex(0);
 
         // List listener
@@ -198,15 +198,15 @@ final class LoadDataDialog extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    fileIndex = fileList.getMinSelectionIndex();
+                    int fileIndex = fileList.getMinSelectionIndex();
                     if (fileIndex < 0) {
                         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
                         fileTextArea.setText("");
                     } else {
                         // Update the border title and show preview
-                        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + files[fileIndex].getName();
+                        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(fileIndex).getName();
                         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-                        setPreview(files[fileIndex], fileTextArea);
+                        setPreview(loadedFiles.get(fileIndex), fileTextArea);
                     }
                 }
             }
@@ -237,7 +237,7 @@ final class LoadDataDialog extends JPanel {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             // Can't remove if there's only one file left
-                            if (files.length == 1) {
+                            if (loadedFiles.size() == 1) {
                                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                         "You can't remove when there's only one file.");
                             } else {
@@ -254,7 +254,8 @@ final class LoadDataDialog extends JPanel {
                                     System.out.println("Removed file of index = " + index + " from data loading list");
 
                                     // Also need to remove it from data structure
-                                    files = ArrayUtils.remove(files, index);
+                                    // Shifts any subsequent elements to the left in the list
+                                    loadedFiles.remove(index);
                                 }
                             }
                         }
@@ -302,15 +303,8 @@ final class LoadDataDialog extends JPanel {
                 // File array that contains only one file
                 final File[] newFiles = fileChooser.getSelectedFiles();
 
-                // Add the selected new file to existing files array
-                // A list is a better choice but considering the old implementation
-                // I'll keep using array - Zhou
-                newFilesArr = new File[files.length + newFiles.length];
-                System.arraycopy(files, 0, newFilesArr, 0, files.length);
-                System.arraycopy(newFiles, 0, newFilesArr, files.length, newFiles.length);
-
-                // Update the files array
-                files = newFilesArr;
+                // Append all new files to existing loadedFiles list
+                loadedFiles.addAll(Arrays.asList(newFiles));
 
                 // Add newly added files to the file list model
                 for (File newFile : newFiles) {
@@ -324,7 +318,7 @@ final class LoadDataDialog extends JPanel {
 
         // Use a titled border with 5 px inside padding - Zhou
         String fileListBoxBorderTitle = "File to load";
-        if (files.length > 1) {
+        if (loadedFiles.size() > 1) {
             fileListBoxBorderTitle = "Files (right click to remove selected file)";
         }
         fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -343,14 +337,14 @@ final class LoadDataDialog extends JPanel {
         fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // Set the default preview for the default selected file
-        setPreview(files[0], fileTextArea);
+        setPreview(loadedFiles.get(0), fileTextArea);
 
         // Add the scrollable text area in a scroller
         final JScrollPane filePreviewScrollPane = new JScrollPane(fileTextArea);
         filePreviewBox.add(filePreviewScrollPane);
 
         // Show the default selected filename as preview border title
-        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + files[0].getName();
+        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(0).getName();
 
         // Use a titled border with 5 px inside padding - Zhou
         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -366,8 +360,8 @@ final class LoadDataDialog extends JPanel {
 
         // A list of files to review
         filesToValidateBox = Box.createVerticalBox();
-        filesToValidateBox.setMinimumSize(new Dimension(305, 500));
-        filesToValidateBox.setMaximumSize(new Dimension(305, 500));
+        filesToValidateBox.setMinimumSize(new Dimension(305, 420));
+        filesToValidateBox.setMaximumSize(new Dimension(305, 420));
 
         // Create a new list with the same model: fileListModel
         validationFileList = new JList(fileListModel);
@@ -381,8 +375,8 @@ final class LoadDataDialog extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    fileIndex = validationFileList.getMinSelectionIndex();
-                    setValidationResult(fileIndex, validationResultTextArea);
+                    int fileIndex = validationFileList.getMinSelectionIndex();
+                    setValidationResult(getValidationOutput(fileIndex, validationResults), validationResultTextArea);
                 }
             }
         });
@@ -399,20 +393,20 @@ final class LoadDataDialog extends JPanel {
         summaryContainer.add(Box.createHorizontalStrut(10), 1);
 
         // Review content, contains errors or summary of loading
-        fileReviewBox = Box.createHorizontalBox();
-        fileReviewBox.setMinimumSize(new Dimension(568, 500));
-        fileReviewBox.setMaximumSize(new Dimension(568, 500));
+        validationResultsBox = Box.createHorizontalBox();
+        validationResultsBox.setMinimumSize(new Dimension(568, 420));
+        validationResultsBox.setMaximumSize(new Dimension(568, 420));
 
         validationResultTextArea.setEditable(false);
         validationResultTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // Set the default content of validation for the default selected file index 0
-        setValidationResult(0, validationResultTextArea);
+        setValidationResult(getValidationOutput(0, validationResults), validationResultTextArea);
 
         final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextArea);
-        fileReviewBox.add(summaryScrollPane);
+        validationResultsBox.add(summaryScrollPane);
 
-        summaryContainer.add(fileReviewBox);
+        summaryContainer.add(validationResultsBox);
 
         // Show the default selected filename as preview border title
         summaryContainerBorderTitle = "Step 3: Validate";
@@ -632,23 +626,38 @@ final class LoadDataDialog extends JPanel {
      * @return
      */
     private void validateAllFiles() {
-        for (int i = 0; i < files.length; i++) {
-            DataValidation validation = dataLoaderSettings.validateDataWithSettings(files[i]);
+        // Removes all elements for each new validation
+        validationResults.clear();
+
+        for (int i = 0; i < loadedFiles.size(); i++) {
+            System.out.println("Showing validation results of file index = " + i);
+
+            List<String> validationResult;
+
+            // Validate each individual file
+            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
+
             validation.validate();
+
             if (validation.hasErrors()) {
-                validationResults.add(i, validation.getErrors());
+                validationResult = validation.getErrors();
+
                 // Also add the file name to failed list
                 // this determines if to show the Load button
-                failedFiles.add(files[i].getName());
+                failedFiles.add(loadedFiles.get(i).getName());
             } else {
                 // Make sure it's a list
-                List<String> noErrorList = new ArrayList<>();
-                noErrorList.add("No error");
-                validationResults.add(i, noErrorList);
+                validationResult = new LinkedList<>();
+                validationResult.add("No error");
             }
 
-            // Update the validation results
-            setValidationResult(i, validationResultTextArea);
+            validationResults.add(validationResult);
+
+            // Get the formatted output string
+            String output = getValidationOutput(i, validationResults);
+
+            // Show the results in scrollable area
+            setValidationResult(output, validationResultTextArea);
         }
     }
 
@@ -657,10 +666,10 @@ final class LoadDataDialog extends JPanel {
      */
     private void loadAll() {
         // Try to load each file and store the file name for failed loading
-        for (int i = 0; i < files.length; i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, files);
+        for (int i = 0; i < loadedFiles.size(); i++) {
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, loadedFiles);
 
-            addDataModel(dataModel, i, files[i].getName());
+            addDataModel(dataModel, i, loadedFiles.get(i).getName());
 
             System.out.println("File index = " + i + " has been loaded successfully");
         }
@@ -679,26 +688,30 @@ final class LoadDataDialog extends JPanel {
     }
 
     /**
-     * Set the validation result content for a given file index
+     * Set the validation result content
      *
-     * @param fileIndex
+     * @param output
      * @param textArea
      */
-    private void setValidationResult(int fileIndex, JTextArea textArea) {
-        System.out.println(validationResults);
-        // When we first created the validation results listener, we'll just use
-        // the file name as the result info
-        if (validationResults.isEmpty()) {
-            textArea.setText(files[fileIndex].getName());
+    private void setValidationResult(String output, JTextArea textArea) {
+        textArea.setText(output);
+    }
+
+    private String getValidationOutput(int index, List<List<String>> resultsList) {
+        String output = "";
+
+        if (resultsList.isEmpty()) {
+            return output;
         } else {
-            System.out.println("Showing validation results of file index = " + fileIndex);
-            String output = "Validation result:";
-            List<String> validationResult = validationResults.get(fileIndex);
-            System.out.println(validationResult);
+            output = "Validation result of " + loadedFiles.get(index).getName() + ": \n";
+
+            List<String> validationResult = resultsList.get(index);
+
             for (String err : validationResult) {
-                output = output + err;
+                output = output + err + "\n";
             }
-            textArea.setText(output);
+
+            return output;
         }
     }
 
