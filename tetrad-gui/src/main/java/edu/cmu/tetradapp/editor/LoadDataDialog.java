@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.pitt.dbmi.data.ContinuousDataset;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -38,6 +37,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -588,8 +589,12 @@ final class LoadDataDialog extends JPanel {
         loadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Load all data files via data reader
-                loadAllFiles();
+                try {
+                    // Load all data files via data reader
+                    loadAllFiles();
+                } catch (IOException ex) {
+                    Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
                 // Close the data loader dialog
                 Window w = SwingUtilities.getWindowAncestor(loadButton);
@@ -684,12 +689,12 @@ final class LoadDataDialog extends JPanel {
     /**
      * Add all files to model once all can be loaded successfully
      */
-    private void loadAllFiles() {
+    private void loadAllFiles() throws IOException {
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < loadedFiles.size(); i++) {
-            ContinuousDataset dataSet = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
 
-            addDataModel(dataSet, i, loadedFiles.get(i).getName());
+            addDataModel(dataModel, i, loadedFiles.get(i).getName());
 
             System.out.println("File index = " + i + " has been loaded successfully");
         }
@@ -714,7 +719,6 @@ final class LoadDataDialog extends JPanel {
      * @param textArea
      */
     private void setValidationResult(String output, JTextArea textArea) {
-        textArea.setText("");
         textArea.setText(output);
     }
 
@@ -734,7 +738,7 @@ final class LoadDataDialog extends JPanel {
     }
 
     /**
-     * Set the file preview content
+     * Set the file preview content, will use Kevin's preview later - Zhou
      *
      * @param file
      * @param textArea

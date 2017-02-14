@@ -20,11 +20,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousDataset;
+import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
@@ -37,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -769,7 +775,9 @@ final class DataLoaderSettings extends JPanel {
      * @param files
      * @return DataModel on success or null on failure
      */
-    public ContinuousDataset loadDataWithSettings(File file) throws IOException {
+    public DataModel loadDataWithSettings(File file) throws IOException {
+        DataModel dataModel = null;
+
         char delimiter = getDelimiterTypeChar(getDelimiterType());
         boolean hasHeader = isVarNamesFirstRow();
 
@@ -779,25 +787,35 @@ final class DataLoaderSettings extends JPanel {
             // reader settings
             dataReader.setHasHeader(hasHeader);
 
-            ContinuousDataset dataSet = null;
+            Dataset dataset;
 
             // Handle case ID column based on different selections
-            if (idNoneRadioButton.isSelected()) {
-                dataSet = (ContinuousDataset) dataReader.readInData();
-                System.out.println("idNoneRadioButton");
+            if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                dataset = dataReader.readInData(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
             } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                 // Exclude the first column
                 System.out.println("idUnlabeledFirstColRadioButton");
-                dataSet = (ContinuousDataset) dataReader.readInData(new int[]{1});
-            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                dataSet = (ContinuousDataset) dataReader.readInData(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+                dataset = dataReader.readInData(new int[]{1});
+            } else {
+                dataset = dataReader.readInData();
+                System.out.println("idNoneRadioButton");
             }
 
-            return dataSet;
+            if (dataset instanceof ContinuousDataset) {
+                ContinuousDataset contDataset = (ContinuousDataset) dataset;
+                // Convert dataset to dataModel
+                dataModel = new BoxDataSet(
+                        new DoubleDataBox(contDataset.getData()),
+                        variablesToContinuosNodes(contDataset.getGetVariables()));
+            } else {
+                throw new UnsupportedOperationException("Not yet supported!");
+            }
         } else {
             throw new UnsupportedOperationException("Not yet supported!");
         }
+
+        return dataModel;
 
 //        try {
 //            DataReader reader = new DataReader();
@@ -827,6 +845,16 @@ final class DataLoaderSettings extends JPanel {
 //        }
 //
 //        return null;
+    }
+
+    private List<Node> variablesToContinuosNodes(List<String> variables) {
+        List<Node> nodes = new LinkedList<>();
+
+        for (String variable : variables) {
+            nodes.add(new ContinuousVariable(variable));
+        }
+
+        return nodes;
     }
 
 }
