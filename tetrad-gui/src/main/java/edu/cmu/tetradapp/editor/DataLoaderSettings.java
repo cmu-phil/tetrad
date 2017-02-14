@@ -781,16 +781,16 @@ final class DataLoaderSettings extends JPanel {
             validation.setQuoteCharacter(quoteChar);
 
             // Handle case ID column based on different selections
-            if (idNoneRadioButton.isSelected()) {
-                validation.validate();
-                System.out.println("idNoneRadioButton");
+            if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
             } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                 // Exclude the first column
                 System.out.println("idUnlabeledFirstColRadioButton");
                 validation.validate(new int[]{1});
-            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+            } else {
+                validation.validate();
+                System.out.println("idNoneRadioButton");
             }
 
             return validation;
