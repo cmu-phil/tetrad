@@ -334,6 +334,37 @@ final class DataLoaderSettings extends JPanel {
         // Make Yes button selected by default
         firstRowVarNamesYesRadioButton.setSelected(true);
 
+        // Event listener
+        firstRowVarNamesYesRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    // Enable specifying column labeled option
+                    if (!idLabeledColRadioButton.isEnabled()) {
+                        idLabeledColRadioButton.setEnabled(true);
+                    }
+
+                    if (!idStringField.isEnabled()) {
+                        idStringField.setEnabled(true);
+                    }
+                }
+            }
+        });
+
+        // Event listener
+        firstRowVarNamesNoRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    // Disable the "Column labeled" option of ignoring case id column
+                    idLabeledColRadioButton.setEnabled(false);
+                    idStringField.setEnabled(false);
+                }
+            }
+        });
+
         // Add label into this label box to size
         Box firstRowVarNamesLabelBox = Box.createHorizontalBox();
         firstRowVarNamesLabelBox.setPreferredSize(labelSize);
@@ -378,7 +409,7 @@ final class DataLoaderSettings extends JPanel {
 
         // ID radio buttons
         idNoneRadioButton = new JRadioButton("None");
-        idUnlabeledFirstColRadioButton = new JRadioButton("Unlabeled 1st column");
+        idUnlabeledFirstColRadioButton = new JRadioButton("First column");
         idLabeledColRadioButton = new JRadioButton("Column labeled: ");
         idStringField = new StringTextField("", 4);
 
