@@ -82,7 +82,7 @@ final class LoadDataDialog extends JPanel {
 
     private String previewBoxBorderTitle;
 
-    private String summaryContainerBorderTitle;
+    private String validationResultsContainerBorderTitle;
 
     private final String defaulyPreviewBoxBorderTitle;
 
@@ -100,7 +100,7 @@ final class LoadDataDialog extends JPanel {
 
     private Box optionsBox;
 
-    private Box summaryContainer;
+    private Box validationResultsContainer;
 
     private Box filesToValidateBox;
 
@@ -152,7 +152,7 @@ final class LoadDataDialog extends JPanel {
         // Overall container
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
-        // Must set the size of container, otherwise summaryContainer gets shrinked
+        // Must set the size of container, otherwise validationResultsContainer gets shrinked
         container.setPreferredSize(new Dimension(900, 510));
 
         // Data loading params
@@ -372,7 +372,7 @@ final class LoadDataDialog extends JPanel {
         container.add(previewContainer);
 
         // Result summary
-        summaryContainer = Box.createHorizontalBox();
+        validationResultsContainer = Box.createHorizontalBox();
 
         // A list of files to review
         filesToValidateBox = Box.createVerticalBox();
@@ -405,10 +405,10 @@ final class LoadDataDialog extends JPanel {
 
         filesToValidateBox.add(filesToValidateScrollPane);
 
-        summaryContainer.add(filesToValidateBox);
+        validationResultsContainer.add(filesToValidateBox);
 
         // Add gap between file list and review conent
-        summaryContainer.add(Box.createHorizontalStrut(10), 1);
+        validationResultsContainer.add(Box.createHorizontalStrut(10), 1);
 
         // Review content, contains errors or summary of loading
         validationResultsBox = Box.createHorizontalBox();
@@ -421,18 +421,18 @@ final class LoadDataDialog extends JPanel {
         final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextArea);
         validationResultsBox.add(summaryScrollPane);
 
-        summaryContainer.add(validationResultsBox);
+        validationResultsContainer.add(validationResultsBox);
 
         // Show the default selected filename as preview border title
-        summaryContainerBorderTitle = "Step 3: Validate";
+        validationResultsContainerBorderTitle = "Step 3: Validate";
 
         // Use a titled border with 5 px inside padding - Zhou
-        summaryContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(summaryContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        validationResultsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(validationResultsContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Add to overall container
-        container.add(summaryContainer);
+        container.add(validationResultsContainer);
         // Hide by default
-        summaryContainer.setVisible(false);
+        validationResultsContainer.setVisible(false);
 
         // Buttons
         // Step 1 button to specify format
@@ -513,7 +513,7 @@ final class LoadDataDialog extends JPanel {
                 previewContainer.setVisible(true);
 
                 // Hide summary
-                summaryContainer.setVisible(false);
+                validationResultsContainer.setVisible(false);
 
                 // Show the step 1 button
                 step1Button.setVisible(true);
@@ -544,7 +544,7 @@ final class LoadDataDialog extends JPanel {
             public void actionPerformed(ActionEvent e) {
 
                 // Show result summary
-                summaryContainer.setVisible(true);
+                validationResultsContainer.setVisible(true);
 
                 // Hide all inside settingsContainer
                 fileListBox.setVisible(false);
