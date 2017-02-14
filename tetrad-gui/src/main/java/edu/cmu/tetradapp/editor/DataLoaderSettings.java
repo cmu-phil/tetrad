@@ -384,7 +384,7 @@ final class DataLoaderSettings extends JPanel {
         // Add label into this label box to size
         Box caseIdProvidedLabelBox = Box.createHorizontalBox();
         caseIdProvidedLabelBox.setPreferredSize(labelSize);
-        caseIdProvidedLabelBox.add(new JLabel("Case IDs:"));
+        caseIdProvidedLabelBox.add(new JLabel("Case ID column to ignore:"));
 
         // Option 1
         Box caseIdProvidedOption1Box = Box.createHorizontalBox();
