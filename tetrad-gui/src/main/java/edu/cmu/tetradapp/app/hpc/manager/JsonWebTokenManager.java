@@ -33,7 +33,7 @@ public class JsonWebTokenManager {
 	jsonWebTokenRequestTimeMap = new HashMap<>();
     }
 
-    public JsonWebToken getJsonWebToken(final HpcAccount hpcAccount)
+    public synchronized JsonWebToken getJsonWebToken(final HpcAccount hpcAccount)
 	    throws Exception {
 	if (locked) {
 	    Thread.sleep(100);

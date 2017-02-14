@@ -239,8 +239,8 @@ public class HpcJobManager {
 	// Lookup on DB for HpcJobInfo with status 0 (Submitted); 1 (Running); 2
 	// (Kill Request)
 	for (int status = 0; status <= 2; status++) {
-	    System.out.println("resumeSubmittedHpcJobInfos: "
-		    + "looping status: " + status);
+	    //System.out.println("resumeSubmittedHpcJobInfos: "
+		//    + "looping status: " + status);
 	    List<HpcJobInfo> submittedHpcJobInfo = hpcJobInfoService
 		    .findByStatus(status);
 	    if (submittedHpcJobInfo != null) {
@@ -290,12 +290,12 @@ public class HpcJobManager {
 	Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
 	    
-	    System.out.println("submittedHpcJobInfoMap: hpcJobInfos not null");
+	    //System.out.println("removeFinishedHpcJob: hpcJobInfos not null");
 	    
 	    for (HpcJobInfo jobInfo : hpcJobInfos) {
 		if (jobInfo.getId() == hpcJobInfo.getId()) {
 		    
-		    System.out.println("Found hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
+		    //System.out.println("removeFinishedHpcJob: Found hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
 		    
 		    hpcJobInfos.remove(jobInfo);
 		}
@@ -323,12 +323,12 @@ public class HpcJobManager {
 	Set<HpcJobInfo> hpcJobInfos = pendingHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
 	    
-	    System.out.println("removedPendingHpcJob: pendingHpcJobInfoMap: hpcJobInfos not null");
+	    //System.out.println("removedPendingHpcJob: hpcJobInfos not null");
 	    
 	    for (HpcJobInfo jobInfo : hpcJobInfos) {
 		if (jobInfo.getId() == hpcJobInfo.getId()) {
 		    
-		    System.out.println("removedPendingHpcJob: Found hpcJobInfo in the pendingHpcJobInfoMap & removed it!");
+		    //System.out.println("removedPendingHpcJob: Found hpcJobInfo in the pendingHpcJobInfoMap & removed it!");
 		    
 		    hpcJobInfos.remove(jobInfo);
 		}
@@ -352,10 +352,12 @@ public class HpcJobManager {
 	Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 	if (hpcJobInfos != null) {
 	    
+	    //System.out.println("updateSubmittedHpcJobInfo: hpcJobInfos not null");
+
 	    for (HpcJobInfo jobInfo : hpcJobInfos) {
 		if (jobInfo.getId() == hpcJobInfo.getId()) {
 		    
-		    System.out.println("updateSubmittedHpcJobInfo: Found hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
+		    //System.out.println("updateSubmittedHpcJobInfo: Found hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
 		    
 		    hpcJobInfos.remove(jobInfo);
 		}
@@ -387,8 +389,8 @@ public class HpcJobManager {
 	// Lookup on DB for HpcJobInfo with status 3 (Finished); 4 (Killed);
 	// 5 (Result Downloaded); 6 (Error Result Downloaded);
 	for (int status = 3; status <= 6; status++) {
-	    System.out.println("getFinishedHpcJobInfoMap: "
-		    + "looping status: " + status);
+	    //System.out.println("getFinishedHpcJobInfoMap: "
+		//    + "looping status: " + status);
 	    List<HpcJobInfo> finishedHpcJobInfo = hpcJobInfoService
 		    .findByStatus(status);
 	    if (finishedHpcJobInfo != null) {

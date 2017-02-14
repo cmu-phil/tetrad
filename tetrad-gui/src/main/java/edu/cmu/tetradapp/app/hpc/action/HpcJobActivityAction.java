@@ -34,9 +34,9 @@ public class HpcJobActivityAction extends AbstractAction {
 	    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
 		    TITLE, JOptionPane.PLAIN_MESSAGE);
 	} catch (HeadlessException e1) {
-	    e1.printStackTrace();
+	    //e1.printStackTrace();
 	} catch (Exception e1) {
-	    e1.printStackTrace();
+	    //e1.printStackTrace();
 	}
     }
 

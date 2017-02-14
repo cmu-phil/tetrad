@@ -88,6 +88,12 @@ public class HpcJobsScheduledTask extends TimerTask {
 		}
 	    }
 
+	    // Finished job map
+	    HashMap<Long, HpcJobInfo> finishedJobMap = new HashMap<>();
+	    for (HpcJobInfo job : hpcJobInfos) {
+		finishedJobMap.put(job.getPid(), job);
+	    }
+
 	    try {
 		List<JobInfo> jobInfos = hpcJobManager.getRemoteActiveJobs(
 			hpcAccountManager, hpcAccount);
@@ -98,6 +104,11 @@ public class HpcJobsScheduledTask extends TimerTask {
 			    + jobInfo.getResultFileName());
 
 		    long pid = jobInfo.getId();
+
+		    if (finishedJobMap.containsKey(pid)) {
+			finishedJobMap.remove(pid);
+		    }
+
 		    int remoteStatus = jobInfo.getStatus();
 		    String recentStatusText = (remoteStatus == 0 ? "Submitted"
 			    : (remoteStatus == 1 ? "Running" : "Kill Request"));
@@ -129,7 +140,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 		}
 
 		// Download finished jobs' results
-		if (hpcJobInfos.size() > 0) {
+		if (finishedJobMap.size() > 0) {
 		    Set<ResultFile> resultFiles = hpcJobManager
 			    .listRemoteAlgorithmResultFiles(hpcAccountManager,
 				    hpcAccount);
@@ -141,9 +152,12 @@ public class HpcJobsScheduledTask extends TimerTask {
 			// + " Result : " + resultFile.getName());
 		    }
 
-		    for (HpcJobInfo hpcJobInfo : hpcJobInfos) {// Job is done or
-							       // killed or
-							       // time-out
+		    for (HpcJobInfo hpcJobInfo : finishedJobMap.values()) {// Job
+									   // is
+									   // done
+									   // or
+			// killed or
+			// time-out
 			HpcJobLog hpcJobLog = hpcJobManager
 				.getHpcJobLog(hpcJobInfo);
 			String recentStatusText = "Job finished";
@@ -155,9 +169,9 @@ public class HpcJobsScheduledTask extends TimerTask {
 			hpcJobInfo.setStatus(recentStatus);
 			hpcJobManager.updateHpcJobInfo(hpcJobInfo);
 
-			System.out.println("hpcJobInfo: id: "
-				+ hpcJobInfo.getId() + " : "
-				+ hpcJobInfo.getStatus());
+			// System.out.println("hpcJobInfo: id: "
+			// + hpcJobInfo.getId() + " : "
+			// + hpcJobInfo.getStatus());
 
 			hpcJobManager.logHpcJobLogDetail(hpcJobLog,
 				recentStatus, recentStatusText);
@@ -287,7 +301,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 			hpcJobManager.removeFinishedHpcJob(hpcJobInfo);
 		    }
 		} else {
-		    System.out.println("Active HpcJobInfo is empty.");
+		    System.out.println("No finished job yet.");
 		}
 
 	    } catch (Exception e) {
