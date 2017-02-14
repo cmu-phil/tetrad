@@ -651,8 +651,6 @@ final class LoadDataDialog extends JPanel {
             // Validate each individual file
             DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
-            validation.validate();
-
             if (validation.hasErrors()) {
                 validationResult = validation.getErrors();
 
@@ -668,6 +666,9 @@ final class LoadDataDialog extends JPanel {
             validationResults.add(validationResult);
 
         }
+
+        // Reset the default selected file
+        validationFileList.setSelectedIndex(0);
 
         // Display validation result of the first file by default
         // Get the formatted output string
@@ -709,27 +710,23 @@ final class LoadDataDialog extends JPanel {
      * @param textArea
      */
     private void setValidationResult(String output, JTextArea textArea) {
+        textArea.setText("");
         textArea.setText(output);
     }
 
     private String getValidationOutput(int index, List<List<String>> resultsList) {
         System.out.println("Getting validation output of file index = " + index);
 
-        String output = "";
+        String output = "Validation result of " + loadedFiles.get(index).getName() + ": \n";
 
-        if (resultsList.isEmpty()) {
-            return output;
-        } else {
-            output = "Validation result of " + loadedFiles.get(index).getName() + ": \n";
+        List<String> validationResult = resultsList.get(index);
 
-            List<String> validationResult = resultsList.get(index);
-
-            for (String err : validationResult) {
-                output = output + err + "\n";
-            }
-
-            return output;
+        for (String err : validationResult) {
+            output = output + err + "\n";
         }
+
+        return output;
+
     }
 
     /**

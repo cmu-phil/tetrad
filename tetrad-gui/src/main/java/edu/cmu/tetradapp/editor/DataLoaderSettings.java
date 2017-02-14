@@ -32,6 +32,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -726,16 +729,30 @@ final class DataLoaderSettings extends JPanel {
      */
     public DataValidation validateDataWithSettings(File file) {
         char delimiter = getDelimiterTypeChar(getDelimiterType());
-        char quoteChar = getQuoteChar();
-        String comment = getCommentString();
         boolean hasHeader = isVarNamesFirstRow();
+        String comment = getCommentString();
+        char quoteChar = getQuoteChar();
 
         if (tabularRadioButton.isSelected()) {
             // Using Kevin's data validation
             TabularDataFileValidation validation = new ContinuousTabularDataFileValidation(file, delimiter);
-            validation.setCommentMarker(comment);
+            // validation settings
             validation.setHasHeader(hasHeader);
+            validation.setCommentMarker(comment);
             validation.setQuoteCharacter(quoteChar);
+
+            List<String> columns = new ArrayList<>();
+
+            // Handle case ID column based on different selections
+            if (idNoneRadioButton.isSelected()) {
+                validation.validate();
+            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
+                // Exclude the first column
+                validation.validate(new int[]{1});
+            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+            }
 
             return validation;
         } else {
