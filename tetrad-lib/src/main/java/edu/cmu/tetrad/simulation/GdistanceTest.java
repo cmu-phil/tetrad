@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ import java.util.List;
 public class GdistanceTest {
     public static void main (String... args) {
         //first generate a couple random graphs
-        int numVars = 5;
-        int numEdges = 4;
+        int numVars = 16;
+        int numEdges = 16;
         List<Node> vars = new ArrayList<>();
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -37,10 +38,19 @@ public class GdistanceTest {
         edu.cmu.tetrad.io.DataReader dataReaderMap = new TabularContinuousDataReader(mapPath, ',');
         try{
             DataSet locationMap = dataReaderMap.readInData();
+            //System.out.println(locationMap);
             //then compare their distance
-            List<Double> output = Gdistance.distances(testdag1, testdag2, locationMap);
+            double xdist = 2.4;
+            double ydist = 2.4;
+            double zdist = 2;
+            Gdistance gdist = new Gdistance(locationMap,xdist,ydist,zdist);
+            List<Double> output = gdist.distances(testdag1, testdag2);
 
             System.out.println(output);
+
+            PrintWriter writer = new PrintWriter("Gdistances.txt", "UTF-8");
+            writer.println(output);
+            writer.close();
         }
         catch(Exception IOException){
             IOException.printStackTrace();
