@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.pitt.dbmi.data.ContinuousDataset;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -583,10 +584,13 @@ final class LoadDataDialog extends JPanel {
         // Load button
         loadButton = new JButton("Load");
 
-        // Finish button listener
+        // Load data button listener
         loadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Load all data files via data reader
+                loadAllFiles();
+
                 // Close the data loader dialog
                 Window w = SwingUtilities.getWindowAncestor(loadButton);
                 if (w != null) {
@@ -680,12 +684,12 @@ final class LoadDataDialog extends JPanel {
     /**
      * Add all files to model once all can be loaded successfully
      */
-    private void loadAll() {
+    private void loadAllFiles() {
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < loadedFiles.size(); i++) {
-            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(i, loadedFiles);
+            ContinuousDataset dataSet = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
 
-            addDataModel(dataModel, i, loadedFiles.get(i).getName());
+            addDataModel(dataSet, i, loadedFiles.get(i).getName());
 
             System.out.println("File index = " + i + " has been loaded successfully");
         }

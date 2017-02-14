@@ -21,10 +21,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.pitt.dbmi.data.ContinuousDataset;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.file.TabularDataFileValidation;
@@ -32,6 +34,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -760,41 +763,70 @@ final class DataLoaderSettings extends JPanel {
     }
 
     /**
-     * Joe's old data reader - Zhou
+     * Kevin's fast data reader
      *
      * @param fileIndex
      * @param files
      * @return DataModel on success or null on failure
      */
-    public DataModel loadDataWithSettings(int fileIndex, List<File> files) {
-        try {
-            DataReader reader = new DataReader();
+    public ContinuousDataset loadDataWithSettings(File file) throws IOException {
+        char delimiter = getDelimiterTypeChar(getDelimiterType());
+        boolean hasHeader = isVarNamesFirstRow();
 
-            reader.setCommentMarker(getCommentString());
-            reader.setDelimiter(getDelimiterType());
-            reader.setQuoteChar(getQuoteChar());
-            reader.setVariablesSupplied(isVarNamesFirstRow());
-            reader.setIdLabel(getIdLabel());
-            //reader.setMissingValueMarker(getMissingValue());
-            //reader.setMaxIntegralDiscrete(getMaxDiscrete());
+        if (tabularRadioButton.isSelected()) {
+            // Using Kevin's data reader
+            TabularDataReader dataReader = new ContinuousTabularDataReader(file, delimiter);
+            // reader settings
+            dataReader.setHasHeader(hasHeader);
 
-            DataModel dataModel;
+            ContinuousDataset dataSet = null;
 
-            if (tabularRadioButton.isSelected()) {
-                // dataModel = parser.parseTabular(string.toCharArray());
-                dataModel = reader.parseTabular(files.get(fileIndex));
-            } else {
-                // String string = fileTextArea.getText();
-                // dataModel = reader.parseCovariance(string.toCharArray());
-                dataModel = reader.parseCovariance(files.get(fileIndex));
+            // Handle case ID column based on different selections
+            if (idNoneRadioButton.isSelected()) {
+                dataSet = (ContinuousDataset) dataReader.readInData();
+                System.out.println("idNoneRadioButton");
+            } else if (idUnlabeledFirstColRadioButton.isSelected()) {
+                // Exclude the first column
+                System.out.println("idUnlabeledFirstColRadioButton");
+                dataSet = (ContinuousDataset) dataReader.readInData(new int[]{1});
+            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                dataSet = (ContinuousDataset) dataReader.readInData(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
             }
 
-            return dataModel;
-        } catch (Exception e1) {
-            e1.printStackTrace();
+            return dataSet;
+        } else {
+            throw new UnsupportedOperationException("Not yet supported!");
         }
 
-        return null;
+//        try {
+//            DataReader reader = new DataReader();
+//
+//            reader.setCommentMarker(getCommentString());
+//            reader.setDelimiter(getDelimiterType());
+//            reader.setQuoteChar(getQuoteChar());
+//            reader.setVariablesSupplied(isVarNamesFirstRow());
+//            reader.setIdLabel(getIdLabel());
+//            //reader.setMissingValueMarker(getMissingValue());
+//            //reader.setMaxIntegralDiscrete(getMaxDiscrete());
+//
+//            DataModel dataModel;
+//
+//            if (tabularRadioButton.isSelected()) {
+//                // dataModel = parser.parseTabular(string.toCharArray());
+//                dataModel = reader.parseTabular(files.get(fileIndex));
+//            } else {
+//                // String string = fileTextArea.getText();
+//                // dataModel = reader.parseCovariance(string.toCharArray());
+//                dataModel = reader.parseCovariance(files.get(fileIndex));
+//            }
+//
+//            return dataModel;
+//        } catch (Exception e1) {
+//            e1.printStackTrace();
+//        }
+//
+//        return null;
     }
 
 }
