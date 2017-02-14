@@ -32,7 +32,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -741,13 +740,13 @@ final class DataLoaderSettings extends JPanel {
             validation.setCommentMarker(comment);
             validation.setQuoteCharacter(quoteChar);
 
-            List<String> columns = new ArrayList<>();
-
             // Handle case ID column based on different selections
             if (idNoneRadioButton.isSelected()) {
                 validation.validate();
+                System.out.println("idNoneRadioButton");
             } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                 // Exclude the first column
+                System.out.println("idUnlabeledFirstColRadioButton");
                 validation.validate(new int[]{1});
             } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
                 // Exclude the specified labled column
