@@ -119,13 +119,20 @@ final class LoadDataDialog extends JPanel {
     //================================CONSTRUCTOR=======================//
     public LoadDataDialog(File... files) {
         // Add all files into the loadedFiles list - Zhou
-        this.loadedFiles = Arrays.asList(files);
+        // Arrays.asList: Returns a fixed-size list backed by the specified array.
+        // You can't add to it; you can't remove from it. You can't structurally modify the List.
+        // Create a LinkedList, which supports faster remove.
+        this.loadedFiles = new LinkedList<>(Arrays.asList(files));
 
         // List is an Interface, you cannot instantiate an Interface
         // ArrayList is an implementation of List which can be instantiated
         // The default size of ArrayList if 10
+        // Here we define validationResults as ArrayList for quick retrival by index
         this.validationResults = new ArrayList<>();
-        this.failedFiles = new ArrayList<>();
+
+        // We only need to know the size of failedFiles, no need to retrival by index
+        // So define it as LinkedList
+        this.failedFiles = new LinkedList<>();
 
         this.fileTextArea = new JTextArea();
 
@@ -221,10 +228,7 @@ final class LoadDataDialog extends JPanel {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     final int index = fileList.getSelectedIndex();
 
-                    // Don't show the close option if selection is empty
-                    if (index == -1) {
-                        return;
-                    }
+                    System.out.println("About to remove file of index " + index);
 
                     JPopupMenu menu = new JPopupMenu();
                     JMenuItem close = new JMenuItem("Remove this selected file from the loading list");
@@ -251,11 +255,14 @@ final class LoadDataDialog extends JPanel {
                                     // Remove the file from list model
                                     fileListModel.remove(index);
 
-                                    System.out.println("Removed file of index = " + index + " from data loading list");
-
                                     // Also need to remove it from data structure
                                     // Shifts any subsequent elements to the left in the list
+                                    System.out.println("Removing file of index = " + index + " from data loading list");
                                     loadedFiles.remove(index);
+
+                                    // Reset the default selection and corresponding preview content
+                                    fileList.setSelectedIndex(0);
+                                    setPreview(loadedFiles.get(0), fileTextArea);
                                 }
                             }
                         }
@@ -303,8 +310,13 @@ final class LoadDataDialog extends JPanel {
                 // File array that contains only one file
                 final File[] newFiles = fileChooser.getSelectedFiles();
 
+                System.out.println("Old loadedFiles list ");
+                System.out.println(loadedFiles);
+
                 // Append all new files to existing loadedFiles list
                 loadedFiles.addAll(Arrays.asList(newFiles));
+                System.out.println("New loadedFiles list ");
+                System.out.println(loadedFiles);
 
                 // Add newly added files to the file list model
                 for (File newFile : newFiles) {
@@ -374,8 +386,10 @@ final class LoadDataDialog extends JPanel {
         validationFileList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int fileIndex = validationFileList.getMinSelectionIndex();
+                // Set the validationResultTextArea only when we have the validationResults not empty
+                // Because we clear() validationResults every time users click the step 2 backward button - Zhou
+                if (!validationResults.isEmpty() && !e.getValueIsAdjusting()) {
+                    int fileIndex = validationFileList.getSelectedIndex();
                     setValidationResult(getValidationOutput(fileIndex, validationResults), validationResultTextArea);
                 }
             }
@@ -508,6 +522,12 @@ final class LoadDataDialog extends JPanel {
 
                 // Hide finish button
                 loadButton.setVisible(false);
+
+                // Removes all elements for each new validation
+                validationResults.clear();
+
+                // Also reset the failedFiles list
+                failedFiles.clear();
             }
         });
 
@@ -623,9 +643,6 @@ final class LoadDataDialog extends JPanel {
      * @return
      */
     private void validateAllFiles() {
-        // Removes all elements for each new validation
-        validationResults.clear();
-
         for (int i = 0; i < loadedFiles.size(); i++) {
             System.out.println("Validating file index = " + i);
 
