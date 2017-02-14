@@ -315,16 +315,18 @@ final class LoadDataDialog extends JPanel {
                 System.out.println("Old loadedFiles list ");
                 System.out.println(loadedFiles);
 
-                // Append all new files to existing loadedFiles list
-                loadedFiles.addAll(Arrays.asList(newFiles));
+                // Add newly added files to the loading list
+                for (File newFile : newFiles) {
+                    // Do not add the same file twice
+                    if (!loadedFiles.contains(newFile)) {
+                        loadedFiles.add(newFile);
+                        // Also add new file name to the file list model
+                        fileListModel.addElement(newFile.getName());
+                    }
+                }
+
                 System.out.println("New loadedFiles list ");
                 System.out.println(loadedFiles);
-
-                // Add newly added files to the file list model
-                for (File newFile : newFiles) {
-                    // Add each file name to the list model
-                    fileListModel.addElement(newFile.getName());
-                }
             }
         });
 
