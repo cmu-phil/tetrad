@@ -151,6 +151,7 @@ public final class Fang implements GraphSearch {
                 double[] p4 = new double[n];
                 double[] xy = new double[n];
                 double[] r = new double[n];
+                double[] h = new double[n];
 
                 for (int k = 0; k < n; k++) {
                     double x = xData[k];
@@ -163,6 +164,7 @@ public final class Fang implements GraphSearch {
 
                     xy[k] = x * y;
                     r[k] = g(x) * y - x * g(y);
+                    h[k] = pos(x) * y - x * pos(y);
                 }
 
                 double cov = mean(xy, n);
@@ -175,7 +177,8 @@ public final class Fang implements GraphSearch {
                 double t2 = (mean(p2, n) - 0.0) / (sd(r, n) / sqrt(n));
                 double t3 = (mean(p3, n) - 0.0) / (sd(r, n) / sqrt(n));
                 double t4 = (mean(p4, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double tr = (mean(r, n) - 0.0) / (sd(r, n) / sqrt(n));
+//                double tr = (mean(r, n) - 0.0) / (sd(r, n) / sqrt(n));
+                double th = (mean(h, n) - 0.0) / (sd(h, n) / sqrt(n));
 
                 boolean ng = isNonGaussian(i) || isNonGaussian(j);
 
@@ -193,11 +196,15 @@ public final class Fang implements GraphSearch {
                 if (abs(t3) > T) numNonZero++;
                 if (abs(t4) > T) numNonZero++;
 
-                if (abs(tr) > extraAdjacencyThreshold || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
-                    if ((signum(cov1) == -signum(cov)
+                if (abs(th) > extraAdjacencyThreshold || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
+                    if (shouldGo(X, Y)) {
+                        graph.addDirectedEdge(X, Y);
+                    } else if (shouldGo(Y, X)) {
+                        graph.addDirectedEdge(Y, X);
+                    } else if ((signum(cov1) == -signum(cov)
                             || signum(cov2) == -signum(cov)
                             || signum(cov3) == -signum(cov)
-                            || signum(cov4) == -signum(cov)) && !(shouldGo(X, Y) || shouldGo(Y, X))) {
+                            || signum(cov4) == -signum(cov))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -206,7 +213,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (numZero > 0 && numNonZero > 0 && !(shouldGo(X, Y) || shouldGo(Y, X))) {
+                    } else if (numZero > 0 && numNonZero > 0) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -215,7 +222,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (ng && abs(tr) <= T && !(shouldGo(X, Y) || shouldGo(Y, X))) {
+                    } else if (ng && abs(th) <= T) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -224,13 +231,9 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (shouldGo(X, Y)) {
+                    } else if (ng && th > T) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (shouldGo(Y, X)) {
-                        graph.addDirectedEdge(Y, X);
-                    } else if (ng && tr > T) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (ng && tr < -T) {
+                    } else if (ng && th < -T) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
@@ -319,6 +322,7 @@ public final class Fang implements GraphSearch {
 
     /**
      * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
+     *
      * @return This threshold, default 10.
      */
     public double getExtraAdjacencyThreshold() {
@@ -327,6 +331,7 @@ public final class Fang implements GraphSearch {
 
     /**
      * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
+     *
      * @param extraAdjacencyThreshold This threshold, default 10.
      */
     public void setExtraAdjacencyThreshold(double extraAdjacencyThreshold) {

@@ -107,18 +107,12 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
-        int count = 0;
 
         for (SemBicScore score : semBicScores) {
-            double _score = score.localScoreDiff(x, y, z);
-
-            if (!Double.isNaN(_score)) {
-                sum += _score;
-                count++;
-            }
+            sum += score.localScoreDiff(x, y, z);
         }
 
-        return sum / count;
+        return sum / semBicScores.size();
     }
 
     @Override
@@ -236,16 +230,23 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         return variables;
     }
 
+    public boolean getAlternativePenalty() {
+        return false;
+    }
+
+    public void setAlternativePenalty(double value) {
+    }
+
     @Override
     public int getSampleSize() {
         return sampleSize;
     }
 
     // Calculates the BIC score.
-    private double score(double residualVariance, int n, int p, double c) {
-        return -n * Math.log(residualVariance) - c * (p + 1) * Math.log(n);
-    }
-
+//    private double score(double residualVariance, int n, int p, double c) {
+//        return -n * Math.log(residualVariance) - c * (2 * p + 1) * Math.log(n);
+//    }
+//
     private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
     }

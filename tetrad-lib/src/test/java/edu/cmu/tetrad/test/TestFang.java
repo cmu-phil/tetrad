@@ -115,7 +115,7 @@ public class TestFang {
     public void TestRuben() {
         Parameters parameters = new Parameters();
 
-        parameters.set("alpha", .001);
+        parameters.set("alpha", .05);
         parameters.set("penaltyDiscount", 5);
         parameters.set("depth", 4);
 
