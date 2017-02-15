@@ -60,15 +60,13 @@ final class LoadDataDialog extends JPanel {
 
     private List<String> failedFiles;
 
-    private File[] newFilesArr;
-
     private DataLoaderSettings dataLoaderSettings;
 
     private DataModelList dataModelList;
 
     private JTextArea validationResultTextArea;
 
-    public JTextArea fileTextArea;
+    private JTextArea filePreviewTextArea;
 
     private JList fileList;
 
@@ -134,7 +132,7 @@ final class LoadDataDialog extends JPanel {
 
         this.failedFiles = new ArrayList<>();
 
-        this.fileTextArea = new JTextArea();
+        this.filePreviewTextArea = new JTextArea();
 
         this.fileListModel = new DefaultListModel();
 
@@ -208,12 +206,12 @@ final class LoadDataDialog extends JPanel {
                     int fileIndex = fileList.getMinSelectionIndex();
                     if (fileIndex < 0) {
                         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-                        fileTextArea.setText("");
+                        filePreviewTextArea.setText("");
                     } else {
                         // Update the border title and show preview
                         previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(fileIndex).getName();
                         filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-                        setPreview(loadedFiles.get(fileIndex), fileTextArea);
+                        setPreview(loadedFiles.get(fileIndex), filePreviewTextArea);
                     }
                 }
             }
@@ -262,7 +260,7 @@ final class LoadDataDialog extends JPanel {
 
                                     // Reset the default selection and corresponding preview content
                                     fileList.setSelectedIndex(0);
-                                    setPreview(loadedFiles.get(0), fileTextArea);
+                                    setPreview(loadedFiles.get(0), filePreviewTextArea);
                                 }
                             }
                         }
@@ -347,14 +345,14 @@ final class LoadDataDialog extends JPanel {
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
-        fileTextArea.setEditable(false);
-        fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        filePreviewTextArea.setEditable(false);
+        filePreviewTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // Set the default preview for the default selected file
-        setPreview(loadedFiles.get(0), fileTextArea);
+        setPreview(loadedFiles.get(0), filePreviewTextArea);
 
         // Add the scrollable text area in a scroller
-        final JScrollPane filePreviewScrollPane = new JScrollPane(fileTextArea);
+        final JScrollPane filePreviewScrollPane = new JScrollPane(filePreviewTextArea);
         filePreviewBox.add(filePreviewScrollPane);
 
         // Show the default selected filename as preview border title
