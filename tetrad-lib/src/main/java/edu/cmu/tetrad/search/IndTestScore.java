@@ -192,7 +192,7 @@ public class IndTestScore implements IndependenceTest {
     }
 
     public ICovarianceMatrix getCov() {
-        throw new UnsupportedOperationException();
+        return ((SemBicScore) score).getCovariances();
     }
 
     public List<DataSet> getDataSets() {

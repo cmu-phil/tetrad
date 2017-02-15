@@ -108,8 +108,6 @@ public class LogisticRegressionEditor extends JPanel {
 
         int numModels = regressionRunner.getNumModels();
 
-        System.out.println("numModels = " + numModels);
-
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
 

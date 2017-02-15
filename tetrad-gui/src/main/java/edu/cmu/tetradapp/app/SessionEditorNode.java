@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.*;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
@@ -38,6 +37,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.MenuDragMouseEvent;
+import javax.swing.event.MenuDragMouseListener;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.*;
@@ -105,8 +106,6 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.simulationStudy = simulationStudy;
         displayComp.setName(modelNode.getSessionName());
-        
-        System.out.println("modelNode.getSessionName(): " + modelNode.getButtonType());
 
         if (displayComp instanceof NoteDisplayComp) {
             createParamObjects(this);
@@ -127,7 +126,6 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             });
         } else {
-            // Any node type except notes
             setDisplayComp(displayComp);
             setLayout(new BorderLayout());
             add((JComponent) getSessionDisplayComp(), BorderLayout.CENTER);
@@ -266,8 +264,6 @@ public final class SessionEditorNode extends DisplayNode {
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
-            editorWindow.setResizable(true);
-            editorWindow.setMaximum(true);
             editorWindow.setVisible(true);
             spawnedEditor = editorWindow;
 
@@ -390,6 +386,22 @@ public final class SessionEditorNode extends DisplayNode {
                 e.consume();
             }
         });
+
+//        sessionEditorNode.addMouseMotionListener(new MouseMotionAdapter() {
+//            public void mouseMoved(MouseEvent e) {
+//                Point p = e.getPoint();
+//                if (p.getX() > 40 && p.getY() > 40) {
+//                    ToolTipManager toolTipManager =
+//                            ToolTipManager.sharedInstance();
+//                    toolTipManager.setInitialDelay(750);
+//                    JPopupMenu popup = sessionEditorNode.getPopup();
+//
+//                    if (!popup.isShowing()) {
+//                        popup.show(sessionEditorNode, e.getX(), e.getY());
+//                    }
+//                }
+//            }
+//        });
 
         sessionEditorNode.addComponentListener(new ComponentAdapter() {
             public void componentMoved(ComponentEvent e) {
@@ -564,11 +576,17 @@ public final class SessionEditorNode extends DisplayNode {
         return popup;
     }
 
+    JPopupMenu popup = null;
+
     /**
      * Creates the popup for the node.
      */
     private JPopupMenu getPopup() {
-        JPopupMenu popup = new JPopupMenu();
+        if (popup != null && popup.isShowing()) {
+            return popup;
+        }
+
+        popup = new JPopupMenu();
 
         JMenuItem createModel = new JMenuItem("Create Model");
         createModel.setToolTipText("<html>Creates a new model for this node" +
@@ -739,52 +757,63 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-//        JMenuItem editSimulationParameters =
-//                new JMenuItem("Edit Parameters...");
-//        editSimulationParameters.setToolTipText("<html>");
+        JMenuItem editSimulationParameters =
+                new JMenuItem("Edit Parameters...");
+        editSimulationParameters.setToolTipText("<html>");
 
-//        editSimulationParameters.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                SessionModel model = getSessionNode().getModel();
-//                Class modelClass;
+        editSimulationParameters.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                SessionModel model = getSessionNode().getModel();
+                Class modelClass;
+
+                if (model == null) {
+                    modelClass = determineTheModelClass(getSessionNode());
+                } else {
+                    modelClass = model.getClass();
+                }
+
+                if (!getSessionNode().existsParameterizedConstructor(
+                        modelClass)) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "There is no parameterization for this model.");
+                    return;
+                }
+
+                Parameters param = getSessionNode().getParam(modelClass);
+                Object[] arguments =
+                        getSessionNode().getModelConstructorArguments(
+                                modelClass);
+
+                if (param != null) {
+                    try {
+                        editParameters(modelClass, param, arguments);
+                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                "Should I overwrite the contents of this box and all delete the contents\n" +
+                                        "of all boxes downstream?",
+                                "Double check...", JOptionPane.YES_NO_OPTION);
+                        if (ret == JOptionPane.YES_OPTION) {
+                            getSessionNode().destroyModel();
+                            getSessionNode().createModel(modelClass, true);
+                        }
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+
+//        final SessionNode thisNode = getSessionNode();
 //
-//                if (model == null) {
-//                    modelClass = determineTheModelClass(getSessionNode());
-//                } else {
-//                    modelClass = model.getClass();
-//                }
+//        //        popup.add(getConsistentParentMenuItems(getConsistentParentBoxTypes(thisNode)));
+////        popup.add(getConsistentChildBoxMenus(getConsistentChildBoxTypes(thisNode, null)));
 //
-//                if (!getSessionNode().existsParameterizedConstructor(
-//                        modelClass)) {
-//                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                            "There is no parameterization for this model.");
-//                    return;
-//                }
+//        addConsistentParentMenuItems(popup, getConsistentParentBoxTypes(thisNode));
+//        addConsistentChildBoxMenus(popup, getConsistentChildBoxTypes(thisNode, null));
 //
-//                Parameters param = getSessionNode().getParam(modelClass);
-//                Object[] arguments =
-//                        getSessionNode().getModelConstructorArguments(
-//                                modelClass);
-//
-//                if (param != null) {
-//                    try {
-//                        editParameters(modelClass, param, arguments);
-//                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-//                                "Should I overwrite the contents of this box and all delete the contents\n" +
-//                                        "of all boxes downstream?",
-//                                "Double check...", JOptionPane.YES_NO_OPTION);
-//                        if (ret == JOptionPane.YES_OPTION) {
-//                            getSessionNode().destroyModel();
-//                            getSessionNode().createModel(modelClass, true);
-//                        }
-//                    } catch (Exception e1) {
-//                        e1.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
+//        popup.addSeparator();
 
         popup.add(createModel);
+        popup.add(editSimulationParameters);
         popup.add(editModel);
         popup.add(destroyModel);
 
@@ -796,85 +825,111 @@ public final class SessionEditorNode extends DisplayNode {
 
         popup.addSeparator();
 
-//        final SessionNode thisNode = getSessionNode();
-//
-//        popup.add(getConsistentParentMenuItems(getConsistentParentBoxTypes(thisNode)));
-//        popup.add(getConsistentChildBoxMenus(getConsistentChildBoxTypes(thisNode, null)));
-
-//        popup.addSeparator();
-
         addEditLoggerSettings(popup);
         popup.add(propagateDownstream);
 
         return popup;
     }
 
-    private JMenu getConsistentChildBoxMenus(List<String> consistentChildBoxes) {
-        JMenu newChildren = new JMenu("New Child Box");
+//    private void addConsistentChildBoxMenus(JPopupMenu menu, List<String> consistentChildBoxes) {
+//        for (String _type : consistentChildBoxes) {
+//            final JMenuItem menuItem = new JMenuItem(_type);
+//
+//            menuItem.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    String text = menuItem.getText();
+//                    String[] tokens = text.split(" ");
+//                    String type = tokens[1];
+//                    new ConstructTemplateAction("Test").addChild(SessionEditorNode.this, type);
+//                }
+//            });
+//
+//            menu.add(menuItem);
+//        }
+//    }
 
-        for (String _type : consistentChildBoxes) {
-            final JMenuItem menuItem = new JMenuItem(_type);
+//    private JMenu addConsistentChildBoxMenus(List<String> consistentChildBoxes) {
+//        JMenu newChildren = new JMenu("New Child Box");
+//
+//        for (String _type : consistentChildBoxes) {
+//            final JMenuItem menuItem = new JMenuItem(_type);
+//
+//            menuItem.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    new ConstructTemplateAction("Test").addChild(SessionEditorNode.this, menuItem.getText());
+//                }
+//            });
+//
+//
+//
+//            newChildren.add(menuItem);
+//        }
+//        return newChildren;
+//    }
 
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    new ConstructTemplateAction("Test").addChild(SessionEditorNode.this, menuItem.getText());
-                }
-            });
+//    private JMenu addConsistentParentMenuItems(JPopupMenu menu, List<SessionNode> consistentParentNodes) {
+//        final JMenu newParents = new JMenu("New Parent Box");
+//
+//        for (final SessionNode node : consistentParentNodes) {
+//            final JMenuItem menuItem = new JMenuItem("Add Links: " + node.getDisplayName());
+//
+//            menuItem.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    String displayName1 = node.getDisplayName();
+//                    String displayName2 = SessionEditorNode.this.getSessionNode().getDisplayName();
+//                    new ConstructTemplateAction("Test").addEdge(displayName1, displayName2);
+//                }
+//            });
+//
+//            menu.add(menuItem);
+//        }
+//
+//        return newParents;
+//    }
 
-            newChildren.add(menuItem);
-        }
-        return newChildren;
-    }
+//    private List<String> getConsistentChildBoxTypes(SessionNode thisNode, SessionModel model) {
+//        List<String> consistentChildBoxes = new ArrayList<>();
+//
+//        List<Node> nodes = sessionWorkbench.getSessionWrapper().getNodes();
+//        List<SessionNode> sessionNodes = new ArrayList<>();
+//        for (Node node : nodes) sessionNodes.add(((SessionNodeWrapper) node).getSessionNode());
+//
+//        Set<String> strings = TetradApplicationConfig.getInstance().getConfigs().keySet();
+//
+//        for (String type : strings) {
+//            SessionNodeConfig config = TetradApplicationConfig.getInstance().getSessionNodeConfig(type);
+//            Class[] modelClasses = config.getModels();
+//
+//            SessionNode newNode = new SessionNode(modelClasses);
+//
+//            if (newNode.isConsistentParent(thisNode, sessionNodes)) {
+//                consistentChildBoxes.add("Add " + type);
+//            }
+//        }
+//
+//        return consistentChildBoxes;
+//    }
 
-    private JMenu getConsistentParentMenuItems(List<String> consistentParentBoxes) {
-        final JMenu newParents = new JMenu("New Parent Box");
-
-        for (String _type : consistentParentBoxes) {
-            final JMenuItem menuItem = new JMenuItem(_type);
-
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    new ConstructTemplateAction("Test").addParent(SessionEditorNode.this, menuItem.getText());
-                }
-            });
-
-            newParents.add(menuItem);
-        }
-        return newParents;
-    }
-
-    private List<String> getConsistentChildBoxTypes(SessionNode thisNode, SessionModel model) {
-        List<String> consistentChildBoxes = new ArrayList<>();
-
-        for (String type : TetradApplicationConfig.getInstance().getConfigs().keySet()) {
-            SessionNodeConfig config = TetradApplicationConfig.getInstance().getSessionNodeConfig(type);
-            Class[] modelClasses = config.getModels();
-
-            SessionNode newNode = new SessionNode(modelClasses);
-
-            if (thisNode.isConsistentParent(newNode)) {
-                consistentChildBoxes.add(type);
-            }
-        }
-        return consistentChildBoxes;
-    }
-
-    private List<String> getConsistentParentBoxTypes(SessionNode thisNode) {
-        List<String> consistentParentBoxes = new ArrayList<>();
-
-        for (String type : TetradApplicationConfig.getInstance().getConfigs().keySet()) {
-            SessionNodeConfig config = TetradApplicationConfig.getInstance().getSessionNodeConfig(type);
-            Class[] modelClasses = config.getModels();
-            SessionNode newNode = new SessionNode(modelClasses);
-
-            if (thisNode.isConsistentParent(newNode)) {
-                consistentParentBoxes.add(type);
-            }
-        }
-        return consistentParentBoxes;
-    }
+//    private List<SessionNode> getConsistentParentBoxTypes(SessionNode thisNode) {
+//        List<SessionNode> consistentParentBoxes = new ArrayList<>();
+//
+//        for (Node _node : getSessionWorkbench().getSessionWrapper().getNodes()) {
+//            SessionNode node = ((SessionNodeWrapper) _node).getSessionNode();
+//
+//            if (sessionWorkbench.getSessionWrapper().isAncestorOf(thisNode, node)) {
+//                continue;
+//            }
+//
+//            if (!thisNode.getParents().contains(node) && thisNode.isConsistentParent(node)) {
+//                consistentParentBoxes.add(node);
+//            }
+//        }
+//
+//        return consistentParentBoxes;
+//    }
 
 
     /**

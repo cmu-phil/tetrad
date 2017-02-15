@@ -23,49 +23,45 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
  */
 public class DeleteHpcJobInfoAction extends AbstractAction {
 
-    private static final long serialVersionUID = 7915068087861233608L;
+	private static final long serialVersionUID = 7915068087861233608L;
 
-    private final Component parentComp;
+	private final Component parentComp;
 
-    public DeleteHpcJobInfoAction(final Component parentComp) {
-	this.parentComp = parentComp;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-	JTable table = (JTable) e.getSource();
-	int modelRow = Integer.valueOf(e.getActionCommand());
-	DefaultTableModel finishedJobTableModel = (DefaultTableModel) table
-		.getModel();
-
-	long jobId = Long.valueOf(
-		finishedJobTableModel.getValueAt(modelRow,
-			HpcJobActivityEditor.ID_COLUMN).toString()).longValue();
-
-	int answer = JOptionPane.showConfirmDialog(parentComp,
-		"Would you like to delete this HPC job id: " + jobId + "?",
-		"Delete HPC job", JOptionPane.YES_NO_OPTION);
-
-	if (answer == JOptionPane.NO_OPTION)
-	    return;
-
-	TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
-	final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
-
-	HpcJobInfo hpcJobInfo = hpcJobManager
-		.findHpcJobInfoById(Long.valueOf(
-			finishedJobTableModel.getValueAt(modelRow,
-				HpcJobActivityEditor.ID_COLUMN).toString())
-			.longValue());
-
-	if (hpcJobInfo != null) {
-	    // Update table
-	    finishedJobTableModel.removeRow(modelRow);
-	    table.updateUI();
-	    hpcJobManager.removeHpcJobInfoTransaction(hpcJobInfo);
+	public DeleteHpcJobInfoAction(final Component parentComp) {
+		this.parentComp = parentComp;
 	}
 
-    }
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		JTable table = (JTable) e.getSource();
+		int modelRow = Integer.valueOf(e.getActionCommand());
+		DefaultTableModel finishedJobTableModel = (DefaultTableModel) table.getModel();
+
+		long jobId = Long.valueOf(finishedJobTableModel.getValueAt(modelRow, HpcJobActivityEditor.ID_COLUMN).toString())
+				.longValue();
+
+		int answer = JOptionPane.showConfirmDialog(parentComp,
+				"Would you like to delete this HPC job id: " + jobId + "?", "Delete HPC job",
+				JOptionPane.YES_NO_OPTION);
+
+		if (answer == JOptionPane.NO_OPTION)
+			return;
+
+		TetradDesktop desktop = (TetradDesktop) DesktopController.getInstance();
+		final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
+
+		HpcJobInfo hpcJobInfo = hpcJobManager.findHpcJobInfoById(
+				Long.valueOf(finishedJobTableModel.getValueAt(modelRow, HpcJobActivityEditor.ID_COLUMN).toString())
+						.longValue());
+
+		if (hpcJobInfo != null) {
+			// Update table
+			finishedJobTableModel.removeRow(modelRow);
+			table.updateUI();
+			hpcJobManager.removeHpcJobInfoTransaction(hpcJobInfo);
+		}
+
+	}
 
 }

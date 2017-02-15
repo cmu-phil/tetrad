@@ -248,7 +248,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -258,20 +258,20 @@ public class GFciRunner extends AbstractAlgorithmRunner
                 if (allContinuous(list)) {
                     double penalty = params.getDouble("penaltyDiscount", 4);
 
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    IndTestScore test = new IndTestScore(fgsScore);
-                    fgsScore.setPenaltyDiscount(penalty);
-                    gfci = new GFci(test, fgsScore);
+                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    IndTestScore test = new IndTestScore(fgesScore);
+                    fgesScore.setPenaltyDiscount(penalty);
+                    gfci = new GFci(test, fgesScore);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
 //
-//                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-//                    fgsScore.setSamplePrior(samplePrior);
-//                    fgsScore.setStructurePrior(structurePrior);
+//                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+//                    fgesScore.setSamplePrior(samplePrior);
+//                    fgesScore.setStructurePrior(structurePrior);
 //
-//                    gfci = new GFci(fgsScore);
+//                    gfci = new GFci(fgesScore);
 //                }
                 else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
@@ -60,7 +60,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     private DataWrapper dataWrapper;
     private String name;
-    private Algorithm algorithm = new Fgs(new BdeuScore());
+    private Algorithm algorithm = new Fges(new BdeuScore());
     private Parameters parameters;
     private Graph sourceGraph;
     private Graph initialGraph;
@@ -249,7 +249,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
-                        throw new IllegalArgumentException("The random selection size is greater than the number of data sets.");
+                        throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than " +
+                                "the number of data sets.");
                     }
 
                     Collections.shuffle(dataSets);
@@ -264,20 +265,19 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRandomSelections"); k++) {
-                    List<DataSet> dataSets = new ArrayList<>();
-
                     for (DataModel dataModel : getDataModelList()) {
                         DataSet dataSet = (DataSet) dataModel;
 
                         if (!dataSet.isContinuous()) {
                             throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
                         }
+
+                        graphList.add(algorithm.search(dataSet, parameters));
                     }
                 }
             } else {
                 for (DataModel data : getDataModelList()) {
                     System.out.println("Analyzing data set # " + (++i));
-                    DataModel dataSet = data; //(DataSet) data;
                     Algorithm algorithm = getAlgorithm();
 
                     if (algorithm instanceof HasKnowledge) {
@@ -286,12 +286,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     DataType algDataType = algorithm.getDataType();
 
-                    if (dataSet.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                        graphList.add(algorithm.search(dataSet, parameters));
-                    } else if (dataSet.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed) && dataSet.isDiscrete()) {
-                        graphList.add(algorithm.search(dataSet, parameters));
-                    } else if (((DataSet) data).isMixed() && algDataType == DataType.Mixed) {
-                        graphList.add(algorithm.search(dataSet, parameters));
+                    System.out.println("data type = " + algDataType);
+                    System.out.println("Continuous = " + data.isContinuous());
+
+                    if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+                        graphList.add(algorithm.search(data, parameters));
+                    } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
+                        graphList.add(algorithm.search(data, parameters));
+                    } else if (data.isMixed() && algDataType == DataType.Mixed) {
+                        graphList.add(algorithm.search(data, parameters));
                     } else {
                         throw new IllegalArgumentException("The type of data changed; try opening up the search editor and " +
                                 "running the algorithm there.");
@@ -502,16 +505,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     @Override
     public List<String> getVariableNames() {
         return null;
-    }
-
-    public List<Graph> getCompareGraph() {
-        List<Graph> compareGraphs = new ArrayList<>();
-
-        for (Graph graph : getGraphs()) {
-            compareGraphs.add(algorithm.getComparisonGraph(graph));
-        }
-
-        return compareGraphs;
     }
 
     public List<Graph> getCompareGraphs(List<Graph> graphs) {

@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
-import com.sun.nio.sctp.IllegalReceiveException;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -1104,6 +1103,8 @@ public final class DataUtils {
     }
 
     public static TetradMatrix cov(TetradMatrix data) {
+
+
         for (int j = 0; j < data.columns(); j++) {
             double sum = 0.0;
 

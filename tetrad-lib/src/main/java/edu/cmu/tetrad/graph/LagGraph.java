@@ -38,6 +38,8 @@ public class LagGraph implements Graph {
     private List<String> variables = new ArrayList<>();
     private int numLags = 0;
     private Map<String, List<Node>> laggedVariables = new HashMap<>();
+    private boolean pag;
+    private boolean pattern;
 
     // New methods.
     public boolean addVariable(String variable) {
@@ -471,6 +473,26 @@ public class LagGraph implements Graph {
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         return null;
+    }
+
+    @Override
+    public boolean isPag() {
+        return pag;
+    }
+
+    @Override
+    public void setPag(boolean pag) {
+        this.pag = pag;
+    }
+
+    @Override
+    public boolean isPattern() {
+        return pattern;
+    }
+
+    @Override
+    public void setPattern(boolean pattern) {
+        this.pattern = pattern;
     }
 }
 

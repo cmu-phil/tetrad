@@ -89,8 +89,6 @@ public final class GraphEditor extends JPanel
 
         int numModels = graphEditable.getNumModels();
 
-        System.out.println("numModels = " + numModels);
-
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
 

@@ -17,16 +17,16 @@ public class HpcJobInfoTableModel extends DefaultTableModel {
 
 	private final int buttonColumn;
 
-	public HpcJobInfoTableModel(final Vector<Vector<String>> activeRowData,
-		final Vector<String> activeColumnNames, final int buttonColumn) {
-	    super(activeRowData, activeColumnNames);
-	    this.buttonColumn = buttonColumn;
+	public HpcJobInfoTableModel(final Vector<Vector<String>> activeRowData, final Vector<String> activeColumnNames,
+			final int buttonColumn) {
+		super(activeRowData, activeColumnNames);
+		this.buttonColumn = buttonColumn;
 	}
 
 	public boolean isCellEditable(int row, int column) {
-	    if (column == buttonColumn)
-		return true;
-	    return false;
+		if (column == buttonColumn)
+			return true;
+		return false;
 	}
 
 }

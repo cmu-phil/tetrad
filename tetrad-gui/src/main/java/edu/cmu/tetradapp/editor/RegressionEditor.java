@@ -149,8 +149,6 @@ public class RegressionEditor extends JPanel {
 
         int numModels = runner.getNumModels();
 
-        System.out.println("numModels = " + numModels);
-
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
 

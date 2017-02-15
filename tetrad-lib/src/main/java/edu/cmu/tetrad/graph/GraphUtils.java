@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TextTable;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayReader;
@@ -1111,7 +1112,7 @@ public final class GraphUtils {
      * @return true if <code>set</code> is a clique in <code>graph</code>. </p>
      * R. Silva, June 2004
      */
-    public static boolean isClique(Set<Node> set, Graph graph) {
+    public static boolean isClique(Collection<Node> set, Graph graph) {
         List<Node> setv = new LinkedList<>(set);
         for (int i = 0; i < setv.size() - 1; i++) {
             for (int j = i + 1; j < setv.size(); j++) {
@@ -1761,6 +1762,12 @@ public final class GraphUtils {
     }
 
     public static String pathString(List<Node> path, Graph graph) {
+        return pathString(graph, path, new LinkedList<Node>());
+    }
+
+    public static String pathString(Graph graph, Node...x) {
+        List<Node> path = new ArrayList<>();
+        Collections.addAll(path, x);
         return pathString(graph, path, new LinkedList<Node>());
     }
 
@@ -3417,6 +3424,74 @@ public final class GraphUtils {
         return counts;
     }
 
+    public static void addPagColoring(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) {
+                continue;
+            }
+
+            Node x = Edges.getDirectedEdgeTail(edge);
+            Node y = Edges.getDirectedEdgeHead(edge);
+
+            graph.removeEdge(edge);
+            final boolean dashed = existsSemiDirectedPath(x, y, -1, graph);
+            graph.addEdge(edge);
+
+            if (dashed) {
+                edge.setDashed(dashed);
+            }
+
+            if (graph.defVisible(edge)) {
+                edge.setLineColor(Color.green);
+            }
+        }
+    }
+
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound'. Cycle checker in other words.
+    public static boolean existsSemiDirectedPath(Node from, Node to, int bound, Graph graph) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Q.offer(from);
+        V.add(from);
+        Node e = null;
+        int distance = 0;
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+            if (t == to) {
+                return true;
+            }
+
+            if (e == t) {
+                e = null;
+                distance++;
+                if (distance > (bound == -1 ? 1000 : bound)) return false;
+            }
+
+            for (Node u : graph.getAdjacentNodes(t)) {
+                Edge edge = graph.getEdge(t, u);
+                Node c = GraphUtils.traverseSemiDirected(t, edge);
+                if (c == null) continue;
+
+                if (c == to) {
+                    return true;
+                }
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+
+                    if (e == null) {
+                        e = u;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static class Counts {
 
         private int[][] counts;
@@ -3574,7 +3649,9 @@ public final class GraphUtils {
             return 4;
         }
 
-        throw new IllegalArgumentException("Unsupported edgeTop type : " + edgeTop);
+        return 5;
+
+//        throw new IllegalArgumentException("Unsupported edge type : " + edgeTop);
     }
 
     private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
@@ -4948,13 +5025,13 @@ public final class GraphUtils {
     }
 
     // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
+    public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
+            if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
                 return edge.getNode2();
             }
         } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
+            if (edge.getEndpoint2() == Endpoint.TAIL || edge.getEndpoint2() == Endpoint.CIRCLE) {
                 return edge.getNode1();
             }
         }

@@ -295,7 +295,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
 //        return simulateDataRecursive(sampleSize, latentDataSaved);
 //        return simulateDataMinimizeSurface(sampleSize, latentDataSaved);
-        return simulateDataAvoidInfinity(sampleSize, latentDataSaved);
+//        return simulateDataAvoidInfinity(sampleSize, latentDataSaved);
+        return simulateDataFisher(sampleSize);
 //        return simulateDataNSteps(sampleSize, latentDataSaved);
     }
 
@@ -820,6 +821,134 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         }
 
     }
+
+    /**
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
+     * applied every so many steps. A data point is recorded before each shock is
+     * administered. If convergence happens before that number of steps has been reached,
+     * a data point is recorded and a new shock immediately applied. The model may be
+     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
+     * though this is not checked. Uses an interval between shocks of 50 and a convergence
+     * threshold of 1e-5. Uncorrelated Gaussian shocks are used.
+     *
+     * @param sampleSize The number of samples to be drawn. Must be a positive
+     *                   integer.
+     */
+    public DataSet simulateDataFisher(int sampleSize) {
+        return simulateDataFisher(sampleSize, 50, 1e-5);
+    }
+
+    /**
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
+     * applied every so many steps. A data point is recorded before each shock is
+     * administered. If convergence happens before that number of steps has been reached,
+     * a data point is recorded and a new shock immediately applied. The model may be
+     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
+     * though this is not checked.
+     *
+     * @param sampleSize            The number of samples to be drawn.
+     * @param intervalBetweenShocks External shock is applied every this many steps.
+     *                              Must be positive integer.
+     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     */
+    public DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
+                                      double epsilon) {
+        if (intervalBetweenShocks < 1) throw new IllegalArgumentException(
+                "Interval between shocks must be >= 1: " + intervalBetweenShocks);
+        if (epsilon <= 0.0) throw new IllegalArgumentException(
+                "Epsilon must be > 0: " + epsilon);
+
+        final Map<String, Double> variableValues = new HashMap<>();
+
+        final Context context = new Context() {
+            public Double getValue(String term) {
+                Double value = parameterValues.get(term);
+
+                if (value != null) {
+                    return value;
+                }
+
+                value = variableValues.get(term);
+
+                if (value != null) {
+                    return value;
+                }
+
+                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            }
+        };
+
+        final List<Node> variableNodes = pm.getVariableNodes();
+
+        double[] t1 = new double[variableNodes.size()];
+        double[] t2 = new double[variableNodes.size()];
+        double[] shocks = new double[variableNodes.size()];
+        double[][] all = new double[variableNodes.size()][sampleSize];
+
+        // Do the simulation.
+        for (int row = 0; row < sampleSize; row++) {
+            for (int j = 0; j < t1.length; j++) {
+                Node error = pm.getErrorNode(variableNodes.get(j));
+
+                if (error == null) {
+                    throw new NullPointerException();
+                }
+
+                Expression expression = pm.getNodeExpression(error);
+                double value = expression.evaluate(context);
+
+                if (Double.isNaN(value)) {
+                    throw new IllegalArgumentException("Undefined value for expression: " + expression);
+                }
+
+                variableValues.put(error.getName(), value);
+                shocks[j] = value;
+            }
+
+            for (int i = 0; i < intervalBetweenShocks; i++) {
+                for (int j = 0; j < t1.length; j++) {
+                    t2[j] = shocks[j];
+                    Node node = variableNodes.get(j);
+                    Expression expression = pm.getNodeExpression(node);
+                    t2[j] = expression.evaluate(context);
+                    variableValues.put(node.getName(), t2[j]);
+                }
+
+                boolean converged = true;
+
+                for (int j = 0; j < t1.length; j++) {
+                    if (Math.abs(t2[j] - t1[j]) > epsilon) {
+                        converged = false;
+                        break;
+                    }
+                }
+
+                double[] t3 = t1;
+                t1 = t2;
+                t2 = t3;
+
+                if (converged) {
+                    break;
+                }
+            }
+
+            for (int j = 0; j < t1.length; j++) {
+                all[j][row] = t1[j];
+            }
+        }
+
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : variableNodes) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
+        }
+
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        return DataUtils.restrictToMeasured(boxDataSet);
+    }
+
 
     public TetradVector simulateOneRecord(TetradVector e) {
         final Map<String, Double> variableValues = new HashMap<>();

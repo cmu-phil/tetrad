@@ -45,7 +45,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     static final long serialVersionUID = 23L;
 
     public enum AlgorithmType {
-        BEAM, FGS
+        BEAM, FGES
     }
 
     private AlgorithmType algorithmType = AlgorithmType.BEAM;
@@ -223,7 +223,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
                 search = new BffBeam(graph2, dataSet, knowledge);
-            } else if (getAlgorithmType() == AlgorithmType.FGS) {
+            } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 search = new BffGes(graph2, dataSet);
                 search.setKnowledge(knowledge);
             } else {
@@ -235,7 +235,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
                 search = new BffBeam(graph2, covarianceMatrix, knowledge);
-            } else if (getAlgorithmType() == AlgorithmType.FGS) {
+            } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 throw new IllegalArgumentException("GES method requires a dataset; a covariance matrix was provided.");
 //                search = new BffGes(graph2, covarianceMatrix);
 //                search.setKnowledge(knowledge);

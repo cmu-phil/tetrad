@@ -21,10 +21,13 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Array;
@@ -59,7 +62,7 @@ import java.util.*;
  * @see SessionAdapter
  * @see SessionEvent
  */
-public class SessionNode implements TetradSerializable {
+public class SessionNode implements Node, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -292,7 +295,7 @@ public class SessionNode implements TetradSerializable {
                 numModels[j] = parentClasses[j].length;
             }
 
-            if (isConsistentModelClass(modelClass, parentClasses, false)) {
+            if (isConsistentModelClass(modelClass, parentClasses, false, null)) {
                 if (this.getModel() == null) {
                     this.parents.add(parent);
                     parent.addChild(this);
@@ -314,6 +317,10 @@ public class SessionNode implements TetradSerializable {
     }
 
     public boolean isConsistentParent(SessionNode parent) {
+        return isConsistentParent(parent, null);
+    }
+
+    public boolean isConsistentParent(SessionNode parent, List<SessionNode> existingNodes) {
         if (this.parents.contains(parent)) {
             return false;
         }
@@ -330,7 +337,7 @@ public class SessionNode implements TetradSerializable {
         Class[] thisClass = new Class[1];
 
         if (getModel() != null) {
-             thisClass[0] = getModel().getClass();
+            thisClass[0] = getModel().getClass();
         }
 
         for (Class modelClass : getModel() != null ? thisClass : this.modelClasses) {
@@ -347,7 +354,7 @@ public class SessionNode implements TetradSerializable {
                 parentClasses[j] = node.getModelClasses();
             }
 
-            if (isConsistentModelClass(modelClass, parentClasses, false)) {
+            if (isConsistentModelClass(modelClass, parentClasses, false, existingNodes)) {
                 return true;
             }
         }
@@ -390,7 +397,7 @@ public class SessionNode implements TetradSerializable {
                 numModels[j] = parentClasses[j].length;
             }
 
-            if (isConsistentModelClass(modelClass, parentClasses, false)) {
+            if (isConsistentModelClass(modelClass, parentClasses, false, null)) {
                 if (this.getModel() == null) {
                     this.parents.add(parent);
                     parent.addChild(this);
@@ -691,13 +698,13 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
+     * @param exact
      * @return those model classes among the possible model classes that are at
      * least consistent with the model class of the parent session nodes, in the
      * sense that possibly with the addition of more parent session nodes, and
      * assuming that the models of the parent session nodes are non-null, it is
      * possible to construct a model in one of the legal classes for this node
      * using the parent models as arguments to some constructor in that class.
-     * @param exact
      */
     public Class[] getConsistentModelClasses(boolean exact) {
         List<Class> classes = new ArrayList<>();
@@ -724,7 +731,7 @@ public class SessionNode implements TetradSerializable {
 
             // If this model class is consistent, add it to the list.
             if (isConsistentModelClass(this.modelClasses[i],
-                    parentModelClasses, exact)) {
+                    parentModelClasses, exact, null)) {
                 classes.add(modelClasses[i]);
             }
         }
@@ -1008,11 +1015,71 @@ public class SessionNode implements TetradSerializable {
         return null;
     }
 
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public void setName(String name) {
+
+    }
+
+    @Override
+    public NodeType getNodeType() {
+        return null;
+    }
+
+    @Override
+    public void setNodeType(NodeType nodeType) {
+
+    }
+
     /**
      * Prints out the name of the session node.
      */
     public String toString() {
         return this.getBoxType();
+    }
+
+    @Override
+    public int getCenterX() {
+        return 0;
+    }
+
+    @Override
+    public void setCenterX(int centerX) {
+
+    }
+
+    @Override
+    public int getCenterY() {
+        return 0;
+    }
+
+    @Override
+    public void setCenterY(int centerY) {
+
+    }
+
+    @Override
+    public void setCenter(int centerX, int centerY) {
+
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+
+    }
+
+    @Override
+    public Node like(String name) {
+        return null;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return 0;
     }
 
     /**
@@ -1132,7 +1199,7 @@ public class SessionNode implements TetradSerializable {
             nodeClasses[i] = node.getModelClasses();
         }
 
-        return isConsistentModelClass(modelClass, nodeClasses, exact);
+        return isConsistentModelClass(modelClass, nodeClasses, exact, null);
     }
 
     /**
@@ -1257,12 +1324,37 @@ public class SessionNode implements TetradSerializable {
         }
     }
 
-    public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes, boolean exact)
+    public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes, boolean exact, List<SessionNode> existingNodes)
             throws RuntimeException {
         for (Class parameterType1 : constructorTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
                         "Parameter types must all be non-null.");
+            }
+        }
+
+        // Is it the case that for this constructor, every argument type is a model class for
+        // one of the existing session nodes? (You can skip Parameters classes.)
+        if (existingNodes != null) {
+            existingNodes.remove(this);
+
+            for (Class<?> type : constructorTypes) {
+                if (type.equals(Parameters.class)) continue;
+                boolean foundNode = false;
+
+                FOR:
+                for (SessionNode node : existingNodes) {
+                    for (Class<?> clazz : node.getModelClasses()) {
+                        if (clazz.equals(type)) {
+                            foundNode = true;
+                            break FOR;
+                        }
+                    }
+                }
+
+                if (!foundNode) {
+                    return false;
+                }
             }
         }
 
@@ -1297,6 +1389,9 @@ public class SessionNode implements TetradSerializable {
                     if (!constructorType.isAssignableFrom(modelType)) {
                         allAssigned = false;
                     }
+//                    else {
+//                        System.out.println("aa " + constructorType + " assignable from " + modelType);
+//                    }
                 }
 
                 if (allAssigned) {
@@ -1536,7 +1631,8 @@ public class SessionNode implements TetradSerializable {
     /**
      * New version 2015901.
      */
-    private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses, boolean exact) {
+    private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses, boolean exact,
+                                           List<SessionNode> existingNodes) {
         Constructor[] constructors = modelClass.getConstructors();
 
         // If the constructor takes the special form of an array followed by Parameters,
@@ -1621,7 +1717,7 @@ public class SessionNode implements TetradSerializable {
 
                     modelTypes[comb.length] = Parameters.class;
 
-                    if (assignClasses(constructorTypes, modelTypes, exact)) {
+                    if (assignClasses(constructorTypes, modelTypes, exact, existingNodes)) {
                         return true;
                     }
                 } else {
@@ -1633,7 +1729,7 @@ public class SessionNode implements TetradSerializable {
                         modelTypes[i] = summary.get(i).get(comb[i]);
                     }
 
-                    if (assignClasses(constructorTypes, modelTypes, exact)) {
+                    if (assignClasses(constructorTypes, modelTypes, exact, existingNodes)) {
                         return true;
                     }
                 }

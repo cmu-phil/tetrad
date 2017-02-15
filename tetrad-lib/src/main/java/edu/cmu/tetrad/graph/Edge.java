@@ -23,6 +23,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
@@ -37,26 +38,15 @@ import java.io.ObjectInputStream;
  */
 public class Edge implements TetradSerializable, Comparable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * @serial
-     */
     private Node node1;
-
-    /**
-     * @serial
-     */
     private Node node2;
-
-    /**
-     * @serial
-     */
     private Endpoint endpoint1;
-
-    /**
-     * @serial
-     */
     private Endpoint endpoint2;
+
+    // Usual coloring--set to something else for a special line color.
+    private transient Color lineColor = null;
+
+    private boolean dashed = false;
 
     //=========================CONSTRUCTORS============================//
 
@@ -95,6 +85,7 @@ public class Edge implements TetradSerializable, Comparable {
 
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
+        this.lineColor = edge.getLineColor();
     }
 
     /**
@@ -365,6 +356,24 @@ public class Edge implements TetradSerializable, Comparable {
 
     public boolean isNull() {
         return endpoint1 == Endpoint.NULL && endpoint2 == Endpoint.NULL;
+    }
+
+    public Color getLineColor() {
+        return this.lineColor;
+    }
+
+    public void setLineColor(Color lineColor) {
+        if (lineColor != null) {
+            this.lineColor = lineColor;
+        }
+    }
+
+    public boolean isDashed() {
+        return dashed;
+    }
+
+    public void setDashed(boolean dashed) {
+        this.dashed = dashed;
     }
 }
 

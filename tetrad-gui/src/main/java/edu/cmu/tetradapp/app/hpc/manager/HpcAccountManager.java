@@ -14,30 +14,30 @@ import edu.pitt.dbmi.tetrad.db.service.HpcAccountService;
  */
 public class HpcAccountManager {
 
-    private final HpcAccountService hpcAccountService;
-    
-    private final JsonWebTokenManager jsonWebTokenManager;
+	private final HpcAccountService hpcAccountService;
 
-    public HpcAccountManager(final org.hibernate.Session session) {
-	this.hpcAccountService = new HpcAccountService(session);
-	this.jsonWebTokenManager = new JsonWebTokenManager();
-    }
+	private final JsonWebTokenManager jsonWebTokenManager;
 
-    public List<HpcAccount> getHpcAccounts() {
-	List<HpcAccount> hpcAccounts = hpcAccountService.get();
-	return hpcAccounts;
-    }
+	public HpcAccountManager(final org.hibernate.Session session) {
+		this.hpcAccountService = new HpcAccountService(session);
+		this.jsonWebTokenManager = new JsonWebTokenManager();
+	}
 
-    public void saveAccount(final HpcAccount hpcAccount) {
-	hpcAccountService.update(hpcAccount);
-    }
+	public List<HpcAccount> getHpcAccounts() {
+		List<HpcAccount> hpcAccounts = hpcAccountService.get();
+		return hpcAccounts;
+	}
 
-    public void removeAccount(final HpcAccount hpcAccount) {
-	hpcAccountService.remove(hpcAccount);
-    }
+	public void saveAccount(final HpcAccount hpcAccount) {
+		hpcAccountService.update(hpcAccount);
+	}
 
-    public JsonWebTokenManager getJsonWebTokenManager() {
-	return jsonWebTokenManager;
-    }
+	public void removeAccount(final HpcAccount hpcAccount) {
+		hpcAccountService.remove(hpcAccount);
+	}
+
+	public JsonWebTokenManager getJsonWebTokenManager() {
+		return jsonWebTokenManager;
+	}
 
 }

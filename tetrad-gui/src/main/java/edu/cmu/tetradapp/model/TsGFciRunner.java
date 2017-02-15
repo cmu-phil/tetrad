@@ -229,7 +229,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -239,21 +239,21 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                 if (allContinuous(list)) {
                     double penalty = params.getDouble("penaltyDiscount", 4);
 
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    fgsScore.setPenaltyDiscount(penalty);
+                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    fgesScore.setPenaltyDiscount(penalty);
                     IndependenceTest test = new IndTestDSep((Graph) model);
-                    gfci = new TsGFci(test, fgsScore);
+                    gfci = new TsGFci(test, fgesScore);
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
 //
-//                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-//                    fgsScore.setSamplePrior(samplePrior);
-//                    fgsScore.setStructurePrior(structurePrior);
+//                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+//                    fgesScore.setSamplePrior(samplePrior);
+//                    fgesScore.setStructurePrior(structurePrior);
 //
-//                    gfci = new GFci(fgsScore);
+//                    gfci = new GFci(fgesScore);
 //                }
                 else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

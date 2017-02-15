@@ -131,9 +131,9 @@ public class ComparisonParameters {
             resultType = ResultType.Pattern;
         } else if (algorithm == Algorithm.CPC) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.FGS) {
+        } else if (algorithm == Algorithm.FGES) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.FGS2) {
+        } else if (algorithm == Algorithm.FGES2) {
             resultType = ResultType.Pattern;
         } else if (algorithm == Algorithm.PCLocal) {
             resultType = ResultType.Pattern;
@@ -323,5 +323,5 @@ public class ComparisonParameters {
     public enum ResultType {Pattern, PAG}
     public enum IndependenceTestType {FisherZ, ChiSquare}
     public enum ScoreType {SemBic, BDeu}
-    public enum Algorithm {PC, CPC, FGS, FGS2, PCLocal, PCMax, FCI, GFCI, TsFCI}
+    public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCMax, FCI, GFCI, TsFCI}
 }

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score suitable for FGS
+ * Interface for a score suitable for FGES
  */
 public interface Score {
     double localScore(int node, int...parents);

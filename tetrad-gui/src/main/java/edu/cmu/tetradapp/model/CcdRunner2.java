@@ -41,7 +41,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     static final long serialVersionUID = 23L;
 
     private transient List<PropertyChangeListener> listeners;
-    private transient GCcd ccd;
+    private transient CcdMax ccd;
 
 
     //=========================CONSTRUCTORS================================//
@@ -171,8 +171,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         if (model instanceof Graph) {
             IndependenceTest test = new IndTestDSep((Graph) model);
             Score score = new GraphScore((Graph) model);
-            ccd = new GCcd(test, score);
-            ccd.setVerbose(true);
+            ccd = new CcdMax(test);
         } else {
 
             if (model instanceof DataSet) {
@@ -187,7 +186,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    ccd = new GCcd(test, gesScore);
+                    ccd = new CcdMax(test);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -205,7 +204,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestScore(gesScore);
-                ccd = new GCcd(test, gesScore);
+                ccd = new CcdMax(test);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -217,7 +216,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -227,20 +226,20 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 if (allContinuous(list)) {
                     double penalty = 4;//params.getPenaltyDiscount();
 
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    fgsScore.setPenaltyDiscount(penalty);
-                    IndependenceTest test = new IndTestScore(fgsScore);
-                    ccd = new GCcd(test, fgsScore);
+                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    fgesScore.setPenaltyDiscount(penalty);
+                    IndependenceTest test = new IndTestScore(fgesScore);
+                    ccd = new CcdMax(test);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
 //
-//                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-//                    fgsScore.setSamplePrior(samplePrior);
-//                    fgsScore.setStructurePrior(structurePrior);
+//                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+//                    fgesScore.setSamplePrior(samplePrior);
+//                    fgesScore.setStructurePrior(structurePrior);
 //
-//                    gfci = new GFci(fgsScore);
+//                    gfci = new GFci(fgesScore);
 //                }
                 else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -253,7 +252,6 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //        gfci.setInitialGraph(initialGraph);
 //        gfci.setKnowledge(getParameters().getKnowledge());
 //        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
-        ccd.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setMaxIndegree(3);
 //        ccd.setHeuristicSpeedup(params.isFaithfulnessAssumed());

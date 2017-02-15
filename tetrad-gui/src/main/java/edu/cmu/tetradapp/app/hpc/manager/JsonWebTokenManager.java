@@ -18,53 +18,48 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
  */
 public class JsonWebTokenManager {
 
-    private final Map<HpcAccount, JsonWebToken> jsonWebTokenMap;
+	private final Map<HpcAccount, JsonWebToken> jsonWebTokenMap;
 
-    private final Map<HpcAccount, Date> jsonWebTokenRequestTimeMap;
+	private final Map<HpcAccount, Date> jsonWebTokenRequestTimeMap;
 
-    private final static long TOKEN_VALID_TIME = 60 * 60 * 1000;// 1-hour
-								// expired time
-								// in
-								// millisecond
-    private boolean locked = false;
+	private final static long TOKEN_VALID_TIME = 60 * 60 * 1000;// 1-hour
+	// expired time
+	// in
+	// millisecond
+	private boolean locked = false;
 
-    public JsonWebTokenManager() {
-	jsonWebTokenMap = new HashMap<>();
-	jsonWebTokenRequestTimeMap = new HashMap<>();
-    }
-
-    public synchronized JsonWebToken getJsonWebToken(final HpcAccount hpcAccount)
-	    throws Exception {
-	if (locked) {
-	    Thread.sleep(100);
-	    getJsonWebToken(hpcAccount);
+	public JsonWebTokenManager() {
+		jsonWebTokenMap = new HashMap<>();
+		jsonWebTokenRequestTimeMap = new HashMap<>();
 	}
-	locked = true;
-	long now = System.currentTimeMillis();
-	JsonWebToken jsonWebToken = jsonWebTokenMap.get(hpcAccount);
-	if (jsonWebToken == null
-		|| (now - jsonWebTokenRequestTimeMap.get(hpcAccount).getTime()) > TOKEN_VALID_TIME) {
 
-	    final String username = hpcAccount.getUsername();
-	    final String password = hpcAccount.getPassword();
-	    final String scheme = hpcAccount.getScheme();
-	    final String hostname = hpcAccount.getHostname();
-	    final int port = hpcAccount.getPort();
+	public synchronized JsonWebToken getJsonWebToken(final HpcAccount hpcAccount) throws Exception {
+		if (locked) {
+			Thread.sleep(100);
+			getJsonWebToken(hpcAccount);
+		}
+		locked = true;
+		long now = System.currentTimeMillis();
+		JsonWebToken jsonWebToken = jsonWebTokenMap.get(hpcAccount);
+		if (jsonWebToken == null || (now - jsonWebTokenRequestTimeMap.get(hpcAccount).getTime()) > TOKEN_VALID_TIME) {
 
-	    RestHttpsClient restClient = new RestHttpsClient(username,
-		    password, scheme, hostname, port);
+			final String username = hpcAccount.getUsername();
+			final String password = hpcAccount.getPassword();
+			final String scheme = hpcAccount.getScheme();
+			final String hostname = hpcAccount.getHostname();
+			final int port = hpcAccount.getPort();
 
-	    // Authentication
-	    UserService userService = new UserService(restClient, scheme,
-		    hostname, port);
-	    // JWT token is valid for 1 hour
-	    jsonWebToken = userService.requestJWT();
-	    jsonWebTokenMap.put(hpcAccount, jsonWebToken);
-	    jsonWebTokenRequestTimeMap.put(hpcAccount,
-		    new Date(System.currentTimeMillis()));
+			RestHttpsClient restClient = new RestHttpsClient(username, password, scheme, hostname, port);
+
+			// Authentication
+			UserService userService = new UserService(restClient, scheme, hostname, port);
+			// JWT token is valid for 1 hour
+			jsonWebToken = userService.requestJWT();
+			jsonWebTokenMap.put(hpcAccount, jsonWebToken);
+			jsonWebTokenRequestTimeMap.put(hpcAccount, new Date(System.currentTimeMillis()));
+		}
+		locked = false;
+		return jsonWebToken;
 	}
-	locked = false;
-	return jsonWebToken;
-    }
 
 }

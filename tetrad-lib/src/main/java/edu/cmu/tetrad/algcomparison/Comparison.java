@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
@@ -94,7 +95,7 @@ public class Comparison {
         }
 
         for (File dir : dirs) {
-            simulations.add(new LoadContinuousDataAndGraphs(dir.getAbsolutePath()));
+            simulations.add(new LoadDataAndGraphs(dir.getAbsolutePath()));
         }
 
         compareFromSimulations(filePath, simulations, algorithms, statistics, parameters);
@@ -115,7 +116,9 @@ public class Comparison {
         // Create output file.
         try {
             File dir = new File(filePath);
-            this.out = new PrintStream(new FileOutputStream(new File(dir, "Comparison.txt")));
+            dir.mkdirs();
+            File file = new File(dir, "Comparison.txt");
+            this.out = new PrintStream(new FileOutputStream(file));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1093,7 +1096,13 @@ public class Comparison {
 
                             for (String name : _parameterNames) {
                                 if (name.equals(statName)) {
-                                    stat = _parameters.getDouble(name);
+                                    try {
+                                        stat = _parameters.getDouble(name);
+                                    } catch (Exception e) {
+                                        boolean b = _parameters.getBoolean(name);
+                                        stat = b ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                                    }
+
                                     break;
                                 }
                             }
@@ -1186,8 +1195,15 @@ public class Comparison {
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 for (int statIndex = 0; statIndex < numStats; statIndex++) {
                     double stat = statTables[u][newOrder[t]][statIndex];
-                    table.setToken(t + 1, initialColumn + statIndex,
-                            Math.abs(stat) < 0.1 ? smallNf.format(stat) : nf.format(stat));
+
+                    if (stat == Double.POSITIVE_INFINITY) {
+                        table.setToken(t + 1, initialColumn + statIndex, "Yes");
+                    } else if (stat == Double.NEGATIVE_INFINITY) {
+                        table.setToken(t + 1, initialColumn + statIndex, "No");
+                    } else {
+                        table.setToken(t + 1, initialColumn + statIndex,
+                                Math.abs(stat) < 0.1 ? smallNf.format(stat) : nf.format(stat));
+                    }
                 }
 
                 if (isShowUtilities()) {
@@ -1353,7 +1369,7 @@ public class Comparison {
         }
 
         public void setValue(String name, Object value) {
-            if (!(value instanceof Number)) {
+            if (!(value instanceof Number || value instanceof Boolean)) {
                 throw new IllegalArgumentException();
             }
 

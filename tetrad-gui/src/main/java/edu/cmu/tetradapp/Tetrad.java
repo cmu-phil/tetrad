@@ -70,6 +70,12 @@ public final class Tetrad implements PropertyChangeListener {
             "Tetrad " + Version.currentViewableVersion()
                     .toString();
 
+
+    /**
+     * Skip latest version checking
+     */
+    private static boolean skipLatest;
+
     //==============================CONSTRUCTORS===========================//
 
     public Tetrad() {
@@ -98,13 +104,21 @@ public final class Tetrad implements PropertyChangeListener {
      * contents and all of the images which Tetrad IV uses, all in their proper
      * relative directories.</p>
      *
-     * @param argv moves line arguments (none for now).
+     * @param argv --skip-latest argument will skip checking for latest version.
      */
     public static void main(final String[] argv) {
         setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
+
+        // Check if we should skip checking for latest version
+        if (argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0) {
+            skipLatest = true;
+        } else {
+            skipLatest = false;
+        }
+
 
         new Tetrad().launchFrame();
     }
@@ -174,7 +188,7 @@ public final class Tetrad implements PropertyChangeListener {
 //        this.frame.setMinimumSize(Toolkit.getDefaultToolkit().getScreenSize());
 //        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
-        SplashScreen.show(getFrame(), "Loading Tetrad...", 1000);
+        SplashScreen.show(getFrame(), "Loading Tetrad...", 1000, skipLatest);
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
@@ -231,6 +245,7 @@ public final class Tetrad implements PropertyChangeListener {
     private TetradDesktop getDesktop() {
         return desktop;
     }
+
 }
 
 

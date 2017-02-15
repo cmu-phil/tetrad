@@ -207,7 +207,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (graphWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -294,7 +294,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            Simulation simulation) {
+                          Simulation simulation) {
         this(graphWrapper, (DataWrapper) simulation);
     }
 
@@ -343,10 +343,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
         int lowerBound, upperBound;
 
-        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
+        if (params.getString("bayesPmInitializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+        else if (params.getString("bayesPmInitializationMode", "manualRetain").equals("automatic")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 2);
         }
@@ -359,7 +359,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
     }
 
     public BayesPmWrapper(DagWrapper dagWrapper,
-            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (dagWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -369,17 +369,18 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
                 throw new NullPointerException("BayesPm must not be null");
             }
 
-            Dag graph = new Dag(dagWrapper.getDag());
+            Graph graph = dagWrapper.getDag();
 
             int lowerBound, upperBound;
 
-            if (params.getString("initializationMode", "manualRetain").equals("manual")) {
+            String string = params.getString("bayesPmInitializationMode", "manual");
+
+            if (string.equals("manual")) {
                 lowerBound = upperBound = 2;
                 setBayesPm(new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound));
             }
-            else
-            if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            else if (string.equals("automatic")) {
                 lowerBound = params.getInt("lowerBoundNumVals", 2);
                 upperBound = params.getInt("upperBoundNumVals", 2);
                 setBayesPm(graph, lowerBound, upperBound);
@@ -489,21 +490,21 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
     public int getNumModels() {
         return numModels;

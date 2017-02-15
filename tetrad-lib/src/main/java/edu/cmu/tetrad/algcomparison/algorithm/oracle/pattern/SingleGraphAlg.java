@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -33,7 +34,7 @@ public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledg
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return graph;
+        return new EdgeListGraph(graph);
     }
 
     @Override

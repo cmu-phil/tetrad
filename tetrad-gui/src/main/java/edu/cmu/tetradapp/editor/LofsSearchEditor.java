@@ -533,9 +533,9 @@ public class LofsSearchEditor extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof IFgsRunner) {
-                IFgsRunner fgsRunner = ((IFgsRunner) getAlgorithmRunner());
-                return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+            if (getAlgorithmRunner() instanceof IFgesRunner) {
+                IFgesRunner fgesRunner = ((IFgesRunner) getAlgorithmRunner());
+                return new FgesIndTestParamsEditor(params, fgesRunner.getType());
             }
         }
 

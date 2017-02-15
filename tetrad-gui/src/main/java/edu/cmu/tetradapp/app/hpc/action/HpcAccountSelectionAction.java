@@ -18,39 +18,36 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
  */
 public class HpcAccountSelectionAction extends AbstractAction {
 
-    private static final long serialVersionUID = -5506074283478552872L;
+	private static final long serialVersionUID = -5506074283478552872L;
 
-    private final List<HpcAccount> hpcAccounts;
+	private final List<HpcAccount> hpcAccounts;
 
-    private final List<HpcAccount> checkedHpcAccountList;
+	private final List<HpcAccount> checkedHpcAccountList;
 
-    private final JTabbedPane tabbedPane;
+	private final JTabbedPane tabbedPane;
 
-    public HpcAccountSelectionAction(final List<HpcAccount> hpcAccounts,
-	    final List<HpcAccount> checkedHpcAccountList,
-	    final JTabbedPane tabbedPane) {
-	this.hpcAccounts = hpcAccounts;
-	this.checkedHpcAccountList = checkedHpcAccountList;
-	this.tabbedPane = tabbedPane;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-	final JCheckBox checkBox = (JCheckBox) e.getSource();
-	for (HpcAccount hpcAccount : hpcAccounts) {
-	    if (checkBox.getText().equals(hpcAccount.getConnectionName())) {
-		if (checkBox.isSelected()
-			&& !checkedHpcAccountList.contains(hpcAccount)) {
-		    checkedHpcAccountList.add(hpcAccount);
-		} else if (!checkBox.isSelected()
-			&& checkedHpcAccountList.contains(hpcAccount)) {
-		    checkedHpcAccountList.remove(hpcAccount);
-		}
-	    }
+	public HpcAccountSelectionAction(final List<HpcAccount> hpcAccounts, final List<HpcAccount> checkedHpcAccountList,
+			final JTabbedPane tabbedPane) {
+		this.hpcAccounts = hpcAccounts;
+		this.checkedHpcAccountList = checkedHpcAccountList;
+		this.tabbedPane = tabbedPane;
 	}
-	int index = tabbedPane.getSelectedIndex();
-	tabbedPane.setSelectedIndex(-1);
-	tabbedPane.setSelectedIndex(index);
-    }
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		final JCheckBox checkBox = (JCheckBox) e.getSource();
+		for (HpcAccount hpcAccount : hpcAccounts) {
+			if (checkBox.getText().equals(hpcAccount.getConnectionName())) {
+				if (checkBox.isSelected() && !checkedHpcAccountList.contains(hpcAccount)) {
+					checkedHpcAccountList.add(hpcAccount);
+				} else if (!checkBox.isSelected() && checkedHpcAccountList.contains(hpcAccount)) {
+					checkedHpcAccountList.remove(hpcAccount);
+				}
+			}
+		}
+		int index = tabbedPane.getSelectedIndex();
+		tabbedPane.setSelectedIndex(-1);
+		tabbedPane.setSelectedIndex(index);
+	}
 
 }

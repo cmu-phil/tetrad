@@ -87,16 +87,16 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     //=============================CONSTRUCTORS==========================//
 
-    public Misclassifications(GeneralAlgorithmRunner model, Parameters params) {
-        this(model, model.getDataWrapper(), params);
-    }
+//    public Misclassifications(GeneralAlgorithmRunner model, Parameters params) {
+//        this(model, model.getDataWrapper(), params);
+//    }
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public Misclassifications(SessionModel model1, SessionModel model2,
+    public Misclassifications(MultipleGraphSource model1, MultipleGraphSource model2,
                               Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
@@ -185,18 +185,18 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         // Need to be able to construct this object even if the models are
         // null. Otherwise the interface is annoying.
-        if (model2 == null) {
-            model2 = new DagWrapper(new Dag());
-        }
+//        if (model2 == null) {
+//            model2 = new DagWrapper(new Dag());
+//        }
+//
+//        if (model1 == null) {
+//            model1 = new DagWrapper(new Dag());
+//        }
 
-        if (model1 == null) {
-            model1 = new DagWrapper(new Dag());
-        }
-
-        if (!(model1 instanceof MultipleGraphSource) ||
-                !(model2 instanceof MultipleGraphSource)) {
-            throw new IllegalArgumentException("Must be graph sources.");
-        }
+//        if (!(model1 instanceof MultipleGraphSource) ||
+//                !(model2 instanceof MultipleGraphSource)) {
+//            throw new IllegalArgumentException("Must be graph sources.");
+//        }
 
         this.params = params;
 
@@ -217,6 +217,22 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
                 this.targetGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
+                }
+            }
+
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
+                }
+            }
+
             if (referenceGraphs == null) {
                 this.referenceGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
             }
@@ -233,6 +249,22 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
             if (model1 instanceof MultipleGraphSource) {
                 this.targetGraphs = ((MultipleGraphSource) model1).getGraphs();
+            }
+
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
+                }
+            }
+
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
+                }
             }
 
             if (referenceGraphs == null) {

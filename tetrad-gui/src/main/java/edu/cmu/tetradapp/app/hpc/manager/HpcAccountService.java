@@ -16,54 +16,48 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
  */
 public class HpcAccountService {
 
-    private final RemoteDataFileService remoteDataService;
+	private final RemoteDataFileService remoteDataService;
 
-    private final DataUploadService dataUploadService;
+	private final DataUploadService dataUploadService;
 
-    private final JobQueueService jobQueueService;
+	private final JobQueueService jobQueueService;
 
-    private final ResultService resultService;
-    
-    public HpcAccountService(final HpcAccount hpcAccount,
-	    final int simultaneousUpload) throws Exception {
+	private final ResultService resultService;
 
-	final String username = hpcAccount.getUsername();
-	final String password = hpcAccount.getPassword();
-	final String scheme = hpcAccount.getScheme();
-	final String hostname = hpcAccount.getHostname();
-	final int port = hpcAccount.getPort();
+	public HpcAccountService(final HpcAccount hpcAccount, final int simultaneousUpload) throws Exception {
 
-	RestHttpsClient restHttpsClient = new RestHttpsClient(username, password, scheme,
-		hostname, port);
+		final String username = hpcAccount.getUsername();
+		final String password = hpcAccount.getPassword();
+		final String scheme = hpcAccount.getScheme();
+		final String hostname = hpcAccount.getHostname();
+		final int port = hpcAccount.getPort();
 
-	this.remoteDataService = new RemoteDataFileService(restHttpsClient,
-		scheme, hostname, port);
+		RestHttpsClient restHttpsClient = new RestHttpsClient(username, password, scheme, hostname, port);
 
-	this.dataUploadService = new DataUploadService(restHttpsClient,
-		simultaneousUpload, scheme, hostname, port);
+		this.remoteDataService = new RemoteDataFileService(restHttpsClient, scheme, hostname, port);
 
-	this.jobQueueService = new JobQueueService(restHttpsClient, scheme,
-		hostname, port);
+		this.dataUploadService = new DataUploadService(restHttpsClient, simultaneousUpload, scheme, hostname, port);
 
-	this.resultService = new ResultService(restHttpsClient,
-		    scheme, hostname, port);
-	
-    }
+		this.jobQueueService = new JobQueueService(restHttpsClient, scheme, hostname, port);
 
-    public RemoteDataFileService getRemoteDataService() {
-        return remoteDataService;
-    }
+		this.resultService = new ResultService(restHttpsClient, scheme, hostname, port);
 
-    public DataUploadService getDataUploadService() {
-        return dataUploadService;
-    }
+	}
 
-    public JobQueueService getJobQueueService() {
-        return jobQueueService;
-    }
+	public RemoteDataFileService getRemoteDataService() {
+		return remoteDataService;
+	}
 
-    public ResultService getResultService() {
-        return resultService;
-    }
+	public DataUploadService getDataUploadService() {
+		return dataUploadService;
+	}
+
+	public JobQueueService getJobQueueService() {
+		return jobQueueService;
+	}
+
+	public ResultService getResultService() {
+		return resultService;
+	}
 
 }

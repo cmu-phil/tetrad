@@ -102,6 +102,47 @@ public class AdLeafTree {
         return rows;
     }
 
+    /**
+     * Finds the set of indices into the leaves of the tree for the given variables.
+     * Counts are the sizes of the index sets.
+     *
+     * @param A A list of discrete variables.
+     * @return The list of index sets of the first variable varied by the second variable,
+     * and so on, to the last variable.
+     */
+    public List<List<List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
+        Collections.sort(A, new Comparator<DiscreteVariable>() {
+
+            @Override
+            public int compare(DiscreteVariable o1, DiscreteVariable o2) {
+                return Integer.compare(nodesHash.get(o1), nodesHash.get(o2));
+            }
+        });
+
+        if (baseCase == null) {
+            Vary vary = new Vary();
+            this.baseCase = new ArrayList<>();
+            baseCase.add(vary);
+        }
+
+        List<Vary> varies = baseCase;
+
+        for (DiscreteVariable v : A) {
+            varies = getVaries(varies, nodesHash.get(v));
+        }
+
+        List<List<List<Integer>>> rows = new ArrayList<>();
+
+        for (Vary vary : varies) {
+            for (int i = 0; i < vary.getNumCategories(); i++) {
+                Vary subvary = vary.getSubvary(nodesHash.get(B), i);
+                rows.add(subvary.getRows());
+            }
+        }
+
+        return rows;
+    }
+
     private List<Vary> getVaries(List<Vary> varies, int v) {
         List<Vary> _varies = new ArrayList<>();
 

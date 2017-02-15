@@ -43,7 +43,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public abstract class AbstractAlgorithmRunner
-        implements AlgorithmRunner, ParamsResettable, Unmarshallable {
+        implements AlgorithmRunner, ParamsResettable, Unmarshallable, MultipleGraphSource {
     static final long serialVersionUID = 23L;
     private DataWrapper dataWrapper;
 

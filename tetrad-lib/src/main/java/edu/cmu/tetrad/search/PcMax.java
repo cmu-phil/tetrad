@@ -21,16 +21,17 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RecursiveTask;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a modification of the the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of
@@ -82,6 +83,8 @@ public class PcMax implements GraphSearch {
      * True if verbose output should be printed.
      */
     private boolean verbose = false;
+    private boolean useHeuristic;
+    private int maxPathLength;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -190,7 +193,10 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        addColliders(graph);
+        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+        orientCollidersMaxP.orient(graph);
+        orientCollidersMaxP.setUseHeuristic(useHeuristic);
+        orientCollidersMaxP.setMaxPathLength(maxPathLength);
 
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
@@ -246,132 +252,20 @@ public class PcMax implements GraphSearch {
         this.verbose = verbose;
     }
 
-    private void addColliders(Graph graph) {
-        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        class Task extends RecursiveTask<Boolean> {
-            int from;
-            int to;
-            int chunk = 20;
-            List<Node> nodes;
-            Graph graph;
-
-            public Task(List<Node> nodes, Graph graph, Map<Triple, Double> scores, int from, int to) {
-                this.nodes = nodes;
-                this.graph = graph;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        doNode(graph, scores, nodes.get(i));
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    Task left = new Task(nodes, graph, scores, from, mid);
-                    Task right = new Task(nodes, graph, scores, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
-        }
-
-        Task task = new Task(nodes, graph, scores, 0, nodes.size());
-
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-
-        List<Triple> tripleList = new ArrayList<>(scores.keySet());
-
-        Collections.sort(tripleList, new Comparator<Triple>() {
-
-            @Override
-            public int compare(Triple o1, Triple o2) {
-                return -Double.compare(scores.get(o2), scores.get(o1));
-            }
-        });
-
-        for (Triple triple : tripleList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-            }
-        }
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
     }
 
-    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+    public boolean isUseHeuristic() {
+        return useHeuristic;
+    }
 
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
+    }
 
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            List<Node> adja = graph.getAdjacentNodes(a);
-            double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
-
-            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
-            int[] comb2;
-
-            while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
-                independenceTest.isIndependent(a, c, s);
-                double _score = independenceTest.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            List<Node> adjc = graph.getAdjacentNodes(c);
-
-            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
-            int[] comb3;
-
-            while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
-                independenceTest.isIndependent(c, a, s);
-                double _score = independenceTest.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            // S actually has to be non-null here, but the compiler doesn't know that.
-            if (S != null && !S.contains(b)) {
-                scores.put(new Triple(a, b, c), score);
-            }
-        }
+    public int getMaxPathLength() {
+        return maxPathLength;
     }
 }
 

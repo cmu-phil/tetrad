@@ -89,12 +89,16 @@ public final class StatUtils {
      */
     public static double mean(double array[], int N) {
         double sum = 0.0;
+        int count = 0;
 
         for (int i = 0; i < N; i++) {
-            sum += array[i];
+            if (!Double.isNaN(array[i])) {
+                sum += array[i];
+                count++;
+            }
         }
 
-        return sum / N;
+        return sum / (double) count;
     }
 
     /**
@@ -104,12 +108,16 @@ public final class StatUtils {
      */
     public static double mean(TetradVector data, int N) {
         double sum = 0.0;
+        int count = 0;
 
         for (int i = 0; i < N; i++) {
-            sum += data.get(i);
+            if (!Double.isNaN( data.get(i))) {
+                sum +=  data.get(i);
+                count++;
+            }
         }
 
-        return sum / N;
+        return sum / (double) count;
     }
 
     /**
@@ -1755,13 +1763,7 @@ public final class StatUtils {
 
         try {
             TetradMatrix inverse = submatrix.inverse();
-
-            double a = -1.0 * inverse.get(0, 1);
-            double v0 = inverse.get(0, 0);
-            double v1 = inverse.get(1, 1);
-            double b = Math.sqrt(v0 * v1);
-
-            return a / b;
+            return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
         } catch (Exception e) {
             e.printStackTrace();
             return Double.NaN;
@@ -1989,7 +1991,7 @@ public final class StatUtils {
     }
 
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
-    public static double logOfSum(List<Double> logs) {
+    public static double logsum(List<Double> logs) {
 
         Collections.sort(logs, new Comparator<Double>() {
             @Override

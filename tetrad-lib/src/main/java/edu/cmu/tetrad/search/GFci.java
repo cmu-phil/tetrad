@@ -53,8 +53,8 @@ public final class GFci implements GraphSearch {
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    // The maxIndegree for the fast adjacency search.
-    private int maxIndegree = -1;
+    // The maxDegree for the fast adjacency search.
+    private int maxDegree = -1;
 
     // The logger to use.
     private TetradLogger logger = TetradLogger.getInstance();
@@ -101,20 +101,20 @@ public final class GFci implements GraphSearch {
 
         this.graph = new EdgeListGraphSingleConnections(nodes);
 
-        Fgs fgs = new Fgs(score);
-        fgs.setKnowledge(getKnowledge());
-        fgs.setVerbose(verbose);
-        fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
-        fgs.setMaxDegree(maxIndegree);
-        fgs.setOut(out);
-        graph = fgs.search();
-        Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
+        Fges fges = new Fges(score);
+        fges.setKnowledge(getKnowledge());
+        fges.setVerbose(verbose);
+        fges.setNumPatternsToStore(0);
+        fges.setFaithfulnessAssumed(faithfulnessAssumed);
+        fges.setMaxDegree(maxDegree);
+        fges.setOut(out);
+        graph = fges.search();
+        Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
 
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxDegree);
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -127,7 +127,7 @@ public final class GFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
                     if (sepsets.getSepset(a, c) != null) {
                         graph.removeEdge(a, c);
                     }
@@ -135,7 +135,7 @@ public final class GFci implements GraphSearch {
             }
         }
 
-        modifiedR0(fgsGraph);
+        modifiedR0(fgesGraph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setVerbose(verbose);
@@ -151,6 +151,8 @@ public final class GFci implements GraphSearch {
 
         elapsedTime = time2 - time1;
 
+        graph.setPag(true);
+
         return graph;
     }
 
@@ -160,26 +162,26 @@ public final class GFci implements GraphSearch {
     }
 
     /**
-     * @param maxIndegree The maximum indegree of the output graph.
+     * @param maxDegree The maximum indegree of the output graph.
      */
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) {
+    public void setMaxDegree(int maxDegree) {
+        if (maxDegree < -1) {
             throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
+                    "Depth must be -1 (unlimited) or >= 0: " + maxDegree);
         }
 
-        this.maxIndegree = maxIndegree;
+        this.maxDegree = maxDegree;
     }
 
     /**
      * Returns The maximum indegree of the output graph.
      */
-    public int getMaxIndegree() {
-        return maxIndegree;
+    public int getMaxDegree() {
+        return maxDegree;
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph) {
+    public void modifiedR0(Graph fgesGraph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -199,10 +201,10 @@ public final class GFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgsGraph.isDefCollider(a, b, c)) {
+                if (fgesGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {

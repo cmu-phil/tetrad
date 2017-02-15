@@ -66,7 +66,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      * Constructs the window menu listener.  Requires to be told which object
      * the window menu is and which object the desktop pane is.
      */
-    public WindowMenuListener(JMenu windowMenu, final TetradDesktop desktop) {
+    public WindowMenuListener(JMenu windowMenu, TetradDesktop desktop) {
 
         if (windowMenu == null) {
             throw new NullPointerException("Window menu must not be null.");

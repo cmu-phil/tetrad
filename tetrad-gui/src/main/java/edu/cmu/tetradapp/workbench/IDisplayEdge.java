@@ -67,6 +67,10 @@ public interface IDisplayEdge {
 
     void setLineColor(Color lineColor);
 
+    boolean getDashed();
+
+    void setDashed(boolean dashed);
+
     Color getSelectedColor();
 
     void setSelectedColor(Color selectedColor);

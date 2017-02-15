@@ -41,14 +41,14 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         graphs = new ArrayList<>();
 
         Graph graph = randomGraph.createGraph(parameters);
-        graph = TimeSeriesUtils.GraphToLagGraph(graph);
+        graph = TimeSeriesUtils.graphToLagGraph(graph);
         topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             if (parameters.getBoolean("differentGraphs") && i > 0) {
                 graph = randomGraph.createGraph(parameters);
-                graph = TimeSeriesUtils.GraphToLagGraph(graph);
+                graph = TimeSeriesUtils.graphToLagGraph(graph);
                 topToBottomLayout((TimeLagGraph) graph);
             }
 
@@ -91,6 +91,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             } //else System.out.println("Coefficient matrix is stable.");
 
             dataSet.setName("" + (i + 1));
+            dataSet.setKnowledge(knowledge.copy());
             dataSets.add(dataSet);
         }
     }

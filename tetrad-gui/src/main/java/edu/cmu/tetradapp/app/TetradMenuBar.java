@@ -59,7 +59,7 @@ final class TetradMenuBar extends JMenuBar {
     /**
      * Creates the main menubar for Tetrad.
      */
-    public TetradMenuBar(final TetradDesktop desktop) {
+    public TetradMenuBar(TetradDesktop desktop) {
         this.desktop = desktop;
         setBorder(new EtchedBorder());
 

@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -31,12 +32,13 @@ public class Cfci implements Algorithm, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
         return search.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return new DagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override
@@ -53,6 +55,7 @@ public class Cfci implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
         parameters.add("depth");
+        parameters.add("completeRuleSetUsed");
         return parameters;
     }
 

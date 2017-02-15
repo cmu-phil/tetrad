@@ -136,11 +136,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     // ===========================PUBLIC METHODS============================//
 
-    public void buildHpcJobActivityPane() {
-	
-    }
-    
-    
     public void newSessionEditor() {
 	String newName = getNewSessionName();
 	SessionEditor editor = new SessionEditor(newName);
@@ -369,8 +364,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * Reacts to property change events 'editorClosing', 'closeFrame', and
      * 'name'.
      *
-     * @param e
-     *            the property change event.
+     * @param e the property change event.
      */
     public void propertyChange(PropertyChangeEvent e) {
 

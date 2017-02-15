@@ -1,10 +1,11 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BdeuScoreImages;
@@ -37,8 +38,9 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
             dataModels.add(dataSet);
         }
 
-        edu.cmu.tetrad.search.Fgs search = new edu.cmu.tetrad.search.Fgs(new BdeuScoreImages(dataModels));
+        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(new BdeuScoreImages(dataModels));
         search.setFaithfulnessAssumed(true);
+        IKnowledge knowledge = dataModels.get(0).getKnowledge();
         search.setKnowledge(knowledge);
 
         return search.search();
@@ -51,7 +53,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     @Override
@@ -66,7 +68,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new Fgs(new BdeuScore()).getParameters();
+        List<String> parameters = new Fges(new BdeuScore()).getParameters();
         parameters.add("randomSelectionSize");
         return parameters;
     }

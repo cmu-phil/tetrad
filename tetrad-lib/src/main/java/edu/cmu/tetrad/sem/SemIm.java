@@ -288,7 +288,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     // Types of scores that yield a chi square value when minimized.
-    // The Fgsl was a typo that unfortunately I had to keep for serialization.
     public enum ScoreType {
         Fml, Fgls
     }
@@ -2500,7 +2499,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 final double covLow = getParams().getDouble("covLow", 0.1);
                 final double covHigh = getParams().getDouble("covHigh", 0.2);
                 double value = new Split(covLow, covHigh).nextRandom();
-                if (getParams().getBoolean("coefSymmetric", true)) {
+                if (getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
                     return Math.abs(value);
