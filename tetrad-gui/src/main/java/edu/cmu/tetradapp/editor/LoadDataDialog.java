@@ -56,7 +56,7 @@ final class LoadDataDialog extends JPanel {
 
     private List<File> loadedFiles;
 
-    private List<List<String>> validationResults;
+    private List<String> validationResults;
 
     private List<String> failedFiles;
 
@@ -390,7 +390,7 @@ final class LoadDataDialog extends JPanel {
                 // Because we clear() validationResults every time users click the step 2 backward button - Zhou
                 if (!validationResults.isEmpty() && !e.getValueIsAdjusting()) {
                     int fileIndex = validationFileList.getSelectedIndex();
-                    setValidationResult(getValidationOutput(fileIndex, validationResults), validationResultTextArea);
+                    setValidationResult(validationResults.get(fileIndex), validationResultTextArea);
                 }
             }
         });
@@ -652,24 +652,42 @@ final class LoadDataDialog extends JPanel {
         for (int i = 0; i < loadedFiles.size(); i++) {
             System.out.println("Validating file index = " + i);
 
-            List<String> validationResult;
-
             // Validate each individual file
             DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
+            String output = "Validation result of " + loadedFiles.get(i).getName() + ": \n\n";
+
+            // Show some file info
+            if (validation.hasInfos()) {
+                output = output + "File info: \n";
+
+                List<String> validationInfos = validation.getInfos();
+
+                for (String validationInfo : validationInfos) {
+                    output = output + validationInfo + "\n";
+                }
+
+                output = output + "\n";
+            }
+
+            // Show errors if found
             if (validation.hasErrors()) {
-                validationResult = validation.getErrors();
+                output = output + "Validation failed with the following errors: \n\n";
+
+                List<String> validationErrors = validation.getErrors();
+
+                for (String validationError : validationErrors) {
+                    output = output + validationError + "\n";
+                }
 
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
             } else {
-                // Make sure it's a list
-                validationResult = new LinkedList<>();
-                validationResult.add("No error");
+                output = output + "Validation passed with no error! \n\n";
             }
 
-            validationResults.add(validationResult);
+            validationResults.add(output);
         }
 
         // Reset the default selected file
@@ -677,9 +695,8 @@ final class LoadDataDialog extends JPanel {
 
         // Display validation result of the first file by default
         // Get the formatted output string
-        String output = getValidationOutput(0, validationResults);
         // Show the results in scrollable area
-        setValidationResult(output, validationResultTextArea);
+        setValidationResult(validationResults.get(0), validationResultTextArea);
     }
 
     /**
@@ -717,21 +734,6 @@ final class LoadDataDialog extends JPanel {
      */
     private void setValidationResult(String output, JTextArea textArea) {
         textArea.setText(output);
-    }
-
-    private String getValidationOutput(int index, List<List<String>> resultsList) {
-        System.out.println("Getting validation output of file index = " + index);
-
-        String output = "Validation result of " + loadedFiles.get(index).getName() + ": \n";
-
-        List<String> validationResult = resultsList.get(index);
-
-        for (String err : validationResult) {
-            output = output + err + "\n";
-        }
-
-        return output;
-
     }
 
     /**
