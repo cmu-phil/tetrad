@@ -623,7 +623,7 @@ final class DataLoaderSettings extends JPanel {
         return optionsContainer;
     }
 
-    private String getCommentString() {
+    private String getCommentMarker() {
         if (commentDoubleSlashRadioButton.isSelected()) {
             return "//";
         } else if (commentPondRadioButton.isSelected()) {
@@ -668,14 +668,6 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
-    private char getQuoteChar() {
-        if (doubleQuoteRadioButton.isSelected()) {
-            return '"';
-        } else {
-            return '\'';
-        }
-    }
-
     private boolean isVarNamesFirstRow() {
         if (firstRowVarNamesYesRadioButton.isSelected()) {
             return true;
@@ -707,16 +699,27 @@ final class DataLoaderSettings extends JPanel {
     public DataValidation validateDataWithSettings(File file) {
         char delimiter = getDelimiterTypeChar(getDelimiterType());
         boolean hasHeader = isVarNamesFirstRow();
-        String comment = getCommentString();
-        char quoteChar = getQuoteChar();
+        String commentMarker = getCommentMarker();
 
+        // Only handles tabular continuous data for now - Zhou
         if (tabularRadioButton.isSelected()) {
             // Using Kevin's data validation
             TabularDataFileValidation validation = new ContinuousTabularDataFileValidation(file, delimiter);
-            // validation settings
+
+            // Header in first row or not
             validation.setHasHeader(hasHeader);
-            validation.setCommentMarker(comment);
-            validation.setQuoteCharacter(quoteChar);
+
+            // Set comment marker
+            validation.setCommentMarker(commentMarker);
+
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                validation.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                validation.setQuoteCharacter('\'');
+            }
 
             // Handle case ID column based on different selections
             if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
@@ -748,12 +751,27 @@ final class DataLoaderSettings extends JPanel {
 
         char delimiter = getDelimiterTypeChar(getDelimiterType());
         boolean hasHeader = isVarNamesFirstRow();
+        String commentMarker = getCommentMarker();
 
+        // Only handles tabular continuous data for now - Zhou
         if (tabularRadioButton.isSelected()) {
             // Using Kevin's data reader
             TabularDataReader dataReader = new ContinuousTabularDataReader(file, delimiter);
-            // reader settings
+
+            // Header in first row or not
             dataReader.setHasHeader(hasHeader);
+
+            // Set comment marker
+            dataReader.setCommentMarker(commentMarker);
+
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                dataReader.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                dataReader.setQuoteCharacter('\'');
+            }
 
             Dataset dataset;
 
