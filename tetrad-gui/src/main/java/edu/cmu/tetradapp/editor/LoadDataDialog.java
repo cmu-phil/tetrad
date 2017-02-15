@@ -123,7 +123,7 @@ final class LoadDataDialog extends JPanel {
         // Add all files into the loadedFiles list - Zhou
         // Arrays.asList: Returns a fixed-size list backed by the specified array.
         // You can't add to it; you can't remove from it. You can't structurally modify the List.
-        // Create a LinkedList, which supports faster remove.
+        // Create a LinkedList, which supports remove().
         this.loadedFiles = new LinkedList<>(Arrays.asList(files));
 
         // List is an Interface, you cannot instantiate an Interface
@@ -140,7 +140,7 @@ final class LoadDataDialog extends JPanel {
 
         this.fileListModel = new DefaultListModel();
 
-        this.defaulyPreviewBoxBorderTitle = "Raw Data Preview (only first 20 rows): ";
+        this.defaulyPreviewBoxBorderTitle = "Data Preview: ";
 
         this.dataModels = new DataModel[files.length];
 
@@ -542,6 +542,8 @@ final class LoadDataDialog extends JPanel {
         step3Button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Validate all files and show error messages
+                validateAllFiles();
 
                 // Show result summary
                 validationResultsContainer.setVisible(true);
@@ -569,9 +571,6 @@ final class LoadDataDialog extends JPanel {
 
                 // Show finish button
                 loadButton.setVisible(true);
-
-                // Validate all files and show error messages
-                validateAllFiles();
 
                 // Determine if enable the finish button or not
                 if (failedFiles.size() > 0) {
