@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousDataset;
 import edu.pitt.dbmi.data.Dataset;
@@ -58,8 +57,6 @@ final class DataLoaderSettings extends JPanel {
 
     private final List<File> files;
 
-    private transient DataModel[] dataModels;
-
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
 
@@ -88,25 +85,18 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton idLabeledColRadioButton;
     private StringTextField idStringField;
 
+    /* Hide for now - Zhou
     private JRadioButton missingValueBlankRadioButton;
     private JRadioButton missingValueStarRadioButton;
     private JRadioButton missingValueQuestionRadioButton;
     private JRadioButton missingValueOtherRadioButton;
     private StringTextField missingStringField;
-
-    private IntTextField maxIntegralDiscreteIntField;
-    private JLabel maxIntegralLabel1;
-    private JLabel maxIntegralLabel2;
-
-    private int fileIndex;
-
-    private Dimension labelSize;
+     */
+    private final Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
     public DataLoaderSettings(List files) {
         this.files = files;
-
-        this.dataModels = new DataModel[files.size()];
 
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(180, 30);
@@ -633,46 +623,6 @@ final class DataLoaderSettings extends JPanel {
         return optionsContainer;
     }
 
-    public DataModel[] getDataModels() {
-        return dataModels;
-    }
-
-    public JRadioButton getTabularRadioButton() {
-        return tabularRadioButton;
-    }
-
-    public JRadioButton getCovarianceRadioButton() {
-        return covarianceRadioButton;
-    }
-
-    public StringTextField getCommentStringField() {
-        return commentStringField;
-    }
-
-    public StringTextField getIdStringField() {
-        return idStringField;
-    }
-
-    public StringTextField getMissingStringField() {
-        return missingStringField;
-    }
-
-    public IntTextField getMaxIntegralDiscreteIntField() {
-        return maxIntegralDiscreteIntField;
-    }
-
-    public JLabel getMaxIntegralLabel1() {
-        return maxIntegralLabel1;
-    }
-
-    public JLabel getMaxIntegralLabel2() {
-        return maxIntegralLabel2;
-    }
-
-    public int getFileIndex() {
-        return fileIndex;
-    }
-
     private String getCommentString() {
         if (commentDoubleSlashRadioButton.isSelected()) {
             return "//";
@@ -736,16 +686,8 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
-    private String getIdLabel() {
-        if (idNoneRadioButton.isSelected()) {
-            return null;
-        } else if (idUnlabeledFirstColRadioButton.isSelected()) {
-            return null;
-        } else {
-            return idStringField.getText();
-        }
-    }
 
+    /* Hide for now - Zhou
     private String getMissingValue() {
         if (missingValueStarRadioButton.isSelected()) {
             return "*";
@@ -755,11 +697,7 @@ final class DataLoaderSettings extends JPanel {
             return missingStringField.getText();
         }
     }
-
-    private int getMaxDiscrete() {
-        return maxIntegralDiscreteIntField.getValue();
-    }
-
+     */
     /**
      * Validate each file based on the specified settings
      *
@@ -802,9 +740,8 @@ final class DataLoaderSettings extends JPanel {
     /**
      * Kevin's fast data reader
      *
-     * @param fileIndex
-     * @param files
-     * @return DataModel on success or null on failure
+     * @param file
+     * @return DataModel on success
      */
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel = null;
@@ -847,37 +784,14 @@ final class DataLoaderSettings extends JPanel {
         }
 
         return dataModel;
-
-//        try {
-//            DataReader reader = new DataReader();
-//
-//            reader.setCommentMarker(getCommentString());
-//            reader.setDelimiter(getDelimiterType());
-//            reader.setQuoteChar(getQuoteChar());
-//            reader.setVariablesSupplied(isVarNamesFirstRow());
-//            reader.setIdLabel(getIdLabel());
-//            //reader.setMissingValueMarker(getMissingValue());
-//            //reader.setMaxIntegralDiscrete(getMaxDiscrete());
-//
-//            DataModel dataModel;
-//
-//            if (tabularRadioButton.isSelected()) {
-//                // dataModel = parser.parseTabular(string.toCharArray());
-//                dataModel = reader.parseTabular(files.get(fileIndex));
-//            } else {
-//                // String string = fileTextArea.getText();
-//                // dataModel = reader.parseCovariance(string.toCharArray());
-//                dataModel = reader.parseCovariance(files.get(fileIndex));
-//            }
-//
-//            return dataModel;
-//        } catch (Exception e1) {
-//            e1.printStackTrace();
-//        }
-//
-//        return null;
     }
 
+    /**
+     * Convert variables to nodes
+     *
+     * @param variables
+     * @return
+     */
     private List<Node> variablesToContinuosNodes(List<String> variables) {
         List<Node> nodes = new LinkedList<>();
 
