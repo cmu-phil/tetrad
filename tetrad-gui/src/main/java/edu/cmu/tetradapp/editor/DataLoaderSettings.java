@@ -403,7 +403,7 @@ final class DataLoaderSettings extends JPanel {
         idNoneRadioButton = new JRadioButton("None");
         idUnlabeledFirstColRadioButton = new JRadioButton("First column");
         idLabeledColRadioButton = new JRadioButton("Column labeled: ");
-        idStringField = new StringTextField("", 4);
+        idStringField = new StringTextField("", 6);
 
         ButtonGroup caseIdBtnGrp = new ButtonGroup();
         caseIdBtnGrp.add(idNoneRadioButton);
@@ -443,7 +443,8 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 3
         Box caseIdProvidedOption3Box = Box.createHorizontalBox();
-        caseIdProvidedOption3Box.setPreferredSize(new Dimension(200, 30));
+        // Make this box a little longer because we don't want the text field too small
+        caseIdProvidedOption3Box.setPreferredSize(new Dimension(240, 30));
         caseIdProvidedOption3Box.add(idLabeledColRadioButton);
         caseIdProvidedOption3Box.add(idStringField);
 
@@ -475,7 +476,7 @@ final class DataLoaderSettings extends JPanel {
         commentMarkerBtnGrp.add(commentOtherRadioButton);
 
         // Comment string field
-        commentStringField = new StringTextField("@", 4);
+        commentStringField = new StringTextField("", 6);
 
         // Select double slash by default
         commentDoubleSlashRadioButton.setSelected(true);
@@ -708,6 +709,32 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
+    /**
+     * To check if the label is specified while that radio button is selected
+     *
+     * @return
+     */
+    public boolean isColumnLabelSpecified() {
+        if (idLabeledColRadioButton.isSelected()) {
+            return !idStringField.getText().isEmpty();
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * To check if comment marker is supplied while Other radio button is
+     * selected
+     *
+     * @return
+     */
+    public boolean isOtherCommentMarkerSpecified() {
+        if (commentOtherRadioButton.isSelected()) {
+            return !commentStringField.getText().isEmpty();
+        } else {
+            return true;
+        }
+    }
 
     /* Hide for now - Zhou
     private String getMissingValue() {

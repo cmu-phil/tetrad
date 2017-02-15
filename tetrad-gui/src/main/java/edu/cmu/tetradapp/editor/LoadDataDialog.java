@@ -538,6 +538,20 @@ final class LoadDataDialog extends JPanel {
         step3Button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // First we want to do some basic form validation/checks
+                // to eliminate user errors
+                if (!dataLoaderSettings.isColumnLabelSpecified()) {
+                    JOptionPane.showMessageDialog(container, "Please specify the case ID column label.", "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
+                    JOptionPane.showMessageDialog(container, "Please specify the comment marker.", "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 // Validate all files and show error messages
                 validateAllFiles();
 
