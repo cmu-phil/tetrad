@@ -132,9 +132,7 @@ final class LoadDataDialog extends JPanel {
         // Here we define validationResults as ArrayList for quick retrival by index
         this.validationResults = new ArrayList<>();
 
-        // We only need to know the size of failedFiles, no need to retrival by index
-        // So define it as LinkedList
-        this.failedFiles = new LinkedList<>();
+        this.failedFiles = new ArrayList<>();
 
         this.fileTextArea = new JTextArea();
 
@@ -674,7 +672,6 @@ final class LoadDataDialog extends JPanel {
             }
 
             validationResults.add(validationResult);
-
         }
 
         // Reset the default selected file
