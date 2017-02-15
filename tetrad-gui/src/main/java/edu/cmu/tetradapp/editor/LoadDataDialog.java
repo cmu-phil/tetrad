@@ -64,7 +64,7 @@ final class LoadDataDialog extends JPanel {
 
     private DataLoaderSettings dataLoaderSettings;
 
-    private final transient DataModel[] dataModels;
+    private DataModelList dataModelList;
 
     private JTextArea validationResultTextArea;
 
@@ -140,7 +140,7 @@ final class LoadDataDialog extends JPanel {
 
         this.defaulyPreviewBoxBorderTitle = "Data Preview: ";
 
-        this.dataModels = new DataModel[files.length];
+        this.dataModelList = new DataModelList();
 
         this.validationResultTextArea = new JTextArea();
     }
@@ -692,21 +692,22 @@ final class LoadDataDialog extends JPanel {
         for (int i = 0; i < loadedFiles.size(); i++) {
             DataModel dataModel = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
 
-            addDataModel(dataModel, i, loadedFiles.get(i).getName());
-
-            System.out.println("File index = " + i + " has been loaded successfully");
+            // Add to dataModelList for further use
+            if (dataModel != null) {
+                // Must setName() here, file names will be used by the spreadsheet - Zhou
+                dataModel.setName(loadedFiles.get(i).getName());
+                dataModelList.add(dataModel);
+                System.out.println("File index = " + i + " has been loaded successfully");
+            }
         }
     }
 
+    /**
+     * This is called by LoadDataAction.java
+     *
+     * @return
+     */
     public DataModelList getDataModels() {
-        DataModelList dataModelList = new DataModelList();
-
-        for (DataModel dataModel : dataModels) {
-            if (dataModel != null) {
-                dataModelList.add(dataModel);
-            }
-        }
-
         return dataModelList;
     }
 
@@ -773,15 +774,6 @@ final class LoadDataDialog extends JPanel {
         } catch (IOException e) {
             textArea.append("<<<ERROR READING FILE>>>");
         }
-    }
-
-    private void addDataModel(DataModel dataModel, int index, String name) {
-        if (dataModel == null) {
-            throw new NullPointerException();
-        }
-
-        dataModel.setName(name);
-        this.dataModels[index] = dataModel;
     }
 
 }
