@@ -37,6 +37,8 @@ import edu.pitt.dbmi.data.validation.file.TabularDataFileValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -411,6 +413,19 @@ final class DataLoaderSettings extends JPanel {
         // Defaults to none
         idNoneRadioButton.setSelected(true);
 
+        // Event listener
+        idStringField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                // Select the "Column labeled:" radio button when users click the text field
+                if (!idLabeledColRadioButton.isSelected()) {
+                    idLabeledColRadioButton.setSelected(true);
+                }
+            }
+        });
+
         // Add label into this label box to size
         Box caseIdProvidedLabelBox = Box.createHorizontalBox();
         caseIdProvidedLabelBox.setPreferredSize(labelSize);
@@ -464,6 +479,19 @@ final class DataLoaderSettings extends JPanel {
 
         // Select double slash by default
         commentDoubleSlashRadioButton.setSelected(true);
+
+        // Event listener
+        commentStringField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                // Select the "Other:" radio button when users click the text field
+                if (!commentOtherRadioButton.isSelected()) {
+                    commentOtherRadioButton.setSelected(true);
+                }
+            }
+        });
 
         // Add label into this label box to size
         Box commentMarkerLabelBox = Box.createHorizontalBox();
@@ -628,8 +656,10 @@ final class DataLoaderSettings extends JPanel {
             return "//";
         } else if (commentPondRadioButton.isSelected()) {
             return "#";
-        } else {
+        } else if (commentOtherRadioButton.isSelected()) {
             return commentStringField.getText();
+        } else {
+            throw new IllegalArgumentException("Unexpected Comment Marker selection.");
         }
     }
 
@@ -722,16 +752,17 @@ final class DataLoaderSettings extends JPanel {
             }
 
             // Handle case ID column based on different selections
-            if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+            if (idNoneRadioButton.isSelected()) {
+                // No column exclusion
+                validation.validate();
             } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                 // Exclude the first column
-                System.out.println("idUnlabeledFirstColRadioButton");
                 validation.validate(new int[]{1});
+            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                validation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
             } else {
-                validation.validate();
-                System.out.println("idNoneRadioButton");
+                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
             }
 
             return validation;
@@ -776,16 +807,17 @@ final class DataLoaderSettings extends JPanel {
             Dataset dataset;
 
             // Handle case ID column based on different selections
-            if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
-                // Exclude the specified labled column
-                dataset = dataReader.readInData(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+            if (idNoneRadioButton.isSelected()) {
+                // No column exclusion
+                dataset = dataReader.readInData();
             } else if (idUnlabeledFirstColRadioButton.isSelected()) {
                 // Exclude the first column
-                System.out.println("idUnlabeledFirstColRadioButton");
                 dataset = dataReader.readInData(new int[]{1});
+            } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
+                // Exclude the specified labled column
+                dataset = dataReader.readInData(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
             } else {
-                dataset = dataReader.readInData();
-                System.out.println("idNoneRadioButton");
+                throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
             }
 
             if (dataset instanceof ContinuousDataset) {
