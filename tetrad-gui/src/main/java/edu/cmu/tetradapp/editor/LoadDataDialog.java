@@ -72,7 +72,11 @@ final class LoadDataDialog extends JPanel {
 
     private JList validationFileList;
 
-    private final DefaultListModel fileListModel;
+    private JScrollPane filesToValidateScrollPane;
+
+    private DefaultListModel fileListModel;
+
+    private DefaultListModel validatedFileListModel;
 
     private Box filePreviewBox;
 
@@ -135,6 +139,8 @@ final class LoadDataDialog extends JPanel {
         this.filePreviewTextArea = new JTextArea();
 
         this.fileListModel = new DefaultListModel();
+
+        this.validatedFileListModel = new DefaultListModel();
 
         this.defaulyPreviewBoxBorderTitle = "Data Preview: ";
 
@@ -367,7 +373,7 @@ final class LoadDataDialog extends JPanel {
         // Add to overall container
         container.add(previewContainer);
 
-        // Result summary
+        // Validation result
         validationResultsContainer = Box.createHorizontalBox();
 
         // A list of files to review
@@ -375,28 +381,27 @@ final class LoadDataDialog extends JPanel {
         filesToValidateBox.setMinimumSize(new Dimension(305, 420));
         filesToValidateBox.setMaximumSize(new Dimension(305, 420));
 
-        // Create a new list with the same model: fileListModel
-        validationFileList = new JList(fileListModel);
+        // Create a new list model based on validation results
+        validationFileList = new JList(validatedFileListModel);
         // This mode specifies that only a single item can be selected at any point of time
         validationFileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        // Default to select the first file and show its preview
-        validationFileList.setSelectedIndex(0);
 
         // List listener
         validationFileList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                // Set the validationResultTextArea only when we have the validationResults not empty
-                // Because we clear() validationResults every time users click the step 2 backward button - Zhou
-                if (!validationResults.isEmpty() && !e.getValueIsAdjusting()) {
+                if (!e.getValueIsAdjusting()) {
                     int fileIndex = validationFileList.getSelectedIndex();
-                    setValidationResult(validationResults.get(fileIndex), validationResultTextArea);
+                    // -1 means no selection
+                    if (fileIndex != -1) {
+                        setValidationResult(validationResults.get(fileIndex), validationResultTextArea);
+                    }
                 }
             }
         });
 
         // Put the list in a scrollable area
-        JScrollPane filesToValidateScrollPane = new JScrollPane(validationFileList);
+        filesToValidateScrollPane = new JScrollPane(validationFileList);
         filesToValidateScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         filesToValidateBox.add(filesToValidateScrollPane);
@@ -522,6 +527,9 @@ final class LoadDataDialog extends JPanel {
 
                 // Hide finish button
                 loadButton.setVisible(false);
+
+                // Reset the list model
+                validatedFileListModel.clear();
 
                 // Removes all elements for each new validation
                 validationResults.clear();
@@ -713,12 +721,29 @@ final class LoadDataDialog extends JPanel {
             validationResults.add(output);
         }
 
-        // Reset the default selected file
+        showValidationResults();
+    }
+
+    private void showValidationResults() {
+        // Create the validation file list with marker prefix
+        // so users know if this file passed the validation or not
+        // just by looking at the file name prefix - Zhou
+        for (int i = 0; i < loadedFiles.size(); i++) {
+            // Default to the check mark
+            String unicodePrefix = "\u2713";
+            if (failedFiles.contains(loadedFiles.get(i).getName())) {
+                // Cross mark
+                unicodePrefix = "\u2717";
+            }
+            // Add the unicode marker
+            validatedFileListModel.addElement("[" + unicodePrefix + "] " + loadedFiles.get(i).getName());
+        }
+
+        // Set the default selected file
+        // that's why we don't set the default selection when creating the JList
         validationFileList.setSelectedIndex(0);
 
         // Display validation result of the first file by default
-        // Get the formatted output string
-        // Show the results in scrollable area
         setValidationResult(validationResults.get(0), validationResultTextArea);
     }
 
