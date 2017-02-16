@@ -170,8 +170,10 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
         if (model instanceof Graph) {
             IndependenceTest test = new IndTestDSep((Graph) model);
-            Score score = new GraphScore((Graph) model);
             ccd = new CcdMax(test);
+//            ccd.setAssumeIid(false);
+            ccd.setCollapseTiers(true);
+//            ccd.setGaussianErrors(true);
         } else {
 
             if (model instanceof DataSet) {
@@ -187,6 +189,9 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
                     ccd = new CcdMax(test);
+//                    ccd.setAssumeIid(false);
+                    ccd.setCollapseTiers(true);
+//                    ccd.setGaussianErrors(true);
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -205,6 +210,9 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestScore(gesScore);
                 ccd = new CcdMax(test);
+//                ccd.setAssumeIid(false);
+                ccd.setCollapseTiers(true);
+//                ccd.setGaussianErrors(true);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -230,6 +238,9 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     fgesScore.setPenaltyDiscount(penalty);
                     IndependenceTest test = new IndTestScore(fgesScore);
                     ccd = new CcdMax(test);
+//                    ccd.setAssumeIid(false);
+                    ccd.setCollapseTiers(true);
+//                    ccd.setGaussianErrors(true);
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();

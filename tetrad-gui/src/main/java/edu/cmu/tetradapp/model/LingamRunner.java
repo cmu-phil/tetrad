@@ -113,12 +113,12 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
         }
 
 //        Lingam_old lingam = new Lingam_old();
-//        lingam.setParameter1(getParameters().getParameter1());
+//        lingam.setAlternativePenalty(getParameters().getAlternativePenalty());
 //        lingam.setPruningDone(true);
 //
 //        double lingamPruningAlpha = Preferences.userRoot().getDouble("lingamPruningAlpha", 0.05);
 //
-//        lingam.setParameter1(lingamPruningAlpha);
+//        lingam.setAlternativePenalty(lingamPruningAlpha);
 //        Graph graph = lingam.lingam(data).getGraph();
 
         Lingam lingam = new Lingam();

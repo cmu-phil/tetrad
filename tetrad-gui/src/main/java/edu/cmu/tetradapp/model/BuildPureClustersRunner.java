@@ -164,10 +164,10 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 ////                    bpc = new FindOneFactorClusters(
 ////                            (DataSet) source,
 ////                            tetradTestType,
-////                            getParameters().getParameter1());
+////                            getParameters().getAlternativePenalty());
 ////                } else {
 ////                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
-////                            tetradTestType, getParameters().getParameter1());
+////                            tetradTestType, getParameters().getAlternativePenalty());
 ////                }
 ////
 ////                searchGraph = bpc.search();
@@ -180,17 +180,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    bpc = new FindOneFactorClusters2(
 //                            (DataSet) source,
 //                            tetradTestType, sag,
-//                            getParameters().getParameter1());
+//                            getParameters().getAlternativePenalty());
 //
 ////                    bpc = new FindTwoFactorClusters4(
 ////                            (DataSet) source,
-////                            getParameters().getParameter1());
+////                            getParameters().getAlternativePenalty());
 //                } else {
 //                    bpc = new FindOneFactorClusters2((ICovarianceMatrix) source,
-//                            tetradTestType, sag, getParameters().getParameter1());
+//                            tetradTestType, sag, getParameters().getAlternativePenalty());
 ////
 ////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-////                            getParameters().getParameter1());
+////                            getParameters().getAlternativePenalty());
 //                }
 //
 //                searchGraph = bpc.search();
@@ -204,17 +204,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    bpc = new FindTwoFactorClusters2(
 //                            (DataSet) source,
 //                            tetradTestType,
-//                            getParameters().getParameter1());
+//                            getParameters().getAlternativePenalty());
 //
 ////                    bpc = new FindTwoFactorClusters4(
 ////                            (DataSet) source,
-////                            getParameters().getParameter1());
+////                            getParameters().getAlternativePenalty());
 //                } else {
 //                    bpc = new FindTwoFactorClusters2((ICovarianceMatrix) source,
-//                            tetradTestType, getParameters().getParameter1());
+//                            tetradTestType, getParameters().getAlternativePenalty());
 ////
 ////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-////                            getParameters().getParameter1());
+////                            getParameters().getAlternativePenalty());
 //                }
 //
 //                searchGraph = bpc.search();

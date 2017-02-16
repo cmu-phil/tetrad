@@ -110,12 +110,9 @@ public interface IndependenceTest {
     void setAlpha(double alpha);
 
     /**
-     * '
-     *
      * @return The data model for the independence test.
      */
     DataModel getData();
-
 
     ICovarianceMatrix getCov();
 

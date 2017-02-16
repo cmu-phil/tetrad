@@ -111,7 +111,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 //            this.variables = Collections.unmodifiableList(nodes);
 //            this.indexMap = indexMap(variables);
 //            this.nameMap = nameMap(variables);
-//            setParameter1(alpha);
+//            setAlternativePenalty(alpha);
 //
 //            this.dataSet = DataUtils.center(dataSet);
 //
@@ -133,7 +133,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 //            this.variables = Collections.unmodifiableList(variables);
 //            this.indexMap = indexMap(variables);
 //            this.nameMap = nameMap(variables);
-//            setParameter1(alpha);
+//            setAlternativePenalty(alpha);
 //        }
 
     /**

@@ -21,122 +21,63 @@
 
 package edu.cmu.tetrad.search;
 
-import Jama.Matrix;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Implements the continuous BIC score for FGES.
+ * Implements a conditional Gaussian BIC score for FGES.
  *
  * @author Joseph Ramsey
  */
 public class SemBicScore2 implements Score {
 
-    private ICovarianceMatrix covarianceMatrix;
+    private DataSet dataSet;
 
-    // The covariance matrix.
-    private Matrix covariances;
-
-    // The variables of the covariance matrix.
+    // The variables of the continuousData set.
     private List<Node> variables;
 
-    // The sample size of the covariance matrix.
-    private int sampleSize;
+    // Likelihood function
+    private SemLikelihood2 likelihood;
 
-    // The penalty penaltyDiscount.
-    private double penaltyDiscount = 2.0;
-
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGES
-    private boolean ignoreLinearDependent = false;
-
-    // The printstream output should be sent to.
-    private PrintStream out = System.out;
-
-    // True if verbose output should be sent to out.
-    private boolean verbose = false;
-    private Set<Integer> forbidden = new HashSet<>();
-    private final double logn;
+    private double penaltyDiscount = 1;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore2(ICovarianceMatrix covariances) {
-        if (covariances == null) {
+    public SemBicScore2(DataSet dataSet) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
 
-        this.setCovariances(covariances);
-        this.variables = covariances.getVariables();
-        this.sampleSize = covariances.getSampleSize();
-        this.penaltyDiscount = 2;
-        logn = Math.log(sampleSize);
+        this.dataSet = dataSet;
+        this.variables = dataSet.getVariables();
+
+        this.likelihood = new SemLikelihood2(new CovarianceMatrixOnTheFly(dataSet));
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
+        SemLikelihood2.Ret ret = likelihood.getLikelihood(i, parents);
 
-//        if (parents.length == 0) return localScore(i);
-//        else if (parents.length == 1) return localScore(i, parents[0]);
+        int N = dataSet.getNumRows();
+        double lik = ret.getLik();
+        int k = ret.getDof();
 
-        double residualVariance = covariances.get(i, i);
-        int n = getSampleSize();
-        int p = parents.length;
-        Matrix covxx = getSelection1(covariances, parents);
-
-        try {
-            Matrix covxxInv = covxx.inverse();
-
-            Matrix covxy = getSelection2(covariances, parents, i);
-            Matrix b = covxxInv.times(covxy);
-
-            double dot = 0.0;
-
-            for (int j = 0; j < covxy.getRowDimension(); j++) {
-                for (int k = 0; k < covxy.getColumnDimension(); k++) {
-                    dot += covxy.get(j, k) * b.get(j, k);
-                }
-            }
-
-            residualVariance -= dot; //covxy.dotProduct(b);
-
-            if (residualVariance <= 0) {
-                if (isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
-                }
-                return Double.NaN;
-            }
-
-            double c = getPenaltyDiscount();
-            return score(residualVariance, n, logn, p, c);
-        } catch (Exception e) {
-            boolean removedOne = true;
-
-            while (removedOne) {
-                List<Integer> _parents = new ArrayList<>();
-                for (int y = 0; y < parents.length; y++) _parents.add(parents[y]);
-                _parents.removeAll(forbidden);
-                parents = new int[_parents.size()];
-                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                removedOne = printMinimalLinearlyDependentSet(parents, covariances);
-            }
-
-            return Double.NaN;
-        }
+        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N);
     }
 
-    @Override
+    private double getStructurePrior(int[] parents) {
+        int i = parents.length + 1;
+        int c = dataSet.getNumColumns();
+        double p = 2 / (double) c;
+        return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
+    }
+
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
@@ -158,32 +99,6 @@ public class SemBicScore2 implements Score {
      */
     public double localScore(int i, int parent) {
         return localScore(i, new int[]{parent});
-//        double residualVariance = covariances.get(i, i);
-//        int n = getSampleSize();
-//        int p = 1;
-//        final double covXX = covariances.get(parent, parent);
-//
-//        if (covXX == 0) {
-//            if (isVerbose()) {
-//                out.println("Dividing by zero");
-//            }
-//            return Double.NaN;
-//        }
-//
-//        double covxxInv = 1.0 / covXX;
-//        double covxy = covariances.get(i, parent);
-//        double b = covxxInv * covxy;
-//        residualVariance -= covxy * b;
-//
-//        if (residualVariance <= 0) {
-//            if (isVerbose()) {
-//                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
-//            }
-//            return Double.NaN;
-//        }
-//
-//        double c = getPenaltyDiscount();
-//        return score(residualVariance, n, logn, p, c);
     }
 
     /**
@@ -191,67 +106,15 @@ public class SemBicScore2 implements Score {
      */
     public double localScore(int i) {
         return localScore(i, new int[0]);
-//        double residualVariance = covariances.get(i, i);
-//        int n = getSampleSize();
-//        int p = 0;
-//
-//        if (residualVariance <= 0) {
-//            if (isVerbose()) {
-//                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
-//            }
-//            return Double.NaN;
-//        }
-//
-//        double c = getPenaltyDiscount();
-//        return score(residualVariance, n, logn, p, c);
     }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        this.ignoreLinearDependent = ignoreLinearDependent;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-//    public ICovarianceMatrix getCovariances() {
-//        return covarianceMatrix;
-//    }
 
     public int getSampleSize() {
-        return sampleSize;
+        return dataSet.getNumRows();
     }
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
-    }
-
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+        return bump > 0;
     }
 
     @Override
@@ -259,76 +122,12 @@ public class SemBicScore2 implements Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-        this.penaltyDiscount = alpha;
-    }
-
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int n, double logn, int p, double c) {
-//        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
-//    }
-
-    private double score(double residualVariance, int n, double logn, int p, double c) {
-        int cols = covarianceMatrix.getDimension();
-        double q = 2 / (double) cols;
-        double bic = -n * Math.log(residualVariance) - c * (p + 1) * logn;
-        double structPrior = (p * Math.log(q) + (cols - p) * Math.log(1.0 - q));
-        return bic ;//+ structPrior;
-    }
-
-    private Matrix getSelection1(Matrix cov, int[] rows) {
-        return cov.getMatrix(rows, rows);
-    }
-
-    private Matrix getSelection2(Matrix cov, int[] rows, int k) {
-        return cov.getMatrix(rows, new int[]{k});
-    }
-
-    // Prints a smallest subset of parents that causes a singular matrix exception.
-    private boolean printMinimalLinearlyDependentSet(int[] parents, Matrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(variables.get(p));
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
-            for (int m = 0; m < choice.length; m++) {
-                sel[m] = parents[m];
-                _sel.add(variables.get(sel[m]));
-            }
-
-            Matrix m = cov.getMatrix(sel, sel);
-
-            try {
-                m.inverse();
-            } catch (Exception e2) {
-                forbidden.add(sel[0]);
-                out.println("### Linear dependence among variables: " + _sel);
-                out.println("### Removing " + _sel.get(0));
-                return true;
-            }
-        }
-
+    public boolean getAlternativePenalty() {
         return false;
     }
 
-    private void setCovariances(ICovarianceMatrix covariances) {
-        this.covarianceMatrix = covariances;
-        this.covariances = new Matrix(covariances.getMatrix().toArray());
-    }
+    public void setAlternativePenalty(double alpha) {
 
-    public void setVariables(List<Node> variables) {
-//        covariances.setVariables(variables);
-        this.variables = variables;
     }
 
     @Override
@@ -344,7 +143,15 @@ public class SemBicScore2 implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(sampleSize));
+        return (int) Math.ceil(Math.log(dataSet.getNumRows()));
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 }
 

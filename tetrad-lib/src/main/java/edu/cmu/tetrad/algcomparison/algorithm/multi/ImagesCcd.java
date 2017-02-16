@@ -35,16 +35,19 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             dataModels.add(dataSet);
         }
 
-        SemBicScoreImages2 score = new SemBicScoreImages2(dataModels);
+        SemBicScoreImages score = new SemBicScoreImages(dataModels);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
+        search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
+        search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
-        search.setKnowledge(knowledge);
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+        search.setKnowledge(knowledge);
         return search.search();
     }
 
@@ -75,13 +78,13 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.add("depth");
         parameters.add("orientVisibleFeedbackLoops");
+        parameters.add("doColliderOrientation");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
-
-        parameters.add("numRandomSelections");
-        parameters.add("randomSelectionSize");
+        parameters.add("assumeIID");
+        parameters.add("collapseTiers");
 
         return parameters;
     }

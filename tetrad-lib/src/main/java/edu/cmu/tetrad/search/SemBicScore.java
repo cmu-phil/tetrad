@@ -34,6 +34,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.log;
+
 /**
  * Implements the continuous BIC score for FGES.
  *
@@ -51,7 +54,7 @@ public class SemBicScore implements Score {
     private int sampleSize;
 
     // The penalty penaltyDiscount.
-    private double penaltyDiscount = 2.0;
+    private double penaltyDiscount = 1.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
     // ignored by FGES
@@ -62,8 +65,9 @@ public class SemBicScore implements Score {
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
+
+    // Variables that caused computational problems and so are to be avoided.
     private Set<Integer> forbidden = new HashSet<>();
-    private final double logn;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -76,8 +80,6 @@ public class SemBicScore implements Score {
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
-        this.penaltyDiscount = 2;
-        logn = Math.log(sampleSize);
     }
 
     /**
@@ -86,36 +88,32 @@ public class SemBicScore implements Score {
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
-//        if (parents.length == 0) return localScore(i);
-//        else if (parents.length == 1) return localScore(i, parents[0]);
-
-        double residualVariance = getCovariances().getValue(i, i);
-        int n = getSampleSize();
-        int p = parents.length;
-        TetradMatrix covxx = getSelection1(getCovariances(), parents);
-
         try {
-            TetradMatrix covxxInv = covxx.inverse();
+            double s2 = getCovariances().getValue(i, i);
+            int p = parents.length;
 
-            TetradVector covxy = getSelection2(getCovariances(), parents, i);
-            TetradVector b = covxxInv.times(covxy);
-            residualVariance -= covxy.dotProduct(b);
+            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
+            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
-            if (residualVariance <= 0) {
+            if (s2 <= 0) {
                 if (isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
+                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
                 }
+
                 return Double.NaN;
             }
 
-            double c = getPenaltyDiscount();
-            return score(residualVariance, n, logn, p, c);
+            int n = getSampleSize();
+            int k = 2 * p + 1;
+            s2 = ((n) / (double) (n - k)) * s2;
+            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
         } catch (Exception e) {
             boolean removedOne = true;
 
             while (removedOne) {
                 List<Integer> _parents = new ArrayList<>();
-                for (int y = 0; y < parents.length; y++) _parents.add(parents[y]);
+                for (int parent : parents) _parents.add(parent);
                 _parents.removeAll(forbidden);
                 parents = new int[_parents.size()];
                 for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
@@ -138,8 +136,8 @@ public class SemBicScore implements Score {
 
     private int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        all[0] = extra;
         return all;
     }
 
@@ -147,51 +145,53 @@ public class SemBicScore implements Score {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
     public double localScore(int i, int parent) {
-        double residualVariance = getCovariances().getValue(i, i);
-        int n = getSampleSize();
-        int p = 1;
-        final double covXX = getCovariances().getValue(parent, parent);
+        return localScore(i, new int[]{parent});
 
-        if (covXX == 0) {
-            if (isVerbose()) {
-                out.println("Dividing by zero");
-            }
-            return Double.NaN;
-        }
-
-        double covxxInv = 1.0 / covXX;
-        double covxy = getCovariances().getValue(i, parent);
-        double b = covxxInv * covxy;
-        residualVariance -= covxy * b;
-
-        if (residualVariance <= 0) {
-            if (isVerbose()) {
-                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
-            }
-            return Double.NaN;
-        }
-
-        double c = getPenaltyDiscount();
-        return score(residualVariance, n, logn, p, c);
+//        double residualVariance = getCovariances().getValue(i, i);
+//        int n = getSampleSize();
+//        int p = 1;
+//        final double covXX = getCovariances().getValue(parent, parent);
+//
+//        if (covXX == 0) {
+//            if (isVerbose()) {
+//                out.println("Dividing by zero");
+//            }
+//            return Double.NaN;
+//        }
+//
+//        double covxxInv = 1.0 / covXX;
+//        double covxy = getCovariances().getValue(i, parent);
+//        double b = covxxInv * covxy;
+//        residualVariance -= covxy * b;
+//
+//        if (residualVariance <= 0) {
+//            if (isVerbose()) {
+//                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
+//            }
+//            return Double.NaN;
+//        }
+//
+//        return score(residualVariance, n, p);
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
     public double localScore(int i) {
-        double residualVariance = getCovariances().getValue(i, i);
-        int n = getSampleSize();
-        int p = 0;
-
-        if (residualVariance <= 0) {
-            if (isVerbose()) {
-                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
-            }
-            return Double.NaN;
-        }
-
-        double c = getPenaltyDiscount();
-        return score(residualVariance, n, logn, p, c);
+        return localScore(i, new int[0]);
+//        double residualVariance = getCovariances().getValue(i, i);
+//        int n = getSampleSize();
+//        int p = 0;
+//
+//        if (residualVariance <= 0) {
+//            if (isVerbose()) {
+//                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
+//            }
+//            return Double.NaN;
+//        }
+//
+//        double c = getPenaltyDiscount();
+//        return score(residualVariance, n, p);
     }
 
     /**
@@ -247,42 +247,8 @@ public class SemBicScore implements Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
-    }
-
-    @Override
-    public void setParameter1(double alpha) {
-        this.penaltyDiscount = alpha;
-    }
-
-    // Calculates the BIC score.
-    private double score(double residualVariance, int n, double logn, int p, double c) {
-        int cols = getCovariances().getDimension();
-        double q = 2 / (double) cols;
-        double bic = -n * Math.log(residualVariance) - c * (p + 1) * logn;
-        double structPrior = (p * Math.log(q) + (cols - p) * Math.log(1.0 - q));
-        return bic ;//+ structPrior;
-    }
-
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int n, double logn, int p, double c) {
-//        int cols = getDataSet().getNumColumns();
-//        double q = 2 / (double) cols;
-//
-//        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
-//
-////        return -n * Math.log(residualVariance) - c * (p + 1) * logn + (p * Math.log(q) + (n - p) * Math.log(1.0 - q));
-//    }
-
-
-    private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
-        return cov.getSelection(rows, rows);
-    }
-
-    private TetradVector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
-        return cov.getSelection(rows, new int[]{k}).getColumn(0);
+    private TetradMatrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
+        return cov.getSelection(rows, cols);
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
@@ -338,7 +304,7 @@ public class SemBicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(sampleSize));
+        return (int) Math.ceil(log(sampleSize));
     }
 }
 
