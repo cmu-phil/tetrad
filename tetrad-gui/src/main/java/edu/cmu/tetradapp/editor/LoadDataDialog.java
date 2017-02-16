@@ -540,14 +540,23 @@ final class LoadDataDialog extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // First we want to do some basic form validation/checks
                 // to eliminate user errors
+                List<String> inputErrors = new ArrayList();
+
                 if (!dataLoaderSettings.isColumnLabelSpecified()) {
-                    JOptionPane.showMessageDialog(container, "Please specify the case ID column label.", "Input Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                    inputErrors.add("- Please specify the case ID column label.");
                 }
 
                 if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
-                    JOptionPane.showMessageDialog(container, "Please specify the comment marker.", "Input Error",
+                    inputErrors.add("- Please specify the comment marker.");
+                }
+
+                // Show all errors in one popup
+                if (!inputErrors.isEmpty()) {
+                    String inputErrorMessages = "";
+                    for (String error : inputErrors) {
+                        inputErrorMessages = inputErrorMessages + error + "\n";
+                    }
+                    JOptionPane.showMessageDialog(container, inputErrorMessages, "Input Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
