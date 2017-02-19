@@ -116,10 +116,12 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", .05);
-        parameters.set("penaltyDiscount", 5);
+        parameters.set("penaltyDiscount", 4);
         parameters.set("depth", 4);
+        parameters.set("extraAdjacencyThreshold", 10);
+        parameters.set("ngAlpha", 1e-7);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRandomSelections", 5);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -202,63 +204,67 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", 1);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("depth", 3);
+        parameters.set("extraAdjacencyThreshold", 10);
 
         // The mmost 1.0's.
 //        parameters.set("alpha", 1);
 //        parameters.set("penaltyDiscount", 2);
 //        parameters.set("depth", 3);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRandomSelections", 5);
         parameters.set("randomSelectionSize", 10);
 
-//        parameters.set("Structure", "Placeholder");
+        parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn("Structure"));
+        statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new TwoCyclePrecision());
-//        statistics.add(new TwoCycleRecall());
-//        statistics.add(new TwoCycleFalsePositive());
-//        statistics.add(new TwoCycleFalseNegative());
-//        statistics.add(new TwoCycleTruePositive());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/1"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/2"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/3"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/4"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/5"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/6"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/7"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/8"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/9"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/10"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/11"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/12"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/13"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/14"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/15"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/16"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/17"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/18"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/19"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/20"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/21"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/22"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/23"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/24"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/25"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/26"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/27"));
-        simulations.add(new LoadContinuousDataSmithSim("/Users/jdramsey/Downloads/smithsim.algcomp/28"));
+        String path = "/Users/jdramsey/Downloads/smithsim.algcomp/";
+
+        simulations.add(new LoadContinuousDataSmithSim(path + "1"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "2"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "3"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "4"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "5"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "6"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "7"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "8"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "9"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "10"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "11"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "12"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "13"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "14"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "15"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "16"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "17"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "18"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "19"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "20"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "21"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "22"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "22_2"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "23"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "24"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "25"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "26"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "27"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "28"));
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new ImagesSemBic());
@@ -266,8 +272,8 @@ public class TestFang {
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
@@ -280,6 +286,85 @@ public class TestFang {
 //        comparison.saveToFiles("comparison", new LinearFisherModel(new RandomForward()), parameters);
 
     }
+
+    public void TestPwwd7() {
+        Parameters parameters = new Parameters();
+
+        parameters.set("alpha", .1);
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("depth", 3);
+        parameters.set("extraAdjacencyThreshold", 10);
+        parameters.set("ngAlpha", .01);
+
+        parameters.set("numRandomSelections", 5);
+        parameters.set("randomSelectionSize", 10);
+
+        parameters.set("Structure", "Placeholder");
+
+        Statistics statistics = new Statistics();
+
+        statistics.add(new ParameterColumn("Structure"));
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleTruePositive());
+        statistics.add(new ElapsedTime());
+
+        Simulations simulations = new Simulations();
+
+        String path = "/Users/jdramsey/Downloads/pwdd7.algcomp/";
+
+        simulations.add(new LoadContinuousDataSmithSim(path + "1"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "2"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "3"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "4"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "5"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "6"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "7"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "8"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "9"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "10"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "11"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "12"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "13"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "14"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "15"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "16"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "17"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "18"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "19"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "20"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "22"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "22_2"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "23"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "24"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "25"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "26"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "27"));
+        simulations.add(new LoadContinuousDataSmithSim(path + "28"));
+
+        Algorithms algorithms = new Algorithms();
+        algorithms.add(new FangConcatenated());
+
+        Comparison comparison = new Comparison();
+
+        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowSimulationIndices(false);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setParallelized(false);
+        comparison.setSaveGraphs(true);
+
+        comparison.setTabDelimitedTables(false);
+
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
 
     public static void main(String... args) {
         new TestFang().TestRuben();

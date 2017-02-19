@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic.utils;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,8 @@ public class ArrowConfusion {
         TCfn = 0;
         TCfp = 0;
 
+
+        this.est = GraphUtils.replaceNodes(est, truth.getNodes());
 
 
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives

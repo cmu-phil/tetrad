@@ -38,26 +38,6 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        File dir = new File(path + "/data");
-
-        if (dir.exists()) {
-            File[] files = dir.listFiles();
-
-            for (File file : files) {
-                if (!file.getName().endsWith(".txt")) continue;
-                System.out.println("Loading data from " + file.getAbsolutePath());
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(false);
-                reader.setDelimiter(DelimiterType.COMMA);
-                try {
-                    DataSet dataSet = reader.parseTabular(file);
-                    dataSets.add(dataSet);
-                } catch (Exception e) {
-                    System.out.println("Couldn't parse " + file.getAbsolutePath());
-                }
-            }
-        }
-
         File dir2 = new File(path + "/graph");
 
         if (dir2.exists()) {
@@ -79,6 +59,43 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 break;
             }
         }
+
+        File dir = new File(path + "/data");
+
+        if (dir.exists()) {
+            File[] files = dir.listFiles();
+
+            for (File file : files) {
+                if (!file.getName().endsWith(".txt")) continue;
+                System.out.println("Loading data from " + file.getAbsolutePath());
+                try {
+                    DataReader reader = new DataReader();
+                    reader.setVariablesSupplied(false);
+                    reader.setDelimiter(DelimiterType.COMMA);
+                    DataSet dataSet;// = reader.parseTabular(file);
+
+//                    if (dataSet.getVariables().size() == 1) {
+                        DataReader reader2 = new DataReader();
+                        reader2.setVariablesSupplied(false);
+                        reader2.setDelimiter(DelimiterType.WHITESPACE);
+                        dataSet = reader2.parseTabular(file);
+//                    }
+
+                    if (dataSet.getVariables().size() > graph.getNumNodes()) {
+                        List<Node> nodes = new ArrayList<>();
+                        for (int i = 0; i < graph.getNumNodes(); i++) nodes.add(dataSet.getVariable(i));
+                        dataSet = dataSet.subsetColumns(nodes);
+                    }
+
+                    dataSets.add(dataSet);
+                } catch (Exception e) {
+                    System.out.println("Couldn't parse " + file.getAbsolutePath());
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
 
         if (parameters.get("numRandomSelections") != null) {
             parameters.set("numRuns", parameters.get("numRandomSelections"));

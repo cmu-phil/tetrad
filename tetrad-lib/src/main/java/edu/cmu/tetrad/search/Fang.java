@@ -23,15 +23,19 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.Regression;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.getRanks;
-import static edu.cmu.tetrad.util.StatUtils.mean;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
@@ -69,6 +73,9 @@ public final class Fang implements GraphSearch {
     // The threshold for adding in extra adjacencies for control two-cycles.
     private double extraAdjacencyThreshold = 10;
 
+    // The alpha for testing non-Gaussianity (Anderson Darling test).
+    private double ngAlpha = 0.05;
+
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
      */
@@ -91,7 +98,7 @@ public final class Fang implements GraphSearch {
         long start = System.currentTimeMillis();
 
         List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.center(dataSet));
+        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
 
         DataSet dataSet = DataUtils.concatenate(_dataSets);
 
@@ -107,7 +114,12 @@ public final class Fang implements GraphSearch {
 
         for (int i = 0; i < colData.length; i++) {
             final double p = new AndersonDarlingTest(colData[i]).getP();
-            nonGaussian[i] = p < alpha;
+
+            if (Double.isInfinite(p)) {
+                nonGaussian[i] = true;
+            } else {
+                nonGaussian[i] = p < ngAlpha;
+            }
         }
 
         final int n = dataSet.getNumRows();
@@ -128,11 +140,6 @@ public final class Fang implements GraphSearch {
                 Node Y = variables.get(j);
 
                 if (graph0.getEdge(X, Y) != null) {
-                    if (graph0.getEdge(X, Y).isDirected()) {
-                        graph.addEdge(graph0.getEdge(X, Y));
-                        continue;
-                    }
-
                     if (shouldGo(X, Y)) {
                         graph.addDirectedEdge(Y, X);
                         continue;
@@ -145,42 +152,78 @@ public final class Fang implements GraphSearch {
                 final double[] xData = colData[i];
                 final double[] yData = colData[j];
 
+//                double startAngle = -90;
+//                double width = 90;
+//
+//                startAngle *= PI / 180.0;
+//                width *= PI / 180.0;
+//
+//                if (startAngle < 0) startAngle += 2 * PI;
+
                 double[] p1 = new double[n];
                 double[] p2 = new double[n];
                 double[] p3 = new double[n];
                 double[] p4 = new double[n];
                 double[] xy = new double[n];
-                double[] r = new double[n];
                 double[] h = new double[n];
 
+                double[] p5 = new double[n];
+                double[] p6 = new double[n];
+//
                 for (int k = 0; k < n; k++) {
                     double x = xData[k];
                     double y = yData[k];
 
-                    p1[k] = pos(x) * y;
-                    p2[k] = x * pos(y);
-                    p3[k] = -pos(-x) * y;
-                    p4[k] = x * -pos(-y);
+                    p1[k] = h(x) * y;
+                    p2[k] = x * h(y);
+                    p3[k] = -h(-x) * y;
+                    p4[k] = x * -h(-y);
 
                     xy[k] = x * y;
-                    r[k] = g(x) * y - x * g(y);
-                    h[k] = pos(x) * y - x * pos(y);
+                    h[k] = h(x) * y - x * h(y);
+
+//                    double a = getAngle(x, y, startAngle);
+//
+//                    if (a > startAngle && a < width + startAngle) {
+//                        p5[k] = x * y;
+//                    } else if (a > PI + startAngle && a < PI + width + startAngle) {
+//                        p6[k] = x * y;
+//                    }
+
+                    if (x > 0 && y < 0) {
+                        p5[k] = x * y;
+                    } else if (x < 0 && y > 0) {
+                        p6[k] = x * y;
+                    }
                 }
 
-                double cov = mean(xy, n);
-                double cov1 = mean(p1, n);
-                double cov2 = mean(p2, n);
-                double cov3 = mean(p3, n);
-                double cov4 = mean(p4, n);
+                p1 = nonzero(p1);
+                p2 = nonzero(p2);
+                p3 = nonzero(p3);
+                p4 = nonzero(p4);
+                h = nonzero(h);
 
-                double t1 = (mean(p1, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double t2 = (mean(p2, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double t3 = (mean(p3, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double t4 = (mean(p4, n) - 0.0) / (sd(r, n) / sqrt(n));
-//                double tr = (mean(r, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double th = (mean(h, n) - 0.0) / (sd(h, n) / sqrt(n));
+                p5 = nonzero(p5);
+                p6 = nonzero(p6);
 
-                boolean ng = isNonGaussian(i) || isNonGaussian(j);
+                final double signumcovxy = signum(covariance(yData, xData));
+                double R = sum(h) * signumcovxy;
+
+                double cov = sum(xy);
+                double cov1 = sum(p1);
+                double cov2 = sum(p2);
+                double cov3 = sum(p3);
+                double cov4 = sum(p4);
+
+                double t1 = mean(p1, p1.length) / (sd(p1, p1.length) / sqrt(p1.length));
+                double t2 = mean(p2, p2.length) / (sd(p2, p2.length) / sqrt(p2.length));
+                double t3 = mean(p3, p3.length) / (sd(p3, p3.length) / sqrt(p3.length));
+                double t4 = mean(p4, p4.length) / (sd(p4, p4.length) / sqrt(p4.length));
+                double th = mean(h, h.length) / (sd(h, h.length) / sqrt(h.length));
+                double tp5 = mean(p5, p5.length) / (sd(p5, p5.length) / sqrt(p5.length));
+                double tp6 = mean(p6, p6.length) / (sd(p6, p6.length) / sqrt(p6.length));
+
+                boolean ng = isNonGaussian(i) && isNonGaussian(j);
 
                 int numZero = 0;
 
@@ -196,12 +239,25 @@ public final class Fang implements GraphSearch {
                 if (abs(t3) > T) numNonZero++;
                 if (abs(t4) > T) numNonZero++;
 
-                if (abs(th) > extraAdjacencyThreshold || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
-                    if (shouldGo(X, Y)) {
+                if (graph0.isAdjacentTo(X, Y)) {
+                    if (ng && abs(th) <= T ) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.GREEN);
+                        edge2.setLineColor(Color.GREEN);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (ng && R > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (shouldGo(Y, X)) {
+                    } else if (ng && R < 0) {
                         graph.addDirectedEdge(Y, X);
-                    } else if ((signum(cov1) == -signum(cov)
+                    } else {
+                        graph.addUndirectedEdge(X, Y);
+                    }
+                } else if (abs(th) > extraAdjacencyThreshold) {
+                    if (ng && (signum(cov1) == -signum(cov)
                             || signum(cov2) == -signum(cov)
                             || signum(cov3) == -signum(cov)
                             || signum(cov4) == -signum(cov))) {
@@ -213,16 +269,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (numZero > 0 && numNonZero > 0) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else if (ng && abs(th) <= T) {
+                    } else if (ng && numZero > 0 && numNonZero > 0) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -231,12 +278,6 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (ng && th > T) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (ng && th < -T) {
-                        graph.addDirectedEdge(Y, X);
-                    } else {
-                        graph.addUndirectedEdge(X, Y);
                     }
                 }
             }
@@ -248,6 +289,37 @@ public final class Fang implements GraphSearch {
         System.out.println(graph);
 
         return graph;
+    }
+
+//    private double getAngle(double x, double y, double startAngle) {
+//        double a = atan(y / x);
+//        if (Double.isNaN(a)) {
+//            if (y > 0) a = .5 * PI;
+//            else a = -.5 * PI;
+//        }
+//        if (x < 0) a += PI;
+//        if (a < startAngle) a += 2 * PI;
+//        return a;
+//    }
+
+    private double[] nonzero(double[] q3) {
+        int N = 0;
+
+        for (double aQ3 : q3) {
+            if (aQ3 != 0) N++;
+        }
+
+        double[] ret = new double[N];
+
+        int t = 0;
+
+        for (double aQ3 : q3) {
+            if (aQ3 != 0) {
+                ret[t++] = aQ3;
+            }
+        }
+
+        return ret;
     }
 
     /**
@@ -320,14 +392,14 @@ public final class Fang implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-    /**
-     * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
-     *
-     * @return This threshold, default 10.
-     */
-    public double getExtraAdjacencyThreshold() {
-        return extraAdjacencyThreshold;
-    }
+//    /**
+//     * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
+//     *
+//     * @return This threshold, default 10.
+//     */
+//    public double getExtraAdjacencyThreshold() {
+//        return extraAdjacencyThreshold;
+//    }
 
     /**
      * The threshold for adding in extra adjacencies for two-cycles where the coefficients are of opposite sign.
@@ -336,6 +408,24 @@ public final class Fang implements GraphSearch {
      */
     public void setExtraAdjacencyThreshold(double extraAdjacencyThreshold) {
         this.extraAdjacencyThreshold = extraAdjacencyThreshold;
+    }
+
+//    /**
+//     * The alpha for testing non-Gaussianity.
+//     *
+//     * @return This alpha, default 0.05.
+//     */
+//    public double getNgAlpha() {
+//        return ngAlpha;
+//    }
+
+    /**
+     * The alpha for testing non-Gaussianity.
+     *
+     * @param ngAlpha This alpha, default 0.05.
+     */
+    public void setNgAlpha(double ngAlpha) {
+        this.ngAlpha = ngAlpha;
     }
 
     //======================================== PRIVATE METHODS ====================================//
@@ -348,7 +438,7 @@ public final class Fang implements GraphSearch {
         return log(Math.cosh(Math.max(x, 0)));
     }
 
-    private double pos(double x) {
+    private double h(double x) {
         return x < 0 ? 0 : x;
     }
 
@@ -372,6 +462,75 @@ public final class Fang implements GraphSearch {
 
     private boolean shouldGo(Node x, Node y) {
         return knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName());
+    }
+
+    /**
+     * @param x Paired differences.
+     */
+    private double wilcoxonz(double[] x) {
+        x = nonzero(x);
+        long nr = x.length;
+        double[] absx = new double[x.length];
+        for (int i = 0; i < x.length; i++) absx[i] = abs(x[i]);
+        double[] sortedabsx = Arrays.copyOf(absx, x.length);
+        Arrays.sort(sortedabsx);
+        double[] ranks = ranks(sortedabsx);
+
+        double W = 0.0;
+
+        for (int i = 0; i < nr; i++) {
+            W += signum(x[i]) * ranks[i];
+        }
+
+        long i = nr * (nr + 1) * (2 * nr + 1);
+
+        return getZ(W, i);
+    }
+
+    private double getZ(double w, long i) {
+        return w / sqrt(i / 6.0);
+    }
+
+    private static double[] ranks(double[] x) {
+        double[] ranks = new double[x.length];
+
+        for (int i = 0; i < x.length; i++) {
+            double d = x[i];
+            int count = 1;
+
+            for (int k = 0; k < x.length; k++) {
+                if (x[k] <= d) {
+                    count++;
+                }
+            }
+
+            ranks[i] = count;
+        }
+
+        return ranks;
+    }
+
+    private double regressionCoef(double[] xValues, double[] yValues) {
+        List<Node> v = new ArrayList<>();
+        v.add(new GraphNode("x"));
+        v.add(new GraphNode("y"));
+
+        TetradMatrix bothData = new TetradMatrix(xValues.length, 2);
+
+        for (int i = 0; i < xValues.length; i++) {
+            bothData.set(i, 0, xValues[i]);
+            bothData.set(i, 1, yValues[i]);
+        }
+
+        Regression regression2 = new RegressionDataset(bothData, v);
+
+        RegressionResult result;
+        try {
+            result = regression2.regress(v.get(0), v.get(1));
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+        return result.getCoef()[1];
     }
 }
 
