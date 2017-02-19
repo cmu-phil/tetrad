@@ -74,7 +74,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.add("depth");
         parameters.add("alpha");
-        parameters.add("alphaNg");
+        parameters.add("ngAlpha");
         parameters.add("penaltyDiscount");
         parameters.add("extraAdjacencyThreshold");
 

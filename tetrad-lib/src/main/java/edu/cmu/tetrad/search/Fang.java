@@ -139,15 +139,15 @@ public final class Fang implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
-                if (graph0.getEdge(X, Y) != null) {
-                    if (shouldGo(X, Y)) {
-                        graph.addDirectedEdge(Y, X);
-                        continue;
-                    } else if (shouldGo(X, Y)) {
-                        graph.addDirectedEdge(X, Y);
-                        continue;
-                    }
-                }
+//                if (graph0.getEdge(X, Y) != null) {
+//                    if (shouldGo(X, Y)) {
+//                        graph.addDirectedEdge(Y, X);
+//                        continue;
+//                    } else if (shouldGo(X, Y)) {
+//                        graph.addDirectedEdge(X, Y);
+//                        continue;
+//                    }
+//                }
 
                 final double[] xData = colData[i];
                 final double[] yData = colData[j];
@@ -240,7 +240,11 @@ public final class Fang implements GraphSearch {
                 if (abs(t4) > T) numNonZero++;
 
                 if (graph0.isAdjacentTo(X, Y)) {
-                    if (ng && abs(th) <= T ) {
+                    if (shouldGo(X, Y)) {
+                        graph.addDirectedEdge(X, Y);
+                    } else if (shouldGo(Y, X)) {
+                        graph.addDirectedEdge(Y, X);
+                    } else if (ng && abs(th) <= T) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 

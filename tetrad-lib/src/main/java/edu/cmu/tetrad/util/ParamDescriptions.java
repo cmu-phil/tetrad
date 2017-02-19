@@ -155,7 +155,7 @@ public class ParamDescriptions {
                 "Threshold for adding in extra adjcencies for control two-cycles",
                 10.0, 0.0, Double.MAX_VALUE));
 
-        put("alphaNg", new ParamDescription(
+        put("ngAlpha", new ParamDescription(
                 "Alpha for testing non-Gaussianity",
                 0.05, 0.0, 1.0));
 
