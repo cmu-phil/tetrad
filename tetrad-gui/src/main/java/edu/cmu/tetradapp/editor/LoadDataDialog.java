@@ -64,7 +64,7 @@ final class LoadDataDialog extends JPanel {
 
     private DataModelList dataModelList;
 
-    private JTextArea validationResultTextArea;
+    private JTextPane validationResultTextPane;
 
     private JTextArea filePreviewTextArea;
 
@@ -146,7 +146,7 @@ final class LoadDataDialog extends JPanel {
 
         this.dataModelList = new DataModelList();
 
-        this.validationResultTextArea = new JTextArea();
+        this.validationResultTextPane = new JTextPane();
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -394,7 +394,7 @@ final class LoadDataDialog extends JPanel {
                     int fileIndex = validationFileList.getSelectedIndex();
                     // -1 means no selection
                     if (fileIndex != -1) {
-                        setValidationResult(validationResults.get(fileIndex), validationResultTextArea);
+                        setValidationResult(validationResults.get(fileIndex), validationResultTextPane);
                     }
                 }
             }
@@ -416,10 +416,10 @@ final class LoadDataDialog extends JPanel {
         validationResultsBox.setMinimumSize(new Dimension(568, 420));
         validationResultsBox.setMaximumSize(new Dimension(568, 420));
 
-        validationResultTextArea.setEditable(false);
-        validationResultTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        validationResultTextPane.setContentType("text/html");
+        validationResultTextPane.setEditable(false);
 
-        final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextArea);
+        final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextPane);
         validationResultsBox.add(summaryScrollPane);
 
         validationResultsContainer.add(validationResultsBox);
@@ -686,36 +686,37 @@ final class LoadDataDialog extends JPanel {
             // Validate each individual file
             DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
-            String output = "Validation result of " + loadedFiles.get(i).getName() + ": \n\n";
+            String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
 
             // Show some file info
             if (validation.hasInfos()) {
-                output = output + "File info: \n";
+                output = output + "<p><b>File info: </b></p>";
 
                 List<String> validationInfos = validation.getInfos();
 
                 for (String validationInfo : validationInfos) {
-                    output = output + validationInfo + "\n";
+                    output = output + "<p>" + validationInfo + "</p>";
                 }
-
-                output = output + "\n";
             }
 
             // Show errors if found
             if (validation.hasErrors()) {
-                output = output + "Validation failed with the following errors: \n\n";
-
                 List<String> validationErrors = validation.getErrors();
 
+                int errorCount = validationErrors.size();
+
+                String errorCountString = (errorCount > 1) ? " errors" : " error";
+                output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
+
                 for (String validationError : validationErrors) {
-                    output = output + validationError + "\n";
+                    output = output + "<p style=\"color: red;\">" + validationError + "</p>";
                 }
 
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
             } else {
-                output = output + "Validation passed with no error! \n\n";
+                output = output + "<p style=\"color: green;\"><b>Validation passed with no error!</b></p>";
             }
 
             validationResults.add(output);
@@ -744,7 +745,7 @@ final class LoadDataDialog extends JPanel {
         validationFileList.setSelectedIndex(0);
 
         // Display validation result of the first file by default
-        setValidationResult(validationResults.get(0), validationResultTextArea);
+        setValidationResult(validationResults.get(0), validationResultTextPane);
     }
 
     /**
@@ -778,10 +779,13 @@ final class LoadDataDialog extends JPanel {
      * Set the validation result content
      *
      * @param output
-     * @param textArea
+     * @param textPane
      */
-    private void setValidationResult(String output, JTextArea textArea) {
-        textArea.setText(output);
+    private void setValidationResult(String output, JTextPane textPane) {
+        // Wrap the output in html
+        textPane.setText("<html><body style=\"font-family: Monospaced; font-size: 10px \"" + output + "</body></html>");
+        // Scroll back to top left
+        textPane.setCaretPosition(0);
     }
 
     /**
