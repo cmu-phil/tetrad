@@ -44,7 +44,9 @@ public class Edge implements TetradSerializable, Comparable {
     private Endpoint endpoint2;
 
     // Usual coloring--set to something else for a special line color.
-    private transient Color lineColor = null;
+    private int lineColorRed = Color.BLUE.getRed();
+    private int lineColorGreen = Color.BLUE.getGreen();
+    private int lineColorBlue = Color.BLUE.getBlue();
 
     private boolean dashed = false;
 
@@ -85,7 +87,9 @@ public class Edge implements TetradSerializable, Comparable {
 
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
-        this.lineColor = edge.getLineColor();
+        this.lineColorBlue = edge.getLineColorBlue();
+        this.lineColorRed = edge.getLineColorRed();
+        this.lineColorGreen = edge.getLineColorGreen();
     }
 
     /**
@@ -271,10 +275,6 @@ public class Edge implements TetradSerializable, Comparable {
 
             boolean equal;
 
-//            if ((node1 == node1b && node2 == node2b) || (node1 == node2b && node2 == node1b)) {
-//                System.out.println();
-//            }
-
             if (node1 == node1b && node2 == node2b) {
                 equal = end1 == end1b && end2 == end2b;
             } else
@@ -358,13 +358,11 @@ public class Edge implements TetradSerializable, Comparable {
         return endpoint1 == Endpoint.NULL && endpoint2 == Endpoint.NULL;
     }
 
-    public Color getLineColor() {
-        return this.lineColor;
-    }
-
     public void setLineColor(Color lineColor) {
         if (lineColor != null) {
-            this.lineColor = lineColor;
+            this.lineColorRed = lineColor.getRed();
+            this.lineColorGreen = lineColor.getGreen();
+            this.lineColorBlue = lineColor.getBlue();
         }
     }
 
@@ -374,6 +372,22 @@ public class Edge implements TetradSerializable, Comparable {
 
     public void setDashed(boolean dashed) {
         this.dashed = dashed;
+    }
+
+    public int getLineColorRed() {
+        return lineColorRed;
+    }
+
+    public int getLineColorBlue() {
+        return lineColorBlue;
+    }
+
+    public int getLineColorGreen() {
+        return lineColorGreen;
+    }
+
+    public Color getLineColor() {
+        return new Color(lineColorRed, lineColorGreen, lineColorBlue);
     }
 }
 

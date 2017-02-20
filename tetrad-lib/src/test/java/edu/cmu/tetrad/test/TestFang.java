@@ -118,11 +118,11 @@ public class TestFang {
         parameters.set("alpha", .05);
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", 4);
-        parameters.set("extraAdjacencyThreshold", 12);
+        parameters.set("extraAdjacencyThreshold", 10);
         parameters.set("ngAlpha", 1e-5);
 
         parameters.set("numRandomSelections", 5);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 8);
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
@@ -290,14 +290,14 @@ public class TestFang {
     public void TestPwwd7() {
         Parameters parameters = new Parameters();
 
-        parameters.set("alpha", .1);
+        parameters.set("alpha", .05);
         parameters.set("penaltyDiscount", 2);
-        parameters.set("depth", 3);
+        parameters.set("depth", 4);
         parameters.set("extraAdjacencyThreshold", 10);
-        parameters.set("ngAlpha", .01);
+        parameters.set("ngAlpha", 1e-7);
 
         parameters.set("numRandomSelections", 5);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 5);
 
         parameters.set("Structure", "Placeholder");
 
@@ -367,7 +367,7 @@ public class TestFang {
 
 
     public static void main(String... args) {
-        new TestFang().TestRuben();
+        new TestFang().TestPwwd7();
     }
 }
 
