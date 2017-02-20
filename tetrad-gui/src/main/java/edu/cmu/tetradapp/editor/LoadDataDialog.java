@@ -23,7 +23,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.pitt.dbmi.data.preview.BasicDataPreviewer;
+import edu.pitt.dbmi.data.preview.DataPreviewer;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import static edu.pitt.dbmi.data.validation.ValidationAttribute.COLUMN_COUNT;
 import static edu.pitt.dbmi.data.validation.ValidationAttribute.ROW_NUMBER;
@@ -33,9 +34,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -575,10 +574,11 @@ final class LoadDataDialog extends JPanel {
                 }
 
                 // watch a process
-                Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
+                //Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
+                // Data loader dialog
+                Window owner = SwingUtilities.getWindowAncestor(loadButton);
                 System.out.println(owner);
-                //Window owner = SwingUtilities.getWindowAncestor(container);
-                new WatchedProcess(owner) {
+                new DataLoadingIndicator(owner) {
                     @Override
                     public void watch() {
                         // Disable the button and change the button text
@@ -834,7 +834,7 @@ final class LoadDataDialog extends JPanel {
     }
 
     /**
-     * Set the file preview content, will use Kevin's preview later - Zhou
+     * Set the file preview content
      *
      * @param file
      * @param textArea
@@ -843,31 +843,43 @@ final class LoadDataDialog extends JPanel {
         try {
             textArea.setText("");
 
-            try (BufferedReader in = new BufferedReader(new FileReader(file))) {
-                StringBuilder text = new StringBuilder();
-                String line;
-                int nLine = 0;
+            int fromLine = 0;
+            int toLine = 15;
+            int numOfCharacters = 100;
 
-                // Only preview the first 20 rows
-                // Will need to think about how to preview big file - Zhou
-                while ((line = in.readLine()) != null) {
-                    text.append(line.substring(0, line.length())).append("\n");
-
-                    if (text.length() > 50000) {
-                        textArea.append("(This file is too big to show the preview ...)\n");
-                        break;
-                    }
-
-                    nLine++;
-                    if (nLine >= 20) {
-                        break;
-                    }
-                }
-
-                textArea.append(text.toString());
-
-                textArea.setCaretPosition(0);
+            // Kevin's data previewer that can handle big data files
+            DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
+            List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharacters);
+            for (String line : linePreviews) {
+                textArea.append(line + "\n");
             }
+            textArea.setCaretPosition(0);
+
+//            try (BufferedReader in = new BufferedReader(new FileReader(file))) {
+//                StringBuilder text = new StringBuilder();
+//                String line;
+//                int nLine = 0;
+//
+//                // Only preview the first 20 rows
+//                // Will need to think about how to preview big file - Zhou
+//                while ((line = in.readLine()) != null) {
+//                    text.append(line.substring(0, line.length())).append("\n");
+//
+//                    if (text.length() > 50000) {
+//                        textArea.append("(This file is too big to show the preview ...)\n");
+//                        break;
+//                    }
+//
+//                    nLine++;
+//                    if (nLine >= 20) {
+//                        break;
+//                    }
+//                }
+//
+//                textArea.append(text.toString());
+//
+//                textArea.setCaretPosition(0);
+//            }
         } catch (IOException e) {
             textArea.append("<<<ERROR READING FILE>>>");
         }
