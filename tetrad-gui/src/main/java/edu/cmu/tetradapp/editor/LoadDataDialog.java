@@ -49,6 +49,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -578,6 +579,7 @@ final class LoadDataDialog extends JPanel {
                 System.out.println(owner);
                 //Window owner = SwingUtilities.getWindowAncestor(container);
                 new WatchedProcess(owner) {
+                    @Override
                     public void watch() {
                         // Disable the button and change the button text
                         step3Button.setEnabled(false);
@@ -751,7 +753,8 @@ final class LoadDataDialog extends JPanel {
                 output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
 
                 for (ValidationResult error : errors) {
-                    output = output + "<p style=\"color: red;\">" + error.getMessage() + "</p>";
+                    // Remember to excape the html tags if the data file contains any
+                    output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
                 }
 
                 // Also add the file name to failed list
