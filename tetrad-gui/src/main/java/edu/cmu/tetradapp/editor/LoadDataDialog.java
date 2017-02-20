@@ -23,7 +23,11 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.pitt.dbmi.data.validation.DataValidation;
+import static edu.pitt.dbmi.data.validation.ValidationAttribute.COLUMN_COUNT;
+import static edu.pitt.dbmi.data.validation.ValidationAttribute.ROW_NUMBER;
+import edu.pitt.dbmi.data.validation.ValidationResult;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -569,44 +573,60 @@ final class LoadDataDialog extends JPanel {
                     return;
                 }
 
-                // Validate all files and show error messages
-                validateAllFiles();
+                // watch a process
+                Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
+                System.out.println(owner);
+                //Window owner = SwingUtilities.getWindowAncestor(container);
+                new WatchedProcess(owner) {
+                    public void watch() {
+                        // Disable the button and change the button text
+                        step3Button.setEnabled(false);
+                        step3Button.setText("Validating ...");
 
-                // Show result summary
-                validationResultsContainer.setVisible(true);
+                        // Validate all files and show error messages
+                        validateAllFiles();
 
-                // Hide all inside settingsContainer
-                fileListBox.setVisible(false);
-                formatBox.setVisible(false);
-                optionsBox.setVisible(false);
+                        // Show result summary
+                        validationResultsContainer.setVisible(true);
 
-                // Use previewContainer instead of previewBox
-                // since the previewContainer also contains padding
-                previewContainer.setVisible(false);
+                        // Hide all inside settingsContainer
+                        fileListBox.setVisible(false);
+                        formatBox.setVisible(false);
+                        optionsBox.setVisible(false);
 
-                // Hide step 1 button
-                step1Button.setVisible(false);
+                        // Use previewContainer instead of previewBox
+                        // since the previewContainer also contains padding
+                        previewContainer.setVisible(false);
 
-                // Hide step 2 forward button
-                step2ForwardButton.setVisible(false);
+                        // Hide step 1 button
+                        step1Button.setVisible(false);
 
-                // Show step 2 backward button
-                step2BackwardButton.setVisible(true);
+                        // Hide step 2 forward button
+                        step2ForwardButton.setVisible(false);
 
-                // Hide step 3 button
-                step3Button.setVisible(false);
+                        // Show step 2 backward button
+                        step2BackwardButton.setVisible(true);
 
-                // Show finish button
-                loadButton.setVisible(true);
+                        // Hide step 3 button
+                        step3Button.setVisible(false);
 
-                // Determine if enable the finish button or not
-                if (failedFiles.size() > 0) {
-                    // Disable it
-                    loadButton.setEnabled(false);
-                } else {
-                    // Enable it
-                    loadButton.setEnabled(true);
-                }
+                        // Show finish button
+                        loadButton.setVisible(true);
+
+                        // Determine if enable the finish button or not
+                        if (failedFiles.size() > 0) {
+                            // Disable it
+                            loadButton.setEnabled(false);
+                        } else {
+                            // Enable it
+                            loadButton.setEnabled(true);
+                        }
+
+                        // Enable the button and hange back the button text
+                        step3Button.setEnabled(true);
+                        step3Button.setText("Step 3: Validate >");
+                    }
+                };
             }
         });
 
@@ -688,28 +708,50 @@ final class LoadDataDialog extends JPanel {
 
             String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
 
+            List<ValidationResult> results = validation.getValidationResults();
+
+            List<ValidationResult> infos = new LinkedList<>();
+            // Just leave the warnings here to future use - Zhou
+            List<ValidationResult> warnings = new LinkedList<>();
+            List<ValidationResult> errors = new LinkedList<>();
+            for (ValidationResult result : results) {
+                switch (result.getCode()) {
+                    case INFO:
+                        infos.add(result);
+                        break;
+                    case WARNING:
+                        warnings.add(result);
+                        break;
+                    default:
+                        errors.add(result);
+                }
+            }
+
             // Show some file info
-            if (validation.hasInfos()) {
+            if (!infos.isEmpty()) {
                 output = output + "<p><b>File info: </b></p>";
+                for (ValidationResult info : infos) {
+                    // More examples of how to get attributes for customized parsing
+                    Object obj = info.getAttributes().get(ROW_NUMBER);
+                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
+                    obj = info.getAttributes().get(COLUMN_COUNT);
+                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
+                    System.out.printf("numOfLines: %d%n", numOfLines);
+                    System.out.printf("numOfColumns: %d%n", numOfColumns);
 
-                List<String> validationInfos = validation.getInfos();
-
-                for (String validationInfo : validationInfos) {
-                    output = output + "<p>" + validationInfo + "</p>";
+                    output = output + "<p>" + info.getMessage() + "</p>";
                 }
             }
 
             // Show errors if found
-            if (validation.hasErrors()) {
-                List<String> validationErrors = validation.getErrors();
-
-                int errorCount = validationErrors.size();
+            if (!errors.isEmpty()) {
+                int errorCount = errors.size();
 
                 String errorCountString = (errorCount > 1) ? " errors" : " error";
                 output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
 
-                for (String validationError : validationErrors) {
-                    output = output + "<p style=\"color: red;\">" + validationError + "</p>";
+                for (ValidationResult error : errors) {
+                    output = output + "<p style=\"color: red;\">" + error.getMessage() + "</p>";
                 }
 
                 // Also add the file name to failed list

@@ -27,13 +27,13 @@ import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.StringTextField;
-import edu.pitt.dbmi.data.ContinuousDataset;
+import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
-import edu.pitt.dbmi.data.validation.file.TabularDataFileValidation;
+import edu.pitt.dbmi.data.validation.file.TabularDataValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -761,7 +761,7 @@ final class DataLoaderSettings extends JPanel {
         // Only handles tabular continuous data for now - Zhou
         if (tabularRadioButton.isSelected()) {
             // Using Kevin's data validation
-            TabularDataFileValidation validation = new ContinuousTabularDataFileValidation(file, delimiter);
+            TabularDataValidation validation = new ContinuousTabularDataFileValidation(file, delimiter);
 
             // Header in first row or not
             validation.setHasHeader(hasHeader);
@@ -847,8 +847,8 @@ final class DataLoaderSettings extends JPanel {
                 throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
             }
 
-            if (dataset instanceof ContinuousDataset) {
-                ContinuousDataset contDataset = (ContinuousDataset) dataset;
+            if (dataset instanceof ContinuousTabularDataset) {
+                ContinuousTabularDataset contDataset = (ContinuousTabularDataset) dataset;
                 // Convert dataset to dataModel
                 dataModel = new BoxDataSet(
                         new DoubleDataBox(contDataset.getData()),
