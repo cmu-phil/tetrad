@@ -118,8 +118,8 @@ public class TestFang {
         parameters.set("alpha", .05);
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", 4);
-        parameters.set("extraAdjacencyThreshold", 10);
-        parameters.set("ngAlpha", 1e-7);
+        parameters.set("extraAdjacencyThreshold", 12);
+        parameters.set("ngAlpha", 1e-5);
 
         parameters.set("numRandomSelections", 5);
         parameters.set("randomSelectionSize", 10);
