@@ -783,7 +783,7 @@ final class LoadDataDialog extends JPanel {
      */
     private void setValidationResult(String output, JTextPane textPane) {
         // Wrap the output in html
-        textPane.setText("<html><body style=\"font-family: Monospaced; font-size: 10px \"" + output + "</body></html>");
+        textPane.setText("<html><body style=\"font-family: Monospaced; font-size: 10px; white-space:nowrap; \"" + output + "</body></html>");
         // Scroll back to top left
         textPane.setCaretPosition(0);
     }
