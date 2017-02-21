@@ -843,43 +843,24 @@ final class LoadDataDialog extends JPanel {
         try {
             textArea.setText("");
 
-            int fromLine = 0;
+            // Show preview from the first line to line 15,
+            // only display up to 100 chars per line,
+            // apend ... if longer than that
+            int fromLine = 1;
             int toLine = 15;
-            int numOfCharacters = 100;
+            int numOfCharactersPerLine = 100;
 
             // Kevin's data previewer that can handle big data files
             DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
-            List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharacters);
+            List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharactersPerLine);
             for (String line : linePreviews) {
                 textArea.append(line + "\n");
             }
-            textArea.setCaretPosition(0);
+            // Tell users we are only showing the first 15 lines, 100 chars per line
+            textArea.append("\n <<This preview only displays the first 15 lines, 100 chars per line>>");
 
-//            try (BufferedReader in = new BufferedReader(new FileReader(file))) {
-//                StringBuilder text = new StringBuilder();
-//                String line;
-//                int nLine = 0;
-//
-//                // Only preview the first 20 rows
-//                // Will need to think about how to preview big file - Zhou
-//                while ((line = in.readLine()) != null) {
-//                    text.append(line.substring(0, line.length())).append("\n");
-//
-//                    if (text.length() > 50000) {
-//                        textArea.append("(This file is too big to show the preview ...)\n");
-//                        break;
-//                    }
-//
-//                    nLine++;
-//                    if (nLine >= 20) {
-//                        break;
-//                    }
-//                }
-//
-//                textArea.append(text.toString());
-//
-//                textArea.setCaretPosition(0);
-//            }
+            // Move the scroll to top left
+            textArea.setCaretPosition(0);
         } catch (IOException e) {
             textArea.append("<<<ERROR READING FILE>>>");
         }
