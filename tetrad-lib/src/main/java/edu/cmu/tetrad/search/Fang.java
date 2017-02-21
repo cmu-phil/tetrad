@@ -144,10 +144,10 @@ public final class Fang implements GraphSearch {
 
                 h = nonzero(h);
 
-                final double signumcovxy = signum(covariance(y, x));
+                double c = covariance(x, y);
+                final double signumcovxy = signum(c);
                 double R = mean(h) * signumcovxy;
 
-                double c = covariance(x, y);
                 double c1 = covarianceOfPart(x, y, 1, 0);
                 double c2 = covarianceOfPart(x, y, 0, 1);
                 double c3 = covarianceOfPart(x, y, -1, 0);
@@ -156,6 +156,17 @@ public final class Fang implements GraphSearch {
                 double th = mean(h, h.length) / (sd(h, h.length) / sqrt(h.length));
 
                 boolean ng = isNonGaussian(i) && isNonGaussian(j);
+
+                final boolean sameSignCondition = !(
+                        signum(c1) == signum(c)
+                                && signum(c2) == signum(c)
+                                && signum(c3) == signum(c)
+                                && signum(c4) == signum(c)
+                );
+
+//                final boolean sameSignCondition = !(
+//                        (signum(c1) == signum(c) && signum(c3) == signum(c))
+//                        || (signum(c2) == signum(c) && signum(c4) == signum(c)));
 
                 if (G0.isAdjacentTo(X, Y)) {
                     if (shouldGo(X, Y)) {
@@ -172,10 +183,7 @@ public final class Fang implements GraphSearch {
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
                     } else if (ng && abs(th) > extraAdjacencyThreshold
-                            && (signum(c1) == -signum(c)
-                            || signum(c2) == -signum(c)
-                            || signum(c3) == -signum(c)
-                            || signum(c4) == -signum(c))) {
+                            && sameSignCondition) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -192,10 +200,7 @@ public final class Fang implements GraphSearch {
                         graph.addUndirectedEdge(X, Y);
                     }
                 } else if (ng && abs(th) > extraAdjacencyThreshold
-                        && (signum(c1) == -signum(c)
-                        || signum(c2) == -signum(c)
-                        || signum(c3) == -signum(c)
-                        || signum(c4) == -signum(c))) {
+                        && sameSignCondition) {
                     Edge edge1 = Edges.directedEdge(X, Y);
                     Edge edge2 = Edges.directedEdge(Y, X);
 

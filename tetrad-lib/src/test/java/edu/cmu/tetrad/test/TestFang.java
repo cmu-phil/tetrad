@@ -119,7 +119,7 @@ public class TestFang {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", 4);
         parameters.set("extraAdjacencyThreshold", 10);
-        parameters.set("ngAlpha", 1e-5);
+        parameters.set("ngAlpha", 1e-7);
 
         parameters.set("numRandomSelections", 5);
         parameters.set("randomSelectionSize", 8);
@@ -367,7 +367,7 @@ public class TestFang {
 
 
     public static void main(String... args) {
-        new TestFang().TestPwwd7();
+        new TestFang().TestRuben();
     }
 }
 
