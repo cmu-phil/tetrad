@@ -72,6 +72,12 @@ final class LoadDataDialog extends JPanel {
 
     private JTextArea filePreviewTextArea;
 
+    private final int previewFromLine;
+
+    private final int previewToLine;
+
+    private final int previewNumOfCharactersPerLine;
+
     private JList fileList;
 
     private JList validationFileList;
@@ -143,6 +149,13 @@ final class LoadDataDialog extends JPanel {
         this.failedFiles = new ArrayList<>();
 
         this.filePreviewTextArea = new JTextArea();
+
+        // Show preview from the first line to line 20,
+        // only display up to 100 chars per line,
+        // apend ... if longer than that
+        this.previewFromLine = 1;
+        this.previewToLine = 20;
+        this.previewNumOfCharactersPerLine = 100;
 
         this.fileListModel = new DefaultListModel();
 
@@ -350,12 +363,12 @@ final class LoadDataDialog extends JPanel {
         fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         previewContainer.add(fileListBox);
-        // Add some gap between file list and format box
+        // Add some gap between file list and preview box
         previewContainer.add(Box.createHorizontalStrut(10), 1);
 
-        filePreviewBox = Box.createHorizontalBox();
-        filePreviewBox.setMinimumSize(new Dimension(585, 315));
-        filePreviewBox.setMaximumSize(new Dimension(585, 315));
+        filePreviewBox = Box.createVerticalBox();
+        filePreviewBox.setMinimumSize(new Dimension(585, 310));
+        filePreviewBox.setMaximumSize(new Dimension(585, 310));
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
@@ -368,6 +381,14 @@ final class LoadDataDialog extends JPanel {
         // Add the scrollable text area in a scroller
         final JScrollPane filePreviewScrollPane = new JScrollPane(filePreviewTextArea);
         filePreviewBox.add(filePreviewScrollPane);
+
+        // Add gap between preview text area and the help instruction
+        filePreviewBox.add(Box.createVerticalStrut(10));
+
+        JLabel previewInstructionText = new JLabel(String.format("Showing from line %d to line %d, up to %d characters per line", previewFromLine, previewToLine, previewNumOfCharactersPerLine));
+
+        // Add the instruction
+        filePreviewBox.add(previewInstructionText);
 
         // Show the default selected filename as preview border title
         previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(0).getName();
@@ -926,25 +947,16 @@ final class LoadDataDialog extends JPanel {
      * @param file
      * @param textArea
      */
-    private static void setPreview(File file, JTextArea textArea) {
+    private void setPreview(File file, JTextArea textArea) {
         try {
             textArea.setText("");
 
-            // Show preview from the first line to line 15,
-            // only display up to 100 chars per line,
-            // apend ... if longer than that
-            int fromLine = 1;
-            int toLine = 15;
-            int numOfCharactersPerLine = 100;
-
             // Kevin's data previewer that can handle big data files
             DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
-            List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharactersPerLine);
+            List<String> linePreviews = dataPreviewer.getPreviews(previewFromLine, previewToLine, previewNumOfCharactersPerLine);
             for (String line : linePreviews) {
                 textArea.append(line + "\n");
             }
-            // Tell users we are only showing the first 15 lines, 100 chars per line
-            textArea.append("\n <<This preview only displays the first 15 lines, 100 chars per line>>");
 
             // Move the scroll to top left
             textArea.setCaretPosition(0);
