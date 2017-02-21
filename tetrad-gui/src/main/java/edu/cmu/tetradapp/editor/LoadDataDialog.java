@@ -763,6 +763,7 @@ final class LoadDataDialog extends JPanel {
      */
     private void showLoadingIndicator(String message) {
         JProgressBar progressBar = new JProgressBar(0, 100);
+        // An indeterminate progress bar continuously displays animation
         progressBar.setIndeterminate(true);
 
         Box dataLoadingIndicatorBox = Box.createVerticalBox();
