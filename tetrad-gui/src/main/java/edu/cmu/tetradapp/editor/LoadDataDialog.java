@@ -655,18 +655,43 @@ final class LoadDataDialog extends JPanel {
         loadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    // Load all data files via data reader
-                    loadAllFiles();
-                } catch (IOException ex) {
-                    Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                // Change button text
+                loadButton.setEnabled(false);
+                loadButton.setText("Loading ...");
 
-                // Close the data loader dialog
-                Window w = SwingUtilities.getWindowAncestor(loadButton);
-                if (w != null) {
-                    w.setVisible(false);
-                }
+                // Load all data files and hide the loading indicator once done
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Load all data files via data reader
+                            loadAllFiles();
+                        } catch (IOException ex) {
+                            Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                        // SwingUtilities.invokeLater means that this call will return immediately
+                        // as the event is placed in Event Dispatcher Queue,
+                        // and run() method will run asynchronously
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Hide the loading indicator
+                                hideLoadingIndicator();
+
+                                // Close the data loader dialog
+                                Window w = SwingUtilities.getWindowAncestor(loadButton);
+                                if (w != null) {
+                                    w.setVisible(false);
+                                }
+                            }
+                        });
+                    }
+                }).start();
+
+                // Create the loading indicator dialog and show
+                showLoadingIndicator("Loading...");
             }
         });
 
@@ -754,6 +779,8 @@ final class LoadDataDialog extends JPanel {
      */
     private void hideLoadingIndicator() {
         loadingIndicatorDialog.setVisible(false);
+        // Also release all of the native screen resources used by this dialog
+        loadingIndicatorDialog.dispose();
     }
 
     /**
