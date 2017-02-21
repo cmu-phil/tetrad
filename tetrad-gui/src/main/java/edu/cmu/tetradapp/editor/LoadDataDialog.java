@@ -76,6 +76,8 @@ final class LoadDataDialog extends JPanel {
 
     private JList validationFileList;
 
+    private JDialog loadingIndicatorDialog;
+
     private JScrollPane filesToValidateScrollPane;
 
     private DefaultListModel fileListModel;
@@ -151,6 +153,8 @@ final class LoadDataDialog extends JPanel {
         this.dataModelList = new DataModelList();
 
         this.validationResultTextPane = new JTextPane();
+
+        this.loadingIndicatorDialog = new JDialog();
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -573,62 +577,74 @@ final class LoadDataDialog extends JPanel {
                     return;
                 }
 
-                // watch a process
-                //Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-                // Data loader dialog
-                Window owner = SwingUtilities.getWindowAncestor(loadButton);
-                System.out.println(owner);
-                new DataLoadingIndicator(owner) {
-                    @Override
-                    public void watch() {
-                        // Disable the button and change the button text
-                        step3Button.setEnabled(false);
-                        step3Button.setText("Validating ...");
+                // Disable the button and change the button text
+                step3Button.setEnabled(false);
+                step3Button.setText("Validating ...");
 
-                        // Validate all files and show error messages
+                // New thread to run the validation and hides the loading indicator
+                // and shows the validation results once the validation process is done - Zhou
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Validate all files and set error messages
                         validateAllFiles();
 
-                        // Show result summary
-                        validationResultsContainer.setVisible(true);
+                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                        // SwingUtilities.invokeLater means that this call will return immediately
+                        // as the event is placed in Event Dispatcher Queue,
+                        // and run() method will run asynchronously
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Hide the loading indicator
+                                hideLoadingIndicator();
 
-                        // Hide all inside settingsContainer
-                        fileListBox.setVisible(false);
-                        formatBox.setVisible(false);
-                        optionsBox.setVisible(false);
+                                // Show result summary
+                                validationResultsContainer.setVisible(true);
 
-                        // Use previewContainer instead of previewBox
-                        // since the previewContainer also contains padding
-                        previewContainer.setVisible(false);
+                                // Hide all inside settingsContainer
+                                fileListBox.setVisible(false);
+                                formatBox.setVisible(false);
+                                optionsBox.setVisible(false);
 
-                        // Hide step 1 button
-                        step1Button.setVisible(false);
+                                // Use previewContainer instead of previewBox
+                                // since the previewContainer also contains padding
+                                previewContainer.setVisible(false);
 
-                        // Hide step 2 forward button
-                        step2ForwardButton.setVisible(false);
+                                // Hide step 1 button
+                                step1Button.setVisible(false);
 
-                        // Show step 2 backward button
-                        step2BackwardButton.setVisible(true);
+                                // Hide step 2 forward button
+                                step2ForwardButton.setVisible(false);
 
-                        // Hide step 3 button
-                        step3Button.setVisible(false);
+                                // Show step 2 backward button
+                                step2BackwardButton.setVisible(true);
 
-                        // Show finish button
-                        loadButton.setVisible(true);
+                                // Hide step 3 button
+                                step3Button.setVisible(false);
 
-                        // Determine if enable the finish button or not
-                        if (failedFiles.size() > 0) {
-                            // Disable it
-                            loadButton.setEnabled(false);
-                        } else {
-                            // Enable it
-                            loadButton.setEnabled(true);
-                        }
+                                // Show finish button
+                                loadButton.setVisible(true);
 
-                        // Enable the button and hange back the button text
-                        step3Button.setEnabled(true);
-                        step3Button.setText("Step 3: Validate >");
+                                // Determine if enable the finish button or not
+                                if (failedFiles.size() > 0) {
+                                    // Disable it
+                                    loadButton.setEnabled(false);
+                                } else {
+                                    // Enable it
+                                    loadButton.setEnabled(true);
+                                }
+
+                                // Enable the button and hange back the button text
+                                step3Button.setEnabled(true);
+                                step3Button.setText("Step 3: Validate >");
+                            }
+                        });
                     }
-                };
+                }).start();
+
+                // Create the loading indicator dialog and show
+                showLoadingIndicator("Validating...");
             }
         });
 
@@ -694,6 +710,50 @@ final class LoadDataDialog extends JPanel {
         JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
                 "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+    }
+
+    /**
+     * Create the loading indicator dialog and show
+     */
+    private void showLoadingIndicator(String message) {
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setIndeterminate(true);
+
+        Box dataLoadingIndicatorBox = Box.createVerticalBox();
+        dataLoadingIndicatorBox.setPreferredSize(new Dimension(200, 60));
+
+        JLabel label = new JLabel(message);
+        // JLabel label = new JLabel(message, SwingConstants.CENTER); doesn't
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        Box progressBarBox = Box.createHorizontalBox();
+        progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        progressBarBox.add(progressBar);
+        progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
+
+        // Put the label on top of progress bar
+        dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
+        dataLoadingIndicatorBox.add(label);
+        dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
+        dataLoadingIndicatorBox.add(progressBarBox);
+
+        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
+        // Set modal true to block user input to other top-level windows when shown
+        loadingIndicatorDialog = new JDialog(ancestor, true);
+        // Remove the whole dialog title bar
+        loadingIndicatorDialog.setUndecorated(true);
+        loadingIndicatorDialog.getContentPane().add(dataLoadingIndicatorBox);
+        loadingIndicatorDialog.pack();
+        loadingIndicatorDialog.setLocationRelativeTo(JOptionUtils.centeringComp());
+
+        loadingIndicatorDialog.setVisible(true);
+    }
+
+    /**
+     * Hide the loading indicator
+     */
+    private void hideLoadingIndicator() {
+        loadingIndicatorDialog.setVisible(false);
     }
 
     /**
