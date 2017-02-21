@@ -23,10 +23,15 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.Regression;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
@@ -169,6 +174,8 @@ public final class Fang implements GraphSearch {
 //                        || (signum(c2) == signum(c) && signum(c4) == signum(c)));
 
                 if (G0.isAdjacentTo(X, Y)) {
+                    double z = wilcoxonz(h);
+
                     if (shouldGo(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (shouldGo(Y, X)) {
@@ -393,6 +400,83 @@ public final class Fang implements GraphSearch {
 
     private boolean shouldGo(Node x, Node y) {
         return knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName());
+    }
+
+    /**
+     * @param x Paired differences. H0 is that the x are symmatric about the origin.
+     */
+    private double wilcoxonz(double[] x) {
+        x = nonzero(x);
+        long n = x.length;
+        double[] ranks = ranks(x);
+
+        double W = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            W += signum(x[i]) * ranks[i];
+        }
+
+        long i = n * (n + 1) * (2 * n + 1);
+
+        return (W - 0.5) / sqrt(i / 6.0);
+    }
+
+    private double[] ranks2(double[] x) {
+        double[] absx = new double[x.length];
+        for (int i = 0; i < x.length; i++) absx[i] = abs(x[i]);
+//        Arrays.sort(absx);
+
+        int j = 1;
+
+        double[] ranks = new double[x.length];
+
+        for (int i = 0; i < ranks.length; i++) {
+            ranks[i] = j++;
+        }
+
+        return ranks;
+    }
+
+    private static double[] ranks(double[] x) {
+        double[] ranks = new double[x.length];
+
+        for (int i = 0; i < x.length; i++) {
+            double d = x[i];
+            int count = 1;
+
+            for (int k = 0; k < x.length; k++) {
+                if (x[k] <= d) {
+                    count++;
+                }
+            }
+
+            ranks[i] = count + 1;
+        }
+
+        return ranks;
+    }
+
+    private double regressionCoef(double[] xValues, double[] yValues) {
+        List<Node> v = new ArrayList<>();
+        v.add(new GraphNode("x"));
+        v.add(new GraphNode("y"));
+
+        TetradMatrix bothData = new TetradMatrix(xValues.length, 2);
+
+        for (int i = 0; i < xValues.length; i++) {
+            bothData.set(i, 0, xValues[i]);
+            bothData.set(i, 1, yValues[i]);
+        }
+
+        Regression regression2 = new RegressionDataset(bothData, v);
+
+        RegressionResult result;
+        try {
+            result = regression2.regress(v.get(0), v.get(1));
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+        return result.getCoef()[1];
     }
 }
 

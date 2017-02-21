@@ -119,10 +119,10 @@ public class TestFang {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", 4);
         parameters.set("extraAdjacencyThreshold", 10);
-        parameters.set("ngAlpha", 1e-7);
+        parameters.set("ngAlpha", 1e-4);
 
         parameters.set("numRandomSelections", 5);
-        parameters.set("randomSelectionSize", 8);
+        parameters.set("randomSelectionSize", 5);
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
@@ -140,45 +140,45 @@ public class TestFang {
         statistics.add(new ElapsedTime());
 
         Simulations simulations = new Simulations();
-
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_contr"));
+//
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_amp"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_contr"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_contr"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_contr_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_contr"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_contr_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_amp"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
-
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp_c4"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_c4"));
-
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p2n6"));
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p6n2"));
-
-
-        simulations.add(new LoadContinuousDataAndSingleGraph(
-                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/ComplexMatrix_1"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_amp"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_contr"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_contr_amp"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_amp"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_contr"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_contr_amp"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_amp"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
+//
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp_c4"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_c4"));
+//
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p2n6"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p6n2"));
+//
+//
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/ComplexMatrix_1"));
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FangConcatenated());
@@ -190,7 +190,7 @@ public class TestFang {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
-        comparison.setSaveGraphs(true);
+        comparison.setSaveGraphs(false);
 
         comparison.setTabDelimitedTables(false);
 
