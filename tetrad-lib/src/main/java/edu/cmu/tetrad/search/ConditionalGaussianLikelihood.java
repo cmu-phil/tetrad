@@ -123,7 +123,7 @@ public class ConditionalGaussianLikelihood {
             nodesHash.put(v, j);
         }
 
-        this.adTree = AdTrees.getAdLeafTree(dataSet);
+        this.adTree = new AdLeafTree(dataSet);
     }
 
     /**
