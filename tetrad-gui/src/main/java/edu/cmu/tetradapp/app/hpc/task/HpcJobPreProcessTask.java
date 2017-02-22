@@ -28,7 +28,7 @@ import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
  * 
  * Jan 10, 2017 4:12:10 PM
  * 
- * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * 
  */
 public class HpcJobPreProcessTask implements Runnable {

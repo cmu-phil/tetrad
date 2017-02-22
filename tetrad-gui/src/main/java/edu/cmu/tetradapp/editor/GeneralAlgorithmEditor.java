@@ -51,7 +51,9 @@ import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
+import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
@@ -61,12 +63,14 @@ import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
+import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
 import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
 import edu.pitt.dbmi.tetrad.db.entity.DataValidation;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
+import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
 import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
 
 import javax.help.CSH;
@@ -85,6 +89,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -92,7 +97,7 @@ import java.util.List;
  * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
- * @author Chirayu (Kong) Wongchokprasitti
+ * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * 
  */
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
@@ -527,7 +532,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 					firePropertyChange("modelChanged", null, null);
 					pane.setSelectedComponent(graphEditor);
 				} else {
-					doRemoteCompute(runner, hpcAccount);
+					try {
+						doRemoteCompute(runner, hpcAccount);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		};
@@ -557,7 +567,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 		return hpcAccounts.get(n - 1);
 	}
 
-	private void doRemoteCompute(final GeneralAlgorithmRunner runner, final HpcAccount hpcAccount) {
+	private void doRemoteCompute(final GeneralAlgorithmRunner runner, final HpcAccount hpcAccount) throws Exception {
 
 		// **********************
 		// Show progress panel *
@@ -786,6 +796,25 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 				algorithmParamRequest.setJvmOptions(jvmOptions);
 			}
 
+			// Hpc parameters
+			final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+			JsonWebToken jsonWebToken = HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount);
+			if (jsonWebToken.getWallTime() > -1 && jsonWebToken.getWallTimeMax() > -1) {
+				// User allowed to customize the job's wall time
+				String wallTime = null;
+				do {
+					wallTime = JOptionPane.showInputDialog(progressDialog,
+							"Enter Your Request Wall Time in Hour (Maximum " + jsonWebToken.getWallTimeMax() + "):");
+				} while (wallTime != null && !StringUtils.isNumeric(wallTime));
+
+				if (wallTime != null) {
+					HpcParameter hpcParameter = new HpcParameter();
+					hpcParameter.setKey("walltime");
+					hpcParameter.setValue(new Integer(wallTime));
+					algorithmParamRequest.setHpcParameters(Collections.singleton(hpcParameter));
+				}
+			}
+
 			progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
 			progressTextArea.append(newline);
 			progressTextArea.updateUI();
@@ -889,19 +918,23 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 		case FGES:
 			algorithm = new Fges(scoreWrapper);
 
-//          if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//          	algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//      	} else {
-//      		algorithm = new Fges(scoreWrapper);
-//      	}
+			// if (runner.getSourceGraph() != null &&
+			// !runner.getDataModelList().isEmpty()) {
+			// algorithm = new Fges(scoreWrapper, new
+			// SingleGraphAlg(runner.getSourceGraph()));
+			// } else {
+			// algorithm = new Fges(scoreWrapper);
+			// }
 			break;
-//          case FgesMeasurement:
-//          if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//              algorithm = new FgesMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//          } else {
-//              algorithm = new FgesMeasurement(scoreWrapper);
-//          }
-//          break;
+		// case FgesMeasurement:
+		// if (runner.getSourceGraph() != null &&
+		// !runner.getDataModelList().isEmpty()) {
+		// algorithm = new FgesMeasurement(scoreWrapper, new
+		// SingleGraphAlg(runner.getSourceGraph()));
+		// } else {
+		// algorithm = new FgesMeasurement(scoreWrapper);
+		// }
+		// break;
 		case PC:
 			if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 				algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -931,11 +964,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 			break;
 		case FCI:
 			algorithm = new Fci(independenceWrapper);
-//          if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//          	algorithm = new Fci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//      	} else {
-//          	algorithm = new Fci(independenceWrapper);
-//      	}
+			// if (runner.getSourceGraph() != null &&
+			// !runner.getDataModelList().isEmpty()) {
+			// algorithm = new Fci(independenceWrapper, new
+			// SingleGraphAlg(runner.getSourceGraph()));
+			// } else {
+			// algorithm = new Fci(independenceWrapper);
+			// }
 			break;
 		case RFCI:
 			algorithm = new Rfci(independenceWrapper);
@@ -945,11 +980,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 			break;
 		case TsFCI:
 			algorithm = new TsFci(independenceWrapper);
-//          if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//          	algorithm = new TsFci(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//      	} else {
-//          	algorithm = new TsFci(independenceWrapper);
-//      	}
+			// if (runner.getSourceGraph() != null &&
+			// !runner.getDataModelList().isEmpty()) {
+			// algorithm = new TsFci(independenceWrapper, new
+			// SingleGraphAlg(runner.getSourceGraph()));
+			// } else {
+			// algorithm = new TsFci(independenceWrapper);
+			// }
 			break;
 		case TsGFCI:
 			algorithm = new TsGfci(independenceWrapper, scoreWrapper);
@@ -968,11 +1005,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 			break;
 		case FgesMb:
 			algorithm = new FgesMb(scoreWrapper);
-//          if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//          	algorithm = new FgesMb(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//      	} else {
-//          	algorithm = new FgesMb(scoreWrapper);
-//      	}
+			// if (runner.getSourceGraph() != null &&
+			// !runner.getDataModelList().isEmpty()) {
+			// algorithm = new FgesMb(scoreWrapper, new
+			// SingleGraphAlg(runner.getSourceGraph()));
+			// } else {
+			// algorithm = new FgesMb(scoreWrapper);
+			// }
 			break;
 		case MBFS:
 			algorithm = new MBFS(independenceWrapper);
@@ -1381,14 +1420,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 	}
 
 	private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
-        FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
-        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
-        LiNGAM, MGM,
-        IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,
-        Bpc, Fofc, Ftfc,
-        GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn
+		PC, PCStable, CPC, CPCStable, FGES, /* PcLocal, */ PcMax, FAS, FgesMb, MBFS, Wfges, JCPC, /* FgesMeasurement, */
+		FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX, LiNGAM, MGM, IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD, Bpc, Fofc, Ftfc, GLASSO, EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, Tahn
 	}
 
 	private enum OracleType {
@@ -1397,13 +1430,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
 	private enum AlgType {
 		ALL, forbid_latent_common_causes, allow_latent_common_causes, /* DAG, */
-		search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise, 
-		search_for_structure_over_latents
+		search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise, search_for_structure_over_latents
 	}
 
 	private enum TestType {
-		ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare, 
-		SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
+		ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare, SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
 	}
 
 	public enum ScoreType {

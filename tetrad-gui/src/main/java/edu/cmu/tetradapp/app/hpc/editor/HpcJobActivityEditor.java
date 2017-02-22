@@ -189,13 +189,13 @@ public class HpcJobActivityEditor extends JPanel implements FinalizingEditor {
 
 		tabbedPane = new JTabbedPane();
 
-		JPanel activeJobsPanel = new JPanel(new BorderLayout());
+		final JPanel activeJobsPanel = new JPanel(new BorderLayout());
 		activeJobsPanel.add(scrollTablePane, BorderLayout.CENTER);
 		tabbedPane.add("Active Jobs", activeJobsPanel);
 
 		final KillHpcJobAction killJobAction = new KillHpcJobAction(this);
 
-		JPanel finishedJobsPanel = new JPanel(new BorderLayout());
+		final JPanel finishedJobsPanel = new JPanel(new BorderLayout());
 
 		tabbedPane.add("Finished Jobs", finishedJobsPanel);
 
