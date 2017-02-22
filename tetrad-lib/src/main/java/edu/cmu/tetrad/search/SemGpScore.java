@@ -226,12 +226,12 @@
 //    }
 //
 //    @Override
-//    public double getParameter1() {
+//    public double getAlternativePenalty() {
 //        return penaltyDiscount;
 //    }
 //
 //    @Override
-//    public void setParameter1(double alpha) {
+//    public void setAlternativePenalty(double alpha) {
 //        this.penaltyDiscount = alpha;
 //    }
 //

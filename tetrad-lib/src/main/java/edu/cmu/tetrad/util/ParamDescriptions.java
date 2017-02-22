@@ -150,6 +150,11 @@ public class ParamDescriptions {
         put("maxDistinctValuesDiscrete", new ParamDescription(
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
+
+        put("symmetricFirstStep", new ParamDescription(
+                "Yes if the heuristic a symmetric first step should be used for FGES",
+                false));
+
     }
 
     public static ParamDescriptions instance() {

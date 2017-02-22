@@ -93,15 +93,46 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     @Override
     public double localScore(int node, int parents[]) {
 
-        if (!(variables.get(node) instanceof  DiscreteVariable)) {
+        if (!(variables.get(node) instanceof DiscreteVariable)) {
             throw new IllegalArgumentException("Not discrete: " + variables.get(node));
         }
 
         for (int t : parents) {
-            if (!(variables.get(t) instanceof  DiscreteVariable)) {
+            if (!(variables.get(t) instanceof DiscreteVariable)) {
                 throw new IllegalArgumentException("Not discrete: " + variables.get(t));
             }
         }
+
+        double lik = getLikelihood(node, parents);
+        int params = getDof(node, parents);
+
+        int n = getSampleSize();
+
+        return 2 * lik - penaltyDiscount * params * Math.log(n);
+    }
+
+    public int getDof(int node, int[] parents) {
+        // Number of categories for node.
+        int c = numCategories[node];
+
+        // Numbers of categories of parents.
+        int[] dims = new int[parents.length];
+
+        for (int p = 0; p < parents.length; p++) {
+            dims[p] = numCategories[parents[p]];
+        }
+
+        // Number of parent states.
+        int r = 1;
+
+        for (int p = 0; p < parents.length; p++) {
+            r *= dims[p];
+        }
+
+        return r * (c - 1);
+    }
+
+    public double getLikelihood(int node, int[] parents) {
 
         // Number of categories for node.
         int c = numCategories[node];
@@ -152,22 +183,24 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         //Finally, compute the score
-        double lik = 0.0;
+        double lnL = 0.0;
+
+        int N = 0;
+
+        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            int rowCount = n_j[rowIndex];
+            N += rowCount;
+        }
 
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
             for (int childValue = 0; childValue < c; childValue++) {
                 int cellCount = n_jk[rowIndex][childValue];
-                int rowCount = n_j[rowIndex];
-
                 if (cellCount == 0) continue;
-                lik += cellCount * Math.log(cellCount / (double) rowCount);
+                lnL += cellCount * Math.log(cellCount / (double) N);
             }
         }
 
-        int params = r * (c - 1);
-        int n = getSampleSize();
-
-        return 2 * lik - penaltyDiscount * params * Math.log(n);
+        return lnL;
     }
 
     private double getPriorForStructure(int numParents) {
@@ -219,13 +252,11 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         return bump > 0;//lastBumpThreshold;
     }
 
-    @Override
-    public double getParameter1() {
+    public double getAlternativePenalty() {
         return 0;
     }
 
-    @Override
-    public void setParameter1(double alpha) {
+    public void setAlternativePenalty(double alpha) {
 
     }
 

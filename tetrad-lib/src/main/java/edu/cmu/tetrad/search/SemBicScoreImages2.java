@@ -74,7 +74,6 @@ public class SemBicScoreImages2 implements Score {
             throw new NullPointerException();
         }
 
-        this.penaltyDiscount = 2;
         this.variables = dataModels.get(0).getVariables();
 
         covariances = new ArrayList<>();
@@ -108,7 +107,9 @@ public class SemBicScoreImages2 implements Score {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
         double lik = 0.0;
 
-        for (int k = 0; k < covariances.size(); k++) {
+        int m = covariances.size();
+
+        for (int k = 0; k < m; k++) {
             double residualVariance = getCovariances(k).getValue(i, i);
             TetradMatrix covxx = getSelection1(getCovariances(k), parents);
 
@@ -127,9 +128,7 @@ public class SemBicScoreImages2 implements Score {
                     return Double.NaN;
                 }
 
-                int cols = getCovariances(0).getDimension();
-                double q = 2 / (double) cols;
-                lik += -sampleSize * Math.log(residualVariance);
+                lik += -0.5 * sampleSize * Math.log(residualVariance);
             } catch (Exception e) {
                 boolean removedOne = true;
 
@@ -146,9 +145,10 @@ public class SemBicScoreImages2 implements Score {
             }
         }
 
-        int p = parents.length;
         double c = getPenaltyDiscount();
-        return 2 * lik - c * (p + 1) * Math.log(covariances.size() * sampleSize);
+        int N = sampleSize;
+        int dof = 2 * m + 1;
+        return 2.0 * lik - c * m * dof * Math.log(N);
     }
 
     @Override
@@ -236,13 +236,11 @@ public class SemBicScoreImages2 implements Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return penaltyDiscount;
+    public boolean getAlternativePenalty() {
+        return false;
     }
 
-    @Override
-    public void setParameter1(double alpha) {
+    public void setAlternativePenalty(double alpha) {
         this.penaltyDiscount = alpha;
     }
 

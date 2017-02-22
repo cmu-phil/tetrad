@@ -28,6 +28,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -42,7 +43,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
-import static edu.cmu.tetrad.util.StatUtils.median;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
@@ -101,7 +102,6 @@ public class Lofs2 {
             DataSet dataSet = ColtDataSet.makeContinuousData(variables, dataSets.get(i).getDoubleData());
             dataSets2.add(dataSet);
         }
-
 
         this.dataSets = dataSets2;
     }
@@ -705,23 +705,35 @@ public class Lofs2 {
     }
 
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
-        System.out.println("Resolving " + x + " === " + y);
+        if (graph.getEdge(x, y).isDirected()) return;
+        if (graph.getEdges(x, y).size() > 1) return;
 
-        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
+        String xname = x.getName();
+        String yname = y.getName();
+
+        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
+            graph.removeEdge(x, y);
+            graph.addDirectedEdge(x, y);
+            return;
+        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
+            graph.removeEdge(y, x);
+            graph.addDirectedEdge(y, x);
+            return;
+        }
+
+//        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
         List<Node> condxMinus = Collections.emptyList();
         List<Node> condxPlus = Collections.singletonList(y);
         List<Node> condyMinus = Collections.emptyList();
         List<Node> condyPlus = Collections.singletonList(x);
 
-        double px = pValue(x, condxMinus);
-        double py = pValue(y, condyMinus);
+//        double px = pValue(x, condxMinus);
+//        double py = pValue(y, condyMinus);
 
-        System.out.println("px = " + px + " py = " + py);
-
-        if (px > alpha || py > alpha) {
-            return;
-        }
+//        if (px > alpha || py > alpha) {
+//            return;
+//        }
 
         double xPlus = score(x, condxPlus);
         double xMinus = score(x, condxMinus);
@@ -729,24 +741,21 @@ public class Lofs2 {
         double yPlus = score(y, condyPlus);
         double yMinus = score(y, condyMinus);
 
-        double xMax = xPlus > xMinus ? xPlus : xMinus;
-        double yMax = yPlus > yMinus ? yPlus : yMinus;
-
-        double score = combinedScore(xMax, yMax);
-        TetradLogger.getInstance().log("info", "Score = " + score);
+//        if (!(xPlus > 0.8 && xMinus > 0.8 && yPlus > 0.8 && yMinus > 0.8)) return;
 
         double deltaX = xPlus - xMinus;
         double deltaY = yPlus - yMinus;
 
-        double epsilon = 0;
         graph.removeEdges(x, y);
+//        double epsilon = 0;
 
-        if (deltaX < deltaY - epsilon) {
+        if (deltaX < epsilon && deltaY < epsilon) {
             graph.addDirectedEdge(x, y);
-        } else if (deltaX > deltaY + epsilon) {
             graph.addDirectedEdge(y, x);
+        } else if (deltaY > deltaX) {
+            graph.addDirectedEdge(x, y);
         } else {
-            graph.addUndirectedEdge(x, y);
+            graph.addDirectedEdge(y, x);
         }
     }
 
@@ -1268,8 +1277,8 @@ public class Lofs2 {
             double[] yData = data[_j];
 
             if (empirical) {
-                xData = correctSkews(xData);
-                yData = correctSkews(yData);
+                xData = correctSkewnesses(xData);
+                yData = correctSkewnesses(yData);
             }
 
             for (int i = 0; i < xData.length; i++) {
@@ -1301,11 +1310,12 @@ public class Lofs2 {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+        List<DataSet> _dataSets = new ArrayList<>();
+        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);// DataUtils.standardizeData(dataSet));
+        DataSet dataSet = DataUtils.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
-        Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
 
@@ -1313,50 +1323,101 @@ public class Lofs2 {
             nodesHash.put(nodes.get(i), i);
         }
 
+//        if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
+//            graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
+//        }
+
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
-
-            double sumX = 0.0;
-            int countX = 0;
 
             double[] xData = data[nodesHash.get(edge.getNode1())];
             double[] yData = data[nodesHash.get(edge.getNode2())];
 
             if (empirical) {
-                xData = correctSkews(xData);
-                yData = correctSkews(yData);
+                xData = correctSkewnesses(xData);
+                yData = correctSkewnesses(yData);
             }
+
+            double[] xx = new double[xData.length];
+            double[] yy = new double[yData.length];
+
+            double corrxy = StatUtils.correlation(xData, yData);
 
             for (int i = 0; i < xData.length; i++) {
-                double x0 = xData[i];
-                double y0 = yData[i];
+                double xi = xData[i];
+                double yi = yData[i];
 
-                double termX = g(x0) * y0 - x0 * g(y0);
+                double s1 = g(xi) * yi;
+                double s2 = xi * g(yi);
 
-                sumX += termX;
-                countX++;
+                xx[i] = s1;
+                yy[i] = s2;
             }
 
-            double R = sumX / countX;
+            double mxx = mean(xx);
+            double myy = mean(yy);
 
-            double rhoX = regressionCoef(xData, yData);
-            R *= rhoX;
+            double R = regressionCoef(xData, yData);
 
-            if (R > 0) {
-                _graph.addDirectedEdge(x, y);
-            } else if (R < 0) {
-                _graph.addDirectedEdge(y, x);
+            double[] D = new double[xx.length];
+
+            for (int i = 0; i < xx.length; i++) {
+                D[i] = xx[i] - yy[i];
+            }
+
+            double md = mean(D);
+            double sd = sd(D);
+            int n = xx.length;
+
+            double td = (md - 0.0) / (sd / sqrt(n));
+            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(abs(td)));
+
+//            double varxx = variance(xx);
+//            double varyy = variance(yy);
+//            double sp = (varxx + varyy) / 2.0;
+//            double tp = (mxx - myy) / (sp * sqrt(2.0 / n));
+//            double ta = 2 * (1.0 - new TDistribution(2 * n - 2).cumulativeProbability(Math.abs(tp)));
+
+            graph.removeEdge(edge);
+
+            double xa = new AndersonDarlingTest(xData).getP();
+            double ya = new AndersonDarlingTest(yData).getP();
+
+            System.out.println("Edge " + edge + ": corr(x, y) = " + corrxy + " xa = " + xa + " ya = " + ya +
+                    " td = " + td + " mxx = " + mxx + " myy = " + myy);
+
+            double alpha = 0.01;
+
+            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || abs(td) < 1.96)) {
+                graph.addDirectedEdge(x, y);
+                graph.addDirectedEdge(y, x);
+                System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
+                        " td = " + td + " tda = " + tda + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
+            } else if (mxx > myy) {
+                graph.addDirectedEdge(x, y);
+            } else if (myy > mxx) {
+                graph.addDirectedEdge(y, x);
             } else {
-                _graph.addUndirectedEdge(x, y);
+                graph.addUndirectedEdge(x, y);
             }
+
+            // 1-10
+            // 2-3
+            // 11-17
+            // 12-20
+            // 15-19
         }
 
-        return _graph;
+        return graph;
     }
 
     private double g(double x) {
         return Math.log(Math.cosh(Math.max(x, 0)));
+    }
+
+    private double g2(double x) {
+        return Math.log(Math.cosh(Math.max(-x, 0)));
     }
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
@@ -1510,7 +1571,7 @@ public class Lofs2 {
         return ret;
     }
 
-    private double[] correctSkews(double[] data) {
+    private double[] correctSkewnesses(double[] data) {
         double skewness = StatUtils.skewness(data);
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(skewness);
@@ -1591,13 +1652,14 @@ public class Lofs2 {
         }
 
         Regression regression2 = new RegressionDataset(bothData, v);
-
         RegressionResult result;
+
         try {
             result = regression2.regress(v.get(0), v.get(1));
         } catch (Exception e) {
             return Double.NaN;
         }
+
         return result.getCoef()[1];
     }
 
@@ -1684,24 +1746,18 @@ public class Lofs2 {
 
             double f = igci(xCol, yCol, 2, 1);
 
-            System.out.println(x + "===" + y + " f = " + f);
-
             graph.removeEdges(x, y);
 
             if (f < -epsilon) {
                 _graph.addDirectedEdge(x, y);
-                System.out.println("Orienting using IGCI: " + graph.getEdge(x, y));
             } else if (f > epsilon) {
                 _graph.addDirectedEdge(y, x);
-                System.out.println("Orienting using IGCI: " + graph.getEdge(x, y));
             } else {
                 if (resolveOneEdgeMaxR3(xCol, yCol) < 0) {
                     _graph.addDirectedEdge(x, y);
                 } else {
                     _graph.addDirectedEdge(y, x);
                 }
-
-                System.out.println("Orienting using non-Gaussianity: " + graph.getEdge(x, y));
             }
 
         }
@@ -1733,10 +1789,10 @@ public class Lofs2 {
                 break;
 
             case 2:
-                double meanx = StatUtils.mean(x);
-                double stdx = StatUtils.sd(x);
-                double meany = StatUtils.mean(y);
-                double stdy = StatUtils.sd(y);
+                double meanx = mean(x);
+                double stdx = sd(x);
+                double meany = mean(y);
+                double stdy = sd(y);
 
                 // Gaussian reference measure
                 for (int i = 0; i < x.length; i++) {
@@ -1987,7 +2043,7 @@ public class Lofs2 {
 
     private double score(Node y, List<Node> parents) {
         if (score == Lofs.Score.andersonDarling) {
-            return andersonDarlingPASquareStar(y, parents);
+            return andersonDarlingPASquare(y, parents);
         } else if (score == Lofs.Score.kurtosis) {
             return Math.abs(StatUtils.kurtosis(residuals(y, parents, true, true)));
         } else if (score == Lofs.Score.entropy) {
@@ -2128,9 +2184,10 @@ public class Lofs2 {
         return _f;
     }
 
-    private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
+    private double andersonDarlingPASquare(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true, true);
-        return new AndersonDarlingTest(_f).getASquaredStar();
+//        return new AndersonDarlingTest(_f).getASquaredStar();
+        return new AndersonDarlingTest(_f).getASquared();
     }
 
     private double entropy(Node node, List<Node> parents) {
@@ -2260,10 +2317,10 @@ public class Lofs2 {
 
         graph.removeEdges(x, y);
 
-        double sdX = StatUtils.sd(resX);
-        double sdXY = StatUtils.sd(resXY);
-        double sdY = StatUtils.sd(resY);
-        double sdYX = StatUtils.sd(resYX);
+        double sdX = sd(resX);
+        double sdXY = sd(resXY);
+        double sdY = sd(resY);
+        double sdYX = sd(resYX);
 
         double abs1 = abs(sdX - sdXY);
         double abs2 = abs(sdY - sdYX);
@@ -2405,8 +2462,6 @@ public class Lofs2 {
 
 
     private double resolveOneEdgeMaxR3(double[] x, double[] y) {
-        System.out.println("Resolving " + x + " === " + y);
-
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
@@ -2433,8 +2488,6 @@ public class Lofs2 {
     }
 
     private double resolveOneEdgeMaxR3b(double[] x, double[] y) {
-        System.out.println("Resolving " + x + " === " + y);
-
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
         int N = x.length;

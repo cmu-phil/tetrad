@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
+import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -9,6 +11,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.pitt.csb.mgm.MixedUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 import java.util.*;
 
@@ -18,7 +21,7 @@ import java.util.*;
  *
  * @author jdramsey
  */
-public class LeeHastieSimulation implements Simulation {
+public class LeeHastieSimulation implements Simulation, HasParameters {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
@@ -119,7 +122,10 @@ public class LeeHastieSimulation implements Simulation {
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                nd.put(shuffledOrder.get(i).getName(), parameters.getInt("numCategories"));
+                final int minNumCategories = parameters.getInt("minCategories");
+                final int maxNumCategories = parameters.getInt("maxCategories");
+                final int value = pickNumCategories(minNumCategories, maxNumCategories);
+                nd.put(shuffledOrder.get(i).getName(), value);
             } else {
                 nd.put(shuffledOrder.get(i).getName(), 0);
             }
@@ -134,4 +140,7 @@ public class LeeHastieSimulation implements Simulation {
         return MixedUtils.makeMixedData(ds, nd);
     }
 
+    private int pickNumCategories(int min, int max) {
+        return RandomUtils.nextInt(min, max + 1);
+    }
 }

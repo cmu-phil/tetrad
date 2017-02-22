@@ -903,7 +903,8 @@ public final class GraphUtils {
      * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5
      * to the graph, then finally adding two cycles.
      */
-    public static Graph cyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle) {
+    public static Graph cyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle,
+                                     double probTwoCycle) {
 
         List<Node> nodes = new ArrayList<>();
 
@@ -993,6 +994,22 @@ public final class GraphUtils {
                 }
             }
         }
+
+        Set<Edge> edges = graph.getEdges();
+
+        for (Edge edge : edges) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+            if (RandomUtil.getInstance().nextDouble() < probTwoCycle) {
+                graph.removeEdges(a, b);
+                graph.addEdge(Edges.directedEdge(a, b));
+                graph.addEdge(Edges.directedEdge(b, a));
+            }
+        }
+
+//        for (Node node : graph.getNodes()) {
+//            graph.addDirectedEdge(node, node);
+//        }
 
         GraphUtils.circleLayout(graph, 200, 200, 150);
 
@@ -1764,7 +1781,7 @@ public final class GraphUtils {
         return pathString(graph, path, new LinkedList<Node>());
     }
 
-    public static String pathString(Graph graph, Node...x) {
+    public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
         Collections.addAll(path, x);
         return pathString(graph, path, new LinkedList<Node>());

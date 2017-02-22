@@ -61,7 +61,7 @@ class IndTestParamsEditor extends JComponent {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-//        alphaField = new DoubleTextField(params().getParameter1(), 5,
+//        alphaField = new DoubleTextField(params().getAlternativePenalty(), 5,
 //                NumberFormatUtil.getInstance().getNumberFormat());
         NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
         NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");

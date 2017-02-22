@@ -95,12 +95,12 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 //        if (source instanceof CovarianceMatrix) {
 //            CovarianceMatrix covMatrix = (CovarianceMatrix) source;
 //            CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
-//            purify = new Purify(corrMatrix, getParameters().getParameter1(),
+//            purify = new Purify(corrMatrix, getParameters().getAlternativePenalty(),
 //                    getParameters().getTetradTestType(), getParameters().getClusters());
 //        }
 //        else if (source instanceof DataSet) {
 //            purify = new Purify((DataSet) source,
-//                    getParameters().getParameter1(), getParameters().getTetradTestType(),
+//                    getParameters().getAlternativePenalty(), getParameters().getTetradTestType(),
 //                    getParameters().getClusters());
 //        }
 //        else {

@@ -161,7 +161,6 @@ public final class BuildPureClusters {
             independenceTest = new IndTestGSquare(dataSet, alpha);
             tetradTest = new DiscreteTetradTest(dataSet, alpha);
         } else {
-            numVariables = getCovarianceMatrix().getSize();
             independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
             TestType type;
 
@@ -2067,8 +2066,8 @@ public final class BuildPureClusters {
             }
         }*/
 
-        //double oldSig = this.tetradTest.getParameter1();
-        //this.tetradTest.setParameter1(oldSig / 3.);
+        //double oldSig = this.tetradTest.getAlternativePenalty();
+        //this.tetradTest.setAlternativePenalty(oldSig / 3.);
 
 //        print(">> Stage 0");
 //        print(
@@ -2374,7 +2373,7 @@ public final class BuildPureClusters {
         }
 //        printlnMessage();
 
-        //this.tetradTest.setParameter1(oldSig);
+        //this.tetradTest.setAlternativePenalty(oldSig);
 
         return finalPureModel;
     }

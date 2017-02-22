@@ -19,7 +19,8 @@ public class Cyclic implements RandomGraph {
     public Graph createGraph(Parameters parameters) {
         return GraphUtils.cyclicGraph3(parameters.getInt("numMeasures"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"), parameters.getDouble("probCycle"));
+                parameters.getInt("maxDegree"), parameters.getDouble("probCycle"),
+                parameters.getDouble("probTwoCycle"));
     }
 
     @Override
@@ -34,6 +35,7 @@ public class Cyclic implements RandomGraph {
         paramDescriptions.add("avgDegree");
         paramDescriptions.add("maxDegree");
         paramDescriptions.add("probCycle");
+        paramDescriptions.add("probTwoCycle");
         return paramDescriptions;
     }
 }

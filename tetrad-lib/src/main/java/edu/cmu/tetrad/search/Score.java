@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -42,10 +44,6 @@ public interface Score {
     List<Node> getVariables();
 
     boolean isEffectEdge(double bump);
-
-    double getParameter1();
-
-    void setParameter1(double alpha);
 
     int getSampleSize();
 
