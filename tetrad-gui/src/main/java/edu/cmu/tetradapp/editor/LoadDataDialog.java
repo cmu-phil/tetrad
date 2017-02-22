@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.pitt.dbmi.data.preview.BasicDataPreviewer;
 import edu.pitt.dbmi.data.preview.DataPreviewer;
 import edu.pitt.dbmi.data.validation.DataValidation;
-import static edu.pitt.dbmi.data.validation.ValidationAttribute.COLUMN_COUNT;
-import static edu.pitt.dbmi.data.validation.ValidationAttribute.ROW_NUMBER;
 import edu.pitt.dbmi.data.validation.ValidationResult;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -842,13 +840,13 @@ final class LoadDataDialog extends JPanel {
             if (!infos.isEmpty()) {
                 output = output + "<p><b>File info: </b></p>";
                 for (ValidationResult info : infos) {
-                    // More examples of how to get attributes for customized parsing
-                    Object obj = info.getAttributes().get(ROW_NUMBER);
-                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
-                    obj = info.getAttributes().get(COLUMN_COUNT);
-                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
-                    System.out.printf("numOfLines: %d%n", numOfLines);
-                    System.out.printf("numOfColumns: %d%n", numOfColumns);
+//                    // More examples of how to get attributes for customized parsing
+//                    Object obj = info.getAttributes().get(ROW_NUMBER);
+//                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
+//                    obj = info.getAttributes().get(COLUMN_COUNT);
+//                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
+//                    System.out.printf("numOfLines: %d%n", numOfLines);
+//                    System.out.printf("numOfColumns: %d%n", numOfColumns);
 
                     output = output + "<p>" + info.getMessage() + "</p>";
                 }
@@ -951,18 +949,14 @@ final class LoadDataDialog extends JPanel {
     private void setPreview(File file, JTextArea textArea) {
         try {
             textArea.setText("");
-
-            // Kevin's data previewer that can handle big data files
             DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
             List<String> linePreviews = dataPreviewer.getPreviews(previewFromLine, previewToLine, previewNumOfCharactersPerLine);
             for (String line : linePreviews) {
                 textArea.append(line + "\n");
             }
-
-            // Move the scroll to top left
             textArea.setCaretPosition(0);
-        } catch (IOException e) {
-            textArea.append("<<<ERROR READING FILE>>>");
+        } catch (IOException ex) {
+            Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

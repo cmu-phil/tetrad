@@ -24,16 +24,22 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.Dataset;
+import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.file.TabularDataValidation;
+import edu.pitt.dbmi.data.validation.file.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -758,10 +764,18 @@ final class DataLoaderSettings extends JPanel {
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
 
-        // Only handles tabular continuous data for now - Zhou
+        // Only handles tabular data for now - Zhou
         if (tabularRadioButton.isSelected()) {
-            // Using Kevin's data validation
-            TabularDataValidation validation = new ContinuousTabularDataFileValidation(file, delimiter);
+            TabularDataValidation validation = null;
+
+            // Mixed data type is not supported yest- Zhou
+            if (contRadioButton.isSelected()) {
+                validation = new ContinuousTabularDataFileValidation(file, delimiter);
+            } else if (discRadioButton.isSelected()) {
+                validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
+            } else {
+                throw new UnsupportedOperationException("Mixed data type is not yet supported!");
+            }
 
             // Header in first row or not
             validation.setHasHeader(hasHeader);
@@ -811,10 +825,18 @@ final class DataLoaderSettings extends JPanel {
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
 
-        // Only handles tabular continuous data for now - Zhou
+        // Only handles tabular data for now - Zhou
         if (tabularRadioButton.isSelected()) {
-            // Using Kevin's data reader
-            TabularDataReader dataReader = new ContinuousTabularDataReader(file, delimiter);
+            TabularDataReader dataReader = null;
+
+            // Mixed data type is not supported yest- Zhou
+            if (contRadioButton.isSelected()) {
+                dataReader = new ContinuousTabularDataReader(file, delimiter);
+            } else if (discRadioButton.isSelected()) {
+                dataReader = new VerticalDiscreteTabularDataReader(file, delimiter);
+            } else {
+                throw new UnsupportedOperationException("Mixed data type is not yet supported!");
+            }
 
             // Header in first row or not
             dataReader.setHasHeader(hasHeader);
@@ -849,10 +871,13 @@ final class DataLoaderSettings extends JPanel {
 
             if (dataset instanceof ContinuousTabularDataset) {
                 ContinuousTabularDataset contDataset = (ContinuousTabularDataset) dataset;
-                // Convert dataset to dataModel
+                // Convert continuous dataset to dataModel
                 dataModel = new BoxDataSet(
                         new DoubleDataBox(contDataset.getData()),
-                        variablesToContinuosNodes(contDataset.getGetVariables()));
+                        variablesToContinuousNodes(contDataset.getGetVariables()));
+            } else if (dataset instanceof VerticalDiscreteTabularDataset) {
+                VerticalDiscreteTabularDataset vDataset = (VerticalDiscreteTabularDataset) dataset;
+                dataModel = new BoxDataSet(new VerticalIntDataBox(vDataset.getData()), variablesToDiscreteNodes(vDataset.getVariableInfos()));
             } else {
                 throw new UnsupportedOperationException("Not yet supported!");
             }
@@ -864,16 +889,33 @@ final class DataLoaderSettings extends JPanel {
     }
 
     /**
-     * Convert variables to nodes
+     * Convert variables to continuous nodes
      *
      * @param variables
      * @return
      */
-    private List<Node> variablesToContinuosNodes(List<String> variables) {
+    private List<Node> variablesToContinuousNodes(List<String> variables) {
         List<Node> nodes = new LinkedList<>();
 
         for (String variable : variables) {
             nodes.add(new ContinuousVariable(variable));
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Convert variables to discrete nodes
+     *
+     * @param variables
+     * @return
+     */
+    private List<Node> variablesToDiscreteNodes(DiscreteVarInfo[] varInfos) {
+        List<Node> nodes = new LinkedList<>();
+
+        for (DiscreteVarInfo varInfo : varInfos) {
+            // Will change later
+            nodes.add(new DiscreteVariable(varInfo.getName(), new LinkedList<String>(varInfo.getCategories())));
         }
 
         return nodes;
