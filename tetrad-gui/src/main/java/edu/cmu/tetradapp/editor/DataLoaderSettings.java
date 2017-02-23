@@ -874,7 +874,7 @@ final class DataLoaderSettings extends JPanel {
                 // Convert continuous dataset to dataModel
                 dataModel = new BoxDataSet(
                         new DoubleDataBox(contDataset.getData()),
-                        variablesToContinuousNodes(contDataset.getGetVariables()));
+                        variablesToContinuousNodes(contDataset.getVariables()));
             } else if (dataset instanceof VerticalDiscreteTabularDataset) {
                 VerticalDiscreteTabularDataset vDataset = (VerticalDiscreteTabularDataset) dataset;
                 dataModel = new BoxDataSet(new VerticalIntDataBox(vDataset.getData()), variablesToDiscreteNodes(vDataset.getVariableInfos()));
@@ -915,7 +915,7 @@ final class DataLoaderSettings extends JPanel {
 
         for (DiscreteVarInfo varInfo : varInfos) {
             // Will change later
-            nodes.add(new DiscreteVariable(varInfo.getName(), new LinkedList<String>(varInfo.getCategories())));
+            nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
         }
 
         return nodes;
