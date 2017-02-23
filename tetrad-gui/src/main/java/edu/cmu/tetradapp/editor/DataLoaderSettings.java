@@ -78,8 +78,7 @@ final class DataLoaderSettings extends JPanel {
     private StringTextField commentStringField;
 
     private JRadioButton commaDelimiterRadioButton;
-    private JRadioButton tabDelimiterRadioButton;
-    private JRadioButton spaceDelimiterRadioButton;
+    private JRadioButton whitespaceDelimiterRadioButton;
 
     private JRadioButton noneQuoteRadioButton;
     private JRadioButton doubleQuoteRadioButton;
@@ -271,13 +270,11 @@ final class DataLoaderSettings extends JPanel {
 
         // Value Delimiter
         commaDelimiterRadioButton = new JRadioButton("Comma");
-        tabDelimiterRadioButton = new JRadioButton("Tab");
-        spaceDelimiterRadioButton = new JRadioButton("Whitespace");
+        whitespaceDelimiterRadioButton = new JRadioButton("Whitespace");
 
         ButtonGroup delimiterBtnGrp = new ButtonGroup();
         delimiterBtnGrp.add(commaDelimiterRadioButton);
-        delimiterBtnGrp.add(tabDelimiterRadioButton);
-        delimiterBtnGrp.add(spaceDelimiterRadioButton);
+        delimiterBtnGrp.add(whitespaceDelimiterRadioButton);
 
         // Defaults to comma
         commaDelimiterRadioButton.setSelected(true);
@@ -295,18 +292,12 @@ final class DataLoaderSettings extends JPanel {
         // Option 2
         Box valueDelimiterOption2Box = Box.createHorizontalBox();
         valueDelimiterOption2Box.setPreferredSize(new Dimension(200, 30));
-        valueDelimiterOption2Box.add(tabDelimiterRadioButton);
-
-        // Option 3
-        Box valueDelimiterOption3Box = Box.createHorizontalBox();
-        valueDelimiterOption3Box.setPreferredSize(new Dimension(200, 30));
-        valueDelimiterOption3Box.add(spaceDelimiterRadioButton);
+        valueDelimiterOption2Box.add(whitespaceDelimiterRadioButton);
 
         valueDelimiterBox.add(valueDelimiterLabelBox);
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
         valueDelimiterBox.add(valueDelimiterOption1Box);
         valueDelimiterBox.add(valueDelimiterOption2Box);
-        valueDelimiterBox.add(valueDelimiterOption3Box);
         valueDelimiterBox.add(Box.createHorizontalGlue());
 
         formatContainer.add(valueDelimiterBox);
@@ -680,14 +671,10 @@ final class DataLoaderSettings extends JPanel {
      */
     private char getDelimiterTypeChar(DelimiterType delimiterType) {
         switch (delimiterType.toString()) {
-            case "Whitespace":
-                return ' ';
-            case "Tab":
-                return '\t';
             case "Comma":
                 return ',';
-            case "Colon":
-                return ':';
+            case "Whitespace":
+                return ' ';
             default:
                 throw new IllegalArgumentException("Unexpected Value delimiter selection.");
         }
@@ -696,9 +683,7 @@ final class DataLoaderSettings extends JPanel {
     private DelimiterType getDelimiterType() {
         if (commaDelimiterRadioButton.isSelected()) {
             return DelimiterType.COMMA;
-        } else if (tabDelimiterRadioButton.isSelected()) {
-            return DelimiterType.TAB;
-        } else if (spaceDelimiterRadioButton.isSelected()) {
+        } else if (whitespaceDelimiterRadioButton.isSelected()) {
             return DelimiterType.WHITESPACE;
         } else {
             throw new IllegalArgumentException("Unexpected Value delimiter selection.");
