@@ -23,15 +23,16 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
@@ -74,6 +75,8 @@ public final class Fang implements GraphSearch {
 
     // The alpha for testing non-Gaussianity (Anderson Darling test).
     private double ngAlpha = 0.05;
+    private DataSet dataSet = null;
+    private RegressionDataset regression = null;
 
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
@@ -98,12 +101,23 @@ public final class Fang implements GraphSearch {
 
         List<DataSet> _dataSets = new ArrayList<>();
         for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
-
+//
         DataSet dataSet = DataUtils.concatenate(_dataSets);
+        this.dataSet = dataSet;
+        this.regression = new RegressionDataset(dataSet);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        DataSet dataSet2 = dataSet.copy();
+
+        for (int i = 0; i < dataSet2.getNumRows(); i++) {
+            for (int j = 0; j < dataSet2.getNumColumns(); j++) {
+                if (dataSet2.getDouble(i, j) < 0) dataSet2.setDouble(i, j, 0);
+            }
+        }
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet2));
         score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, dataSet);
+        IndependenceTest test = new IndTestScore(score, dataSet2);
+//        IndependenceTest test = new IndTestFisherZ(dataSet2, 0.000000000001);
 
         List<Node> variables = dataSet.getVariables();
 
@@ -113,12 +127,7 @@ public final class Fang implements GraphSearch {
 
         for (int i = 0; i < colData.length; i++) {
             final double p = new AndersonDarlingTest(colData[i]).getP();
-
-            if (Double.isInfinite(p)) {
-                nonGaussian[i] = true;
-            } else {
-                nonGaussian[i] = p < ngAlpha;
-            }
+            nonGaussian[i] = Double.isInfinite(p) || p < ngAlpha;
         }
 
         final int n = dataSet.getNumRows();
@@ -149,33 +158,27 @@ public final class Fang implements GraphSearch {
 
                 h = nonzero(h);
 
+                // h is symmetric but leptokurtic, kurtosis around +4.
+//                h = nonParanormal(h);
+
                 double c = covariance(x, y);
+
                 final double signumcovxy = signum(c);
-                double R = mean(h) * signumcovxy;
 
                 double c1 = covarianceOfPart(x, y, 1, 0);
-                double c2 = covarianceOfPart(x, y, 0, 1);
-                double c3 = covarianceOfPart(x, y, -1, 0);
+                double c2 = covarianceOfPart(x, y, -1, 0);
+                double c3 = covarianceOfPart(x, y, 0, 1);
                 double c4 = covarianceOfPart(x, y, 0, -1);
 
-                double th = mean(h, h.length) / (sd(h, h.length) / sqrt(h.length));
+                double th = mean(h) / (sd(h) / sqrt(h.length));
 
                 boolean ng = isNonGaussian(i) && isNonGaussian(j);
 
-                final boolean sameSignCondition = !(
-                        signum(c1) == signum(c)
-                                && signum(c2) == signum(c)
-                                && signum(c3) == signum(c)
-                                && signum(c4) == signum(c)
-                );
-
-//                final boolean sameSignCondition = !(
-//                        (signum(c1) == signum(c) && signum(c3) == signum(c))
-//                        || (signum(c2) == signum(c) && signum(c4) == signum(c)));
+                final boolean sameSignCondition =
+                        !(signum(c) == signum(c1) && signum(c) == signum(c2))
+                                && !(signum(c) == signum(c3) && signum(c) == signum(c4));
 
                 if (G0.isAdjacentTo(X, Y)) {
-                    double z = wilcoxonz(h);
-
                     if (shouldGo(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (shouldGo(Y, X)) {
@@ -189,8 +192,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (ng && abs(th) > extraAdjacencyThreshold
-                            && sameSignCondition) {
+                    } else if (ng && sameSignCondition) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -199,14 +201,14 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (ng && R > 0) {
+                    } else if (ng && signumcovxy * (c1 - c3) > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (ng && R < 0) {
+                    } else if (ng && signumcovxy * (c1 - c3) < 0) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
                     }
-                } else if (ng && abs(th) > extraAdjacencyThreshold
+                } else if (ng && abs(c1 - c3) > extraAdjacencyThreshold
                         && sameSignCondition) {
                     Edge edge1 = Edges.directedEdge(X, Y);
                     Edge edge2 = Edges.directedEdge(Y, X);
@@ -229,8 +231,6 @@ public final class Fang implements GraphSearch {
     }
 
     private double covarianceOfPart(double[] xData, double[] yData, int q, int s) {
-        if (q != 0 && s != 0) throw new IllegalArgumentException("q and s can't both be zero.");
-
         final int n = xData.length;
 
         double[] x = new double[n];
@@ -240,13 +240,19 @@ public final class Fang implements GraphSearch {
             if (q == 1 && xData[i] > 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            } else if (q == -1 && xData[i] < 0) {
+            }
+
+            if (q == -1 && xData[i] < 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            } else if (s == 1 && yData[i] < 0) {
+            }
+
+            if (s == 1 && yData[i] > 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            } else if (s == -1 && yData[i] < 0) {
+            }
+
+            if (s == -1 && yData[i] < 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
             }
@@ -372,12 +378,12 @@ public final class Fang implements GraphSearch {
         return nonGaussian[i];
     }
 
-    private double g(double x) {
-        return log(Math.cosh(Math.max(x, 0)));
-    }
-
     private double h(double x) {
         return x < 0 ? 0 : x;
+    }
+
+    private static double sd(double array[]) {
+        return Math.pow(ssx(array, array.length) / (array.length - 1), .5);
     }
 
     private static double sd(double array[], int N) {
@@ -398,43 +404,44 @@ public final class Fang implements GraphSearch {
         return sum;
     }
 
-    private boolean shouldGo(Node x, Node y) {
-        return knowledge.isForbidden(y.getName(), x.getName()) || knowledge.isRequired(x.getName(), y.getName());
+    private boolean shouldGo(Node left, Node right) {
+        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
-    /**
-     * @param x Paired differences. H0 is that the x are symmatric about the origin.
-     */
-    private double wilcoxonz(double[] x) {
-        x = nonzero(x);
-        long n = x.length;
-        double[] ranks = ranks(x);
-
-        double W = 0.0;
-
-        for (int i = 0; i < n; i++) {
-            W += signum(x[i]) * ranks[i];
-        }
-
-        long i = n * (n + 1) * (2 * n + 1);
-
-        return (W - 0.5) / sqrt(i / 6.0);
+    private double[] residuals(Node target, List<Node> parents) {
+        RegressionResult result = regression.regress(target, parents);
+        return result.getResiduals().toArray();
     }
 
-    private double[] ranks2(double[] x) {
-        double[] absx = new double[x.length];
-        for (int i = 0; i < x.length; i++) absx[i] = abs(x[i]);
-//        Arrays.sort(absx);
+    public double[] nonParanormal(double[] x1) {
+        double std1 = StatUtils.sd(x1);
+        double mu1 = StatUtils.mean(x1);
+        double[] x = ranks(x1);
 
-        int j = 1;
+        final NormalDistribution normalDistribution = new NormalDistribution();
+        final double delta = 1.0 / (4.0 * Math.pow(x1.length, 0.25) * Math.sqrt(Math.PI * Math.log(x1.length)));
 
-        double[] ranks = new double[x.length];
+        double std = Double.NaN;
 
-        for (int i = 0; i < ranks.length; i++) {
-            ranks[i] = j++;
+
+        for (int i = 0; i < x.length; i++) {
+            x[i] /= x.length;
+            if (x[i] < delta) x[i] = delta;
+            if (x[i] > (1. - delta)) x[i] = 1. - delta;
+            x[i] = normalDistribution.inverseCumulativeProbability(x[i]);
         }
 
-        return ranks;
+        if (Double.isNaN(std)) {
+            std = StatUtils.sd(x);
+        }
+
+        for (int i = 0; i < x.length; i++) {
+            x[i] /= std;
+            x[i] *= std1;
+            x[i] += mu1;
+        }
+
+        return x;
     }
 
     private static double[] ranks(double[] x) {
@@ -442,7 +449,7 @@ public final class Fang implements GraphSearch {
 
         for (int i = 0; i < x.length; i++) {
             double d = x[i];
-            int count = 1;
+            int count = 0;
 
             for (int k = 0; k < x.length; k++) {
                 if (x[k] <= d) {
@@ -454,29 +461,6 @@ public final class Fang implements GraphSearch {
         }
 
         return ranks;
-    }
-
-    private double regressionCoef(double[] xValues, double[] yValues) {
-        List<Node> v = new ArrayList<>();
-        v.add(new GraphNode("x"));
-        v.add(new GraphNode("y"));
-
-        TetradMatrix bothData = new TetradMatrix(xValues.length, 2);
-
-        for (int i = 0; i < xValues.length; i++) {
-            bothData.set(i, 0, xValues[i]);
-            bothData.set(i, 1, yValues[i]);
-        }
-
-        Regression regression2 = new RegressionDataset(bothData, v);
-
-        RegressionResult result;
-        try {
-            result = regression2.regress(v.get(0), v.get(1));
-        } catch (Exception e) {
-            return Double.NaN;
-        }
-        return result.getCoef()[1];
     }
 }
 

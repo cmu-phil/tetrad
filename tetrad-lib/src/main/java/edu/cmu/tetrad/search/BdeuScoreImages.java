@@ -74,7 +74,7 @@ public class BdeuScoreImages implements IBDeuScore {
                 DataSet dataSet = (DataSet) model;
 
                 if (!dataSet.isDiscrete()) {
-                    throw new IllegalArgumentException("Datasets must be continuous.");
+                    throw new IllegalArgumentException("Datasets must be discrete.");
                 }
 
                 scores.add(new BDeuScore(dataSet));

@@ -24,6 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -116,13 +118,13 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", .05);
-        parameters.set("penaltyDiscount", 4);
-        parameters.set("depth", 4);
-        parameters.set("extraAdjacencyThreshold", 10);
-        parameters.set("ngAlpha", 1e-4);
+        parameters.set("penaltyDiscount", 5);
+        parameters.set("depth", 3);
+        parameters.set("extraAdjacencyThreshold", .25);
+        parameters.set("ngAlpha", .2);
 
         parameters.set("numRandomSelections", 5);
-        parameters.set("randomSelectionSize", 5);
+        parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
@@ -141,44 +143,44 @@ public class TestFang {
 
         Simulations simulations = new Simulations();
 //
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_contr"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_amp"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure1_contr"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_contr"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_contr_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_contr"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_contr_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_amp"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
-//
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp_c4"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_c4"));
-//
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p2n6"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p6n2"));
-//
-//
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/ComplexMatrix_1"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_amp"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_amp_contr"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure3_contr_amp"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_amp"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_amp_contr"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure4_contr_amp"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_amp"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
+
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp_c4"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_c4"));
+
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p2n6"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_contr_p6n2"));
+
+
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/ComplexMatrix_1"));
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FangConcatenated());
@@ -291,7 +293,7 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", .05);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("depth", 4);
         parameters.set("extraAdjacencyThreshold", 10);
         parameters.set("ngAlpha", 1e-7);
@@ -331,7 +333,7 @@ public class TestFang {
         simulations.add(new LoadContinuousDataSmithSim(path + "10"));
         simulations.add(new LoadContinuousDataSmithSim(path + "11"));
         simulations.add(new LoadContinuousDataSmithSim(path + "12"));
-        simulations.add(new LoadContinuousDataSmithSim(path + "13"));
+//        simulations.add(new LoadContinuousDataSmithSim(path + "13"));
         simulations.add(new LoadContinuousDataSmithSim(path + "14"));
         simulations.add(new LoadContinuousDataSmithSim(path + "15"));
         simulations.add(new LoadContinuousDataSmithSim(path + "16"));
@@ -350,10 +352,11 @@ public class TestFang {
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FangConcatenated());
+        algorithms.add(new ImagesSemBic());
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
