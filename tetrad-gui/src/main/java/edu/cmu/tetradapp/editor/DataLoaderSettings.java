@@ -31,14 +31,18 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
+import edu.pitt.dbmi.data.CovarianceDataset;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
+import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
+import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
+import edu.pitt.dbmi.data.validation.file.CovarianceDataFileValidation;
 import edu.pitt.dbmi.data.validation.file.TabularDataValidation;
 import edu.pitt.dbmi.data.validation.file.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
@@ -173,6 +177,8 @@ final class DataLoaderSettings extends JPanel {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
                     // When Covariance data is selected, data type can only be Continuous,
+                    contRadioButton.setSelected(true);
+
                     //will disallow the users to choose Discrete
                     discRadioButton.setEnabled(false);
 
@@ -774,7 +780,6 @@ final class DataLoaderSettings extends JPanel {
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
 
-        // Only handles tabular data for now - Zhou
         if (tabularRadioButton.isSelected()) {
             TabularDataValidation validation = null;
 
@@ -817,6 +822,25 @@ final class DataLoaderSettings extends JPanel {
             }
 
             return validation;
+        } else if (covarianceRadioButton.isSelected()) {
+            DataValidation validation = new CovarianceDataFileValidation(file, delimiter);
+
+            // Header in first row is required
+            // Set comment marker
+            //validation.setCommentMarker(commentMarker);
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                //validation.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                //validation.setQuoteCharacter('\'');
+            }
+
+            // No case ID on covarianced data
+            validation.validate();
+
+            return validation;
         } else {
             throw new UnsupportedOperationException("Not yet supported!");
         }
@@ -835,7 +859,6 @@ final class DataLoaderSettings extends JPanel {
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
 
-        // Only handles tabular data for now - Zhou
         if (tabularRadioButton.isSelected()) {
             TabularDataReader dataReader = null;
 
@@ -891,6 +914,29 @@ final class DataLoaderSettings extends JPanel {
             } else {
                 throw new UnsupportedOperationException("Not yet supported!");
             }
+        } else if (covarianceRadioButton.isSelected()) {
+            // Covariance data can only be continuous
+            CovarianceDataReader dataReader = new LowerCovarianceDataReader(file, delimiter);
+
+            // Set comment marker
+            dataReader.setCommentMarker(commentMarker);
+
+            // Set the quote character
+            if (doubleQuoteRadioButton.isSelected()) {
+                dataReader.setQuoteCharacter('"');
+            }
+
+            if (singleQuoteRadioButton.isSelected()) {
+                dataReader.setQuoteCharacter('\'');
+            }
+
+            Dataset dataset = dataReader.readInData();
+            CovarianceDataset covarianceDataset = (CovarianceDataset) dataset;
+
+            // Convert dataset to dataModel
+            dataModel = new BoxDataSet(
+                    new DoubleDataBox(covarianceDataset.getData()),
+                    variablesToContinuousNodes(covarianceDataset.getVariables()));
         } else {
             throw new UnsupportedOperationException("Not yet supported!");
         }
