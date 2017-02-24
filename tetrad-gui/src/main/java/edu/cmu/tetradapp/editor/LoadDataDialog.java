@@ -108,25 +108,25 @@ final class LoadDataDialog extends JPanel {
 
     private Box fileListBox;
 
-    private Box formatBox;
+    private Box basicSettingsBox;
 
-    private Box optionsBox;
+    private Box advancedSettingsBox;
 
     private Box validationResultsContainer;
 
     private Box filesToValidateBox;
 
+    private Box validationSummaryBox;
+
+    private Box validationMessageBox;
+
     private Box buttonsBox;
 
     private JButton addFileButton;
 
-    private JButton step1Button;
+    private JButton settingsButton;
 
-    private JButton step2ForwardButton;
-
-    private JButton step2BackwardButton;
-
-    private JButton step3Button;
+    private JButton validateButton;
 
     private JButton loadButton;
 
@@ -174,31 +174,26 @@ final class LoadDataDialog extends JPanel {
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
         // Must set the size of container, otherwise validationResultsContainer gets shrinked
-        container.setPreferredSize(new Dimension(900, 510));
+        container.setPreferredSize(new Dimension(900, 560));
 
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
         dataLoaderSettings = new DataLoaderSettings(loadedFiles);
 
-        // Specify Format
-        formatBox = dataLoaderSettings.specifyFormat();
+        // Basic settings
+        basicSettingsBox = dataLoaderSettings.basicSettings();
 
-        formatBox.setPreferredSize(new Dimension(900, 145));
-        formatBox.setMaximumSize(new Dimension(900, 145));
-
-        // Options settings
-        optionsBox = dataLoaderSettings.selectOptions();
-
-        optionsBox.setPreferredSize(new Dimension(900, 145));
-        optionsBox.setMaximumSize(new Dimension(900, 145));
+        // Advanced settings
+        advancedSettingsBox = dataLoaderSettings.advancedSettings();
 
         // Contains file list and format/options
         settingsContainer = Box.createVerticalBox();
 
-        settingsContainer.add(formatBox);
-        settingsContainer.add(optionsBox);
-        optionsBox.setVisible(false);
+        settingsContainer.add(basicSettingsBox);
+        settingsContainer.add(Box.createVerticalStrut(10));
+        settingsContainer.add(advancedSettingsBox);
+        //advancedSettingsBox.setVisible(false);
 
         // Add some padding between settingsContainer and preview container
         settingsContainer.add(Box.createVerticalStrut(10));
@@ -208,7 +203,7 @@ final class LoadDataDialog extends JPanel {
 
         // Preview container, contains file list and raw data preview
         previewContainer = Box.createHorizontalBox();
-        previewContainer.setPreferredSize(new Dimension(900, 310));
+        previewContainer.setPreferredSize(new Dimension(900, 250));
 
         // Show all chosen files in a list
         for (File file : loadedFiles) {
@@ -299,8 +294,8 @@ final class LoadDataDialog extends JPanel {
         fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
 
         fileListBox = Box.createVerticalBox();
-        fileListBox.setMinimumSize(new Dimension(305, 310));
-        fileListBox.setMaximumSize(new Dimension(305, 310));
+        fileListBox.setMinimumSize(new Dimension(305, 250));
+        fileListBox.setMaximumSize(new Dimension(305, 250));
         fileListBox.add(fileListScrollPane);
 
         // Add gap between file list and add new file button
@@ -365,8 +360,8 @@ final class LoadDataDialog extends JPanel {
         previewContainer.add(Box.createHorizontalStrut(10), 1);
 
         filePreviewBox = Box.createVerticalBox();
-        filePreviewBox.setMinimumSize(new Dimension(585, 310));
-        filePreviewBox.setMaximumSize(new Dimension(585, 310));
+        filePreviewBox.setMinimumSize(new Dimension(585, 250));
+        filePreviewBox.setMaximumSize(new Dimension(585, 250));
 
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
@@ -401,12 +396,20 @@ final class LoadDataDialog extends JPanel {
         container.add(previewContainer);
 
         // Validation result
-        validationResultsContainer = Box.createHorizontalBox();
+        validationResultsContainer = Box.createVerticalBox();
+
+        validationSummaryBox = Box.createHorizontalBox();
+
+        JLabel validationSummaryText = new JLabel("Please review. You can change the settings or add/remove files by clicking the Settings button.");
+
+        validationSummaryBox.add(validationSummaryText);
+
+        validationResultsBox = Box.createHorizontalBox();
 
         // A list of files to review
         filesToValidateBox = Box.createVerticalBox();
-        filesToValidateBox.setMinimumSize(new Dimension(305, 420));
-        filesToValidateBox.setMaximumSize(new Dimension(305, 420));
+        filesToValidateBox.setMinimumSize(new Dimension(305, 450));
+        filesToValidateBox.setMaximumSize(new Dimension(305, 450));
 
         // Create a new list model based on validation results
         validationFileList = new JList(validatedFileListModel);
@@ -433,26 +436,31 @@ final class LoadDataDialog extends JPanel {
 
         filesToValidateBox.add(filesToValidateScrollPane);
 
-        validationResultsContainer.add(filesToValidateBox);
+        validationResultsBox.add(filesToValidateBox);
 
-        // Add gap between file list and review conent
-        validationResultsContainer.add(Box.createHorizontalStrut(10), 1);
+        // Add gap between file list and message content
+        validationResultsBox.add(Box.createHorizontalStrut(10), 1);
 
         // Review content, contains errors or summary of loading
-        validationResultsBox = Box.createHorizontalBox();
-        validationResultsBox.setMinimumSize(new Dimension(568, 420));
-        validationResultsBox.setMaximumSize(new Dimension(568, 420));
+        validationMessageBox = Box.createVerticalBox();
+        validationMessageBox.setMinimumSize(new Dimension(568, 450));
+        validationMessageBox.setMaximumSize(new Dimension(568, 450));
 
         validationResultTextPane.setContentType("text/html");
         validationResultTextPane.setEditable(false);
 
         final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextPane);
-        validationResultsBox.add(summaryScrollPane);
+        validationMessageBox.add(summaryScrollPane);
 
+        validationResultsBox.add(validationMessageBox);
+
+        // Put things into container
+        validationResultsContainer.add(validationSummaryBox);
+        validationResultsContainer.add(Box.createVerticalStrut(10));
         validationResultsContainer.add(validationResultsBox);
 
         // Show the default selected filename as preview border title
-        validationResultsContainerBorderTitle = "Step 3: Validate";
+        validationResultsContainerBorderTitle = "Validate";
 
         // Use a titled border with 5 px inside padding - Zhou
         validationResultsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(validationResultsContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -463,79 +471,20 @@ final class LoadDataDialog extends JPanel {
         validationResultsContainer.setVisible(false);
 
         // Buttons
-        // Step 1 button to specify format
-        // You'll see Step 1 button only when you are ate step 2
-        step1Button = new JButton("< Step 1: Specify Format");
-
-        // Step 1 button listener
-        step1Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Hide the options settings and show format
-                optionsBox.setVisible(false);
-                formatBox.setVisible(true);
-
-                // Show the step 2 forward button
-                step2ForwardButton.setVisible(true);
-
-                // Hide the step 2 backward button
-                step2BackwardButton.setVisible(false);
-
-                // Hide step 3 button
-                step3Button.setVisible(false);
-
-                // Hide finish button
-                loadButton.setVisible(false);
-
-                // Hide back button
-                step1Button.setVisible(false);
-            }
-        });
-
-        // Step 2 forward button to select options
-        // You'll see Step 2 forward button only when you are ate step 1
-        step2ForwardButton = new JButton("Step 2: Select Options >");
-
-        // Step 2 forward button listener
-        step2ForwardButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Hide format
-                formatBox.setVisible(false);
-
-                // Show options
-                optionsBox.setVisible(true);
-
-                // Show the step 1 button
-                step1Button.setVisible(true);
-
-                // Hide step 2 forward button
-                step2ForwardButton.setVisible(false);
-
-                // Show step 3 button
-                step3Button.setVisible(true);
-
-                // Hide finish button
-                loadButton.setVisible(false);
-            }
-        });
-
-        // Step 2 button to select options
-        // You'll see Step 2 backward button only when you are ate step 3
-        step2BackwardButton = new JButton("< Step 2: Select Options");
+        // Settings button
+        settingsButton = new JButton("< Settings");
 
         // Step 2 backward button listener
-        step2BackwardButton.addActionListener(new ActionListener() {
+        settingsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Show file list
                 fileListBox.setVisible(true);
 
-                // Still hide format
-                formatBox.setVisible(false);
+                basicSettingsBox.setVisible(true);
 
                 // Show options
-                optionsBox.setVisible(true);
+                advancedSettingsBox.setVisible(true);
 
                 // Show preview
                 previewContainer.setVisible(true);
@@ -543,14 +492,11 @@ final class LoadDataDialog extends JPanel {
                 // Hide summary
                 validationResultsContainer.setVisible(false);
 
-                // Show the step 1 button
-                step1Button.setVisible(true);
+                // Hide step 1 backward button
+                settingsButton.setVisible(false);
 
-                // Hide step 2 backward button
-                step2BackwardButton.setVisible(false);
-
-                // Show step 3 button
-                step3Button.setVisible(true);
+                // Show validate button
+                validateButton.setVisible(true);
 
                 // Hide finish button
                 loadButton.setVisible(false);
@@ -566,11 +512,11 @@ final class LoadDataDialog extends JPanel {
             }
         });
 
-        // Step 3 button
-        step3Button = new JButton("Step 3: Validate >");
+        // Validate button
+        validateButton = new JButton("Validate >");
 
         // Step 3 button listener
-        step3Button.addActionListener(new ActionListener() {
+        validateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // First we want to do some basic form validation/checks
@@ -597,8 +543,8 @@ final class LoadDataDialog extends JPanel {
                 }
 
                 // Disable the button and change the button text
-                step3Button.setEnabled(false);
-                step3Button.setText("Validating ...");
+                validateButton.setEnabled(false);
+                validateButton.setText("Validating ...");
 
                 // New thread to run the validation and hides the loading indicator
                 // and shows the validation results once the validation process is done - Zhou
@@ -623,24 +569,18 @@ final class LoadDataDialog extends JPanel {
 
                                 // Hide all inside settingsContainer
                                 fileListBox.setVisible(false);
-                                formatBox.setVisible(false);
-                                optionsBox.setVisible(false);
+                                basicSettingsBox.setVisible(false);
+                                advancedSettingsBox.setVisible(false);
 
                                 // Use previewContainer instead of previewBox
                                 // since the previewContainer also contains padding
                                 previewContainer.setVisible(false);
 
-                                // Hide step 1 button
-                                step1Button.setVisible(false);
-
-                                // Hide step 2 forward button
-                                step2ForwardButton.setVisible(false);
-
                                 // Show step 2 backward button
-                                step2BackwardButton.setVisible(true);
+                                settingsButton.setVisible(true);
 
-                                // Hide step 3 button
-                                step3Button.setVisible(false);
+                                // Hide validate button
+                                validateButton.setVisible(false);
 
                                 // Show finish button
                                 loadButton.setVisible(true);
@@ -655,8 +595,8 @@ final class LoadDataDialog extends JPanel {
                                 }
 
                                 // Enable the button and hange back the button text
-                                step3Button.setEnabled(true);
-                                step3Button.setText("Step 3: Validate >");
+                                validateButton.setEnabled(true);
+                                validateButton.setText("Validate >");
                             }
                         });
                     }
@@ -722,21 +662,15 @@ final class LoadDataDialog extends JPanel {
 
         // Buttons box
         buttonsBox = Box.createHorizontalBox();
-        buttonsBox.add(step1Button);
+        buttonsBox.add(settingsButton);
         // Don't use Box.createHorizontalStrut(20)
         buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonsBox.add(step2BackwardButton);
-        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonsBox.add(step2ForwardButton);
-        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonsBox.add(step3Button);
+        buttonsBox.add(validateButton);
         buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonsBox.add(loadButton);
 
         // Default to only show step forward button
-        step1Button.setVisible(false);
-        step2BackwardButton.setVisible(false);
-        step3Button.setVisible(false);
+        settingsButton.setVisible(false);
         loadButton.setVisible(false);
         // Add to buttons container
         buttonsContainer.add(buttonsBox);

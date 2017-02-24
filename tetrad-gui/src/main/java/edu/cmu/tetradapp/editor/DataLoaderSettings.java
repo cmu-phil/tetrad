@@ -110,7 +110,7 @@ final class DataLoaderSettings extends JPanel {
     }
 
     // Step 1 items
-    public final Box specifyFormat() {
+    public final Box basicSettings() {
         // Data loading params layout
         Box formatContainer = Box.createVerticalBox();
 
@@ -379,7 +379,7 @@ final class DataLoaderSettings extends JPanel {
         formatContainer.add(firstRowVarNamesBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Step 1: Specify Format";
+        String borderTitle = "Basic Settings";
         if (files.size() > 1) {
             borderTitle = borderTitle + " (apply to all files)";
         }
@@ -389,7 +389,7 @@ final class DataLoaderSettings extends JPanel {
     }
 
     // Step 2 items
-    public final Box selectOptions() {
+    public final Box advancedSettings() {
         // Data loading params layout
         Box optionsContainer = Box.createVerticalBox();
 
@@ -640,7 +640,7 @@ final class DataLoaderSettings extends JPanel {
         optionsContainer.add(maxIntegralDiscreteBox);
          */
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Step 2: Select Options";
+        String borderTitle = "Advanced Settings";
         if (files.size() > 1) {
             borderTitle = borderTitle + " (apply to all files)";
         }
