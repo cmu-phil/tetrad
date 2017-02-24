@@ -167,9 +167,9 @@ public final class Fang implements GraphSearch {
 
                     final double signumcovxy = signum(c);
 
-                    if (shouldGo(X, Y)) {
+                    if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (shouldGo(Y, X)) {
+                    } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
                     } else if (ng && abs(th) <= T) {
                         Edge edge1 = Edges.directedEdge(X, Y);
@@ -388,7 +388,7 @@ public final class Fang implements GraphSearch {
         return sum;
     }
 
-    private boolean shouldGo(Node left, Node right) {
+    private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
