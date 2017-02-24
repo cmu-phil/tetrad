@@ -19,7 +19,7 @@
 package edu.cmu.tetrad.cli.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.cli.AbstractAlgorithmCli;
 import edu.cmu.tetrad.cli.AlgorithmType;
@@ -92,12 +92,12 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     @Override
     public Algorithm getAlgorithm(IKnowledge knowledge) {
-        Fgs fgs = new Fgs(new BdeuScore());
+        Fges fges = new Fges(new BdeuScore());
         if (knowledge != null) {
-            fgs.setKnowledge(knowledge);
+            fges.setKnowledge(knowledge);
         }
 
-        return fgs;
+        return fges;
     }
 
     @Override

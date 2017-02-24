@@ -799,18 +799,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 			// Hpc parameters
 			final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
 			JsonWebToken jsonWebToken = HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount);
-			if (jsonWebToken.getWallTime() > -1 && jsonWebToken.getWallTimeMax() > -1) {
+			if (jsonWebToken.getWallTime() != null) {
 				// User allowed to customize the job's wall time
-				String wallTime = null;
-				do {
-					wallTime = JOptionPane.showInputDialog(progressDialog,
-							"Enter Your Request Wall Time in Hour (Maximum " + jsonWebToken.getWallTimeMax() + "):");
-				} while (wallTime != null && !StringUtils.isNumeric(wallTime));
+				String[] wallTime = jsonWebToken.getWallTime();
+				Object userwallTime = JOptionPane.showInputDialog(progressDialog, "Wall Time:",
+						"Choose Your Wall Time (in Hour)", JOptionPane.QUESTION_MESSAGE, null, wallTime, wallTime[0]);
 
 				if (wallTime != null) {
 					HpcParameter hpcParameter = new HpcParameter();
 					hpcParameter.setKey("walltime");
-					hpcParameter.setValue(new Integer(wallTime));
+					hpcParameter.setValue(new Integer(userwallTime.toString()));
 					algorithmParamRequest.setHpcParameters(Collections.singleton(hpcParameter));
 				}
 			}
