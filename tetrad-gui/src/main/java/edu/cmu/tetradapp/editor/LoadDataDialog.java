@@ -408,8 +408,8 @@ final class LoadDataDialog extends JPanel {
 
         // A list of files to review
         filesToValidateBox = Box.createVerticalBox();
-        filesToValidateBox.setMinimumSize(new Dimension(305, 450));
-        filesToValidateBox.setMaximumSize(new Dimension(305, 450));
+        filesToValidateBox.setMinimumSize(new Dimension(305, 430));
+        filesToValidateBox.setMaximumSize(new Dimension(305, 430));
 
         // Create a new list model based on validation results
         validationFileList = new JList(validatedFileListModel);
@@ -443,8 +443,8 @@ final class LoadDataDialog extends JPanel {
 
         // Review content, contains errors or summary of loading
         validationMessageBox = Box.createVerticalBox();
-        validationMessageBox.setMinimumSize(new Dimension(568, 450));
-        validationMessageBox.setMaximumSize(new Dimension(568, 450));
+        validationMessageBox.setMinimumSize(new Dimension(560, 430));
+        validationMessageBox.setMaximumSize(new Dimension(560, 430));
 
         validationResultTextPane.setContentType("text/html");
         validationResultTextPane.setEditable(false);
