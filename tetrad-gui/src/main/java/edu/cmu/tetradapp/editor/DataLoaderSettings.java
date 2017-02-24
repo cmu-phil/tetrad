@@ -93,6 +93,8 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton idLabeledColRadioButton;
     private StringTextField idStringField;
 
+    private final Color separatorColor;
+
     /* Hide for now - Zhou
     private JRadioButton missingValueBlankRadioButton;
     private JRadioButton missingValueStarRadioButton;
@@ -108,6 +110,8 @@ final class DataLoaderSettings extends JPanel {
 
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
+
+        this.separatorColor = new Color(221, 221, 221);
     }
 
     // Step 1 items
@@ -215,7 +219,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Add seperator line
         JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
-        separator1.setForeground(Color.LIGHT_GRAY);
+        separator1.setForeground(separatorColor);
         basicSettingsBox.add(separator1);
 
         // Vertical gap
@@ -262,7 +266,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Add seperator line
         JSeparator separator2 = new JSeparator(SwingConstants.HORIZONTAL);
-        separator2.setForeground(Color.LIGHT_GRAY);
+        separator2.setForeground(separatorColor);
         basicSettingsBox.add(separator2);
 
         //basicSettingsBox.add(Box.createVerticalStrut(5));
@@ -310,7 +314,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Add seperator line
         JSeparator separator3 = new JSeparator(SwingConstants.HORIZONTAL);
-        separator3.setForeground(Color.LIGHT_GRAY);
+        separator3.setForeground(separatorColor);
         basicSettingsBox.add(separator3);
 
         //basicSettingsBox.add(Box.createVerticalStrut(5));
@@ -467,7 +471,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Add seperator line
         JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
-        separator1.setForeground(Color.LIGHT_GRAY);
+        separator1.setForeground(separatorColor);
         advancedSettingsBox.add(separator1);
 
         //advancedSettingsBox.add(Box.createVerticalStrut(5));
@@ -539,7 +543,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Add seperator line
         JSeparator separator2 = new JSeparator(SwingConstants.HORIZONTAL);
-        separator2.setForeground(Color.LIGHT_GRAY);
+        separator2.setForeground(separatorColor);
         advancedSettingsBox.add(separator2);
 
         //advancedSettingsBox.add(Box.createVerticalStrut(5));
