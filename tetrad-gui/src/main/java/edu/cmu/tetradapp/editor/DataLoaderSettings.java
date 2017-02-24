@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.Dataset;
@@ -106,13 +107,13 @@ final class DataLoaderSettings extends JPanel {
         this.files = files;
 
         // All labels should share the save size - Zhou
-        this.labelSize = new Dimension(180, 30);
+        this.labelSize = new Dimension(200, 30);
     }
 
     // Step 1 items
     public final Box basicSettings() {
         // Data loading params layout
-        Box formatContainer = Box.createVerticalBox();
+        Box basicSettingsBox = Box.createVerticalBox();
 
         // File type: Tabular/covariance
         Box fileTypeBox = Box.createHorizontalBox();
@@ -210,15 +211,15 @@ final class DataLoaderSettings extends JPanel {
         fileTypeBox.add(Box.createHorizontalGlue());
 
         // Add to format container
-        formatContainer.add(fileTypeBox);
+        basicSettingsBox.add(fileTypeBox);
 
         // Add seperator line
         JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
         separator1.setForeground(Color.LIGHT_GRAY);
-        formatContainer.add(separator1);
+        basicSettingsBox.add(separator1);
 
         // Vertical gap
-        //formatContainer.add(Box.createVerticalStrut(5));
+        //basicSettingsBox.add(Box.createVerticalStrut(5));
         // Data type - moved from the old Fast tab - Zhou
         Box dataTypeBox = Box.createHorizontalBox();
         // Data type: continuous, discrete, or mixed
@@ -257,14 +258,14 @@ final class DataLoaderSettings extends JPanel {
         //dataTypeBox.add(mixedRadioButton);
         dataTypeBox.add(Box.createHorizontalGlue());
 
-        formatContainer.add(dataTypeBox);
+        basicSettingsBox.add(dataTypeBox);
 
         // Add seperator line
         JSeparator separator2 = new JSeparator(SwingConstants.HORIZONTAL);
         separator2.setForeground(Color.LIGHT_GRAY);
-        formatContainer.add(separator2);
+        basicSettingsBox.add(separator2);
 
-        //formatContainer.add(Box.createVerticalStrut(5));
+        //basicSettingsBox.add(Box.createVerticalStrut(5));
         // Value Delimiter box
         Box valueDelimiterBox = Box.createHorizontalBox();
 
@@ -283,6 +284,11 @@ final class DataLoaderSettings extends JPanel {
         Box valueDelimiterLabelBox = Box.createHorizontalBox();
         valueDelimiterLabelBox.setPreferredSize(labelSize);
         valueDelimiterLabelBox.add(new JLabel("Value delimiter:"));
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel valueDelimiterLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        valueDelimiterLabelInfoIcon.setToolTipText("Delimiter used to seperate the variable names and data values");
+        valueDelimiterLabelBox.add(valueDelimiterLabelInfoIcon);
 
         // Option 1
         Box valueDelimiterOption1Box = Box.createHorizontalBox();
@@ -300,14 +306,14 @@ final class DataLoaderSettings extends JPanel {
         valueDelimiterBox.add(valueDelimiterOption2Box);
         valueDelimiterBox.add(Box.createHorizontalGlue());
 
-        formatContainer.add(valueDelimiterBox);
+        basicSettingsBox.add(valueDelimiterBox);
 
         // Add seperator line
         JSeparator separator3 = new JSeparator(SwingConstants.HORIZONTAL);
         separator3.setForeground(Color.LIGHT_GRAY);
-        formatContainer.add(separator3);
+        basicSettingsBox.add(separator3);
 
-        //formatContainer.add(Box.createVerticalStrut(5));
+        //basicSettingsBox.add(Box.createVerticalStrut(5));
         // Var names in first row of data
         Box firstRowVarNamesBox = Box.createHorizontalBox();
 
@@ -358,6 +364,11 @@ final class DataLoaderSettings extends JPanel {
         Box firstRowVarNamesLabelBox = Box.createHorizontalBox();
         firstRowVarNamesLabelBox.setPreferredSize(labelSize);
         firstRowVarNamesLabelBox.add(new JLabel("First row variable names:"));
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel firstRowVarNamesLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        firstRowVarNamesLabelInfoIcon.setToolTipText("Whether the column variable names are presented in the first row of data");
+        firstRowVarNamesLabelBox.add(firstRowVarNamesLabelInfoIcon);
 
         // Option 1
         Box firstRowVarNamesOption1Box = Box.createHorizontalBox();
@@ -376,22 +387,22 @@ final class DataLoaderSettings extends JPanel {
         firstRowVarNamesBox.add(firstRowVarNamesOption2Box);
         firstRowVarNamesBox.add(Box.createHorizontalGlue());
 
-        formatContainer.add(firstRowVarNamesBox);
+        basicSettingsBox.add(firstRowVarNamesBox);
 
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Basic Settings";
         if (files.size() > 1) {
             borderTitle = borderTitle + " (apply to all files)";
         }
-        formatContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
+        basicSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        return formatContainer;
+        return basicSettingsBox;
     }
 
     // Step 2 items
     public final Box advancedSettings() {
         // Data loading params layout
-        Box optionsContainer = Box.createVerticalBox();
+        Box advancedSettingsBox = Box.createVerticalBox();
 
         // Case ID's provided
         Box caseIdProvidedBox = Box.createHorizontalBox();
@@ -452,14 +463,14 @@ final class DataLoaderSettings extends JPanel {
         caseIdProvidedBox.add(caseIdProvidedOption3Box);
         caseIdProvidedBox.add(Box.createHorizontalGlue());
 
-        optionsContainer.add(caseIdProvidedBox);
+        advancedSettingsBox.add(caseIdProvidedBox);
 
         // Add seperator line
         JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
         separator1.setForeground(Color.LIGHT_GRAY);
-        optionsContainer.add(separator1);
+        advancedSettingsBox.add(separator1);
 
-        //optionsContainer.add(Box.createVerticalStrut(5));
+        //advancedSettingsBox.add(Box.createVerticalStrut(5));
         // Comment Marker
         Box commentMarkerBox = Box.createHorizontalBox();
 
@@ -495,6 +506,11 @@ final class DataLoaderSettings extends JPanel {
         Box commentMarkerLabelBox = Box.createHorizontalBox();
         commentMarkerLabelBox.setPreferredSize(labelSize);
         commentMarkerLabelBox.add(new JLabel("Comment marker:"));
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel commentMarkerLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        commentMarkerLabelInfoIcon.setToolTipText("Validation and data loading will ingnore the rows started with the comment marker.");
+        commentMarkerLabelBox.add(commentMarkerLabelInfoIcon);
 
         // Option 1
         Box commentMarkerOption1Box = Box.createHorizontalBox();
@@ -519,14 +535,14 @@ final class DataLoaderSettings extends JPanel {
         commentMarkerBox.add(commentMarkerOption3Box);
         commentMarkerBox.add(Box.createHorizontalGlue());
 
-        optionsContainer.add(commentMarkerBox);
+        advancedSettingsBox.add(commentMarkerBox);
 
         // Add seperator line
         JSeparator separator2 = new JSeparator(SwingConstants.HORIZONTAL);
         separator2.setForeground(Color.LIGHT_GRAY);
-        optionsContainer.add(separator2);
+        advancedSettingsBox.add(separator2);
 
-        //optionsContainer.add(Box.createVerticalStrut(5));
+        //advancedSettingsBox.add(Box.createVerticalStrut(5));
         // Quote Character
         Box quoteCharBox = Box.createHorizontalBox();
 
@@ -546,6 +562,11 @@ final class DataLoaderSettings extends JPanel {
         Box quoteCharLabelBox = Box.createHorizontalBox();
         quoteCharLabelBox.setPreferredSize(labelSize);
         quoteCharLabelBox.add(new JLabel("Quote character:"));
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel quoteCharLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        quoteCharLabelInfoIcon.setToolTipText("If variable names or/and actual data are quoted, choose either single quote or double quotes. ");
+        quoteCharLabelBox.add(quoteCharLabelInfoIcon);
 
         // Option 1
         Box quoteCharOption1Box = Box.createHorizontalBox();
@@ -569,9 +590,9 @@ final class DataLoaderSettings extends JPanel {
         quoteCharBox.add(quoteCharOption3Box);
         quoteCharBox.add(Box.createHorizontalGlue());
 
-        optionsContainer.add(quoteCharBox);
+        advancedSettingsBox.add(quoteCharBox);
 
-        optionsContainer.add(Box.createVerticalStrut(5));
+        advancedSettingsBox.add(Box.createVerticalStrut(5));
 
         /* Hide missing value marker for now - Zhou
 
@@ -604,9 +625,9 @@ final class DataLoaderSettings extends JPanel {
         missingValueMarkerBox.add(missingValueOtherRadioButton);
         missingValueMarkerBox.add(missingStringField);
         missingValueMarkerBox.add(Box.createHorizontalGlue());
-        optionsContainer.add(missingValueMarkerBox);
+        advancedSettingsBox.add(missingValueMarkerBox);
 
-        optionsContainer.add(Box.createVerticalStrut(5));
+        advancedSettingsBox.add(Box.createVerticalStrut(5));
          */
 
  /* Hide this since mixed data is not ready - Zhou
@@ -637,16 +658,16 @@ final class DataLoaderSettings extends JPanel {
         maxIntegralDiscreteBox.add(maxIntegralDiscreteIntField);
         maxIntegralDiscreteBox.add(maxIntegralLabel2);
         maxIntegralDiscreteBox.add(Box.createHorizontalGlue());
-        optionsContainer.add(maxIntegralDiscreteBox);
+        advancedSettingsBox.add(maxIntegralDiscreteBox);
          */
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Advanced Settings";
         if (files.size() > 1) {
             borderTitle = borderTitle + " (apply to all files)";
         }
-        optionsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
+        advancedSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        return optionsContainer;
+        return advancedSettingsBox;
     }
 
     private String getCommentMarker() {
