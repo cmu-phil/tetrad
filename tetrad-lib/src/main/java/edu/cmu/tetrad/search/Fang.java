@@ -212,8 +212,6 @@ public final class Fang implements GraphSearch {
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
-        System.out.println(graph);
-
         return graph;
     }
 
