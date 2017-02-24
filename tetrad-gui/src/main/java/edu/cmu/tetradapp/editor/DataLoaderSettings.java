@@ -22,12 +22,14 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
@@ -43,6 +45,7 @@ import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.file.CovarianceDataFileValidation;
+import edu.pitt.dbmi.data.validation.file.DataFileValidation;
 import edu.pitt.dbmi.data.validation.file.TabularDataValidation;
 import edu.pitt.dbmi.data.validation.file.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
@@ -84,6 +87,8 @@ final class DataLoaderSettings extends JPanel {
 
     private JRadioButton commaDelimiterRadioButton;
     private JRadioButton whitespaceDelimiterRadioButton;
+    // Remove tab once Kevin's done with the whitespace changes in validation and reader
+    private JRadioButton tabDelimiterRadioButton;
 
     private JRadioButton noneQuoteRadioButton;
     private JRadioButton doubleQuoteRadioButton;
@@ -149,7 +154,11 @@ final class DataLoaderSettings extends JPanel {
                         discRadioButton.setEnabled(true);
                     }
 
-                    // Enable No for variable names in first row
+                    // Enable variable names in first row
+                    if (!firstRowVarNamesYesRadioButton.isEnabled()) {
+                        firstRowVarNamesYesRadioButton.setEnabled(true);
+                    }
+
                     if (!firstRowVarNamesNoRadioButton.isEnabled()) {
                         firstRowVarNamesNoRadioButton.setEnabled(true);
                     }
@@ -182,9 +191,9 @@ final class DataLoaderSettings extends JPanel {
                     //will disallow the users to choose Discrete
                     discRadioButton.setEnabled(false);
 
-                    // variable names in first row is also checked with Yes for covariance data,
-                    // and we disable the No radio button
-                    firstRowVarNamesYesRadioButton.setSelected(true);
+                    // Both Yes and No of Variable names in first row need to be disabled
+                    // Because the first row should be number of cases
+                    firstRowVarNamesYesRadioButton.setEnabled(false);
                     firstRowVarNamesNoRadioButton.setEnabled(false);
 
                     // select None for Case IDs, disable other options,
@@ -282,10 +291,12 @@ final class DataLoaderSettings extends JPanel {
         // Value Delimiter
         commaDelimiterRadioButton = new JRadioButton("Comma");
         whitespaceDelimiterRadioButton = new JRadioButton("Whitespace");
+        tabDelimiterRadioButton = new JRadioButton("Tab (to be removed)");
 
         ButtonGroup delimiterBtnGrp = new ButtonGroup();
         delimiterBtnGrp.add(commaDelimiterRadioButton);
         delimiterBtnGrp.add(whitespaceDelimiterRadioButton);
+        delimiterBtnGrp.add(tabDelimiterRadioButton);
 
         // Defaults to comma
         commaDelimiterRadioButton.setSelected(true);
@@ -310,10 +321,16 @@ final class DataLoaderSettings extends JPanel {
         valueDelimiterOption2Box.setPreferredSize(new Dimension(200, 30));
         valueDelimiterOption2Box.add(whitespaceDelimiterRadioButton);
 
+        // Option 3, Tab, will be removed later
+        Box valueDelimiterOption3Box = Box.createHorizontalBox();
+        valueDelimiterOption3Box.setPreferredSize(new Dimension(200, 30));
+        valueDelimiterOption3Box.add(tabDelimiterRadioButton);
+
         valueDelimiterBox.add(valueDelimiterLabelBox);
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
         valueDelimiterBox.add(valueDelimiterOption1Box);
         valueDelimiterBox.add(valueDelimiterOption2Box);
+        valueDelimiterBox.add(valueDelimiterOption3Box);
         valueDelimiterBox.add(Box.createHorizontalGlue());
 
         basicSettingsBox.add(valueDelimiterBox);
@@ -706,6 +723,8 @@ final class DataLoaderSettings extends JPanel {
                 return ',';
             case "Whitespace":
                 return ' ';
+            case "Tab":
+                return '\t';
             default:
                 throw new IllegalArgumentException("Unexpected Value delimiter selection.");
         }
@@ -716,6 +735,8 @@ final class DataLoaderSettings extends JPanel {
             return DelimiterType.COMMA;
         } else if (whitespaceDelimiterRadioButton.isSelected()) {
             return DelimiterType.WHITESPACE;
+        } else if (tabDelimiterRadioButton.isSelected()) {
+            return DelimiterType.TAB;
         } else {
             throw new IllegalArgumentException("Unexpected Value delimiter selection.");
         }
@@ -823,18 +844,19 @@ final class DataLoaderSettings extends JPanel {
 
             return validation;
         } else if (covarianceRadioButton.isSelected()) {
-            DataValidation validation = new CovarianceDataFileValidation(file, delimiter);
+            DataFileValidation validation = new CovarianceDataFileValidation(file, delimiter);
 
             // Header in first row is required
             // Set comment marker
-            //validation.setCommentMarker(commentMarker);
+            validation.setCommentMarker(commentMarker);
+
             // Set the quote character
             if (doubleQuoteRadioButton.isSelected()) {
-                //validation.setQuoteCharacter('"');
+                validation.setQuoteCharacter('"');
             }
 
             if (singleQuoteRadioButton.isSelected()) {
-                //validation.setQuoteCharacter('\'');
+                validation.setQuoteCharacter('\'');
             }
 
             // No case ID on covarianced data
@@ -933,10 +955,10 @@ final class DataLoaderSettings extends JPanel {
             Dataset dataset = dataReader.readInData();
             CovarianceDataset covarianceDataset = (CovarianceDataset) dataset;
 
+            List<Node> variables = variablesToContinuousNodes(covarianceDataset.getVariables());
+            TetradMatrix tetradMatrix = new TetradMatrix(covarianceDataset.getData());
             // Convert dataset to dataModel
-            dataModel = new BoxDataSet(
-                    new DoubleDataBox(covarianceDataset.getData()),
-                    variablesToContinuousNodes(covarianceDataset.getVariables()));
+            dataModel = new CovarianceMatrix(variables, tetradMatrix, covarianceDataset.getNumberOfCases());
         } else {
             throw new UnsupportedOperationException("Not yet supported!");
         }
