@@ -1,13 +1,11 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fang;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setAlpha(parameters.getDouble("alpha"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setExtraAdjacencyThreshold(parameters.getDouble("extraAdjacencyThreshold"));
+        search.setMaxCoef(parameters.getDouble("maxCoef"));
         search.setNgAlpha(parameters.getDouble("ngAlpha"));
         search.setKnowledge(knowledge);
         return getGraph(search);
@@ -76,7 +74,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("alpha");
         parameters.add("ngAlpha");
         parameters.add("penaltyDiscount");
-        parameters.add("extraAdjacencyThreshold");
+        parameters.add("maxCoef");
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");

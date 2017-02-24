@@ -120,7 +120,7 @@ public class TestFang {
         parameters.set("alpha", .05);
         parameters.set("penaltyDiscount", 5);
         parameters.set("depth", 3);
-        parameters.set("extraAdjacencyThreshold", .25);
+        parameters.set("maxCoef", 1.0);
         parameters.set("ngAlpha", .2);
 
         parameters.set("numRandomSelections", 5);
@@ -197,9 +197,6 @@ public class TestFang {
         comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
-//        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
-//        comparison.saveToFiles("comparison", new LinearFisherModel(new RandomForward()), parameters);
-
     }
 
     public void TestSmith() {
