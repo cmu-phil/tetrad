@@ -37,6 +37,8 @@ import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -111,19 +113,19 @@ public class TestFang {
 //        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
 //        comparison.saveToFiles("comparison", new LinearFisherModel(new RandomForward()), parameters);
 
-
     }
+
 
     public void TestRuben() {
         Parameters parameters = new Parameters();
 
-        parameters.set("alpha", .05);
+        parameters.set("alpha", .1);
         parameters.set("penaltyDiscount", 5);
         parameters.set("depth", 3);
-        parameters.set("maxCoef", 1.0);
+        parameters.set("maxCoef", .3);
         parameters.set("ngAlpha", .2);
 
-        parameters.set("numRandomSelections", 5);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -365,6 +367,18 @@ public class TestFang {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
+    public void test2() {
+        int N = 500;
+
+        double[] x = new double[N];
+        double[] eY = new double[N];
+
+
+
+        for (int i = 0; i < N; i++) {
+            eY[i] = RandomUtil.getInstance().nextBeta(2, 5);
+        }
+    }
 
     public static void main(String... args) {
         new TestFang().TestRuben();

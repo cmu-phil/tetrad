@@ -94,8 +94,8 @@ public final class Fang implements GraphSearch {
         long start = System.currentTimeMillis();
 
         List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.center(dataSet));
-//
+        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
+
         DataSet dataSet = DataUtils.concatenate(_dataSets);
 
         DataSet dataSet2 = dataSet.copy();
@@ -141,11 +141,9 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = covarianceOfPart(x, y, 1, 0);
-                double c3 = covarianceOfPart(x, y, 0, 1);
-                double c = covariance(x, y);
-
                 boolean ng = isNonGaussian(i) && isNonGaussian(j);
+                double c1 = covarianceOfPart(x, y, 1, 0);
+                double c2 = covarianceOfPart(x, y, 0, 1);
 
                 if (G0.isAdjacentTo(X, Y)) {
                     double[] h = new double[n];
@@ -154,18 +152,17 @@ public final class Fang implements GraphSearch {
                         h[k] = h(x[k]) * y[k] - x[k] * h(y[k]);
                     }
 
+                    double c = covariance(x, y);
+
                     h = nonzero(h);
-                    h = nonParanormal(h);
                     double th = mean(h) / (sd(h) / sqrt(h.length));
 
-                    double c2 = covarianceOfPart(x, y, -1, 0);
+                    double c3 = covarianceOfPart(x, y, -1, 0);
                     double c4 = covarianceOfPart(x, y, 0, -1);
 
                     final boolean sameSignCondition =
-                            !(signum(c) == signum(c1) && signum(c) == signum(c2))
-                                    && !(signum(c) == signum(c3) && signum(c) == signum(c4));
-
-                    final double signumcovxy = signum(c);
+                            !(signum(c) == signum(c1) && signum(c) == signum(c3))
+                                    && !(signum(c) == signum(c2) && signum(c) == signum(c4));
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -189,14 +186,14 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (ng && signumcovxy * (c1 - c3) > 0) {
+                    } else if (ng && c * (c1 - c2) > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (ng && signumcovxy * (c1 - c3) < 0) {
+                    } else if (ng && c * (c1 - c2) < 0) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
                     }
-                } else if (ng && abs(c1 - c3) > maxCoef * max(0.25 * variance(x), 0.25 * variance(y))) {
+                } else if (ng && abs(c1 - c2) > maxCoef) {
                     Edge edge1 = Edges.directedEdge(X, Y);
                     Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -366,6 +363,10 @@ public final class Fang implements GraphSearch {
 
     private double h(double x) {
         return x < 0 ? 0 : x;
+    }
+
+    private double g(double x) {
+        return log(cosh(max(0, x)));
     }
 
     private static double sd(double array[]) {
