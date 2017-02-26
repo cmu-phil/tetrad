@@ -151,9 +151,9 @@ public class ParamDescriptions {
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
 
-        put("maxCoef", new ParamDescription(
-                "The maximum coefficient (in absolute value) for directed edges",
-                1.0, 0.0, Double.MAX_VALUE));
+        put("extraEdgeThreshold", new ParamDescription(
+                "Threshold for adding in control two-cycles removed by conditional independence tests",
+                .25, 0.0, Double.MAX_VALUE));
 
         put("ngAlpha", new ParamDescription(
                 "Alpha for testing non-Gaussianity",

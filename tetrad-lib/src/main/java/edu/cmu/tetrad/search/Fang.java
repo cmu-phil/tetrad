@@ -23,15 +23,14 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.*;
+import static edu.cmu.tetrad.util.StatUtils.covariance;
+import static edu.cmu.tetrad.util.StatUtils.mean;
 import static java.lang.Math.*;
 
 /**
@@ -67,7 +66,7 @@ public final class Fang implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
 
     // The maximum coefficient expected in the data.
-    private double maxCoef = 1.0;
+    private double extraEdgeThreshold = 1.0;
 
     // The alpha for testing non-Gaussianity (Anderson Darling test).
     private double ngAlpha = 0.05;
@@ -193,7 +192,7 @@ public final class Fang implements GraphSearch {
                     } else {
                         graph.addUndirectedEdge(X, Y);
                     }
-                } else if (ng && abs(c1 - c2) > maxCoef) {
+                } else if (ng && abs(c1 - c2) > extraEdgeThreshold) {
                     Edge edge1 = Edges.directedEdge(X, Y);
                     Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -340,10 +339,10 @@ public final class Fang implements GraphSearch {
      * The maximum coefficient expected, in absoluate value. Coefficients outside this range will be considered to
      * imply 2-cycles.
      *
-     * @param maxCoef This threshold, default 10.
+     * @param extraEdgeThreshold This threshold, default 10.
      */
-    public void setMaxCoef(double maxCoef) {
-        this.maxCoef = maxCoef;
+    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
+        this.extraEdgeThreshold = extraEdgeThreshold;
     }
 
     /**
@@ -389,56 +388,6 @@ public final class Fang implements GraphSearch {
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
-    }
-
-    public double[] nonParanormal(double[] x1) {
-        double std1 = StatUtils.sd(x1);
-        double mu1 = StatUtils.mean(x1);
-        double[] x = ranks(x1);
-
-        final NormalDistribution normalDistribution = new NormalDistribution();
-        final double delta = 1.0 / (4.0 * Math.pow(x1.length, 0.25) * Math.sqrt(Math.PI * Math.log(x1.length)));
-
-        double std = Double.NaN;
-
-
-        for (int i = 0; i < x.length; i++) {
-            x[i] /= x.length;
-            if (x[i] < delta) x[i] = delta;
-            if (x[i] > (1. - delta)) x[i] = 1. - delta;
-            x[i] = normalDistribution.inverseCumulativeProbability(x[i]);
-        }
-
-        if (Double.isNaN(std)) {
-            std = StatUtils.sd(x);
-        }
-
-        for (int i = 0; i < x.length; i++) {
-            x[i] /= std;
-            x[i] *= std1;
-            x[i] += mu1;
-        }
-
-        return x;
-    }
-
-    private static double[] ranks(double[] x) {
-        double[] ranks = new double[x.length];
-
-        for (int i = 0; i < x.length; i++) {
-            double d = x[i];
-            int count = 1;
-
-            for (int k = 0; k < x.length; k++) {
-                if (x[k] <= d) {
-                    count++;
-                }
-            }
-
-            ranks[i] = count;
-        }
-
-        return ranks;
     }
 }
 

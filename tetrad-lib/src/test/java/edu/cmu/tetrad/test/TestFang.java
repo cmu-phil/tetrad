@@ -120,10 +120,10 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", .1);
-        parameters.set("penaltyDiscount", 5);
-        parameters.set("depth", 3);
-        parameters.set("maxCoef", .3);
-        parameters.set("ngAlpha", .2);
+        parameters.set("penaltyDiscount", 4);
+        parameters.set("depth", 4);
+        parameters.set("extraEdgeThreshold", .3);
+        parameters.set("ngAlpha", .5);
 
         parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
