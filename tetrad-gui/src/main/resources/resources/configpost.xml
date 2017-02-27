@@ -210,8 +210,7 @@
     </session-node>
     <session-node id="PM">
         <models>
-            <model name="Bayes Parametric Model" acronym="Bayes PM"
-                   help="bayes_pm">
+            <model name="Bayes Parametric Model" acronym="Bayes PM" help="bayes_pm">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="pm" description="Parametric Model" default="on"/>
@@ -345,15 +344,6 @@
     </session-node>
     <session-node id="Data">
         <models>
-            <model name="Simulation" acronym="Simulation"
-                   help="data" category="Data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
-            </model>
             <model name="Data" acronym="Data" help="data" category="Data">
                 <model-class>edu.cmu.tetradapp.model.DataWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
@@ -361,8 +351,7 @@
             <model name="Discretize Dataset" acronym="Discretize" help="data"
                    category="Manipulation of Data">
                 <logger>
-                    <event id="inf
-                    o" description="Information" default="on"/>
+                    <event id="info" description="Information" default="on"/>
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>
@@ -859,6 +848,28 @@
             ]]>
         </node-specific-message>
     </session-node>
+    
+    <session-node id="Simulation">
+        <models>
+            <model name="Simulation" acronym="Simulation" help="data" category="Data">
+                <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
+            </model>
+        </models>
+        <!-- Reuse the data icon -->
+        <display-component image="dataIcon.gif"/>
+        <model-chooser title="Simulation"/>
+        <node-specific-message>
+            <![CDATA[
+               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Simulated Data, OR
+                 <br> (2) Data Manipulation Node
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
+    
     <session-node id="Estimator">
         <models>
             <model name="ML Bayes Estimator" acronym="ML Bayes Est"
