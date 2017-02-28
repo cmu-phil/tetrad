@@ -214,7 +214,13 @@ public class ExpressionManager {
                     public double evaluate(Context context) {
                         double value = 0.0;
                         for (Expression exp : getExpressions()) {
-                            value += exp.evaluate(context);
+                            double evaluate = 0;
+                            try {
+                                evaluate = exp.evaluate(context);
+                            } catch (Exception e) {
+//                                e.printStackTrace();
+                            }
+                            value += evaluate;
                         }
                         return value;
                     }

@@ -23,16 +23,13 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.covariance;
 import static edu.cmu.tetrad.util.StatUtils.mean;
-import static edu.cmu.tetrad.util.StatUtils.variance;
 import static java.lang.Math.*;
 
 /**
@@ -51,9 +48,9 @@ public final class Fang implements GraphSearch {
     // number of records.
     private List<DataSet> dataSets = null;
 
-//    // nonGaussian[i] is true iff the i'th variable is judged non-Gaussian by the
-//    // Anderson-Darling test.
-//    private boolean[] nonGaussian;
+    // nonGaussian[i] is true iff the i'th variable is judged non-Gaussian by the
+    // Anderson-Darling test.
+    private boolean[] nonGaussian;
 
     // For the Fast Adjacency Search.
     private int depth = -1;
@@ -115,15 +112,15 @@ public final class Fang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-//        nonGaussian = new boolean[colData.length];
-//
-//        for (int i = 0; i < colData.length; i++) {
-//            final double p = new AndersonDarlingTest(colData[i]).getP();
-//            nonGaussian[i] = Double.isInfinite(p) || p < ngAlpha;
-//        }
+        nonGaussian = new boolean[colData.length];
+
+        for (int i = 0; i < colData.length; i++) {
+            final double p = new AndersonDarlingTest(colData[i]).getP();
+            nonGaussian[i] = Double.isInfinite(p) || p < ngAlpha;
+        }
 
         final int n = dataSet.getNumRows();
-        double T = new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
+        double T = extraEdgeThreshold;//new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
 
         FasStableConcurrent fas = new FasStableConcurrent(null, test);
         fas.setDepth(getDepth());
@@ -139,11 +136,10 @@ public final class Fang implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
+                boolean ng = isNonGaussian(i) && isNonGaussian(j);
+
                 final double[] x = colData[i];
                 final double[] y = colData[j];
-
-                double cutx = .4 * sd(x);
-                double cuty = .4 * sd(y);
 
                 double c1 = covarianceOfPart(x, y, 1, 0);
                 double c2 = covarianceOfPart(x, y, 0, 1);
@@ -163,30 +159,24 @@ public final class Fang implements GraphSearch {
                     int nyp = 0;
 
                     for (int k = 0; k < n; k++) {
-                        if (x[k] > cutx) {
+                        if (x[k] > (double) 0) {
                             xpx[k] = x[k];
                             xpy[k] = y[k];
                             nxp++;
                         }
 
-                        if (y[k] > cuty) {
+                        if (y[k] > (double) 0) {
                             ypx[k] = x[k];
                             ypy[k] = y[k];
                             nyp++;
                         }
                     }
 
-                    System.out.println("nxp = " + nxp + " nyp = " + nyp);
-
-                    double cxp = (nxp / (double) n) * covariance(xpx, xpy);
-                    double cyp = (nyp / (double) n) * covariance(ypx, ypy);
-                    double vxpx = (nxp / (double) n) * variance(xpx);
-                    double vxpy = (nxp / (double) n) * variance(xpy);
-                    double vypx = (nyp / (double) n) * variance(ypx);
-                    double vypy = (nyp / (double) n) * variance(ypy);
+                    double cpx = (nxp / (double) n) * covariance(xpx, xpy);
+                    double cpy = (nyp / (double) n) * covariance(ypx, ypy);
                     double c = covariance(x, y);
-                    double R1 = signum(c) * (cxp * vypx - cyp * vxpx);
-                    double R2 = signum(c) * (cyp * vxpy - cxp * vypy);
+                    double R1 = signum(c) * (cpx - cpy);
+                    double R2 = signum(c) * (cpy - cpx);
 
                     h = nonzero(h);
                     double th = mean(h) / (sd(h) / sqrt(h.length));
@@ -198,11 +188,64 @@ public final class Fang implements GraphSearch {
                             !(signum(c) == signum(c1) && signum(c) == signum(c3))
                                     && !(signum(c) == signum(c2) && signum(c) == signum(c4));
 
+                    double varxxp = 0.0;
+                    double varyyp = 0.0;
+                    double meanxxp = 0.0;
+                    double meanyxp = 0.0;
+                    double meanxyp = 0.0;
+                    double meanyyp = 0.0;
+
+                    int na = 0;
+                    int nb = 0;
+
+                    for (int k = 0; k < n; k++) {
+                        if (x[k] > 0) {
+                            varxxp += x[k] * x[k];
+                            meanxxp += x[k];
+                            meanyxp += y[k];
+                            na++;
+                        }
+
+                        if (y[k] > 0) {
+                            varyyp += x[k] * x[k];
+                            meanxyp += x[k];
+                            meanyyp += y[k];
+                            nb++;
+                        }
+                    }
+
+                    varxxp /= na;
+                    varyyp /= nb;
+                    meanxxp /= na;
+                    meanyxp /= na;
+                    meanxyp /= nb;
+                    meanyyp /= nb;
+
+                    double[] hxp = new double[n];
+                    double[] hyp = new double[n];
+
+                    for (int k = 0; k < n; k++) {
+                        if (x[k] > 0) {
+                            hxp[k] = ((x[k] - meanxxp) * (y[k] - meanyxp)) / sqrt(varxxp * varyyp);
+                        }
+
+                        if (y[k] > 0) {
+                            hyp[k] = ((x[k] - meanxyp) * (y[k] - meanyyp)) / sqrt(varxxp * varyyp);
+                        }
+                    }
+
+                    hxp = nonzero(hxp);
+                    double thxp = mean(hxp) / (sd(hxp) / sqrt(hxp.length));
+
+                    hyp = nonzero(hyp);
+                    double thyp = mean(hyp) / (sd(hyp) / sqrt(hyp.length));
+
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (sameSignCondition) {
+                    }
+                    else if (sameSignCondition) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -211,33 +254,19 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(th) <= T) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
+                    }
+                    else if (abs(thxp) > T && abs(thyp) > T) {
+                        graph.addDirectedEdge(X, Y);
+                        graph.addDirectedEdge(Y, X);
                     } else if (R2 < 0) {
                         graph.addDirectedEdge(X, Y);
                     } else if (R1 < 0) {
                         graph.addDirectedEdge(Y, X);
-                    } else {
+                    }
+                    else {
                         graph.addUndirectedEdge(X, Y);
                     }
                 }
-//                else if (abs(c1 - c2) > .25) {
-//                    Edge edge1 = Edges.directedEdge(X, Y);
-//                    Edge edge2 = Edges.directedEdge(Y, X);
-//
-//                    edge1.setLineColor(Color.RED);
-//                    edge2.setLineColor(Color.RED);
-//
-//                    graph.addEdge(edge1);
-//                    graph.addEdge(edge2);
-//                }
             }
         }
 
@@ -392,9 +421,9 @@ public final class Fang implements GraphSearch {
 
     //======================================== PRIVATE METHODS ====================================//
 
-//    private boolean isNonGaussian(int i) {
-//        return nonGaussian[i];
-//    }
+    private boolean isNonGaussian(int i) {
+        return nonGaussian[i];
+    }
 
     private double h(double x) {
         return x < 0 ? 0 : x;
