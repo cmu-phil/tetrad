@@ -122,7 +122,7 @@ public class TestFang {
         parameters.set("alpha", 13);
         parameters.set("penaltyDiscount", 3);
         parameters.set("depth", 4);
-        parameters.set("extraEdgeThreshold", .55);
+        parameters.set("extraEdgeThreshold", .5);
         parameters.set("ngAlpha", .05);
 
         parameters.set("numRandomSelections", 10);

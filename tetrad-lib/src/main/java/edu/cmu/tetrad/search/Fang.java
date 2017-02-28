@@ -224,8 +224,14 @@ public final class Fang implements GraphSearch {
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
                     } else if (abs(q1) > T && abs(q2) > T) {
-                        graph.addDirectedEdge(X, Y);
-                        graph.addDirectedEdge(Y, X);
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.GREEN);
+                        edge2.setLineColor(Color.GREEN);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
                     } else if (R2 < 0) {
                         graph.addDirectedEdge(X, Y);
                     } else if (R1 < 0) {
