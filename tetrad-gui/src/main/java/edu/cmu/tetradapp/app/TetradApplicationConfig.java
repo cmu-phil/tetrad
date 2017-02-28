@@ -68,7 +68,6 @@ public class TetradApplicationConfig {
 
         System.out.println("config file: " + path);
 
-//        String PATH = "/resources/configplay.xml";
         InputStream stream = this.getClass().getResourceAsStream(path);
         Builder builder = new Builder(true);
         try {

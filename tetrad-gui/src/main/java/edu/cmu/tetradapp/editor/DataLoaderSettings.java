@@ -71,8 +71,6 @@ import javax.swing.border.EmptyBorder;
  */
 final class DataLoaderSettings extends JPanel {
 
-    private final List<File> files;
-
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
 
@@ -114,9 +112,7 @@ final class DataLoaderSettings extends JPanel {
     private final Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
-    public DataLoaderSettings(List files) {
-        this.files = files;
-
+    public DataLoaderSettings() {
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
 
@@ -417,10 +413,7 @@ final class DataLoaderSettings extends JPanel {
         basicSettingsBox.add(firstRowVarNamesBox);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Basic Settings";
-        if (files.size() > 1) {
-            borderTitle = borderTitle + " (apply to all files)";
-        }
+        String borderTitle = "Basic Settings (apply to all files)";
         basicSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         return basicSettingsBox;
@@ -688,10 +681,7 @@ final class DataLoaderSettings extends JPanel {
         advancedSettingsBox.add(maxIntegralDiscreteBox);
          */
         // Use a titled border with 5 px inside padding - Zhou
-        String borderTitle = "Advanced Settings";
-        if (files.size() > 1) {
-            borderTitle = borderTitle + " (apply to all files)";
-        }
+        String borderTitle = "Advanced Settings (apply to all files)";
         advancedSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         return advancedSettingsBox;

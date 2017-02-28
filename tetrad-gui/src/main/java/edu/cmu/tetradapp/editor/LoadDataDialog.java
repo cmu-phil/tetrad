@@ -179,7 +179,7 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new DataLoaderSettings(loadedFiles);
+        dataLoaderSettings = new DataLoaderSettings();
 
         // Basic settings
         basicSettingsBox = dataLoaderSettings.basicSettings();
@@ -349,10 +349,7 @@ final class LoadDataDialog extends JPanel {
         fileListBox.add(addFileButton);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String fileListBoxBorderTitle = "File to load";
-        if (loadedFiles.size() > 1) {
-            fileListBoxBorderTitle = "Files (right click to remove selected file)";
-        }
+        String fileListBoxBorderTitle = "Files (right click to remove selected file)";
         fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         previewContainer.add(fileListBox);
