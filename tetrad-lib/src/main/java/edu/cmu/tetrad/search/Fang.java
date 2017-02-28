@@ -145,12 +145,6 @@ public final class Fang implements GraphSearch {
                 double c2 = covarianceOfPart(x, y, 0, 1);
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > .25) {
-                    double[] h = new double[n];
-
-                    for (int k = 0; k < n; k++) {
-                        h[k] = h(x[k]) * y[k] - x[k] * h(y[k]);
-                    }
-
                     double[] xpx = new double[n];
                     double[] xpy = new double[n];
                     double[] ypx = new double[n];
@@ -178,9 +172,6 @@ public final class Fang implements GraphSearch {
                     double R1 = signum(c) * (cpx - cpy);
                     double R2 = signum(c) * (cpy - cpx);
 
-                    h = nonzero(h);
-                    double th = mean(h) / (sd(h) / sqrt(h.length));
-
                     double c3 = covarianceOfPart(x, y, -1, 0);
                     double c4 = covarianceOfPart(x, y, 0, -1);
 
@@ -188,64 +179,41 @@ public final class Fang implements GraphSearch {
                             !(signum(c) == signum(c1) && signum(c) == signum(c3))
                                     && !(signum(c) == signum(c2) && signum(c) == signum(c4));
 
+                    double covxp = 0.0;
+                    double covyp = 0.0;
                     double varxxp = 0.0;
                     double varyyp = 0.0;
-                    double meanxxp = 0.0;
-                    double meanyxp = 0.0;
-                    double meanxyp = 0.0;
-                    double meanyyp = 0.0;
 
                     int na = 0;
                     int nb = 0;
 
                     for (int k = 0; k < n; k++) {
                         if (x[k] > 0) {
+                            covxp += x[k] * y[k];
                             varxxp += x[k] * x[k];
-                            meanxxp += x[k];
-                            meanyxp += y[k];
                             na++;
                         }
 
                         if (y[k] > 0) {
+                            covyp += x[k] * y[k];
                             varyyp += x[k] * x[k];
-                            meanxyp += x[k];
-                            meanyyp += y[k];
                             nb++;
                         }
                     }
 
+                    covxp /= na;
+                    covyp /= nb;
                     varxxp /= na;
                     varyyp /= nb;
-                    meanxxp /= na;
-                    meanyxp /= na;
-                    meanxyp /= nb;
-                    meanyyp /= nb;
 
-                    double[] hxp = new double[n];
-                    double[] hyp = new double[n];
-
-                    for (int k = 0; k < n; k++) {
-                        if (x[k] > 0) {
-                            hxp[k] = ((x[k] - meanxxp) * (y[k] - meanyxp)) / sqrt(varxxp * varyyp);
-                        }
-
-                        if (y[k] > 0) {
-                            hyp[k] = ((x[k] - meanxyp) * (y[k] - meanyyp)) / sqrt(varxxp * varyyp);
-                        }
-                    }
-
-                    hxp = nonzero(hxp);
-                    double thxp = mean(hxp) / (sd(hxp) / sqrt(hxp.length));
-
-                    hyp = nonzero(hyp);
-                    double thyp = mean(hyp) / (sd(hyp) / sqrt(hyp.length));
+                    double q1 = covxp / varxxp;
+                    double q2 = covyp / varyyp;
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    }
-                    else if (sameSignCondition) {
+                    } else if (sameSignCondition) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -254,16 +222,14 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    }
-                    else if (abs(thxp) > T && abs(thyp) > T) {
+                    } else if (abs(q1) > T && abs(q2) > T) {
                         graph.addDirectedEdge(X, Y);
                         graph.addDirectedEdge(Y, X);
                     } else if (R2 < 0) {
                         graph.addDirectedEdge(X, Y);
                     } else if (R1 < 0) {
                         graph.addDirectedEdge(Y, X);
-                    }
-                    else {
+                    } else {
                         graph.addUndirectedEdge(X, Y);
                     }
                 }

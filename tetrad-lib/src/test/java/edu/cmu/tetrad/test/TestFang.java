@@ -120,9 +120,9 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("alpha", 13);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 3);
         parameters.set("depth", 4);
-        parameters.set("extraEdgeThreshold", 13);
+        parameters.set("extraEdgeThreshold", .55);
         parameters.set("ngAlpha", .05);
 
         parameters.set("numRandomSelections", 10);
@@ -169,7 +169,7 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_amp"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure5_contr"));
-//
+
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Structure2_amp_c4"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
