@@ -166,11 +166,12 @@ public final class Fang implements GraphSearch {
                         }
                     }
 
+                    double c = covariance(x, y);
                     double cpx = (nxp / (double) n) * covariance(xpx, xpy);
                     double cpy = (nyp / (double) n) * covariance(ypx, ypy);
-                    double c = covariance(x, y);
-                    double R1 = signum(c) * (cpx - cpy);
-                    double R2 = signum(c) * (cpy - cpx);
+
+                    double R1 = c * (cpx - cpy);
+                    double R2 = c * (cpy - cpx);
 
                     double c3 = covarianceOfPart(x, y, -1, 0);
                     double c4 = covarianceOfPart(x, y, 0, -1);
