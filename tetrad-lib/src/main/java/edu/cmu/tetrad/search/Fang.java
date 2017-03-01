@@ -28,6 +28,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.allPathsFromTo;
 import static edu.cmu.tetrad.util.StatUtils.covariance;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
@@ -130,7 +131,17 @@ public final class Fang implements GraphSearch {
                 int na = 0;
                 int nb = 0;
 
+                LOOP:
                 for (int k = 0; k < n; k++) {
+                    List<List<Node>> paths = GraphUtils.allPathsFromTo(graph, X, Y, 3);
+
+                    for (List<Node> path : paths) {
+                        if (path.size() < 3) continue;
+                        Node Z = path.get(0);
+                        int index = variables.indexOf(Z);
+                        if (colData[i][index] < 0) continue LOOP;
+                    }
+
                     if (x[k] > 0) {
                         covxp += x[k] * y[k];
                         varxxp += x[k] * x[k];

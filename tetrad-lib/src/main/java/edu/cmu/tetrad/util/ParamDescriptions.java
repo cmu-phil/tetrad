@@ -153,7 +153,7 @@ public class ParamDescriptions {
 
         put("maxCoef", new ParamDescription(
                 "If coefficients for X->Y are both bounded below by this number, a 2-cycle will be oriented",
-                .25, 0.0, Double.MAX_VALUE));
+                .5, 0.0, Double.MAX_VALUE));
 
         put("ngAlpha", new ParamDescription(
                 "Alpha for testing non-Gaussianity",
