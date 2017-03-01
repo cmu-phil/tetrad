@@ -151,8 +151,8 @@ public class ParamDescriptions {
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
 
-        put("extraEdgeThreshold", new ParamDescription(
-                "Threshold for adding in control two-cycles removed by conditional independence tests",
+        put("maxCoef", new ParamDescription(
+                "If coefficients for X->Y are both bounded below by this number, a 2-cycle will be oriented",
                 .25, 0.0, Double.MAX_VALUE));
 
         put("ngAlpha", new ParamDescription(

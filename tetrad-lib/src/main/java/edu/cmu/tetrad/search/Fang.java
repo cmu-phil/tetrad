@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.covariance;
-import static edu.cmu.tetrad.util.StatUtils.mean;
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.signum;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -48,27 +48,17 @@ public final class Fang implements GraphSearch {
     // number of records.
     private List<DataSet> dataSets = null;
 
-    // nonGaussian[i] is true iff the i'th variable is judged non-Gaussian by the
-    // Anderson-Darling test.
-    private boolean[] nonGaussian;
-
     // For the Fast Adjacency Search.
     private int depth = -1;
 
     // For the SEM BIC score, for the Fast Adjacency Search.
     private double penaltyDiscount = 1;
 
-    // For the T tests of equality and the Anderson-Darling tests.
-    private double alpha = 0.05;
+    // The maximum coefficient expected in the data.
+    private double maxCoef = 1.0;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
-
-    // The maximum coefficient expected in the data.
-    private double extraEdgeThreshold = 1.0;
-
-    // The alpha for testing non-Gaussianity (Anderson Darling test).
-    private double ngAlpha = 0.05;
 
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
@@ -112,15 +102,8 @@ public final class Fang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-        nonGaussian = new boolean[colData.length];
-
-        for (int i = 0; i < colData.length; i++) {
-            final double p = new AndersonDarlingTest(colData[i]).getP();
-            nonGaussian[i] = Double.isInfinite(p) || p < ngAlpha;
-        }
-
         final int n = dataSet.getNumRows();
-        double T = extraEdgeThreshold;//new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
+        double minCoef = maxCoef;//new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
 
         FasStableConcurrent fas = new FasStableConcurrent(null, test);
         fas.setDepth(getDepth());
@@ -136,15 +119,40 @@ public final class Fang implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
-                boolean ng = isNonGaussian(i) && isNonGaussian(j);
-
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = covarianceOfPart(x, y, 1, 0);
-                double c2 = covarianceOfPart(x, y, 0, 1);
+                double covxp = 0.0;
+                double covyp = 0.0;
+                double varxxp = 0.0;
+                double varyyp = 0.0;
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > .25) {
+                int na = 0;
+                int nb = 0;
+
+                for (int k = 0; k < n; k++) {
+                    if (x[k] > 0) {
+                        covxp += x[k] * y[k];
+                        varxxp += x[k] * x[k];
+                        na++;
+                    }
+
+                    if (y[k] > 0) {
+                        covyp += x[k] * y[k];
+                        varyyp += x[k] * x[k];
+                        nb++;
+                    }
+                }
+
+                covxp /= na;
+                covyp /= nb;
+                varxxp /= na;
+                varyyp /= nb;
+
+                double q1 = covxp / varxxp;
+                double q2 = covyp / varyyp;
+
+                if (G0.isAdjacentTo(X, Y) || abs(q1 - q2) > 0.25) {
                     double[] xpx = new double[n];
                     double[] xpy = new double[n];
                     double[] ypx = new double[n];
@@ -173,42 +181,14 @@ public final class Fang implements GraphSearch {
                     double R1 = c * (cpx - cpy);
                     double R2 = c * (cpy - cpx);
 
+                    double c1 = covarianceOfPart(x, y, 1, 0);
+                    double c2 = covarianceOfPart(x, y, 0, 1);
                     double c3 = covarianceOfPart(x, y, -1, 0);
                     double c4 = covarianceOfPart(x, y, 0, -1);
 
                     final boolean sameSignCondition =
                             !(signum(c) == signum(c1) && signum(c) == signum(c3))
                                     && !(signum(c) == signum(c2) && signum(c) == signum(c4));
-
-                    double covxp = 0.0;
-                    double covyp = 0.0;
-                    double varxxp = 0.0;
-                    double varyyp = 0.0;
-
-                    int na = 0;
-                    int nb = 0;
-
-                    for (int k = 0; k < n; k++) {
-                        if (x[k] > 0) {
-                            covxp += x[k] * y[k];
-                            varxxp += x[k] * x[k];
-                            na++;
-                        }
-
-                        if (y[k] > 0) {
-                            covyp += x[k] * y[k];
-                            varyyp += x[k] * x[k];
-                            nb++;
-                        }
-                    }
-
-                    covxp /= na;
-                    covyp /= nb;
-                    varxxp /= na;
-                    varyyp /= nb;
-
-                    double q1 = covxp / varxxp;
-                    double q2 = covyp / varyyp;
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -223,7 +203,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(q1) > T && abs(q2) > T) {
+                    } else if (abs(q1) > minCoef && abs(q2) > minCoef) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -326,23 +306,6 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @return The alpha value used for T tests of equality and non-Gaussianity tests,
-     * by default 0.05.
-     */
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * @param alpha The alpha value used for T tests of equality and non-Gaussianity tests.
-     *              The default is 0.05. The test used for non-Gaussianity is the Anderson-
-     *              Darling test.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
      * @return Returns the penalty discount used for the adjacency search. The default is 1,
      * though a higher value is recommended, say, 2, 3, or 4.
      */
@@ -377,52 +340,13 @@ public final class Fang implements GraphSearch {
      * The maximum coefficient expected, in absoluate value. Coefficients outside this range will be considered to
      * imply 2-cycles.
      *
-     * @param extraEdgeThreshold This threshold, default 10.
+     * @param maxCoef This threshold, default 10.
      */
-    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
-        this.extraEdgeThreshold = extraEdgeThreshold;
-    }
-
-    /**
-     * The alpha for testing non-Gaussianity.
-     *
-     * @param ngAlpha This alpha, default 0.05.
-     */
-    public void setNgAlpha(double ngAlpha) {
-        this.ngAlpha = ngAlpha;
+    public void setMaxCoef(double maxCoef) {
+        this.maxCoef = maxCoef;
     }
 
     //======================================== PRIVATE METHODS ====================================//
-
-    private boolean isNonGaussian(int i) {
-        return nonGaussian[i];
-    }
-
-    private double h(double x) {
-        return x < 0 ? 0 : x;
-    }
-
-//    private double g(double x) {
-//        return log(cosh(max(0, x)));
-//    }
-
-    private static double sd(double array[]) {
-        return Math.pow(ssx(array, array.length) / (array.length - 1), .5);
-    }
-
-    private static double ssx(double array[], int N) {
-        int i;
-        double difference;
-        double meanValue = mean(array, N);
-        double sum = 0.0;
-
-        for (i = 0; i < N; i++) {
-            difference = array[i] - meanValue;
-            sum += difference * difference;
-        }
-
-        return sum;
-    }
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
