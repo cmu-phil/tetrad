@@ -104,9 +104,8 @@ public final class Fang implements GraphSearch {
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
         final int n = dataSet.getNumRows();
-        double minCoef = maxCoef;//new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
 
-        FasStableConcurrent fas = new FasStableConcurrent(null, test);
+        FasStableConcurrent fas = new FasStableConcurrent(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setKnowledge(knowledge);
@@ -204,7 +203,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(q1) > minCoef && abs(q2) > minCoef) {
+                    } else if (abs(q1) > maxCoef && abs(q2) > maxCoef) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
