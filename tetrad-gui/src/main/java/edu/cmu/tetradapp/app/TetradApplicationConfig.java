@@ -25,10 +25,10 @@ import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.ParameterEditor;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.prefs.Preferences;
 import javax.swing.*;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -58,17 +58,29 @@ public class TetradApplicationConfig {
      * Constructs the configuration.
      */
     private TetradApplicationConfig() {
-        String path;
+        // Tetrad-Gui properties file, use absolute path with leading "/"
+        InputStream tetradGuiPropertiesStream = this.getClass().getResourceAsStream("/tetrad-gui.properties");
 
-        if (Preferences.userRoot().getBoolean("experimental", false)) {
-            path = "/resources/configplay.xml";
-        } else {
-            path = "/resources/configpost.xml";
+        Properties tetradGuiProperties = new Properties();
+
+        try {
+            tetradGuiProperties.load(tetradGuiPropertiesStream);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Could not load tetrad-gui.properties file", ex);
         }
 
-        System.out.println("config file: " + path);
+        try {
+            tetradGuiPropertiesStream.close();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Could not close the tetradGuiPropertiesStream", ex);
+        }
 
-        InputStream stream = this.getClass().getResourceAsStream(path);
+        // Load different config xml files based config setting - development or production- Zhou
+        String configXml = tetradGuiProperties.getProperty("tetrad-gui.config");
+
+        System.out.println("config file: " + configXml);
+
+        InputStream stream = this.getClass().getResourceAsStream(configXml);
         Builder builder = new Builder(true);
         try {
             Document doc = builder.build(stream);
