@@ -119,12 +119,12 @@ public class TestFang {
     public void TestRuben() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("penaltyDiscount", 3);
         parameters.set("depth", -1);
         parameters.set("maxCoef", .55);
 
         parameters.set("numRandomSelections", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 2);
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
