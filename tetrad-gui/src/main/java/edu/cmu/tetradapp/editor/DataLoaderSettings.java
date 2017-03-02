@@ -84,6 +84,7 @@ final class DataLoaderSettings extends JPanel {
     private StringTextField commentStringField;
 
     private JRadioButton commaDelimiterRadioButton;
+    private JRadioButton singleCharDelimiterRadioButton;
     private JRadioButton whitespaceDelimiterRadioButton;
     // Remove tab once Kevin's done with the whitespace changes in validation and reader
     private JRadioButton tabDelimiterRadioButton;
@@ -285,17 +286,23 @@ final class DataLoaderSettings extends JPanel {
         Box valueDelimiterBox = Box.createHorizontalBox();
 
         // Value Delimiter
-        commaDelimiterRadioButton = new JRadioButton("Comma");
         whitespaceDelimiterRadioButton = new JRadioButton("Whitespace");
-        tabDelimiterRadioButton = new JRadioButton("Tab (to be removed)");
+        singleCharDelimiterRadioButton = new JRadioButton("Single character");
+
+        // Dropdown options for commo box
+        String[] singleCharDelimiterOptions = {"Comma", "Tab", "Space", "Pipe"};
+
+        //Create the combo box
+        JComboBox singleCharDelimiterComboBox = new JComboBox(singleCharDelimiterOptions);
+        // select first item by default, index starts at 0
+        singleCharDelimiterComboBox.setSelectedIndex(0);
 
         ButtonGroup delimiterBtnGrp = new ButtonGroup();
-        delimiterBtnGrp.add(commaDelimiterRadioButton);
         delimiterBtnGrp.add(whitespaceDelimiterRadioButton);
-        delimiterBtnGrp.add(tabDelimiterRadioButton);
+        delimiterBtnGrp.add(singleCharDelimiterRadioButton);
 
-        // Defaults to comma
-        commaDelimiterRadioButton.setSelected(true);
+        // Defaults to whitespace
+        whitespaceDelimiterRadioButton.setSelected(true);
 
         // Add label into this label box to size
         Box valueDelimiterLabelBox = Box.createHorizontalBox();
@@ -310,23 +317,18 @@ final class DataLoaderSettings extends JPanel {
         // Option 1
         Box valueDelimiterOption1Box = Box.createHorizontalBox();
         valueDelimiterOption1Box.setPreferredSize(new Dimension(200, 30));
-        valueDelimiterOption1Box.add(commaDelimiterRadioButton);
+        valueDelimiterOption1Box.add(whitespaceDelimiterRadioButton);
 
         // Option 2
         Box valueDelimiterOption2Box = Box.createHorizontalBox();
         valueDelimiterOption2Box.setPreferredSize(new Dimension(200, 30));
-        valueDelimiterOption2Box.add(whitespaceDelimiterRadioButton);
-
-        // Option 3, Tab, will be removed later
-        Box valueDelimiterOption3Box = Box.createHorizontalBox();
-        valueDelimiterOption3Box.setPreferredSize(new Dimension(200, 30));
-        valueDelimiterOption3Box.add(tabDelimiterRadioButton);
+        valueDelimiterOption2Box.add(singleCharDelimiterRadioButton);
+        valueDelimiterOption2Box.add(singleCharDelimiterComboBox);
 
         valueDelimiterBox.add(valueDelimiterLabelBox);
         valueDelimiterBox.add(Box.createRigidArea(new Dimension(10, 1)));
         valueDelimiterBox.add(valueDelimiterOption1Box);
         valueDelimiterBox.add(valueDelimiterOption2Box);
-        valueDelimiterBox.add(valueDelimiterOption3Box);
         valueDelimiterBox.add(Box.createHorizontalGlue());
 
         basicSettingsBox.add(valueDelimiterBox);
