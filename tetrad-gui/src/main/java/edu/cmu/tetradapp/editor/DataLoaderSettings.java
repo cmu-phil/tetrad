@@ -289,6 +289,7 @@ final class DataLoaderSettings extends JPanel {
 
         //Create the combo box
         singleCharDelimiterComboBox = new JComboBox(singleCharDelimiterOptions);
+        singleCharDelimiterComboBox.setMaximumSize(new Dimension(90, 30));
         // select first item by default, index starts at 0
         singleCharDelimiterComboBox.setSelectedIndex(0);
 
@@ -328,7 +329,8 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 2
         Box valueDelimiterOption2Box = Box.createHorizontalBox();
-        valueDelimiterOption2Box.setPreferredSize(new Dimension(200, 30));
+        // Make this box wider so we can see the combo box - Zhou
+        valueDelimiterOption2Box.setPreferredSize(new Dimension(300, 30));
         valueDelimiterOption2Box.add(singleCharDelimiterRadioButton);
         valueDelimiterOption2Box.add(singleCharDelimiterComboBox);
 
