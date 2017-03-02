@@ -103,13 +103,12 @@ final class DataLoaderSettings extends JPanel {
 
     private final Color separatorColor;
 
-    /* Hide for now - Zhou
     private JRadioButton missingValueBlankRadioButton;
     private JRadioButton missingValueStarRadioButton;
     private JRadioButton missingValueQuestionRadioButton;
     private JRadioButton missingValueOtherRadioButton;
     private StringTextField missingStringField;
-     */
+
     private final Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
@@ -616,18 +615,14 @@ final class DataLoaderSettings extends JPanel {
 
         advancedSettingsBox.add(Box.createVerticalStrut(5));
 
-        /* Hide missing value marker for now - Zhou
-
         //  Missing value marker
         Box missingValueMarkerBox = Box.createHorizontalBox();
 
-        missingValueBlankRadioButton = new JRadioButton("Blank");
         missingValueStarRadioButton = new JRadioButton("*");
         missingValueQuestionRadioButton = new JRadioButton("?");
         missingValueOtherRadioButton = new JRadioButton("Other: ");
 
         ButtonGroup missingValueMarkerBtnGrp = new ButtonGroup();
-        missingValueMarkerBtnGrp.add(missingValueBlankRadioButton);
         missingValueMarkerBtnGrp.add(missingValueStarRadioButton);
         missingValueMarkerBtnGrp.add(missingValueQuestionRadioButton);
         missingValueMarkerBtnGrp.add(missingValueOtherRadioButton);
@@ -636,23 +631,43 @@ final class DataLoaderSettings extends JPanel {
         missingStringField = new StringTextField("", 6);
         missingStringField.setText("Missing");
 
-        // Blank is selected as the default
-        missingValueBlankRadioButton.setSelected(true);
+        // * is selected as the default
+        missingValueStarRadioButton.setSelected(true);
 
-        missingValueMarkerBox.add(new JLabel("Missing value marker:"));
+        // Option 1
+        Box missingValueMarkerOption1Box = Box.createHorizontalBox();
+        missingValueMarkerOption1Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption1Box.add(missingValueStarRadioButton);
+
+        // Option 2
+        Box missingValueMarkerOption2Box = Box.createHorizontalBox();
+        missingValueMarkerOption2Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption2Box.add(missingValueQuestionRadioButton);
+
+        // Option 3
+        Box missingValueMarkerOption3Box = Box.createHorizontalBox();
+        missingValueMarkerOption3Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption3Box.add(missingValueOtherRadioButton);
+        missingValueMarkerOption3Box.add(missingStringField);
+
+        // Add label into this label box to size
+        Box missingValueMarkerLabelBox = Box.createHorizontalBox();
+        missingValueMarkerLabelBox.setPreferredSize(labelSize);
+        missingValueMarkerLabelBox.add(new JLabel("Missing value marker:"));
+
+        missingValueMarkerBox.add(missingValueMarkerLabelBox);
         missingValueMarkerBox.add(Box.createRigidArea(new Dimension(10, 1)));
-        missingValueMarkerBox.add(missingValueBlankRadioButton);
-        missingValueMarkerBox.add(missingValueStarRadioButton);
-        missingValueMarkerBox.add(missingValueQuestionRadioButton);
-        missingValueMarkerBox.add(missingValueOtherRadioButton);
-        missingValueMarkerBox.add(missingStringField);
+        missingValueMarkerBox.add(missingValueMarkerOption1Box);
+        missingValueMarkerBox.add(missingValueMarkerOption2Box);
+        missingValueMarkerBox.add(missingValueMarkerOption3Box);
         missingValueMarkerBox.add(Box.createHorizontalGlue());
+
         advancedSettingsBox.add(missingValueMarkerBox);
 
         advancedSettingsBox.add(Box.createVerticalStrut(5));
-         */
 
- /* Hide this since mixed data is not ready - Zhou
+
+        /* Hide this since mixed data is not ready - Zhou
 
         // Max number of disc columns
         Box maxIntegralDiscreteBox = Box.createHorizontalBox();

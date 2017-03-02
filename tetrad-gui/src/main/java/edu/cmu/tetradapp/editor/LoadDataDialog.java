@@ -174,7 +174,7 @@ final class LoadDataDialog extends JPanel {
         // contains data preview panel, loading params panel, and load button
         container = Box.createVerticalBox();
         // Must set the size of container, otherwise validationResultsContainer gets shrinked
-        container.setPreferredSize(new Dimension(900, 560));
+        container.setPreferredSize(new Dimension(900, 590));
 
         // Data loading params
         // The data loading params apply to all slected files
