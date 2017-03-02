@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
@@ -83,11 +82,9 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton commentOtherRadioButton;
     private StringTextField commentStringField;
 
-    private JRadioButton commaDelimiterRadioButton;
-    private JRadioButton singleCharDelimiterRadioButton;
     private JRadioButton whitespaceDelimiterRadioButton;
-    // Remove tab once Kevin's done with the whitespace changes in validation and reader
-    private JRadioButton tabDelimiterRadioButton;
+    private JRadioButton singleCharDelimiterRadioButton;
+    private JComboBox singleCharDelimiterComboBox;
 
     private JRadioButton noneQuoteRadioButton;
     private JRadioButton doubleQuoteRadioButton;
@@ -103,7 +100,6 @@ final class DataLoaderSettings extends JPanel {
 
     private final Color separatorColor;
 
-    private JRadioButton missingValueBlankRadioButton;
     private JRadioButton missingValueStarRadioButton;
     private JRadioButton missingValueQuestionRadioButton;
     private JRadioButton missingValueOtherRadioButton;
@@ -286,13 +282,13 @@ final class DataLoaderSettings extends JPanel {
 
         // Value Delimiter
         whitespaceDelimiterRadioButton = new JRadioButton("Whitespace");
-        singleCharDelimiterRadioButton = new JRadioButton("Single character");
+        singleCharDelimiterRadioButton = new JRadioButton("Single character: ");
 
         // Dropdown options for commo box
         String[] singleCharDelimiterOptions = {"Comma", "Tab", "Space", "Pipe"};
 
         //Create the combo box
-        JComboBox singleCharDelimiterComboBox = new JComboBox(singleCharDelimiterOptions);
+        singleCharDelimiterComboBox = new JComboBox(singleCharDelimiterOptions);
         // select first item by default, index starts at 0
         singleCharDelimiterComboBox.setSelectedIndex(0);
 
@@ -302,6 +298,18 @@ final class DataLoaderSettings extends JPanel {
 
         // Defaults to whitespace
         whitespaceDelimiterRadioButton.setSelected(true);
+
+        // Event listener
+        // ComboBox is actually a container
+        singleCharDelimiterComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                // Select the "Single character:" radio button when users click the combo box
+                if (!singleCharDelimiterRadioButton.isSelected()) {
+                    singleCharDelimiterRadioButton.setSelected(true);
+                }
+            }
+        });
 
         // Add label into this label box to size
         Box valueDelimiterLabelBox = Box.createHorizontalBox();
@@ -613,7 +621,10 @@ final class DataLoaderSettings extends JPanel {
 
         advancedSettingsBox.add(quoteCharBox);
 
-        advancedSettingsBox.add(Box.createVerticalStrut(5));
+        // Add seperator line
+        JSeparator separator3 = new JSeparator(SwingConstants.HORIZONTAL);
+        separator3.setForeground(separatorColor);
+        advancedSettingsBox.add(separator3);
 
         //  Missing value marker
         Box missingValueMarkerBox = Box.createHorizontalBox();
@@ -629,7 +640,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Missing string field: other
         missingStringField = new StringTextField("", 6);
-        missingStringField.setText("Missing");
+        missingStringField.setText("");
 
         // * is selected as the default
         missingValueStarRadioButton.setSelected(true);
@@ -717,33 +728,26 @@ final class DataLoaderSettings extends JPanel {
     }
 
     /**
-     * Convert string delimiter to char
+     * Get delimiter character
      *
-     * Joe's DelimiterType uses string, while Kevin's data reader takes char
-     *
-     * @param delimiterType
      * @return
      */
-    private char getDelimiterTypeChar(DelimiterType delimiterType) {
-        switch (delimiterType.toString()) {
-            case "Comma":
-                return ',';
-            case "Whitespace":
-                return ' ';
-            case "Tab":
-                return '\t';
-            default:
-                throw new IllegalArgumentException("Unexpected Value delimiter selection.");
-        }
-    }
+    private char getDelimiterTypeChar() {
+        if (whitespaceDelimiterRadioButton.isSelected()) {
+            return ' ';
+        } else if (singleCharDelimiterRadioButton.isSelected()) {
+            String singleCharDelimiter = singleCharDelimiterComboBox.getSelectedItem().toString();
 
-    private DelimiterType getDelimiterType() {
-        if (commaDelimiterRadioButton.isSelected()) {
-            return DelimiterType.COMMA;
-        } else if (whitespaceDelimiterRadioButton.isSelected()) {
-            return DelimiterType.WHITESPACE;
-        } else if (tabDelimiterRadioButton.isSelected()) {
-            return DelimiterType.TAB;
+            switch (singleCharDelimiter) {
+                case "Comma":
+                    return ',';
+                case "Space":
+                    return ' ';
+                case "Tab":
+                    return '\t';
+                default:
+                    throw new IllegalArgumentException("Unexpected Value delimiter selection.");
+            }
         } else {
             throw new IllegalArgumentException("Unexpected Value delimiter selection.");
         }
@@ -786,8 +790,7 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
-    /* Hide for now - Zhou
-    private String getMissingValue() {
+    private String getMissingValueMarker() {
         if (missingValueStarRadioButton.isSelected()) {
             return "*";
         } else if (missingValueQuestionRadioButton.isSelected()) {
@@ -796,7 +799,7 @@ final class DataLoaderSettings extends JPanel {
             return missingStringField.getText();
         }
     }
-     */
+
     /**
      * Validate each file based on the specified settings
      *
@@ -804,7 +807,7 @@ final class DataLoaderSettings extends JPanel {
      * @return
      */
     public DataValidation validateDataWithSettings(File file) {
-        char delimiter = getDelimiterTypeChar(getDelimiterType());
+        char delimiter = getDelimiterTypeChar();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
 
@@ -884,7 +887,7 @@ final class DataLoaderSettings extends JPanel {
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel = null;
 
-        char delimiter = getDelimiterTypeChar(getDelimiterType());
+        char delimiter = getDelimiterTypeChar();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
 
