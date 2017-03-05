@@ -167,8 +167,7 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    }
-                    else if (!(signum(c) == signum(c1) && signum(c) == signum(c3))
+                    } else if (!(signum(c) == signum(c1) && signum(c) == signum(c3))
                             && !(signum(c) == signum(c2) && signum(c) == signum(c4))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
@@ -178,8 +177,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    }
-                    else if ((abs(q1) > 0.5 && abs(q2) > 0.5) || signum(q1) == -signum(q2)) {
+                    } else if ((abs(q1) > 0.5 && abs(q2) > 0.5)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -215,20 +213,16 @@ public final class Fang implements GraphSearch {
             if (q == 0 && s == 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            }
-            else if (q == 1 && s == 0 && xData[i] > 0) {
+            } else if (q == 1 && s == 0 && xData[i] > 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            }
-            else if (q == 0 && s == 1 && yData[i] > 0) {
+            } else if (q == 0 && s == 1 && yData[i] > 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            }
-            else if (q == -1 && s == 0 && xData[i] < 0) {
+            } else if (q == -1 && s == 0 && xData[i] < 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
-            }
-            else if (q == 0 && s == -1 && yData[i] < 0) {
+            } else if (q == 0 && s == -1 && yData[i] < 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
             }
