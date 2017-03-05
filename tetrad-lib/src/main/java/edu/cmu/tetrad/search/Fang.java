@@ -28,7 +28,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.allPathsFromTo;
 import static edu.cmu.tetrad.util.StatUtils.covariance;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
@@ -54,9 +53,6 @@ public final class Fang implements GraphSearch {
 
     // For the SEM BIC score, for the Fast Adjacency Search.
     private double penaltyDiscount = 1;
-
-    // The maximum coefficient expected in the data.
-    private double maxCoef = 1.0;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
@@ -103,8 +99,6 @@ public final class Fang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-        final int n = dataSet.getNumRows();
-
         FasStableConcurrent fas = new FasStableConcurrent(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
@@ -119,82 +113,63 @@ public final class Fang implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
-                final double[] x = colData[i];
-                final double[] y = colData[j];
+                int n = colData[i].length;
 
-                double covxp = 0.0;
-                double covyp = 0.0;
-                double varxxp = 0.0;
-                double varyyp = 0.0;
+                final double[] x = new double[n];
+                final double[] y = new double[n];
+
+                for (int k = 0; k < n; k++) {
+                    x[k] = colData[i][k];
+                    y[k] = colData[j][k];
+                }
+
+                double sxyxp = 0.0;
+                double sxyyp = 0.0;
+                double sxxxp = 0.0;
+                double syyyp = 0.0;
 
                 int na = 0;
                 int nb = 0;
 
                 for (int k = 0; k < n; k++) {
                     if (x[k] > 0) {
-                        covxp += x[k] * y[k];
-                        varxxp += x[k] * x[k];
+                        sxyxp += x[k] * y[k];
+                        sxxxp += x[k] * x[k];
                         na++;
                     }
 
                     if (y[k] > 0) {
-                        covyp += x[k] * y[k];
-                        varyyp += x[k] * x[k];
+                        sxyyp += x[k] * y[k];
+                        syyyp += y[k] * y[k];
                         nb++;
                     }
                 }
 
-                covxp /= na;
-                covyp /= nb;
-                varxxp /= na;
-                varyyp /= nb;
+                sxyxp /= na;
+                sxyyp /= nb;
+                sxxxp /= na;
+                syyyp /= nb;
 
-                double q1 = covxp / varxxp;
-                double q2 = covyp / varyyp;
+                double q1 = sxyxp / sxxxp;
+                double q2 = sxyyp / syyyp;
 
-                if (G0.isAdjacentTo(X, Y) || abs(q1 - q2) > 0.25) {
-                    double[] xpx = new double[n];
-                    double[] xpy = new double[n];
-                    double[] ypx = new double[n];
-                    double[] ypy = new double[n];
-                    int nxp = 0;
-                    int nyp = 0;
 
-                    for (int k = 0; k < n; k++) {
-                        if (x[k] > (double) 0) {
-                            xpx[k] = x[k];
-                            xpy[k] = y[k];
-                            nxp++;
-                        }
-
-                        if (y[k] > (double) 0) {
-                            ypx[k] = x[k];
-                            ypy[k] = y[k];
-                            nyp++;
-                        }
-                    }
-
-                    double c = covariance(x, y);
-                    double cpx = (nxp / (double) n) * covariance(xpx, xpy);
-                    double cpy = (nyp / (double) n) * covariance(ypx, ypy);
-
-                    double R1 = c * (cpx - cpy);
-                    double R2 = c * (cpy - cpx);
-
+                if (G0.isAdjacentTo(X, Y) || ((q1 < 0.2 || q2 < 0.2) && abs(q1 - q2) > 0.2)) {
+                    double c = covarianceOfPart(x, y, 0, 0);
                     double c1 = covarianceOfPart(x, y, 1, 0);
                     double c2 = covarianceOfPart(x, y, 0, 1);
                     double c3 = covarianceOfPart(x, y, -1, 0);
                     double c4 = covarianceOfPart(x, y, 0, -1);
 
-                    final boolean sameSignCondition =
-                            !(signum(c) == signum(c1) && signum(c) == signum(c3))
-                                    && !(signum(c) == signum(c2) && signum(c) == signum(c4));
+                    double R = c * (sxyxp - sxyyp);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (sameSignCondition) {
+                    }
+                    else if (!(signum(c) == signum(c1) && signum(c) == signum(c3))
+                            && !(signum(c) == signum(c2) && signum(c) == signum(c4))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -203,7 +178,8 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(q1) > maxCoef && abs(q2) > maxCoef) {
+                    }
+                    else if ((abs(q1) > 0.5 && abs(q2) > 0.5) || signum(q1) == -signum(q2)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -212,9 +188,9 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (R2 < 0) {
+                    } else if (R > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (R1 < 0) {
+                    } else if (R < 0) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
@@ -236,22 +212,23 @@ public final class Fang implements GraphSearch {
         double[] y = new double[n];
 
         for (int i = 0; i < n; i++) {
-            if (q == 1 && xData[i] > 0) {
+            if (q == 0 && s == 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
             }
-
-            if (q == -1 && xData[i] < 0) {
+            else if (q == 1 && s == 0 && xData[i] > 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
             }
-
-            if (s == 1 && yData[i] > 0) {
+            else if (q == 0 && s == 1 && yData[i] > 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
             }
-
-            if (s == -1 && yData[i] < 0) {
+            else if (q == -1 && s == 0 && xData[i] < 0) {
+                x[i] = xData[i];
+                y[i] = yData[i];
+            }
+            else if (q == 0 && s == -1 && yData[i] < 0) {
                 x[i] = xData[i];
                 y[i] = yData[i];
             }
@@ -334,16 +311,6 @@ public final class Fang implements GraphSearch {
      */
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    /**
-     * The maximum coefficient expected, in absoluate value. Coefficients outside this range will be considered to
-     * imply 2-cycles.
-     *
-     * @param maxCoef This threshold, default 10.
-     */
-    public void setMaxCoef(double maxCoef) {
-        this.maxCoef = maxCoef;
     }
 
     //======================================== PRIVATE METHODS ====================================//
