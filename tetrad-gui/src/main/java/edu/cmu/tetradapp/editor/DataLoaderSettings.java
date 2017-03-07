@@ -286,7 +286,7 @@ final class DataLoaderSettings extends JPanel {
         singleCharDelimiterRadioButton = new JRadioButton("Single character: ");
 
         // Dropdown options for commo box
-        String[] singleCharDelimiterOptions = {"Comma", "Tab", "Space", "Pipe"};
+        String[] singleCharDelimiterOptions = {"Comma", "Colon", "Tab", "Space", "Semicolon", "Pipe"};
 
         //Create the combo box
         singleCharDelimiterComboBox = new JComboBox(singleCharDelimiterOptions);
@@ -748,6 +748,12 @@ final class DataLoaderSettings extends JPanel {
                     return Delimiter.SPACE;
                 case "Tab":
                     return Delimiter.TAB;
+                case "Colon":
+                    return Delimiter.COLON;
+                case "Semicolon":
+                    return Delimiter.SEMICOLON;
+                case "Pipe":
+                    return Delimiter.PIPE;
                 default:
                     throw new IllegalArgumentException("Unexpected Value delimiter selection.");
             }
