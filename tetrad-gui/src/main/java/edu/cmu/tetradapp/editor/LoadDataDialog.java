@@ -771,7 +771,7 @@ final class LoadDataDialog extends JPanel {
             if (!infos.isEmpty()) {
                 output = output + "<p><b>File info: </b></p>";
                 for (ValidationResult info : infos) {
-//                    // More examples of how to get attributes for customized parsing
+                    // More examples of how to get attributes for customized parsing
 //                    Object obj = info.getAttributes().get(ROW_NUMBER);
 //                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
 //                    obj = info.getAttributes().get(COLUMN_COUNT);
@@ -780,6 +780,14 @@ final class LoadDataDialog extends JPanel {
 //                    System.out.printf("numOfColumns: %d%n", numOfColumns);
 
                     output = output + "<p>" + info.getMessage() + "</p>";
+                }
+            }
+
+            // Show warning messages
+            if (!warnings.isEmpty()) {
+                output = output + "<p style=\"color: orange;\"><b>Warning: </b></p>";
+                for (ValidationResult warning : warnings) {
+                    output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
                 }
             }
 
