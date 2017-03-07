@@ -34,19 +34,20 @@ import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.CovarianceDataset;
 import edu.pitt.dbmi.data.Dataset;
+import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.validation.DataValidation;
-import edu.pitt.dbmi.data.validation.file.ContinuousTabularDataFileValidation;
-import edu.pitt.dbmi.data.validation.file.CovarianceDataFileValidation;
-import edu.pitt.dbmi.data.validation.file.DataFileValidation;
-import edu.pitt.dbmi.data.validation.file.TabularDataValidation;
-import edu.pitt.dbmi.data.validation.file.VerticalDiscreteTabularDataFileValidation;
+import edu.pitt.dbmi.data.validation.covariance.CovarianceDataFileValidation;
+import edu.pitt.dbmi.data.validation.tabular.ContinuousTabularDataFileValidation;
+import edu.pitt.dbmi.data.validation.tabular.DataFileValidation;
+import edu.pitt.dbmi.data.validation.tabular.TabularDataValidation;
+import edu.pitt.dbmi.data.validation.tabular.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -734,19 +735,19 @@ final class DataLoaderSettings extends JPanel {
      *
      * @return
      */
-    private char getDelimiterTypeChar() {
+    private Delimiter getDelimiterType() {
         if (whitespaceDelimiterRadioButton.isSelected()) {
-            return ' ';
+            return Delimiter.WHITESPACE;
         } else if (singleCharDelimiterRadioButton.isSelected()) {
             String singleCharDelimiter = singleCharDelimiterComboBox.getSelectedItem().toString();
 
             switch (singleCharDelimiter) {
                 case "Comma":
-                    return ',';
+                    return Delimiter.COMMA;
                 case "Space":
-                    return ' ';
+                    return Delimiter.SPACE;
                 case "Tab":
-                    return '\t';
+                    return Delimiter.TAB;
                 default:
                     throw new IllegalArgumentException("Unexpected Value delimiter selection.");
             }
@@ -809,9 +810,10 @@ final class DataLoaderSettings extends JPanel {
      * @return
      */
     public DataValidation validateDataWithSettings(File file) {
-        char delimiter = getDelimiterTypeChar();
+        Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
+        String missingValueMarker = getMissingValueMarker();
 
         if (tabularRadioButton.isSelected()) {
             TabularDataValidation validation = null;
@@ -830,6 +832,8 @@ final class DataLoaderSettings extends JPanel {
 
             // Set comment marker
             validation.setCommentMarker(commentMarker);
+
+            validation.setMissingValueMarker(missingValueMarker);
 
             // Set the quote character
             if (doubleQuoteRadioButton.isSelected()) {
@@ -859,6 +863,7 @@ final class DataLoaderSettings extends JPanel {
             DataFileValidation validation = new CovarianceDataFileValidation(file, delimiter);
 
             // Header in first row is required
+            // Cpvariance never has missing value marker
             // Set comment marker
             validation.setCommentMarker(commentMarker);
 
@@ -889,16 +894,17 @@ final class DataLoaderSettings extends JPanel {
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel = null;
 
-        char delimiter = getDelimiterTypeChar();
+        Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();
         String commentMarker = getCommentMarker();
+        String missingValueMarker = getMissingValueMarker();
 
         if (tabularRadioButton.isSelected()) {
             TabularDataReader dataReader = null;
 
             // Mixed data type is not supported yest- Zhou
             if (contRadioButton.isSelected()) {
-                dataReader = new ContinuousTabularDataReader(file, delimiter);
+                dataReader = new ContinuousTabularDataFileReader(file, delimiter);
             } else if (discRadioButton.isSelected()) {
                 dataReader = new VerticalDiscreteTabularDataReader(file, delimiter);
             } else {
@@ -910,6 +916,8 @@ final class DataLoaderSettings extends JPanel {
 
             // Set comment marker
             dataReader.setCommentMarker(commentMarker);
+
+            dataReader.setMissingValueMarker(missingValueMarker);
 
             // Set the quote character
             if (doubleQuoteRadioButton.isSelected()) {
