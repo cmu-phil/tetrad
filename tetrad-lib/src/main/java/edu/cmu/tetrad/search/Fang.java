@@ -31,7 +31,6 @@ import java.util.List;
 import static edu.cmu.tetrad.util.StatUtils.covariance;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
-import static java.lang.Math.sqrt;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -109,7 +108,6 @@ public final class Fang implements GraphSearch {
 
         Graph graph = new EdgeListGraph(variables);
 
-
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
                 Node X = variables.get(i);
@@ -118,18 +116,18 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double e1 = e(x, y, 1, 0) / e(x, x, 1, 0);
-                double e2 = e(x, y, 0, 1) / e(y, y, 0, 1);
+                double e1 =s(x, y, 0) / s(x, x, 0);
+                double e2 = s(x, y, 0) / s(y, y, 0);;
 
-                double p = 0.2;
+//                double p = 0.2;
                 double m = 0.5;
 
-                if (G0.isAdjacentTo(X, Y) || ((e1 < p || e2 < p) && abs(e1 - e2) > p)) {
-                    double c = s(x, y, 0, 0);
-                    double q1 = s(x, y, 1, 0);
-                    double q2 = s(y, x, 1, 0);
-                    double q3 = s(x, y, -1, 0);
-                    double q4 = s(x, y, 0, -1);
+                if (G0.isAdjacentTo(X, Y)) {// || ((e1 < p || e2 < p) && abs(e1 - e2) > p)) {
+                    double c = s(x, y, 0);
+                    double q1 = s(x, y, 1);
+                    double q2 = s(y, x, 1);
+                    double q3 = s(x, y, -1);
+                    double q4 = s(y, x, -1);
                     double R = c * (q1 - q2);
 
                     if (knowledgeOrients(X, Y)) {
@@ -171,10 +169,9 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private double s(double[] x, double[] y, int q, int s) {
+    private double s(double[] x, double[] y, int q) {
         double exy = 0.0;
         double exx = 0.0;
-        double eyy = 0.0;
 
         double ex = 0.0;
         double ey = 0.0;
@@ -182,38 +179,21 @@ public final class Fang implements GraphSearch {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (q == 0 && s == 0) {
+            if (q == 0) {
                 exy += x[k] * y[k];
                 exx += x[k] * x[k];
-                eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
                 n++;
-            } else if (q == 1 && s == 0 && x[k] > 0) {
+            } else if (q == 1 && x[k] > 0) {
                 exy += x[k] * y[k];
                 exx += x[k] * x[k];
-                eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
                 n++;
-            } else if (q == 0 && s == 1 && y[k] > 0) {
+            } else if (q == -1 && x[k] < 0) {
                 exy += x[k] * y[k];
                 exx += x[k] * x[k];
-                eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (q == -1 && s == 0 && x[k] < 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (q == 0 && s == -1 && y[k] < 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
                 n++;
@@ -222,41 +202,10 @@ public final class Fang implements GraphSearch {
 
         exy /= n;
         exx /= n;
-        eyy /= n;
         ex /= n;
         ey /= n;
 
         return (exy - ex * ey) / (exx - ex * ex);
-//        return (exy - ex * ey) / sqrt((exx - ex * ex) * (eyy - ey * ey));
-    }
-
-    private double e(double[] x, double[] y, int q, int s) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (q == 0 && s == 0) {
-                exy += x[k] * y[k];
-                n++;
-            } else if (q == 1 && s == 0 && x[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            } else if (q == 0 && s == 1 && y[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            } else if (q == -1 && s == 0 && x[k] < 0) {
-                exy += x[k] * y[k];
-                n++;
-            } else if (q == 0 && s == -1 && y[k] < 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        exy /= n;
-
-        return exy;
     }
 
     /**
