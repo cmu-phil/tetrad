@@ -109,6 +109,7 @@ public final class Fang implements GraphSearch {
 
         Graph graph = new EdgeListGraph(variables);
 
+
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
                 Node X = variables.get(i);
@@ -126,7 +127,7 @@ public final class Fang implements GraphSearch {
                 if (G0.isAdjacentTo(X, Y) || ((e1 < p || e2 < p) && abs(e1 - e2) > p)) {
                     double c = s(x, y, 0, 0);
                     double q1 = s(x, y, 1, 0);
-                    double q2 = s(x, y, 0, 1);
+                    double q2 = s(y, x, 1, 0);
                     double q3 = s(x, y, -1, 0);
                     double q4 = s(x, y, 0, -1);
                     double R = c * (q1 - q2);
@@ -225,7 +226,8 @@ public final class Fang implements GraphSearch {
         ex /= n;
         ey /= n;
 
-        return (exy - ex * ey) / sqrt((exx - ex * ex) * (eyy - ey * ey));
+        return (exy - ex * ey) / (exx - ex * ex);
+//        return (exy - ex * ey) / sqrt((exx - ex * ex) * (eyy - ey * ey));
     }
 
     private double e(double[] x, double[] y, int q, int s) {
