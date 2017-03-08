@@ -38,9 +38,20 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
+import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.io.AbstractContinuousDataReader;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -123,9 +134,8 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 3);
         parameters.set("depth", -1);
-        parameters.set("maxCoef", .50);
 
-        parameters.set("numRandomSelections", 60);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -188,8 +198,8 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Diamond"));
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new FangConcatenated());
-        algorithms.add(new CcdMax(new SemBicTest()));
+        algorithms.add(new FangConcatenated());
+//        algorithms.add(new CcdMax(new SemBicTest()));
 
         Comparison comparison = new Comparison();
 
@@ -208,7 +218,7 @@ public class TestFang {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 3);
         parameters.set("depth", -1);
 
         parameters.set("numRandomSelections", 10);
@@ -382,14 +392,13 @@ public class TestFang {
     public void TestSmith() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("maxCoef", .55);
 
-        parameters.set("numRandomSelections", 5);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
-
         parameters.set("Structure", "Placeholder");
+
 
         Statistics statistics = new Statistics();
 
@@ -536,6 +545,46 @@ public class TestFang {
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
+
+//    @Test
+//    public void loadAlexandersDataset() {
+//        String path = "/Users/jdramsey/Downloads/converted_rndhrs_numeric_only.txt";
+//
+//        File file = new File(path);
+//
+//        DataReader reader = new DataReader();
+//        reader.setVariablesSupplied(true);
+//        reader.setDelimiter(DelimiterType.WHITESPACE);
+//        reader.setMissingValueMarker("NA");
+//
+//        try {
+//            DataSet dataSet = reader.parseTabular(file);
+//            System.out.println(dataSet);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    public void loadAlexandersDataset2() {
+//        String path = "/Users/jdramsey/Downloads/fails_328_lines.txt";
+//
+//        File file = new File(path);
+//
+//        AbstractContinuousDataReader reader = new TabularContinuousDataReader(
+//                Paths.get("/Users/jdramsey/Downloads/converted_rndhrs_numeric_only.txt"), ' ');
+//
+//        DataReader reader = new DataReader();
+//        reader.setVariablesSupplied(true);
+//        reader.setDelimiter(DelimiterType.WHITESPACE);
+//        reader.setMissingValueMarker("NA");
+//
+//        try {
+//            DataSet dataSet = reader.parseTabular(file);
+//            System.out.println(dataSet);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static void main(String... args) {
         new TestFang().TestCycles_Data_fMRI_FANG();

@@ -119,25 +119,25 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = s(x, y, 1, 0);
-                double c2 = s(x, y, 0, 1);
-                double v1 = s(x, x, 1, 0);
-                double v2 = s(y, y, 0, 1);
+                double e1 = e(x, y, 1, 0) / e(x, x, 1, 0);
+                double e2 = e(x, y, 0, 1) / e(y, y, 0, 1);
 
-                double q1 = c1 / v1;
-                double q2 = c2 / v2;
+                double p = 0.2;
+                double m = 0.5;
 
-                if (G0.isAdjacentTo(X, Y) || ((q1 < 0.2 || q2 < 0.2) && abs(q1 - q2) > 0.2)) {
+                if (G0.isAdjacentTo(X, Y) || ((e1 < p || e2 < p) && abs(e1 - e2) > p)) {
                     double c = s(x, y, 0, 0);
-                    double c3 = s(x, y, -1, 0);
-                    double c4 = s(x, y, 0, -1);
-                    double R = c * (c1 - c2);
+                    double q1 = s(x, y, 1, 0);
+                    double q2 = s(x, y, 0, 1);
+                    double q3 = s(x, y, -1, 0);
+                    double q4 = s(x, y, 0, -1);
+                    double R = c * (q1 - q2);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (signum(c1) != signum(c3) && signum(c2) != signum(c4)) {
+                    } else if (signum(q1) != signum(q3) && signum(q2) != signum(q4)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -146,7 +146,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if ((abs(q1) > 0.5 && abs(q2) > 0.5)) {
+                    } else if ((abs(e1) > m && abs(e2) > m)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -173,47 +173,90 @@ public final class Fang implements GraphSearch {
     }
 
     private double s(double[] x, double[] y, int q, int s) {
-        double sxy = 0.0;
-        double sxx = 0.0;
-        double syy = 0.0;
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
             if (q == 0 && s == 0) {
-                sxy += x[k] * y[k];
-                sxx += x[k] * x[k];
-                syy += y[k] * y[k];
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
                 n++;
             } else if (q == 1 && s == 0 && x[k] > 0) {
-                sxy += x[k] * y[k];
-                sxx += x[k] * x[k];
-                syy += y[k] * y[k];
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
                 n++;
             } else if (q == 0 && s == 1 && y[k] > 0) {
-                sxy += x[k] * y[k];
-                sxx += x[k] * x[k];
-                syy += y[k] * y[k];
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
                 n++;
             } else if (q == -1 && s == 0 && x[k] < 0) {
-                sxy += x[k] * y[k];
-                sxx += x[k] * x[k];
-                syy += y[k] * y[k];
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
                 n++;
             } else if (q == 0 && s == -1 && y[k] < 0) {
-                sxy += x[k] * y[k];
-                sxx += x[k] * x[k];
-                syy += y[k] * y[k];
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
                 n++;
             }
         }
 
-        for (int k = 0; k < n; k++) {
-            sxy += x[k] * y[k] / (double) n;
-            sxx += x[k] * x[k] / (double) n;;
-            syy += y[k] * y[k] / (double) n;;
+        exy /= n;
+        exx /= n;
+        eyy /= n;
+        ex /= n;
+        ey /= n;
+
+        return (exy - ex * ey) / sqrt((exx - ex * ex) * (eyy - ey * ey));
+    }
+
+    private double e(double[] x, double[] y, int q, int s) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (q == 0 && s == 0) {
+                exy += x[k] * y[k];
+                n++;
+            } else if (q == 1 && s == 0 && x[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            } else if (q == 0 && s == 1 && y[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            } else if (q == -1 && s == 0 && x[k] < 0) {
+                exy += x[k] * y[k];
+                n++;
+            } else if (q == 0 && s == -1 && y[k] < 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
         }
 
-        return sxy / sqrt(sxx * syy);
+        exy /= n;
+
+        return exy;
     }
 
     /**

@@ -3406,11 +3406,10 @@ public final class GraphUtils {
             Node y = Edges.getDirectedEdgeHead(edge);
 
             graph.removeEdge(edge);
-            final boolean dashed = existsSemiDirectedPath(x, y, -1, graph);
             graph.addEdge(edge);
 
-            if (dashed) {
-                edge.setDashed(dashed);
+            if (existsSemiDirectedPath(x, y, -1, graph)) {
+                edge.setDashed(existsSemiDirectedPath(x, y, -1, graph));
             }
 
             if (graph.defVisible(edge)) {
