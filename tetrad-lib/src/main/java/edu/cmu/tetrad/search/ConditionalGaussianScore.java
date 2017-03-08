@@ -41,8 +41,8 @@ public class ConditionalGaussianScore implements Score {
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
 
-    private double penaltyDiscount = 2;
-    private boolean denominatorMixed = true;
+    private double penaltyDiscount = 1;
+    private int numCategoriesToDiscretize = 3;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -62,8 +62,8 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        likelihood.setDenominatorMixed(denominatorMixed);
-        likelihood.setPenaltyDiscount(penaltyDiscount);
+        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+//        likelihood.setPenaltyDiscount(penaltyDiscount);
 
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
@@ -71,13 +71,14 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * lik - k * Math.log(N);
+        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + getStructurePrior(parents);
+//        return 2.0 * lik - k * Math.log(N);// + getStructurePrior(parents);
     }
 
     private double getStructurePrior(int[] parents) {
         int i = parents.length + 1;
         int c = dataSet.getNumColumns();
-        double p = 2 / (double) c;
+        double p = 3.0 / (double) c;
         return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
     }
 
@@ -125,13 +126,11 @@ public class ConditionalGaussianScore implements Score {
         return variables;
     }
 
-    @Override
-    public double getParameter1() {
-        return 0;
+    public boolean getAlternativePenalty() {
+        return false;
     }
 
-    @Override
-    public void setParameter1(double alpha) {
+    public void setAlternativePenalty(double alpha) {
 
     }
 
@@ -159,8 +158,8 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setDenominatorMixed(boolean denominatorMixed) {
-        this.denominatorMixed = denominatorMixed;
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
+        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 }
 

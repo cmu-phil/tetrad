@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.lang3.RandomUtils;
 
 import java.util.*;
 
@@ -99,7 +100,8 @@ public class ConditionalGaussianSimulation implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("numCategories");
+        parameters.add("minCategories");
+        parameters.add("maxCategories");
         parameters.add("percentDiscrete");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
@@ -139,7 +141,10 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                nd.put(shuffledOrder.get(i).getName(), parameters.getInt("numCategories"));
+                final int minNumCategories = parameters.getInt("minCategories");
+                final int maxNumCategories = parameters.getInt("maxCategories");
+                final int value = pickNumCategories(minNumCategories, maxNumCategories);
+                nd.put(shuffledOrder.get(i).getName(), value);
             } else {
                 nd.put(shuffledOrder.get(i).getName(), 0);
             }
@@ -199,6 +204,8 @@ public class ConditionalGaussianSimulation implements Simulation {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
         }
 
+        Map<Integer, double[]> breakpointsMap = new HashMap<>();
+
         for (int mixedIndex : tiers) {
             for (int i = 0; i < parameters.getInt("sampleSize"); i++) {
                 if (nodes.get(mixedIndex) instanceof DiscreteVariable) {
@@ -219,7 +226,13 @@ public class ConditionalGaussianSimulation implements Simulation {
                         if (orig != null) {
                             int mixedParentColumn = mixedData.getColumn(orig);
                             double d = mixedData.getDouble(i, mixedParentColumn);
-                            double[] breakpoints = getBreakpoints(mixedData, _parent, mixedParentColumn);
+                            double[] breakpoints = breakpointsMap.get(mixedParentColumn);
+
+                            if (breakpoints == null) {
+                                breakpoints = getBreakpoints(mixedData, _parent, mixedParentColumn);
+                                breakpointsMap.put(mixedParentColumn, breakpoints);
+                            }
+
                             value = breakpoints.length;
 
                             for (int j = 0; j < breakpoints.length; j++) {
@@ -240,6 +253,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                     double sum = 0.0;
 
                     double r = RandomUtil.getInstance().nextDouble();
+                    mixedData.setInt(i, mixedIndex, 0);
 
                     for (int k = 0; k < bayesIm.getNumColumns(bayesIndex); k++) {
                         double probability = bayesIm.getProbability(bayesIndex, rowIndex, k);
@@ -444,5 +458,9 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         return outG;
+    }
+
+    private int pickNumCategories(int min, int max) {
+        return RandomUtils.nextInt(min, max + 1);
     }
 }

@@ -71,15 +71,17 @@ public final class StatUtils {
      * @return the mean of the first N values in this array.
      */
     public static double mean(long array[], int N) {
+        double sum = 0.0;
+        int count = 0;
 
-        int i;
-        long sum = 0;
-
-        for (i = 0; i < N; i++) {
-            sum += array[i];
+        for (int i = 0; i < N; i++) {
+            if (!Double.isNaN(array[i])) {
+                sum += array[i];
+                count++;
+            }
         }
 
-        return sum / N;
+        return sum / (double) count;
     }
 
     /**
@@ -2011,6 +2013,12 @@ public final class StatUtils {
         sum += 1;
 
         return loga0 + log(sum);
+    }
+
+    public static double sum(double[] x) {
+        double sum = 0.0;
+        for (double xx : x) sum += xx;
+        return sum;
     }
 }
 

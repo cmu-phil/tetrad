@@ -288,7 +288,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //            int depth = getParameters().getMaxDegree();
 //
 //            ScoredIndTest fgesScore = new ScoredIndTest(getIndependenceTest());
-//            fgesScore.setParameter1(getParameters().getAlpha());
+//            fgesScore.setAlternativePenalty(getParameters().getAlpha());
 //            FgesMb search = new FgesMb(fgesScore, target);
 //            search.setKnowledge(knowledge);
 //            search.setMaxDegree(depth);

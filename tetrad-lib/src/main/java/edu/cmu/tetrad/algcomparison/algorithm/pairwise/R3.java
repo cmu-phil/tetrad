@@ -1,13 +1,10 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
 
@@ -22,6 +19,7 @@ import java.util.List;
 public class R3 implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
+    private IKnowledge knowledge;
 
     public R3(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
@@ -43,6 +41,7 @@ public class R3 implements Algorithm, TakesInitialGraph {
 
         Lofs2 lofs = new Lofs2(initial, dataSets);
         lofs.setRule(Lofs2.Rule.R3);
+        lofs.setKnowledge(knowledge);
 
         return lofs.orient();
     }
@@ -66,5 +65,9 @@ public class R3 implements Algorithm, TakesInitialGraph {
     @Override
     public List<String> getParameters() {
         return initialGraph.getParameters();
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

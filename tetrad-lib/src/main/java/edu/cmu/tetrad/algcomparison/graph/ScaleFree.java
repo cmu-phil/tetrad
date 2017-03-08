@@ -22,7 +22,7 @@ public class ScaleFree implements RandomGraph {
                 parameters.getDouble("scaleFreeAlpha"),
                 parameters.getDouble("scaleFreeBeta"),
                 parameters.getDouble("scaleFreeDeltaIn"),
-                parameters.getInt("scaleFreeDeltaOut")
+                parameters.getDouble("scaleFreeDeltaOut")
         );
     }
 

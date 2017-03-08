@@ -1,11 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataType;
 
 import java.util.*;
 
@@ -19,9 +16,9 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        SemBicScore score = new SemBicScore(DataUtils.getCovMatrix(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        return new IndTestScore(score);
+        return new IndTestScore(score, dataSet);
     }
 
     @Override

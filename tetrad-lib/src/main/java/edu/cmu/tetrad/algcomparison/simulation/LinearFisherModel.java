@@ -85,6 +85,9 @@ public class LinearFisherModel implements Simulation, TakesData {
                     parameters.getDouble("varLow"),
                     parameters.getDouble("varHigh"));
             simulator.setCoefSymmetric(parameters.getBoolean("coefSymmetric"));
+            simulator.setMeanRange(
+                    parameters.getDouble("meanLow"),
+                    parameters.getDouble("meanHigh"));
 
             simulator.setVerbose(parameters.getBoolean("verbose"));
 

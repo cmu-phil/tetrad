@@ -223,7 +223,7 @@ public class TestMimbuild2 {
 //            Graph mimbuildStructure;
 //
 //            Mimbuild2 mimbuild = new Mimbuild2();
-//            mimbuild.setParameter1(0.001);
+//            mimbuild.setAlternativePenalty(0.001);
 //            mimbuild.setMinClusterSize(4);
 ////            mimbuild.setFixOneLoadingPerCluster(true);
 //
@@ -399,7 +399,7 @@ public class TestMimbuild2 {
 //
 //            Mimbuild2 mimbuild = new Mimbuild2();
 //
-//            mimbuild.setParameter1(0.001);
+//            mimbuild.setAlternativePenalty(0.001);
 ////            mimbuild.setMinimumSize(5);
 //
 //            // To test knowledge.
@@ -495,7 +495,7 @@ public class TestMimbuild2 {
 //            Graph mimbuildStructure;
 //
 //            Mimbuild2 mimbuild = new Mimbuild2();
-//            mimbuild.setParameter1(0.001);
+//            mimbuild.setAlternativePenalty(0.001);
 //            mimbuild.setMinClusterSize(3);
 //
 //            try {

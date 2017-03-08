@@ -45,19 +45,13 @@ public class IndTestScore implements IndependenceTest {
     private final List<Node> variables;
     private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
+    private DataModel data = null;
 
-    public IndTestScore(Score score) {
-        if (score == null) throw new NullPointerException();
-        this.score = score;
-        this.variables = score.getVariables();
-        this.variablesHash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            this.variablesHash.put(variables.get(i), i);
-        }
+    public  IndTestScore(Score score) {
+        this(score, null);
     }
 
-    public IndTestScore(Score score, double parameter1) {
+    public  IndTestScore(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
@@ -67,7 +61,7 @@ public class IndTestScore implements IndependenceTest {
             this.variablesHash.put(variables.get(i), i);
         }
 
-        score.setParameter1(parameter1);
+        this.data = data;
     }
 
     /**
@@ -174,21 +168,20 @@ public class IndTestScore implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return score.getParameter1();
+        return -1;
     }
 
     /**
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
-        score.setParameter1(alpha);
     }
 
     /**
      * @return The data model for the independence test.
      */
     public DataModel getData() {
-        throw new UnsupportedOperationException();
+        return data;
     }
 
     public ICovarianceMatrix getCov() {
@@ -213,7 +206,6 @@ public class IndTestScore implements IndependenceTest {
     public double getScore() {
         return bump;
     }
-
 }
 
 

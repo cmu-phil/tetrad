@@ -54,7 +54,6 @@ import java.util.concurrent.*;
  */
 public final class Fges implements GraphSearch, GraphScorer {
 
-
     /**
      * Internal.
      */
@@ -173,6 +172,10 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Bounds the degree of the graph.
     private int maxDegree = -1;
+
+    // True if the first step of adding an edge to an empty graph should be scored in both directions
+    // for each edge with the maximum score chosen.
+    private boolean symmetricFirstStep = false;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
@@ -489,6 +492,15 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.maxDegree = maxDegree;
     }
 
+    public boolean isSymmetricFirstStep() {
+        return symmetricFirstStep;
+    }
+
+    public void setSymmetricFirstStep(boolean symmetricFirstStep) {
+        this.symmetricFirstStep = symmetricFirstStep;
+    }
+
+
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
@@ -559,6 +571,11 @@ public final class Fges implements GraphSearch, GraphScorer {
                     int parent = hashIndices.get(x);
                     double bump = score.localScoreDiff(parent, child);
 
+                    if (symmetricFirstStep) {
+                        double bump2 = score.localScoreDiff(child, parent);
+                        bump = bump > bump2 ? bump : bump2;
+                    }
+
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
                     if (bump > 0) {
@@ -566,7 +583,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         effectEdgesGraph.addEdge(edge);
                     }
 
-                    if (bump > 0.0) {
+                    if (bump > 0) {
                         addArrow(x, y, emptySet, emptySet, bump);
                         addArrow(y, x, emptySet, emptySet, bump);
                     }
@@ -1117,7 +1134,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         Set<Node> naYX = getNaYX(a, b);
-        if (!GraphUtils.isClique(naYX, this.graph)) return;
+        if (!isClique(naYX)) return;
 
         List<Node> TNeighbors = getTNeighbors(a, b);
 
@@ -1149,12 +1166,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                     break FOR;
                 }
 
-                if (!GraphUtils.isClique(union, this.graph)) continue;
+                if (!isClique(union)) continue;
                 newCliques.add(union);
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > 0.0) {
+                if (bump > 0) {
                     addArrow(a, b, naYX, T, bump);
                 }
 
@@ -1552,7 +1569,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
-        boolean clique = GraphUtils.isClique(union, this.graph);
+        boolean clique = isClique(union);
         boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, cycleBound);
         return clique && noCycle && !violatesKnowledge;
     }
@@ -1574,7 +1591,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         Set<Node> diff = new HashSet<>(naYX);
         diff.removeAll(H);
-        return GraphUtils.isClique(diff, this.graph) && !violatesKnowledge;
+        return isClique(diff) && !violatesKnowledge;
     }
 
     // Adds edges required by knowledge.
@@ -1669,6 +1686,21 @@ public final class Fges implements GraphSearch, GraphScorer {
         return nayx;
     }
 
+    Set<Edge> cliqueEdges = new HashSet<>();
+
+    // Returns true iif the given set forms a clique in the given graph.
+    private boolean isClique(Set<Node> nodes) {
+        List<Node> _nodes = new ArrayList<>(nodes);
+        for (int i = 0; i < _nodes.size() - 1; i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
