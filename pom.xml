@@ -10,7 +10,6 @@
     <modules>
         <module>tetrad-gui</module>
         <module>tetrad-lib</module>
-        <module>causal-cmd</module>
     </modules>
 
     <licenses>
