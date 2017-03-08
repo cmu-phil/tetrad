@@ -109,8 +109,6 @@ public final class Fang implements GraphSearch {
 
         Graph graph = new EdgeListGraph(variables);
 
-        int n = colData[0].length;
-
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
                 Node X = variables.get(i);
