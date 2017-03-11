@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.covariance;
+import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 
@@ -56,6 +57,9 @@ public final class Fang implements GraphSearch {
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
+
+    // The maximum coefficient in absolute value (used for orienting 2-cycles.
+    private double maxCoef = 0.6;
 
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
@@ -85,12 +89,6 @@ public final class Fang implements GraphSearch {
 
         DataSet dataSet2 = dataSet.copy();
 
-        for (int i = 0; i < dataSet2.getNumRows(); i++) {
-            for (int j = 0; j < dataSet2.getNumColumns(); j++) {
-                if (dataSet2.getDouble(i, j) < 0) dataSet2.setDouble(i, j, 0);
-            }
-        }
-
         SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet2));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet2);
@@ -113,28 +111,24 @@ public final class Fang implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
+                // Standardized.
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double e1 =s(x, y, 0) / s(x, x, 0);
-                double e2 = s(x, y, 0) / s(y, y, 0);;
+                if (G0.isAdjacentTo(X, Y)) {
+                    double c = s(x, y, 0, 0);
+                    double c1 = s(x, y, 1, 0);
+                    double c2 = s(x, y, 0, 1);
+                    double c3 = s(x, y, -1, 0);
+                    double c4 = s(x, y, 0, -1);
 
-//                double p = 0.2;
-                double m = 0.5;
-
-                if (G0.isAdjacentTo(X, Y)) {// || ((e1 < p || e2 < p) && abs(e1 - e2) > p)) {
-                    double c = s(x, y, 0);
-                    double q1 = s(x, y, 1);
-                    double q2 = s(y, x, 1);
-                    double q3 = s(x, y, -1);
-                    double q4 = s(y, x, -1);
-                    double R = c * (q1 - q2);
+                    double R = abs(c - c2) - abs(c - c1);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (signum(q1) != signum(q3) && signum(q2) != signum(q4)) {
+                    } else if (signum(c1) != signum(c3) && signum(c2) != signum(c4)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -143,7 +137,7 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if ((abs(e1) > m && abs(e2) > m)) {
+                    } else if ((abs(c) > maxCoef)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -169,9 +163,8 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private double s(double[] x, double[] y, int q) {
+    private double s(double[] x, double[] y, int xInc, int yInc) {
         double exy = 0.0;
-        double exx = 0.0;
 
         double ex = 0.0;
         double ey = 0.0;
@@ -179,33 +172,61 @@ public final class Fang implements GraphSearch {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (q == 0) {
+            if (xInc == 0 && yInc == 0) {
                 exy += x[k] * y[k];
-                exx += x[k] * x[k];
                 ex += x[k];
                 ey += y[k];
                 n++;
-            } else if (q == 1 && x[k] > 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (q == -1 && x[k] < 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
+            } else if (xInc == 1 && yInc == 0) {
+                if (x[k] > 0) {
+                    exy += x[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == 1) {
+                if (y[k] > 0) {
+                    exy += x[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 0) {
+                if (x[k] < 0) {
+                    exy += x[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == -1) {
+                if (y[k] < 0) {
+                    exy += x[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 1 && yInc == -1) {
+                if (x[k] > 0 && y[k] < 0) {
+                    exy += x[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 1) {
+                if (x[k] < 0 && y[k] > 0) {
+                    exy += x[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
             }
         }
 
         exy /= n;
-        exx /= n;
         ex /= n;
         ey /= n;
 
-        return (exy - ex * ey) / (exx - ex * ex);
+        return (exy - ex * ey);
     }
 
     /**
@@ -248,6 +269,20 @@ public final class Fang implements GraphSearch {
     }
 
     /**
+     * @return The maximum coefficient in absoluate value (used for orienting 2-cycles).
+     */
+    public double getMaxCoef() {
+        return maxCoef;
+    }
+
+    /**
+     * @param maxCoef The maximum coefficient in absoluate value (used for orienting 2-cycles).f
+     */
+    public void setMaxCoef(double maxCoef) {
+        this.maxCoef = maxCoef;
+    }
+
+    /**
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
@@ -266,6 +301,7 @@ public final class Fang implements GraphSearch {
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
+
 }
 
 

@@ -46,12 +46,18 @@ import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static edu.cmu.tetrad.util.StatUtils.skewness;
+import static java.lang.Math.signum;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -218,10 +224,11 @@ public class TestFang {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 3);
+        parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
+        parameters.set("maxCoef", 0.6);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRandomSelections", 60);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -279,6 +286,8 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Network9_contr_amp"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Diamond"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_1"));
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FangConcatenated());
@@ -370,6 +379,12 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Network9_contr_amp"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Diamond"));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_1"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_Full_80"));
+//        simulations.add(new LoadContinuousDataAndSingleGraph(
+//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_Thr3_70"));
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new FangConcatenated());
@@ -585,6 +600,88 @@ public class TestFang {
 //            e.printStackTrace();
 //        }
 //    }
+
+    @Test
+    public void test5() {
+        for (int j = 0; j < 10; j++) {
+
+            int n = 1000;
+            double rho = .1;
+
+            double[] eX = new double[n];
+            double[] eY = new double[n];
+            double[] x = new double[n];
+            double[] y = new double[n];
+
+            BetaDistribution d = new BetaDistribution(2, 5);
+
+            for (int i = 0; i < n; i++) {
+                eX[i] = d.sample();
+                eY[i] = d.sample();
+                x[i] = eX[i];
+                y[i] = rho * x[i] + eY[i];
+//
+//                x[i] = signum(skewness(x)) * x[i];
+//                y[i] = signum(skewness(y)) * y[i];
+            }
+
+            standardizeData(x);
+            standardizeData(y);
+
+            System.out.println("cov = " + s(x, y, eY));
+        }
+    }
+
+    private double s(double[] x, double[] y, double[] eY) {
+        double exy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+                if (y[k] > 0) {
+                    exy += x[k] * eY[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+        }
+
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+        return (exy - ex * ey);
+    }
+
+    public static void standardizeData(double[] data) {
+        double sum = 0.0;
+
+        for (int i = 0; i < data.length; i++) {
+            sum += data[i];
+        }
+
+        double mean = sum / data.length;
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] -= mean;
+        }
+
+        double norm = 0.0;
+
+        for (int i = 0; i < data.length; i++) {
+            double v = data[i];
+            norm += v * v;
+        }
+
+        norm = Math.sqrt(norm / (data.length - 1));
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] /= norm;
+        }
+    }
 
     public static void main(String... args) {
         new TestFang().TestCycles_Data_fMRI_FANG();
