@@ -42,6 +42,7 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
+import edu.pitt.dbmi.data.util.TextFileUtils;
 import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.covariance.CovarianceDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.ContinuousTabularDataFileValidation;
@@ -70,6 +71,8 @@ import javax.swing.border.EmptyBorder;
  * @author Joseph Ramsey
  */
 final class DataLoaderSettings extends JPanel {
+
+    private List<File> files;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -109,7 +112,9 @@ final class DataLoaderSettings extends JPanel {
     private final Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
-    public DataLoaderSettings() {
+    public DataLoaderSettings(List<File> files) {
+        this.files = files;
+
         // All labels should share the save size - Zhou
         this.labelSize = new Dimension(200, 30);
 
@@ -298,8 +303,41 @@ final class DataLoaderSettings extends JPanel {
         delimiterBtnGrp.add(whitespaceDelimiterRadioButton);
         delimiterBtnGrp.add(singleCharDelimiterRadioButton);
 
-        // Defaults to whitespace
-        whitespaceDelimiterRadioButton.setSelected(true);
+        // Defaults to whitespace if the data-reader infers space (can't infer whitespcace)
+        // Otherwise, use the inferred delimiter and select corresponding one from ComboBox
+        char inferredDelimiter = getInferredDelimiter(files.get(0));
+        System.out.println("Inferred delimiter inferredDelimiter: " + inferredDelimiter);
+
+        switch (inferredDelimiter) {
+            case ',':
+                singleCharDelimiterRadioButton.setSelected(true);
+                singleCharDelimiterComboBox.setSelectedItem("Comma");
+                System.out.println("Inferred delimiter: Comma");
+            case '\t':
+                singleCharDelimiterRadioButton.setSelected(true);
+                singleCharDelimiterComboBox.setSelectedItem("Tab");
+                System.out.println("Inferred delimiter: Tab");
+            case ' ':
+                singleCharDelimiterRadioButton.setSelected(true);
+                singleCharDelimiterComboBox.setSelectedItem("Space");
+                System.out.println("Inferred delimiter: Space");
+            case ':':
+                singleCharDelimiterRadioButton.setSelected(true);
+                singleCharDelimiterComboBox.setSelectedItem("Colon");
+                System.out.println("Inferred delimiter: Colon");
+            case ';':
+                singleCharDelimiterRadioButton.setSelected(true);
+                singleCharDelimiterComboBox.setSelectedItem("Semicolon");
+                System.out.println("Inferred delimiter: Semicolon");
+            case '|':
+                singleCharDelimiterRadioButton.setSelected(true);
+                singleCharDelimiterComboBox.setSelectedItem("Pipe");
+                System.out.println("Inferred delimiter: Pipe");
+            default:
+                // Just use whitespace as default if can't infer
+                whitespaceDelimiterRadioButton.setSelected(true);
+                System.out.println("Inferred delimiter defaults: Whitespace");
+        }
 
         // Event listener
         // ComboBox is actually a container
@@ -727,6 +765,30 @@ final class DataLoaderSettings extends JPanel {
             return commentStringField.getText();
         } else {
             throw new IllegalArgumentException("Unexpected Comment Marker selection.");
+        }
+    }
+
+    /**
+     * Determine the delimiter for a text data file.
+     *
+     * @param file
+     * @return
+     */
+    private char getInferredDelimiter(File file) {
+        System.out.println("Infer demiliter for file: " + file.getName());
+
+        // Reads the first n lines of data in a text file and
+        // attempts to infer what delimiter is used.
+        int n = 20;
+        int skip = 0;
+        String comment = "//";
+        char quoteCharacter = '"';
+        char[] delims = {'\t', ' ', ',', ':', ';', '|'};
+
+        try {
+            return TextFileUtils.inferDelimiter(file, n, skip, comment, quoteCharacter, delims);
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Can't infer delimiter due to default file not found.");
         }
     }
 
