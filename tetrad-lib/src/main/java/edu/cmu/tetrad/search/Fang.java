@@ -209,7 +209,7 @@ public final class Fang implements GraphSearch {
             }
         }
 
-        System.out.println("Mark correlated errors.");
+        System.out.println("Mark dependent residuals.");
 
         double[][] res = new double[variables.size()][];
 
