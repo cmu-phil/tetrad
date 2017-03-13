@@ -307,6 +307,7 @@ final class DataLoaderSettings extends JPanel {
         // We can't infer whitespcace.
         // Otherwise, select the inferred delimiter from ComboBox and
         // check the singleCharDelimiterRadioButton
+        // Only infer delimiter based on the first file - Zhou
         char inferredDelimiter = getInferredDelimiter(files.get(0));
 
         switch (inferredDelimiter) {
@@ -785,15 +786,18 @@ final class DataLoaderSettings extends JPanel {
     private char getInferredDelimiter(File file) {
         System.out.println("Infer demiliter for file: " + file.getName());
 
-        // Reads the first n lines of data in a text file and
-        // attempts to infer what delimiter is used.
+        // The number of lines to read to make the inference
         int n = 20;
-        int skip = 0;
+        // The number of lines to skip at top of file before processing
+        // Here we use 2 because covariance data has total number of cases at line 1,
+        // and sometimes a commented line as well
+        int skip = 2;
         String comment = "//";
         char quoteCharacter = '"';
         char[] delims = {'\t', ' ', ',', ':', ';', '|'};
 
         try {
+            // https://rdrr.io/cran/reader/man/get.delim.html
             return TextFileUtils.inferDelimiter(file, n, skip, comment, quoteCharacter, delims);
         } catch (IOException ex) {
             throw new IllegalArgumentException("Can't infer delimiter due to default file not found.");
