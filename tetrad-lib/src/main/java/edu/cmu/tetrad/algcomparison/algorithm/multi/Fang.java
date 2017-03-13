@@ -34,7 +34,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setMaxCoef(parameters.getDouble("maxCoef"));
-        search.setCorrErrorsAlpha(parameters.getDouble("corrErrorsAlpha"));
+        search.setDepErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
         search.setKnowledge(knowledge);
         return getGraph(search);
     }

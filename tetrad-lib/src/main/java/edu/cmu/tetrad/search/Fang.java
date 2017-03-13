@@ -60,8 +60,8 @@ public final class Fang implements GraphSearch {
     // The maximum coefficient in absolute value (used for orienting 2-cycles.
     private double maxCoef = 0.6;
 
-    // Alpha level for detecting noncorrelated errors.
-    private double corrErrorsAlpha;
+    // Alpha level for detecting dependent errors.
+    private double depErrorsAlpha;
 
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
@@ -167,7 +167,7 @@ public final class Fang implements GraphSearch {
 
         System.out.println("Remove extraneous edges.");
 
-        double z0 = StatUtils.getZForAlpha(corrErrorsAlpha);
+        double z0 = StatUtils.getZForAlpha(depErrorsAlpha);
 
         // Remove extraneous edges.
         boolean changed = true;
@@ -448,19 +448,19 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @return Alpha level for detecting noncorrelated errors. The high this is set, the fewer noncorrelated
-     * errors will be round.
+     * @return Alpha level for detecting dependent errors. The lower this is set, the fewer dependent
+     * errors will be found.
      */
-    public double getCorrErrorsAlpha() {
-        return corrErrorsAlpha;
+    public double getDepErrorsAlpha() {
+        return depErrorsAlpha;
     }
 
     /**
-     * @param corrErrorsAlpha Alpha level for detecting noncorrelated errors. The high this is set, the fewer noncorrelated
-     *                        errors will be round.
+     * @param depErrorsAlpha Alpha level for detecting dependent errors. The lower this is set, the fewer
+     *                       dependent errors will be found.
      */
-    public void setCorrErrorsAlpha(double corrErrorsAlpha) {
-        this.corrErrorsAlpha = corrErrorsAlpha;
+    public void setDepErrorsAlpha(double depErrorsAlpha) {
+        this.depErrorsAlpha = depErrorsAlpha;
     }
 
     /**

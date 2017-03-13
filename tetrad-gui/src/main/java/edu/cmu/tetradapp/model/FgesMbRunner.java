@@ -256,11 +256,11 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //
 //                if (dataSet.isContinuous()) {
 //                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
-//                            getParameters().getCorrErrorsAlpha());
+//                            getParameters().getDepErrorsAlpha());
 //                    fges = new FgesMb(gesScore, target);
 //                } else if (dataSet.isDiscrete()) {
 //                    double structurePrior = 1;
-//                    double samplePrior = getParameters().getCorrErrorsAlpha();
+//                    double samplePrior = getParameters().getDepErrorsAlpha();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -271,7 +271,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //            } else if (dataModel instanceof ICovarianceMatrix) {
 //                cov = (ICovarianceMatrix) dataModel;
 //                SemBicScore score = new SemBicScore(cov,
-//                        getParameters().getCorrErrorsAlpha());
+//                        getParameters().getDepErrorsAlpha());
 //                target = cov.getVariable(targetName);
 //                fges = new FgesMb(score, target);
 //            } else {
@@ -288,7 +288,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //            int depth = getParameters().getMaxDegree();
 //
 //            ScoredIndTest fgesScore = new ScoredIndTest(getIndependenceTest());
-//            fgesScore.setParameter1(getParameters().getCorrErrorsAlpha());
+//            fgesScore.setParameter1(getParameters().getDepErrorsAlpha());
 //            FgesMb search = new FgesMb(fgesScore, target);
 //            search.setKnowledge(knowledge);
 //            search.setMaxDegree(depth);
