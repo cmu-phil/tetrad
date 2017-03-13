@@ -303,40 +303,48 @@ final class DataLoaderSettings extends JPanel {
         delimiterBtnGrp.add(whitespaceDelimiterRadioButton);
         delimiterBtnGrp.add(singleCharDelimiterRadioButton);
 
-        // Defaults to whitespace if the data-reader infers space (can't infer whitespcace)
-        // Otherwise, use the inferred delimiter and select corresponding one from ComboBox
+        // Defaults to whitespace if the inferred delimiter is not in Combo box
+        // We can't infer whitespcace.
+        // Otherwise, select the inferred delimiter from ComboBox and
+        // check the singleCharDelimiterRadioButton
         char inferredDelimiter = getInferredDelimiter(files.get(0));
-        System.out.println("Inferred delimiter inferredDelimiter: " + inferredDelimiter);
 
         switch (inferredDelimiter) {
             case ',':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Comma");
                 System.out.println("Inferred delimiter: Comma");
+                break;
             case '\t':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Tab");
                 System.out.println("Inferred delimiter: Tab");
+                break;
             case ' ':
-                singleCharDelimiterRadioButton.setSelected(true);
-                singleCharDelimiterComboBox.setSelectedItem("Space");
-                System.out.println("Inferred delimiter: Space");
+                // Whitespace covers space, so we use whitespace instead of space here
+                whitespaceDelimiterRadioButton.setSelected(true);
+                System.out.println("Inferred delimiter defaults: Whitespace");
+                break;
             case ':':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Colon");
                 System.out.println("Inferred delimiter: Colon");
+                break;
             case ';':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Semicolon");
                 System.out.println("Inferred delimiter: Semicolon");
+                break;
             case '|':
                 singleCharDelimiterRadioButton.setSelected(true);
                 singleCharDelimiterComboBox.setSelectedItem("Pipe");
                 System.out.println("Inferred delimiter: Pipe");
+                break;
             default:
                 // Just use whitespace as default if can't infer
                 whitespaceDelimiterRadioButton.setSelected(true);
                 System.out.println("Inferred delimiter defaults: Whitespace");
+                break;
         }
 
         // Event listener
