@@ -467,6 +467,21 @@ public final class Fang implements GraphSearch {
     }
 
     /**
+     * @return True if dependent residuals should be marked in the graph with o-o dark green edges.
+     */
+    public boolean isMarkDependentResidualsInGraph() {
+        return markDependentResidualsInGraph;
+    }
+
+    /**
+     * @param markDependentResidualsInGraph True if dependent residuals should be marked in the
+     *                                      graph with o-o dark green edges.
+     */
+    public void setMarkDependentResidualsInGraph(boolean markDependentResidualsInGraph) {
+        this.markDependentResidualsInGraph = markDependentResidualsInGraph;
+    }
+
+    /**
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
@@ -485,6 +500,7 @@ public final class Fang implements GraphSearch {
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
+
 }
 
 
