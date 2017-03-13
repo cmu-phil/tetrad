@@ -63,6 +63,9 @@ public final class Fang implements GraphSearch {
     // Alpha level for detecting dependent errors.
     private double depErrorsAlpha;
 
+    // True if dependent residuals should be marked with o-o edges.
+    private boolean markDependentResidualsInGraph = false;
+
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
      */
@@ -236,7 +239,7 @@ public final class Fang implements GraphSearch {
                         for (Edge edge : edges) {
                             edge.setDashed(true);
                         }
-                    } else {
+                    } else if (markDependentResidualsInGraph) {
                         Edge edge = Edges.nondirectedEdge(X, Y);
                         edge.setLineColor(Color.GREEN.darker().darker());
                         edge.setDashed(true);
