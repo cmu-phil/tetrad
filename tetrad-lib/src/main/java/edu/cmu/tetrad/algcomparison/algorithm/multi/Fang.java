@@ -69,7 +69,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("maxCoef");
-        parameters.add("corrErrorsAlpha");
+        parameters.add("depErrorsAlpha");
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");

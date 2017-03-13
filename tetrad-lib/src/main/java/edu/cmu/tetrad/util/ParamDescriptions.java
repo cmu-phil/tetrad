@@ -159,8 +159,8 @@ public class ParamDescriptions {
                 "Alpha for testing non-Gaussianity",
                 0.05, 0.0, 1.0));
 
-        put("corrErrorsAlpha", new ParamDescription(
-                "Alpha for testing for noncorrelated errors",
+        put("depErrorsAlpha", new ParamDescription(
+                "Alpha for testing for independent errors",
                 0.05, 0.0, 1.0));
     }
 

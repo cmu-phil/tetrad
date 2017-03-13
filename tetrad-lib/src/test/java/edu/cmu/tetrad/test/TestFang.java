@@ -211,7 +211,7 @@ public class TestFang {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.55);
-        parameters.set("corrErrorsAlpha", 0.0001);
+        parameters.set("depErrorsAlpha", 0.0001);
 
         parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
