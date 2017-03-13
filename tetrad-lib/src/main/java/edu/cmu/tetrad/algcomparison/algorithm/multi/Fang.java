@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fang;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,25 +19,27 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated() {
+    public Fang() {
     }
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
         List<DataSet> _dataSets = new ArrayList<>();
         for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
-        Fang search = new Fang(_dataSets);
+        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(_dataSets);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setMaxCoef(parameters.getDouble("maxCoef"));
+        search.setCorrErrorsAlpha(parameters.getDouble("corrErrorsAlpha"));
         search.setKnowledge(knowledge);
         return getGraph(search);
     }
 
-    private Graph getGraph(Fang search) {
+    private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
         return search.search();
     }
 
@@ -65,10 +66,10 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-
         parameters.add("depth");
         parameters.add("penaltyDiscount");
+        parameters.add("maxCoef");
+        parameters.add("corrErrorsAlpha");
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");

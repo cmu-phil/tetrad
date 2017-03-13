@@ -365,7 +365,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             for (Node node : selected) {
                 if (wrapper.getHighlightInEditor().contains(node) &&
                         workbench.getGraph().containsNode(node)) {
-                    workbench.selectNode(node);
+//                    workbench.selectNode(node);
                 }
             }
         }

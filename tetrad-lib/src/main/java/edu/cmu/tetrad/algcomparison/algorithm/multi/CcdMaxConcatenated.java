@@ -44,10 +44,6 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         return search.search();
     }
 
-    private Graph getGraph(Fang search) {
-        return search.search();
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);

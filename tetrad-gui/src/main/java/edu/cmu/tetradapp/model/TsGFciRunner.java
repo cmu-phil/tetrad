@@ -138,7 +138,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 //            fci.setMaxIndegree(params.getMaxIndegree());
 //            double penaltyDiscount = params.getPenaltyDiscount();
 //
-//            fci.setAlpha(penaltyDiscount);
+//            fci.setCorrErrorsAlpha(penaltyDiscount);
 //            fci.setSamplePrior(params.getSamplePrior());
 //            fci.setStructurePrior(params.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);

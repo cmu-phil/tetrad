@@ -24,9 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.CcdMaxConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -38,23 +36,9 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetrad.io.AbstractContinuousDataReader;
-import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.signum;
@@ -204,7 +188,7 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI-selected/Diamond"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new FangConcatenated());
+        algorithms.add(new Fang());
 //        algorithms.add(new CcdMax(new SemBicTest()));
 
         Comparison comparison = new Comparison();
@@ -226,9 +210,10 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("maxCoef", 0.6);
+        parameters.set("maxCoef", 0.55);
+        parameters.set("corrErrorsAlpha", 0.0001);
 
-        parameters.set("numRandomSelections", 60);
+        parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -290,7 +275,7 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_1"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new FangConcatenated());
+        algorithms.add(new Fang());
 
         Comparison comparison = new Comparison();
 
@@ -381,10 +366,6 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Diamond"));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_1"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_Full_80"));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_Thr3_70"));
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new FangConcatenated());
@@ -465,7 +446,7 @@ public class TestFang {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new ImagesSemBic());
-        algorithms.add(new FangConcatenated());
+        algorithms.add(new Fang());
 
         Comparison comparison = new Comparison();
 
@@ -544,7 +525,7 @@ public class TestFang {
         simulations.add(new LoadContinuousDataSmithSim(path + "28"));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new FangConcatenated());
+        algorithms.add(new Fang());
 //        algorithms.add(new ImagesSemBic());
 
         Comparison comparison = new Comparison();

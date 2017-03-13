@@ -23,15 +23,14 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.covariance;
-import static edu.cmu.tetrad.util.StatUtils.skewness;
-import static java.lang.Math.abs;
-import static java.lang.Math.signum;
+import static java.lang.Math.*;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -61,6 +60,9 @@ public final class Fang implements GraphSearch {
     // The maximum coefficient in absolute value (used for orienting 2-cycles.
     private double maxCoef = 0.6;
 
+    // Alpha level for detecting noncorrelated errors.
+    private double corrErrorsAlpha;
+
     /**
      * @param dataSets These datasets must all have the same variables, in the same order.
      */
@@ -87,22 +89,26 @@ public final class Fang implements GraphSearch {
 
         DataSet dataSet = DataUtils.concatenate(_dataSets);
 
-        DataSet dataSet2 = dataSet.copy();
+        RegressionDataset regression = new RegressionDataset(dataSet);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet2));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, dataSet2);
-
+        IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+
+        System.out.println("FAS");
 
         FasStableConcurrent fas = new FasStableConcurrent(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setKnowledge(knowledge);
         Graph G0 = fas.search();
+
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
+
+        System.out.println("Orientation");
 
         Graph graph = new EdgeListGraph(variables);
 
@@ -115,12 +121,13 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                if (G0.isAdjacentTo(X, Y)) {
-                    double c = s(x, y, 0, 0);
-                    double c1 = s(x, y, 1, 0);
-                    double c2 = s(x, y, 0, 1);
-                    double c3 = s(x, y, -1, 0);
-                    double c4 = s(x, y, 0, -1);
+                double c1 = cov(x, y, 1, 0);
+                double c2 = cov(x, y, 0, 1);
+
+                if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > 0.2) {
+                    double c = cov(x, y, 0, 0);
+                    double c3 = cov(x, y, -1, 0);
+                    double c4 = cov(x, y, 0, -1);
 
                     double R = abs(c - c2) - abs(c - c1);
 
@@ -128,7 +135,8 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (signum(c1) != signum(c3) && signum(c2) != signum(c4)) {
+                    } else if (!((signum(c) == signum(c1) && signum(c) == signum(c3))
+                            || (signum(c) == signum(c2) && signum(c) == signum(c4)))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -157,13 +165,114 @@ public final class Fang implements GraphSearch {
             }
         }
 
+        System.out.println("Remove extraneous edges.");
+
+        double z0 = StatUtils.getZForAlpha(corrErrorsAlpha);
+
+        // Remove extraneous edges.
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            for (int k = 0; k < variables.size(); k++) {
+                Node X = variables.get(k);
+                List<Node> parX = graph.getParents(X);
+
+                for (Node Y : parX) {
+                    double[] rx = regression.regress(X, graph.getParents(X)).getResiduals().toArray();
+                    double[] ry = regression.regress(Y, graph.getParents(Y)).getResiduals().toArray();
+
+                    if (isIndependent(rx, ry, z0)) {
+                        if (!graph.getParents(X).contains(Y)) continue;
+
+                        List<Node> _parX = graph.getParents(X);
+                        _parX.remove(Y);
+
+                        double[] rx2 = regression.regress(X, _parX).getResiduals().toArray();
+
+                        if (!isIndependent(rx2, ry, z0)) {
+                            Edge edge = graph.getDirectedEdge(Y, X);
+                            graph.removeEdge(edge);
+                            System.out.println("Removed " + edge);
+
+                            List<Edge> edges = graph.getEdges(X, Y);
+
+                            if (edges.size() == 1 && edges.get(0).isDirected()) {
+                                edges.get(0).setLineColor(Color.BLUE);
+                            }
+
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("Mark correlated errors.");
+
+        double[][] res = new double[variables.size()][];
+
+        for (int i = 0; i < variables.size(); i++) {
+            Node v = variables.get(i);
+            res[i] = regression.regress(v, graph.getParents(v)).getResiduals().toArray();
+            res[i] = DataUtils.standardizeData(res[i]);
+        }
+
+        // Mark dependent errors.
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
+                Node X = variables.get(i);
+                Node Y = variables.get(j);
+
+                if (graph.isAdjacentTo(X, Y)) continue;
+
+                if (!isIndependent(res[i], res[j], z0)) {
+                    System.out.println("Depenedent residuals " + X + "---" + Y);
+
+                    if (graph.isAdjacentTo(X, Y)) {
+                        List<Edge> edges = graph.getEdges(X, Y);
+
+                        for (Edge edge : edges) {
+                            edge.setDashed(true);
+                        }
+                    } else {
+                        Edge edge = Edges.nondirectedEdge(X, Y);
+                        edge.setLineColor(Color.GREEN.darker().darker());
+                        edge.setDashed(true);
+                        graph.addEdge(edge);
+                    }
+                }
+            }
+        }
+
+        System.out.println("Done");
+
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
         return graph;
     }
 
-    private double s(double[] x, double[] y, int xInc, int yInc) {
+    private boolean isIndependent(double[] rx, double[] ry, double z0) {
+        List<List<Double>> c = new ArrayList<List<Double>>();
+
+        c.add(cor(rx, ry, 1, 0));
+        c.add(cor(rx, ry, 0, 1));
+        c.add(cor(rx, ry, -1, 0));
+        c.add(cor(rx, ry, 0, -1));
+
+        for (List<Double> c0 : c) {
+            double _c = c0.get(0);
+            double _n = c0.get(1);
+            double z = 0.5 * sqrt(_n) * (log(1 + _c) / (1 - _c));
+            if (z > z0) return false;
+        }
+
+        return true;
+    }
+
+    private double cov(double[] x, double[] y, int xInc, int yInc) {
         double exy = 0.0;
 
         double ex = 0.0;
@@ -205,16 +314,66 @@ public final class Fang implements GraphSearch {
                     ey += y[k];
                     n++;
                 }
-            } else if (xInc == 1 && yInc == -1) {
-                if (x[k] > 0 && y[k] < 0) {
+            }
+        }
+
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+        return (exy - ex * ey);
+    }
+
+    private List<Double> cor(double[] x, double[] y, int xInc, int yInc) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (xInc == 0 && yInc == 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            } else if (xInc == 1 && yInc == 0) {
+                if (x[k] > 0) {
                     exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
                 }
-            } else if (xInc == -1 && yInc == 1) {
-                if (x[k] < 0 && y[k] > 0) {
+            } else if (xInc == 0 && yInc == 1) {
+                if (y[k] > 0) {
                     exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 0) {
+                if (x[k] < 0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == -1) {
+                if (y[k] < 0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
@@ -226,7 +385,13 @@ public final class Fang implements GraphSearch {
         ex /= n;
         ey /= n;
 
-        return (exy - ex * ey);
+        double c = (exy - ex * ey) / sqrt((exx - ex * ex) * (eyy * ey * ey));
+
+        List<Double> ret = new ArrayList<>();
+        ret.add(c);
+        ret.add((double) n);
+
+        return ret;
     }
 
     /**
@@ -283,6 +448,22 @@ public final class Fang implements GraphSearch {
     }
 
     /**
+     * @return Alpha level for detecting noncorrelated errors. The high this is set, the fewer noncorrelated
+     * errors will be round.
+     */
+    public double getCorrErrorsAlpha() {
+        return corrErrorsAlpha;
+    }
+
+    /**
+     * @param corrErrorsAlpha Alpha level for detecting noncorrelated errors. The high this is set, the fewer noncorrelated
+     *                        errors will be round.
+     */
+    public void setCorrErrorsAlpha(double corrErrorsAlpha) {
+        this.corrErrorsAlpha = corrErrorsAlpha;
+    }
+
+    /**
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
@@ -301,7 +482,6 @@ public final class Fang implements GraphSearch {
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
-
 }
 
 

@@ -1694,7 +1694,7 @@ public class PerformanceTests {
 //
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
-//            GFci.setAlpha(penaltyDiscount);
+//            GFci.setCorrErrorsAlpha(penaltyDiscount);
 //            GFci.setMaxDegree(depth);
 //            GFci.setMaxPathLength(maxPathLength);
 //            GFci.setPossibleDsepSearchDone(true);
