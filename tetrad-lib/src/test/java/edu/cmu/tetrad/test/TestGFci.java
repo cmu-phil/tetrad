@@ -261,7 +261,7 @@ public class TestGFci {
 	public void testDiscreteData() throws IOException {
 		double alpha = 0.05;
 		char delimiter = '\t';
-		Path dataFile = Paths.get("../causal-cmd/test/data/diff_delim/sim_discrete_data_20vars_100cases.txt");
+		Path dataFile = Paths.get("./src/test/resources/sim_discrete_data_20vars_100cases.txt");
 
 		VerticalTabularDiscreteDataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
 		DataSet dataSet = dataReader.readInData();

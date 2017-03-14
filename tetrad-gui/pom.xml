@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -9,6 +10,17 @@
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
+
+    <repositories>
+        <repository>
+            <id>ccd-releases</id>
+            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ccd-snapshots</id>
+            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
 
     <build>
         <resources>
@@ -48,7 +60,8 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>edu.cmu.tetradapp.Tetrad</Main-Class>
                                         <Permissions>all-permissions</Permissions>
@@ -100,6 +113,7 @@
             </extension>
         </extensions>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>edu.cmu</groupId>
@@ -119,14 +133,14 @@
     </dependencies>
 
     <!--<distributionManagement>-->
-        <!--<repository>-->
-            <!--<id>www.phil.cmu.edu_tetrad</id>-->
-            <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>-->
-        <!--</repository>-->
-        <!--<site>-->
-            <!--<id>www.phil.cmu.edu_tetrad</id>-->
-            <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>-->
-        <!--</site>-->
+    <!--<repository>-->
+    <!--<id>www.phil.cmu.edu_tetrad</id>-->
+    <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>-->
+    <!--</repository>-->
+    <!--<site>-->
+    <!--<id>www.phil.cmu.edu_tetrad</id>-->
+    <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>-->
+    <!--</site>-->
     <!--</distributionManagement>-->
 
     <properties>
@@ -134,10 +148,10 @@
     </properties>
 
     <!--<scm>-->
-        <!--<connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>-->
-        <!--<url>scm:git:git@github.com:cmu-phil/tetrad.git</url>-->
-        <!--<developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>-->
-        <!--<tag>HEAD</tag>-->
+    <!--<connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>-->
+    <!--<url>scm:git:git@github.com:cmu-phil/tetrad.git</url>-->
+    <!--<developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>-->
+    <!--<tag>HEAD</tag>-->
     <!--</scm>-->
 
 </project>
