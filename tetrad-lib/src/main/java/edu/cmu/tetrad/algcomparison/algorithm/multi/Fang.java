@@ -35,6 +35,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setMaxCoef(parameters.getDouble("maxCoef"));
         search.setDepErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
+        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
         search.setKnowledge(knowledge);
         return getGraph(search);
     }
@@ -70,6 +71,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("penaltyDiscount");
         parameters.add("maxCoef");
         parameters.add("depErrorsAlpha");
+        parameters.add("markDependentResiduals");
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");

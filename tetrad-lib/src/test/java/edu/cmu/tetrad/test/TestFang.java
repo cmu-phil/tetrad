@@ -36,9 +36,21 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
+import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.signum;
@@ -622,12 +634,12 @@ public class TestFang {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-                if (y[k] > 0) {
-                    exy += x[k] * eY[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
+            if (y[k] > 0) {
+                exy += x[k] * eY[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            }
         }
 
         exy /= n;
@@ -662,6 +674,139 @@ public class TestFang {
         for (int i = 0; i < data.length; i++) {
             data[i] /= norm;
         }
+    }
+
+    @Test
+    public void testAutistic1() {
+        List<DataSet> autistic = new ArrayList<>();
+        List<DataSet> typical = new ArrayList<>();
+
+        DataReader reader = new DataReader();
+
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
+
+        try {
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_001.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_002.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_003.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_004.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_005.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_006.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_007.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_008.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_009.txt")));
+            autistic.add(reader.parseTabular(new File(path, "autistic_normal_ROI_data_spline_smooth_clean_010.txt")));
+
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_001.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_002.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_003.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_004.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_005.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_006.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_007.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_008.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_009.txt")));
+            typical.add(reader.parseTabular(new File(path, "typical_normal_ROI_data_spline_smooth_clean_010.txt")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("depth", -1);
+        parameters.set("maxCoef", 0.6);
+        parameters.set("depErrorsAlpha", 0.0001);
+        parameters.set("markDependentResiduals", false);
+
+        parameters.set("numRandomSelections", 10);
+        parameters.set("randomSelectionSize", 3);
+        parameters.set("Structure", "Placeholder");
+
+        Fang fang = new Fang();
+
+        List<Graph> fangGraphs = runFangOnSubsets(autistic, parameters, fang);
+        List<Graph> typicalGraphs = runFangOnSubsets(typical, parameters, fang);
+
+        List<Node> nodes = fangGraphs.get(0).getNodes();
+        fangGraphs = replaceNodes(fangGraphs, nodes);
+        typicalGraphs = replaceNodes(typicalGraphs, nodes);
+
+        List<Edge> edges1 = new ArrayList<>(fangGraphs.get(0).getEdges());
+        List<Edge> edges2 = new ArrayList<>(typicalGraphs.get(0).getEdges());
+
+        for (Graph graph : fangGraphs) {
+//            for (Edge edge : graph.getEdges()) {
+//                if (edge.getNode1().getName().contains("Cerebelum") && edge.getNode2().getName().contains("Cerebelum")) {
+//                    edges1.add(edge);
+//                }
+//            }
+
+            edges1.retainAll(graph.getEdges());
+        }
+
+        for (Graph graph : typicalGraphs) {
+//            for (Edge edge : graph.getEdges()) {
+//                if (edge.getNode1().getName().contains("Cerebelum") && edge.getNode2().getName().contains("Cerebelum")) {
+//                    edges2.add(edge);
+//                }
+//            }
+//
+            edges2.retainAll(graph.getEdges());
+        }
+
+        List<Edge> edges3 = new ArrayList<>(edges1);
+        List<Edge> edges4 = new ArrayList<>(edges2);
+
+        edges3.removeAll(edges2);
+        edges4.removeAll(edges1);
+
+        System.out.println("\nEdges autistic across all runs but not in any typical run\n");
+
+        for (int i = 0; i < edges3.size(); i++) {
+            System.out.println((i + 1) + ". " + edges3.get(i));
+        }
+
+        System.out.println("\nEdges typical across all runs but not in any autistic run\n");
+
+        for (int i = 0; i < edges4.size(); i++) {
+            System.out.println((i + 1) + ". " + edges4.get(i));
+        }
+
+        System.out.println();
+        System.out.println("# edges autistic across all runs = " + edges1.size());
+        System.out.println("# edges typical across all runs = " + edges2.size());
+        System.out.println("# edges autistic across all runs but not in any typical run = " + edges3.size());
+        System.out.println("# edges typical across all runs but not in any autistic run  = " + edges4.size());
+
+    }
+
+    private List<Graph> replaceNodes(List<Graph> fangGraphs, List<Node> nodes) {
+        List<Graph> replaced = new ArrayList<>();
+
+        for (Graph graph : fangGraphs) {
+            replaced.add(GraphUtils.replaceNodes(graph, nodes));
+        }
+
+        return replaced;
+    }
+
+    private List<Graph> runFangOnSubsets(List<DataSet> dataSets, Parameters parameters, Fang fang) {
+        List<Graph> graphs = new ArrayList<>();
+        List<DataSet> copy = new ArrayList<>(dataSets);
+
+        for (int i = 0; i < parameters.getInt("numRandomSelections"); i++) {
+            Collections.shuffle(copy);
+            List<DataSet> subset = new ArrayList<>();
+
+            for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
+                subset.add(copy.get(j));
+            }
+
+            graphs.add(fang.search(subset, parameters));
+        }
+
+        return graphs;
     }
 
     public static void main(String... args) {

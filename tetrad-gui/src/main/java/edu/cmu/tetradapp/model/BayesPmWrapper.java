@@ -78,12 +78,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
         if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
-        }
-        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 2);
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unrecognized type.");
         }
 
@@ -151,13 +149,11 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
         if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
             setBayesPm(new BayesPm(graph, bayesPm, lowerBound, upperBound));
-        }
-        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 2);
             setBayesPm(graph, lowerBound, upperBound);
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unrecognized type.");
         }
         log(bayesPm);
@@ -183,8 +179,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
         try {
             graph = new Dag(graphWrapper.getGraph());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
@@ -193,12 +188,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
         if (params.getString("bayesPmInitializationMode", "automatic").equals("manual")) {
             lowerBound = upperBound = 2;
-        }
-        else if (params.getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
+        } else if (params.getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 2);
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unrecognized type.");
         }
 
@@ -221,6 +214,8 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
             int lowerBound, upperBound;
 
+//            params.set("initializationMode", "automatic");
+
             if (params.getString("initializationMode", "manualRetain").equals("manual")) {
                 lowerBound = upperBound = 2;
 
@@ -228,18 +223,14 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
                 BayesPm bayesPm = new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound);
                 setBayesPm(bayesPm);
-            }
-            else
-            if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            } else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
                 lowerBound = params.getInt("lowerBoundNumVals", 2);
                 upperBound = params.getInt("upperBoundNumVals", 2);
                 setBayesPm(graph, lowerBound, upperBound);
-            }
-            else {
+            } else {
                 throw new IllegalStateException("Unrecognized type.");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
@@ -335,8 +326,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
         try {
             graph = new Dag(dagWrapper.getDag());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
@@ -345,12 +335,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
         if (params.getString("bayesPmInitializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
-        }
-        else if (params.getString("bayesPmInitializationMode", "manualRetain").equals("automatic")) {
+        } else if (params.getString("bayesPmInitializationMode", "manualRetain").equals("automatic")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 2);
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unrecognized type.");
         }
 
@@ -379,17 +367,14 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
                 lowerBound = upperBound = 2;
                 setBayesPm(new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound));
-            }
-            else if (string.equals("automatic")) {
+            } else if (string.equals("automatic")) {
                 lowerBound = params.getInt("lowerBoundNumVals", 2);
                 upperBound = params.getInt("upperBoundNumVals", 2);
                 setBayesPm(graph, lowerBound, upperBound);
-            }
-            else {
+            } else {
                 throw new IllegalStateException("Unrecognized type.");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
@@ -484,7 +469,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
     //================================= Private Methods ==================================//
 
-    private void log(BayesPm pm){
+    private void log(BayesPm pm) {
         TetradLogger.getInstance().log("info", "Bayes Parametric Model (Bayes PM)");
         TetradLogger.getInstance().log("pm", pm.toString());
 

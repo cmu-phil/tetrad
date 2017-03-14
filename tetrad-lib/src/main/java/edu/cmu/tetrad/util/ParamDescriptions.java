@@ -162,6 +162,11 @@ public class ParamDescriptions {
         put("depErrorsAlpha", new ParamDescription(
                 "Alpha for testing for independent errors",
                 0.05, 0.0, 1.0));
+
+        put("markDependentResiduals", new ParamDescription(
+                "Yes if dependent residuals should be marked as dark green o-o edges",
+                false));
+
     }
 
     public static ParamDescriptions instance() {
