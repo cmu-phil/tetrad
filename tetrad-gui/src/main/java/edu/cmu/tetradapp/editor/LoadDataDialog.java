@@ -179,7 +179,7 @@ final class LoadDataDialog extends JPanel {
         // Data loading params
         // The data loading params apply to all slected files
         // the users should know that the selected files should share these settings - Zhou
-        dataLoaderSettings = new DataLoaderSettings();
+        dataLoaderSettings = new DataLoaderSettings(loadedFiles);
 
         // Basic settings
         basicSettingsBox = dataLoaderSettings.basicSettings();
