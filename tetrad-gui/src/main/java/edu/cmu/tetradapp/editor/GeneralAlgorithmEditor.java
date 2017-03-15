@@ -797,8 +797,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 				if (wallTime != null) {
 					HpcParameter hpcParameter = new HpcParameter();
 					hpcParameter.setKey("walltime");
-					hpcParameter.setValue(new Integer(userwallTime.toString()));
-					algorithmParamRequest.setHpcParameters(Collections.singleton(hpcParameter));
+					hpcParameter.setValue(userwallTime.toString());
+					algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
 				}
 			}
 
