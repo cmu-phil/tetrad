@@ -10,6 +10,17 @@
 
     <artifactId>tetrad-gui</artifactId>
 
+    <repositories>
+        <repository>
+            <id>ccd-releases</id>
+            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ccd-snapshots</id>
+            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
     <build>
         <resources>
             <resource>
