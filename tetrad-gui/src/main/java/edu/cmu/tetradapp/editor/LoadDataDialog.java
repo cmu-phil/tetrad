@@ -246,8 +246,6 @@ final class LoadDataDialog extends JPanel {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     final int index = fileList.getSelectedIndex();
 
-                    System.out.println("About to remove file of index " + index);
-
                     JPopupMenu menu = new JPopupMenu();
                     JMenuItem close = new JMenuItem("Remove this selected file from the loading list");
                     menu.add(close);
@@ -328,9 +326,6 @@ final class LoadDataDialog extends JPanel {
                 // File array that contains only one file
                 final File[] newFiles = fileChooser.getSelectedFiles();
 
-                System.out.println("Old loadedFiles list ");
-                System.out.println(loadedFiles);
-
                 // Add newly added files to the loading list
                 for (File newFile : newFiles) {
                     // Do not add the same file twice
@@ -340,9 +335,6 @@ final class LoadDataDialog extends JPanel {
                         fileListModel.addElement(newFile.getName());
                     }
                 }
-
-                System.out.println("New loadedFiles list ");
-                System.out.println(loadedFiles);
             }
         });
 
