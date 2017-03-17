@@ -1367,7 +1367,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     public boolean finalizeEditor() {
         List<Graph> graphs = runner.getGraphs();
 
-        if (graphs == null || graphs.isEmpty()) {
+        if (hpcJobInfo == null && (graphs == null || graphs.isEmpty())) {
             int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;

@@ -23,10 +23,6 @@ public class JsonWebTokenManager {
 	private final Map<HpcAccount, Date> jsonWebTokenRequestTimeMap;
 
 	private final static long TOKEN_VALID_TIME = 60 * 60 * 1000;// 1-hour
-	// expired time
-	// in
-	// millisecond
-	private boolean locked = false;
 
 	public JsonWebTokenManager() {
 		jsonWebTokenMap = new HashMap<>();
@@ -34,11 +30,6 @@ public class JsonWebTokenManager {
 	}
 
 	public synchronized JsonWebToken getJsonWebToken(final HpcAccount hpcAccount) throws Exception {
-		if (locked) {
-			Thread.sleep(100);
-			getJsonWebToken(hpcAccount);
-		}
-		locked = true;
 		long now = System.currentTimeMillis();
 		JsonWebToken jsonWebToken = jsonWebTokenMap.get(hpcAccount);
 		if (jsonWebToken == null || (now - jsonWebTokenRequestTimeMap.get(hpcAccount).getTime()) > TOKEN_VALID_TIME) {
@@ -58,7 +49,6 @@ public class JsonWebTokenManager {
 			jsonWebTokenMap.put(hpcAccount, jsonWebToken);
 			jsonWebTokenRequestTimeMap.put(hpcAccount, new Date(System.currentTimeMillis()));
 		}
-		locked = false;
 		return jsonWebToken;
 	}
 
