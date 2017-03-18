@@ -53,6 +53,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -676,7 +677,7 @@ public class TestFges {
         DataSet data = im.simulateData(200, false);
 
         TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
+        IndependenceTest test = new IndTestIndResiduals(data, 0.05);
 
         PcStable pc = new PcStable(test);
         pc.setVerbose(false);
@@ -684,7 +685,7 @@ public class TestFges {
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
+            IndependenceTest test2 = new IndTestIndResiduals(data2, 0.05);
             PcStable pc2 = new PcStable(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
@@ -1371,6 +1372,75 @@ public class TestFges {
             }
         }
 
+    }
+
+    @Test
+    public void test7() {
+        for (int i = 0; i < 10; i++) {
+
+            Graph graph = GraphUtils.randomGraph(10, 0,
+                    10, 10, 10, 10, false);
+            SemPm semPm = new SemPm(graph);
+            SemIm semIm = new SemIm(semPm);
+            DataSet dataSet = semIm.simulateData(1000, false);
+
+            Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+            Graph pattern = fges.search();
+
+            Graph dag = dagFromPattern(pattern);
+
+            assertFalse(dag.existsDirectedCycle());
+        }
+    }
+
+    private Graph dagFromPattern(Graph pattern) {
+        Graph dag = new EdgeListGraph(pattern);
+
+        MeekRules rules = new MeekRules();
+
+        WHILE:
+        while (true) {
+            List<Edge> edges = new ArrayList<>(dag.getEdges());
+
+            for (Edge edge : edges) {
+                if (Edges.isUndirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    List<Node> okx = dag.getAdjacentNodes(x);
+                    okx.removeAll(dag.getChildren(x));
+                    okx.remove(y);
+
+                    List<Node> oky = dag.getAdjacentNodes(y);
+                    oky.removeAll(dag.getChildren(y));
+                    oky.remove(x);
+
+                    if (!okx.isEmpty()) {
+                        Node other = okx.get(0);
+                        dag.removeEdge(other, x);
+                        dag.removeEdge(y, x);
+                        dag.addDirectedEdge(other, x);
+                        dag.addDirectedEdge(y, x);
+                    } else if (!oky.isEmpty()) {
+                        Node other = oky.get(0);
+                        dag.removeEdge(other, y);
+                        dag.removeEdge(x, y);
+                        dag.addDirectedEdge(other, y);
+                        dag.addDirectedEdge(x, y);
+                    } else {
+                        dag.removeEdge(x, y);
+                        dag.addDirectedEdge(x, y);
+                    }
+
+                    rules.orientImplied(dag);
+                    continue WHILE;
+                }
+            }
+
+            break;
+        }
+
+        return dag;
     }
 
     public static void main(String... args) {

@@ -79,7 +79,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         for (DataSet dataSet : dataSets) {
-            this.tests.add(new IndTestFisherZ(dataSet, alpha));
+            this.tests.add(new IndTestIndResiduals(dataSet, alpha));
         }
 
         this.dataSets = dataSets;

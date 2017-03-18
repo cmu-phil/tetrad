@@ -80,7 +80,7 @@ public class TestGFci {
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+        IndTestIndResiduals independenceTest = new IndTestIndResiduals(cov, alpha);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
@@ -208,7 +208,7 @@ public class TestGFci {
 
         data = DataUtils.restrictToMeasured(data);
 
-        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly(data), 0.001);
+        IndependenceTest test = new IndTestIndResiduals(new CovarianceMatrixOnTheFly(data), 0.001);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
         score.setPenaltyDiscount(4);
         GFci gFci = new GFci(test, score);

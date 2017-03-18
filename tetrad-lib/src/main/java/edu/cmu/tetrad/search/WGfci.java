@@ -39,7 +39,7 @@ public class WGfci implements GraphSearch {
 
         System.out.println("Cov matrix made.");
 
-        test = new IndTestFisherZ(covariances, 0.001);
+        test = new IndTestIndResiduals(covariances, 0.001);
         this.score = new SemBicScore(covariances);
         score.setPenaltyDiscount(4);
         this.gfci = new GFci(test, score);

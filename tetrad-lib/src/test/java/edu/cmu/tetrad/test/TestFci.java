@@ -216,7 +216,7 @@ public class TestFci {
         SemIm bayesIm = new SemIm(bayesPm);
         DataSet dataSet = bayesIm.simulateData(sampleSize, latentDataSaved);
 
-        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
+        IndependenceTest test = new IndTestIndResiduals(dataSet, 0.05);
 
         Cfci search = new Cfci(test);
 
@@ -448,7 +448,7 @@ public class TestFci {
     }
 
     private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {
-        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+        IndTestIndResiduals test = new IndTestIndResiduals(data, alpha);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
         score.setPenaltyDiscount(penaltyDiscount);

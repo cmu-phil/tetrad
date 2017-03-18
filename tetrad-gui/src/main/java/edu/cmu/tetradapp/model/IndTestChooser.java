@@ -139,7 +139,7 @@ final class IndTestChooser {
             return new IndTestConditionalCorrelation(dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.FISHER_Z == testType) {
-            return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestIndResiduals(dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.FISHER_ZD == testType) {
             return new IndTestFisherZGeneralizedInverse(dataSet, params.getDouble("alpha", 0.001));
@@ -157,7 +157,7 @@ final class IndTestChooser {
 
         {
             params.set("indTestType", IndTestType.FISHER_Z);
-            return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestIndResiduals(dataSet, params.getDouble("alpha", 0.001));
         }
     }
 
@@ -171,7 +171,7 @@ final class IndTestChooser {
             List<IndependenceTest> independenceTests = new ArrayList<>();
             for (DataModel dataModel : dataSets) {
                 DataSet dataSet = (DataSet) dataModel;
-                independenceTests.add(new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001)));
+                independenceTests.add(new IndTestIndResiduals(dataSet, params.getDouble("alpha", 0.001)));
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
@@ -219,7 +219,7 @@ final class IndTestChooser {
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,
                                               Parameters params) {
-        return new IndTestFisherZ(covMatrix,
+        return new IndTestIndResiduals(covMatrix,
                 params.getDouble("alpha", 0.001));
     }
 

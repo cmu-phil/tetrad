@@ -157,7 +157,7 @@ public final class SampleVcpc implements GraphSearch {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
-        if (!(independenceTest instanceof IndTestFisherZ)) {
+        if (!(independenceTest instanceof IndTestIndResiduals)) {
             throw new IllegalArgumentException("Need Fisher Z test to proceed with algorithm");
         }
 

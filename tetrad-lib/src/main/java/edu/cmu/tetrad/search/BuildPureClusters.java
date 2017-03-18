@@ -162,7 +162,7 @@ public final class BuildPureClusters {
             tetradTest = new DiscreteTetradTest(dataSet, alpha);
         } else {
             numVariables = getCovarianceMatrix().getSize();
-            independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
+            independenceTest = new IndTestIndResiduals(getCovarianceMatrix(), .1);
             TestType type;
 
             if (sigTestType == TestType.TETRAD_WISHART || sigTestType == TestType.TETRAD_DELTA

@@ -210,7 +210,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                 DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
-                    IndependenceTest test = new IndTestFisherZ(new CovarianceMatrixOnTheFly((DataSet) model), 0.001);
+                    IndependenceTest test = new IndTestIndResiduals(new CovarianceMatrixOnTheFly((DataSet) model), 0.001);
                     SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                     gesScore.setPenaltyDiscount(penaltyDiscount);
 //                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
@@ -232,7 +232,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                     throw new IllegalStateException("Data set must either be continuous or discrete.");
                 }
             } else if (model instanceof ICovarianceMatrix) {
-                IndependenceTest test = new IndTestFisherZ((ICovarianceMatrix) model, 0.001);
+                IndependenceTest test = new IndTestIndResiduals((ICovarianceMatrix) model, 0.001);
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);

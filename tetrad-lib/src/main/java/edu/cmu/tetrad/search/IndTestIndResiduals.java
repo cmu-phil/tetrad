@@ -40,7 +40,7 @@ import static java.lang.Math.abs;
  * @author Joseph Ramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
-public final class IndTestFisherZ implements IndependenceTest {
+public final class IndTestIndResiduals implements IndependenceTest {
 
     /**
      * The covariance matrix.
@@ -93,7 +93,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestFisherZ(DataSet dataSet, double alpha) {
+    public IndTestIndResiduals(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -120,7 +120,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
+    public IndTestIndResiduals(TetradMatrix data, List<Node> variables, double alpha) {
         this.dataSet = ColtDataSet.makeContinuousData(variables, data);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
@@ -133,7 +133,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
+    public IndTestIndResiduals(ICovarianceMatrix covMatrix, double alpha) {
         this.covMatrix = covMatrix;
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(variables);
@@ -167,7 +167,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
 
         double alphaNew = getAlpha();
-        return new IndTestFisherZ(newCovMatrix, alphaNew);
+        return new IndTestIndResiduals(newCovMatrix, alphaNew);
     }
 
     /**

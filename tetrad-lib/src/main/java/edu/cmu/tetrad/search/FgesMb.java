@@ -165,6 +165,7 @@ public final class FgesMb {
     private List<Node> targets;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 5;
+    private int maxDegree;
 
     //===========================CONSTRUCTORS=============================//
 
@@ -614,6 +615,8 @@ public final class FgesMb {
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
+        int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
+
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
             sortedArrows.remove(arrow);
@@ -624,6 +627,9 @@ public final class FgesMb {
             if (graph.isAdjacentTo(x, y)) {
                 continue;
             }
+
+            if (graph.getDegree(x) > maxDegree - 1) continue;
+            if (graph.getDegree(y) > maxDegree - 1) continue;
 
             if (!arrow.getNaYX().equals(getNaYX(x, y))) {
                 continue;
@@ -1019,6 +1025,10 @@ public final class FgesMb {
 
     public double getModelScore() {
         return modelScore;
+    }
+
+    public void setMaxDegree(int maxDegree) {
+        this.maxDegree = maxDegree;
     }
 
     // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with

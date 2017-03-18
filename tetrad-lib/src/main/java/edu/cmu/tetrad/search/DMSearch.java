@@ -180,7 +180,7 @@ public class DMSearch {
 //           2DO: Alternative to using built in PC. Needs a fix so that all nodes added to pattern are looked at in applyDmSearch
 //            ExecutorService executorService = Executors.newFixedThreadPool(4); // number of threads
 
-            IndTestFisherZ ind = new IndTestFisherZ(cov, this.alphaPC);
+            IndTestIndResiduals ind = new IndTestIndResiduals(cov, this.alphaPC);
             for (int i = 0; i < getInputs().length; i++) {
                 if (!pattern.containsNode(data.getVariable(i))) {
                     pattern.addNode(data.getVariable(i));
@@ -675,7 +675,7 @@ public class DMSearch {
 
         latentList.addAll(inputsLatent);
 
-        IndependenceTest test = new IndTestFisherZ(this.cov, this.alphaSober);
+        IndependenceTest test = new IndTestIndResiduals(this.cov, this.alphaSober);
 
         boolean testResult = false;
 

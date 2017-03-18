@@ -116,7 +116,7 @@ public class TestPc {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestIndResiduals(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
         Graph pattern = pc.search();
@@ -219,7 +219,7 @@ public class TestPc {
         DataSet data = im.simulateData(200, false);
 
         TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
+        IndependenceTest test = new IndTestIndResiduals(data, 0.05);
 
         PcStable pc = new PcStable(test);
         pc.setVerbose(false);
@@ -227,7 +227,7 @@ public class TestPc {
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
+            IndependenceTest test2 = new IndTestIndResiduals(data2, 0.05);
             PcStable pc2 = new PcStable(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
@@ -338,7 +338,7 @@ public class TestPc {
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
 
-            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+            IndTestIndResiduals test = new IndTestIndResiduals(data, alpha);
 
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
             score.setPenaltyDiscount(penaltyDiscount);
@@ -709,7 +709,7 @@ public class TestPc {
             Graph comparison = new DagToPag(dag).convert();
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
-            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+            IndTestIndResiduals test = new IndTestIndResiduals(data, alpha);
 
 
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));

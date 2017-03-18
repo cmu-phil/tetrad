@@ -30,6 +30,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.util.StatUtils.correlation;
 import static java.lang.Math.*;
 
 /**
@@ -103,7 +104,7 @@ public final class Fang implements GraphSearch {
 
         System.out.println("FAS");
 
-        FasStableConcurrent fas = new FasStableConcurrent(test);
+        Fas fas = new Fas(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setKnowledge(knowledge);
@@ -186,7 +187,7 @@ public final class Fang implements GraphSearch {
                     double[] rx = regression.regress(X, graph.getParents(X)).getResiduals().toArray();
                     double[] ry = regression.regress(Y, graph.getParents(Y)).getResiduals().toArray();
 
-                    if (isIndependent(rx, ry, z0)) {
+                    if (isIndependent(rx, ry)) {
                         if (!graph.getParents(X).contains(Y)) continue;
 
                         List<Node> _parX = graph.getParents(X);
@@ -194,7 +195,7 @@ public final class Fang implements GraphSearch {
 
                         double[] rx2 = regression.regress(X, _parX).getResiduals().toArray();
 
-                        if (!isIndependent(rx2, ry, z0)) {
+                        if (!isIndependent(rx2, ry)) {
                             Edge edge = graph.getDirectedEdge(Y, X);
                             graph.removeEdge(edge);
                             System.out.println("Removed " + edge);
@@ -212,41 +213,44 @@ public final class Fang implements GraphSearch {
             }
         }
 
-        System.out.println("Mark dependent residuals.");
-
-        double[][] res = new double[variables.size()][];
-
-        for (int i = 0; i < variables.size(); i++) {
-            Node v = variables.get(i);
-            res[i] = regression.regress(v, graph.getParents(v)).getResiduals().toArray();
-            res[i] = DataUtils.standardizeData(res[i]);
-        }
-
         // Mark dependent errors.
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Node X = variables.get(i);
-                Node Y = variables.get(j);
+        if (markDependentResidualsInGraph) {
+            System.out.println("Mark dependent residuals.");
 
-                if (graph.isAdjacentTo(X, Y)) continue;
+            double[][] res = new double[variables.size()][];
 
-                if (!isIndependent(res[i], res[j], z0)) {
-                    System.out.println("Depenedent residuals " + X + "---" + Y);
+            for (int i = 0; i < variables.size(); i++) {
+                Node v = variables.get(i);
+                res[i] = regression.regress(v, graph.getParents(v)).getResiduals().toArray();
+                res[i] = DataUtils.standardizeData(res[i]);
+            }
 
-                    if (graph.isAdjacentTo(X, Y)) {
-                        List<Edge> edges = graph.getEdges(X, Y);
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = i + 1; j < variables.size(); j++) {
+                    Node X = variables.get(i);
+                    Node Y = variables.get(j);
 
-                        for (Edge edge : edges) {
+                    if (graph.isAdjacentTo(X, Y)) continue;
+
+                    if (!isIndependent(res[i], res[j])) {
+                        System.out.println("Dependent residuals " + X + "---" + Y);
+
+                        if (graph.isAdjacentTo(X, Y)) {
+                            List<Edge> edges = graph.getEdges(X, Y);
+
+                            for (Edge edge : edges) {
+                                edge.setDashed(true);
+                            }
+                        } else {
+                            Edge edge = Edges.nondirectedEdge(X, Y);
+                            edge.setLineColor(Color.GREEN.darker().darker());
                             edge.setDashed(true);
+                            graph.addEdge(edge);
                         }
-                    } else if (markDependentResidualsInGraph) {
-                        Edge edge = Edges.nondirectedEdge(X, Y);
-                        edge.setLineColor(Color.GREEN.darker().darker());
-                        edge.setDashed(true);
-                        graph.addEdge(edge);
                     }
                 }
             }
+
         }
 
         System.out.println("Done");
@@ -257,22 +261,15 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private boolean isIndependent(double[] rx, double[] ry, double z0) {
-        List<List<Double>> c = new ArrayList<List<Double>>();
+    private boolean isIndependent(double[] rx, double[] ry) {
+        double a1 = a(rx, ry, 1);
+        double a3 = a(rx, ry, -1);
+        double a2 = a(ry, rx, 1);
+        double a4 = a(ry, rx, -1);
 
-        c.add(cor(rx, ry, 1, 0));
-        c.add(cor(rx, ry, 0, 1));
-        c.add(cor(rx, ry, -1, 0));
-        c.add(cor(rx, ry, 0, -1));
+        double cutoff = 0.3;
 
-        for (List<Double> c0 : c) {
-            double _c = c0.get(0);
-            double _n = c0.get(1);
-            double z = 0.5 * sqrt(_n) * (log(1 + _c) / (1 - _c));
-            if (z > z0) return false;
-        }
-
-        return true;
+        return abs(a1 - a2) < cutoff && abs(a3 - a4) < cutoff;
     }
 
     private double cov(double[] x, double[] y, int xInc, int yInc) {
@@ -327,10 +324,9 @@ public final class Fang implements GraphSearch {
         return (exy - ex * ey);
     }
 
-    private List<Double> cor(double[] x, double[] y, int xInc, int yInc) {
+    private double a(double[] x, double[] y, int xInc) {
         double exy = 0.0;
         double exx = 0.0;
-        double eyy = 0.0;
 
         double ex = 0.0;
         double ey = 0.0;
@@ -338,45 +334,18 @@ public final class Fang implements GraphSearch {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (xInc == 0 && yInc == 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (xInc == 1 && yInc == 0) {
+            if (xInc == 1) {
                 if (x[k] > 0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
                 }
-            } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == -1 && yInc == 0) {
+            } else if (xInc == -1) {
                 if (x[k] < 0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
@@ -388,14 +357,9 @@ public final class Fang implements GraphSearch {
         ex /= n;
         ey /= n;
 
-        double c = (exy - ex * ey) / sqrt((exx - ex * ex) * (eyy * ey * ey));
-
-        List<Double> ret = new ArrayList<>();
-        ret.add(c);
-        ret.add((double) n);
-
-        return ret;
+        return (exy - ex * ey) / (exx - ex * ex);
     }
+
 
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).

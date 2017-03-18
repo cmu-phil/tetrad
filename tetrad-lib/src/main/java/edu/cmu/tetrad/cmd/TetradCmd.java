@@ -943,7 +943,7 @@ public final class TetradCmd {
         IndependenceTest independence;
 
         if (useCovariance) {
-            independence = new IndTestFisherZ(covarianceMatrix, significance);
+            independence = new IndTestIndResiduals(covarianceMatrix, significance);
         } else {
             if (this.data.isDiscrete()) {
                 independence = new IndTestChiSquare(data, significance);
@@ -955,7 +955,7 @@ public final class TetradCmd {
 
                 } else {
 
-                    independence = new IndTestFisherZ(data, significance);
+                    independence = new IndTestIndResiduals(data, significance);
                 }
 
 
