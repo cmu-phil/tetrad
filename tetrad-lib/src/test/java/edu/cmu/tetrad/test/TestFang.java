@@ -36,13 +36,11 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.junit.Test;
@@ -702,8 +700,8 @@ public class TestFang {
         train.reconcileNames(test);
         test.reconcileNames(train);
 
-        trainTest(train, test);
-//        leaveOneOut(train);
+//        trainTest(train, test);
+        leaveOneOut(train);
     }
 
 
@@ -713,7 +711,7 @@ public class TestFang {
         int numMeh = 0;
 
         List<Edge> allEdges = getAllEdges(train.getGraphs(), train.getTypes(), train.getGraphs());
-        List<List<Edge>> ret = train(train.getGraphs(), allEdges, train.getTypes());
+        List<List<List<Edge>>> ret = train(train.getGraphs(), allEdges, train.getTypes());
 
         printFiles(train.getGraphs(), train.getTypes(), -1, ret);
 
@@ -745,7 +743,7 @@ public class TestFang {
             trainingGraphs.remove(train.getGraphs().get(i));
             List<Edge> allEdges = getAllEdges(train.getGraphs(), train.getTypes(), trainingGraphs);
 
-            List<List<Edge>> ret = train(trainingGraphs, allEdges, train.getTypes());
+            List<List<List<Edge>>> ret = train(trainingGraphs, allEdges, train.getTypes());
             int _class = test(i, train.getFilenames(), train.getGraphs(), train.getTypes(), ret);
 
             if (_class == 1) numTp++;
@@ -872,10 +870,10 @@ public class TestFang {
         return new ArrayList<>(allEdgesSet);
     }
 
-    private void printFiles(List<Graph> _graphs, List<Boolean> types, int i, List<List<Edge>> ret) {
+    private void printFiles(List<Graph> _graphs, List<Boolean> types, int i, List<List<List<Edge>>> ret) {
 
         try {
-            List<Edge> sublist = ret.get(4);
+            List<List<Edge>> sublist = ret.get(4);
 
             File dir2 = new File("/Users/jdramsey/Downloads/alldata");
             dir2.mkdirs();
@@ -887,8 +885,16 @@ public class TestFang {
 
             out.println("T");
 
+            Set<Edge> __edges = new HashSet<>();
+
+            for (List<Edge> _edges : sublist) {
+                __edges.addAll(_edges);
+            }
+
+            List<Edge> edges = new ArrayList<>(__edges);
+
             for (int k = 0; k < _graphs.size(); k++) {
-                for (Edge edge : sublist) {
+                for (Edge edge : edges) {
                     out.print(_graphs.get(k).containsEdge(edge) ? "1\t" : "0\t");
                 }
 
@@ -909,40 +915,41 @@ public class TestFang {
         }
     }
 
-    private int test(int i, List<String> _filenames, List<Graph> _graphs, List<Boolean> types, List<List<Edge>> ret) {
+    private int test(int i, List<String> _filenames, List<Graph> _graphs, List<Boolean> types, List<List<List<Edge>>> ret) {
         Graph testGraph = _graphs.get(i);
 
-        List<Edge> forAutisismIfPresent = ret.get(0);
-        List<Edge> forAutisismIfAbsent = ret.get(1);
-        List<Edge> forTypicalIfPresent = ret.get(2);
-        List<Edge> forTypicalIfAbsent = ret.get(3);
+        List<List<Edge>> forAutisismIfPresent = ret.get(0);
+        List<List<Edge>> forAutisismIfAbsent = ret.get(1);
+        List<List<Edge>> forTypicalIfPresent = ret.get(2);
+        List<List<Edge>> forTypicalIfAbsent = ret.get(3);
 
-        List<Edge> presentAutistic = new ArrayList<>();
-        List<Edge> absentAutistic = new ArrayList<>();
-        List<Edge> presentTypical = new ArrayList<>();
-        List<Edge> absentTypical = new ArrayList<>();
+        List<List<Edge>> presentAutistic = new ArrayList<>();
+        List<List<Edge>> absentAutistic = new ArrayList<>();
+        List<List<Edge>> presentTypical = new ArrayList<>();
+        List<List<Edge>> absentTypical = new ArrayList<>();
 
-        for (Edge edge : forAutisismIfPresent) {
-            if (testGraph.containsEdge(edge) && testGraph.containsEdge(edge.reverse())) {
-                presentAutistic.add(edge);
+
+        for (List<Edge> edges : forAutisismIfPresent) {
+            if (isInAll(testGraph, edges) && !isInAllReverse(testGraph, edges)) {
+                presentAutistic.add(edges);
             }
         }
 
-        for (Edge edge : forAutisismIfAbsent) {
-            if (!testGraph.containsEdge(edge) && testGraph.containsEdge(edge.reverse())) {
-                absentAutistic.add(edge);
+        for (List<Edge> edges : forAutisismIfAbsent) {
+            if (!isInAll(testGraph, edges) && isInAllReverse(testGraph, edges)) {
+                absentAutistic.add(edges);
             }
         }
 
-        for (Edge edge : forTypicalIfPresent) {
-            if (testGraph.containsEdge(edge)) {
-                presentTypical.add(edge);
+        for (List<Edge> edges : forTypicalIfPresent) {
+            if (isInAll(testGraph, edges)) {// && !isInAllReverse(testGraph, edges)) {
+                presentTypical.add(edges);
             }
         }
 
-        for (Edge edge : forTypicalIfAbsent) {
-            if (!testGraph.containsEdge(edge) && testGraph.containsEdge(edge.reverse())) {
-                absentTypical.add(edge);
+        for (List<Edge> edges : forTypicalIfAbsent) {
+            if (!isInAll(testGraph, edges)) {// && isInAllReverse(testGraph, edges)) {
+                absentTypical.add(edges);
             }
         }
 
@@ -967,19 +974,19 @@ public class TestFang {
             System.out.println(name + ". -- ");
         }
 
-        for (Edge aPresent : presentAutistic) {
+        for (List<Edge> aPresent : presentAutistic) {
             System.out.println("..... present autistic " + aPresent);
         }
 
-        for (Edge anAbsent : absentAutistic) {
+        for (List<Edge> anAbsent : absentAutistic) {
             System.out.println("..... absent autistic " + anAbsent);
         }
 
-        for (Edge aPresent : presentTypical) {
+        for (List<Edge> aPresent : presentTypical) {
             System.out.println("..... present typical" + aPresent);
         }
 
-        for (Edge anAbsent : absentTypical) {
+        for (List<Edge> anAbsent : absentTypical) {
             System.out.println("..... absent typical" + anAbsent);
         }
 
@@ -992,7 +999,27 @@ public class TestFang {
         }
     }
 
-    private List<List<Edge>> train(List<Graph> trainingGraphs, List<Edge> allEdges, List<Boolean> types) {
+    private boolean isInAll(Graph testGraph, List<Edge> edges) {
+        for (Edge edge : edges) {
+            if (!testGraph.containsEdge(edge)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isInAllReverse(Graph testGraph, List<Edge> edges) {
+        for (Edge edge : edges) {
+            if (!testGraph.containsEdge(edge.reverse())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private List<List<List<Edge>>> train(List<Graph> trainingGraphs, List<Edge> allEdges, List<Boolean> types) {
         double[] truth = new double[trainingGraphs.size()];
         int w = 0;
 
@@ -1000,10 +1027,10 @@ public class TestFang {
             truth[w++] = types.get(k) ? 1.0 : 0.0;
         }
 
-        List<Edge> forAutisismIfPresent = new ArrayList<>();
-        List<Edge> forAutisismIfAbsent = new ArrayList<>();
-        List<Edge> forTypicalIfPresent = new ArrayList<>();
-        List<Edge> forTypicalIfAbsent = new ArrayList<>();
+        List<List<Edge>> forAutisismIfPresent = new ArrayList<>();
+        List<List<Edge>> forAutisismIfAbsent = new ArrayList<>();
+        List<List<Edge>> forTypicalIfPresent = new ArrayList<>();
+        List<List<Edge>> forTypicalIfAbsent = new ArrayList<>();
 
         for (int y = 0; y < allEdges.size(); y++) {
             double[] est = new double[trainingGraphs.size()];
@@ -1014,23 +1041,23 @@ public class TestFang {
             }
 
             if (cond(est, truth, 1, 1, 10)) {
-//                forAutisismIfPresent.add(allEdges.get(y));
+                forAutisismIfPresent.add(Collections.singletonList(allEdges.get(y)));
             }
 
             if (cond(est, truth, 0, 1, 1)) {
-                forAutisismIfAbsent.add(allEdges.get(y));
+                forAutisismIfAbsent.add(Collections.singletonList(allEdges.get(y)));
             }
 
             if (cond(est, truth, 1, 0, 10)) {
-//                forTypicalIfPresent.add(allEdges.get(y));
+                forTypicalIfPresent.add(Collections.singletonList(allEdges.get(y)));
             }
 
             if (cond(est, truth, 0, 0, 1)) {
-                forTypicalIfAbsent.add(allEdges.get(y));
+                forTypicalIfAbsent.add(Collections.singletonList(allEdges.get(y)));
             }
         }
 
-        List<Edge> sublist = new ArrayList<>();
+        List<List<Edge>> sublist = new ArrayList<>();
 
         sublist.addAll(forAutisismIfPresent);
         sublist.addAll(forAutisismIfAbsent);
@@ -1038,7 +1065,7 @@ public class TestFang {
         sublist.addAll(forTypicalIfAbsent);
 
         // return from train.
-        List<List<Edge>> ret = new ArrayList<>();
+        List<List<List<Edge>>> ret = new ArrayList<>();
         ret.add(forAutisismIfPresent);
         ret.add(forAutisismIfAbsent);
         ret.add(forTypicalIfPresent);
