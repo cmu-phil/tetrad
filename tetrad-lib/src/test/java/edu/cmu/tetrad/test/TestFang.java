@@ -694,52 +694,31 @@ public class TestFang {
 //        Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters);
         Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters);
 //        Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters);
-//
-        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters);
-//        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters);
+//x`
+//        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters);
+        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters);
 //        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters);
 
-        Set<String> allNames = new HashSet<>();
-        List<Node> nodes = new ArrayList<>();
+        train.reconcileNames(test);
+        test.reconcileNames(train);
 
-        List<Graph> trainGraphs = train.getGraphs();
-        List<Graph> testGraphs = test.getGraphs();
-
-        for (Graph graph : trainGraphs) {
-            for (Node node : graph.getNodes()) {
-                if (!allNames.contains(node.getName())) {
-                    nodes.add(node);
-                    allNames.add(node.getName());
-                }
-            }
-        }
-
-        for (Graph graph : testGraphs) {
-            for (Node node : graph.getNodes()) {
-                if (!allNames.contains(node.getName())) {
-                    nodes.add(node);
-                    allNames.add(node.getName());
-                }
-            }
-        }
-
-        trainGraphs = replaceNodes(trainGraphs, nodes);
-        testGraphs = replaceNodes(testGraphs, nodes);
-
-//        trainTest(train, test, trainGraphs, testGraphs);
-        leaveOneOut(train, nodes, trainGraphs);
+//        trainTest(train, test);
+        leaveOneOut(train);
     }
 
-    private void trainTest(Files train, Files test, List<Graph> trainGraphs, List<Graph> testGraphs) {
+
+    private void trainTest(Files train, Files test) {
         int numTp = 0;
         int numFp = 0;
         int numMeh = 0;
 
-        List<Edge> allEdges = getAllEdges(trainGraphs, train.getTypes(), trainGraphs);
-        List<List<Edge>> ret = train(trainGraphs, allEdges, train.getTypes());
+        List<Edge> allEdges = getAllEdges(train.getGraphs(), train.getTypes(), train.getGraphs());
+        List<List<Edge>> ret = train(train.getGraphs(), allEdges, train.getTypes());
 
-        for (int i = 0; i < testGraphs.size(); i++) {
-            int _class = test(i, test.getFilenames(), testGraphs, test.getTypes(), ret);
+        printFiles(train.getGraphs(), train.getTypes(), -1, ret);
+
+        for (int i = 0; i < test.getGraphs().size(); i++) {
+            int _class = test(i, test.getFilenames(), test.getGraphs(), test.getTypes(), ret);
 
             if (_class == 1) numTp++;
             if (_class == -1) numFp++;
@@ -756,24 +735,24 @@ public class TestFang {
         System.out.println();
     }
 
-    private void leaveOneOut(Files train, List<Node> nodes, List<Graph> trainGraphs) {
+    private void leaveOneOut(Files train) {
         int numTp = 0;
         int numFp = 0;
         int numUnclassified = 0;
 
-        for (int i = 0; i < trainGraphs.size(); i++) {
-            List<Graph> trainingGraphs = new ArrayList<>(trainGraphs);
-            trainingGraphs.remove(trainGraphs.get(i));
-            List<Edge> allEdges = getAllEdges(trainGraphs, train.getTypes(), trainingGraphs);
+        for (int i = 0; i < train.getGraphs().size(); i++) {
+            List<Graph> trainingGraphs = new ArrayList<>(train.getGraphs());
+            trainingGraphs.remove(train.getGraphs().get(i));
+            List<Edge> allEdges = getAllEdges(train.getGraphs(), train.getTypes(), trainingGraphs);
 
             List<List<Edge>> ret = train(trainingGraphs, allEdges, train.getTypes());
-            int _class = test(i, train.getFilenames(), trainGraphs, train.getTypes(), ret);
+            int _class = test(i, train.getFilenames(), train.getGraphs(), train.getTypes(), ret);
 
             if (_class == 1) numTp++;
             if (_class == -1) numFp++;
             if (_class == 0) numUnclassified++;
 
-            printFiles(trainGraphs, train.getTypes(), i, ret);
+            printFiles(train.getGraphs(), train.getTypes(), i, ret);
         }
 
         System.out.println();
@@ -828,23 +807,12 @@ public class TestFang {
                     }
                 }
             }
-        }
 
+            reconcileNames();
+        }
 
         public List<String> getFilenames() {
             return filenames;
-        }
-
-        public void setFilenames(List<String> filenames) {
-            this.filenames = filenames;
-        }
-
-        public List<DataSet> getDatasets() {
-            return datasets;
-        }
-
-        public void setDatasets(List<DataSet> datasets) {
-            this.datasets = datasets;
         }
 
         public List<Graph> getGraphs() {
@@ -859,8 +827,28 @@ public class TestFang {
             return types;
         }
 
-        public void setTypes(List<Boolean> types) {
-            this.types = types;
+        private void reconcileNames(Files... files) {
+            Set<String> allNames = new HashSet<>();
+            List<Node> nodes = new ArrayList<>();
+
+            for (Files file : files) {
+                for (Graph graph : file.getGraphs()) {
+                    for (Node node : graph.getNodes()) {
+                        if (!allNames.contains(node.getName())) {
+                            nodes.add(node);
+                            allNames.add(node.getName());
+                        }
+                    }
+                }
+            }
+
+            List<Graph> graphs2 = new ArrayList<>();
+
+            for (Graph graph : graphs) {
+                graphs2.add(GraphUtils.replaceNodes(graph, nodes));
+            }
+
+            this.graphs = graphs2;
         }
     }
 
@@ -885,82 +873,76 @@ public class TestFang {
     }
 
     private void printFiles(List<Graph> _graphs, List<Boolean> types, int i, List<List<Edge>> ret) {
-        PrintStream out = null;
-        List<Edge> sublist = ret.get(4);
 
         try {
+            List<Edge> sublist = ret.get(4);
+
             File dir2 = new File("/Users/jdramsey/Downloads/alldata");
             dir2.mkdirs();
-            out = new PrintStream(new File(dir2, "data" + (i + 1) + ".txt"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+            PrintStream out = new PrintStream(new File(dir2, "data" + (i + 1) + ".txt"));
 
-        for (int j = 0; j < sublist.size(); j++) {
-            out.print("X" + (j + 1) + "\t");
-        }
-
-        out.println("T");
-
-        for (int k = 0; k < _graphs.size(); k++) {
             for (int j = 0; j < sublist.size(); j++) {
-                out.print(_graphs.get(k).containsEdge(sublist.get(j)) ? "1\t" : "0\t");
+                out.print("X" + (j + 1) + "\t");
             }
 
-            out.println(types.get(k) ? "1" : "0");
-        }
+            out.println("T");
 
-        out.close();
+            for (int k = 0; k < _graphs.size(); k++) {
+                for (Edge edge : sublist) {
+                    out.print(_graphs.get(k).containsEdge(edge) ? "1\t" : "0\t");
+                }
 
-        PrintStream keyOut = null;
+                out.println(types.get(k) ? "1" : "0");
+            }
 
-        try {
-            File dir2 = new File("/Users/jdramsey/Downloads/allkeys");
-            dir2.mkdirs();
-            keyOut = new PrintStream(new File(dir2, "key" + (i + 1) + ".txt"));
+            out.close();
+
+            File dir3 = new File("/Users/jdramsey/Downloads/allkeys");
+            dir3.mkdirs();
+            PrintStream keyOut = new PrintStream(new File(dir3, "key" + (i + 1) + ".txt"));
+
+            for (int j = 0; j < sublist.size(); j++) {
+                keyOut.println("X" + (j + 1) + ". " + sublist.get(j));
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
-
-        for (int j = 0; j < sublist.size(); j++) {
-            keyOut.println("X" + (j + 1) + ". " + sublist.get(j));
         }
     }
 
     private int test(int i, List<String> _filenames, List<Graph> _graphs, List<Boolean> types, List<List<Edge>> ret) {
         Graph testGraph = _graphs.get(i);
 
-        int numAutistic = 0;
-        int numTypical = 0;
+        List<Edge> forAutisismIfPresent = ret.get(0);
+        List<Edge> forAutisismIfAbsent = ret.get(1);
+        List<Edge> forTypicalIfPresent = ret.get(2);
+        List<Edge> forTypicalIfAbsent = ret.get(3);
 
-        List<Edge> present = new ArrayList<>();
-        List<Edge> absent = new ArrayList<>();
+        List<Edge> presentAutistic = new ArrayList<>();
+        List<Edge> absentAutistic = new ArrayList<>();
+        List<Edge> presentTypical = new ArrayList<>();
+        List<Edge> absentTypical = new ArrayList<>();
 
-        for (Edge edge : ret.get(0)) {
-            if (testGraph.containsEdge(edge)) {
-//                        present.add(edge);
-//                        numAutistic++;
+        for (Edge edge : forAutisismIfPresent) {
+            if (testGraph.containsEdge(edge) && testGraph.containsEdge(edge.reverse())) {
+                presentAutistic.add(edge);
             }
         }
 
-        for (Edge edge : ret.get(1)) {
+        for (Edge edge : forAutisismIfAbsent) {
             if (!testGraph.containsEdge(edge) && testGraph.containsEdge(edge.reverse())) {
-                absent.add(edge);
-                numAutistic++;
+                absentAutistic.add(edge);
             }
         }
-//
-        for (Edge edge : ret.get(2)) {
+
+        for (Edge edge : forTypicalIfPresent) {
             if (testGraph.containsEdge(edge)) {
-//                        present.add(edge);
-//                        numTypical++;
+                presentTypical.add(edge);
             }
         }
-//
-        for (Edge edge : ret.get(3)) {
+
+        for (Edge edge : forTypicalIfAbsent) {
             if (!testGraph.containsEdge(edge)) {
-//                        absent.add(edge);
-//                        numTypical++;
+                absentTypical.add(edge);
             }
         }
 
@@ -969,20 +951,36 @@ public class TestFang {
         int tp = 0;
         int fp = 0;
 
-        if (numAutistic > 0 && types.get(i)) {
-            System.out.println(name + ". Autistic " + numAutistic + " " + numTypical);
+        if ((!presentAutistic.isEmpty() || !absentAutistic.isEmpty()) && types.get(i)) {
+            System.out.println(name + ". Autistic");
             tp++;
-        } else if (numAutistic > numTypical && !types.get(i)) {
-            System.out.println(name + ". FP " + numAutistic + " " + numTypical);
+        } else if ((!presentAutistic.isEmpty() || !absentAutistic.isEmpty()) && !types.get(i)) {
+            System.out.println(name + ". FP Autistic");
             fp++;
+        } else if ((!presentTypical.isEmpty() || !absentTypical.isEmpty()) && types.get(i)) {
+            System.out.println(name + ". Autistic");
+            tp++;
+        } else if ((!presentTypical.isEmpty() || !absentTypical.isEmpty()) && !types.get(i)) {
+            System.out.println(name + ". FP Autistic");
+            fp++;
+        } else {
+            System.out.println(name + ". -- ");
         }
 
-        for (Edge aPresent : present) {
-            System.out.println("..... present " + aPresent);
+        for (Edge aPresent : presentAutistic) {
+            System.out.println("..... present autistic " + aPresent);
         }
 
-        for (Edge anAbsent : absent) {
-            System.out.println("..... absent " + anAbsent);
+        for (Edge anAbsent : absentAutistic) {
+            System.out.println("..... absent autistic " + anAbsent);
+        }
+
+        for (Edge aPresent : presentTypical) {
+            System.out.println("..... present typical" + aPresent);
+        }
+
+        for (Edge anAbsent : absentTypical) {
+            System.out.println("..... absent typical" + anAbsent);
         }
 
         if (tp > 0) {
@@ -995,7 +993,6 @@ public class TestFang {
     }
 
     private List<List<Edge>> train(List<Graph> trainingGraphs, List<Edge> allEdges, List<Boolean> types) {
-
         double[] truth = new double[trainingGraphs.size()];
         int w = 0;
 
@@ -1016,25 +1013,25 @@ public class TestFang {
                 est[_w++] = (trainingGraphs.get(k).containsEdge(allEdges.get(y))) ? 1.0 : 0.0;
             }
 
-            if (cond(est, truth, 1, 1)) {
+            if (cond(est, truth, 1, 1, 10)) {
                 forAutisismIfPresent.add(allEdges.get(y));
             }
 
-            if (cond(est, truth, 0, 1)) {
+            if (cond(est, truth, 0, 1, 1)) {
                 forAutisismIfAbsent.add(allEdges.get(y));
             }
 
-            if (cond(est, truth, 1, 0)) {
+            if (cond(est, truth, 1, 0, 10)) {
                 forTypicalIfPresent.add(allEdges.get(y));
             }
 
-            if (cond(est, truth, 0, 0)) {
+            if (cond(est, truth, 0, 0, 1)) {
                 forTypicalIfAbsent.add(allEdges.get(y));
             }
         }
 
         List<Edge> sublist = new ArrayList<>();
-        
+
         sublist.addAll(forAutisismIfPresent);
         sublist.addAll(forAutisismIfAbsent);
         sublist.addAll(forTypicalIfPresent);
@@ -1047,6 +1044,7 @@ public class TestFang {
         ret.add(forTypicalIfPresent);
         ret.add(forTypicalIfAbsent);
         ret.add(sublist);
+
         return ret;
     }
 
@@ -1056,7 +1054,7 @@ public class TestFang {
     }
 
     // Returns true if a2 = j on condition that a1 = i.
-    private boolean cond(double[] a1, double[] a2, int i, int j) {
+    private boolean cond(double[] a1, double[] a2, int i, int j, int min) {
         int occurs = 0;
         int isTheCase = 0;
 
@@ -1070,7 +1068,7 @@ public class TestFang {
             }
         }
 
-        return occurs >= 1 && isTheCase == occurs;
+        return occurs >= min && isTheCase == occurs;
     }
 
     private Double count(Map<Edge, Double> edges1Count, Edge edge) {
