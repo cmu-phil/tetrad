@@ -1032,28 +1032,28 @@ public class TestFang {
         List<List<Edge>> forTypicalIfPresent = new ArrayList<>();
         List<List<Edge>> forTypicalIfAbsent = new ArrayList<>();
 
-        for (int y = 0; y < allEdges.size(); y++) {
+        for (Edge allEdge : allEdges) {
             double[] est = new double[trainingGraphs.size()];
             int _w = 0;
 
-            for (int k = 0; k < trainingGraphs.size(); k++) {
-                est[_w++] = (trainingGraphs.get(k).containsEdge(allEdges.get(y))) ? 1.0 : 0.0;
+            for (Graph trainingGraph : trainingGraphs) {
+                est[_w++] = (trainingGraph.containsEdge(allEdge)) ? 1.0 : 0.0;
             }
 
             if (cond(est, truth, 1, 1, 10)) {
-                forAutisismIfPresent.add(Collections.singletonList(allEdges.get(y)));
+                forAutisismIfPresent.add(Collections.singletonList(allEdge));
             }
 
             if (cond(est, truth, 0, 1, 1)) {
-                forAutisismIfAbsent.add(Collections.singletonList(allEdges.get(y)));
+                forAutisismIfAbsent.add(Collections.singletonList(allEdge));
             }
 
             if (cond(est, truth, 1, 0, 10)) {
-                forTypicalIfPresent.add(Collections.singletonList(allEdges.get(y)));
+                forTypicalIfPresent.add(Collections.singletonList(allEdge));
             }
 
             if (cond(est, truth, 0, 0, 1)) {
-                forTypicalIfAbsent.add(Collections.singletonList(allEdges.get(y)));
+                forTypicalIfAbsent.add(Collections.singletonList(allEdge));
             }
         }
 
