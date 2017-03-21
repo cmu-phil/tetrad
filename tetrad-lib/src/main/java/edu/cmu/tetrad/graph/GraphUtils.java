@@ -2548,6 +2548,10 @@ public final class GraphUtils {
 
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
+            for (int i = 4; i < tokens.length; i++) {
+                _edge.addProperty(Edge.Property.valueOf(tokens[i]));
+            }
+
             graph.addEdge(_edge);
         }
 
@@ -3423,15 +3427,18 @@ public final class GraphUtils {
             Node y = Edges.getDirectedEdgeHead(edge);
 
             graph.removeEdge(edge);
-            final boolean dashed = existsSemiDirectedPath(x, y, -1, graph);
             graph.addEdge(edge);
 
-            if (dashed) {
-                edge.setDashed(dashed);
+            if (existsSemiDirectedPath(x, y, -1, graph)) {
+                edge.addProperty(Edge.Property.nl); // dashed.
+            } else {
+                edge.addProperty(Edge.Property.pl);
             }
 
             if (graph.defVisible(edge)) {
-                edge.setLineColor(Color.green);
+                edge.addProperty(Edge.Property.dd); // green.
+            } else {
+                edge.addProperty(Edge.Property.pd);
             }
         }
     }
@@ -3801,12 +3808,47 @@ public final class GraphUtils {
 
         int size = edges.size();
         int count = 0;
+
         for (Edge edge : edges) {
             count++;
+
+            ArrayList<Edge.Property> properties = edge.getProperties();
+
             if (count < size) {
-                fmt.format("%d. %s%n", count, edge);
+                String f = "%d. %s";
+
+                for (int i = 0; i < properties.size(); i++) {
+                    f += " %s";
+                }
+
+                Object[] o = new Object[2 + properties.size()];
+
+                o[0] = count;
+                o[1] = edge;
+
+                for (int i = 0; i < properties.size(); i++) {
+                    o[2 + i] = properties.get(i);
+                }
+
+                fmt.format(f, o);
+                fmt.format("\n");
             } else {
-                fmt.format("%d. %s", count, edge);
+                String f = "%d. %s";
+
+                for (int i = 0; i < properties.size(); i++) {
+                    f += " %s";
+                }
+                Object[] o = new Object[2 + properties.size()];
+
+                o[0] = count;
+                o[1] = edge;
+
+                for (int i = 0; i < properties.size(); i++) {
+                    o[2 + i] = properties.get(i);
+                }
+
+                fmt.format(f, o);
+                fmt.format("\n");
             }
         }
 
