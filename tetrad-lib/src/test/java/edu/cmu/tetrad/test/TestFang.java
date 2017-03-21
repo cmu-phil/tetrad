@@ -695,15 +695,15 @@ public class TestFang {
         Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters);
 //        Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters);
 //x`
-//        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters);
-        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters);
+        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters);
+//        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters);
 //        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters);
 
         train.reconcileNames(test);
         test.reconcileNames(train);
 
-//        trainTest(train, test);
-        leaveOneOut(train);
+        trainTest(train, test);
+//        leaveOneOut(train);
     }
 
 
@@ -941,7 +941,7 @@ public class TestFang {
         }
 
         for (Edge edge : forTypicalIfAbsent) {
-            if (!testGraph.containsEdge(edge)) {
+            if (!testGraph.containsEdge(edge) && testGraph.containsEdge(edge.reverse())) {
                 absentTypical.add(edge);
             }
         }
@@ -1014,7 +1014,7 @@ public class TestFang {
             }
 
             if (cond(est, truth, 1, 1, 10)) {
-                forAutisismIfPresent.add(allEdges.get(y));
+//                forAutisismIfPresent.add(allEdges.get(y));
             }
 
             if (cond(est, truth, 0, 1, 1)) {
@@ -1022,7 +1022,7 @@ public class TestFang {
             }
 
             if (cond(est, truth, 1, 0, 10)) {
-                forTypicalIfPresent.add(allEdges.get(y));
+//                forTypicalIfPresent.add(allEdges.get(y));
             }
 
             if (cond(est, truth, 0, 0, 1)) {
