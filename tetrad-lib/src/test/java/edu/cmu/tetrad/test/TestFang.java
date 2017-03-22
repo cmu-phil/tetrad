@@ -36,7 +36,6 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
@@ -52,6 +51,8 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+
+import static edu.cmu.tetrad.util.StatUtils.sum;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -680,7 +681,7 @@ public class TestFang {
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 1);
-        parameters.set("depth", 3);
+        parameters.set("depth", -1);
         parameters.set("maxCoef", .7);
         parameters.set("depErrorsAlpha", 0.001);
         parameters.set("markDependentResiduals", false);
@@ -915,8 +916,8 @@ public class TestFang {
         }
     }
 
-    private int test(int i, List<String> _filenames, List<Graph> _graphs, List<Boolean> types, List<List<List<Edge>>> ret) {
-        Graph testGraph = _graphs.get(i);
+    private int test(int i, List<String> filenames, List<Graph> graphs, List<Boolean> types, List<List<List<Edge>>> ret) {
+        Graph testGraph = graphs.get(i);
 
         List<List<Edge>> forAutisismIfPresent = ret.get(0);
         List<List<Edge>> forAutisismIfAbsent = ret.get(1);
@@ -928,32 +929,33 @@ public class TestFang {
         List<List<Edge>> presentTypical = new ArrayList<>();
         List<List<Edge>> absentTypical = new ArrayList<>();
 
+        List<Edge> allEdges = new ArrayList<>();
 
         for (List<Edge> edges : forAutisismIfPresent) {
-            if (isInAll(testGraph, edges) && !isInAllReverse(testGraph, edges)) {
+            if (!anyMissing(testGraph, edges) && !isInAllReverse(testGraph, edges)) {
                 presentAutistic.add(edges);
             }
         }
 
         for (List<Edge> edges : forAutisismIfAbsent) {
-            if (!isInAll(testGraph, edges) && isInAllReverse(testGraph, edges)) {
+            if (anyMissing(testGraph, edges)) {// && isInAllReverse(testGraph, edges)) {
                 absentAutistic.add(edges);
             }
         }
 
-        for (List<Edge> edges : forTypicalIfPresent) {
-            if (isInAll(testGraph, edges)) {// && !isInAllReverse(testGraph, edges)) {
-                presentTypical.add(edges);
-            }
-        }
+//        for (List<Edge> edges : forTypicalIfPresent) {
+//            if (isInAll(testGraph, edges)) {// && !isInAllReverse(testGraph, edges)) {
+//                presentTypical.add(edges);
+//            }
+//        }
+//
+//        for (List<Edge> edges : forTypicalIfAbsent) {
+//            if (!isInAll(testGraph, edges)) {// && isInAllReverse(testGraph, edges)) {
+//                absentTypical.add(edges);
+//            }
+//        }
 
-        for (List<Edge> edges : forTypicalIfAbsent) {
-            if (!isInAll(testGraph, edges)) {// && isInAllReverse(testGraph, edges)) {
-                absentTypical.add(edges);
-            }
-        }
-
-        String name = "" + (i + 1) + ". " + _filenames.get(i) + ". ";
+        String name = "" + (i + 1) + ". " + filenames.get(i) + ". ";
 
         int tp = 0;
         int fp = 0;
@@ -999,14 +1001,14 @@ public class TestFang {
         }
     }
 
-    private boolean isInAll(Graph testGraph, List<Edge> edges) {
+    private boolean anyMissing(Graph testGraph, List<Edge> edges) {
         for (Edge edge : edges) {
             if (!testGraph.containsEdge(edge)) {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
     private boolean isInAllReverse(Graph testGraph, List<Edge> edges) {
@@ -1020,59 +1022,95 @@ public class TestFang {
     }
 
     private List<List<List<Edge>>> train(List<Graph> trainingGraphs, List<Edge> allEdges, List<Boolean> types) {
+        double[] truth = getTruth(trainingGraphs, types);
+
+        List<List<Edge>> forAutismIfPresent = new ArrayList<>();
+        List<List<Edge>> forAutismIfAbsent = new ArrayList<>();
+        List<List<Edge>> forTypicalIfPresent = new ArrayList<>();
+        List<List<Edge>> forTypicalIfAbsent = new ArrayList<>();
+
+        for (Edge edge : allEdges) {
+            double[][] est = new double[1][];
+            est[0] = getEst(trainingGraphs, edge);
+
+//            if (cond(est, truth, 1, 1, 10)) {
+//                forAutismIfPresent.add(Collections.singletonList(edge));
+//            }
+
+            if (cond(est, truth, 0, 1, 1)) {
+                forAutismIfAbsent.add(Collections.singletonList(edge));
+            }
+
+//            if (cond(est, truth, 1, 0, 10)) {
+//                forTypicalIfPresent.add(Collections.singletonList(edge));
+//            }
+//
+            if (cond(est, truth, 0, 0, 1)) {
+                forTypicalIfAbsent.add(Collections.singletonList(edge));
+            }
+        }
+
+        List<Edge> sub = new ArrayList<>();
+
+//        for (int i = 0; i < allEdges.size(); i++) {
+//            double[] est = getEst(trainingGraphs, allEdges.get(i));
+//            double sum = sum(est);
+//            if (sum > 5) sub.add(allEdges.get(i));
+//        }
+//
+//        for (int i = 0; i < sub.size(); i++) {
+//            for (int j = i + 1; j < sub.size(); j++) {
+//                double[][] est = new double[2][];
+//                est[0] = getEst(trainingGraphs, allEdges.get(i));
+//                est[1] = getEst(trainingGraphs, allEdges.get(j));
+//
+//                List<Edge> edges = new ArrayList<>();
+//                edges.add(allEdges.get(i));
+//                edges.add(allEdges.get(j));
+//
+//                if (cond(est, truth, 1, 1, 5)) {
+//                    forAutismIfPresent.add(edges);
+//                }
+//            }
+//        }
+
+        List<List<Edge>> sublist = new ArrayList<>();
+
+        sublist.addAll(forAutismIfPresent);
+        sublist.addAll(forAutismIfAbsent);
+        sublist.addAll(forTypicalIfPresent);
+        sublist.addAll(forTypicalIfAbsent);
+
+        // return from train.
+        List<List<List<Edge>>> ret = new ArrayList<>();
+        ret.add(forAutismIfPresent);
+        ret.add(forAutismIfAbsent);
+        ret.add(forTypicalIfPresent);
+        ret.add(forTypicalIfAbsent);
+        ret.add(sublist);
+
+        return ret;
+    }
+
+    private double[] getTruth(List<Graph> trainingGraphs, List<Boolean> types) {
         double[] truth = new double[trainingGraphs.size()];
         int w = 0;
 
         for (int k = 0; k < trainingGraphs.size(); k++) {
             truth[w++] = types.get(k) ? 1.0 : 0.0;
         }
+        return truth;
+    }
 
-        List<List<Edge>> forAutisismIfPresent = new ArrayList<>();
-        List<List<Edge>> forAutisismIfAbsent = new ArrayList<>();
-        List<List<Edge>> forTypicalIfPresent = new ArrayList<>();
-        List<List<Edge>> forTypicalIfAbsent = new ArrayList<>();
+    private double[] getEst(List<Graph> trainingGraphs, Edge allEdge) {
+        double[] est = new double[trainingGraphs.size()];
+        int _w = 0;
 
-        for (Edge allEdge : allEdges) {
-            double[] est = new double[trainingGraphs.size()];
-            int _w = 0;
-
-            for (Graph trainingGraph : trainingGraphs) {
-                est[_w++] = (trainingGraph.containsEdge(allEdge)) ? 1.0 : 0.0;
-            }
-
-            if (cond(est, truth, 1, 1, 10)) {
-                forAutisismIfPresent.add(Collections.singletonList(allEdge));
-            }
-
-            if (cond(est, truth, 0, 1, 1)) {
-                forAutisismIfAbsent.add(Collections.singletonList(allEdge));
-            }
-
-            if (cond(est, truth, 1, 0, 10)) {
-                forTypicalIfPresent.add(Collections.singletonList(allEdge));
-            }
-
-            if (cond(est, truth, 0, 0, 1)) {
-                forTypicalIfAbsent.add(Collections.singletonList(allEdge));
-            }
+        for (Graph trainingGraph : trainingGraphs) {
+            est[_w++] = (trainingGraph.containsEdge(allEdge)) ? 1.0 : 0.0;
         }
 
-        List<List<Edge>> sublist = new ArrayList<>();
-
-        sublist.addAll(forAutisismIfPresent);
-        sublist.addAll(forAutisismIfAbsent);
-        sublist.addAll(forTypicalIfPresent);
-        sublist.addAll(forTypicalIfAbsent);
-
-        // return from train.
-        List<List<List<Edge>>> ret = new ArrayList<>();
-        ret.add(forAutisismIfPresent);
-        ret.add(forAutisismIfAbsent);
-        ret.add(forTypicalIfPresent);
-        ret.add(forTypicalIfAbsent);
-        ret.add(sublist);
-
-        return ret;
+        return est;
     }
 
 
@@ -1081,18 +1119,34 @@ public class TestFang {
     }
 
     // Returns true if a2 = j on condition that a1 = i.
-    private boolean cond(double[] a1, double[] a2, int i, int j, int min) {
+    private boolean cond(double[][] a1, double[] a2, int i, int j, int min) {
         int occurs = 0;
         int isTheCase = 0;
 
-        for (int w = 0; w < a1.length; w++) {
-            if (a1[w] == i) {
+        int N = a2.length;
+
+        for (int w = 0; w < N; w++) {
+            boolean all = true;
+
+            for (double[] anA1 : a1) {
+                if (anA1[w] != i) all = false;
+            }
+
+            if (all) {
                 occurs++;
 
                 if (a2[w] == j) {
                     isTheCase++;
                 }
             }
+
+//            if (a1[0][w] == i) {
+//                occurs++;
+//
+//                if (a2[w] == j) {
+//                    isTheCase++;
+//                }
+//            }
         }
 
         return occurs >= min && isTheCase == occurs;
