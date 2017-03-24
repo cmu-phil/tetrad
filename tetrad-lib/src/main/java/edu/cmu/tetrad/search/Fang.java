@@ -23,15 +23,15 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.signum;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -62,7 +62,7 @@ public final class Fang implements GraphSearch {
     private double maxCoef = 0.6;
 
     // Alpha level for detecting dependent errors.
-    private double depErrorsAlpha;
+    private double correlatedErrorsAlpha;
 
     // True if dependent residuals should be marked with o-o edges.
     private boolean markDependentResidualsInGraph = false;
@@ -92,8 +92,6 @@ public final class Fang implements GraphSearch {
         for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
 
         DataSet dataSet = DataUtils.concatenate(_dataSets);
-
-        RegressionDataset regression = new RegressionDataset(dataSet);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -125,15 +123,20 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = cov(x, y, 1, 0);
-                double c2 = cov(x, y, 0, 1);
+                double c1 = cov(x, y, 1, 0, 0.0);
+                double c2 = cov(x, y, 0, 1, 0.0);
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > 0.2) {
-                    double c = cov(x, y, 0, 0);
-                    double c3 = cov(x, y, -1, 0);
-                    double c4 = cov(x, y, 0, -1);
+                    double c = cov(x, y, 0, 0, 0.0);
+                    double c3 = cov(x, y, -1, 0, 0.0);
+                    double c4 = cov(x, y, 0, -1, 0.0);
 
-                    double R = abs(c - c2) - abs(c - c1);
+
+                    // Find a y0 such that var(Y > y0) = var(X > 0) and return cov(X, Y > y0).
+                    double v1 = var(x, 0);
+                    double c5 = binarySearchCov(x, y, v1);
+
+                    double R = abs(c - c5) - abs(c - c1);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -169,90 +172,6 @@ public final class Fang implements GraphSearch {
             }
         }
 
-        System.out.println("Remove extraneous edges.");
-
-        double z0 = StatUtils.getZForAlpha(depErrorsAlpha);
-
-        // Remove extraneous edges.
-        boolean changed = true;
-
-        while (changed) {
-            changed = false;
-
-            for (int k = 0; k < variables.size(); k++) {
-                Node X = variables.get(k);
-                List<Node> parX = graph.getParents(X);
-
-                for (Node Y : parX) {
-                    double[] rx = regression.regress(X, graph.getParents(X)).getResiduals().toArray();
-                    double[] ry = regression.regress(Y, graph.getParents(Y)).getResiduals().toArray();
-
-                    if (isIndependent(rx, ry)) {
-                        if (!graph.getParents(X).contains(Y)) continue;
-
-                        List<Node> _parX = graph.getParents(X);
-                        _parX.remove(Y);
-
-                        double[] rx2 = regression.regress(X, _parX).getResiduals().toArray();
-
-                        if (!isIndependent(rx2, ry)) {
-                            Edge edge = graph.getDirectedEdge(Y, X);
-                            graph.removeEdge(edge);
-                            System.out.println("Removed " + edge);
-
-                            List<Edge> edges = graph.getEdges(X, Y);
-
-                            if (edges.size() == 1 && edges.get(0).isDirected()) {
-                                edges.get(0).setLineColor(Color.BLUE);
-                            }
-
-                            changed = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Mark dependent errors.
-        if (markDependentResidualsInGraph) {
-            System.out.println("Mark dependent residuals.");
-
-            double[][] res = new double[variables.size()][];
-
-            for (int i = 0; i < variables.size(); i++) {
-                Node v = variables.get(i);
-                res[i] = regression.regress(v, graph.getParents(v)).getResiduals().toArray();
-                res[i] = DataUtils.standardizeData(res[i]);
-            }
-
-            for (int i = 0; i < variables.size(); i++) {
-                for (int j = i + 1; j < variables.size(); j++) {
-                    Node X = variables.get(i);
-                    Node Y = variables.get(j);
-
-                    if (graph.isAdjacentTo(X, Y)) continue;
-
-                    if (!isIndependent(res[i], res[j])) {
-                        System.out.println("Dependent residuals " + X + "---" + Y);
-
-                        if (graph.isAdjacentTo(X, Y)) {
-                            List<Edge> edges = graph.getEdges(X, Y);
-
-                            for (Edge edge : edges) {
-                                edge.setDashed(true);
-                            }
-                        } else {
-                            Edge edge = Edges.nondirectedEdge(X, Y);
-                            edge.setLineColor(Color.GREEN.darker().darker());
-                            edge.setDashed(true);
-                            graph.addEdge(edge);
-                        }
-                    }
-                }
-            }
-
-        }
-
         System.out.println("Done");
 
         long stop = System.currentTimeMillis();
@@ -261,18 +180,49 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private boolean isIndependent(double[] rx, double[] ry) {
-        double a1 = a(rx, ry, 1);
-        double a3 = a(rx, ry, -1);
-        double a2 = a(ry, rx, 1);
-        double a4 = a(ry, rx, -1);
+    // Finds c0 such that var(Y > c0) = var(X > 0)
+    private double binarySearchCov(double[] x, double[] y, double v1) {
+        double[] ys = Arrays.copyOf(y, y.length);
+        Arrays.sort(ys);
 
-        double cutoff = 0.3;
+        // find the boundary using binary search.
+        int high = ys.length - 1;
+        int low = 0;
+        int midpoint = 0;
 
-        return abs(a1 - a2) < cutoff && abs(a3 - a4) < cutoff;
+        double var = 0.0;
+
+        while (abs(high - low) > 1) {
+            midpoint = (high + low) / 2;
+
+            var = var(y, ys[midpoint]);
+
+            if (var >= v1) {
+                low = midpoint;
+            } else {
+                high = midpoint;
+            }
+        }
+
+        double y2 = ys[midpoint];
+        return cov(x, y, 0, 1, y2);
     }
 
-    private double cov(double[] x, double[] y, int xInc, int yInc) {
+    private boolean correlated(double[] rx, double[] ry) {
+        double correlation = correlation(rx, ry);
+        return abs(correlation) > correlatedErrorsAlpha;
+
+//        double a1 = a(rx, ry, 0);
+//        double a2 = a(ry, rx, 0);
+//        double a3 = a(rx, ry, -1);
+//        double a4 = a(ry, rx, -1);
+
+//        double cutoff = 0.05;
+//
+//        return abs(a1) > cutoff && abs(a2) > cutoff; // || abs(a3) > cutoff || abs(a4) > cutoff;
+    }
+
+    private double cov(double[] x, double[] y, int xInc, int yInc, double cutoff) {
         double exy = 0.0;
 
         double ex = 0.0;
@@ -287,28 +237,28 @@ public final class Fang implements GraphSearch {
                 ey += y[k];
                 n++;
             } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > 0) {
+                if (x[k] > cutoff) {
                     exy += x[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
                 }
             } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > 0) {
+                if (y[k] > cutoff) {
                     exy += x[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
                 }
             } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < 0) {
+                if (x[k] < cutoff) {
                     exy += x[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
                 }
             } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < 0) {
+                if (y[k] < cutoff) {
                     exy += x[k] * y[k];
                     ex += x[k];
                     ey += y[k];
@@ -324,6 +274,26 @@ public final class Fang implements GraphSearch {
         return (exy - ex * ey);
     }
 
+    private double var(double[] x, double cutoff) {
+        double exx = 0.0;
+        double ex = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (x[k] >= cutoff) {
+                exx += x[k] * x[k];
+                ex += x[k];
+                n++;
+            }
+        }
+
+        exx /= n;
+        ex /= n;
+
+        return (exx - ex * ex);
+    }
+
     private double a(double[] x, double[] y, int xInc) {
         double exy = 0.0;
         double exx = 0.0;
@@ -334,7 +304,13 @@ public final class Fang implements GraphSearch {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (xInc == 1) {
+            if (xInc == 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            } else if (xInc == 1) {
                 if (x[k] > 0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
@@ -418,16 +394,16 @@ public final class Fang implements GraphSearch {
      * @return Alpha level for detecting dependent errors. The lower this is set, the fewer dependent
      * errors will be found.
      */
-    public double getDepErrorsAlpha() {
-        return depErrorsAlpha;
+    public double getCorrelatedErrorsAlpha() {
+        return correlatedErrorsAlpha;
     }
 
     /**
-     * @param depErrorsAlpha Alpha level for detecting dependent errors. The lower this is set, the fewer
-     *                       dependent errors will be found.
+     * @param correlatedErrorsAlpha Alpha level for detecting dependent errors. The lower this is set, the fewer
+     *                              dependent errors will be found.
      */
-    public void setDepErrorsAlpha(double depErrorsAlpha) {
-        this.depErrorsAlpha = depErrorsAlpha;
+    public void setCorrelatedErrorsAlpha(double correlatedErrorsAlpha) {
+        this.correlatedErrorsAlpha = correlatedErrorsAlpha;
     }
 
     /**
