@@ -35,11 +35,15 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
 import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fas;
+import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.junit.Test;
@@ -1210,6 +1214,16 @@ public class TestFang {
 
     @Test
     public void testForBiwei() {
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", 6);
+        parameters.set("depth", -1);
+        parameters.set("maxCoef", 0.6);
+
+        parameters.set("numRandomSelections", 10);
+        parameters.set("randomSelectionSize", 1);
+        parameters.set("Structure", "Placeholder");
+
         Files files = new Files("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
 
         List<DataSet> datasets = files.getDatasets();
@@ -1219,9 +1233,38 @@ public class TestFang {
             DataSet dataSet = datasets.get(i);
             String filename = filenames.get(i);
 
-//            SemBicScoredss
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            Fas fas = new Fas(new IndTestScore(score));
+            Graph graph = fas.search();
 
-//            Fas fas = new Fas();
+            System.out.println(graph);
+            List<Node> nodes = graph.getNodes();
+
+            StringBuilder b = new StringBuilder();
+
+            for (int j = 0; j < nodes.size(); j++) {
+                for (int k = 0; k < nodes.size(); k++) {
+                    if (graph.isAdjacentTo(nodes.get(j), nodes.get(k))) {
+                        b.append("1 ");
+                    } else {
+                        b.append("0 ");
+                    }
+                }
+
+                b.append("\n");
+            }
+
+            try {
+                File dir = new File("/Users/jdramsey/Downloads/biwei/USM_ABIDE");
+                dir.mkdirs();
+                File file = new File(dir, filenames.get(i) + ".graph.txt");
+                PrintStream out = new PrintStream(file);
+                out.println(b);
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
         }
 
 
