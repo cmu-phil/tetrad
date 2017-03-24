@@ -20,12 +20,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangLofs implements MultiDataSetAlgorithm, HasKnowledge {
+public class FasLofs implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangLofs(Lofs2.Rule rule) {
+    public FasLofs(Lofs2.Rule rule) {
         this.rule = rule;
     }
 

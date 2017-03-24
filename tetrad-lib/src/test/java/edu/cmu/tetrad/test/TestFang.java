@@ -40,7 +40,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Lofs2;
-import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.junit.Test;
@@ -287,14 +286,14 @@ public class TestFang {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest()));
         algorithms.add(new Fang());
-//        algorithms.add(new FangLofs(Lofs2.Rule.R1));
-//        algorithms.add(new FangLofs(Lofs2.Rule.R2));
-//        algorithms.add(new FangLofs(Lofs2.Rule.R3));
-//        algorithms.add(new FangLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FangLofs(Lofs2.Rule.EB));
-//        algorithms.add(new FangLofs(Lofs2.Rule.Skew));
-//        algorithms.add(new FangLofs(Lofs2.Rule.RSkew));
-//        algorithms.add(new FangLofs(Lofs2.Rule.IGCI));
+        algorithms.add(new FasLofs(Lofs2.Rule.R1));
+        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+        algorithms.add(new FasLofs(Lofs2.Rule.R3));
+        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
+        algorithms.add(new FasLofs(Lofs2.Rule.EB));
+        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
+        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
+        algorithms.add(new FasLofs(Lofs2.Rule.IGCI));
 
         Comparison comparison = new Comparison();
 
@@ -792,12 +791,13 @@ public class TestFang {
             for (File file : dir.listFiles()) {
                 String name = file.getName();
 
-                if (name.contains("ROI_data") && !name.contains("graph")) {
+                if (/*name.contains("ROI_data") &&*/ !name.contains("graph")) {
                     try {
                         if (name.contains("autistic")) {
                             types.add(true);
                             DataSet dataSet = reader.parseTabular(new File(path, name));
                             filenames.add(name);
+                            datasets.add(dataSet);
                             Fang fang = new Fang();
                             Graph search = fang.search(dataSet, parameters);
                             graphs.add(search);
@@ -805,6 +805,7 @@ public class TestFang {
                             types.add(false);
                             DataSet dataSet = reader.parseTabular(new File(path, name));
                             filenames.add(name);
+                            datasets.add(dataSet);
                             Fang fang = new Fang();
                             Graph search = fang.search(dataSet, parameters);
                             graphs.add(search);
@@ -856,6 +857,14 @@ public class TestFang {
             }
 
             this.graphs = graphs2;
+        }
+
+        public List<DataSet> getDatasets() {
+            return datasets;
+        }
+
+        public void setDatasets(List<DataSet> datasets) {
+            this.datasets = datasets;
         }
     }
 
@@ -1199,15 +1208,24 @@ public class TestFang {
         return graphs;
     }
 
-//    public void testForBiwei() {
-//        String dirpath = "/Users/jdramsey/Downloads/USM_ABIDE";
-//
-//        File dir = new File(dirpath);
-//
-//        Files file = new Files("/Users/jdramsey/Downloads/USM_ABIDE");
-//
-//
-//    }
+    @Test
+    public void testForBiwei() {
+        Files files = new Files("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
+
+        List<DataSet> datasets = files.getDatasets();
+        List<String> filenames = files.getFilenames();
+
+        for (int i = 0; i < datasets.size(); i++) {
+            DataSet dataSet = datasets.get(i);
+            String filename = filenames.get(i);
+
+//            SemBicScoredss
+
+//            Fas fas = new Fas();
+        }
+
+
+    }
 
     public static void main(String... args) {
         new TestFang().TestCycles_Data_fMRI_FANG();
