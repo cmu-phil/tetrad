@@ -6,6 +6,7 @@ jdk:
 branches:
   only:
   - development
+  - 2017-04
 
 env:
   global:
