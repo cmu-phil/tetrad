@@ -1199,6 +1199,16 @@ public class TestFang {
         return graphs;
     }
 
+//    public void testForBiwei() {
+//        String dirpath = "/Users/jdramsey/Downloads/USM_ABIDE";
+//
+//        File dir = new File(dirpath);
+//
+//        Files file = new Files("/Users/jdramsey/Downloads/USM_ABIDE");
+//
+//
+//    }
+
     public static void main(String... args) {
         new TestFang().TestCycles_Data_fMRI_FANG();
     }
