@@ -131,12 +131,7 @@ public final class Fang implements GraphSearch {
                     double c3 = cov(x, y, -1, 0, 0.0);
                     double c4 = cov(x, y, 0, -1, 0.0);
 
-
-                    // Find a y0 such that var(Y > y0) = var(X > 0) and return cov(X, Y > y0).
-                    double v1 = var(x, 0);
-                    double c5 = binarySearchCov(x, y, v1);
-
-                    double R = abs(c - c5) - abs(c - c1);
+                    double R = abs(c - c2) - abs(c - c1);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -178,48 +173,6 @@ public final class Fang implements GraphSearch {
         this.elapsed = stop - start;
 
         return graph;
-    }
-
-    // Finds c0 such that var(Y > c0) = var(X > 0)
-    private double binarySearchCov(double[] x, double[] y, double v1) {
-        double[] ys = Arrays.copyOf(y, y.length);
-        Arrays.sort(ys);
-
-        // find the boundary using binary search.
-        int high = ys.length - 1;
-        int low = 0;
-        int midpoint = 0;
-
-        double var = 0.0;
-
-        while (abs(high - low) > 1) {
-            midpoint = (high + low) / 2;
-
-            var = var(y, ys[midpoint]);
-
-            if (var >= v1) {
-                low = midpoint;
-            } else {
-                high = midpoint;
-            }
-        }
-
-        double y2 = ys[midpoint];
-        return cov(x, y, 0, 1, y2);
-    }
-
-    private boolean correlated(double[] rx, double[] ry) {
-        double correlation = correlation(rx, ry);
-        return abs(correlation) > correlatedErrorsAlpha;
-
-//        double a1 = a(rx, ry, 0);
-//        double a2 = a(ry, rx, 0);
-//        double a3 = a(rx, ry, -1);
-//        double a4 = a(ry, rx, -1);
-
-//        double cutoff = 0.05;
-//
-//        return abs(a1) > cutoff && abs(a2) > cutoff; // || abs(a3) > cutoff || abs(a4) > cutoff;
     }
 
     private double cov(double[] x, double[] y, int xInc, int yInc, double cutoff) {
@@ -293,49 +246,6 @@ public final class Fang implements GraphSearch {
 
         return (exx - ex * ex);
     }
-
-    private double a(double[] x, double[] y, int xInc) {
-        double exy = 0.0;
-        double exx = 0.0;
-
-        double ex = 0.0;
-        double ey = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (xInc == 0) {
-                exy += x[k] * y[k];
-                exx += x[k] * x[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            } else if (xInc == 1) {
-                if (x[k] > 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == -1) {
-                if (x[k] < 0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            }
-        }
-
-        exy /= n;
-        ex /= n;
-        ey /= n;
-
-        return (exy - ex * ey) / (exx - ex * ex);
-    }
-
 
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).
