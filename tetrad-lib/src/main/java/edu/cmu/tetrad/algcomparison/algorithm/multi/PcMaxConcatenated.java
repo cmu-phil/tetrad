@@ -1,10 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.CcdMax;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -12,35 +16,29 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Wraps the IMaGES algorithm for continuous variables.
- * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
  * @author jdramsey
  */
-public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
+public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private IndependenceWrapper test;
+    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang() {
+    public PcMaxConcatenated(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(_dataSets);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setMaxCoef(parameters.getDouble("maxCoef"));
-        search.setCorrelatedErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
-        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
+        DataSet dataSet = DataUtils.concatenate(dataSets);
+        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
+                test.getTest(dataSet, parameters));
+        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setKnowledge(knowledge);
-        return getGraph(search);
-    }
-
-    private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
         return search.search();
     }
 
@@ -56,8 +54,9 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
-    }
+        return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + test.getDescription()
+                + (initialGraph != null ? " with initial graph from " +
+                initialGraph.getDescription() : "");    }
 
     @Override
     public DataType getDataType() {
@@ -68,10 +67,8 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
-        parameters.add("penaltyDiscount");
-        parameters.add("maxCoef");
-        parameters.add("depErrorsAlpha");
-        parameters.add("markDependentResiduals");
+        parameters.add("useMaxPOrientationHeuristic");
+        parameters.add("maxPOrientationMaxPathLength");
 
         parameters.add("numRandomSelections");
         parameters.add("randomSelectionSize");

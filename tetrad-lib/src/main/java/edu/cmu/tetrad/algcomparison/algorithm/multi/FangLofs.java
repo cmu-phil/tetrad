@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -19,18 +20,20 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
+public class FangLofs implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private final Lofs2.Rule rule;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fang() {
+    public FangLofs(Lofs2.Rule rule) {
+        this.rule = rule;
     }
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
         List<DataSet> _dataSets = new ArrayList<>();
         for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(_dataSets);
+        edu.cmu.tetrad.search.FangLofs search = new edu.cmu.tetrad.search.FangLofs(_dataSets, rule);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setMaxCoef(parameters.getDouble("maxCoef"));
@@ -40,7 +43,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
         return getGraph(search);
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
+    private Graph getGraph(edu.cmu.tetrad.search.FangLofs search) {
         return search.search();
     }
 
@@ -56,7 +59,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
+        return "FAS followed by " + rule;
     }
 
     @Override

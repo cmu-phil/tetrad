@@ -23,8 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.CcdMaxConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -40,6 +39,8 @@ import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.junit.Test;
@@ -51,8 +52,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-
-import static edu.cmu.tetrad.util.StatUtils.sum;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -204,7 +203,7 @@ public class TestFang {
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
@@ -221,8 +220,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("maxCoef", 0.7);
-        parameters.set("depErrorsAlpha", 0.0001);
+        parameters.set("maxCoef", 0.6);
 
         parameters.set("numRandomSelections", 10);
         parameters.set("randomSelectionSize", 10);
@@ -286,11 +284,21 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_1"));
 
         Algorithms algorithms = new Algorithms();
+//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new PcMaxConcatenated(new SemBicTest()));
         algorithms.add(new Fang());
+//        algorithms.add(new FangLofs(Lofs2.Rule.R1));
+//        algorithms.add(new FangLofs(Lofs2.Rule.R2));
+//        algorithms.add(new FangLofs(Lofs2.Rule.R3));
+//        algorithms.add(new FangLofs(Lofs2.Rule.Patel));
+//        algorithms.add(new FangLofs(Lofs2.Rule.EB));
+//        algorithms.add(new FangLofs(Lofs2.Rule.Skew));
+//        algorithms.add(new FangLofs(Lofs2.Rule.RSkew));
+//        algorithms.add(new FangLofs(Lofs2.Rule.IGCI));
 
         Comparison comparison = new Comparison();
 
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
