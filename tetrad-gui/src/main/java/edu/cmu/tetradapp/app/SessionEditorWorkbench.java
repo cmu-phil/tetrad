@@ -329,8 +329,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @throws NullPointerException if no classes are stored for the given type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
-        System.out.println("nextButtonType: " + nextButtonType);
-
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
 
