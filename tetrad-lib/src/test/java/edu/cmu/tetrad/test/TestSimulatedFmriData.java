@@ -45,7 +45,7 @@ public class TestSimulatedFmriData {
 
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("maxCoef", 0.6);
+        parameters.set("maxCoef", 0.55);
 
         parameters.set("numRuns", 10);
 
