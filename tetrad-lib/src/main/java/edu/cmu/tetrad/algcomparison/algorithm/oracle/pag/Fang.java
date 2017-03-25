@@ -34,7 +34,6 @@ public class Fang implements Algorithm {
         edu.cmu.tetrad.search.Fang search =
                 new edu.cmu.tetrad.search.Fang(Collections.singletonList((DataSet) dataSet));
         search.setDepth(parameters.getInt("depth"));
-        search.setAlpha(parameters.getInt("alpha"));
         search.setPenaltyDiscount(parameters.getInt("penaltyDiscount"));
         return search.search();
     }

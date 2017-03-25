@@ -1231,7 +1231,6 @@ public class TestFang {
 
         for (int i = 0; i < datasets.size(); i++) {
             DataSet dataSet = datasets.get(i);
-            String filename = filenames.get(i);
 
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
             Fas fas = new Fas(new IndTestScore(score));
