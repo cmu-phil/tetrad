@@ -36,9 +36,6 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
         edu.cmu.tetrad.search.FasLofs search = new FasLofs(dataSet, rule);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setMaxCoef(parameters.getDouble("maxCoef"));
-        search.setCorrelatedErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
-        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
         search.setKnowledge(knowledge);
         return getGraph(search);
     }
@@ -73,8 +70,6 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("maxCoef");
-        parameters.add("depErrorsAlpha");
-        parameters.add("markDependentResiduals");
 
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");

@@ -83,7 +83,7 @@ public class PcMax implements GraphSearch {
      * True if verbose output should be printed.
      */
     private boolean verbose = false;
-    private boolean useHeuristic;
+    private boolean useHeuristic = false;
     private int maxPathLength;
 
     //=============================CONSTRUCTORS==========================//

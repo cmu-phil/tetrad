@@ -393,11 +393,11 @@ public class Lofs2 {
                 }
             }
 
-            double p = pValue(node, parents);
-
-            if (p > alpha) {
-                continue;
-            }
+//            double p = pValue(node, parents);
+//
+//            if (p > alpha) {
+//                continue;
+//            }
 
             for (double score : scoreReports.keySet()) {
                 TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
@@ -520,15 +520,15 @@ public class Lofs2 {
 
                 double p3 = pValue(y, condyPlus);
 
-                if (p3 > alpha) {
-                    continue;
-                }
+//                if (p3 > alpha) {
+//                    continue;
+//                }
 
                 double p4 = pValue(y, condyMinus);
 
-                if (p4 > alpha) {
-                    continue;
-                }
+//                if (p4 > alpha) {
+//                    continue;
+//                }
 
                 boolean forbiddenLeft = knowledge.isForbidden(y.getName(), x.getName());
                 boolean forbiddenRight = knowledge.isForbidden(x.getName(), y.getName());

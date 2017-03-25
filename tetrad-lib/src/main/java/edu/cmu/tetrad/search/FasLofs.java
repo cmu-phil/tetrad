@@ -56,15 +56,6 @@ public final class FasLofs implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // The maximum coefficient in absolute value (used for orienting 2-cycles.
-    private double maxCoef = 0.6;
-
-    // Alpha level for detecting dependent errors.
-    private double correlatedErrorsAlpha;
-
-    // True if dependent residuals should be marked with o-o edges.
-    private boolean markDependentResidualsInGraph = false;
-
     /**
      * @param dataSet These datasets to analyze.
      */
@@ -151,51 +142,6 @@ public final class FasLofs implements GraphSearch {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-    }
-
-    /**
-     * @return The maximum coefficient in absoluate value (used for orienting 2-cycles).
-     */
-    public double getMaxCoef() {
-        return maxCoef;
-    }
-
-    /**
-     * @param maxCoef The maximum coefficient in absoluate value (used for orienting 2-cycles).f
-     */
-    public void setMaxCoef(double maxCoef) {
-        this.maxCoef = maxCoef;
-    }
-
-    /**
-     * @return Alpha level for detecting dependent errors. The lower this is set, the fewer dependent
-     * errors will be found.
-     */
-    public double getCorrelatedErrorsAlpha() {
-        return correlatedErrorsAlpha;
-    }
-
-    /**
-     * @param correlatedErrorsAlpha Alpha level for detecting dependent errors. The lower this is set, the fewer
-     *                              dependent errors will be found.
-     */
-    public void setCorrelatedErrorsAlpha(double correlatedErrorsAlpha) {
-        this.correlatedErrorsAlpha = correlatedErrorsAlpha;
-    }
-
-    /**
-     * @return True if dependent residuals should be marked in the graph with o-o dark green edges.
-     */
-    public boolean isMarkDependentResidualsInGraph() {
-        return markDependentResidualsInGraph;
-    }
-
-    /**
-     * @param markDependentResidualsInGraph True if dependent residuals should be marked in the
-     *                                      graph with o-o dark green edges.
-     */
-    public void setMarkDependentResidualsInGraph(boolean markDependentResidualsInGraph) {
-        this.markDependentResidualsInGraph = markDependentResidualsInGraph;
     }
 
     /**

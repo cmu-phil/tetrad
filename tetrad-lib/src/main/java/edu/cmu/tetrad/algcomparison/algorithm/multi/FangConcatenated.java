@@ -63,8 +63,6 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("maxCoef");
-        parameters.add("depErrorsAlpha");
-        parameters.add("markDependentResiduals");
 
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
