@@ -504,7 +504,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         switch (name) {
             case FGES:
-                algorithm = new Fges(scoreWrapper);
+                algorithm = new Fges(scoreWrapper, false);
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -598,7 +598,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new MBFS(independenceWrapper);
                 break;
             case PcMax:
-                algorithm = new PcMax(independenceWrapper);
+                algorithm = new PcMax(independenceWrapper, false);
                 break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);

@@ -60,7 +60,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     private DataWrapper dataWrapper;
     private String name;
-    private Algorithm algorithm = new Fges(new BdeuScore());
+    private Algorithm algorithm = new Fges(new BdeuScore(), false);
     private Parameters parameters;
     private Graph sourceGraph;
     private Graph initialGraph;

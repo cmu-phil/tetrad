@@ -23,11 +23,17 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
 import static java.lang.Math.signum;
 
 /**
@@ -79,7 +85,7 @@ public final class Fang implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        dataSet = DataUtils.standardizeData(dataSet);
+        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -116,40 +122,41 @@ public final class Fang implements GraphSearch {
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > 0.2) {
                     double c = cov(x, y, 0, 0, 0.0);
-                    double c3 = cov(x, y, -1, 0, 0.0);
-                    double c4 = cov(x, y, 0, -1, 0.0);
-
                     double R = abs(c - c2) - abs(c - c1);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (!((signum(c) == signum(c1) && signum(c) == signum(c3))
-                            || (signum(c) == signum(c2) && signum(c) == signum(c4)))) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.RED);
-                        edge2.setLineColor(Color.RED);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else if ((abs(c) > maxCoef)) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
                     } else if (R > 0) {
                         graph.addDirectedEdge(X, Y);
                     } else if (R < 0) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
+                    }
+                }
+            }
+
+            // Orient 2-cycles by checking to see when coefficients are out of range.
+            RegressionDataset regressionDataset = new RegressionDataset(this.dataSet);
+            Set<Node> nodes = new HashSet<>(variables);
+
+            for (Node node : nodes) {
+                final List<Node> parents = graph.getParents(node);
+                RegressionResult result = regressionDataset.regress(node, parents);
+
+                for (int j = 0; j < parents.size(); j++) {
+                    if (knowledgeOrients(node, parents.get(j)) || knowledgeOrients(parents.get(j), node)) {
+                        continue;
+                    }
+
+                    double b = result.getCoef()[j + 1];
+
+                    final boolean out = abs(b) > maxCoef || abs(b) < 0.1;
+
+                    if (out && !graph.isDirectedFromTo(node, parents.get(j))) {
+                        graph.addDirectedEdge(node, parents.get(j));
                     }
                 }
             }

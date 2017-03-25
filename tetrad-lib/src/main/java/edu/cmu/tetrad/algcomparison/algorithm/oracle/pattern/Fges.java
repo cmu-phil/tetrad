@@ -29,10 +29,16 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
+    public Fges(ScoreWrapper score) {
+        this.score = score;
+        this.compareToTrue = false;
+    }
+
     public Fges(ScoreWrapper score, boolean compareToTrueGraph) {
         this.score = score;
         this.compareToTrue = compareToTrueGraph;
     }
+
 
     public Fges(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
