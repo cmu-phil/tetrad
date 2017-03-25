@@ -34,10 +34,6 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setMaxCoef(parameters.getDouble("maxCoef"));
         search.setKnowledge(knowledge);
-        return getGraph(search);
-    }
-
-    private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
         return search.search();
     }
 
