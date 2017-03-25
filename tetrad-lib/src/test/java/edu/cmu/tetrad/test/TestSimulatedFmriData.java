@@ -43,7 +43,7 @@ public class TestSimulatedFmriData {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 6);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 

@@ -30,7 +30,7 @@ public class TwoCyclePrecision implements Statistic {
         double TwoCycleTp = adjConfusion.getTwoCycleTp();
         double TwoCycleFp = adjConfusion.getTwoCycleFp();
         double precision = TwoCycleTp / (TwoCycleTp + TwoCycleFp);
-        if (precision == 0) precision = Double.NaN;
+//        if (precision == 0) precision = Double.NaN;
         return precision;
 
     }

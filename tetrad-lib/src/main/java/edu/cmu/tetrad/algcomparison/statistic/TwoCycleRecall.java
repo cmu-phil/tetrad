@@ -30,7 +30,7 @@ public class TwoCycleRecall implements Statistic {
         double TwoCycleTp = adjConfusion.getTwoCycleTp();
         double TwoCycleFn = adjConfusion.getTwoCycleFn();
         double recall = TwoCycleTp / (TwoCycleTp + TwoCycleFn);
-        if (recall == 0) recall = Double.NaN;
+//        if (recall == 0) recall = Double.NaN;
         return recall;
 
     }
