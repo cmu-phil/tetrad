@@ -25,11 +25,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.correlation;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 
@@ -61,14 +58,8 @@ public final class Fang implements GraphSearch {
     // The maximum coefficient in absolute value (used for orienting 2-cycles.
     private double maxCoef = 0.6;
 
-    // Alpha level for detecting dependent errors.
-    private double correlatedErrorsAlpha;
-
-    // True if dependent residuals should be marked with o-o edges.
-    private boolean markDependentResidualsInGraph = false;
-
     /**
-     * @param dataSet The data to analyze.
+     * @param dataSet These datasets must all have the same variables, in the same order.
      */
     public Fang(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -120,18 +111,13 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double cutoff = 0;
-
-                double c1 = cov(x, y, 1, 0, 0);
-                double c2 = cov(x, y, 0, 1, 0);
+                double c1 = cov(x, y, 1, 0, 0.0);
+                double c2 = cov(x, y, 0, 1, 0.0);
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > 0.2) {
-                    double c = cov(x, y, 0, 0, cutoff);
-
-                    double c1a = cov(x, y, -1, 0, 0);
-                    double c2a = cov(x, y, 0, -1, 0);
-                    double c3a = cov(x, y, -1, 0, 0);
-                    double c4a = cov(x, y, 0, -1, 0);
+                    double c = cov(x, y, 0, 0, 0.0);
+                    double c3 = cov(x, y, -1, 0, 0.0);
+                    double c4 = cov(x, y, 0, -1, 0.0);
 
                     double R = abs(c - c2) - abs(c - c1);
 
@@ -139,8 +125,8 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (!((signum(c) == signum(c1a) && signum(c) == signum(c3a))
-                            || (signum(c) == signum(c2a) && signum(c) == signum(c4a)))) {
+                    } else if (!((signum(c) == signum(c1) && signum(c) == signum(c3))
+                            || (signum(c) == signum(c2) && signum(c) == signum(c4)))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -289,48 +275,10 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @return The maximum coefficient in absoluate value (used for orienting 2-cycles).
-     */
-    public double getMaxCoef() {
-        return maxCoef;
-    }
-
-    /**
      * @param maxCoef The maximum coefficient in absoluate value (used for orienting 2-cycles).f
      */
     public void setMaxCoef(double maxCoef) {
         this.maxCoef = maxCoef;
-    }
-
-    /**
-     * @return Alpha level for detecting dependent errors. The lower this is set, the fewer dependent
-     * errors will be found.
-     */
-    public double getCorrelatedErrorsAlpha() {
-        return correlatedErrorsAlpha;
-    }
-
-    /**
-     * @param correlatedErrorsAlpha Alpha level for detecting dependent errors. The lower this is set, the fewer
-     *                              dependent errors will be found.
-     */
-    public void setCorrelatedErrorsAlpha(double correlatedErrorsAlpha) {
-        this.correlatedErrorsAlpha = correlatedErrorsAlpha;
-    }
-
-    /**
-     * @return True if dependent residuals should be marked in the graph with o-o dark green edges.
-     */
-    public boolean isMarkDependentResidualsInGraph() {
-        return markDependentResidualsInGraph;
-    }
-
-    /**
-     * @param markDependentResidualsInGraph True if dependent residuals should be marked in the
-     *                                      graph with o-o dark green edges.
-     */
-    public void setMarkDependentResidualsInGraph(boolean markDependentResidualsInGraph) {
-        this.markDependentResidualsInGraph = markDependentResidualsInGraph;
     }
 
     /**

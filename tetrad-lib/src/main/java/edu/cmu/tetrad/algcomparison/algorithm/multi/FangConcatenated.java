@@ -33,8 +33,6 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setMaxCoef(parameters.getDouble("maxCoef"));
-        search.setCorrelatedErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
-        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
         search.setKnowledge(knowledge);
         return getGraph(search);
     }

@@ -24,6 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
@@ -34,7 +36,6 @@ import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.algcomparison.statistic.TwoCycleRecall;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
@@ -154,8 +155,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
-        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleFalsePositive2());
+        statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -224,13 +225,13 @@ public class TestFang {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 
-        parameters.set("numRuns", 5);
+        parameters.set("numRuns", 10);
+        parameters.set("randomSelectionSize", 10);
 
-        parameters.set("randomSelectionSize", 1);
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
@@ -242,8 +243,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
-        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleFalsePositive2());
+        statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -303,13 +304,15 @@ public class TestFang {
 //        algorithms.add(new PcMax(new SemBicTest()));
         algorithms.add(new Fang());
         algorithms.add(new FasLofs(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+        algorithms.add(new FasLofs(Lofs2.Rule.R2));
         algorithms.add(new FasLofs(Lofs2.Rule.R3));
         algorithms.add(new FasLofs(Lofs2.Rule.Patel));
         algorithms.add(new FasLofs(Lofs2.Rule.EB));
         algorithms.add(new FasLofs(Lofs2.Rule.Skew));
         algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
+//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new PcMaxConcatenated(new SemBicTest()));
 //        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
@@ -324,7 +327,7 @@ public class TestFang {
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
+        comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(false);
@@ -361,8 +364,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
-        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleFalsePositive2());
+        statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -447,8 +450,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
-        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleFalsePositive2());
+        statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -528,8 +531,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
-        statistics.add(new TwoCycleFalseNegative());
+        statistics.add(new TwoCycleFalsePositive2());
+        statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -1236,7 +1239,7 @@ public class TestFang {
     public void testForBiwei() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 6);
+        parameters.set("penaltyDiscount", 2);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 

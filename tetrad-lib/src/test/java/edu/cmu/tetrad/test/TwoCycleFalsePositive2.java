@@ -1,5 +1,6 @@
-package edu.cmu.tetrad.algcomparison.statistic;
+package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
@@ -11,28 +12,28 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey, rubens (November 2016)
  */
-public class TwoCycleFalseNegative implements Statistic {
+public class TwoCycleFalsePositive2 implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "2CFN";
+        return "2CFP";
     }
 
     @Override
     public String getDescription() {
-        return "2-cycle false negative";
+        return "2-cycle false positive";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        return (double) adjConfusion.getTwoCycleFn();
+        return (double) adjConfusion.getTwoCycleFp();
 
     }
 
     @Override
     public double getNormValue(double value) {
-        return value;
+        return 1.0 - Math.tanh(value);
     }
 }

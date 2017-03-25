@@ -11,7 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey, rubens (November 2016)
  */
-public class TwoCycleTruePositive implements Statistic {
+public class TwoCycleTruePositive2 implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override

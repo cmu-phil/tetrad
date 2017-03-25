@@ -1320,10 +1320,6 @@ public class Lofs2 {
             nodesHash.put(nodes.get(i), i);
         }
 
-//        if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//            graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//        }
-
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -1339,8 +1335,6 @@ public class Lofs2 {
             double[] xx = new double[xData.length];
             double[] yy = new double[yData.length];
 
-//            double corrxy = StatUtils.correlation(xData, yData);
-
             for (int i = 0; i < xData.length; i++) {
                 double xi = xData[i];
                 double yi = yData[i];
@@ -1355,43 +1349,8 @@ public class Lofs2 {
             double mxx = mean(xx);
             double myy = mean(yy);
 
-//            double R = regressionCoef(xData, yData);
-
-            double[] D = new double[xx.length];
-
-            for (int i = 0; i < xx.length; i++) {
-                D[i] = xx[i] - yy[i];
-            }
-
-//            double md = mean(D);
-//            double sd = sd(D);
-//            int n = xx.length;
-//
-//            double td = (md - 0.0) / (sd / sqrt(n));
-//            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(abs(td)));
-
-//            double varxx = variance(xx);
-//            double varyy = variance(yy);
-//            double sp = (varxx + varyy) / 2.0;
-//            double tp = (mxx - myy) / (sp * sqrt(2.0 / n));
-//            double ta = 2 * (1.0 - new TDistribution(2 * n - 2).cumulativeProbability(Math.abs(tp)));
-
             graph.removeEdge(edge);
 
-//            double xa = new AndersonDarlingTest(xData).getP();
-//            double ya = new AndersonDarlingTest(yData).getP();
-//
-//            System.out.println("Edge " + edge + ": corr(x, y) = " + corrxy + " xa = " + xa + " ya = " + ya +
-//                    " td = " + td + " mxx = " + mxx + " myy = " + myy);
-//
-//            double alpha = 0.01;
-//
-//            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || abs(td) < 1.96)) {
-//                graph.addDirectedEdge(x, y);
-//                graph.addDirectedEdge(y, x);
-//                System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
-//                        " td = " + td + " tda = " + tda + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
-//            } else
             if (mxx > myy) {
                 graph.addDirectedEdge(x, y);
             } else if (myy > mxx) {
@@ -1399,12 +1358,6 @@ public class Lofs2 {
             } else {
                 graph.addUndirectedEdge(x, y);
             }
-
-            // 1-10
-            // 2-3
-            // 11-17
-            // 12-20
-            // 15-19
         }
 
         return graph;
