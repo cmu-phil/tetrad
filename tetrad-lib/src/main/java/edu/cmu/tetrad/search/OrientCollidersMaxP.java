@@ -186,13 +186,15 @@ public final class OrientCollidersMaxP {
 
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
         List<Node> adja = graph.getAdjacentNodes(a);
+        List<Node> adjc = graph.getAdjacentNodes(c);
+
         double score = Double.POSITIVE_INFINITY;
         List<Node> S = null;
 
-        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), -1);
         int[] comb2;
 
-        while ((comb2 = cg2.next()) != null) {
+        while ((comb2 = cg1.next()) != null) {
             List<Node> s = GraphUtils.asList(comb2, adja);
             independenceTest.isIndependent(a, c, s);
             double _score = independenceTest.getScore();
@@ -203,12 +205,10 @@ public final class OrientCollidersMaxP {
             }
         }
 
-        List<Node> adjc = graph.getAdjacentNodes(c);
-
-        DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), -1);
         int[] comb3;
 
-        while ((comb3 = cg3.next()) != null) {
+        while ((comb3 = cg2.next()) != null) {
             List<Node> s = GraphUtils.asList(comb3, adjc);
             independenceTest.isIndependent(c, a, s);
             double _score = independenceTest.getScore();
@@ -260,6 +260,8 @@ public final class OrientCollidersMaxP {
         if (wouldCreateBadCollider(graph, c, b)) return;
         if (graph.getEdges(a, b).size() > 1) return;
         if (graph.getEdges(b, c).size() > 1) return;
+        if (knowledge.isForbidden(a.getName(), b.getName())) return;
+        if (knowledge.isForbidden(c.getName(), b.getName())) return;
         graph.removeEdge(a, b);
         graph.removeEdge(c, b);
         graph.addDirectedEdge(a, b);

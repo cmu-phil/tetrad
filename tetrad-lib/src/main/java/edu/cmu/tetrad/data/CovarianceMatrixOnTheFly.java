@@ -410,6 +410,26 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
+    public final ICovarianceMatrix getSubmatrix(int[] indices, int[] dataRows) {
+        List<Node> submatrixVars = new LinkedList<>();
+
+        for (int indice : indices) {
+            submatrixVars.add(variables.get(indice));
+        }
+
+        TetradMatrix cov = new TetradMatrix(indices.length, indices.length);
+
+        for (int i = 0; i < indices.length; i++) {
+            for (int j = i; j < indices.length; j++) {
+                double d = getValue(indices[i], indices[j], dataRows);
+                cov.set(i, j, d);
+                cov.set(j, i, d);
+            }
+        }
+
+        return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
+    }
+
     public final ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames) {
         throw new UnsupportedOperationException();
     }
@@ -450,6 +470,32 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return v;
     }
 
+    public final double getValue(int i, int j, int[] rows) {
+//        if (i == j) {
+//            return variances[i];
+//        }
+
+        double d = 0.0D;
+
+        double[] v1 = vectors[i];
+        double[] v2 = vectors[j];
+        int count = 0;
+
+        for (int k : rows) {
+            if (Double.isNaN(v1[k])) continue;
+            if (Double.isNaN(v2[k])) continue;
+
+            d += v1[k] * v2[k];
+            count++;
+        }
+
+        double v = d;
+//        v /= (sampleSize - 1);
+//        v /= (count - 1);
+        v /= count;
+        return v;
+    }
+
     public void setMatrix(TetradMatrix matrix) {
         this.matrix = matrix;
         checkMatrix();
@@ -479,6 +525,18 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         for (int i = 0; i < getDimension(); i++) {
             for (int j = 0; j < getDimension(); j++) {
                 matrix.set(i, j, getValue(i, j));
+            }
+        }
+
+        return matrix;
+    }
+
+    public final TetradMatrix getMatrix(int[] rows) {
+        TetradMatrix matrix = new TetradMatrix(getDimension(), getDimension());
+
+        for (int i = 0; i < getDimension(); i++) {
+            for (int j = 0; j < getDimension(); j++) {
+                matrix.set(i, j, getValue(i, j, rows));
             }
         }
 
@@ -625,6 +683,29 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
             for (int i = 0; i < rows.length; i++) {
                 for (int j = 0; j < cols.length; j++) {
                     double value = getValue(rows[i], cols[j]);
+                    m.set(i, j, value);
+                }
+            }
+        }
+
+        return m;
+    }
+
+    public TetradMatrix getSelection(int[] rows, int[] cols, int[] dataRows) {
+        TetradMatrix m = new TetradMatrix(rows.length, cols.length);
+
+        if (Arrays.equals(rows, cols)) {
+            for (int i = 0; i < rows.length; i++) {
+                for (int j = i; j < cols.length; j++) {
+                    double value = getValue(rows[i], cols[j], dataRows);
+                    m.set(i, j, value);
+                    m.set(j, i, value);
+                }
+            }
+        } else {
+            for (int i = 0; i < rows.length; i++) {
+                for (int j = 0; j < cols.length; j++) {
+                    double value = getValue(rows[i], cols[j], dataRows);
                     m.set(i, j, value);
                 }
             }

@@ -36,6 +36,7 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
                 test.getTest(dataSet, parameters));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         return search.search();
     }

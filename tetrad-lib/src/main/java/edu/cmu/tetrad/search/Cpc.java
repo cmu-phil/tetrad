@@ -451,9 +451,9 @@ Cpc implements GraphSearch {
 //
 ////        System.out.println("orientUnshieldedTriples 1");
 //
-//        double alpha = test.getParameter1();
+//        double alpha = test.getAlternativePenalty();
 //
-//        test.setParameter1(0.1);
+//        test.setAlternativePenalty(0.1);
 //
 //        colliderTriples = new HashSet<Triple>();
 //        noncolliderTriples = new HashSet<Triple>();
@@ -501,7 +501,7 @@ Cpc implements GraphSearch {
 //            }
 //        }
 //
-//        test.setParameter1(alpha);
+//        test.setAlternativePenalty(alpha);
 //
 //        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
 //    }

@@ -24,7 +24,7 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
         final ConditionalGaussianScore conditionalGaussianScore
                 = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet));
         conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        conditionalGaussianScore.setDenominatorMixed(parameters.getBoolean("assumeMixed"));
+        conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
     }
 

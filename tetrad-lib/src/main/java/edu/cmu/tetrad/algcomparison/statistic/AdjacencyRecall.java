@@ -26,9 +26,9 @@ public class AdjacencyRecall implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
         int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
+//        int adjFp = adjConfusion.getAdjFp();
         int adjFn = adjConfusion.getAdjFn();
-        int adjTn = adjConfusion.getAdjTn();
+//        int adjTn = adjConfusion.getAdjTn();
         return adjTp / (double) (adjTp + adjFn);
     }
 

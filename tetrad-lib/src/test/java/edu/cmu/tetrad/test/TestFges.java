@@ -576,14 +576,14 @@ public class TestFges {
                 "\n" +
                 "Graph Edges: \n" +
                 "1. ABILITY --> GPQ\n" +
-                "2. ABILITY --> PREPROD\n" +
-                "3. ABILITY --> PUBS\n" +
-                "4. GPQ --> QFJ\n" +
-                "5. PREPROD --> CITES\n" +
-                "6. PUBS --> CITES\n" +
-                "7. QFJ --> CITES\n" +
-                "8. QFJ --> PUBS\n" +
-                "9. SEX --> PUBS";
+//                "2. ABILITY --> PREPROD\n" +
+//                "3. ABILITY --> PUBS\n" +
+                "3. GPQ --> QFJ\n" +
+                "4. PREPROD --> CITES\n" +
+                "5. PUBS --> CITES\n" +
+//                "7. QFJ --> CITES\n" +
+                "6. QFJ --> PUBS\n" +
+                "7. SEX --> PUBS";
 
         Graph trueGraph = null;
 
@@ -1017,7 +1017,7 @@ public class TestFges {
                 case 2:
                     out = searchMixedFges(data, penalty);
                     break;
-                case 6:
+                case 3:
                     out = searchMGMFges(data, penalty);
                     break;
                 default:

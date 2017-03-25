@@ -124,7 +124,7 @@ public class RandomUtil {
         }
 
         double sample = normal.sample();
-        return (sample - mean) * sd;
+        return sample * sd + mean;
 
 //        return new NormalDistribution(randomGenerator, mean, sd).sample();
     }

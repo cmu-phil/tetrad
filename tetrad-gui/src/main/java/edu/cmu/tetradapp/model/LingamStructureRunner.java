@@ -88,9 +88,9 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
         }
 
 //        Lingam_old lingam = new Lingam_old();
-//        lingam.setParameter1(getParameters().getParameter1());
+//        lingam.setAlternativePenalty(getParameters().getAlternativePenalty());
 //        lingam.setPruningDone(true);
-//        lingam.setParameter1(getParameters().getParameter1());
+//        lingam.setAlternativePenalty(getParameters().getAlternativePenalty());
 //        GraphWithParameters result = lingam.lingam(data);
 //        Graph graph = result.getGraph();
 
