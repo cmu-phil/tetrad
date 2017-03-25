@@ -225,7 +225,7 @@ public class TestFang {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 8);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 
@@ -303,28 +303,25 @@ public class TestFang {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-        algorithms.add(new PcMax(new SemBicTest(), true));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
+//        algorithms.add(new PcMax(new SemBicTest(), true));
         algorithms.add(new Fang());
-        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofs(Lofs2.Rule.EB));
 //        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
 //        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
-//        algorithms.add(new FangConcatenated());
+        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-////        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.EB));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
-//
 
         Comparison comparison = new Comparison();
 

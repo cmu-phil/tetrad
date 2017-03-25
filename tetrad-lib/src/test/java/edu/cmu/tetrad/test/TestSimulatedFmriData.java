@@ -23,8 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
@@ -44,7 +43,7 @@ public class TestSimulatedFmriData {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1);
+        parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 
@@ -129,7 +128,6 @@ public class TestSimulatedFmriData {
         algorithms.add(new FasLofs(Lofs2.Rule.R2));
         algorithms.add(new FasLofs(Lofs2.Rule.R3));
         algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-        algorithms.add(new FasLofs(Lofs2.Rule.EB));
         algorithms.add(new FasLofs(Lofs2.Rule.Skew));
         algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
@@ -137,7 +135,7 @@ public class TestSimulatedFmriData {
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
 //        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-////        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.EB));
