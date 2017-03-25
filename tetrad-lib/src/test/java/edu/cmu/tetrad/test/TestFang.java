@@ -34,6 +34,7 @@ import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.algcomparison.statistic.TwoCycleRecall;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
@@ -246,6 +247,14 @@ public class TestFang {
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 1.0);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 1.0);
+        statistics.setWeight("2CP", 1.0);
+        statistics.setWeight("2CR", 1.0);
+        statistics.setWeight("2CFP", 1.0);
+
         Simulations simulations = new Simulations();
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
@@ -292,34 +301,33 @@ public class TestFang {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new PcMax(new SemBicTest()));
-//        algorithms.add(new Fang());
-//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-////        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofs(Lofs2.Rule.EB));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
+        algorithms.add(new Fang());
+        algorithms.add(new FasLofs(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+        algorithms.add(new FasLofs(Lofs2.Rule.R3));
+        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
+        algorithms.add(new FasLofs(Lofs2.Rule.EB));
+        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
+        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
-        algorithms.add(new FangConcatenated());
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
+//        algorithms.add(new FangConcatenated());
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.EB));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.IGCI));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.EB));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+
 
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(false);
+        comparison.setSortByUtility(true);
         comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(false);
-
         comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
