@@ -63,7 +63,7 @@ public class Lofs2 {
     private Graph pattern;
     private List<DataSet> dataSets;
     private List<TetradMatrix> matrices;
-    private double alpha = 1.0;
+    private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
     private List<String> varnames;
@@ -705,9 +705,6 @@ public class Lofs2 {
     }
 
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
-        if (graph.getEdge(x, y).isDirected()) return;
-        if (graph.getEdges(x, y).size() > 1) return;
-
         String xname = x.getName();
         String yname = y.getName();
 
@@ -1342,7 +1339,7 @@ public class Lofs2 {
             double[] xx = new double[xData.length];
             double[] yy = new double[yData.length];
 
-            double corrxy = StatUtils.correlation(xData, yData);
+//            double corrxy = StatUtils.correlation(xData, yData);
 
             for (int i = 0; i < xData.length; i++) {
                 double xi = xData[i];
@@ -1358,7 +1355,7 @@ public class Lofs2 {
             double mxx = mean(xx);
             double myy = mean(yy);
 
-            double R = regressionCoef(xData, yData);
+//            double R = regressionCoef(xData, yData);
 
             double[] D = new double[xx.length];
 
@@ -1366,12 +1363,12 @@ public class Lofs2 {
                 D[i] = xx[i] - yy[i];
             }
 
-            double md = mean(D);
-            double sd = sd(D);
-            int n = xx.length;
-
-            double td = (md - 0.0) / (sd / sqrt(n));
-            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(abs(td)));
+//            double md = mean(D);
+//            double sd = sd(D);
+//            int n = xx.length;
+//
+//            double td = (md - 0.0) / (sd / sqrt(n));
+//            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(abs(td)));
 
 //            double varxx = variance(xx);
 //            double varyy = variance(yy);
@@ -1381,20 +1378,21 @@ public class Lofs2 {
 
             graph.removeEdge(edge);
 
-            double xa = new AndersonDarlingTest(xData).getP();
-            double ya = new AndersonDarlingTest(yData).getP();
-
-            System.out.println("Edge " + edge + ": corr(x, y) = " + corrxy + " xa = " + xa + " ya = " + ya +
-                    " td = " + td + " mxx = " + mxx + " myy = " + myy);
-
-            double alpha = 0.01;
-
-            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || abs(td) < 1.96)) {
-                graph.addDirectedEdge(x, y);
-                graph.addDirectedEdge(y, x);
-                System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
-                        " td = " + td + " tda = " + tda + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
-            } else if (mxx > myy) {
+//            double xa = new AndersonDarlingTest(xData).getP();
+//            double ya = new AndersonDarlingTest(yData).getP();
+//
+//            System.out.println("Edge " + edge + ": corr(x, y) = " + corrxy + " xa = " + xa + " ya = " + ya +
+//                    " td = " + td + " mxx = " + mxx + " myy = " + myy);
+//
+//            double alpha = 0.01;
+//
+//            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || abs(td) < 1.96)) {
+//                graph.addDirectedEdge(x, y);
+//                graph.addDirectedEdge(y, x);
+//                System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
+//                        " td = " + td + " tda = " + tda + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
+//            } else
+            if (mxx > myy) {
                 graph.addDirectedEdge(x, y);
             } else if (myy > mxx) {
                 graph.addDirectedEdge(y, x);

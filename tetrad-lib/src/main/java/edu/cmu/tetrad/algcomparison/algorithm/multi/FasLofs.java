@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FasLofs implements MultiDataSetAlgorithm, HasKnowledge {
+public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
     private IKnowledge knowledge = new Knowledge2();
@@ -29,27 +29,17 @@ public class FasLofs implements MultiDataSetAlgorithm, HasKnowledge {
         this.rule = rule;
     }
 
-    @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
-        edu.cmu.tetrad.search.FangLofs search = new edu.cmu.tetrad.search.FangLofs(_dataSets, rule);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setMaxCoef(parameters.getDouble("maxCoef"));
-        search.setCorrelatedErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
-        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
-        search.setKnowledge(knowledge);
-        return getGraph(search);
-    }
-
-    private Graph getGraph(edu.cmu.tetrad.search.FangLofs search) {
+    private Graph getGraph(edu.cmu.tetrad.search.FasLofs search) {
         return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
+        search.setDepth(parameters.getInt("depth"));
+        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setKnowledge(knowledge);
+        return getGraph(search);
     }
 
     @Override
@@ -72,12 +62,6 @@ public class FasLofs implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
-        parameters.add("maxCoef");
-        parameters.add("depErrorsAlpha");
-        parameters.add("markDependentResiduals");
-
-        parameters.add("numRandomSelections");
-        parameters.add("randomSelectionSize");
 
         return parameters;
     }

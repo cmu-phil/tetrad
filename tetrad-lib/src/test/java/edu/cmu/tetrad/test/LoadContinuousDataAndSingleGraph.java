@@ -77,8 +77,8 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 
-        if (parameters.get("numRandomSelections") != null) {
-            parameters.set("numRuns", parameters.get("numRandomSelections"));
+        if (parameters.get("numRuns") != null) {
+            parameters.set("numRuns", parameters.get("numRuns"));
         } else {
             parameters.set("numRuns", dataSets.size());
         }

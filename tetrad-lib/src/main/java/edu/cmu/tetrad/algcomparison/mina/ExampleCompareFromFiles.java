@@ -45,7 +45,7 @@ public class ExampleCompareFromFiles {
         // Can leave the simulation parameters out since
         // we're loading from file here.
         parameters.set("penaltyDiscount", 2);
-        parameters.set("numRandomSelections", 5);
+        parameters.set("numRuns", 5);
         parameters.set("randomSelectionSize", 10);
 
         Statistics statistics = new Statistics();

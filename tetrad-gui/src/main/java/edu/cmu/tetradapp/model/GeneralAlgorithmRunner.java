@@ -241,7 +241,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
-                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++) {
+                for (int k = 0; k < parameters.getInt("numRuns"); k++) {
                     List<DataSet> dataSets = new ArrayList<>();
 
                     for (DataModel dataModel : getDataModelList()) {
@@ -270,7 +270,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     graphList.add(((MultiDataSetAlgorithm) algorithm).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
-                for (int k = 0; k < parameters.getInt("numRandomSelections"); k++) {
+                for (int k = 0; k < parameters.getInt("numRuns"); k++) {
                     for (DataModel dataModel : getDataModelList()) {
                         DataSet dataSet = (DataSet) dataModel;
 

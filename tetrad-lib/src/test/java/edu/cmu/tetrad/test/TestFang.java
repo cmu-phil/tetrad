@@ -25,6 +25,8 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
 import edu.cmu.tetrad.algcomparison.graph.Cyclic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
@@ -32,14 +34,14 @@ import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalseNegative;
-import edu.cmu.tetrad.algcomparison.statistic.TwoCycleFalsePositive;
-import edu.cmu.tetrad.algcomparison.statistic.TwoCycleTruePositive;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.Lofs2;
@@ -138,7 +140,7 @@ public class TestFang {
         parameters.set("penaltyDiscount", 3);
         parameters.set("depth", -1);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -221,12 +223,13 @@ public class TestFang {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 6);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 
-        parameters.set("numRandomSelections", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("numRuns", 5);
+
+        parameters.set("randomSelectionSize", 1);
         parameters.set("Structure", "Placeholder");
 
         Statistics statistics = new Statistics();
@@ -287,17 +290,26 @@ public class TestFang {
                 "/Users/jdramsey/Downloads/Cycles_Data_fMRI/Markov_Complex_1"));
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new PcMaxConcatenated(new SemBicTest()));
-        algorithms.add(new Fang());
-        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-        algorithms.add(new FasLofs(Lofs2.Rule.EB));
-        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
-        algorithms.add(new FasLofs(Lofs2.Rule.IGCI));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new PcMax(new SemBicTest()));
+//        algorithms.add(new Fang());
+//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
+////        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
+//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
+//        algorithms.add(new FasLofs(Lofs2.Rule.EB));
+//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
+//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
+
+        algorithms.add(new FangConcatenated());
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.EB));
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.IGCI));
 
         Comparison comparison = new Comparison();
 
@@ -328,7 +340,7 @@ public class TestFang {
         parameters.set("assumeIID", false);
         parameters.set("collapseTiers", true);
 
-        parameters.set("numRandomSelections", 60);
+        parameters.set("numRuns", 60);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -413,7 +425,7 @@ public class TestFang {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
         parameters.set("Structure", "Placeholder");
 
@@ -494,7 +506,7 @@ public class TestFang {
         parameters.set("depth", 4);
         parameters.set("maxCoef", .5);
 
-        parameters.set("numRandomSelections", 5);
+        parameters.set("numRuns", 5);
         parameters.set("randomSelectionSize", 5);
 
         parameters.set("Structure", "Placeholder");
@@ -697,7 +709,7 @@ public class TestFang {
         parameters.set("depErrorsAlpha", 0.001);
         parameters.set("markDependentResiduals", false);
 
-        parameters.set("numRandomSelections", 50);
+        parameters.set("numRuns", 50);
         parameters.set("randomSelectionSize", 1);
         parameters.set("Structure", "Placeholder");
 
@@ -1220,7 +1232,7 @@ public class TestFang {
         parameters.set("depth", -1);
         parameters.set("maxCoef", 0.6);
 
-        parameters.set("numRandomSelections", 10);
+        parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 1);
         parameters.set("Structure", "Placeholder");
 

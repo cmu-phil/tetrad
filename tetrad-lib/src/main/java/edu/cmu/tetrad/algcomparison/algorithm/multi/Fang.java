@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -19,25 +19,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
+public class Fang implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
     public Fang() {
-    }
-
-    @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(_dataSets);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setMaxCoef(parameters.getDouble("maxCoef"));
-        search.setCorrelatedErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
-        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
-        search.setKnowledge(knowledge);
-        return getGraph(search);
     }
 
     private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
@@ -46,7 +32,14 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang((DataSet) dataSet);
+        search.setDepth(parameters.getInt("depth"));
+        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setMaxCoef(parameters.getDouble("maxCoef"));
+        search.setCorrelatedErrorsAlpha(parameters.getDouble("depErrorsAlpha"));
+        search.setMarkDependentResidualsInGraph(parameters.getBoolean("markDependentResiduals"));
+        search.setKnowledge(knowledge);
+        return getGraph(search);
     }
 
     @Override
@@ -73,7 +66,7 @@ public class Fang implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("depErrorsAlpha");
         parameters.add("markDependentResiduals");
 
-        parameters.add("numRandomSelections");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

@@ -70,7 +70,7 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
 
-        parameters.add("numRandomSelections");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

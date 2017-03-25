@@ -21,19 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static java.lang.Math.abs;
-import static java.lang.Math.signum;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -42,7 +37,7 @@ import static java.lang.Math.signum;
  *
  * @author Joseph Ramsey
  */
-public final class FangLofs implements GraphSearch {
+public final class FasLofs implements GraphSearch {
 
     private final Lofs2.Rule rule;
     // Elapsed time of the search, in milliseconds.
@@ -50,7 +45,7 @@ public final class FangLofs implements GraphSearch {
 
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
-    private List<DataSet> dataSets = null;
+    private DataSet dataSet = null;
 
     // For the Fast Adjacency Search.
     private int depth = -1;
@@ -71,10 +66,10 @@ public final class FangLofs implements GraphSearch {
     private boolean markDependentResidualsInGraph = false;
 
     /**
-     * @param dataSets These datasets must all have the same variables, in the same order.
+     * @param dataSet These datasets to analyze.
      */
-    public FangLofs(List<DataSet> dataSets, Lofs2.Rule rule) {
-        this.dataSets = dataSets;
+    public FasLofs(DataSet dataSet, Lofs2.Rule rule) {
+        this.dataSet = dataSet;
         this.rule = rule;
     }
 
@@ -92,17 +87,9 @@ public final class FangLofs implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
-
-        DataSet dataSet = DataUtils.concatenate(_dataSets);
-
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
-        List<Node> variables = dataSet.getVariables();
-
-        double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
         System.out.println("FAS");
 
@@ -111,6 +98,8 @@ public final class FangLofs implements GraphSearch {
         fas.setVerbose(false);
         fas.setKnowledge(knowledge);
         Graph G0 = fas.search();
+
+        System.out.println("LOFS orientation, rule " + rule);
 
         Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(dataSet));
         lofs2.setRule(rule);
@@ -188,7 +177,7 @@ public final class FangLofs implements GraphSearch {
 
     /**
      * @param correlatedErrorsAlpha Alpha level for detecting dependent errors. The lower this is set, the fewer
-     *                       dependent errors will be found.
+     *                              dependent errors will be found.
      */
     public void setCorrelatedErrorsAlpha(double correlatedErrorsAlpha) {
         this.correlatedErrorsAlpha = correlatedErrorsAlpha;

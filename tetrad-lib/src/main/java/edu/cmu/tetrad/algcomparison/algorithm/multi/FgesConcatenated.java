@@ -108,7 +108,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("maxDegree");
         parameters.add("verbose");
 
-        parameters.add("numRandomSelections");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

@@ -47,7 +47,7 @@ public final class Fang implements GraphSearch {
 
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
-    private List<DataSet> dataSets = null;
+    private DataSet dataSet = null;
 
     // For the Fast Adjacency Search.
     private int depth = -1;
@@ -68,10 +68,10 @@ public final class Fang implements GraphSearch {
     private boolean markDependentResidualsInGraph = false;
 
     /**
-     * @param dataSets These datasets must all have the same variables, in the same order.
+     * @param dataSet The data to analyze.
      */
-    public Fang(List<DataSet> dataSets) {
-        this.dataSets = dataSets;
+    public Fang(DataSet dataSet) {
+        this.dataSet = dataSet;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -88,12 +88,9 @@ public final class Fang implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.standardizeData(dataSet));
+        dataSet = DataUtils.standardizeData(dataSet);
 
-        DataSet dataSet = DataUtils.concatenate(_dataSets);
-
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
@@ -123,13 +120,18 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = cov(x, y, 1, 0, 0.0);
-                double c2 = cov(x, y, 0, 1, 0.0);
+                double cutoff = 0;
+
+                double c1 = cov(x, y, 1, 0, 0);
+                double c2 = cov(x, y, 0, 1, 0);
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > 0.2) {
-                    double c = cov(x, y, 0, 0, 0.0);
-                    double c3 = cov(x, y, -1, 0, 0.0);
-                    double c4 = cov(x, y, 0, -1, 0.0);
+                    double c = cov(x, y, 0, 0, cutoff);
+
+                    double c1a = cov(x, y, -1, 0, 0);
+                    double c2a = cov(x, y, 0, -1, 0);
+                    double c3a = cov(x, y, -1, 0, 0);
+                    double c4a = cov(x, y, 0, -1, 0);
 
                     double R = abs(c - c2) - abs(c - c1);
 
@@ -137,8 +139,8 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (!((signum(c) == signum(c1) && signum(c) == signum(c3))
-                            || (signum(c) == signum(c2) && signum(c) == signum(c4)))) {
+                    } else if (!((signum(c) == signum(c1a) && signum(c) == signum(c3a))
+                            || (signum(c) == signum(c2a) && signum(c) == signum(c4a)))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
