@@ -1,5 +1,6 @@
-package edu.cmu.tetrad.algcomparison.statistic;
+package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.graph.Graph;
 

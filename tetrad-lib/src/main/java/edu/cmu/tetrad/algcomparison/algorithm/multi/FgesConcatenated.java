@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.CcdMax;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.PrintStream;
@@ -30,9 +31,15 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     private IKnowledge knowledge = new Knowledge2();
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
+    private boolean compareToTrue = false;
 
     public FgesConcatenated(ScoreWrapper score) {
         this.score = score;
+    }
+
+    public FgesConcatenated(ScoreWrapper score, boolean compareToTrue) {
+        this.score = score;
+        this.compareToTrue = compareToTrue;
     }
 
     public FgesConcatenated(ScoreWrapper score, Algorithm initialGraph) {
@@ -75,19 +82,11 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-//        Graph graph2 = new EdgeListGraph(graph.getNodes());
-//
-//        for (Edge edge : graph.getEdges()) {
-//            List<Edge> edges = graph.getEdges(edge.getNode1(), edge.getNode2());
-//            if (edges.size() == 1) {
-//                graph2.addEdge(edge);
-//            } else if (edges.size() == 2) {
-//                graph2.addUndirectedEdge(edge.getNode1(), edge.getNode2());
-//            }
-//        }
-//
-//        return graph2;
-        return new EdgeListGraph(graph);
+        if (compareToTrue) {
+            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        } else {
+            return new EdgeListGraph(graph);
+        }
     }
 
     @Override
@@ -122,5 +121,13 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    /**
+     * @param compareToTrue true if the result should be compared to the true graph,
+     *                      false if to the pattern of the true graph.
+     */
+    public void setCompareToTrue(boolean compareToTrue) {
+        this.compareToTrue = compareToTrue;
     }
 }

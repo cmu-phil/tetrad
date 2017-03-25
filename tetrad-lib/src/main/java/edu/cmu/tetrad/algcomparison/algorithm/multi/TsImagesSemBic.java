@@ -70,7 +70,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new Fges(new SemBicScore()).getParameters();
+        List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("randomSelectionSize");
         return parameters;
     }

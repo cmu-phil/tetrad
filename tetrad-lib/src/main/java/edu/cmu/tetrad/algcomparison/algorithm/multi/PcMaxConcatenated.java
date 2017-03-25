@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.CcdMax;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -23,9 +24,15 @@ import java.util.List;
  */
 public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private boolean compareToTrue = false;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+
+    public PcMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
+        this.test = test;
+        this.compareToTrue = compareToTrue;
+    }
 
     public PcMaxConcatenated(IndependenceWrapper test) {
         this.test = test;
@@ -49,14 +56,19 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        if (compareToTrue) {
+            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        } else {
+            return new EdgeListGraph(graph);
+        }
     }
 
     @Override
     public String getDescription() {
         return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + test.getDescription()
                 + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");    }
+                initialGraph.getDescription() : "");
+    }
 
     @Override
     public DataType getDataType() {
@@ -84,5 +96,9 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    public void setCompareToTrue(boolean compareToTrue) {
+        this.compareToTrue = compareToTrue;
     }
 }

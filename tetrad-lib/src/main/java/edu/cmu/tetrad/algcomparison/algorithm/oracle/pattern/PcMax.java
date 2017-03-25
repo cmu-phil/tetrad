@@ -22,12 +22,14 @@ import java.util.List;
  */
 public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private boolean compareToTrue = false;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcMax(IndependenceWrapper test) {
+    public PcMax(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;
+        this.compareToTrue = compareToTrue;
     }
 
     @Override
@@ -43,8 +45,11 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        if (compareToTrue) {
+            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        } else {
+            return new EdgeListGraph(graph);
+        }
     }
 
     @Override
@@ -76,5 +81,9 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    public boolean isCompareToTrue() {
+        return compareToTrue;
     }
 }

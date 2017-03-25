@@ -104,7 +104,7 @@ public class TestConditionalGaussianSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianBicScore(), false));
 //        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Comparison comparison = new Comparison();
@@ -180,7 +180,7 @@ public class TestConditionalGaussianSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianBicScore(), false));
 //        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Comparison comparison = new Comparison();
@@ -265,7 +265,7 @@ public class TestConditionalGaussianSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore(), false));
 //        algorithms.add(new PcMax(new ConditionalGaussianLRT()));
 
         Comparison comparison = new Comparison();

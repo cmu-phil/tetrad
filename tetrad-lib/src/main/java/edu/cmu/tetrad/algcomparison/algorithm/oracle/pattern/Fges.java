@@ -8,10 +8,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -26,12 +24,14 @@ import java.util.List;
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
+    private boolean compareToTrue = false;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fges(ScoreWrapper score) {
+    public Fges(ScoreWrapper score, boolean compareToTrueGraph) {
         this.score = score;
+        this.compareToTrue = compareToTrueGraph;
     }
 
     public Fges(ScoreWrapper score, Algorithm initialGraph) {
@@ -69,9 +69,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-//        return GraphUtils.undirectedGraph(graph);
-//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        if (compareToTrue) {
+            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        } else {
+            return new EdgeListGraph(graph);
+        }
     }
 
     @Override
@@ -104,4 +106,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.knowledge = knowledge;
     }
 
+    public void setCompareToTrue(boolean compareToTrue) {
+        this.compareToTrue = compareToTrue;
+    }
 }
