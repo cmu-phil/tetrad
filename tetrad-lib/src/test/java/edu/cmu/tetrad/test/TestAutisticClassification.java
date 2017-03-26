@@ -46,33 +46,34 @@ import java.util.*;
  * @author jdramsey
  */
 public class TestAutisticClassification {
+    private double minCoef = 0.1;
     private double maxCoef = 0.5;
+    private double penaltyDiscount = 1;
+    private int depth = -1;
     private int cutoffPresent = 5;
     private int cutoffAbsent = 1;
 
     public void testAutistic() {
-
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1);
-        parameters.set("depth", -1);
+        parameters.set("penaltyDiscount", penaltyDiscount);
+        parameters.set("depth", depth);
+        parameters.set("minCoef", minCoef);
         parameters.set("maxCoef", maxCoef);
 
-        parameters.set("numRuns", 50);
-        parameters.set("randomSelectionSize", 1);
-        parameters.set("Structure", "Placeholder");
-
-//        Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters, "ROI_data");
-        FangGraphs train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters, "ROI_data");
-//        Files train = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters, "ROI_data");
-
-//        Files train = new Files("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
+        FangGraphs train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters, "ROI_data");
+//        FangGraphs train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
+//                parameters, "ROI_data");
+//        FangGraphs train = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters, "ROI_data");
+//
+//        FangGraphs train = new FangGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
 //x`
-//        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters, "ROI_data");
-        FangGraphs test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2", parameters, "ROI_data");
-//        Files test = new Files("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters, "ROI_data");
-//        Files test = new Files("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
-
+        FangGraphs test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable", parameters, "ROI_data");
+//        FangGraphs test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
+//                parameters, "ROI_data");
+//        FangGraphs test = new FangGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans", parameters, "ROI_data");
+//        FangGraphs test = new FangGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
+//
         train.reconcileNames(test);
         test.reconcileNames(train);
 
@@ -416,6 +417,7 @@ public class TestAutisticClassification {
 
         parameters.set("penaltyDiscount", 2);
         parameters.set("depth", -1);
+        parameters.set("minCoef", 0.1);
         parameters.set("maxCoef", 0.6);
 
         parameters.set("numRuns", 10);

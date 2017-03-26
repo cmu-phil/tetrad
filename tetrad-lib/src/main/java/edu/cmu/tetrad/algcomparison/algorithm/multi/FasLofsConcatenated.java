@@ -69,7 +69,6 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
-        parameters.add("maxCoef");
 
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");

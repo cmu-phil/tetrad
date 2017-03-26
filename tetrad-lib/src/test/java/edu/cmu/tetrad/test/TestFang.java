@@ -223,6 +223,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
+        parameters.set("minCoef", 0.1);
         parameters.set("maxCoef", 0.6);
 
         parameters.set("numRuns", 10);
@@ -511,6 +512,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", 4);
+        parameters.set("minCoef", .1);
         parameters.set("maxCoef", .5);
 
         parameters.set("numRuns", 5);
@@ -712,6 +714,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
+        parameters.set("minCoef", .1);
         parameters.set("maxCoef", .5);
 
         parameters.set("numRuns", 50);
@@ -1203,6 +1206,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 2);
         parameters.set("depth", -1);
+        parameters.set("minCoef", 0.1);
         parameters.set("maxCoef", 0.6);
 
         parameters.set("numRuns", 10);

@@ -62,6 +62,9 @@ public final class Fang implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
 
     // The maximum coefficient in absolute value (used for orienting 2-cycles.
+    private double minCoef = 0.1;
+
+    // The maximum coefficient in absolute value (used for orienting 2-cycles.
     private double maxCoef = 0.6;
 
     /**
@@ -153,7 +156,7 @@ public final class Fang implements GraphSearch {
 
                     double b = result.getCoef()[j + 1];
 
-                    final boolean out = abs(b) > maxCoef || abs(b) < 0.1;
+                    final boolean out = abs(b) > maxCoef || abs(b) < minCoef;
 
                     if (out && !graph.isDirectedFromTo(node, parents.get(j))) {
                         graph.addDirectedEdge(node, parents.get(j));
@@ -282,7 +285,14 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @param maxCoef The maximum coefficient in absoluate value (used for orienting 2-cycles).f
+     * @param minCoef The minimum coefficient in absolute value (used for orienting 2-cycles).f
+     */
+    public void setMinCoef(double minCoef) {
+        this.minCoef = minCoef;
+    }
+
+    /**
+     * @param maxCoef The maximum coefficient in absolute value (used for orienting 2-cycles).f
      */
     public void setMaxCoef(double maxCoef) {
         this.maxCoef = maxCoef;

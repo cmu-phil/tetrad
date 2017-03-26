@@ -35,6 +35,7 @@ public class Fang implements Algorithm, HasKnowledge {
         edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setMinCoef(parameters.getDouble("minCoef"));
         search.setMaxCoef(parameters.getDouble("maxCoef"));
         search.setKnowledge(knowledge);
         return getGraph(search);
@@ -60,6 +61,7 @@ public class Fang implements Algorithm, HasKnowledge {
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
+        parameters.add("minCoef");
         parameters.add("maxCoef");
         parameters.add("depErrorsAlpha");
         parameters.add("markDependentResiduals");
