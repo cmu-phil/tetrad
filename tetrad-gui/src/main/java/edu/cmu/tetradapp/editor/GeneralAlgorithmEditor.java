@@ -794,10 +794,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 				Object userwallTime = JOptionPane.showInputDialog(progressDialog, "Wall Time:",
 						"Choose Your Wall Time (in Hour)", JOptionPane.QUESTION_MESSAGE, null, wallTime, wallTime[0]);
 
-				if (wallTime != null) {
+				if (wallTime != null && userwallTime != null) {
 					HpcParameter hpcParameter = new HpcParameter();
 					hpcParameter.setKey("walltime");
 					hpcParameter.setValue(userwallTime.toString());
+					System.out.println("walltime: " + userwallTime.toString());
 					algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
 				}
 			}

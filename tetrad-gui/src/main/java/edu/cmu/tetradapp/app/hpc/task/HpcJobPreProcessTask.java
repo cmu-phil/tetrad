@@ -2,8 +2,10 @@ package edu.cmu.tetradapp.app.hpc.task;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -22,6 +24,7 @@ import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
 import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
+import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
 import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
 
 /**
@@ -214,6 +217,19 @@ public class HpcJobPreProcessTask implements Runnable {
 			}
 			paramRequest.setJvmOptions(jvmOptions);
 
+			List<HpcParameter> hpcParameters = algorParamReq.getHpcParameters();
+			if(hpcParameters != null){
+				List<edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter> hpcParams = new ArrayList<>();
+				for(HpcParameter param : hpcParameters){
+					edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter hpcParam = new edu.pitt.dbmi.ccd.rest.client.dto.algo.HpcParameter();
+					hpcParam.setKey(param.getKey());
+					hpcParam.setValue(param.getValue());
+					hpcParams.add(hpcParam);
+					System.out.println("HpcParameter: " + hpcParam.getKey() + " : " + hpcParam.getValue());
+				}
+				paramRequest.setHpcParameters(hpcParams);
+			}
+			
 			// Submit a job
 			String algorithmName = hpcJobInfo.getAlgorithmName();
 			JobQueueService jobQueueService = hpcAccountService.getJobQueueService();
