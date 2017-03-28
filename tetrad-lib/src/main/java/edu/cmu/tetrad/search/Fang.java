@@ -138,7 +138,7 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (p1 < alpha && p2 < alpha) {
+                    } else if (p1 <= alpha && p2 <= alpha) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -311,59 +311,7 @@ public final class Fang implements GraphSearch {
 
     private double getZ(double r) {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
-//        double w = sqrt(x.length) * _z;
-
-        // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
-        // are finite and that the sample is large.
-//        x = standardizeData(x);
-//        y = standardizeData(y);
-
-//        double t2 = moment22(x, y);
-//
-//        double t = sqrt(t2);
-//        return abs(w / t);
     }
-
-    public static double[] standardizeData(double[] data) {
-        double sum = 0.0;
-        data = Arrays.copyOf(data, data.length);
-
-        for (int i = 0; i < data.length; i++) {
-            sum += data[i];
-        }
-
-        double mean = sum / data.length;
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] -= mean;
-        }
-
-        double norm = 0.0;
-
-        for (int i = 0; i < data.length; i++) {
-            norm += data[i] * data[i];
-        }
-
-        norm = Math.sqrt(norm / (data.length - 1));
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] /= norm;
-        }
-
-        return data;
-    }
-
-    private double moment22(double[] x, double[] y) {
-        int N = x.length;
-        double sum = 0.0;
-
-        for (int j = 0; j < x.length; j++) {
-            sum += x[j] * x[j] * y[j] * y[j];
-        }
-
-        return sum / N;
-    }
-
 }
 
 
