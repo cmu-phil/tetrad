@@ -32,8 +32,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setMinCoef(parameters.getDouble("minCoef"));
-        search.setMaxCoef(parameters.getDouble("maxCoef"));
+        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
         return search.search();
     }
@@ -63,9 +62,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
-        parameters.add("minCoef");
-        parameters.add("maxCoef");
-
+        parameters.add("twoCycleAlpha");
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 

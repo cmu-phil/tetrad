@@ -23,14 +23,10 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcMax;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -45,13 +41,12 @@ public class TestSimulatedFmriData {
 
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("minCoef", 0.1);
-        parameters.set("maxCoef", 0.55);
+        parameters.set("twoCycleAlpha", .00000001);
 
         parameters.set("numRuns", 10);
 
         // For automatically generated concatenations if you're doing them.
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 5);
 
         parameters.set("Structure", "Placeholder");
 
@@ -122,19 +117,19 @@ public class TestSimulatedFmriData {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-        algorithms.add(new PcMax(new SemBicTest(), true));
-        algorithms.add(new Fang());
-        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
-
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
+//        algorithms.add(new PcMax(new SemBicTest(), true));
+//        algorithms.add(new Fang());
+//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
+//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
+//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
+//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
+//
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
-//        algorithms.add(new FangConcatenated());
+        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));

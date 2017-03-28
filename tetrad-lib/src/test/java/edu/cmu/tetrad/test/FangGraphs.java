@@ -125,6 +125,8 @@ public class FangGraphs {
                         Graph search = fang.search(dataSet, parameters);
                         graphs.add(search);
                     }
+
+                    System.out.println("Loaded " + name);
                 } catch (IOException e) {
                     System.out.println("File " + name + " could not be parsed.");
                 }

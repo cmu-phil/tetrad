@@ -151,25 +151,13 @@ public class ParamDescriptions {
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
 
-        put("minCoef", new ParamDescription(
-                "Low end of coefficient range, in absoluate value",
-                .1, 0.0, Double.MAX_VALUE));
-
-        put("maxCoef", new ParamDescription(
-                "High end of coefficient range, in absolute value",
-                .6, 0.0, Double.MAX_VALUE));
-
         put("ngAlpha", new ParamDescription(
                 "Alpha for testing non-Gaussianity",
                 0.05, 0.0, 1.0));
 
-        put("depErrorsAlpha", new ParamDescription(
-                "Alpha for testing for independent errors",
-                0.05, 0.0, 1.0));
-
-        put("markDependentResiduals", new ParamDescription(
-                "Yes if dependent residuals should be marked as dark green o-o edges",
-                false));
+        put("twoCycleAlpha", new ParamDescription(
+                "Alpha orienting 2-cycles",
+                1e-6, 0.0, 1.0));
 
         put("symmetricFirstStep", new ParamDescription(
                 "Yes if the first step step for FGES should do scoring for both X->Y and Y->X",
