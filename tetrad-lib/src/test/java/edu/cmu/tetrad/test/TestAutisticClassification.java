@@ -51,10 +51,10 @@ public class TestAutisticClassification {
     // Parameters.
     private double penaltyDiscount = 2;
     private int depth = 3;
-    private int cutoffPresent = 4;
-    private int cutoffAbsent = 1;
+    private int cutoffPresent = 10;
+    private int cutoffAbsent = 10;
 
-    private int trainIndex = 1;
+    private int trainIndex = 2;
     private int testIndex = 0;
 
     private Type type = Type.LEAVE_ONE_OUT;
@@ -416,11 +416,11 @@ public class TestAutisticClassification {
 
         double prob = isTheCase / (double) occurs;
 
-        if (occurs >= 4 && isTheCase >= .75 * occurs) {
-            System.out.println();
-        }
+//        if (occurs >= 4 && isTheCase >= .75 * occurs) {
+//            System.out.println();
+//        }
 
-        return occurs >= 4 && prob >= 0.75;
+        return occurs >= min && prob >= 0.75;
     }
 
     private Double count(Map<Edge, Double> edges1Count, Edge edge) {
