@@ -23,20 +23,13 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionCovariance;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.covariance;
 import static java.lang.Math.*;
-import static java.lang.Math.log;
-import static java.lang.Math.sqrt;
 
 /**
  * Fast adjacency search followed by robust skew orientation. Checks are done for adding
@@ -119,27 +112,27 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = cor(x, y, 1, 0, 0.0);
-                double c2 = cor(x, y, 0, 1, 0.0);
+                double[] c1 = cor(x, y, 1, 0, 0.0);
+                double[] c2 = cor(x, y, 0, 1, 0.0);
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1 - c2) > .3) {
-                    double c = cor(x, y, 0, 0, 0.0);
-                    double R = abs(c - c2) - abs(c - c1);
-                    double c3 = cor(x, y, -1, 0, 0.0);
-                    double c4 = cor(x, y, 0, -1, 0.0);
+                if (G0.isAdjacentTo(X, Y) || abs(c1[0] - c2[0]) > .3) {
+                    double c[] = cor(x, y, 0, 0, 0.0);
+                    double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
+                    double c3[] = cor(x, y, -1, 0, 0.0);
+                    double c4[] = cor(x, y, 0, -1, 0.0);
 
-                    double z = getZ(c, x, y);
-                    double z1 = getZ(c1, x, y);
-                    double z2 = getZ(c2, x, y);
+                    double z = getZ(c[0]);
+                    double z1 = getZ(c1[0]);
+                    double z2 = getZ(c2[0]);
 
                     double diff1 = z - z1;
                     double diff2 = z - z2;
 
-                    final double t1 = diff1 / (sqrt(2.0 / x.length));
-                    final double t2 = diff2 / (sqrt(2.0 / x.length));
+                    final double t1 = diff1 / (sqrt(1.0 / c[1] + 1.0 / c1[1]));
+                    final double t2 = diff2 / (sqrt(1.0 / c[1] + 1.0 / c2[1]));
 
-                    double p1 = 1.0 - new TDistribution(2 * x.length - 2).cumulativeProbability(abs(t1 / 2.0));
-                    double p2 = 1.0 - new TDistribution(2 * x.length - 2).cumulativeProbability(abs(t2 / 2.0));
+                    double p1 = 1.0 - new TDistribution(2 * (c[1] + c1[1]) - 2).cumulativeProbability(abs(t1 / 2.0));
+                    double p2 = 1.0 - new TDistribution(2 * (c[1] + c2[1]) - 2).cumulativeProbability(abs(t2 / 2.0));
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -154,8 +147,8 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (!((signum(c) == signum(c1) && signum(c) == signum(c3))
-                            || (signum(c) == signum(c2) && signum(c) == signum(c4)))) {
+                    } else if (!((signum(c[0]) == signum(c1[0]) && signum(c[0]) == signum(c3[0]))
+                            || (signum(c[0]) == signum(c2[0]) && signum(c[0]) == signum(c4[0])))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -184,14 +177,7 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private double p(double r, double[] x, double[] y) {
-//        int N = dataSet.getNumRows();
-//        double z = 0.5 * Math.sqrt(N) * (Math.log(1 + r) - Math.log(1 - r));
-        double z = getZ(r, x, y);
-        return 1.0 - new NormalDistribution().cumulativeProbability(z / 2.0);
-    }
-
-    private double cor(double[] x, double[] y, int xInc, int yInc, double cutoff) {
+    private double[] cor(double[] x, double[] y, int xInc, int yInc, double cutoff) {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
@@ -254,7 +240,7 @@ public final class Fang implements GraphSearch {
         ex /= n;
         ey /= n;
 
-        return (exy - ex * ey) / Math.sqrt((exx - ex * ex) * (eyy - ey * ey));
+        return new double[]{(exy - ex * ey) / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
     }
 
     /**
@@ -323,9 +309,8 @@ public final class Fang implements GraphSearch {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
-    private double getZ(double r, double[] x, double[] y) {
-        double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-        return _z;
+    private double getZ(double r) {
+        return 0.5 * (log(1.0 + r) - log(1.0 - r));
 //        double w = sqrt(x.length) * _z;
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y

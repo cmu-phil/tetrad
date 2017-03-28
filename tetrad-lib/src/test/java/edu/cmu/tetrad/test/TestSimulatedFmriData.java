@@ -41,7 +41,7 @@ public class TestSimulatedFmriData {
 
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .00000001);
+        parameters.set("twoCycleAlpha", .00001);
 
         parameters.set("numRuns", 10);
 
