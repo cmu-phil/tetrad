@@ -19,13 +19,15 @@ import java.util.List;
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private String path;
+    private String subdir;
     private Graph graph = null;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
     private Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataAndSingleGraph(String path) {
+    public LoadContinuousDataAndSingleGraph(String path, String subdir) {
         this.path = path;
+        this.subdir = subdir;
         String structure = new File(path).getName();
         parametersValues.set("Structure", structure);
     }
@@ -34,7 +36,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        File dir = new File(path + "/data_noise");
+        File dir = new File(path + "/" + subdir);
 
         if (dir.exists()) {
             File[] files = dir.listFiles();
@@ -44,6 +46,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 DataReader reader = new DataReader();
                 reader.setVariablesSupplied(true);
+
                 try {
                     DataSet dataSet = reader.parseTabular(file);
                     dataSets.add(dataSet);

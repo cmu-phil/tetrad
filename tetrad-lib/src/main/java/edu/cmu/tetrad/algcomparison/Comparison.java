@@ -1009,7 +1009,7 @@ public class Comparison {
                 file = new File(dir, path + "." + simIndex + "." + algIndex + ".graph" + "."
                         + (i + 1) + ".txt");
             } else {
-                file = new File(dir, simIndex + "." + algIndex + ".graph" + "."
+                file = new File(dir,  simIndex + "." + algIndex + ".graph" + "."
                         + (i + 1) + ".txt");
             }
 
@@ -1248,8 +1248,6 @@ public class Comparison {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
-                    } else if (Double.isNaN(stat)) {
-                        table.setToken(t + 1, initialColumn + statIndex, "-");
                     } else {
                         table.setToken(t + 1, initialColumn + statIndex,
                                 Math.abs(stat) < Math.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
