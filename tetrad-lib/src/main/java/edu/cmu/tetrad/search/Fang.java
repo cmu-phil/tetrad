@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.*;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -112,14 +111,14 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double[] c1 = cor(x, y, 1, 0, 0.0);
-                double[] c2 = cor(x, y, 0, 1, 0.0);
+                double[] c1 = cor(x, y, 1, 0);
+                double[] c2 = cor(x, y, 0, 1);
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[0] - c2[0]) > .3) {
-                    double c[] = cor(x, y, 0, 0, 0.0);
+                    double c[] = cor(x, y, 0, 0);
                     double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
-                    double c3[] = cor(x, y, -1, 0, 0.0);
-                    double c4[] = cor(x, y, 0, -1, 0.0);
+                    double c3[] = cor(x, y, -1, 0);
+                    double c4[] = cor(x, y, 0, -1);
 
                     double z = getZ(c[0]);
                     double z1 = getZ(c1[0]);
@@ -177,7 +176,8 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private double[] cor(double[] x, double[] y, int xInc, int yInc, double cutoff) {
+    private double[] cor(double[] x, double[] y, int xInc, int yInc) {
+
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
@@ -196,7 +196,7 @@ public final class Fang implements GraphSearch {
                 ey += y[k];
                 n++;
             } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > cutoff) {
+                if (x[k] > 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -205,7 +205,7 @@ public final class Fang implements GraphSearch {
                     n++;
                 }
             } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > cutoff) {
+                if (y[k] > 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -214,7 +214,7 @@ public final class Fang implements GraphSearch {
                     n++;
                 }
             } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < cutoff) {
+                if (x[k] < 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -223,7 +223,7 @@ public final class Fang implements GraphSearch {
                     n++;
                 }
             } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < cutoff) {
+                if (y[k] < 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
