@@ -967,12 +967,12 @@ public class MixedUtils {
         IndependenceTest test = null;
 
         if (name.equals("tlin")) {
-            test = new edu.pitt.csb.mgm.IndTestMixedMultipleTTest(data, alpha);
-            ((edu.pitt.csb.mgm.IndTestMixedMultipleTTest)test).setPreferLinear(true);
+            test = new IndTestMixedMultipleTTest(data, alpha);
+            ((IndTestMixedMultipleTTest)test).setPreferLinear(true);
             //test = new IndTestMultinomialLogisticRegressionWald(data, alpha, true);
         } else if (name.equals("tlog")){
-            test = new edu.pitt.csb.mgm.IndTestMixedMultipleTTest(data, alpha);
-            ((edu.pitt.csb.mgm.IndTestMixedMultipleTTest)test).setPreferLinear(false);
+            test = new IndTestMixedMultipleTTest(data, alpha);
+            ((IndTestMixedMultipleTTest)test).setPreferLinear(false);
             //test = new IndTestMultinomialLogisticRegressionWald(data, alpha, false);
         } else {
 

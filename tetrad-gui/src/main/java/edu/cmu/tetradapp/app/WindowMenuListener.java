@@ -24,6 +24,11 @@ package edu.cmu.tetradapp.app;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+
+import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
@@ -34,6 +39,7 @@ import java.util.*;
  * titles, the corresponding internal frame is moved to the front.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
  */
 final class WindowMenuListener implements MenuListener, ActionListener {
 
@@ -46,31 +52,35 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      * The desktop pane that the session editors presented by
      * <code>windowMenu</code> are situated.
      */
-    private JDesktopPane desktopPane;
+    //private final JDesktopPane desktopPane;
 
     /**
      * A map from menu items to the internal frames they represent, used to
      * determine which session editor to navigate to.
      */
-    private Hashtable itemsToFrames;
+    private Hashtable<JMenuItem, JInternalFrame> itemsToFrames;
 
+    private final TetradDesktop desktop;
+    
     /**
      * Constructs the window menu listener.  Requires to be told which object
      * the window menu is and which object the desktop pane is.
      */
-    public WindowMenuListener(JMenu windowMenu, JDesktopPane desktopPane) {
+    public WindowMenuListener(JMenu windowMenu, TetradDesktop desktop) {
 
         if (windowMenu == null) {
             throw new NullPointerException("Window menu must not be null.");
         }
 
-        if (desktopPane == null) {
+        
+        
+        if (desktop == null) {
             throw new NullPointerException("Desktop pane must not be null.");
         }
 
         this.windowMenu = windowMenu;
-        this.desktopPane = desktopPane;
-        itemsToFrames = new Hashtable();
+        this.desktop = desktop;
+        itemsToFrames = new Hashtable<>();
     }
 
     /**
@@ -100,9 +110,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         windowMenu.removeAll();
         itemsToFrames.clear();
 
-        JInternalFrame[] layer0Frames = desktopPane.getAllFramesInLayer(0);
-        List titles = new ArrayList();
-        Map titlesToFrames = new HashMap();
+        JInternalFrame[] layer0Frames = desktop.getDesktopPane().getAllFramesInLayer(0);
+        List<String> titles = new ArrayList<>();
+        Map<String, JInternalFrame> titlesToFrames = new HashMap<>();
 
         for (JInternalFrame layer0Frame : layer0Frames) {
             String title = layer0Frame.getTitle();
@@ -121,6 +131,17 @@ final class WindowMenuListener implements MenuListener, ActionListener {
             item.addActionListener(this);
             this.itemsToFrames.put(item, titlesToFrames.get(title));
         }
+        
+        // If there are hpc account(s) setup, show the hpc activity
+        HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+        List<HpcAccount> hpcAccounts = hpcAccountManager.getHpcAccounts();
+        if(hpcAccounts != null && !hpcAccounts.isEmpty()){
+            this.windowMenu.addSeparator();
+            String title = "HPC Job Activity";
+            JMenuItem item = new JMenuItem(new HpcJobActivityAction(title));
+            this.windowMenu.add(item);
+            //item.addActionListener(hpcJobActivityMenuListener);
+        }
     }
 
     /**
@@ -135,6 +156,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         Object item = e.getSource();
         JInternalFrame frame = (JInternalFrame) itemsToFrames.get(item);
         frame.moveToFront();
+        if(frame.getContentPane().getComponents().length > 0){
+            desktop.setMainTitle(frame.getContentPane().getComponent(0).getName());
+        }
     }
 
     /**

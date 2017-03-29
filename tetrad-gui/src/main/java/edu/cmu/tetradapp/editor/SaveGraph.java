@@ -26,6 +26,10 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -55,7 +59,7 @@ public class SaveGraph extends AbstractAction {
      */
     private Type type = Type.xml;
     
-    public enum Type{text, xml, r}
+    public enum Type{text, xml, json, r}
 
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -94,6 +98,25 @@ public class SaveGraph extends AbstractAction {
             File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, title);
             try {
                 String text = GraphUtils.rMatrix(graph);
+
+                PrintWriter out = new PrintWriter(file);
+                out.println(text);
+                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+                out.close();
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                throw new RuntimeException("Not a directed graph.", e1);
+            } catch (IllegalArgumentException e1) {
+
+                // Probably not a directed graph.
+                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+            }
+        }
+        else if (type == Type.json) {
+            File file = EditorUtils.getSaveFile("graph", "json", parent, false, title);
+            try {
+        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String text = gson.toJson(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
