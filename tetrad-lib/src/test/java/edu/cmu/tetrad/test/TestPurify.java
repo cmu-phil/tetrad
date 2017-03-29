@@ -28,6 +28,8 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.search.Mimbuild2;
 import edu.cmu.tetrad.util.RandomUtil;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Joseph Ramsey
  */
+@Ignore
 public class TestPurify {
 
     @Test

@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import javax.swing.*;
 
+import edu.cmu.tetradapp.app.hpc.action.LoadHpcGraphJsonAction;
+
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -33,6 +35,8 @@ import javax.swing.*;
  */
 final class GraphFileMenu extends JMenu {
 
+    private static final long serialVersionUID = 8003709852565658589L;
+
     public GraphFileMenu(GraphEditable editable, JComponent comp) {
         super("File");
 
@@ -41,16 +45,22 @@ final class GraphFileMenu extends JMenu {
 
         load.add(new LoadGraph(editable, "XML..."));
         load.add(new LoadGraphTxt(editable, "Text..."));
-
+        load.add(new LoadGraphJson(editable, "Json..."));
+        // Load from remote HPC servers
+        load.addSeparator();
+        load.add(new LoadHpcGraphJsonAction(editable, "Remote Json from HPC..."));
+        
         JMenu save = new JMenu("Save...");
         add(save);
 
         save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
         save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
 
 //        add(new SaveGraph(editable, "Save Graph..."));
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
+        addSeparator();
         add(new SaveComponentImage(comp, "Save Graph Image..."));
     }
 }

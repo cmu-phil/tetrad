@@ -848,7 +848,7 @@
             ]]>
         </node-specific-message>
     </session-node>
-    
+
     <session-node id="Simulation">
         <models>
             <model name="Simulation" acronym="Simulation" help="data" category="Data">
@@ -869,7 +869,7 @@
             ]]>
         </node-specific-message>
     </session-node>
-    
+
     <session-node id="Estimator">
         <models>
             <model name="ML Bayes Estimator" acronym="ML Bayes Est"

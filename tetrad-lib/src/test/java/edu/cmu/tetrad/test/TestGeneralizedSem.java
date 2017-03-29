@@ -29,6 +29,8 @@ import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradVector;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -41,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Joseph Ramsey
  */
+@Ignore
 public class TestGeneralizedSem {
 
     private boolean printStuff = false;

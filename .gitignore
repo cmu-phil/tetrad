@@ -13,3 +13,12 @@ analysis/AnalysisScriptAlpha.java
 analysis/TestFunctions.java
 tetrad-gui/build
 tetrad-gui/build/**
+
+.settings/*
+causal-cmd/.settings/*
+tetrad-gui/.settings/*
+tetrad-lib/.settings/*
+causal-cmd/build/*
+tetrad-gui/build/*
+tetrad-lib/build/*
+

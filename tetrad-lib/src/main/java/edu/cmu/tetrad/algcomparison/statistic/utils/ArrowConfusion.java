@@ -39,6 +39,9 @@ public class ArrowConfusion {
         TCfn = 0;
         TCfp = 0;
 
+        Set<Edge> allOriented = new HashSet<>();
+        allOriented.addAll(this.truth.getEdges());
+        allOriented.addAll(this.est.getEdges());
 
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
         //    System.out.println(this.truth.getEdges());
