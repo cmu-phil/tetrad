@@ -1247,8 +1247,14 @@ public abstract class AbstractWorkbench extends JComponent
         }
 
         if (graph.isHighlighted(modelEdge)) displayEdge.setHighlighted(true);
-        displayEdge.setLineColor(modelEdge.getLineColor());
-        displayEdge.setDashed(modelEdge.isDashed());
+
+        boolean dashed = modelEdge.getProperties().contains(Edge.Property.nl) || modelEdge.isDashed();
+
+        Color lineColor = modelEdge.getProperties().contains(Edge.Property.dd) ?
+                Color.green : modelEdge.getLineColor();
+
+        displayEdge.setLineColor(lineColor);
+        displayEdge.setDashed(dashed);
 
         // Link the display edge to the model edge.
 

@@ -26,7 +26,7 @@ public class ParamDescriptions {
         put("numRuns", new ParamDescription("Number of runs", 1, 1, Integer.MAX_VALUE));
         put("differentGraphs", new ParamDescription("Yes if a different graph should be used for each run", false));
         put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.01, 0.0, 1.0));
-        put("penaltyDiscount", new ParamDescription("Penalty discount", 4.0, 0.0, Double.MAX_VALUE));
+        put("penaltyDiscount", new ParamDescription("Penalty discount", 2.0, 0.0, Double.MAX_VALUE));
         put("fgesDepth", new ParamDescription("Maximum number of new colliders", 1, 1, Integer.MAX_VALUE));
         put("standardize", new ParamDescription("Yes if the data should be standardized", false));
         put("measurementVariance", new ParamDescription("Additive measurement noise variance", 0.0, 0, Double.MAX_VALUE));
