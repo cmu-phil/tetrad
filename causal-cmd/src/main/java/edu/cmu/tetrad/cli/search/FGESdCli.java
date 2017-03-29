@@ -27,6 +27,7 @@ import edu.cmu.tetrad.cli.CmdOptions;
 import edu.cmu.tetrad.cli.ParamAttrs;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.LimitDiscreteCategory;
+import edu.cmu.tetrad.cli.validation.TabularDiscreteData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -39,16 +40,18 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 /**
+ * Command-line interface for FGES discrete.
  *
  * Sep 14, 2016 2:31:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsdCli extends AbstractAlgorithmCli {
+public class FGESdCli extends AbstractAlgorithmCli {
 
     public static final int CATEGORY_LIMIT = 10;
 
@@ -60,7 +63,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
     protected boolean skipUniqueVarName;
     protected boolean skipCategoryLimit;
 
-    public FgsdCli(String[] args) {
+    public FGESdCli(String[] args) {
         super(args);
     }
 
@@ -125,6 +128,13 @@ public class FgsdCli extends AbstractAlgorithmCli {
     }
 
     @Override
+    public List<DataValidation> getPreDataValidations(Set<String> excludedVariables) {
+        DataValidation dataValidation = new TabularDiscreteData(excludedVariables, dataFile, delimiter);
+
+        return Collections.singletonList(dataValidation);
+    }
+
+    @Override
     public void parseRequiredOptions(CommandLine cmd) throws Exception {
     }
 
@@ -158,7 +168,7 @@ public class FgsdCli extends AbstractAlgorithmCli {
 
     @Override
     public AlgorithmType getAlgorithmType() {
-        return AlgorithmType.FGSD;
+        return AlgorithmType.FGESD;
     }
 
 }
