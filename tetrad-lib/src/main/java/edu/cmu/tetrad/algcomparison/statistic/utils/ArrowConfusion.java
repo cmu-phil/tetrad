@@ -38,6 +38,7 @@ public class ArrowConfusion {
         TCtp = 0; //for the two-cycle accuracy
         TCfn = 0;
         TCfp = 0;
+<<<<<<< HEAD
 
 
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
@@ -126,10 +127,18 @@ public class ArrowConfusion {
                 edge1 = this.est.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
             //      System.out.println(edge1 + "(est)");
+=======
 
-            Endpoint e1Est = null;
-            Endpoint e2Est = null;
 
+        // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
+        //    System.out.println(this.truth.getEdges());
+>>>>>>> development
+
+        for (Edge edge : this.truth.getEdges()) {
+            Edge edgeT = getDirectedEdge(edge.getNode1(), edge.getNode2(), truth);
+            Edge edgeE = getDirectedEdge(edge.getNode1(), edge.getNode2(), est);
+
+<<<<<<< HEAD
             if (edge1 != null) {
                 e1Est = edge1.getProximalEndpoint(edge.getNode1());
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
@@ -150,23 +159,46 @@ public class ArrowConfusion {
 
             Endpoint e1True = null;
             Endpoint e2True = null;
-
-            if (edge2 != null) {
-                e1True = edge2.getProximalEndpoint(edge.getNode1());
-                e2True = edge2.getProximalEndpoint(edge.getNode2());
+=======
+            if (edgeT != null) {
+                if (edgeE != null) {
+                    arrowsTp++;
+                } else {
+                    arrowsFn++;
+                }
             }
+        }
+
+        for (Edge edge : this.est.getEdges()) {
+            Edge edgeE = getDirectedEdge(edge.getNode1(), edge.getNode2(), est);
+            Edge edgeT = getDirectedEdge(edge.getNode1(), edge.getNode2(), truth);
+>>>>>>> development
+
+            if (edgeE != null && edgeT == null) {
+                arrowsFp++;
+            }
+<<<<<<< HEAD
             //          System.out.println(e1True);
             //          System.out.println(e2True);
 
+=======
+        }
 
-            if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
-                arrowsFp++;
-            }
+        int n = this.truth.getNumNodes();
+        int m = n * (n - 1) / 2;
+        arrowsTn = m - this.truth.getNumEdges();
 
-            if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
-                arrowsFp++;
-            }
+        // test for 2-cycle
+        //Set<Edge> allOriented = new HashSet<>();
+        //allOriented.addAll(this.truth.getEdges());
+        //allOriented.addAll(this.est.getEdges());
+>>>>>>> development
 
+        List<Node> nodes = this.truth.getNodes();
+
+        Graph adjacencies = new EdgeListGraph(nodes);
+
+<<<<<<< HEAD
 
         }
 
@@ -190,10 +222,38 @@ public class ArrowConfusion {
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() != 2) {
    //             System.out.println("2-cycle not inferred " + TwoCycle1);
+=======
+        for (Edge edge : truth.getEdges()) {
+            adjacencies.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+        }
+
+        for (Edge edge : est.getEdges()) {
+            adjacencies.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+        }
+
+        for (Edge edge : adjacencies.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+
+            Edge edgeT1 = getDirectedEdge(n1, n2, truth);
+            Edge edgeT2 = getDirectedEdge(n2, n1, truth);
+            Edge edgeE1 = getDirectedEdge(n1, n2, est);
+            Edge edgeE2 = getDirectedEdge(n2, n1, est);
+
+            boolean twocycleT = edgeT1 != null && edgeT2 != null;
+            boolean twocycleE = edgeE1 != null && edgeE2 != null;
+
+            if (twocycleT && twocycleE) {
+                TCtp++;
+            }
+
+            if (twocycleT && !twocycleE) {
+>>>>>>> development
                 TCfn++;
             }
         }
 
+<<<<<<< HEAD
         for (Edge edge : this.est.getEdges()) {
 
             List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
@@ -201,10 +261,14 @@ public class ArrowConfusion {
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
   //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
+=======
+            if (twocycleE && !twocycleT) {
+>>>>>>> development
                 TCfp++;
             }
         }
 
+<<<<<<< HEAD
   /*      System.out.println(arrowsTp);
         System.out.println(arrowsTn);
         System.out.println(arrowsFn);
@@ -218,6 +282,8 @@ public class ArrowConfusion {
  //       System.out.println(TCfn);
  //       System.out.println(TCfp);
 
+=======
+>>>>>>> development
 //        for (Edge edge : this.truth.getEdges()) {
 //            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
 //            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
