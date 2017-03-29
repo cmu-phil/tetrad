@@ -243,8 +243,4 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> development

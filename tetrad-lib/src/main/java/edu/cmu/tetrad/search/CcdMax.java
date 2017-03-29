@@ -397,13 +397,6 @@ public final class CcdMax implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-<<<<<<< HEAD
-    public boolean isUseHeuristic() {
-        return useHeuristic;
-    }
-
-=======
->>>>>>> development
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
     }
@@ -416,13 +409,6 @@ public final class CcdMax implements GraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
-<<<<<<< HEAD
-    public boolean isUseOrientTowardDConnections() {
-        return useOrientTowardDConnections;
-    }
-
-=======
->>>>>>> development
     public void setUseOrientTowardDConnections(boolean useOrientTowardDConnections) {
         this.useOrientTowardDConnections = useOrientTowardDConnections;
     }
