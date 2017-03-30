@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TextTable;
-
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayReader;
@@ -58,7 +56,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
-
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -80,7 +77,7 @@ public final class GraphUtils {
      * @param radius The radius of the circle in pixels; a good default is 150.
      */
     public static void circleLayout(Graph graph, int centerx, int centery,
-                                    int radius) {
+            int radius) {
         List<Node> nodes = graph.getNodes();
 
         Collections.sort(nodes, new Comparator<Node>() {
@@ -110,8 +107,8 @@ public final class GraphUtils {
     }
 
     public static void kamadaKawaiLayout(Graph graph,
-                                         boolean randomlyInitialized, double naturalEdgeLength,
-                                         double springConstant, double stopEnergy) {
+            boolean randomlyInitialized, double naturalEdgeLength,
+            double springConstant, double stopEnergy) {
         KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
         layout.setRandomlyInitialized(randomlyInitialized);
         layout.setNaturalEdgeLength(naturalEdgeLength);
@@ -129,7 +126,7 @@ public final class GraphUtils {
      * Decompose a latent variable graph into its measurement model
      */
     private static int getMeasurementModel(Graph graph, List<Node> latents,
-                                           List<List<Node>> partition) {
+            List<List<Node>> partition) {
         int totalSize = 0;
 
         for (Object o : graph.getNodes()) {
@@ -154,9 +151,9 @@ public final class GraphUtils {
     }
 
     public static Graph randomDag(int numNodes, int numLatentConfounders,
-                                  int maxNumEdges, int maxDegree,
-                                  int maxIndegree, int maxOutdegree,
-                                  boolean connected) {
+            int maxNumEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree,
+            boolean connected) {
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
@@ -168,17 +165,17 @@ public final class GraphUtils {
     }
 
     public static Dag randomDag(List<Node> nodes, int numLatentConfounders,
-                                int maxNumEdges, int maxDegree,
-                                int maxIndegree, int maxOutdegree,
-                                boolean connected) {
+            int maxNumEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree,
+            boolean connected) {
         return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree,
                 connected));
     }
 
     public static Graph randomGraph(int numNodes, int numLatentConfounders,
-                                    int maxNumEdges, int maxDegree,
-                                    int maxIndegree, int maxOutdegree,
-                                    boolean connected) {
+            int maxNumEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree,
+            boolean connected) {
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
@@ -190,9 +187,9 @@ public final class GraphUtils {
     }
 
     public static Graph randomGraph(List<Node> nodes, int numLatentConfounders,
-                                    int maxNumEdges, int maxDegree,
-                                    int maxIndegree, int maxOutdegree,
-                                    boolean connected) {
+            int maxNumEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree,
+            boolean connected) {
 
         // It is still unclear whether we should use the random forward edges method or the
         // random uniform method to create random DAGs, hence this method.
@@ -283,8 +280,8 @@ public final class GraphUtils {
     }
 
     public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders,
-                                                      int numEdges, int maxDegree,
-                                                      int maxIndegree, int maxOutdegree, boolean connected) {
+            int numEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree, boolean connected) {
 
         List<Node> nodes = new ArrayList<>();
 
@@ -297,16 +294,16 @@ public final class GraphUtils {
     }
 
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders,
-                                                      int numEdges, int maxDegree,
-                                                      int maxIndegree, int maxOutdegree, boolean connected) {
+            int numEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree, boolean connected) {
         return randomGraphRandomForwardEdges(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree,
                 maxOutdegree, connected, true);
     }
 
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders,
-                                                      int numEdges, int maxDegree,
-                                                      int maxIndegree, int maxOutdegree, boolean connected,
-                                                      boolean layoutAsCircle) {
+            int numEdges, int maxDegree,
+            int maxIndegree, int maxOutdegree, boolean connected,
+            boolean layoutAsCircle) {
         if (nodes.size() <= 0) {
             throw new IllegalArgumentException(
                     "NumNodes most be > 0: " + nodes.size());
@@ -329,7 +326,6 @@ public final class GraphUtils {
 
         final Graph dag = new EdgeListGraphSingleConnections(nodes);
 
-
         if (connected) {
             for (int i = 0; i < nodes.size() - 1; i++) {
                 dag.addDirectedEdge(nodes.get(i), nodes.get(i + 1));
@@ -347,7 +343,6 @@ public final class GraphUtils {
 //            if ((i + 1) % 1000 == 0) {
 //                System.out.println("# edges = " + (i + 1));
 //            }
-
             int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
             int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
 
@@ -419,8 +414,8 @@ public final class GraphUtils {
     }
 
     public static Graph scaleFreeGraph(int numNodes, int numLatentConfounders,
-                                       double alpha, double beta,
-                                       double delta_in, double delta_out) {
+            double alpha, double beta,
+            double delta_in, double delta_out) {
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
@@ -431,15 +426,16 @@ public final class GraphUtils {
     }
 
     private static Graph scaleFreeGraph(List<Node> _nodes, int numLatentConfounders,
-                                        double alpha, double beta,
-                                        double delta_in, double delta_out) {
+            double alpha, double beta,
+            double delta_in, double delta_out) {
 
-        if (alpha + beta >= 1) throw new IllegalArgumentException("For the Bollobas et al. algorithm," +
-                "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
+        if (alpha + beta >= 1) {
+            throw new IllegalArgumentException("For the Bollobas et al. algorithm,"
+                    + "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
+        }
 
 //        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
 //                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
-
 //        >>> print inspect.getsource(nx.scale_free_graph)
 //        def scale_free_graph(n,
 //                alpha=0.41,
@@ -745,11 +741,11 @@ public final class GraphUtils {
      * This method builds on the randomDag methods by implementing a procedure
      * for adding cycles to a graph.
      *
-     * @param dag            A Dag returned from any of the randomDag methods
-     * @param maxNumCycles   Algorithm will add at most this many cyclic edges to
-     *                       the graph
+     * @param dag A Dag returned from any of the randomDag methods
+     * @param maxNumCycles Algorithm will add at most this many cyclic edges to
+     * the graph
      * @param minCycleLength The smallest number of edges allowed for creating
-     *                       cycles
+     * cycles
      */
     public static Graph addCycles(Graph dag, int maxNumCycles, int minCycleLength) {
 
@@ -847,7 +843,6 @@ public final class GraphUtils {
 //                    continue LOOP;
 //                }
 //            }
-
             for (int i = 0; i < cycleNodes.size(); i++) {
                 if (graph.getDegree(cycleNodes.get(i)) >= maxDegree) {
                     continue LOOP;
@@ -903,7 +898,8 @@ public final class GraphUtils {
      * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5
      * to the graph, then finally adding two cycles.
      */
-    public static Graph cyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle) {
+    public static Graph cyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle,
+            double probTwoCycle) {
 
         List<Node> nodes = new ArrayList<>();
 
@@ -943,7 +939,6 @@ public final class GraphUtils {
 //                    continue LOOP;
 //                }
 //            }
-
             for (int i = 0; i < cycleNodes.size(); i++) {
                 if (graph.getDegree(cycleNodes.get(i)) >= maxDegree) {
                     continue LOOP;
@@ -994,6 +989,21 @@ public final class GraphUtils {
             }
         }
 
+        Set<Edge> edges = graph.getEdges();
+
+        for (Edge edge : edges) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+            if (RandomUtil.getInstance().nextDouble() < probTwoCycle) {
+                graph.removeEdges(a, b);
+                graph.addEdge(Edges.directedEdge(a, b));
+                graph.addEdge(Edges.directedEdge(b, a));
+            }
+        }
+
+//        for (Node node : graph.getNodes()) {
+//            graph.addDirectedEdge(node, node);
+//        }
         GraphUtils.circleLayout(graph, 200, 200, 150);
 
         return graph;
@@ -1043,7 +1053,7 @@ public final class GraphUtils {
      * @return true if all of the nodes were arranged, false if not.
      */
     public static boolean arrangeBySourceGraph(Graph resultGraph,
-                                               Graph sourceGraph) {
+            Graph sourceGraph) {
         if (resultGraph == null) {
             throw new IllegalArgumentException("Graph must not be null.");
         }
@@ -1089,7 +1099,7 @@ public final class GraphUtils {
         if (errorNode.getNodeType() != NodeType.ERROR) {
             throw new IllegalArgumentException(
                     "Can only get an associated node " + "for an error node: "
-                            + errorNode);
+                    + errorNode);
         }
 
         List<Node> children = graph.getChildren(errorNode);
@@ -1100,8 +1110,8 @@ public final class GraphUtils {
 
             throw new IllegalArgumentException(
                     "An error node should have only "
-                            + "one child, which is its associated node: "
-                            + errorNode);
+                    + "one child, which is its associated node: "
+                    + errorNode);
         }
 
         return children.get(0);
@@ -1134,9 +1144,9 @@ public final class GraphUtils {
      * (Joseph Ramsey 8/6/04)
      *
      * @param target a node in the given DAG.
-     * @param dag    the DAG with respect to which a Markov blanket DAG is to to be
-     *               calculated. All of the nodes and edges of the Markov Blanket DAG are in
-     *               this DAG.
+     * @param dag the DAG with respect to which a Markov blanket DAG is to to be
+     * calculated. All of the nodes and edges of the Markov Blanket DAG are in
+     * this DAG.
      */
     public static Dag markovBlanketDag(Node target, Graph dag) {
         if (dag.getNode(target.getName()) == null) {
@@ -1249,7 +1259,7 @@ public final class GraphUtils {
      * Assumes node should be in component.
      */
     private static void collectComponentVisit(Node node, Set<Node> component,
-                                              Graph graph, List<Node> unsortedNodes) {
+            Graph graph, List<Node> unsortedNodes) {
         if (TaskManager.getInstance().isCanceled()) {
             return;
         }
@@ -1299,7 +1309,7 @@ public final class GraphUtils {
      * any.
      */
     private static List<Node> directedPathVisit(Graph graph, Node node1, Node node2,
-                                                LinkedList<Node> path) {
+            LinkedList<Node> path) {
         path.addLast(node1);
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -1401,7 +1411,7 @@ public final class GraphUtils {
     }
 
     private static void directedPathsFromToVisit(Graph graph, Node node1, Node node2,
-                                                 LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -1451,7 +1461,7 @@ public final class GraphUtils {
     }
 
     private static void semidirectedPathsFromToVisit(Graph graph, Node node1, Node node2,
-                                                     LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -1501,7 +1511,7 @@ public final class GraphUtils {
     }
 
     private static void allPathsFromToVisit(Graph graph, Node node1, Node node2,
-                                            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         path.addLast(node1);
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
@@ -1539,7 +1549,7 @@ public final class GraphUtils {
     }
 
     private static void allDirectedPathsFromToVisit(Graph graph, Node node1, Node node2,
-                                                    LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         path.addLast(node1);
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
@@ -1577,7 +1587,7 @@ public final class GraphUtils {
     }
 
     private static void treks(Graph graph, Node node1, Node node2,
-                              LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+            LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
         if (path.size() > (maxLength == -1 ? 1000 : maxLength - 2)) {
             return;
         }
@@ -1639,7 +1649,7 @@ public final class GraphUtils {
     }
 
     private static void treksIncludingBidirected(SemGraph graph, Node node1, Node node2,
-                                                 LinkedList<Node> path, List<List<Node>> paths) {
+            LinkedList<Node> path, List<List<Node>> paths) {
         if (!graph.isShowErrorTerms()) {
             throw new IllegalArgumentException("The SEM Graph must be showing its error terms; this method "
                     + "doesn't traverse two edges between the same nodes well.");
@@ -1764,7 +1774,7 @@ public final class GraphUtils {
         return pathString(graph, path, new LinkedList<Node>());
     }
 
-    public static String pathString(Graph graph, Node...x) {
+    public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
         Collections.addAll(path, x);
         return pathString(graph, path, new LinkedList<Node>());
@@ -1828,8 +1838,8 @@ public final class GraphUtils {
      * variables (with the same names as the old).
      *
      * @param originalGraph The graph to be converted.
-     * @param newVariables  The new variables to use, with the same names as the
-     *                      old ones.
+     * @param newVariables The new variables to use, with the same names as the
+     * old ones.
      * @return A new, converted, graph.
      */
     public static Graph replaceNodes(Graph originalGraph, List<Node> newVariables) {
@@ -1909,8 +1919,8 @@ public final class GraphUtils {
      * new variables (with the same names as the old).
      *
      * @param originalNodes The list of nodes to be converted.
-     * @param newNodes      A list of new nodes, containing as a subset nodes with
-     *                      the same names as those in <code>originalNodes</code>. the old ones.
+     * @param newNodes A list of new nodes, containing as a subset nodes with
+     * the same names as those in <code>originalNodes</code>. the old ones.
      * @return The converted list of nodes.
      */
     public static List<Node> replaceNodes(List<Node> originalNodes, List<Node> newNodes) {
@@ -1932,7 +1942,7 @@ public final class GraphUtils {
      * Counts the adjacencies that are in graph1 but not in graph2.
      *
      * @throws IllegalArgumentException if graph1 and graph2 are not namewise
-     *                                  isomorphic.
+     * isomorphic.
      */
     public static int countAdjErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -2056,7 +2066,7 @@ public final class GraphUtils {
      * <code>graph</code>.
      *
      * @param originalNodes The list of nodes to be converted.
-     * @param graph         A graph to be used as a source of new nodes.
+     * @param graph A graph to be used as a source of new nodes.
      * @return A new, converted, graph.
      */
     public static List<Node> replaceNodes(List<Node> originalNodes, Graph graph) {
@@ -2087,7 +2097,6 @@ public final class GraphUtils {
      */
     public static String graphToDot(Graph graph) {
         StringBuilder builder = new StringBuilder();
-
         builder.append("digraph g {\n");
         for (Edge edge : graph.getEdges()) {
             builder.append(" \"").append(edge.getNode1()).append("\" -> \"").append(edge.getNode2()).append("\" [arrowtail=");
@@ -2108,8 +2117,8 @@ public final class GraphUtils {
             }
             builder.append("]; \n");
         }
-
         builder.append("}");
+
         return builder.toString();
     }
 
@@ -2407,8 +2416,8 @@ public final class GraphUtils {
 
     /**
      * @param graph The graph to be saved.
-     * @param file  The file to save it in.
-     * @param xml   True if to be saved in XML, false if in text.
+     * @param file The file to save it in.
+     * @param xml True if to be saved in XML, false if in text.
      * @return I have no idea whey I'm returning this; it's already closed...
      */
     public static PrintWriter saveGraph(Graph graph, File file, boolean xml) {
@@ -2530,6 +2539,10 @@ public final class GraphUtils {
             }
 
             Edge _edge = new Edge(_from, _to, _end1, _end2);
+
+            for (int i = 4; i < tokens.length; i++) {
+                _edge.addProperty(Edge.Property.valueOf(tokens[i]));
+            }
 
             graph.addEdge(_edge);
         }
@@ -2696,7 +2709,7 @@ public final class GraphUtils {
      * is j-->i and -1 if i-->j.
      *
      * @throws IllegalArgumentException if <code>graph</code> is not a directed
-     *                                  graph.
+     * graph.
      */
     private static int[][] incidenceMatrix(Graph graph) throws IllegalArgumentException {
         List<Node> nodes = graph.getNodes();
@@ -2849,7 +2862,7 @@ public final class GraphUtils {
      * @return true iff there is a semi-directed path from node1 to node2
      */
     private static boolean existsSemiDirectedPathVisit(Node node1, Node node2, LinkedList<Node> path, int maxDepth,
-                                                       Graph graph) {
+            Graph graph) {
         path.addLast(node1);
 
         if (path.size() >= maxDepth) {
@@ -2912,7 +2925,7 @@ public final class GraphUtils {
      * given indices in that list.
      *
      * @param indices The indices of the desired nodes in <code>nodes</code>.
-     * @param nodes   The list of nodes from which we select a sublist.
+     * @param nodes The list of nodes from which we select a sublist.
      * @return the The sublist selected.
      */
     public static List<Node> asList(int[] indices, List<Node> nodes) {
@@ -3000,7 +3013,7 @@ public final class GraphUtils {
         List<Node> found = new LinkedList<>();
         List<Node> notFound = new ArrayList<>(graph.getNodes());
 
-        for (Iterator<Node> i = notFound.iterator(); i.hasNext(); ) {
+        for (Iterator<Node> i = notFound.iterator(); i.hasNext();) {
             if (i.next().getNodeType() == NodeType.ERROR) {
                 i.remove();
             }
@@ -3009,7 +3022,7 @@ public final class GraphUtils {
         List<Node> allNodes = new ArrayList<>(notFound);
 
         while (!notFound.isEmpty()) {
-            for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
+            for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
                 Node node = it.next();
 
                 List<Node> parents = graph.getParents(node);
@@ -3409,11 +3422,15 @@ public final class GraphUtils {
             graph.addEdge(edge);
 
             if (existsSemiDirectedPath(x, y, -1, graph)) {
-                edge.setDashed(existsSemiDirectedPath(x, y, -1, graph));
+                edge.addProperty(Edge.Property.nl); // dashed.
+            } else {
+                edge.addProperty(Edge.Property.pl);
             }
 
             if (graph.defVisible(edge)) {
-                edge.setLineColor(Color.green);
+                edge.addProperty(Edge.Property.dd); // green.
+            } else {
+                edge.addProperty(Edge.Property.pd);
             }
         }
     }
@@ -3437,13 +3454,17 @@ public final class GraphUtils {
             if (e == t) {
                 e = null;
                 distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
+                if (distance > (bound == -1 ? 1000 : bound)) {
+                    return false;
+                }
             }
 
             for (Node u : graph.getAdjacentNodes(t)) {
                 Edge edge = graph.getEdge(t, u);
                 Node c = GraphUtils.traverseSemiDirected(t, edge);
-                if (c == null) continue;
+                if (c == null) {
+                    continue;
+                }
 
                 if (c == to) {
                     return true;
@@ -3730,6 +3751,11 @@ public final class GraphUtils {
     }
 
     public static String graphToText(Graph graph) {
+        // add edge properties relating to edge coloring of PAGs
+        if (graph.isPag()) {
+            addPagColoring(graph);
+        }
+
         Formatter fmt = new Formatter();
         fmt.format("%s%n%n", graphNodesToText(graph, "Graph Nodes:", ','));
         fmt.format("%s", graphEdgesToText(graph, "Graph Edges:"));
@@ -3783,12 +3809,47 @@ public final class GraphUtils {
 
         int size = edges.size();
         int count = 0;
+
         for (Edge edge : edges) {
             count++;
+
+            ArrayList<Edge.Property> properties = edge.getProperties();
+
             if (count < size) {
-                fmt.format("%d. %s%n", count, edge);
+                String f = "%d. %s";
+
+                for (int i = 0; i < properties.size(); i++) {
+                    f += " %s";
+                }
+
+                Object[] o = new Object[2 + properties.size()];
+
+                o[0] = count;
+                o[1] = edge;
+
+                for (int i = 0; i < properties.size(); i++) {
+                    o[2 + i] = properties.get(i);
+                }
+
+                fmt.format(f, o);
+                fmt.format("\n");
             } else {
-                fmt.format("%d. %s", count, edge);
+                String f = "%d. %s";
+
+                for (int i = 0; i < properties.size(); i++) {
+                    f += " %s";
+                }
+                Object[] o = new Object[2 + properties.size()];
+
+                o[0] = count;
+                o[1] = edge;
+
+                for (int i = 0; i < properties.size(); i++) {
+                    o[2 + i] = properties.get(i);
+                }
+
+                fmt.format(f, o);
+                fmt.format("\n");
             }
         }
 
@@ -3844,14 +3905,14 @@ public final class GraphUtils {
         private List<Edge> edgesReorientedTo;
 
         public GraphComparison(int adjFn, int adjFp, int adjCorrect,
-                               int arrowptFn, int arrowptFp, int arrowptCorrect,
-                               double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
-                               int shd,
-                               int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
-                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
-                               List<Edge> edgesReorientedFrom,
-                               List<Edge> edgesReorientedTo,
-                               int[][] counts) {
+                int arrowptFn, int arrowptFp, int arrowptCorrect,
+                double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
+                int shd,
+                int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
+                List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                List<Edge> edgesReorientedFrom,
+                List<Edge> edgesReorientedTo,
+                int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;
@@ -4375,7 +4436,7 @@ public final class GraphUtils {
     }
 
     private static boolean sepsetPathFound(Node a, Node b, Node y, Set<Node> path, List<Node> z, Graph graph,
-                                           Set<Triple> colliders, int bound) {
+            Set<Triple> colliders, int bound) {
         if (b == y) {
             return true;
         }
@@ -4623,7 +4684,7 @@ public final class GraphUtils {
 
     // Needs to be public.
     public static boolean existsInducingPathVisit(Graph graph, Node a, Node b, Node x, Node y,
-                                                  LinkedList<Node> path) {
+            LinkedList<Node> path) {
         if (path.contains(b)) {
             return false;
         }
@@ -4679,7 +4740,7 @@ public final class GraphUtils {
     }
 
     private static void collectInducedNodesVisit(Graph graph, Node x, Node b, LinkedList<Node> path,
-                                                 Set<Node> induced) {
+            Set<Node> induced) {
         if (path.contains(b)) {
             return;
         }
