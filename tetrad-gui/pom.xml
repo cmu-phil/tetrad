@@ -61,7 +61,7 @@
                         <configuration>
                             <transformers>
                                 <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>edu.cmu.tetradapp.Tetrad</Main-Class>
                                         <Permissions>all-permissions</Permissions>
@@ -131,19 +131,19 @@
             <version>0.1.3</version>
         </dependency>
         <dependency>
-        	<groupId>edu.pitt.dbmi</groupId>
-        	<artifactId>tetrad-db</artifactId>
-        	<version>0.0.1-SNAPSHOT</version>
+            <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>tetrad-db</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
-        	<groupId>edu.pitt.dbmi.ccd</groupId>
-        	<artifactId>causal-tetrad-rest-client</artifactId>
-        	<version>0.0.1-SNAPSHOT</version>
+            <groupId>edu.pitt.dbmi.ccd</groupId>
+            <artifactId>causal-tetrad-rest-client</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
-        	<groupId>edu.pitt.dbmi</groupId>
-        	<artifactId>ccd-commons</artifactId>
-        	<version>0.3.1</version>
+            <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>ccd-commons</artifactId>
+            <version>0.3.1</version>
         </dependency>
     </dependencies>
 
@@ -151,7 +151,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
+        <java.version>1.8</java.version>
     </properties>
 
     <!--<scm>-->
