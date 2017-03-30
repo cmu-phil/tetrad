@@ -27,7 +27,30 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.AndersonDarlingTest;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.distribution.TDistribution;
+import org.junit.Test;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.List;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.log;
+import static java.lang.Math.sqrt;
+import static org.junit.Assert.assertEquals;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -276,6 +299,177 @@ public class TestFang {
         comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
+    @Test
+    public void testSkeptical() {
+        int misoriented = 0;
+        int total = 100;
+
+        for (int index = 0; index < total; index++) {
+            SemGraph G0 = new SemGraph();
+
+            Node X = new ContinuousVariable("X");
+            Node Y = new ContinuousVariable("Y");
+            Node Z = new ContinuousVariable("Z");
+
+            G0.addNode(X);
+            G0.addNode(Y);
+            G0.addNode(Z);
+
+            G0.addDirectedEdge(X, Y);
+            G0.addDirectedEdge(Z, X);
+//            G0.addDirectedEdge(Z, Y);
+
+            G0.setShowErrorTerms(true);
+
+            Node e1 = G0.getExogenous(X);
+            Node e2 = G0.getExogenous(Y);
+            Node e3 = G0.getExogenous(Z);
+//
+            GeneralizedSemPm pm = new GeneralizedSemPm(G0);
+
+            try {
+            pm.setNodeExpression(X, "E_X");
+//                pm.setNodeExpression(X, "c * Z + E_X");
+            pm.setNodeExpression(Y, "a * X + E_Y");
+//                pm.setNodeExpression(Y, "a * X + b * Y + E_Y");
+                pm.setNodeExpression(Z, "E_Z");
+                pm.setNodeExpression(e1, "Beta(2, 20)");
+                pm.setNodeExpression(e2, "Beta(2, 20)");
+                pm.setNodeExpression(e3, "Beta(2, 20)");
+                pm.setParameterExpression("a", "U(-1, 1)");
+                pm.setParameterExpression("b", "U(-1, 1)");
+                pm.setParameterExpression("c", "U(-1, 1)");
+
+                GeneralizedSemIm im = new GeneralizedSemIm(pm);
+
+//            System.out.println(im);
+
+                DataSet dataSet = im.simulateDataRecursive(1000, false);
+                dataSet = DataUtils.standardizeData(dataSet);
+
+                List<Node> nodes = dataSet.getVariables();
+                double[][] colData = dataSet.getDoubleData().transpose().toArray();
+                int i = nodes.indexOf(dataSet.getVariable("X"));
+                int j = nodes.indexOf(dataSet.getVariable("Y"));
+                double[] x = colData[i];
+                double[] y = colData[j];
+
+                double[] c = cor(x, y, 0, 0);
+                double[] c1 = cor(x, y, 1, 0);
+                double[] c2 = cor(x, y, 0, 1);
+
+                double z = getZ(c[0]);
+                double z1 = getZ(c1[0]);
+                double z2 = getZ(c2[0]);
+
+                double diff1 = z - z1;
+                double diff2 = z - z2;
+
+                final double t1 = diff1 / (sqrt(1.0 / c[1] + 1.0 / c1[1]));
+                final double t2 = diff2 / (sqrt(1.0 / c[1] + 1.0 / c2[1]));
+
+                double p1 = 1.0 - new TDistribution(2 * (c[1] + c1[1]) - 2).cumulativeProbability(abs(t1 / 2.0));
+                double p2 = 1.0 - new TDistribution(2 * (c[1] + c2[1]) - 2).cumulativeProbability(abs(t2 / 2.0));
+
+                NumberFormat nf = new DecimalFormat("0.000000");
+
+//            System.out.println();
+                System.out.print(((index + 1) + ". "));
+                System.out.print("cor(X, Y) = " + nf.format(c[0]));
+                System.out.print(" cor(X, Y | X > 0) = " + nf.format(c1[0]));
+                System.out.println(" cor(X, Y | Y > 0) = " + nf.format(c2[0]));
+                System.out.println("  p value for cor(X, Y) - cor(X, Y | X > 0) = " + nf.format(p1));
+                System.out.println("  p value for cor(X, Y) - cor(X, Y | Y > 0) = " + nf.format(p2));
+                System.out.println("  X->Y " + (p1 < p2));
+
+                double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
+
+                if (!(p1 > p2)) misoriented++;
+
+                System.out.println("R > 0 " + (R > 0));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        System.out.println("% R < 0 = " + (misoriented / (double) total));
+    }
+
+    private double[] cor(double[] x, double[] y, int xInc, int yInc) {
+
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (xInc == 0 && yInc == 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            } else if (xInc == 1 && yInc == 0) {
+                if (x[k] > 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == 1) {
+                if (y[k] > 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 0) {
+                if (x[k] < 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == -1) {
+                if (y[k] < 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        eyy /= n;
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+//        return new double[]{(exy - ex * ey) / (exx - ex * ex), (double) n};// / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+
+
+        return new double[]{(exy - ex * ey) / (exx - ex * ex), (double) n};// / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+    }
+
+    private double getZ(double r) {
+        return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
 
     public static void main(String... args) {

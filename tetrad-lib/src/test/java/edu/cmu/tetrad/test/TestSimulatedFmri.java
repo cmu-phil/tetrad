@@ -38,14 +38,14 @@ public class TestSimulatedFmri {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 6);
+        parameters.set("penaltyDiscount", 5);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", .00001);
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 10);
 
         // For automatically generated concatenations if you're doing them.
-        parameters.set("randomSelectionSize", 5);
+        parameters.set("randomSelectionSize", 10);
 
         parameters.set("Structure", "Placeholder");
 

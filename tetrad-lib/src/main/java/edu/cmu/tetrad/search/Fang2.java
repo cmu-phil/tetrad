@@ -37,7 +37,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fang implements GraphSearch {
+public final class Fang2 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -61,7 +61,7 @@ public final class Fang implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fang(DataSet dataSet) {
+    public Fang2(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 

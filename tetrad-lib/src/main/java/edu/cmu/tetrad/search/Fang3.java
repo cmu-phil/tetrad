@@ -37,7 +37,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fang implements GraphSearch {
+public final class Fang3 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -61,7 +61,7 @@ public final class Fang implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fang(DataSet dataSet) {
+    public Fang3(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -116,7 +116,7 @@ public final class Fang implements GraphSearch {
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[0] - c2[0]) > .3) {
                     double c[] = cor(x, y, 0, 0);
-                    double G = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
+                    double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
                     double c3[] = cor(x, y, -1, 0);
                     double c4[] = cor(x, y, 0, -1);
 
@@ -133,19 +133,13 @@ public final class Fang implements GraphSearch {
                     double p1 = 1.0 - new TDistribution(2 * (c[1] + c1[1]) - 2).cumulativeProbability(abs(t1 / 2.0));
                     double p2 = 1.0 - new TDistribution(2 * (c[1] + c2[1]) - 2).cumulativeProbability(abs(t2 / 2.0));
 
+                    double alpha1 = 1e-9;
+                    double alpha2 = 1;
+
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (p1 <= alpha && p2 <= alpha) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
                     } else if (!((signum(c[0]) == signum(c1[0]) && signum(c[0]) == signum(c3[0]))
                             || (signum(c[0]) == signum(c2[0]) && signum(c[0]) == signum(c4[0])))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
@@ -156,12 +150,21 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (G > 0) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (G < 0) {
-                        graph.addDirectedEdge(Y, X);
-                    } else {
+                    } else if (p1 <= alpha1 && p2 <= alpha1) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.GREEN);
+                        edge2.setLineColor(Color.GREEN);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (p1 >= alpha2 && p2 >= alpha2) {
                         graph.addUndirectedEdge(X, Y);
+                    } else if (p1 > p2) {
+                        graph.addDirectedEdge(X, Y);
+                    } else if (p1 < p1) {
+                        graph.addDirectedEdge(Y, X);
                     }
                 }
             }
