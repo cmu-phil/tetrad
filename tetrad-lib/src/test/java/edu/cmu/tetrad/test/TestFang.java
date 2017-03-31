@@ -37,6 +37,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -45,11 +47,11 @@ import org.junit.Test;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.log;
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -145,14 +147,16 @@ public class TestFang {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
+    @Test
     public void TestSmith() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
+        parameters.set("twoCycleAlpha", .001);
 
         parameters.set("numRuns", 10);
-        parameters.set("randomSelectionSize", 10);
+        parameters.set("randomSelectionSize", 1);
         parameters.set("Structure", "Placeholder");
 
 
@@ -219,20 +223,23 @@ public class TestFang {
 
         comparison.setTabDelimitedTables(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparisonsmith", simulations, algorithms, statistics, parameters);
 //        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
 //        comparison.saveToFiles("comparison", new LinearFisherModel(new RandomForward()), parameters);
 
     }
 
+    @Test
     public void TestPwwd7() {
         Parameters parameters = new Parameters();
 
         parameters.set("penaltyDiscount", 1);
-        parameters.set("depth", 4);
+        parameters.set("depth", -1);
+        parameters.set("twoCycleAlpha", .001);
 
-        parameters.set("numRuns", 5);
-        parameters.set("randomSelectionSize", 5);
+        parameters.set("numRuns", 10);
+        parameters.set("randomSelectionSize", 1);
+        parameters.set("Structure", "Placeholder");
 
         parameters.set("Structure", "Placeholder");
 
@@ -304,7 +311,14 @@ public class TestFang {
     @Test
     public void testSkeptical() {
         int misoriented = 0;
-        int total = 100;
+        int total = 200;
+        double minRatio3 = Double.POSITIVE_INFINITY;
+
+        List<Double> ratios = new ArrayList<>();
+        double sumdiff1 = 0.0;
+        double sumdiff2 = 0.0;
+        double sumvzx = 0.0;
+        double sumvzy = 0.0;
 
         for (int index = 0; index < total; index++) {
             SemGraph G0 = new SemGraph();
@@ -319,32 +333,38 @@ public class TestFang {
 
             G0.addDirectedEdge(X, Y);
             G0.addDirectedEdge(Z, X);
-//            G0.addDirectedEdge(Z, Y);
+            G0.addDirectedEdge(Z, Y);
 
             G0.setShowErrorTerms(true);
 
             Node e1 = G0.getExogenous(X);
             Node e2 = G0.getExogenous(Y);
             Node e3 = G0.getExogenous(Z);
-//
+
+
             GeneralizedSemPm pm = new GeneralizedSemPm(G0);
 
             try {
-            pm.setNodeExpression(X, "E_X");
-//                pm.setNodeExpression(X, "c * Z + E_X");
-            pm.setNodeExpression(Y, "a * X + E_Y");
-//                pm.setNodeExpression(Y, "a * X + b * Y + E_Y");
+//                pm.setNodeExpression(X, "E_X");
+                pm.setNodeExpression(X, "c * Z + E_X");
+//                pm.setNodeExpression(Y, "a * X + E_Y");
+                pm.setNodeExpression(Y, "a * X + b * Z + E_Y");
                 pm.setNodeExpression(Z, "E_Z");
-                pm.setNodeExpression(e1, "Beta(2, 20)");
-                pm.setNodeExpression(e2, "Beta(2, 20)");
-                pm.setNodeExpression(e3, "Beta(2, 20)");
-                pm.setParameterExpression("a", "U(-1, 1)");
-                pm.setParameterExpression("b", "U(-1, 1)");
-                pm.setParameterExpression("c", "U(-1, 1)");
+
+                final String errors = "Beta(2, 10)";
+                pm.setNodeExpression(e1, errors);
+                pm.setNodeExpression(e2, errors);
+                pm.setNodeExpression(e3, errors);
+
+                pm.setParameterExpression("a", ".9");
+                pm.setParameterExpression("b", ".2");
+                pm.setParameterExpression("c", ".8");
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-//            System.out.println(im);
+                double _a = im.getParameterValue("a");
+                double _b = im.getParameterValue("b");
+                double _c = im.getParameterValue("c");
 
                 DataSet dataSet = im.simulateDataRecursive(1000, false);
                 dataSet = DataUtils.standardizeData(dataSet);
@@ -353,19 +373,44 @@ public class TestFang {
                 double[][] colData = dataSet.getDoubleData().transpose().toArray();
                 int i = nodes.indexOf(dataSet.getVariable("X"));
                 int j = nodes.indexOf(dataSet.getVariable("Y"));
+                int k = nodes.indexOf(dataSet.getVariable("Z"));
                 double[] x = colData[i];
                 double[] y = colData[j];
+                double[] z = colData[k];
 
                 double[] c = cor(x, y, 0, 0);
                 double[] c1 = cor(x, y, 1, 0);
                 double[] c2 = cor(x, y, 0, 1);
 
-                double z = getZ(c[0]);
+                double vxx = var(x, x, 1)[0];
+                double vyx = var(y, x, 1)[0];
+                double vzx = var(z, x, 1)[0];
+
+                double vxy = var(x, y, 1)[0];
+                double vyy = var(y, y, 1)[0];
+                double vzy = var(z, y, 1)[0];
+
+                double ratiozy_x = vzx / vyx;
+                double ratiozy_y = vzy / vyy;
+
+                double ratiozx_x = vzx / vxx;
+                double ratiozx_y = vzy / vxy;
+
+
+//                double ratio3 = (ratiozx_y - 1.0) / (ratiozx_x - 1.0);
+//
+//                if (ratio3 < minRatio3) {
+//                    minRatio3 = ratio3;
+//                }
+//
+//                ratios.add(ratio3);
+
+                double z0 = getZ(c[0]);
                 double z1 = getZ(c1[0]);
                 double z2 = getZ(c2[0]);
 
-                double diff1 = z - z1;
-                double diff2 = z - z2;
+                double diff1 = z0 - z1; // 0.5 * total amount of confounding.
+                double diff2 = z0 - z2; // ?? * total amount of confounding + cov(X, eY) / var(X)
 
                 final double t1 = diff1 / (sqrt(1.0 / c[1] + 1.0 / c1[1]));
                 final double t2 = diff2 / (sqrt(1.0 / c[1] + 1.0 / c2[1]));
@@ -382,20 +427,55 @@ public class TestFang {
                 System.out.println(" cor(X, Y | Y > 0) = " + nf.format(c2[0]));
                 System.out.println("  p value for cor(X, Y) - cor(X, Y | X > 0) = " + nf.format(p1));
                 System.out.println("  p value for cor(X, Y) - cor(X, Y | Y > 0) = " + nf.format(p2));
+                System.out.println("  diff1 = " + nf.format(diff1));
+                System.out.println("  diff2 = " + nf.format(diff2));
+                System.out.println("  bc = " + nf.format(_b * _c));
+                System.out.println("  vzx = " + nf.format(vzx));
+                System.out.println("  vxx = " + nf.format(vxx));
+                System.out.println("  vzy = " + nf.format(vzy));
+                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
                 System.out.println("  X->Y " + (p1 < p2));
+                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vxx));
+                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vyx));
+                System.out.println("  bc * (vzx / vxx) = " + nf.format(_b * _c * (vzx / vxx)));
+                System.out.println("  bc * (vzx / vyx) = " + nf.format(_b * _c * (vzx / vyx)));
+                System.out.println("  c^2 = " + nf.format(_c * _c));
+                System.out.println("  (vxx / vzx) - c^2 = " + nf.format((vxx / vzx) - _c * _c));
 
-                double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
+                final double d1 = c[0] - c1[0];
+                final double d2 = c[0] - c2[0];
 
-                if (!(p1 > p2)) misoriented++;
+                sumdiff1 += diff1;
+                sumdiff2 += diff2;
+                sumvzx += vzx;
+                sumvzy += vzy;
 
-                System.out.println("R > 0 " + (R > 0));
+                final double f = 1;
+
+                boolean orientxy = abs(d2) > f * abs(d1);
+                boolean orientyx = abs(d1) > f * abs(d2);
+                if (!(orientxy && !orientyx)) misoriented++;
+
+                System.out.println("Orient " + (orientxy && !orientyx));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
 
         }
 
-        System.out.println("% R < 0 = " + (misoriented / (double) total));
+//        Collections.sort(ratios);
+//
+//        for (int i = 0; i < ratios.size(); i++) {
+//            System.out.println((i + 1) + ". " + ratios.get(i));
+//        }
+//
+        System.out.println("% misoriented = " + (misoriented / (double) total));
+//        System.out.println("min ratio3 = " + minRatio3);
+
+        System.out.println("Avg diff1 = " + (sumdiff1 / total));
+        System.out.println("Avg diff2 = " + (sumdiff2 / total));
+        System.out.println("Avg vzx = " + (sumvzx / total));
+        System.out.println("Avg vzy = " + (sumvzy / total));
     }
 
     private double[] cor(double[] x, double[] y, int xInc, int yInc) {
@@ -466,6 +546,34 @@ public class TestFang {
 
 
         return new double[]{(exy - ex * ey) / (exx - ex * ex), (double) n};// / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+    }
+
+    private double[] var(double[] x, double[] y, int yInc) {
+
+        double exx = 0.0;
+
+        double ex = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (yInc == 0) {
+                exx += x[k] * x[k];
+                ex += x[k];
+                n++;
+            } else if (yInc == 1) {
+                if (y[k] > 0.0) {
+                    exx += x[k] * x[k];
+                    ex += x[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        ex /= n;
+
+        return new double[]{(exx - ex * ex), (double) n};
     }
 
     private double getZ(double r) {

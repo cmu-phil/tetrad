@@ -130,22 +130,13 @@ public class Comparison {
         // are set in the parameters object.
         List<SimulationWrapper> simulationWrappers = new ArrayList<>();
 
-        int numRuns = -1;
+        int numRuns = parameters.getInt("numRuns");
 
         for (Simulation simulation : simulations.getSimulations()) {
             List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
 
             for (SimulationWrapper wrapper : wrappers) {
                 wrapper.createData(wrapper.getSimulationSpecificParameters());
-
-                int _numRuns = wrapper.getSimulationSpecificParameters().getInt("numRuns");
-
-                if (numRuns == -1) {
-                    numRuns = _numRuns;
-                } else if (numRuns != _numRuns) {
-                    throw new IllegalArgumentException("The simulation all need to have the same number of runs.");
-                }
-
                 simulationWrappers.add(wrapper);
             }
         }
@@ -1516,7 +1507,7 @@ public class Comparison {
 
         @Override
         public Graph getTrueGraph(int index) {
-            if (graphs == null) return null;
+            if (graphs.get(index) == null) return null;
             else return new EdgeListGraph(graphs.get(index));
         }
 

@@ -24,8 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofsConcatenated;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -40,7 +42,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 5);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .00001);
+        parameters.set("twoCycleAlpha", .00000001);
 
         parameters.set("numRuns", 10);
 
