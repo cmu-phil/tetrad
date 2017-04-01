@@ -237,7 +237,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-5);
+        parameters.set("twoCycleAlpha", 1e-9);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 1);
