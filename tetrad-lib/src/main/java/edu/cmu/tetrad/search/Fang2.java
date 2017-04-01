@@ -37,7 +37,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fang implements GraphSearch {
+public final class Fang2 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -61,7 +61,7 @@ public final class Fang implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fang(DataSet dataSet) {
+    public Fang2(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -114,7 +114,7 @@ public final class Fang implements GraphSearch {
                 double[] c1 = cor(x, y, 1, 0);
                 double[] c2 = cor(x, y, 0, 1);
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[0] - c2[0]) > .3) {
+                if (G0.isAdjacentTo(X, Y)) {// || abs(c1[0] - c2[0]) > .3) {
                     double c[] = cor(x, y, 0, 0);
                     double G = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
                     double c3[] = cor(x, y, -1, 0);
