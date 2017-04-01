@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -35,6 +36,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.SemIm;
@@ -235,7 +237,7 @@ public class TestFang {
 
         parameters.set("penaltyDiscount", 1);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .001);
+        parameters.set("twoCycleAlpha", 1e-5);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 1);
@@ -292,7 +294,7 @@ public class TestFang {
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new Fang());
-//        algorithms.add(new ImagesSemBic());
+        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -305,7 +307,7 @@ public class TestFang {
 
         comparison.setTabDelimitedTables(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparisonpwwd", simulations, algorithms, statistics, parameters);
     }
 
     @Test
