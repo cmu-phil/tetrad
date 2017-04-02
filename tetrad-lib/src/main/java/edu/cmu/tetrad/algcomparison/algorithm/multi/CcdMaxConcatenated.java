@@ -65,7 +65,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("orientVisibleFeedbackLoops");
         parameters.add("doColliderOrientation");

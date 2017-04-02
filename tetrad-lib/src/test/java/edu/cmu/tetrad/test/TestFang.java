@@ -358,9 +358,9 @@ public class TestFang {
                 pm.setNodeExpression(e2, errors);
                 pm.setNodeExpression(e3, errors);
 
-                pm.setParameterExpression("a", ".9");
-                pm.setParameterExpression("b", ".2");
-                pm.setParameterExpression("c", ".8");
+                pm.setParameterExpression("a", "Split(-.9, -.1, .1,.9)");
+                pm.setParameterExpression("b", "Split(-.9, -.1, .1,.9)");
+                pm.setParameterExpression("c", "Split(-.9, -.1, .1,.9)");
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
@@ -424,25 +424,30 @@ public class TestFang {
 
 //            System.out.println();
                 System.out.print(((index + 1) + ". "));
-                System.out.print("cor(X, Y) = " + nf.format(c[0]));
-                System.out.print(" cor(X, Y | X > 0) = " + nf.format(c1[0]));
-                System.out.println(" cor(X, Y | Y > 0) = " + nf.format(c2[0]));
-                System.out.println("  p value for cor(X, Y) - cor(X, Y | X > 0) = " + nf.format(p1));
-                System.out.println("  p value for cor(X, Y) - cor(X, Y | Y > 0) = " + nf.format(p2));
-                System.out.println("  diff1 = " + nf.format(diff1));
-                System.out.println("  diff2 = " + nf.format(diff2));
-                System.out.println("  bc = " + nf.format(_b * _c));
-                System.out.println("  vzx = " + nf.format(vzx));
+//                System.out.print("cor(X, Y) = " + nf.format(c[0]));
+//                System.out.print(" cor(X, Y | X > 0) = " + nf.format(c1[0]));
+//                System.out.println(" cor(X, Y | Y > 0) = " + nf.format(c2[0]));
+//                System.out.println("  p value for cor(X, Y) - cor(X, Y | X > 0) = " + nf.format(p1));
+//                System.out.println("  p value for cor(X, Y) - cor(X, Y | Y > 0) = " + nf.format(p2));
+//                System.out.println("  diff1 = " + nf.format(diff1));
+//                System.out.println("  diff2 = " + nf.format(diff2));
+//                System.out.println("  bc = " + nf.format(_b * _c));
+
+                System.out.println();
                 System.out.println("  vxx = " + nf.format(vxx));
-                System.out.println("  vzy = " + nf.format(vzy));
-                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
-                System.out.println("  X->Y " + (p1 < p2));
-                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vxx));
-                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vyx));
-                System.out.println("  bc * (vzx / vxx) = " + nf.format(_b * _c * (vzx / vxx)));
-                System.out.println("  bc * (vzx / vyx) = " + nf.format(_b * _c * (vzx / vyx)));
-                System.out.println("  c^2 = " + nf.format(_c * _c));
-                System.out.println("  (vxx / vzx) - c^2 = " + nf.format((vxx / vzx) - _c * _c));
+                System.out.println("  vxy = " + nf.format(vxy));
+
+//                System.out.println("  vzx = " + nf.format(vzx));
+//                System.out.println("  vxx = " + nf.format(vxx));
+//                System.out.println("  vzy = " + nf.format(vzy));
+//                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
+//                System.out.println("  X->Y " + (p1 < p2));
+//                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vxx));
+//                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vyx));
+//                System.out.println("  bc * (vzx / vxx) = " + nf.format(_b * _c * (vzx / vxx)));
+//                System.out.println("  bc * (vzx / vyx) = " + nf.format(_b * _c * (vzx / vyx)));
+//                System.out.println("  c^2 = " + nf.format(_c * _c));
+//                System.out.println("  (vxx / vzx) - c^2 = " + nf.format((vxx / vzx) - _c * _c));
 
                 final double d1 = c[0] - c1[0];
                 final double d2 = c[0] - c2[0];

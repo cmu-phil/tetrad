@@ -175,7 +175,8 @@ public class Parameters implements TetradSerializable {
 //            }
         } else {
             if (getNumValues(name) != 1) {
-                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+                System.out.println("ERROR. Parameter '" + name + "' was not listed among the algorithm parameters "
+                   + "for this algorithm. Skipping this run.\n");
             }
 
             return objects[0];

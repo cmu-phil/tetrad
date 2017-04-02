@@ -114,57 +114,56 @@ public final class Fang implements GraphSearch {
                 double[] c1 = cor(x, y, 1, 0);
                 double[] c2 = cor(x, y, 0, 1);
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[0] - c2[0]) > .3) {
-
+                if (G0.isAdjacentTo(X, Y) || getP(c1, c2) < alpha) {
                     double[] c = cor(x, y, 0, 0);
-
-                    double G = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
-
                     double c3[] = cor(x, y, -1, 0);
                     double c4[] = cor(x, y, 0, -1);
-
-                    double z = getZ(c[0]);
-                    double z1 = getZ(c1[0]);
-                    double z2 = getZ(c2[0]);
-
-                    double diff1 = z - z1;
-                    double diff2 = z - z2;
-
-                    final double t1 = diff1 / (sqrt(1.0 / c[1] + 1.0 / c1[1]));
-                    final double t2 = diff2 / (sqrt(1.0 / c[1] + 1.0 / c2[1]));
-
-                    double p1 = 1.0 - new TDistribution(2 * (c[1] + c1[1]) - 2).cumulativeProbability(abs(t1 / 2.0));
-                    double p2 = 1.0 - new TDistribution(2 * (c[1] + c2[1]) - 2).cumulativeProbability(abs(t2 / 2.0));
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (p1 <= alpha && p2 <= alpha) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else if (!((signum(c[0]) == signum(c1[0]) && signum(c[0]) == signum(c3[0]))
-                            || (signum(c[0]) == signum(c2[0]) && signum(c[0]) == signum(c4[0])))) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.RED);
-                        edge2.setLineColor(Color.RED);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else if (G > 0) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (G < 0) {
-                        graph.addDirectedEdge(Y, X);
+                    }
+//                    else if (getP(c1, c) <= alpha && getP(c2, c) <= alpha) {
+//                        Edge edge1 = Edges.directedEdge(X, Y);
+//                        Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                        edge1.setLineColor(Color.GREEN);
+//                        edge2.setLineColor(Color.GREEN);
+//
+//                        graph.addEdge(edge1);
+//                        graph.addEdge(edge2);
+//                    } else if (!((signum(c[0]) == signum(c1[0]) && signum(c[0]) == signum(c3[0]))
+//                            || (signum(c[0]) == signum(c2[0]) && signum(c[0]) == signum(c4[0])))) {
+//                        Edge edge1 = Edges.directedEdge(X, Y);
+//                        Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                        edge1.setLineColor(Color.RED);
+//                        edge2.setLineColor(Color.RED);
+//
+//                        graph.addEdge(edge1);
+//                        graph.addEdge(edge2);
+//                    }
+                    else if (abs(c1[0]) > 0 && abs(c2[0]) > 0) {
+                        if (abs(c1[0]) > abs(c2[0])) {
+                            graph.addDirectedEdge(X, Y);
+                        } else {
+                            graph.addDirectedEdge(Y, X);
+                        }
+                    } else if (abs(c1[0]) < 0 && abs(c2[0]) < 0) {
+                        if (abs(c1[0]) < abs(c2[0])) {
+                            graph.addDirectedEdge(X, Y);
+                        } else {
+                            graph.addDirectedEdge(Y, X);
+                        }
                     } else {
-                        graph.addUndirectedEdge(X, Y);
+                        final double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
+
+                        if (R > 0) {
+                            graph.addDirectedEdge(X, Y);
+                        } else if (R < 0) {
+                            graph.addDirectedEdge(Y, X);
+                        }
                     }
                 }
             }
@@ -177,6 +176,15 @@ public final class Fang implements GraphSearch {
         this.elapsed = stop - start;
 
         return graph;
+    }
+
+    private double getP(double[] c1, double[] c) {
+        double z = getZ(c[0]);
+        double z1 = getZ(c1[0]);
+
+        double diff1 = z - z1;
+        final double t1 = diff1 / (sqrt(1.0 / c[1] + 1.0 / c1[1]));
+        return 1.0 - new TDistribution(2 * (c[1] + c1[1]) - 2).cumulativeProbability(abs(t1 / 2.0));
     }
 
     private double[] cor(double[] x, double[] y, int xInc, int yInc) {
@@ -243,7 +251,7 @@ public final class Fang implements GraphSearch {
         ex /= n;
         ey /= n;
 
-        return new double[]{(exy - ex * ey) / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+        return new double[]{(exy - ex * ey) /*/ Math.sqrt((exx - ex * ex) * (eyy - ey * ey))*/, (double) n};
     }
 
     /**
