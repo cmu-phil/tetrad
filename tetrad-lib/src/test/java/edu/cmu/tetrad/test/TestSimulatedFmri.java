@@ -45,9 +45,8 @@ public class TestSimulatedFmri {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 1, 2, 3, 4, 5);
+        parameters.set("penaltyDiscount", 5);
         parameters.set("depth", -1);
-        parameters.set("alpha", 0.05, 0.01, 0.001, 0.0001);
         parameters.set("twoCycleAlpha", .000000001);
 
         parameters.set("numRuns", 10);
@@ -57,7 +56,7 @@ public class TestSimulatedFmri {
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("Structure"));
+        statistics.add(new ParameterColumn("penaltyDiscount"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -67,7 +66,7 @@ public class TestSimulatedFmri {
         statistics.add(new TwoCycleFalsePositive2());
         statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+//        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);
@@ -138,7 +137,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new CcdMaxConcatenated(new SemBicTest()));
 //        algorithms.add(new CcdMaxConcatenated(new FisherZ()));
-//        algorithms.addNode(new FangConcatenated());
+        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -150,8 +149,8 @@ public class TestSimulatedFmri {
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
-        comparison.setShowUtilities(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
         comparison.setParallelized(false);
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);

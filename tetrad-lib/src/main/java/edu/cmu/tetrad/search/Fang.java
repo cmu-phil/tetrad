@@ -144,27 +144,32 @@ public final class Fang implements GraphSearch {
 //                        graph.addEdge(edge1);
 //                        graph.addEdge(edge2);
 //                    }
-                    else if (abs(c1[0]) > 0 && abs(c2[0]) > 0) {
+//                    else if (abs(c1[0]) > 0 && abs(c2[0]) > 0) {
                         if (abs(c1[0]) > abs(c2[0])) {
                             graph.addDirectedEdge(X, Y);
                         } else {
                             graph.addDirectedEdge(Y, X);
                         }
-                    } else if (abs(c1[0]) < 0 && abs(c2[0]) < 0) {
-                        if (abs(c1[0]) < abs(c2[0])) {
-                            graph.addDirectedEdge(X, Y);
-                        } else {
-                            graph.addDirectedEdge(Y, X);
-                        }
-                    } else {
-                        final double R = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
-
-                        if (R > 0) {
-                            graph.addDirectedEdge(X, Y);
-                        } else if (R < 0) {
-                            graph.addDirectedEdge(Y, X);
-                        }
-                    }
+//                    } else if (abs(c1[0]) < 0 && abs(c2[0]) < 0) {
+//                        if (abs(c1[0]) < abs(c2[0])) {
+//                            graph.addDirectedEdge(X, Y);
+//                        } else {
+//                            graph.addDirectedEdge(Y, X);
+//                        }
+//                    }
+//                    else {
+//                        final double delta1 = c[0] - c2[0];
+//                        final double delta2 = c[0] - c1[0];
+//                        final double R = abs(delta1) - abs(delta2);
+//
+////                        double R = abs(delta2 - delta1);
+//
+//                        if (R > 0) {
+//                            graph.addDirectedEdge(X, Y);
+//                        } else if (R < 0) {
+//                            graph.addDirectedEdge(Y, X);
+//                        }
+//                    }
                 }
             }
         }
