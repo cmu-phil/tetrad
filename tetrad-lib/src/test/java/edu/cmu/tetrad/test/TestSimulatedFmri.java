@@ -23,13 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.CcdMaxConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofsConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.PcMaxConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.CcdMax;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.search.Lofs2;
@@ -56,7 +51,7 @@ public class TestSimulatedFmri {
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("penaltyDiscount"));
+        statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -66,15 +61,15 @@ public class TestSimulatedFmri {
         statistics.add(new TwoCycleFalsePositive2());
         statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
-//        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 1.0);
-//        statistics.setWeight("2CP", 1.0);
-//        statistics.setWeight("2CR", 1.0);
-//        statistics.setWeight("2CFP", 1.0);
+        statistics.setWeight("2CP", 1.0);
+        statistics.setWeight("2CR", 1.0);
+        statistics.setWeight("2CFP", 1.0);
 
         Simulations simulations = new Simulations();
 
@@ -135,9 +130,8 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-        algorithms.add(new CcdMax(new SemBicTest()));
-//        algorithms.add(new CcdMaxConcatenated(new FisherZ()));
-//        algorithms.add(new FangConcatenated());
+//        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
+        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));

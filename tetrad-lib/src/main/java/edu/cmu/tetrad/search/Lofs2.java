@@ -746,10 +746,7 @@ public class Lofs2 {
         graph.removeEdges(x, y);
 //        double epsilon = 0;
 
-        if (deltaX < epsilon && deltaY < epsilon) {
-            graph.addDirectedEdge(x, y);
-            graph.addDirectedEdge(y, x);
-        } else if (deltaY > deltaX) {
+        if (deltaY > deltaX) {
             graph.addDirectedEdge(x, y);
         } else {
             graph.addDirectedEdge(y, x);

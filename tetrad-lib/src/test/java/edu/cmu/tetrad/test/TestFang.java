@@ -28,21 +28,17 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.junit.Test;
 
@@ -50,11 +46,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Math.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -322,6 +316,9 @@ public class TestFang {
         double sumvzx = 0.0;
         double sumvzy = 0.0;
 
+        final BetaDistribution betaDistribution = new BetaDistribution(2, 10);
+
+
         for (int index = 0; index < total; index++) {
             SemGraph G0 = new SemGraph();
 
@@ -346,6 +343,7 @@ public class TestFang {
 
             GeneralizedSemPm pm = new GeneralizedSemPm(G0);
 
+
             try {
 //                pm.setNodeExpression(X, "E_X");
                 pm.setNodeExpression(X, "c * Z + E_X");
@@ -358,9 +356,11 @@ public class TestFang {
                 pm.setNodeExpression(e2, errors);
                 pm.setNodeExpression(e3, errors);
 
-                pm.setParameterExpression("a", "Split(-.9, -.1, .1,.9)");
-                pm.setParameterExpression("b", "Split(-.9, -.1, .1,.9)");
-                pm.setParameterExpression("c", "Split(-.9, -.1, .1,.9)");
+//                final String coef = "Split(-1, -.1, .1, 1)";
+                final String coef = "Split(-.8, -.1, .1, .8)";
+                pm.setParameterExpression("a", coef);
+                pm.setParameterExpression("b", coef);
+                pm.setParameterExpression("c", coef);
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
@@ -437,9 +437,9 @@ public class TestFang {
                 System.out.println("  vxx = " + nf.format(vxx));
                 System.out.println("  vxy = " + nf.format(vxy));
 
-//                System.out.println("  vzx = " + nf.format(vzx));
+                System.out.println("  vzx = " + nf.format(vzx));
 //                System.out.println("  vxx = " + nf.format(vxx));
-//                System.out.println("  vzy = " + nf.format(vzy));
+                System.out.println("  vzy = " + nf.format(vzy));
 //                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
 //                System.out.println("  X->Y " + (p1 < p2));
 //                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vxx));
@@ -448,6 +448,17 @@ public class TestFang {
 //                System.out.println("  bc * (vzx / vyx) = " + nf.format(_b * _c * (vzx / vyx)));
 //                System.out.println("  c^2 = " + nf.format(_c * _c));
 //                System.out.println("  (vxx / vzx) - c^2 = " + nf.format((vxx / vzx) - _c * _c));
+
+//                double varex = vxx - _c * _c - _c * (-_c);
+//                double varey = (_a * _a) * vxy + (_b * _b) - 2 * _a * _b * (_c - _a * _b);
+
+                double varerror = .5;
+
+                double varx1 = (_c * _c) + varerror;
+                double varx2 = (1.0 / (_a * _a)) * (varerror - (_b * _b) + 2 * _a * _b * (_c - _a * _b));
+
+                System.out.println("...varx1 = " + varx1);
+                System.out.println("...varx2 = " + varx2);
 
                 final double d1 = c[0] - c1[0];
                 final double d2 = c[0] - c2[0];
