@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.http.client.ClientProtocolException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.app.hpc.task.HpcJobPreProcessTask;
@@ -41,6 +43,8 @@ import edu.pitt.dbmi.tetrad.db.service.HpcJobLogDetailService;
  */
 public class HpcJobManager {
 
+	private final Logger LOGGER = LoggerFactory.getLogger(HpcJobManager.class);
+	
 	private final HpcJobLogService hpcJobLogService;
 
 	private final HpcJobLogDetailService hpcJobLogDetailService;
@@ -97,7 +101,7 @@ public class HpcJobManager {
 		List<HpcJobInfo> pendingHpcJobInfo = hpcJobInfoService.findByStatus(-1);
 		if (pendingHpcJobInfo != null) {
 			for (HpcJobInfo hpcJobInfo : pendingHpcJobInfo) {
-				System.out.println("resumePreProcessJobs: " + hpcJobInfo.getAlgorithmName() + " : "
+				LOGGER.debug("resumePreProcessJobs: " + hpcJobInfo.getAlgorithmName() + " : "
 						+ hpcJobInfo.getHpcAccount().getConnectionName() + " : "
 						+ hpcJobInfo.getAlgorithmParamRequest().getDatasetPath());
 
@@ -114,12 +118,12 @@ public class HpcJobManager {
 				executorService.submit(preProcessTask);
 			}
 		} else {
-			System.out.println("resumePreProcessJobs: no pending jobs to be resumed");
+			LOGGER.debug("resumePreProcessJobs: no pending jobs to be resumed");
 		}
 	}
 
 	public void startHpcJobScheduler() {
-		System.out.println("startHpcJobScheduler");
+		LOGGER.debug("startHpcJobScheduler");
 		HpcJobsScheduledTask hpcScheduledTask = new HpcJobsScheduledTask();
 		timer.schedule(hpcScheduledTask, 1000, TIME_INTERVAL);
 	}
@@ -128,13 +132,13 @@ public class HpcJobManager {
 			final GeneralAlgorithmEditor generalAlgorithmEditor) {
 
 		hpcJobInfoService.add(hpcJobInfo);
-		System.out.println("hpcJobInfo: id: " + hpcJobInfo.getId());
+		LOGGER.debug("hpcJobInfo: id: " + hpcJobInfo.getId());
 
 		HpcJobLog hpcJobLog = new HpcJobLog();
 		hpcJobLog.setAddedTime(new Date(System.currentTimeMillis()));
 		hpcJobLog.setHpcJobInfo(hpcJobInfo);
 		hpcJobLogService.update(hpcJobLog);
-		System.out.println("HpcJobLog: id: " + hpcJobLog.getId());
+		LOGGER.debug("HpcJobLog: id: " + hpcJobLog.getId());
 
 		HpcJobLogDetail hpcJobLogDetail = new HpcJobLogDetail();
 		hpcJobLogDetail.setAddedTime(new Date());
@@ -142,7 +146,7 @@ public class HpcJobManager {
 		hpcJobLogDetail.setJobState(-1);// Pending
 		hpcJobLogDetail.setProgress("Pending");
 		hpcJobLogDetailService.add(hpcJobLogDetail);
-		System.out.println("HpcJobLogDetail: id: " + hpcJobLogDetail.getId());
+		LOGGER.debug("HpcJobLogDetail: id: " + hpcJobLogDetail.getId());
 
 		hpcGraphResultMap.put(hpcJobInfo, generalAlgorithmEditor);
 
@@ -227,7 +231,7 @@ public class HpcJobManager {
 		// Lookup on DB for HpcJobInfo with status 0 (Submitted); 1 (Running); 2
 		// (Kill Request)
 		for (int status = 0; status <= 2; status++) {
-			// System.out.println("resumeSubmittedHpcJobInfos: "
+			// LOGGER.debug("resumeSubmittedHpcJobInfos: "
 			// + "looping status: " + status);
 			List<HpcJobInfo> submittedHpcJobInfo = hpcJobInfoService.findByStatus(status);
 			if (submittedHpcJobInfo != null) {
@@ -244,10 +248,10 @@ public class HpcJobManager {
 
 	public synchronized void addNewSubmittedHpcJob(final HpcJobInfo hpcJobInfo) {
 		HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
-		System.out.println("addNewSubmittedHpcJob: connection: " + hpcAccount.getConnectionName());
-		System.out.println("addNewSubmittedHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
-		System.out.println("addNewSubmittedHpcJob: status: " + hpcJobInfo.getStatus());
-		System.out.println("addNewSubmittedHpcJob: " + "pid: " + hpcJobInfo.getPid());
+		LOGGER.debug("addNewSubmittedHpcJob: connection: " + hpcAccount.getConnectionName());
+		LOGGER.debug("addNewSubmittedHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
+		LOGGER.debug("addNewSubmittedHpcJob: status: " + hpcJobInfo.getStatus());
+		LOGGER.debug("addNewSubmittedHpcJob: " + "pid: " + hpcJobInfo.getPid());
 
 		Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 		if (hpcJobInfos == null) {
@@ -261,19 +265,19 @@ public class HpcJobManager {
 
 	public synchronized void removeFinishedHpcJob(final HpcJobInfo hpcJobInfo) {
 		HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
-		System.out.println("removedFinishedHpcJob: connection: " + hpcAccount.getConnectionName());
-		System.out.println("removedFinishedHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
-		System.out.println("removedFinishedHpcJob: status: " + hpcJobInfo.getStatus());
-		System.out.println("removedFinishedHpcJob: pid: " + hpcJobInfo.getPid());
+		LOGGER.debug("removedFinishedHpcJob: connection: " + hpcAccount.getConnectionName());
+		LOGGER.debug("removedFinishedHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
+		LOGGER.debug("removedFinishedHpcJob: status: " + hpcJobInfo.getStatus());
+		LOGGER.debug("removedFinishedHpcJob: pid: " + hpcJobInfo.getPid());
 		Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 		if (hpcJobInfos != null) {
 
-			// System.out.println("removeFinishedHpcJob: hpcJobInfos not null");
+			// LOGGER.debug("removeFinishedHpcJob: hpcJobInfos not null");
 
 			for (HpcJobInfo jobInfo : hpcJobInfos) {
 				if (jobInfo.getId() == hpcJobInfo.getId()) {
 
-					// System.out.println("removeFinishedHpcJob: Found
+					// LOGGER.debug("removeFinishedHpcJob: Found
 					// hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
 
 					hpcJobInfos.remove(jobInfo);
@@ -291,20 +295,20 @@ public class HpcJobManager {
 
 	public synchronized void removePendingHpcJob(final HpcJobInfo hpcJobInfo) {
 		HpcAccount hpcAccount = hpcJobInfo.getHpcAccount();
-		System.out.println("removedPendingHpcJob: connection: " + hpcAccount.getConnectionName());
-		System.out.println("removedPendingHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
-		System.out.println("removedPendingHpcJob: status: " + hpcJobInfo.getStatus());
-		System.out.println("removedPendingHpcJob: pid: " + hpcJobInfo.getPid());
+		LOGGER.debug("removedPendingHpcJob: connection: " + hpcAccount.getConnectionName());
+		LOGGER.debug("removedPendingHpcJob: algorithm: " + hpcJobInfo.getAlgorithmName());
+		LOGGER.debug("removedPendingHpcJob: status: " + hpcJobInfo.getStatus());
+		LOGGER.debug("removedPendingHpcJob: pid: " + hpcJobInfo.getPid());
 
 		Set<HpcJobInfo> hpcJobInfos = pendingHpcJobInfoMap.get(hpcAccount);
 		if (hpcJobInfos != null) {
 
-			// System.out.println("removedPendingHpcJob: hpcJobInfos not null");
+			// LOGGER.debug("removedPendingHpcJob: hpcJobInfos not null");
 
 			for (HpcJobInfo jobInfo : hpcJobInfos) {
 				if (jobInfo.getId() == hpcJobInfo.getId()) {
 
-					// System.out.println("removedPendingHpcJob: Found
+					// LOGGER.debug("removedPendingHpcJob: Found
 					// hpcJobInfo in the pendingHpcJobInfoMap & removed it!");
 
 					hpcJobInfos.remove(jobInfo);
@@ -328,13 +332,13 @@ public class HpcJobManager {
 		Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfoMap.get(hpcAccount);
 		if (hpcJobInfos != null) {
 
-			// System.out.println("updateSubmittedHpcJobInfo: hpcJobInfos not
+			// LOGGER.debug("updateSubmittedHpcJobInfo: hpcJobInfos not
 			// null");
 
 			for (HpcJobInfo jobInfo : hpcJobInfos) {
 				if (jobInfo.getId() == hpcJobInfo.getId()) {
 
-					// System.out.println("updateSubmittedHpcJobInfo: Found
+					// LOGGER.debug("updateSubmittedHpcJobInfo: Found
 					// hpcJobInfo in the submittedHpcJobInfoMap & removed it!");
 
 					hpcJobInfos.remove(jobInfo);
@@ -364,7 +368,7 @@ public class HpcJobManager {
 		// Lookup on DB for HpcJobInfo with status 3 (Finished); 4 (Killed);
 		// 5 (Result Downloaded); 6 (Error Result Downloaded);
 		for (int status = 3; status <= 6; status++) {
-			// System.out.println("getFinishedHpcJobInfoMap: "
+			// LOGGER.debug("getFinishedHpcJobInfoMap: "
 			// + "looping status: " + status);
 			List<HpcJobInfo> finishedHpcJobInfo = hpcJobInfoService.findByStatus(status);
 			if (finishedHpcJobInfo != null) {

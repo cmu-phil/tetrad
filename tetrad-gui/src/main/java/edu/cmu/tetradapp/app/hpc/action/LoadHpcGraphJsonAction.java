@@ -24,6 +24,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -51,6 +54,8 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 public class LoadHpcGraphJsonAction extends AbstractAction {
 
 	private static final long serialVersionUID = 3640705055173728331L;
+	
+	private final Logger LOGGER = LoggerFactory.getLogger(LoadHpcGraphJsonAction.class);
 
 	/**
 	 * The component whose image is to be saved.
@@ -101,9 +106,9 @@ public class LoadHpcGraphJsonAction extends AbstractAction {
 				e1.printStackTrace();
 			}
 		} else {
-			System.out.println("Option: OK " + (option == JOptionPane.OK_OPTION));
-			System.out.println("Option: jsonFileName " + (jsonFileName != null));
-			System.out.println("Option: computingAccount " + (hpcAccount != null));
+			LOGGER.debug("Option: OK " + (option == JOptionPane.OK_OPTION));
+			LOGGER.debug("Option: jsonFileName " + (jsonFileName != null));
+			LOGGER.debug("Option: computingAccount " + (hpcAccount != null));
 		}
 	}
 

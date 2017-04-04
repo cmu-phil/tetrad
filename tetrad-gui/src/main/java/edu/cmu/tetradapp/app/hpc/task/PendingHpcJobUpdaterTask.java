@@ -8,6 +8,9 @@ import java.util.TimerTask;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.cmu.tetradapp.app.hpc.editor.HpcJobActivityEditor;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.pitt.dbmi.ccd.commons.file.FilePrint;
@@ -24,6 +27,8 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
  * 
  */
 public class PendingHpcJobUpdaterTask extends TimerTask {
+
+	private final Logger LOGGER = LoggerFactory.getLogger(PendingHpcJobUpdaterTask.class);
 
 	private final HpcJobManager hpcJobManager;
 
@@ -98,7 +103,7 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 				int priorKnowledgeUploadProgress = -1;
 				if (priorKnowledgePath != null) {
 
-					System.out.println("priorKnowledgePath: " + priorKnowledgePath);
+					LOGGER.debug("priorKnowledgePath: " + priorKnowledgePath);
 
 					priorKnowledgeUploadProgress = hpcJobManager.getUploadFileProgress(priorKnowledgePath);
 
@@ -115,7 +120,7 @@ public class PendingHpcJobUpdaterTask extends TimerTask {
 				if (dataUploadProgress == 100
 						&& (priorKnowledgeUploadProgress == -1 || priorKnowledgeUploadProgress == 100)) {
 
-					System.out.println("HpcJobInfo Id: " + hpcJobInfo.getId() + " done with both uploading");
+					LOGGER.debug("HpcJobInfo Id: " + hpcJobInfo.getId() + " done with both uploading");
 
 					Map<HpcAccount, Set<HpcJobInfo>> pendingHpcJobInfoMap = hpcJobManager.getPendingHpcJobInfoMap();
 

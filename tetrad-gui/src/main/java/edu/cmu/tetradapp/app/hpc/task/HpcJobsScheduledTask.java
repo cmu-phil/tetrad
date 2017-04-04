@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.TimerTask;
 
 import org.apache.http.client.ClientProtocolException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
@@ -31,6 +33,8 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcJobLog;
  * 
  */
 public class HpcJobsScheduledTask extends TimerTask {
+	
+	private final Logger LOGGER = LoggerFactory.getLogger(HpcJobsScheduledTask.class);
 
 	public HpcJobsScheduledTask() {
 	}
@@ -45,21 +49,21 @@ public class HpcJobsScheduledTask extends TimerTask {
 		final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
 		final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
 
-		System.out.println("HpcJobsScheduledTask: " + new Date(System.currentTimeMillis()));
+		LOGGER.debug("HpcJobsScheduledTask: " + new Date(System.currentTimeMillis()));
 
 		// Load active jobs: Status (0 = Submitted; 1 = Running; 2 = Kill
 		// Request)
 		Map<HpcAccount, Set<HpcJobInfo>> submittedHpcJobInfos = hpcJobManager.getSubmittedHpcJobInfoMap();
 		if (submittedHpcJobInfos.size() == 0) {
-			System.out.println("Submitted job pool is empty!");
+			LOGGER.debug("Submitted job pool is empty!");
 		} else {
-			System.out.println("Submitted job pool has " + submittedHpcJobInfos.keySet().size() + " hpcAccount"
+			LOGGER.debug("Submitted job pool has " + submittedHpcJobInfos.keySet().size() + " hpcAccount"
 					+ (submittedHpcJobInfos.keySet().size() > 1 ? "s" : ""));
 		}
 
 		for (HpcAccount hpcAccount : submittedHpcJobInfos.keySet()) {
 
-			System.out.println("HpcJobsScheduledTask: " + hpcAccount.getConnectionName());
+			LOGGER.debug("HpcJobsScheduledTask: " + hpcAccount.getConnectionName());
 
 			Set<HpcJobInfo> hpcJobInfos = submittedHpcJobInfos.get(hpcAccount);
 			// Pid-HpcJobInfo map
@@ -69,12 +73,12 @@ public class HpcJobsScheduledTask extends TimerTask {
 					long pid = hpcJobInfo.getPid().longValue();
 					hpcJobInfoMap.put(pid, hpcJobInfo);
 
-					System.out.println("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgorithmName() + ": pid: "
+					LOGGER.debug("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgorithmName() + ": pid: "
 							+ pid + " : " + hpcJobInfo.getResultFileName());
 
 				} else {
 
-					System.out.println("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgorithmName()
+					LOGGER.debug("id: " + hpcJobInfo.getId() + " : " + hpcJobInfo.getAlgorithmName()
 							+ ": no pid! : " + hpcJobInfo.getResultFileName());
 
 					hpcJobInfos.remove(hpcJobInfo);
@@ -91,7 +95,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 				List<JobInfo> jobInfos = hpcJobManager.getRemoteActiveJobs(hpcAccountManager, hpcAccount);
 
 				for (JobInfo jobInfo : jobInfos) {
-					System.out.println("Remote pid: " + jobInfo.getId() + " : " + jobInfo.getAlgorithmName() + " : "
+					LOGGER.debug("Remote pid: " + jobInfo.getId() + " : " + jobInfo.getAlgorithmName() + " : "
 							+ jobInfo.getResultFileName());
 
 					long pid = jobInfo.getId();
@@ -116,9 +120,9 @@ public class HpcJobsScheduledTask extends TimerTask {
 							hpcJobLog.setLastUpdatedTime(new Date(System.currentTimeMillis()));
 
 							String log = "Job status changed to " + recentStatusText;
-							System.out.println(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId()
+							LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId()
 									+ " : pid : " + pid);
-							System.out.println(log);
+							LOGGER.debug(log);
 
 							hpcJobManager.logHpcJobLogDetail(hpcJobLog, remoteStatus, log);
 						}
@@ -133,7 +137,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 					Set<String> resultFileNames = new HashSet<>();
 					for (ResultFile resultFile : resultFiles) {
 						resultFileNames.add(resultFile.getName());
-						// System.out.println(hpcAccount.getConnectionName()
+						// LOGGER.debug(hpcAccount.getConnectionName()
 						// + " Result : " + resultFile.getName());
 					}
 
@@ -153,18 +157,18 @@ public class HpcJobsScheduledTask extends TimerTask {
 						hpcJobInfo.setStatus(recentStatus);
 						hpcJobManager.updateHpcJobInfo(hpcJobInfo);
 
-						// System.out.println("hpcJobInfo: id: "
+						// LOGGER.debug("hpcJobInfo: id: "
 						// + hpcJobInfo.getId() + " : "
 						// + hpcJobInfo.getStatus());
 
 						hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, recentStatusText);
 
-						System.out.println(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : "
+						LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : "
 								+ recentStatusText);
 
 						GeneralAlgorithmEditor editor = hpcJobManager.getGeneralAlgorithmEditor(hpcJobInfo);
 						if (editor != null) {
-							System.out.println("GeneralAlgorithmEditor is not null");
+							LOGGER.debug("GeneralAlgorithmEditor is not null");
 
 							String resultJsonFileName = hpcJobInfo.getResultJsonFileName();
 							String errorResultFileName = hpcJobInfo.getErrorResultFileName();
@@ -182,7 +186,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 								String log = "Result downloaded";
 								hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-								System.out.println(
+								LOGGER.debug(
 										hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : " + log);
 
 							} else if (resultFileNames.contains(errorResultFileName)) {
@@ -198,7 +202,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 								String log = "Error Result downloaded";
 								hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-								System.out.println(
+								LOGGER.debug(
 										hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId() + " : " + log);
 
 							} else {
@@ -217,7 +221,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 									String log = "Result downloaded";
 									hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-									System.out.println(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId()
+									LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : " + hpcJobInfo.getId()
 											+ " : " + log);
 								} else {
 									String error = downloadAlgorithmResultFile(hpcAccountManager, hpcJobManager,
@@ -232,7 +236,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 										String log = "Error Result downloaded";
 										hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-										System.out.println(hpcJobInfo.getAlgorithmName() + " : id : "
+										LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : "
 												+ hpcJobInfo.getId() + " : " + log);
 									} else {
 										recentStatus = 7; // Result Not Found
@@ -240,7 +244,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 										String log = resultJsonFileName + " not found";
 										hpcJobManager.logHpcJobLogDetail(hpcJobLog, recentStatus, log);
 
-										System.out.println(hpcJobInfo.getAlgorithmName() + " : id : "
+										LOGGER.debug(hpcJobInfo.getAlgorithmName() + " : id : "
 												+ hpcJobInfo.getId() + " : " + log);
 									}
 
@@ -252,7 +256,7 @@ public class HpcJobsScheduledTask extends TimerTask {
 						hpcJobManager.removeFinishedHpcJob(hpcJobInfo);
 					}
 				} else {
-					System.out.println("No finished job yet.");
+					LOGGER.debug("No finished job yet.");
 				}
 
 			} catch (Exception e) {

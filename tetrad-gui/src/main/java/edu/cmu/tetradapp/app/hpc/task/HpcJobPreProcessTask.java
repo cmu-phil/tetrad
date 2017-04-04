@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountService;
@@ -35,6 +38,8 @@ import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
  * 
  */
 public class HpcJobPreProcessTask implements Runnable {
+	
+	private final Logger LOGGER = LoggerFactory.getLogger(HpcJobPreProcessTask.class);
 
 	private final HpcJobInfo hpcJobInfo;
 
@@ -67,7 +72,7 @@ public class HpcJobPreProcessTask implements Runnable {
 			HpcJobLog hpcJobLog = hpcJobManager.getHpcJobLog(hpcJobInfo);
 
 			String log = "Initiated connection to " + hpcAccount.getConnectionName();
-			System.out.println(log);
+			LOGGER.debug(log);
 			hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 			log = "datasetPath: " + datasetPath;
@@ -82,7 +87,7 @@ public class HpcJobPreProcessTask implements Runnable {
 			Path prior = null;
 			if (priorKnowledgePath != null) {
 				log = "priorKnowledgePath: " + priorKnowledgePath;
-				System.out.println(log);
+				LOGGER.debug(log);
 				prior = Paths.get(priorKnowledgePath);
 
 				// Initiate prior knowledge uploading progress
@@ -99,7 +104,7 @@ public class HpcJobPreProcessTask implements Runnable {
 			// If not, upload the file
 			if (dataFile == null) {
 				log = "Started uploading " + file.getFileName().toString();
-				System.out.println(log);
+				LOGGER.debug(log);
 				dataUploadService.startUpload(file, HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 				hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
@@ -115,7 +120,7 @@ public class HpcJobPreProcessTask implements Runnable {
 				hpcJobManager.updateUploadFileProgress(datasetPath, progress);
 
 				log = "Finished uploading " + file.getFileName().toString();
-				System.out.println(log);
+				LOGGER.debug(log);
 				hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 				// Get remote datafile
@@ -124,11 +129,11 @@ public class HpcJobPreProcessTask implements Runnable {
 				HpcAccountUtils.summarizeDataset(remoteDataService, algorParamReq, dataFile.getId(),
 						HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 				log = "Summarized " + file.getFileName().toString();
-				System.out.println(log);
+				LOGGER.debug(log);
 				hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 			} else {
 				log = "Skipped uploading " + file.getFileName().toString();
-				System.out.println(log);
+				LOGGER.debug(log);
 
 				hpcJobManager.updateUploadFileProgress(datasetPath, -1);
 
@@ -138,7 +143,7 @@ public class HpcJobPreProcessTask implements Runnable {
 					HpcAccountUtils.summarizeDataset(remoteDataService, algorParamReq, dataFile.getId(),
 							HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 					log = "Summarized " + file.getFileName().toString();
-					System.out.println(log);
+					LOGGER.debug(log);
 					hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, "Summarized " + file.getFileName().toString());
 				}
 
@@ -160,7 +165,7 @@ public class HpcJobPreProcessTask implements Runnable {
 							HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount));
 
 					log = "Started uploading Prior Knowledge File";
-					System.out.println(log);
+					LOGGER.debug(log);
 					hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 					int progress;
@@ -175,7 +180,7 @@ public class HpcJobPreProcessTask implements Runnable {
 							remoteDataService, hpcAccount, md5);
 
 					log = "Finished uploading Prior Knowledge File";
-					System.out.println(log);
+					LOGGER.debug(log);
 					hpcJobManager.logHpcJobLogDetail(hpcJobLog, -1, log);
 
 				}
@@ -191,29 +196,29 @@ public class HpcJobPreProcessTask implements Runnable {
 			System.out.println("dataValidation: skipUniqueVarName: false");
 			if (algorParamReq.getVariableType().equalsIgnoreCase("discrete")) {
 				dataValidation.put("skipNonzeroVariance", false);
-				System.out.println("dataValidation: skipNonzeroVariance: false");
+				LOGGER.debug("dataValidation: skipNonzeroVariance: false");
 			} else {
 				dataValidation.put("skipCategoryLimit", false);
-				System.out.println("dataValidation: skipCategoryLimit: false");
+				LOGGER.debug("dataValidation: skipCategoryLimit: false");
 			}
 			paramRequest.setDataValidation(dataValidation);
 
 			Map<String, Object> algorithmParameters = new HashMap<>();
 			for (AlgorithmParameter param : algorParamReq.getAlgorithmParameters()) {
 				algorithmParameters.put(param.getParameter(), param.getValue());
-				System.out.println("AlgorithmParameter: " + param.getParameter() + " : " + param.getValue());
+				LOGGER.debug("AlgorithmParameter: " + param.getParameter() + " : " + param.getValue());
 			}
 
 			if (priorKnowledgeFile != null) {
 				algorithmParameters.put("priorKnowledgeFileId", priorKnowledgeFile.getId());
-				System.out.println("priorKnowledgeFileId: " + priorKnowledgeFile.getId());
+				LOGGER.debug("priorKnowledgeFileId: " + priorKnowledgeFile.getId());
 			}
 			paramRequest.setAlgorithmParameters(algorithmParameters);
 
 			Map<String, Object> jvmOptions = new HashMap<>();
 			for (JvmOption jvmOption : algorParamReq.getJvmOptions()) {
 				jvmOptions.put(jvmOption.getParameter(), jvmOption.getValue());
-				System.out.println("JvmOption: " + jvmOption.getParameter() + " : " + jvmOption.getValue());
+				LOGGER.debug("JvmOption: " + jvmOption.getParameter() + " : " + jvmOption.getValue());
 			}
 			paramRequest.setJvmOptions(jvmOptions);
 
@@ -225,7 +230,7 @@ public class HpcJobPreProcessTask implements Runnable {
 					hpcParam.setKey(param.getKey());
 					hpcParam.setValue(param.getValue());
 					hpcParams.add(hpcParam);
-					System.out.println("HpcParameter: " + hpcParam.getKey() + " : " + hpcParam.getValue());
+					LOGGER.debug("HpcParameter: " + hpcParam.getKey() + " : " + hpcParam.getValue());
 				}
 				paramRequest.setHpcParameters(hpcParams);
 			}
@@ -247,10 +252,10 @@ public class HpcJobPreProcessTask implements Runnable {
 			hpcJobManager.updateHpcJobInfo(hpcJobInfo);
 
 			log = "Submitted job to " + hpcAccount.getConnectionName();
-			System.out.println(log);
+			LOGGER.debug(log);
 			hpcJobManager.logHpcJobLogDetail(hpcJobLog, 0, log);
 
-			System.out.println(
+			LOGGER.debug(
 					"HpcJobPreProcessTask: HpcJobInfo: id : " + hpcJobInfo.getId() + " : pid : " + hpcJobInfo.getPid()
 							+ " : " + hpcJobInfo.getAlgorithmName() + " : " + hpcJobInfo.getResultFileName());
 
