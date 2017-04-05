@@ -47,19 +47,25 @@ public class HpcJobsScheduledTask extends TimerTask {
 			return;
 
 		final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+		
+		// No Hpc Account in the first place, no need to proceed!
+		List<HpcAccount> hpcAccounts = hpcAccountManager.getHpcAccounts();
+		if(hpcAccounts == null || hpcAccounts.isEmpty())return;
+		
+		
 		final HpcJobManager hpcJobManager = desktop.getHpcJobManager();
 
-		LOGGER.debug("HpcJobsScheduledTask: " + new Date(System.currentTimeMillis()));
+		//LOGGER.debug("HpcJobsScheduledTask: " + new Date(System.currentTimeMillis()));
 
 		// Load active jobs: Status (0 = Submitted; 1 = Running; 2 = Kill
 		// Request)
 		Map<HpcAccount, Set<HpcJobInfo>> submittedHpcJobInfos = hpcJobManager.getSubmittedHpcJobInfoMap();
-		if (submittedHpcJobInfos.size() == 0) {
+		/*if (submittedHpcJobInfos.size() == 0) {
 			LOGGER.debug("Submitted job pool is empty!");
 		} else {
 			LOGGER.debug("Submitted job pool has " + submittedHpcJobInfos.keySet().size() + " hpcAccount"
 					+ (submittedHpcJobInfos.keySet().size() > 1 ? "s" : ""));
-		}
+		}*/
 
 		for (HpcAccount hpcAccount : submittedHpcJobInfos.keySet()) {
 
