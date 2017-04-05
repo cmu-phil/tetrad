@@ -37,7 +37,7 @@ import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.junit.Test;
@@ -380,9 +380,9 @@ public class TestFang {
                 double[] y = colData[j];
                 double[] z = colData[k];
 
-                double[] c = cor(x, y, 0, 0);
-                double[] c1 = cor(x, y, 1, 0);
-                double[] c2 = cor(x, y, 0, 1);
+                double[] c = cor(x, y, 0, 0, x);
+                double[] c1 = cor(x, y, 1, 0, x);
+                double[] c2 = cor(x, y, 0, 1, x);
 
                 double vxx = var(x, x, 1)[0];
                 double vyx = var(y, x, 1)[0];
@@ -437,9 +437,9 @@ public class TestFang {
                 System.out.println("  vxx = " + nf.format(vxx));
                 System.out.println("  vxy = " + nf.format(vxy));
 
-                System.out.println("  vzx = " + nf.format(vzx));
-//                System.out.println("  vxx = " + nf.format(vxx));
-                System.out.println("  vzy = " + nf.format(vzy));
+//                System.out.println("  vzx = " + nf.format(vzx));
+////                System.out.println("  vxx = " + nf.format(vxx));
+//                System.out.println("  vzy = " + nf.format(vzy));
 //                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
 //                System.out.println("  X->Y " + (p1 < p2));
 //                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vxx));
@@ -496,7 +496,7 @@ public class TestFang {
         System.out.println("Avg vzy = " + (sumvzy / total));
     }
 
-    private double[] cor(double[] x, double[] y, int xInc, int yInc) {
+    private double[] cor(double[] x, double[] y, int xInc, int yInc, double[] z) {
 
         double exy = 0.0;
         double exx = 0.0;
@@ -516,7 +516,7 @@ public class TestFang {
                 ey += y[k];
                 n++;
             } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > 0.0) {
+                if (z[k] > 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -525,7 +525,7 @@ public class TestFang {
                     n++;
                 }
             } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > 0.0) {
+                if (z[k] > 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -534,7 +534,7 @@ public class TestFang {
                     n++;
                 }
             } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < 0.0) {
+                if (z[k] < 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -543,7 +543,7 @@ public class TestFang {
                     n++;
                 }
             } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < 0.0) {
+                if (z[k] < 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -596,6 +596,143 @@ public class TestFang {
 
     private double getZ(double r) {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
+    }
+
+    @Test
+    public void testSkeptical2() {
+        int misoriented = 0;
+        int total = 200;
+        double minRatio3 = Double.POSITIVE_INFINITY;
+
+        List<Double> ratios = new ArrayList<>();
+        double sumdiff1 = 0.0;
+        double sumdiff2 = 0.0;
+        double sumvzx = 0.0;
+        double sumvzy = 0.0;
+
+        final BetaDistribution betaDistribution = new BetaDistribution(2, 10);
+
+
+        for (int index = 0; index < total; index++) {
+            SemGraph G0 = new SemGraph();
+
+            Node X = new ContinuousVariable("X");
+            Node Y = new ContinuousVariable("Y");
+            Node Z = new ContinuousVariable("Z");
+
+            G0.addNode(X);
+            G0.addNode(Y);
+            G0.addNode(Z);
+
+            G0.addDirectedEdge(X, Y);
+            G0.addDirectedEdge(Z, X);
+            G0.addDirectedEdge(Z, Y);
+
+            G0.setShowErrorTerms(true);
+
+            Node e1 = G0.getExogenous(X);
+            Node e2 = G0.getExogenous(Y);
+            Node e3 = G0.getExogenous(Z);
+
+
+            GeneralizedSemPm pm = new GeneralizedSemPm(G0);
+
+
+            try {
+//                pm.setNodeExpression(X, "E_X");
+                pm.setNodeExpression(X, "cxy * Z + E_X");
+//                pm.setNodeExpression(Y, "a * X + E_Y");
+                pm.setNodeExpression(Y, "a * X + b * Z + E_Y");
+                pm.setNodeExpression(Z, "E_Z");
+
+                final String errors = "Beta(2, 10)";
+                pm.setNodeExpression(e1, errors);
+                pm.setNodeExpression(e2, errors);
+                pm.setNodeExpression(e3, errors);
+
+//                final String coef = "Split(-1, -.1, .1, 1)";
+                final String coef = "Split(-.8, -.1, .1, .8)";
+                pm.setParameterExpression("a", coef);
+                pm.setParameterExpression("b", coef);
+                pm.setParameterExpression("c", coef);
+
+                GeneralizedSemIm im = new GeneralizedSemIm(pm);
+
+                double _a = im.getParameterValue("a");
+                double _b = im.getParameterValue("b");
+                double _c = im.getParameterValue("c");
+
+                DataSet dataSet = im.simulateDataRecursive(1000, false);
+                dataSet = DataUtils.standardizeData(dataSet);
+
+                List<Node> nodes = dataSet.getVariables();
+                double[][] colData = dataSet.getDoubleData().transpose().toArray();
+                int i = nodes.indexOf(dataSet.getVariable("X"));
+                int j = nodes.indexOf(dataSet.getVariable("Y"));
+                int k = nodes.indexOf(dataSet.getVariable("Z"));
+                double[] x = colData[i];
+                double[] y = colData[j];
+                double[] z = colData[k];
+
+                double[] cxy = cor(x, y, 0, 0, x);
+                double[] cyz = cor(y, z, 0, 0, x);
+                double[] vx = var(x, x, 0);
+                double[] vy = var(y, y, 0);
+                double[] vz = var(z, z, 0);
+
+                double vxx = var(x, x, 1)[0];
+                double vyx = var(y, x, 1)[0];
+                double vzx = var(z, x, 1)[0];
+
+                double vxy = var(x, y, 1)[0];
+                double vyy = var(y, y, 1)[0];
+                double vzy = var(z, y, 1)[0];
+
+                double _vx = vxy;
+                double _vy = vyy;
+                double _vz = vzy;
+                double _cxy = cor(x, y, 1, 0, x)[0];
+                double _cyz = cor(y, z, 1, 0, x)[0];
+
+                // cov(Y, eY) = (1 - b) var(Y) - a cov(X, Y)
+                double cyey = (1 - _b) * _vy - _a * cxy[0];
+
+                // maxvarey = (a^2 - 1) var(Y)  - (b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
+                double maxvarey = (_a * _a - 1.0) * _vy  - (_b * _b * _vz - 2 * _b * _cxy - 2 * cyey);
+
+                // var(ey) = a^2 var(X) - (var(Y) + b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
+                double varey = _a * _a * _vx - (_vy + _b * _b * _vz  - 2 * _b * _cyz - 2 * cyey);
+
+                final boolean boundAbove = maxvarey > varey;
+
+
+                if (boundAbove) {
+                    System.out.println((index + 1) + ". " + (vyx > vxx));
+                }
+
+//                System.out.println("maxvarey " + maxvarey + " varey = " + varey);
+//                System.out.println("vxy > vxx " + (vxy > vxx) + " maxvarey > varey = " + boundAbove);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
+
+    @Test
+    public void test3() {
+
+        double a = RandomUtil.getInstance().nextUniform(-1, 1);
+        double b = RandomUtil.getInstance().nextUniform(-1, 1);
+        double c = RandomUtil.getInstance().nextUniform(-1, 1);
+        double vy = RandomUtil.getInstance().nextUniform(-1, 1);
+        double cxy = RandomUtil.getInstance().nextUniform(-1, 1);
+
+        double vey = (a * a - 1) * vy  - (b * b - 2 * b * c- 2 * ((1 - b) * vy - a * cxy));
+
+        System.out.println(vey);
     }
 
     public static void main(String... args) {

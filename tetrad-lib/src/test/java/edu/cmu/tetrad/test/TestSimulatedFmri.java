@@ -40,7 +40,7 @@ public class TestSimulatedFmri {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 5);
+        parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", .000000001);
 
@@ -54,6 +54,7 @@ public class TestSimulatedFmri {
         statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
+        statistics.add(new MathewsCorrAdj());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
