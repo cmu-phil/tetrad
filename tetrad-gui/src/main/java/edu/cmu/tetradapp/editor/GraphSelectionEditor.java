@@ -116,7 +116,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         infoBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                helpSet.setHomeID("under_construction");
+                helpSet.setHomeID("graph_edge_types");
                 HelpBroker broker = helpSet.createHelpBroker();
                 ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                 listener.actionPerformed(e);

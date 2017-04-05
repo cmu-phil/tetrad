@@ -12,6 +12,7 @@
     <mapID target="references" url="manual/references.html"/>
     <mapID target="for_further_help" url="manual/for_further_help.html"/>
     <mapID target="under_construction" url="manual/under_construction.html"/>
+    <mapID target="graph_edge_types" url="manual/graph_edge_types.html"/>
 
     <!-- Main Workspace  -->
 
