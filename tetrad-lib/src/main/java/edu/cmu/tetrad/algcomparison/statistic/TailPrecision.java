@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
-import edu.cmu.tetrad.algcomparison.statistic.utils.TailConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -13,7 +12,7 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class ArrowheadPrecision implements Statistic {
+public class TailPrecision implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
@@ -28,9 +27,9 @@ public class ArrowheadPrecision implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph) {
-        TailConfusion confusion = new TailConfusion(trueGraph, estGraph);
-        double arrowsTp = confusion.getArrowsTp();
-        double arrowsFp = confusion.getArrowsFp();
+        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+        double arrowsTp = adjConfusion.getArrowsTp();
+        double arrowsFp = adjConfusion.getArrowsFp();
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 
