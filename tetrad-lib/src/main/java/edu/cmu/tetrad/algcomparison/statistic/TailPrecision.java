@@ -17,7 +17,7 @@ public class TailPrecision implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "AHP";
+        return "TP";
     }
 
     @Override

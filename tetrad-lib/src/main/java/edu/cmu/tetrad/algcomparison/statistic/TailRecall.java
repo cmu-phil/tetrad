@@ -18,7 +18,7 @@ public class TailRecall implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "AHR";
+        return "TR";
     }
 
     @Override
