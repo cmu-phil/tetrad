@@ -380,9 +380,9 @@ public class TestFang {
                 double[] y = colData[j];
                 double[] z = colData[k];
 
-                double[] c = cor(x, y, 0, 0, x);
-                double[] c1 = cor(x, y, 1, 0, x);
-                double[] c2 = cor(x, y, 0, 1, x);
+                double[] c = cor(x, y, 0, x);
+                double[] c1 = cor(x, y, 1, x);
+                double[] c2 = cor(x, y, 0, x);
 
                 double vxx = var(x, x, 1)[0];
                 double vyx = var(y, x, 1)[0];
@@ -496,11 +496,10 @@ public class TestFang {
         System.out.println("Avg vzy = " + (sumvzy / total));
     }
 
-    private double[] cor(double[] x, double[] y, int xInc, int yInc, double[] z) {
+    private double[] cor(double[] x, double[] y, int xInc, double[] z) {
 
         double exy = 0.0;
         double exx = 0.0;
-        double eyy = 0.0;
 
         double ex = 0.0;
         double ey = 0.0;
@@ -508,45 +507,24 @@ public class TestFang {
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (xInc == 0 && yInc == 0) {
+            if (xInc == 0) {
                 exy += x[k] * y[k];
                 exx += x[k] * x[k];
-                eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
                 n++;
-            } else if (xInc == 1 && yInc == 0) {
+            } else if (xInc == 1) {
                 if (z[k] > 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
                 }
-            } else if (xInc == 0 && yInc == 1) {
-                if (z[k] > 0.0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == -1 && yInc == 0) {
+            } else if (xInc == -1) {
                 if (z[k] < 0.0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == -1) {
-                if (z[k] < 0.0) {
-                    exy += x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
                     n++;
@@ -555,7 +533,6 @@ public class TestFang {
         }
 
         exx /= n;
-        eyy /= n;
         exy /= n;
         ex /= n;
         ey /= n;
@@ -580,7 +557,7 @@ public class TestFang {
                 ex += x[k];
                 n++;
             } else if (yInc == 1) {
-                if (y[k] > 0.0) {
+                if (y[k] > 0) {
                     exx += x[k] * x[k];
                     ex += x[k];
                     n++;
@@ -600,18 +577,8 @@ public class TestFang {
 
     @Test
     public void testSkeptical2() {
-        int misoriented = 0;
         int total = 200;
-        double minRatio3 = Double.POSITIVE_INFINITY;
-
-        List<Double> ratios = new ArrayList<>();
-        double sumdiff1 = 0.0;
-        double sumdiff2 = 0.0;
-        double sumvzx = 0.0;
-        double sumvzy = 0.0;
-
-        final BetaDistribution betaDistribution = new BetaDistribution(2, 10);
-
+        int count = 0;
 
         for (int index = 0; index < total; index++) {
             SemGraph G0 = new SemGraph();
@@ -624,6 +591,7 @@ public class TestFang {
             G0.addNode(Y);
             G0.addNode(Z);
 
+//            G0.addDirectedEdge(Y, X);
             G0.addDirectedEdge(X, Y);
             G0.addDirectedEdge(Z, X);
             G0.addDirectedEdge(Z, Y);
@@ -639,11 +607,13 @@ public class TestFang {
 
 
             try {
-//                pm.setNodeExpression(X, "E_X");
-                pm.setNodeExpression(X, "cxy * Z + E_X");
-//                pm.setNodeExpression(Y, "a * X + E_Y");
+                pm.setNodeExpression(X, "c * Z + E_X");
                 pm.setNodeExpression(Y, "a * X + b * Z + E_Y");
                 pm.setNodeExpression(Z, "E_Z");
+
+//                pm.setNodeExpression(X, "a * Y + c * Z + E_X");
+//                pm.setNodeExpression(Y, "b * Z + E_Y");
+//                pm.setNodeExpression(Z, "E_Z");
 
                 final String errors = "Beta(2, 10)";
                 pm.setNodeExpression(e1, errors);
@@ -651,7 +621,8 @@ public class TestFang {
                 pm.setNodeExpression(e3, errors);
 
 //                final String coef = "Split(-1, -.1, .1, 1)";
-                final String coef = "Split(-.8, -.1, .1, .8)";
+//                final String coef = "Split(-.8, -.1, .1, .8)";
+                final String coef = "Split(-.6, -.2, .2, .6)";
                 pm.setParameterExpression("a", coef);
                 pm.setParameterExpression("b", coef);
                 pm.setParameterExpression("c", coef);
@@ -674,50 +645,41 @@ public class TestFang {
                 double[] y = colData[j];
                 double[] z = colData[k];
 
-                double[] cxy = cor(x, y, 0, 0, x);
-                double[] cyz = cor(y, z, 0, 0, x);
-                double[] vx = var(x, x, 0);
-                double[] vy = var(y, y, 0);
-                double[] vz = var(z, z, 0);
+                int condition = 1;
+                double[] condVar = y;
 
-                double vxx = var(x, x, 1)[0];
+                double cxy = cor(x, y, condition, condVar)[0];
+                double cyz = cor(y, z, condition, condVar)[0];
+                double cxz = cor(x, z, condition, condVar)[0];
+
+                double vx = var(x, condVar, condition)[0];
+                double vy = var(y, condVar, condition)[0];
+                double vz = var(z, condVar, condition)[0];
+
                 double vyx = var(y, x, 1)[0];
-                double vzx = var(z, x, 1)[0];
-
-                double vxy = var(x, y, 1)[0];
-                double vyy = var(y, y, 1)[0];
-                double vzy = var(z, y, 1)[0];
-
-                double _vx = vxy;
-                double _vy = vyy;
-                double _vz = vzy;
-                double _cxy = cor(x, y, 1, 0, x)[0];
-                double _cyz = cor(y, z, 1, 0, x)[0];
+                double vxx = var(x, x, 1)[0];
 
                 // cov(Y, eY) = (1 - b) var(Y) - a cov(X, Y)
-                double cyey = (1 - _b) * _vy - _a * cxy[0];
+                double cyey = (1 - _b) * vy - _a * cxy;
 
-                // maxvarey = (a^2 - 1) var(Y)  - (b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
-                double maxvarey = (_a * _a - 1.0) * _vy  - (_b * _b * _vz - 2 * _b * _cxy - 2 * cyey);
+                // maxvareyx = (a^2 - 1) var(Y)  - (b^2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
+                // var(ey) > (a^2 - 1) var(Y)  - (b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey) + (c - var(Z))
+                double bound = (_a * _a - 1.0) * vy - (_b * _b * vz - 2 * _b * cxz - 2 * cyey - (_c - vz));
 
                 // var(ey) = a^2 var(X) - (var(Y) + b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
-                double varey = _a * _a * _vx - (_vy + _b * _b * _vz  - 2 * _b * _cyz - 2 * cyey);
+                double vareyy = _a * _a * vx - (vy + _b * _b * vz - 2 * _b * cyz - 2 * cyey);
 
-                final boolean boundAbove = maxvarey > varey;
-
-
-                if (boundAbove) {
+                if (vareyy > bound) {
                     System.out.println((index + 1) + ". " + (vyx > vxx));
+                    count++;
                 }
-
-//                System.out.println("maxvarey " + maxvarey + " varey = " + varey);
-//                System.out.println("vxy > vxx " + (vxy > vxx) + " maxvarey > varey = " + boundAbove);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
 
         }
 
+        System.out.println(count);
 
     }
 
@@ -730,7 +692,7 @@ public class TestFang {
         double vy = RandomUtil.getInstance().nextUniform(-1, 1);
         double cxy = RandomUtil.getInstance().nextUniform(-1, 1);
 
-        double vey = (a * a - 1) * vy  - (b * b - 2 * b * c- 2 * ((1 - b) * vy - a * cxy));
+        double vey = (a * a - 1) * vy - (b * b - 2 * b * c - 2 * ((1 - b) * vy - a * cxy));
 
         System.out.println(vey);
     }

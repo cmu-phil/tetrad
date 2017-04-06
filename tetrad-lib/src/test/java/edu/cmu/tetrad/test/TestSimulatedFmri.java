@@ -23,12 +23,14 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofsConcatenated;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
+import org.junit.Test;
 
 /**
  * Pulling this test out for Madelyn.
@@ -121,6 +123,85 @@ public class TestSimulatedFmri {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
+//        algorithms.add(new PcMax(new SemBicTest(), true));
+//        algorithms.add(new Fang());
+//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
+//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
+//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
+//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
+//
+//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
+//        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
+        algorithms.add(new FangConcatenated());
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+
+        Comparison comparison = new Comparison();
+
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setParallelized(false);
+        comparison.setSaveGraphs(false);
+        comparison.setTabDelimitedTables(false);
+
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
+    @Test
+    public void testTough() {
+        Parameters parameters = new Parameters();
+
+        parameters.set("penaltyDiscount", 2);
+        parameters.set("depth", 5);
+        parameters.set("twoCycleAlpha", .01);
+
+        parameters.set("numRuns", 1);
+        parameters.set("randomSelectionSize", 10);
+
+        parameters.set("Structure", "Placeholder");
+
+        Statistics statistics = new Statistics();
+
+        statistics.add(new ParameterColumn("Structure"));
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new MathewsCorrAdj());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new TwoCyclePrecision());
+        statistics.add(new TwoCycleRecall());
+        statistics.add(new TwoCycleFalsePositive2());
+        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleTruePositive());
+        statistics.add(new ElapsedTime());
+
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 1.0);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 1.0);
+        statistics.setWeight("2CP", 1.0);
+        statistics.setWeight("2CR", 1.0);
+        statistics.setWeight("2CFP", 1.0);
+
+        Simulations simulations = new Simulations();
+
+        String dir = "/Users/jdramsey/Downloads/";
+        String subdir = "data_fslfilter";
+
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Markov_dist_thresh36", subdir));
+
+        Algorithms algorithms = new Algorithms();
+
+//        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new PcMax(new SemBicTest(), true));
 //        algorithms.add(new Fang());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
