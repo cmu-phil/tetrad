@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
@@ -32,24 +31,29 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -60,13 +64,27 @@ import java.util.List;
  */
 public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
+
     private GraphWorkbench workbench;
     private GraphSettable graphEditable;
     private Parameters parameters;
 
-    //===========================PUBLIC METHODS========================//
+    private final HelpSet helpSet;
 
+    //===========================PUBLIC METHODS========================//
     public GraphEditor(GraphSettable graphWrapper) {
+        // Initialize helpSet - Zhou
+        String helpHS = "/resources/javahelp/TetradHelp.hs";
+
+        try {
+            URL url = this.getClass().getResource(helpHS);
+            this.helpSet = new HelpSet(null, url);
+        } catch (Exception ee) {
+            System.out.println("HelpSet " + ee.getMessage());
+            System.out.println("HelpSet " + helpHS + " not found");
+            throw new IllegalArgumentException();
+        }
+
         setLayout(new BorderLayout());
         this.graphEditable = graphWrapper;
         this.parameters = graphWrapper.getParameters();
@@ -99,7 +117,7 @@ public final class GraphEditor extends JPanel
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    graphEditable.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    graphEditable.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     editGraph(graphEditable.getGraph());
                     validate();
                 }
@@ -138,10 +156,7 @@ public final class GraphEditor extends JPanel
 //    public GraphEditor(CompletedPatternWrapper wrapper) {
 //        this(wrapper.getGraph());
 //    }
-
     //===========================PRIVATE METHODS======================//
-
-
     private void editGraph(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
         GraphToolbar toolbar = new GraphToolbar(getWorkbench());
@@ -154,11 +169,28 @@ public final class GraphEditor extends JPanel
         add(toolbar, BorderLayout.WEST);
         add(menuBar, BorderLayout.NORTH);
 
-        JLabel label = new JLabel("Double click variable to change name.");
+        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        // Info button added by Zhou to show edge types
+        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        // Clock info button to show edge types instructions - Zhou
+        infoBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                helpSet.setHomeID("graph_edge_types");
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
+
         Box b = Box.createHorizontalBox();
         b.add(Box.createHorizontalStrut(2));
         b.add(label);
+        b.add(infoBtn);
         b.add(Box.createHorizontalGlue());
         b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 
@@ -183,10 +215,10 @@ public final class GraphEditor extends JPanel
      * selection.
      */
     public List getSelectedModelComponents() {
-        List<Component> selectedComponents =
-                getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents =
-                new ArrayList<>();
+        List<Component> selectedComponents
+                = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents
+                = new ArrayList<>();
 
         for (Component comp : selectedComponents) {
             if (comp instanceof DisplayNode) {
@@ -264,7 +296,6 @@ public final class GraphEditor extends JPanel
     }
 
     //===========================PRIVATE METHODS========================//
-
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -296,7 +327,6 @@ public final class GraphEditor extends JPanel
 //
 //        return file;
 //    }
-
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -365,7 +395,6 @@ public final class GraphEditor extends JPanel
                 editorWindow.pack();
                 editorWindow.setVisible(true);
 
-
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                     public void internalFrameClosed(InternalFrameEvent e1) {
                         EditorWindow window = (EditorWindow) e1.getSource();
@@ -395,41 +424,28 @@ public final class GraphEditor extends JPanel
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
         graph.add(meekOrient);
 
-        meekOrient.addActionListener(new
-
-                                             ActionListener() {
-                                                 public void actionPerformed(ActionEvent e) {
-                                                     MeekRules rules = new MeekRules();
-                                                     rules.orientImplied(getGraph());
-                                                     getWorkbench().setGraph(getGraph());
-                                                     firePropertyChange("modelChanged", null, null);
-                                                 }
-                                             }
-
+        meekOrient.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                MeekRules rules = new MeekRules();
+                rules.orientImplied(getGraph());
+                getWorkbench().setGraph(getGraph());
+                firePropertyChange("modelChanged", null, null);
+            }
+        }
         );
 
         graph.addSeparator();
-        graph.add(new
-
-                JMenuItem(new SelectBidirectedAction(getWorkbench()
-
+        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench()
         )));
-        graph.add(new
-
-                JMenuItem(new SelectUndirectedAction(getWorkbench()
-
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench()
         )));
-        graph.add(new
-
-                JMenuItem(new SelectLatentsAction(getWorkbench()
-
+        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench()
         )));
 
 //        graph.addSeparator();
 //        IndependenceFactsAction action = new IndependenceFactsAction(
 //                JOptionUtils.centeringComp(), this, "D Separation Facts...");
 //        graph.add(action);
-
         return graph;
     }
 
@@ -481,7 +497,7 @@ public final class GraphEditor extends JPanel
                 try {
                     graph.removeEdge(edge);
                 } catch (Exception e) {
-                    // Ignore. 
+                    // Ignore.
                 }
             }
         }
@@ -493,8 +509,3 @@ public final class GraphEditor extends JPanel
         return new IndTestDSep(listGraph);
     }
 }
-
-
-
-
-

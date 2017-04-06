@@ -18,11 +18,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
@@ -32,16 +29,12 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -49,8 +42,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -61,22 +63,35 @@ import java.util.List;
  */
 public final class SemGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
+
     private GraphWorkbench workbench;
     private SemGraphWrapper semGraphWrapper;
     private JMenuItem errorTerms;
     private Parameters parameters;
 
-    //===========================PUBLIC METHODS========================//
+    private final HelpSet helpSet;
 
+    //===========================PUBLIC METHODS========================//
     public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
         }
 
+        // Initialize helpSet - Zhou
+        String helpHS = "/resources/javahelp/TetradHelp.hs";
+
+        try {
+            URL url = this.getClass().getResource(helpHS);
+            this.helpSet = new HelpSet(null, url);
+        } catch (Exception ee) {
+            System.out.println("HelpSet " + ee.getMessage());
+            System.out.println("HelpSet " + helpHS + " not found");
+            throw new IllegalArgumentException();
+        }
+
 //        setLayout(new BorderLayout());
 //
 //        setEditor(semGraphWrapper);
-
         setLayout(new BorderLayout());
         this.semGraphWrapper = semGraphWrapper;
         this.parameters = semGraphWrapper.getParameters();
@@ -84,7 +99,6 @@ public final class SemGraphEditor extends JPanel
         setEditor(semGraphWrapper);
 
 //        editGraph(graphWrapper.getGraph());
-
         this.getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
@@ -111,7 +125,7 @@ public final class SemGraphEditor extends JPanel
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    getSemGraphWrapper().setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    getSemGraphWrapper().setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     setEditor(semGraphWrapper);
 //                    editGraph(getSemGraphWrapper().getGraph());
                     validate();
@@ -163,11 +177,28 @@ public final class SemGraphEditor extends JPanel
         add(toolbar, BorderLayout.WEST);
         add(menuBar, BorderLayout.NORTH);
 
-        JLabel label = new JLabel("Double click variable to change name.");
+        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        // Info button added by Zhou to show edge types
+        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        // Clock info button to show edge types instructions - Zhou
+        infoBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                helpSet.setHomeID("graph_edge_types");
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
+
         Box b = Box.createHorizontalBox();
         b.add(Box.createHorizontalStrut(2));
         b.add(label);
+        b.add(infoBtn);
         b.add(Box.createHorizontalGlue());
         b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 
@@ -200,7 +231,6 @@ public final class SemGraphEditor extends JPanel
     }
 
     //===========================PRIVATE METHODS======================//
-
     /**
      * Sets the name of this editor.
      */
@@ -253,7 +283,6 @@ public final class SemGraphEditor extends JPanel
 
         getWorkbench().selectConnectingEdges();
     }
-
 
     public JComponent getEditDelegate() {
         return getWorkbench();
@@ -312,7 +341,6 @@ public final class SemGraphEditor extends JPanel
     }
 
     //===========================PRIVATE METHODS========================//
-
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -345,7 +373,6 @@ public final class SemGraphEditor extends JPanel
 //
 //        return file;
 //    }
-
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -405,10 +432,10 @@ public final class SemGraphEditor extends JPanel
         graph.add(errorTerms);
         graph.addSeparator();
 
-        JMenuItem correlateExogenous =
-                new JMenuItem("Correlate Exogenous Variables");
-        JMenuItem uncorrelateExogenous =
-                new JMenuItem("Uncorrelate Exogenous Variables");
+        JMenuItem correlateExogenous
+                = new JMenuItem("Correlate Exogenous Variables");
+        JMenuItem uncorrelateExogenous
+                = new JMenuItem("Uncorrelate Exogenous Variables");
         graph.add(correlateExogenous);
         graph.add(uncorrelateExogenous);
         graph.addSeparator();
@@ -444,7 +471,6 @@ public final class SemGraphEditor extends JPanel
                 editorWindow.pack();
                 editorWindow.setVisible(true);
 
-
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                     public void internalFrameClosed(InternalFrameEvent e1) {
                         EditorWindow window = (EditorWindow) e1.getSource();
@@ -474,12 +500,10 @@ public final class SemGraphEditor extends JPanel
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
 //        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
 
-
 //        graph.addSeparator();
 //        IndependenceFactsAction action = new IndependenceFactsAction(
 //                JOptionUtils.centeringComp(), this, "D Separation Facts...");
 //        graph.add(action);
-
         return graph;
     }
 
@@ -546,8 +570,3 @@ public final class SemGraphEditor extends JPanel
         return new IndTestDSep(workbench.getGraph());
     }
 }
-
-
-
-
-

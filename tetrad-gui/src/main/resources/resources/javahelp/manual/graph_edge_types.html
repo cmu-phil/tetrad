@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <title>Introduction to TETRAD</title>
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=iso-8859-1">
+</head>
+<body>
+<table width="95%" border="1" bgcolor="maroon">
+    <tbody>
+    <tr>
+        <td>
+            <h2><font color="white">Graph Edge Types</font></h2>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<table width="95%" border="1">
+    <thead>
+        <tr>
+            <th>Edge Types</th>
+            <th>Present Relationships</th>
+            <th>Absent Relationships</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>A --&gt; B</td>
+            <td>
+                A is a cause of B.<br />
+                It may be a direct or indirect cause that may include other measured variables. Also, there may be an unmeasured confounder of A and B.
+            </td>
+            <td>B is not a cause of A</td>
+        </tr>
+        <tr>
+            <td>A &lt;-&gt; B</td>
+            <td>There is an unmeasured confounder (call it L) of A and B. There may be measured variables along the causal pathway from L to A or from L to B.</td>
+            <td>
+                A is not a cause of B.<br />
+                B is not a cause of A.
+            </td>
+        </tr>
+        <tr>
+            <td>A o-&gt; B</td>
+            <td>Either A is a cause of B (i.e, A --&gt; B) or there is an unmeasured confounder of A and B (i.e, A &lt;-&gt; B) or both.</td>
+            <td>B is not a cause of A.</td>
+        </tr>
+        <tr>
+            <td>A o-o B</td>
+            <td>
+                Exactly one of the following holds:
+                <ol>
+                    <li>A is a cause of B</li>
+                    <li>B is a cause of A</li>
+                    <li>there is an unmeasured confounder of A and B</li>
+                    <li>both a and c</li>
+                    <li>both b and c</li>
+                </ol>
+            </td>
+            <td></td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">If an edge is dashed that means there is no latent confounder. Otherwise, there is possibly latent confounder.</td>
+        </tr>
+        <tr>
+            <td colspan="3">If an edge is green that means it is definitely direct. Otherwise, it is possibly direct.</td>
+        </tr>
+    </tfoot>
+</table>
+
+</body>
+</html>
