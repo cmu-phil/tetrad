@@ -82,9 +82,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             throw new NullPointerException("The regression wrapper is required.");
         }
 
+        // Initialize helpSet - Zhou
         String helpHS = "/resources/javahelp/TetradHelp.hs";
 
-        // Initialize helpSet - Zhou
         try {
             URL url = this.getClass().getResource(helpHS);
             this.helpSet = new HelpSet(null, url);
@@ -107,6 +107,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         resetGraphs(wrapper);
 
         final JButton executeButton = resetWorkbenches(wrapper);
+
+        JLabel infoLabel = new JLabel("More information on graph edge types");
+        infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
         JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
@@ -181,6 +184,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 //        buttonPanel.add(selectInGraph);
         buttonPanel.add(executeButton);
         // Info button added by Zhou to show edge types
+        buttonPanel.add(infoLabel);
         buttonPanel.add(infoBtn);
 //        b.add(buttonPanel, BorderLayout.SOUTH);
 
