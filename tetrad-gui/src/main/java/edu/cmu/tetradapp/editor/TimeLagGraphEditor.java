@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -35,9 +34,21 @@ import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.*;
-
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
+import java.util.*;
+import java.util.List;
+import java.util.prefs.Preferences;
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
@@ -45,15 +56,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.*;
-import java.util.List;
-import java.util.prefs.Preferences;
-
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -64,14 +66,16 @@ import java.util.prefs.Preferences;
  */
 public final class TimeLagGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
+
     private final TimeLagGraphWorkbench workbench;
     private TimeLagGraphWrapper graphWrapper;
     private LayoutEditable layoutEditable;
     private CopyLayoutAction copyLayoutAction;
     private Parameters parameters;
 
-    //===========================PUBLIC METHODS========================//
+    private final HelpSet helpSet;
 
+    //===========================PUBLIC METHODS========================//
     public TimeLagGraphEditor(TimeLagGraphWrapper graphWrapper) {
         this((TimeLagGraph) graphWrapper.getGraph());
         this.graphWrapper = graphWrapper;
@@ -90,11 +94,22 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     //===========================PRIVATE METHODS======================//
-
     /**
      * Constructs a new GraphEditor for the given EdgeListGraph.
      */
     public TimeLagGraphEditor(TimeLagGraph graph) {
+        // Initialize helpSet - Zhou
+        String helpHS = "/resources/javahelp/TetradHelp.hs";
+
+        try {
+            URL url = this.getClass().getResource(helpHS);
+            this.helpSet = new HelpSet(null, url);
+        } catch (Exception ee) {
+            System.out.println("HelpSet " + ee.getMessage());
+            System.out.println("HelpSet " + helpHS + " not found");
+            throw new IllegalArgumentException();
+        }
+
         setLayout(new BorderLayout());
 
         this.workbench = new TimeLagGraphWorkbench(graph);
@@ -107,11 +122,28 @@ public final class TimeLagGraphEditor extends JPanel
         add(toolbar, BorderLayout.WEST);
         add(menuBar, BorderLayout.NORTH);
 
-        JLabel label = new JLabel("Double click variable to change name.");
+        JLabel label = new JLabel("Double click variable to change name. More information on graph edge types");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        // Info button added by Zhou to show edge types
+        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        // Clock info button to show edge types instructions - Zhou
+        infoBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                helpSet.setHomeID("graph_edge_types");
+                HelpBroker broker = helpSet.createHelpBroker();
+                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                listener.actionPerformed(e);
+            }
+        });
+
         Box b = Box.createHorizontalBox();
         b.add(Box.createHorizontalStrut(2));
         b.add(label);
+        b.add(infoBtn);
         b.add(Box.createHorizontalGlue());
         b.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 
@@ -149,13 +181,13 @@ public final class TimeLagGraphEditor extends JPanel
      * selection.
      */
     public List getSelectedModelComponents() {
-        List<Component> selectedComponents =
-                getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents =
-                new ArrayList<>();
+        List<Component> selectedComponents
+                = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents
+                = new ArrayList<>();
 
-        for (Iterator<Component> it =
-             selectedComponents.iterator(); it.hasNext(); ) {
+        for (Iterator<Component> it
+                = selectedComponents.iterator(); it.hasNext();) {
             Object comp = it.next();
 
             if (comp instanceof DisplayNode) {
@@ -236,7 +268,6 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     //===========================PRIVATE METHODS========================//
-
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -268,7 +299,6 @@ public final class TimeLagGraphEditor extends JPanel
 //
 //        return file;
 //    }
-
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
      * workbench models.
@@ -288,7 +318,6 @@ public final class TimeLagGraphEditor extends JPanel
 //
 //        edit.add(copy);
 //        edit.add(paste);
-
         edit.addSeparator();
 
         JMenuItem configuration = new JMenuItem("Configuration...");
@@ -298,8 +327,8 @@ public final class TimeLagGraphEditor extends JPanel
             public void actionPerformed(ActionEvent e) {
                 final TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
 
-
                 class ConfigurationEditor extends JPanel {
+
                     private int maxLag;
                     private int numInitialLags;
 
@@ -377,14 +406,12 @@ public final class TimeLagGraphEditor extends JPanel
 
                 final ConfigurationEditor editor = new ConfigurationEditor((TimeLagGraph) getGraph());
 
-
-                EditorWindow editorWindow =
-                        new EditorWindow(editor, "Configuration...", "Save", true, TimeLagGraphEditor.this);
+                EditorWindow editorWindow
+                        = new EditorWindow(editor, "Configuration...", "Save", true, TimeLagGraphEditor.this);
 
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
-
 
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                     public void internalFrameClosed(InternalFrameEvent e) {
@@ -404,7 +431,6 @@ public final class TimeLagGraphEditor extends JPanel
             }
         });
 
-
         return edit;
     }
 
@@ -419,10 +445,10 @@ public final class TimeLagGraphEditor extends JPanel
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
         graph.addSeparator();
 
-        JMenuItem correlateExogenous =
-                new JMenuItem("Correlate Exogenous Variables");
-        JMenuItem uncorrelateExogenous =
-                new JMenuItem("Uncorrelate Exogenous Variables");
+        JMenuItem correlateExogenous
+                = new JMenuItem("Correlate Exogenous Variables");
+        JMenuItem uncorrelateExogenous
+                = new JMenuItem("Uncorrelate Exogenous Variables");
         graph.add(correlateExogenous);
         graph.add(uncorrelateExogenous);
         graph.addSeparator();
@@ -495,7 +521,6 @@ public final class TimeLagGraphEditor extends JPanel
                                             30, 15, 15, editor.isConnected()
                                     );
 
-
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
                                     List<Node> nodes = new ArrayList<>();
@@ -517,7 +542,6 @@ public final class TimeLagGraphEditor extends JPanel
                             int minCycleLength = editor.getMinCycleLength();
 
 //                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
-
                             graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges(), 8);
                             GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
                         } else {
@@ -539,8 +563,8 @@ public final class TimeLagGraphEditor extends JPanel
             }
         });
 
-        JMenuItem randomIndicatorModel =
-                new JMenuItem("Random Multiple Indicator Model");
+        JMenuItem randomIndicatorModel
+                = new JMenuItem("Random Multiple Indicator Model");
         graph.add(randomIndicatorModel);
 
         randomIndicatorModel.addActionListener(new ActionListener() {
@@ -564,13 +588,13 @@ public final class TimeLagGraphEditor extends JPanel
                             "measurementModelDegree", 3);
                     int numLatentMeasuredImpureParents = Preferences.userRoot()
                             .getInt("latentMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureParents =
-                            Preferences.userRoot()
-                                    .getInt("measuredMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureAssociations =
-                            Preferences.userRoot()
-                                    .getInt("measuredMeasuredImpureAssociations",
-                                            0);
+                    int numMeasuredMeasuredImpureParents
+                            = Preferences.userRoot()
+                            .getInt("measuredMeasuredImpureParents", 0);
+                    int numMeasuredMeasuredImpureAssociations
+                            = Preferences.userRoot()
+                            .getInt("measuredMeasuredImpureAssociations",
+                                    0);
 
                     Graph graph;
 
@@ -587,15 +611,14 @@ public final class TimeLagGraphEditor extends JPanel
                                 numMeasuredMeasuredImpureParents,
                                 numMeasuredMeasuredImpureAssociations);
                     } else {
-                        throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                                "sorry dude.");
+                        throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, "
+                                + "sorry dude.");
                     }
 
                     getWorkbench().setGraph(graph);
                 }
             }
         });
-
 
         graph.addSeparator();
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
@@ -605,7 +628,6 @@ public final class TimeLagGraphEditor extends JPanel
 //        IndependenceFactsAction action = new IndependenceFactsAction(
 //                JOptionUtils.centeringComp(), this, "D Separation Facts...");
 //        graph.add(action);
-
         return graph;
     }
 
@@ -795,8 +817,6 @@ public final class TimeLagGraphEditor extends JPanel
 //
 //        return Layout;
 //    }
-
-
     private LayoutEditable getLayoutEditable() {
         return layoutEditable;
     }
@@ -805,5 +825,3 @@ public final class TimeLagGraphEditor extends JPanel
         return copyLayoutAction;
     }
 }
-
-
