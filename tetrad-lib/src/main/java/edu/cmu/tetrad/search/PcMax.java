@@ -184,11 +184,12 @@ public class PcMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
+//        FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(initialGraph, getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(false);
-        fas.setRecordSepsets(false);
+//        fas.setRecordSepsets(false);
         graph = fas.search();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
