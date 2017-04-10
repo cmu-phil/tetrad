@@ -18,21 +18,20 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Stores a 2D array of double continuousData. Note that the missing value marker for this
- * box is -99.
+ * Stores a 2D array of double continuousData. Note that the missing value
+ * marker for this box is -99.
  */
 public class MixedDataBox implements DataBox {
-    static final long serialVersionUID = 23L;
+
+    private static final long serialVersionUID = -8643520574602633744L;
 
     private final List<Node> variables;
     private final int numRows;
@@ -40,8 +39,11 @@ public class MixedDataBox implements DataBox {
     private int[][] discreteData;
 
     /**
-     * The variables here are used only to determine which columns are discrete and which
-     * are continuous; bounds checking is not done.
+     * The variables here are used only to determine which columns are discrete
+     * and which are continuous; bounds checking is not done.
+     *
+     * @param variables
+     * @param numRows
      */
     public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
@@ -62,30 +64,57 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
+     * This constructor allows other data readers to populate the fields
+     * directly.
+     *
+     * @param variables list of discrete and continuous variables
+     * @param numRows number of cases in the dataset
+     * @param continuousData continuous data
+     * @param discreteData discrete data
+     */
+    public MixedDataBox(List<Node> variables, int numRows, double[][] continuousData, int[][] discreteData) {
+        this.variables = variables;
+        this.numRows = numRows;
+        this.continuousData = continuousData;
+        this.discreteData = discreteData;
+    }
+
+    /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return
      */
     public static BoxDataSet serializableInstance() {
         return new BoxDataSet(new ShortDataBox(4, 4), null);
     }
 
     /**
+     *
      * @return the number of rows in this continuousData box.
      */
+    @Override
     public int numRows() {
         return numRows;
     }
 
     /**
+     *
      * @return the number of columns in this continuousData box.
      */
+    @Override
     public int numCols() {
         return variables.size();
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.doubleValue().
+     * Sets the value at the given row/column to the given Number value. The
+     * value used is number.doubleValue().
+     *
+     * @param row
+     * @param col
+     * @param value
      */
+    @Override
     public void set(int row, int col, Number value) {
         if (continuousData[col] != null) {
             continuousData[col][row] = value.doubleValue();
@@ -97,9 +126,13 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     *
+     * @param row
+     * @param col
+     * @return the Number value at the given row and column. If the value is
+     * missing (-99), null, is returned.
      */
+    @Override
     public Number get(int row, int col) {
         if (continuousData[col] != null) {
             double v = continuousData[col][row];
@@ -113,8 +146,10 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
+     *
      * @return a copy of this continuousData box.
      */
+    @Override
     public DataBox copy() {
         MixedDataBox box = new MixedDataBox(variables, numRows());
 
@@ -128,14 +163,20 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
+     *
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
+    @Override
     public DataBox like() {
         int[] rows = new int[numRows()];
         int[] cols = new int[numCols()];
 
-        for (int i = 0; i < numRows(); i++) rows[i] = i;
-        for (int j = 0; j < numCols(); j++) cols[j] = j;
+        for (int i = 0; i < numRows(); i++) {
+            rows[i] = i;
+        }
+        for (int j = 0; j < numCols(); j++) {
+            cols[j] = j;
+        }
 
         return viewSelection(rows, cols);
     }
@@ -173,6 +214,5 @@ public class MixedDataBox implements DataBox {
 
         return _dataBox;
     }
+
 }
-
-
