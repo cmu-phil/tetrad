@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class MixedDataBox implements DataBox {
 
-    private static final long serialVersionUID = -8643520574602633744L;
+    private static final long serialVersionUID = 23L;
 
     private final List<Node> variables;
     private final int numRows;
