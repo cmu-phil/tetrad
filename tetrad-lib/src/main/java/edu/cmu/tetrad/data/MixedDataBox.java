@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class MixedDataBox implements DataBox {
 
-    private static final long serialVersionUID = -8643520574602633744L;
+    private static final long serialVersionUID = 23L;
 
     private final List<Node> variables;
     private final int numRows;
@@ -77,6 +77,46 @@ public class MixedDataBox implements DataBox {
         this.numRows = numRows;
         this.continuousData = continuousData;
         this.discreteData = discreteData;
+
+        if (variables == null) {
+            throw new IllegalArgumentException("Parameter variables cannot be null.");
+        }
+        if (numRows < 0) {
+            throw new IllegalArgumentException("Parameter numRows cannot be negative.");
+        }
+        if (continuousData == null) {
+            throw new IllegalArgumentException("Parameter continuousData cannot be null.");
+        }
+        if (discreteData == null) {
+            throw new IllegalArgumentException("Parameter discreteData cannot be null.");
+        }
+
+        // ensure the number of variables for both datasets are the same
+        int numOfVars = variables.size();
+        if (continuousData.length != numOfVars) {
+            throw new IllegalArgumentException(String.format("Continuous Data: expect %d variables but found %d.", numOfVars, continuousData.length));
+        }
+        if (discreteData.length != numOfVars) {
+            throw new IllegalArgumentException(String.format("Discrete Data: expect %d variables but found %d.", numOfVars, discreteData.length));
+        }
+
+        for (int i = 0; i < numOfVars; i++) {
+            // ensure there is data for either dataset, not both
+            if (!(continuousData[i] == null ^ discreteData[i] == null)) {
+                String errMsg = String.format("Variable at index %d either has data for both discrete and continuous or has no data for both.", i);
+                throw new IllegalArgumentException(errMsg);
+            }
+
+            // ensure the number of rows for both dataset is consistent
+            if (continuousData[i] != null && continuousData[i].length != numRows) {
+                String errMsg = String.format("Continuous Data: Inconsistent row number at index %d.  Expect %d rows but found %d.", i, numRows, continuousData[i].length);
+                throw new IllegalArgumentException(errMsg);
+            }
+            if (discreteData[i] != null && discreteData[i].length != numRows) {
+                String errMsg = String.format("Discrete Data: Inconsistent row number at index %d.  Expect %d rows but found %d.", i, numRows, discreteData[i].length);
+                throw new IllegalArgumentException(errMsg);
+            }
+        }
     }
 
     /**
