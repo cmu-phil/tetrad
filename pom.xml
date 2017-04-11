@@ -96,11 +96,11 @@
         <!--</site>-->
         <repository>
             <id>ccd-releases</id>
-            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/releases/</url>
+            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
             <id>ccd-snapshots</id>
-            <url>https://ccd3.vm.bridges.psc.edu/nexus/content/repositories/snapshots/</url>
+            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
