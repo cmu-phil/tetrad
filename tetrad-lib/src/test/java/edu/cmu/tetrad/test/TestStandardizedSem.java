@@ -327,14 +327,14 @@ public class TestStandardizedSem {
                 Node b = edge.getNode2();
 
                 if (Edges.isDirectedEdge(edge)) {
-                    double initial = sem.getEdgeCoefficient(a, b);
+                    double initial = sem.getEdgeCoef(a, b);
                     StandardizedSemIm.ParameterRange range = sem.getCoefficientRange(a, b);
-                    assertEquals(initial, sem.getEdgeCoefficient(a, b), 0.1);
+                    assertEquals(initial, sem.getEdgeCoef(a, b), 0.1);
 
                     double low = range.getLow();
                     double high = range.getHigh();
 
-                    double _coef = sem.getEdgeCoefficient(a, b);
+                    double _coef = sem.getEdgeCoef(a, b);
 
                     double coef = low + random.nextDouble() * (high - low);
                     assertTrue(sem.setEdgeCoefficient(a, b, coef));

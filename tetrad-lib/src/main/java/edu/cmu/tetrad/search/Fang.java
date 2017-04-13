@@ -156,11 +156,21 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(c1[0]) > abs(c2[0])) {
+                    }
+
+//                    else if (c1[0] > c2[0]) {
+//                        graph.addDirectedEdge(X, Y);
+//                    } else if (abs(c[0] - c1[0]) > abs(c[0] - c2[0])) {
+//                        graph.addDirectedEdge(Y, X);
+//                    }
+
+                    else if (abs(c1[0]) > abs(c2[0])) {
                         graph.addDirectedEdge(X, Y);
                     } else if (abs(c2[0]) > abs(c1[0])) {
                         graph.addDirectedEdge(Y, X);
-                    } else {
+                    }
+
+                    else {
                         graph.addUndirectedEdge(X, Y);
                     }
                 }
@@ -239,7 +249,11 @@ public final class Fang implements GraphSearch {
         ex /= n;
         ey /= n;
 
-        return new double[]{(exy - ex * ey) / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+        double sxy = exy - ex * ey;
+        double sx = sqrt(exx - ex * ex);
+        double sy = sqrt(eyy - ey * ey);
+
+        return new double[]{sxy / (sx * sy), (double) n};
     }
 
     /**

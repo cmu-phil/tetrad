@@ -34,8 +34,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.search.Lofs2;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.BetaDistribution;
@@ -48,6 +47,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.util.StatUtils.correlation;
+import static edu.cmu.tetrad.util.StatUtils.covariance;
+import static edu.cmu.tetrad.util.StatUtils.mean;
 import static java.lang.Math.*;
 
 /**
@@ -380,17 +382,19 @@ public class TestFang {
                 double[] y = colData[j];
                 double[] z = colData[k];
 
-                double[] c = cor(x, y, 0, x);
-                double[] c1 = cor(x, y, 1, x);
-                double[] c2 = cor(x, y, 0, x);
+                double cutoff = 0.0;
 
-                double vxx = var(x, x, 1)[0];
-                double vyx = var(y, x, 1)[0];
-                double vzx = var(z, x, 1)[0];
+                double[] c = cov(x, y, 0, x, cutoff);
+                double[] c1 = cov(x, y, 1, x, cutoff);
+                double[] c2 = cov(x, y, 0, x, cutoff);
 
-                double vxy = var(x, y, 1)[0];
-                double vyy = var(y, y, 1)[0];
-                double vzy = var(z, y, 1)[0];
+                double vxx = var(x, 1, x, cutoff)[0];
+                double vyx = var(y, 1, x, cutoff)[0];
+                double vzx = var(z, 1, x, cutoff)[0];
+
+                double vxy = var(x, 1, y, cutoff)[0];
+                double vyy = var(y, 1, y, cutoff)[0];
+                double vzy = var(z, 1, y, cutoff)[0];
 
                 double ratiozy_x = vzx / vyx;
                 double ratiozy_y = vzy / vyy;
@@ -440,7 +444,7 @@ public class TestFang {
 //                System.out.println("  vzx = " + nf.format(vzx));
 ////                System.out.println("  vxx = " + nf.format(vxx));
 //                System.out.println("  vzy = " + nf.format(vzy));
-//                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
+                System.out.println("  vzy - vzx = " + nf.format(vzy - vzx));
 //                System.out.println("  X->Y " + (p1 < p2));
 //                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vxx));
 //                System.out.println("  (vzx / vxx) = " + nf.format(vzx / vyx));
@@ -496,8 +500,7 @@ public class TestFang {
         System.out.println("Avg vzy = " + (sumvzy / total));
     }
 
-    private double[] cor(double[] x, double[] y, int xInc, double[] z) {
-
+    private double[] cov(double[] x, double[] y, int xInc, double[] var, double cutoff) {
         double exy = 0.0;
         double exx = 0.0;
 
@@ -514,7 +517,7 @@ public class TestFang {
                 ey += y[k];
                 n++;
             } else if (xInc == 1) {
-                if (z[k] > 0.0) {
+                if (var[k] > cutoff) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     ex += x[k];
@@ -522,7 +525,7 @@ public class TestFang {
                     n++;
                 }
             } else if (xInc == -1) {
-                if (z[k] < 0.0) {
+                if (var[k] < cutoff) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     ex += x[k];
@@ -537,27 +540,21 @@ public class TestFang {
         ex /= n;
         ey /= n;
 
-//        return new double[]{(exy - ex * ey) / (exx - ex * ex), (double) n};// / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
-
-
-        return new double[]{(exy - ex * ey) / (exx - ex * ex), (double) n};// / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+        return new double[]{(exy - ex * ey) / (exx - ex * ex), (double) n};
     }
 
-    private double[] var(double[] x, double[] y, int yInc) {
-
+    private double[] var(double[] x, int condition, double[] var, double cutoff) {
         double exx = 0.0;
-
         double ex = 0.0;
-
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
-            if (yInc == 0) {
+            if (condition == 0) {
                 exx += x[k] * x[k];
                 ex += x[k];
                 n++;
-            } else if (yInc == 1) {
-                if (y[k] > 0) {
+            } else if (condition == 1) {
+                if (var[k] > cutoff) {
                     exx += x[k] * x[k];
                     ex += x[k];
                     n++;
@@ -571,14 +568,147 @@ public class TestFang {
         return new double[]{(exx - ex * ex), (double) n};
     }
 
+    private double[] cor(double[] x, double[] y, int xInc, int yInc) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (xInc == 0 && yInc == 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            } else if (xInc == 1 && yInc == 0) {
+                if (x[k] > 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == 1) {
+                if (y[k] > 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 0) {
+                if (x[k] < 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == -1) {
+                if (y[k] < 0.0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        eyy /= n;
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+        return new double[]{(exy - ex * ey) / Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+    }
+
+//    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
+//        double exy = 0.0;
+//        double exx = 0.0;
+//        double eyy = 0.0;
+//
+//        double ex = 0.0;
+//        double ey = 0.0;
+//
+//        int n = 0;
+//
+//        for (int k = 0; k < x.length; k++) {
+//            if (xInc == 0 && yInc == 0) {
+//                exy += x[k] * y[k];
+//                exx += x[k] * x[k];
+//                eyy += y[k] * y[k];
+//                ex += x[k];
+//                ey += y[k];
+//                n++;
+//            } else if (xInc == 1 && yInc == 0) {
+//                if (x[k] > 0.0) {
+//                    exy += x[k] * y[k];
+//                    exx += x[k] * x[k];
+//                    eyy += y[k] * y[k];
+//                    ex += x[k];
+//                    ey += y[k];
+//                    n++;
+//                }
+//            } else if (xInc == 0 && yInc == 1) {
+//                if (y[k] > 0.0) {
+//                    exy += x[k] * y[k];
+//                    exx += x[k] * x[k];
+//                    eyy += y[k] * y[k];
+//                    ex += x[k];
+//                    ey += y[k];
+//                    n++;
+//                }
+//            } else if (xInc == -1 && yInc == 0) {
+//                if (x[k] < 0.0) {
+//                    exy += x[k] * y[k];
+//                    exx += x[k] * x[k];
+//                    eyy += y[k] * y[k];
+//                    ex += x[k];
+//                    ey += y[k];
+//                    n++;
+//                }
+//            } else if (xInc == 0 && yInc == -1) {
+//                if (y[k] < 0.0) {
+//                    exy += x[k] * y[k];
+//                    exx += x[k] * x[k];
+//                    eyy += y[k] * y[k];
+//                    ex += x[k];
+//                    ey += y[k];
+//                    n++;
+//                }
+//            }
+//        }
+//
+//        exx /= n;
+//        eyy /= n;
+//        exy /= n;
+//        ex /= n;
+//        ey /= n;
+//
+//        return new double[]{(exy - ex * ey), (double) n};/// Math.sqrt((exx - ex * ex) * (eyy - ey * ey)), (double) n};
+//    }
+
     private double getZ(double r) {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
 
     @Test
     public void testSkeptical2() {
-        int total = 200;
-        int count = 0;
+        int total = 20;
+        int count1 = 0;
+        int count2 = 0;
 
         for (int index = 0; index < total; index++) {
             SemGraph G0 = new SemGraph();
@@ -602,85 +732,247 @@ public class TestFang {
             Node e2 = G0.getExogenous(Y);
             Node e3 = G0.getExogenous(Z);
 
+            SemPm pm2 = new SemPm(G0);
+            double a, b, c;
 
-            GeneralizedSemPm pm = new GeneralizedSemPm(G0);
+            DataSet dataSet;
 
+//            {
+//                Parameters parameters = new Parameters();
+//
+//                parameters.set("coefLow", 0.2);
+//                parameters.set("coefHigh", 0.8);
+//                parameters.set("varLow", 1);
+//                parameters.set("varHigh", 3);
+//                parameters.set("coefSymmetric", true);
+//
+//                SemIm im2 = new SemIm(pm2, parameters);
+//                StandardizedSemIm im3 = new StandardizedSemIm(im2);
+//                dataSet = im3.simulateData(1000, false);
+//                dataSet = DataUtils.standardizeData(dataSet);
+//
+//                SemIm im4 = new SemEstimator(dataSet, pm2).estimate();
+//
+//                a = im4.getEdgeCoef(X, Y);
+//                b = im4.getEdgeCoef(Z, Y);
+//                c = im4.getEdgeCoef(Z, X);
+//            }
 
             try {
+                GeneralizedSemPm pm = new GeneralizedSemPm(G0);
+
+
                 pm.setNodeExpression(X, "c * Z + E_X");
                 pm.setNodeExpression(Y, "a * X + b * Z + E_Y");
                 pm.setNodeExpression(Z, "E_Z");
 
-//                pm.setNodeExpression(X, "a * Y + c * Z + E_X");
-//                pm.setNodeExpression(Y, "b * Z + E_Y");
-//                pm.setNodeExpression(Z, "E_Z");
+                //                pm.setNodeExpression(X, "a * Y + c * Z + E_X");
+                //                pm.setNodeExpression(Y, "b * Z + E_Y");
+                //                pm.setNodeExpression(Z, "E_Z");
 
-                final String errors = "Beta(2, 10)";
+
+                final String errors = "(Beta(2, 8) - (2 / (2 + 8))) / ((2 * 8) / (2 + 8) * (2 + 8) * (2 + 8 + 1))";
                 pm.setNodeExpression(e1, errors);
                 pm.setNodeExpression(e2, errors);
                 pm.setNodeExpression(e3, errors);
 
-//                final String coef = "Split(-1, -.1, .1, 1)";
-//                final String coef = "Split(-.8, -.1, .1, .8)";
-                final String coef = "Split(-.6, -.2, .2, .6)";
+                //                final String coef = "Split(-1, -.1, .1, 1)";
+                //                final String coef = "Split(-.8, -.1, .1, .8)";
+                final String coef = "Split(-.8, -.2, .2, .8)";
+
                 pm.setParameterExpression("a", coef);
                 pm.setParameterExpression("b", coef);
                 pm.setParameterExpression("c", coef);
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-                double _a = im.getParameterValue("a");
-                double _b = im.getParameterValue("b");
-                double _c = im.getParameterValue("c");
+                dataSet = im.simulateDataRecursive(1000, false);
 
-                DataSet dataSet = im.simulateDataRecursive(1000, false);
-                dataSet = DataUtils.standardizeData(dataSet);
-
-                List<Node> nodes = dataSet.getVariables();
-                double[][] colData = dataSet.getDoubleData().transpose().toArray();
-                int i = nodes.indexOf(dataSet.getVariable("X"));
-                int j = nodes.indexOf(dataSet.getVariable("Y"));
-                int k = nodes.indexOf(dataSet.getVariable("Z"));
-                double[] x = colData[i];
-                double[] y = colData[j];
-                double[] z = colData[k];
-
-                int condition = 1;
-                double[] condVar = y;
-
-                double cxy = cor(x, y, condition, condVar)[0];
-                double cyz = cor(y, z, condition, condVar)[0];
-                double cxz = cor(x, z, condition, condVar)[0];
-
-                double vx = var(x, condVar, condition)[0];
-                double vy = var(y, condVar, condition)[0];
-                double vz = var(z, condVar, condition)[0];
-
-                double vyx = var(y, x, 1)[0];
-                double vxx = var(x, x, 1)[0];
-
-                // cov(Y, eY) = (1 - b) var(Y) - a cov(X, Y)
-                double cyey = (1 - _b) * vy - _a * cxy;
-
-                // maxvareyx = (a^2 - 1) var(Y)  - (b^2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
-                // var(ey) > (a^2 - 1) var(Y)  - (b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey) + (c - var(Z))
-                double bound = (_a * _a - 1.0) * vy - (_b * _b * vz - 2 * _b * cxz - 2 * cyey - (_c - vz));
-
-                // var(ey) = a^2 var(X) - (var(Y) + b2var(Z) - 2bcov(Y, Z) - 2cov(Y,ey))
-                double vareyy = _a * _a * vx - (vy + _b * _b * vz - 2 * _b * cyz - 2 * cyey);
-
-                if (vareyy > bound) {
-                    System.out.println((index + 1) + ". " + (vyx > vxx));
-                    count++;
-                }
+                a = im.getParameterValue("a");
+                b = im.getParameterValue("b");
+                c = im.getParameterValue("c");
             } catch (ParseException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
+            DataSet std = DataUtils.standardizeData(dataSet);
+
+            List<Node> nodes = std.getVariables();
+            double[][] colData = std.getDoubleData().transpose().toArray();
+            int i = nodes.indexOf(std.getVariable("X"));
+            int j = nodes.indexOf(std.getVariable("Y"));
+            int k = nodes.indexOf(std.getVariable("Z"));
+            double[] x = colData[i];
+            double[] y = colData[j];
+            double[] z = colData[k];
+
+            int condition = 1;
+            double[] condVar = y;
+            double cutoff = 0.0;
+
+
+            double cxy = cov(x, y, 0, condVar, cutoff)[0];
+            double cxz = cov(x, z, 0, condVar, cutoff)[0];
+            double cyz = cov(y, z, 0, condVar, cutoff)[0];
+
+            double vx = var(x, 0, condVar, cutoff)[0];
+            double vy = var(y, 0, condVar, cutoff)[0];
+            double vz = var(z, 0, condVar, cutoff)[0];
+
+            double vzx = var(z, 1, x, cutoff)[0];
+            double vzy = var(z, 1, y, cutoff)[0];
+
+            double cxyx1 = cov(x, y, 1, x, cutoff)[0];
+            double cxyy1 = cov(x, y, 1, y, cutoff)[0];
+            double cxzx = cov(x, z, 1, x, cutoff)[0];
+            double cxzy = cov(x, z, 1, y, cutoff)[0];
+
+            double vxx = var(x, 1, x, cutoff)[0];
+            double vxy = var(x, 1, y, cutoff)[0];
+            double vyx = var(y, 1, x, cutoff)[0];
+            double vyy = var(y, 1, y, cutoff)[0];
+
+            double cxey = cxy - a * vx - b * cxzx;
+            double czey = cyz - a * vy - b * cxzy;
+
+            double vex = vx - c * c * vz - c * czey;
+            double vey = vy - a * a * vx - b * b * vz - a * b * cxz;
+
+            double _vy = a * a * vx + b * b * vz + vey + a * b * cxz;
+//            double _vx = (1. / (a * a)) * (_vy - (b * b * vz + vey + a * b * cxz));
+
+
+            NumberFormat nf = new DecimalFormat("0.000");
+
+            List<Double> _xx = new ArrayList<>();
+            List<Double> _zx = new ArrayList<>();
+            List<Double> _ryx = new ArrayList<>();
+            List<Double> _rxx = new ArrayList<>();
+
+            for (int l = 0; l < x.length; l++) {
+                if (x[l] > 0) {
+                    _xx.add(x[l]);
+                    _zx.add(z[l]);
+                    _ryx.add(y[l] - a * x[l] - b * z[l]);
+                    _rxx.add(x[l] - c * z[l]);
+                }
+            }
+
+            double[] zx = new double[_zx.size()];
+            double[] xx = new double[_xx.size()];
+            double[] ryx = new double[_ryx.size()];
+            double[] rxx = new double[_rxx.size()];
+
+            for (int l = 0; l < _ryx.size(); l++) {
+                zx[l] = _zx.get(l);
+                xx[l] = _xx.get(l);
+                ryx[l] = _ryx.get(l);
+                rxx[l] = _rxx.get(l);
+            }
+
+            List<Double> _xy = new ArrayList<>();
+            List<Double> _zy = new ArrayList<>();
+            List<Double> _ryy = new ArrayList<>();
+            List<Double> _rxy = new ArrayList<>();
+
+            for (int l = 0; l < y.length; l++) {
+                if (y[l] > 0) {
+                    _xy.add(x[l]);
+                    _zy.add(z[l]);
+                    _ryy.add(y[l] - a * x[l] - b * z[l]);
+                    _rxy.add(x[l] - c * z[l]);
+                }
+            }
+
+            double[] zy = new double[_zy.size()];
+            double[] xy = new double[_xy.size()];
+            double[] ryy = new double[_ryy.size()];
+            double[] rxy = new double[_rxy.size()];
+
+            for (int l = 0; l < _ryy.size(); l++) {
+                zy[l] = _zy.get(l);
+                xy[l] = _xy.get(l);
+                ryy[l] = _ryy.get(l);
+                rxy[l] = _rxy.get(l);
+            }
+
+            double cxeyx2 = covariance(xx, ryx);
+            double cxeyy2 = covariance(xy, ryy);
+
+            double cxeyx = cxyx1 - a * vxx - b * cxzx;
+            double cxeyy = cxyy1 - a * vxy - b * cxzy;
+
+            double sxx = sqrt(vxx);
+            double sxy = sqrt(vxy);
+            double syx = sqrt(vyx);
+            double syy = sqrt(vyy);
+
+            double cxyx2 = a * vxx + b * cxzx;
+            double cxyy2 = a * vxy + b * cxzy + cxeyy2;
+
+            double cxyx3 = cor(x, y, 1, 0)[0];
+            double cxyy3 = cor(x, y, 0, 1)[0];
+
+            double cxyx4 = (sxx / syx) * (a + b * (cxzx / vxx));
+            double cxyy4 = (sxy / syy) * (a + b * (cxzy / vxy) + cxeyy2 / vxy);
+
+            double cxyx5 = (a + b * (cxzx / vxx));
+            double cxyy5 = (a + b * (cxzy / vxy) + cxeyy2 / vxy);
+
+
+            //            System.out.println(" a * vxx = " + nf.format(a * vxx)
+//                    + " b * c * vzx = " + nf.format(b * c * vzx)
+//                    + " cxeyx2 = " + nf.format(cxeyx2)
+//                    + " cxyx1 = " + nf.format(cxyx1));
+//            System.out.println(" a * vxy = " + nf.format(a * vxy)
+//                    + " b * c * vzy = " + nf.format(b * c * vzy)
+//                    + " cxeyy2 = " + nf.format(cxeyy2)
+//                    + " cxyy1 = " + nf.format(cxyy1));
+//            System.out.println(" a * vx = " + nf.format(a * vx)
+//                    + " b * c * vz = " + nf.format(b * c * vz)
+//                    + " cxey = " + nf.format(cxey)
+//                    + " cxy = " + nf.format(cxy));
+
+            double factorx = sxx / syx;
+            double factory = sxy / syy;
+
+//            System.out.println("sxx = " + sxx + " " + "syx = " + syx + " sxy = " + sxy
+//                    + " syy = " + syy);
+//            System.out.println("cxzx = " + cxzx + " cxzy = " + cxzy);
+//            System.out.println("vxx = " + vxx + " vxy = " + vxy);
+//            System.out.println("cxzx / vxx = " + (cxzx / vxx) + " cxzy / vxy = " + (cxzy / vxy));
+//            System.out.println("factorx = " + factorx + " factory = " + factory);
+//            System.out.println("bound1 = " + bound1 + " bound2 = " + bound2);
+//            System.out.println("a = " + a + " b = " + b + " c = " + c + " cxzx " + cxzx + " cxzy " + cxzy);
+//            System.out.println(" a " + a + " b * cxzx / vxx " + (b * cxzx / vxx));
+//            System.out.println(" a " + a + " b * cxzy / vxy " + (b * cxzy / vxy) +  " cxeyy " + cxeyy);
+
+            {
+                System.out.println("a = " + a + " b = " + b + " c = " + c);
+                System.out.println("a vxx + b cxzx = " + (a * vxx + b * cxzx) + " a vxy + bc * cxzy + cxeyy2 = " + (a * vxy + b * cxzy + cxeyy));
+                System.out.println(" sxx / syx = " + nf.format(sxx / syx) + " sxy / syy = " + nf.format(sxy / syy));
+                System.out.println(" vxx = " + nf.format(vxx) + "\t\t vxy = " + nf.format(vxy));
+                System.out.println(" vxx = " + nf.format(vxx) + "\t\t vyx = " + nf.format(vyx));
+                System.out.println(" vxy = " + nf.format(vxy) + "\t\t vyy = " + nf.format(vyy));
+                System.out.println(" vzx = " + nf.format(vzx) + "\t\t vzy = " + nf.format(vzy));
+                System.out.println(" cxzx = " + nf.format(cxzx) + "\t\t cxzy = " + nf.format(cxzy));
+                System.out.println(" cxyx1 / vxx = " + nf.format(cxyx1 / vxx) + "\t cxyy1 / vxy = " + nf.format(cxyy1 / vxy));
+                System.out.println(" cxeyx2 / vxx = " + nf.format(cxeyx2 / vxx) + "\t cxeyy2 / vxy = " + nf.format(cxeyy2 / vxy));
+//                System.out.println(" cxeyx2 = " + nf.format(cxeyx) + "\t cxeyy2 = " + nf.format(cxeyy));
+                System.out.println(" a * vxx = " + nf.format(a * vxx) + "\t\t a * vxy = " + nf.format(a * vxy));
+                System.out.println(" b * cxzx = " + nf.format(b * cxzx) + "\t b * cxzy = " + nf.format(b * cxzy));
+                System.out.println(" (a * vy + b * c * vzy) = " + nf.format((a * vy + b * c * vzy)));
+                System.out.println(" cxyx1 = " + nf.format(cxyx1) + "\t cxyy1 = " + nf.format(cxyy1) + " Cov(X, Y) as judged from data for X > 0 and Y > 0");
+                System.out.println(" cxyx2 = " + nf.format(cxyx2) + "\t cxyy2 = " + nf.format(cxyy2) + " Cov(X, Y) = a var(X) + b cov(X, Y) + cov(X, eY) for X > 0 and Y > 0 ");
+                System.out.println(" cxyx3 = " + nf.format(cxyx3) + "\t cxyy3 = " + nf.format(cxyy3) + " Cor(X, Y) as judged from the data, for X > 0 and Y > 0");
+                System.out.println(" cxyx4 = " + nf.format(cxyx4) + "\t cxyy4 = " + nf.format(cxyy4) + " Cor(X, Y) = (sx / sy) * (a + b * (cov(X, Z) / var(X)) + cov(X, eY / var(X))");
+                System.out.println(" cxyx5 = " + nf.format(cxyx5) + "\t cxyy5 = " + nf.format(cxyy5) + " (sy / sx) Cor(X, Y) = (a + b * (cov(X, Z) / var(X)) + cov(X, eY / var(X))");
+            }
+
+            System.out.println();
+
+
         }
-
-        System.out.println(count);
-
     }
 
     @Test
