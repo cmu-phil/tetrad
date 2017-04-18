@@ -30,6 +30,7 @@ import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.CovarianceDataset;
@@ -267,12 +268,57 @@ final class DataLoaderSettings extends JPanel {
         dataTypeOption2Box.setPreferredSize(new Dimension(200, 30));
         dataTypeOption2Box.add(discRadioButton);
 
+        // Option 3
+        Box dataTypeOption3Box = Box.createHorizontalBox();
+        dataTypeOption3Box.setPreferredSize(new Dimension(240, 30));
+        dataTypeOption3Box.add(mixedRadioButton);
+
+        // Threshold label
+        JLabel thresholdLabel = new JLabel(", threshold: ");
+
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel thresholdLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        thresholdLabelInfoIcon.setToolTipText("Integral columns with up to N (specify here) distinct values are discrete.");
+
+        // Threshold value field
+        IntTextField maxIntegralDiscreteIntField = new IntTextField(0, 3);
+        // 0 by default
+        maxIntegralDiscreteIntField.setValue(0);
+
+        maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
+            @Override
+            public int filter(int value, int oldValue) {
+                if (value >= 0) {
+                    return value;
+                } else {
+                    return oldValue;
+                }
+            }
+        });
+
+        // Event listener
+        maxIntegralDiscreteIntField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                // Select the "Mixed" radio button when users click the input field
+                if (!mixedRadioButton.isSelected()) {
+                    mixedRadioButton.setSelected(true);
+                }
+            }
+        });
+
+        dataTypeOption3Box.add(thresholdLabel);
+        dataTypeOption3Box.add(thresholdLabelInfoIcon);
+        dataTypeOption3Box.add(maxIntegralDiscreteIntField);
+
         dataTypeBox.add(dataTypeLabelBox);
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         dataTypeBox.add(dataTypeOption1Box);
         dataTypeBox.add(dataTypeOption2Box);
-        // Hide mixed option for now until we have that in fast data reader - Zhou
-        //dataTypeBox.add(mixedRadioButton);
+        dataTypeBox.add(dataTypeOption3Box);
         dataTypeBox.add(Box.createHorizontalGlue());
 
         basicSettingsBox.add(dataTypeBox);
