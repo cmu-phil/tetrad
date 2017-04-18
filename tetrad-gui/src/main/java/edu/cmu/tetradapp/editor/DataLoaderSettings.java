@@ -149,9 +149,13 @@ final class DataLoaderSettings extends JPanel {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 // Just enable disabled buttons, do not change the previous selections - Zhou
                 if (button.isSelected()) {
-                    // Enable the discrete radio button if it's disabled by clicking covariance data
+                    // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
                     if (!discRadioButton.isEnabled()) {
                         discRadioButton.setEnabled(true);
+                    }
+
+                    if (!mixedRadioButton.isEnabled()) {
+                        mixedRadioButton.setEnabled(true);
                     }
 
                     // Enable variable names in first row
@@ -188,8 +192,9 @@ final class DataLoaderSettings extends JPanel {
                     // When Covariance data is selected, data type can only be Continuous,
                     contRadioButton.setSelected(true);
 
-                    //will disallow the users to choose Discrete
+                    //will disallow the users to choose Discrete and mixed data
                     discRadioButton.setEnabled(false);
+                    mixedRadioButton.setEnabled(false);
 
                     // Both Yes and No of Variable names in first row need to be disabled
                     // Because the first row should be number of cases
