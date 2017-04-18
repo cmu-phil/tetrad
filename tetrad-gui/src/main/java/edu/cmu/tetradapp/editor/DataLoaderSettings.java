@@ -81,6 +81,7 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton contRadioButton;
     private JRadioButton discRadioButton;
     private JRadioButton mixedRadioButton;
+    private IntTextField mixedThresholdIntField;
 
     private JRadioButton commentDoubleSlashRadioButton;
     private JRadioButton commentPondRadioButton;
@@ -282,11 +283,11 @@ final class DataLoaderSettings extends JPanel {
         thresholdLabelInfoIcon.setToolTipText("Integral columns with up to N (specify here) distinct values are discrete.");
 
         // Threshold value field
-        IntTextField maxIntegralDiscreteIntField = new IntTextField(0, 3);
+        mixedThresholdIntField = new IntTextField(0, 3);
         // 0 by default
-        maxIntegralDiscreteIntField.setValue(0);
+        mixedThresholdIntField.setValue(0);
 
-        maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
+        mixedThresholdIntField.setFilter(new IntTextField.Filter() {
             @Override
             public int filter(int value, int oldValue) {
                 if (value >= 0) {
@@ -298,7 +299,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         // Event listener
-        maxIntegralDiscreteIntField.addMouseListener(new MouseAdapter() {
+        mixedThresholdIntField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
@@ -312,7 +313,7 @@ final class DataLoaderSettings extends JPanel {
 
         dataTypeOption3Box.add(thresholdLabel);
         dataTypeOption3Box.add(thresholdLabelInfoIcon);
-        dataTypeOption3Box.add(maxIntegralDiscreteIntField);
+        dataTypeOption3Box.add(mixedThresholdIntField);
 
         dataTypeBox.add(dataTypeLabelBox);
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
