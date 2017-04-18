@@ -773,37 +773,6 @@ final class DataLoaderSettings extends JPanel {
 
         advancedSettingsBox.add(Box.createVerticalStrut(5));
 
-
-        /* Hide this since mixed data is not ready - Zhou
-
-        // Max number of disc columns
-        Box maxIntegralDiscreteBox = Box.createHorizontalBox();
-
-        maxIntegralLabel1 = new JLabel("Integral columns with up to ");
-        maxIntegralLabel2 = new JLabel(" distinct values are discrete.");
-
-        maxIntegralDiscreteIntField = new IntTextField(0, 3);
-
-        // 0 by default
-        maxIntegralDiscreteIntField.setValue(0);
-
-        maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
-            @Override
-            public int filter(int value, int oldValue) {
-                if (value >= 0) {
-                    return value;
-                } else {
-                    return oldValue;
-                }
-            }
-        });
-
-        maxIntegralDiscreteBox.add(maxIntegralLabel1);
-        maxIntegralDiscreteBox.add(maxIntegralDiscreteIntField);
-        maxIntegralDiscreteBox.add(maxIntegralLabel2);
-        maxIntegralDiscreteBox.add(Box.createHorizontalGlue());
-        advancedSettingsBox.add(maxIntegralDiscreteBox);
-         */
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Advanced Settings (apply to all files)";
         advancedSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
