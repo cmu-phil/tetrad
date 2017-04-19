@@ -128,7 +128,7 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>data-reader</artifactId>
-            <version>0.1.3</version>
+            <version>0.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
