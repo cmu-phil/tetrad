@@ -908,13 +908,15 @@ final class DataLoaderSettings extends JPanel {
         if (tabularRadioButton.isSelected()) {
             TabularDataValidation validation = null;
 
-            // Mixed data type is not supported yest- Zhou
             if (contRadioButton.isSelected()) {
                 validation = new ContinuousTabularDataFileValidation(file, delimiter);
             } else if (discRadioButton.isSelected()) {
                 validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
+            } else if (mixedRadioButton.isSelected()) {
+                // Using empty list until we have validation for mixed data - Zhou
+                return validation;
             } else {
-                throw new UnsupportedOperationException("Mixed data type validation is not yet supported!");
+                throw new UnsupportedOperationException("Unsupported selection of Data Type!");
             }
 
             // Header in first row or not

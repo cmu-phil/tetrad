@@ -736,70 +736,75 @@ final class LoadDataDialog extends JPanel {
             System.out.println("Validating file index = " + i);
 
             // Validate each individual file
-            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
-
             String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
 
-            List<ValidationResult> results = validation.getValidationResults();
+            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
-            List<ValidationResult> infos = new LinkedList<>();
-            // Just leave the warnings here to future use - Zhou
-            List<ValidationResult> warnings = new LinkedList<>();
-            List<ValidationResult> errors = new LinkedList<>();
-            for (ValidationResult result : results) {
-                switch (result.getCode()) {
-                    case INFO:
-                        infos.add(result);
-                        break;
-                    case WARNING:
-                        warnings.add(result);
-                        break;
-                    default:
-                        errors.add(result);
-                }
-            }
-
-            // Show some file info
-            if (!infos.isEmpty()) {
-                output = output + "<p><b>File info: </b></p>";
-                for (ValidationResult info : infos) {
-                    // More examples of how to get attributes for customized parsing
-//                    Object obj = info.getAttributes().get(ROW_NUMBER);
-//                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
-//                    obj = info.getAttributes().get(COLUMN_COUNT);
-//                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
-//                    System.out.printf("numOfLines: %d%n", numOfLines);
-//                    System.out.printf("numOfColumns: %d%n", numOfColumns);
-
-                    output = output + "<p>" + info.getMessage() + "</p>";
-                }
-            }
-
-            // Show warning messages
-            if (!warnings.isEmpty()) {
-                output = output + "<p style=\"color: orange;\"><b>Warning: </b></p>";
-                for (ValidationResult warning : warnings) {
-                    output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
-                }
-            }
-
-            // Show errors if found
-            if (!errors.isEmpty()) {
-                int errorCount = errors.size();
-
-                String errorCountString = (errorCount > 1) ? " errors" : " error";
-                output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
-
-                for (ValidationResult error : errors) {
-                    // Remember to excape the html tags if the data file contains any
-                    output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
-                }
-
-                // Also add the file name to failed list
-                // this determines if to show the Load button
-                failedFiles.add(loadedFiles.get(i).getName());
+            // validation is null for mixed data, for now - Zhou
+            if (validation == null) {
+                output = output + "<p>Fake validation for mixed data...</p>";
             } else {
-                output = output + "<p style=\"color: green;\"><b>Validation passed with no error!</b></p>";
+                List<ValidationResult> results = validation.getValidationResults();
+
+                List<ValidationResult> infos = new LinkedList<>();
+                // Just leave the warnings here to future use - Zhou
+                List<ValidationResult> warnings = new LinkedList<>();
+                List<ValidationResult> errors = new LinkedList<>();
+                for (ValidationResult result : results) {
+                    switch (result.getCode()) {
+                        case INFO:
+                            infos.add(result);
+                            break;
+                        case WARNING:
+                            warnings.add(result);
+                            break;
+                        default:
+                            errors.add(result);
+                    }
+                }
+
+                // Show some file info
+                if (!infos.isEmpty()) {
+                    output = output + "<p><b>File info: </b></p>";
+                    for (ValidationResult info : infos) {
+                        // More examples of how to get attributes for customized parsing
+                        //                    Object obj = info.getAttributes().get(ROW_NUMBER);
+                        //                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
+                        //                    obj = info.getAttributes().get(COLUMN_COUNT);
+                        //                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
+                        //                    System.out.printf("numOfLines: %d%n", numOfLines);
+                        //                    System.out.printf("numOfColumns: %d%n", numOfColumns);
+
+                        output = output + "<p>" + info.getMessage() + "</p>";
+                    }
+                }
+
+                // Show warning messages
+                if (!warnings.isEmpty()) {
+                    output = output + "<p style=\"color: orange;\"><b>Warning: </b></p>";
+                    for (ValidationResult warning : warnings) {
+                        output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
+                    }
+                }
+
+                // Show errors if found
+                if (!errors.isEmpty()) {
+                    int errorCount = errors.size();
+
+                    String errorCountString = (errorCount > 1) ? " errors" : " error";
+                    output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
+
+                    for (ValidationResult error : errors) {
+                        // Remember to excape the html tags if the data file contains any
+                        output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
+                    }
+
+                    // Also add the file name to failed list
+                    // this determines if to show the Load button
+                    failedFiles.add(loadedFiles.get(i).getName());
+                } else {
+                    output = output + "<p style=\"color: green;\"><b>Validation passed with no error!</b></p>";
+                }
             }
 
             validationResults.add(output);
