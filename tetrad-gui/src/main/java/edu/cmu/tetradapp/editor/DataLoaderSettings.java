@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -36,11 +37,14 @@ import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.CovarianceDataset;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.MixedTabularDataset;
 import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
+import edu.pitt.dbmi.data.reader.tabular.MixedTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.MixedVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.util.TextFileUtils;
@@ -925,7 +929,7 @@ final class DataLoaderSettings extends JPanel {
             } else if (discRadioButton.isSelected()) {
                 validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
             } else {
-                throw new UnsupportedOperationException("Mixed data type is not yet supported!");
+                throw new UnsupportedOperationException("Mixed data type validation is not yet supported!");
             }
 
             // Header in first row or not
@@ -1003,13 +1007,16 @@ final class DataLoaderSettings extends JPanel {
         if (tabularRadioButton.isSelected()) {
             TabularDataReader dataReader = null;
 
-            // Mixed data type is not supported yest- Zhou
+            // Continuous, discrete, mixed
             if (contRadioButton.isSelected()) {
                 dataReader = new ContinuousTabularDataFileReader(file, delimiter);
             } else if (discRadioButton.isSelected()) {
                 dataReader = new VerticalDiscreteTabularDataReader(file, delimiter);
+            } else if (mixedRadioButton.isSelected()) {
+                int numberOfDiscreteCategories = mixedThresholdIntField.getValue();
+                dataReader = new MixedTabularDataFileReader(numberOfDiscreteCategories, file, delimiter);
             } else {
-                throw new UnsupportedOperationException("Mixed data type is not yet supported!");
+                throw new UnsupportedOperationException("Unsupported data type!");
             }
 
             // Header in first row or not
@@ -1045,6 +1052,7 @@ final class DataLoaderSettings extends JPanel {
                 throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
             }
 
+            // Box Dataset to DataModel
             if (dataset instanceof ContinuousTabularDataset) {
                 ContinuousTabularDataset contDataset = (ContinuousTabularDataset) dataset;
                 // Convert continuous dataset to dataModel
@@ -1054,8 +1062,18 @@ final class DataLoaderSettings extends JPanel {
             } else if (dataset instanceof VerticalDiscreteTabularDataset) {
                 VerticalDiscreteTabularDataset vDataset = (VerticalDiscreteTabularDataset) dataset;
                 dataModel = new BoxDataSet(new VerticalIntDataBox(vDataset.getData()), variablesToDiscreteNodes(vDataset.getVariableInfos()));
+            } else if (dataset instanceof MixedTabularDataset) {
+                MixedTabularDataset mixedDataset = (MixedTabularDataset) dataset;
+
+                int numOfRows = mixedDataset.getNumOfRows();
+                MixedVarInfo[] mixedVarInfos = mixedDataset.getMixedVarInfos();
+                double[][] continuousData = mixedDataset.getContinuousData();
+                int[][] discreteData = mixedDataset.getDiscreteData();
+                List<Node> nodes = variablesToMixedNodes(mixedVarInfos);
+
+                dataModel = new BoxDataSet(new MixedDataBox(nodes, numOfRows, continuousData, discreteData), nodes);
             } else {
-                throw new UnsupportedOperationException("Not yet supported!");
+                throw new UnsupportedOperationException("Unsupported dataset instance!");
             }
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
@@ -1115,6 +1133,25 @@ final class DataLoaderSettings extends JPanel {
         for (DiscreteVarInfo varInfo : varInfos) {
             // Will change later
             nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Convert variables to discrete nodes
+     *
+     * @param variables
+     * @return
+     */
+    private List<Node> variablesToMixedNodes(MixedVarInfo[] mixedVarInfos) {
+        List<Node> nodes = new LinkedList<>();
+        for (MixedVarInfo mixedVarInfo : mixedVarInfos) {
+            if (mixedVarInfo.isContinuous()) {
+                nodes.add(new ContinuousVariable(mixedVarInfo.getName()));
+            } else {
+                nodes.add(new DiscreteVariable(mixedVarInfo.getName(), mixedVarInfo.getCategories()));
+            }
         }
 
         return nodes;
