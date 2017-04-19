@@ -20,31 +20,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.MixedDataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import edu.pitt.dbmi.data.ContinuousTabularDataset;
-import edu.pitt.dbmi.data.CovarianceDataset;
+import edu.pitt.dbmi.causal.cmd.util.TetradDataUtils;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.MixedTabularDataset;
-import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.MixedTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.MixedVarInfo;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.util.TextFileUtils;
@@ -63,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -1053,28 +1038,7 @@ final class DataLoaderSettings extends JPanel {
             }
 
             // Box Dataset to DataModel
-            if (dataset instanceof ContinuousTabularDataset) {
-                ContinuousTabularDataset contDataset = (ContinuousTabularDataset) dataset;
-                // Convert continuous dataset to dataModel
-                dataModel = new BoxDataSet(
-                        new DoubleDataBox(contDataset.getData()),
-                        variablesToContinuousNodes(contDataset.getVariables()));
-            } else if (dataset instanceof VerticalDiscreteTabularDataset) {
-                VerticalDiscreteTabularDataset vDataset = (VerticalDiscreteTabularDataset) dataset;
-                dataModel = new BoxDataSet(new VerticalIntDataBox(vDataset.getData()), variablesToDiscreteNodes(vDataset.getVariableInfos()));
-            } else if (dataset instanceof MixedTabularDataset) {
-                MixedTabularDataset mixedDataset = (MixedTabularDataset) dataset;
-
-                int numOfRows = mixedDataset.getNumOfRows();
-                MixedVarInfo[] mixedVarInfos = mixedDataset.getMixedVarInfos();
-                double[][] continuousData = mixedDataset.getContinuousData();
-                int[][] discreteData = mixedDataset.getDiscreteData();
-                List<Node> nodes = variablesToMixedNodes(mixedVarInfos);
-
-                dataModel = new BoxDataSet(new MixedDataBox(nodes, numOfRows, continuousData, discreteData), nodes);
-            } else {
-                throw new UnsupportedOperationException("Unsupported dataset instance!");
-            }
+            dataModel = TetradDataUtils.toDataModel(dataset);
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
             CovarianceDataReader dataReader = new LowerCovarianceDataReader(file, delimiter);
@@ -1092,69 +1056,14 @@ final class DataLoaderSettings extends JPanel {
             }
 
             Dataset dataset = dataReader.readInData();
-            CovarianceDataset covarianceDataset = (CovarianceDataset) dataset;
 
-            List<Node> variables = variablesToContinuousNodes(covarianceDataset.getVariables());
-            TetradMatrix tetradMatrix = new TetradMatrix(covarianceDataset.getData());
-            // Convert dataset to dataModel
-            dataModel = new CovarianceMatrix(variables, tetradMatrix, covarianceDataset.getNumberOfCases());
+            // Box Dataset to DataModel
+            dataModel = TetradDataUtils.toDataModel(dataset);
         } else {
-            throw new UnsupportedOperationException("Not yet supported!");
+            throw new UnsupportedOperationException("Unsupported selection of File Type!");
         }
 
         return dataModel;
-    }
-
-    /**
-     * Convert variables to continuous nodes
-     *
-     * @param variables
-     * @return
-     */
-    private List<Node> variablesToContinuousNodes(List<String> variables) {
-        List<Node> nodes = new LinkedList<>();
-
-        for (String variable : variables) {
-            nodes.add(new ContinuousVariable(variable));
-        }
-
-        return nodes;
-    }
-
-    /**
-     * Convert variables to discrete nodes
-     *
-     * @param variables
-     * @return
-     */
-    private List<Node> variablesToDiscreteNodes(DiscreteVarInfo[] varInfos) {
-        List<Node> nodes = new LinkedList<>();
-
-        for (DiscreteVarInfo varInfo : varInfos) {
-            // Will change later
-            nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
-        }
-
-        return nodes;
-    }
-
-    /**
-     * Convert variables to discrete nodes
-     *
-     * @param variables
-     * @return
-     */
-    private List<Node> variablesToMixedNodes(MixedVarInfo[] mixedVarInfos) {
-        List<Node> nodes = new LinkedList<>();
-        for (MixedVarInfo mixedVarInfo : mixedVarInfos) {
-            if (mixedVarInfo.isContinuous()) {
-                nodes.add(new ContinuousVariable(mixedVarInfo.getName()));
-            } else {
-                nodes.add(new DiscreteVariable(mixedVarInfo.getName(), mixedVarInfo.getCategories()));
-            }
-        }
-
-        return nodes;
     }
 
 }
