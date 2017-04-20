@@ -677,7 +677,7 @@ public class TestFges {
         DataSet data = im.simulateData(200, false);
 
         TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestIndResiduals(data, 0.05);
+        IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
         PcStable pc = new PcStable(test);
         pc.setVerbose(false);
@@ -685,7 +685,7 @@ public class TestFges {
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestIndResiduals(data2, 0.05);
+            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
             PcStable pc2 = new PcStable(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();

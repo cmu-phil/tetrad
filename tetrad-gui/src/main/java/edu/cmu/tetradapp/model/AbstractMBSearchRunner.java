@@ -184,7 +184,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 //                return new IndTestCramerT(this.source, params.getAlternativePenalty());
 //            }
             if (IndTestType.FISHER_Z == type) {
-                return new IndTestIndResiduals(this.source, params.getDouble("alpha", 0.001));
+                return new IndTestFisherZ(this.source, params.getDouble("alpha", 0.001));
             }
             if (IndTestType.FISHER_ZD == type) {
                 return new IndTestFisherZGeneralizedInverse(this.source, params.getDouble("alpha", 0.001));
@@ -196,7 +196,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
                 return new IndTestRegression(this.source, params.getDouble("alpha", 0.001));
             } else {
                 params.set("indTestType", IndTestType.FISHER_Z);
-                return new IndTestIndResiduals(this.source, params.getDouble("alpha", 0.001));
+                return new IndTestFisherZ(this.source, params.getDouble("alpha", 0.001));
             }
         }
         if (this.source.isDiscrete()) {

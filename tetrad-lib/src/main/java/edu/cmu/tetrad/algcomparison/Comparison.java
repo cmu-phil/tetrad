@@ -724,51 +724,51 @@ public class Comparison {
             }
         }
 
-        if (!isParallelized()) {
+//        if (!isParallelized()) {
             for (AlgorithmTask task : tasks) {
                 task.compute();
             }
-        } else {
-            class Task extends RecursiveTask<Boolean> {
-                List<AlgorithmTask> tasks;
+//        } else {
+//            class Task extends RecursiveTask<Boolean> {
+//                List<AlgorithmTask> tasks;
+//
+//                public Task(List<AlgorithmTask> tasks) {
+//                    this.tasks = tasks;
+//                }
+//
+//                @Override
+//                protected Boolean compute() {
+//                    Queue<AlgorithmTask> tasks = new ArrayDeque<>();
+//
+//                    for (AlgorithmTask task : this.tasks) {
+//                        tasks.add(task);
+//                        task.fork();
+//
+//                        for (AlgorithmTask _task : new ArrayList<>(tasks)) {
+//                            if (_task.isDone()) {
+//                                _task.join();
+//                                tasks.remove(_task);
+//                            }
+//                        }
+//
+//                        while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
+//                            AlgorithmTask _task = tasks.poll();
+//                            _task.join();
+//                        }
+//                    }
+//
+//                    for (AlgorithmTask task : tasks) {
+//                        task.join();
+//                    }
+//
+//                    return true;
+//                }
+//            }
 
-                public Task(List<AlgorithmTask> tasks) {
-                    this.tasks = tasks;
-                }
-
-                @Override
-                protected Boolean compute() {
-                    Queue<AlgorithmTask> tasks = new ArrayDeque<>();
-
-                    for (AlgorithmTask task : this.tasks) {
-                        tasks.add(task);
-                        task.fork();
-
-                        for (AlgorithmTask _task : new ArrayList<>(tasks)) {
-                            if (_task.isDone()) {
-                                _task.join();
-                                tasks.remove(_task);
-                            }
-                        }
-
-                        while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
-                            AlgorithmTask _task = tasks.poll();
-                            _task.join();
-                        }
-                    }
-
-                    for (AlgorithmTask task : tasks) {
-                        task.join();
-                    }
-
-                    return true;
-                }
-            }
-
-            Task task = new Task(tasks);
-
-            ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-        }
+//            Task task = new Task(tasks);
+//
+//            ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+//        }
 
         return allStats;
     }

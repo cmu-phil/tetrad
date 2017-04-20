@@ -51,14 +51,14 @@ public class BpcTetradPurifyWashdown {
         this.variables = cov.getVariables();
         this.test = new ContinuousTetradTest(cov, testType, alpha);
         this.alpha = alpha;
-        this.indTest = new IndTestIndResiduals(cov, alpha);
+        this.indTest = new IndTestFisherZ(cov, alpha);
     }
 
     public BpcTetradPurifyWashdown(DataSet dataSet, TestType testType, double alpha) {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.test = new ContinuousTetradTest(dataSet, testType, alpha);
-        this.indTest = new IndTestIndResiduals(dataSet, alpha);
+        this.indTest = new IndTestFisherZ(dataSet, alpha);
     }
 
     public Graph search() {

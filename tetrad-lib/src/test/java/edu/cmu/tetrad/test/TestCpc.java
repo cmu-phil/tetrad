@@ -95,7 +95,7 @@ public class TestCpc {
         SemIm semIm = new SemIm(semPm);
         DataSet _dataSet = semIm.simulateData(1000, false);
 
-        IndependenceTest test = new IndTestIndResiduals(_dataSet, 0.05);
+        IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
 
         Cpc search = new Cpc(test);
         Graph resultGraph = search.search();

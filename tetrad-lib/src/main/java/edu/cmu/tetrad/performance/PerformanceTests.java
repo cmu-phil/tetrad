@@ -107,7 +107,7 @@ public class PerformanceTests {
 
 //        out.println(cov);
 
-        IndTestIndResiduals test = new IndTestIndResiduals(cov, alpha);
+        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc pc = new Pc(test);
         pc.setVerbose(false);
@@ -225,7 +225,7 @@ public class PerformanceTests {
 
 //        out.println(cov);
 
-        IndTestIndResiduals test = new IndTestIndResiduals(cov, alpha);
+        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         PcStable pcStable = new PcStable(test);
 //        pcStable.setVerbose(false);
@@ -305,7 +305,7 @@ public class PerformanceTests {
 
 //        out.println(cov);
 
-        IndTestIndResiduals test = new IndTestIndResiduals(cov, alpha);
+        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         PcMax pcStable = new PcMax(test);
 //        pcStable.setVerbose(false);
@@ -471,7 +471,7 @@ public class PerformanceTests {
 
 //        out.println(cov);
 
-        IndTestIndResiduals test = new IndTestIndResiduals(cov, alpha);
+        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Cpc cpc = new Cpc(test);
         cpc.setVerbose(false);
@@ -552,7 +552,7 @@ public class PerformanceTests {
 
 //        out.println(cov);
 
-        IndTestIndResiduals test = new IndTestIndResiduals(cov, alpha);
+        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         CpcStable cpcStable = new CpcStable(test);
         cpcStable.setVerbose(false);
@@ -643,7 +643,7 @@ public class PerformanceTests {
 
 //        out.println(cov);
 
-        IndTestIndResiduals independenceTest = new IndTestIndResiduals(cov, alpha);
+        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
 
         Fci fci = new Fci(independenceTest);
         fci.setVerbose(false);
@@ -733,7 +733,7 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
-        IndependenceTest independenceTest = new IndTestIndResiduals(cov, alpha);
+        IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
 //        GFci fci = new GFci(independenceTest);
 
         SemBicScore score = new SemBicScore(cov);
@@ -1374,7 +1374,7 @@ public class PerformanceTests {
             System.out.println("Covariance matrix done");
 
             // Independence test.
-            final IndTestIndResiduals independenceTest = new IndTestIndResiduals(cov, alpha);
+            final IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
             final SemBicScore score = new SemBicScore(cov);
             score.setPenaltyDiscount(penaltyDiscount);
 

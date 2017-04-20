@@ -46,7 +46,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .000000001);
+        parameters.set("twoCycleAlpha", .00000001);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -136,7 +136,7 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
-//        algorithms.add(new FangConcatenated());
+        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));

@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.search.IndTestIndResiduals;
+import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 
 import java.util.ArrayList;
@@ -21,9 +21,9 @@ public class FisherZ implements IndependenceWrapper {
         double alpha = parameters.getDouble("alpha");
 
         if (dataSet instanceof ICovarianceMatrix) {
-            return new IndTestIndResiduals((ICovarianceMatrix) dataSet, alpha);
+            return new IndTestFisherZ((ICovarianceMatrix) dataSet, alpha);
         } else if (dataSet instanceof DataSet) {
-            return new IndTestIndResiduals((DataSet) dataSet, alpha);
+            return new IndTestFisherZ((DataSet) dataSet, alpha);
 
         }
 

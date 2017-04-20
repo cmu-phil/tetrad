@@ -76,7 +76,7 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
         for (int i = 0; i < numBootstrapSamples; i++) {
             TetradMatrix fullData = dataSet.getDoubleData();
             bootstrapSamples[i] = DataUtils.getBootstrapSample(fullData, bootstrapSampleSize);
-            tests[i] = new IndTestIndResiduals(bootstrapSamples[i], dataSet.getVariables(), alpha);
+            tests[i] = new IndTestFisherZ(bootstrapSamples[i], dataSet.getVariables(), alpha);
 
         }
 

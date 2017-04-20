@@ -196,7 +196,7 @@ public final class TestSearchGraph {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
-        IndependenceTest test2 = new IndTestIndResiduals(data, 0.001);
+        IndependenceTest test2 = new IndTestFisherZ(data, 0.001);
 
         Rfci fci3 = new Rfci(test2);
         Fas fas2 = new Fas(test2);

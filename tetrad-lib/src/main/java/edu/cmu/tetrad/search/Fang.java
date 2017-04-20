@@ -79,13 +79,13 @@ public final class Fang implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
+//        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
-
+    
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
         System.out.println("FAS");
@@ -111,27 +111,26 @@ public final class Fang implements GraphSearch {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double[] c1 = cor(x, y, 1, 0);
-                double[] c2 = cor(x, y, 0, 1);
+                double[] c1 = cov(x, y, 1, 0);
+                double[] c2 = cov(x, y, 0, 1);
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[0]) - abs(c2[0]) > .3) {
-                    double c[] = cor(x, y, 0, 0);
-                    double G = abs(c[0] - c2[0]) - abs(c[0] - c1[0]);
-                    double c3[] = cor(x, y, -1, 0);
-                    double c4[] = cor(x, y, 0, -1);
+                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
+                    double c[] = cov(x, y, 0, 0);
+                    double c3[] = cov(x, y, -1, 0);
+                    double c4[] = cov(x, y, 0, -1);
 
-                    double z = getZ(c[0]);
-                    double z1 = getZ(c1[0]);
-                    double z2 = getZ(c2[0]);
+                    double z = getZ(c[1]);
+                    double z1 = getZ(c1[1]);
+                    double z2 = getZ(c2[1]);
 
                     double diff1 = z - z1;
                     double diff2 = z - z2;
 
-                    final double t1 = diff1 / (sqrt(1.0 / c[1] + 1.0 / c1[1]));
-                    final double t2 = diff2 / (sqrt(1.0 / c[1] + 1.0 / c2[1]));
+                    final double t1 = diff1 / (sqrt(1.0 / c[3] + 1.0 / c1[3]));
+                    final double t2 = diff2 / (sqrt(1.0 / c[3] + 1.0 / c2[3]));
 
-                    double p1 = 1.0 - new TDistribution(2 * (c[1] + c1[1]) - 2).cumulativeProbability(abs(t1 / 2.0));
-                    double p2 = 1.0 - new TDistribution(2 * (c[1] + c2[1]) - 2).cumulativeProbability(abs(t2 / 2.0));
+                    double p1 = 1.0 - new TDistribution(2 * (c[3] + c1[3]) - 2).cumulativeProbability(abs(t1) / 2.0);
+                    double p2 = 1.0 - new TDistribution(2 * (c[3] + c2[3]) - 2).cumulativeProbability(abs(t2) / 2.0);
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -156,22 +155,10 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    }
-
-//                    else if (c1[0] > c2[0]) {
-//                        graph.addDirectedEdge(X, Y);
-//                    } else if (abs(c[0] - c1[0]) > abs(c[0] - c2[0])) {
-//                        graph.addDirectedEdge(Y, X);
-//                    }
-
-                    else if (abs(c1[0]) > abs(c2[0])) {
+                    } else if ((c2[2] > c1[2]) == (abs(c1[0]) > abs(c2[0]))) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (abs(c2[0]) > abs(c1[0])) {
+                    } else {
                         graph.addDirectedEdge(Y, X);
-                    }
-
-                    else {
-                        graph.addUndirectedEdge(X, Y);
                     }
                 }
             }
@@ -186,7 +173,7 @@ public final class Fang implements GraphSearch {
         return graph;
     }
 
-    private double[] cor(double[] x, double[] y, int xInc, int yInc) {
+    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
@@ -253,7 +240,7 @@ public final class Fang implements GraphSearch {
         double sx = sqrt(exx - ex * ex);
         double sy = sqrt(eyy - ey * ey);
 
-        return new double[]{sxy / (sx * sy), (double) n};
+        return new double[]{sxy, sxy / (sx * sy), sx * sx, (double) n};
     }
 
     /**

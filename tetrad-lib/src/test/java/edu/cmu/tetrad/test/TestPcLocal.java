@@ -117,7 +117,7 @@ public class TestPcLocal {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Pc pc = new Pc(new IndTestIndResiduals(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
         Graph pattern = pc.search();
@@ -220,7 +220,7 @@ public class TestPcLocal {
         DataSet data = im.simulateData(200, false);
 
         TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestIndResiduals(data, 0.05);
+        IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
         PcStable pc = new PcStable(test);
         pc.setVerbose(false);
@@ -228,7 +228,7 @@ public class TestPcLocal {
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestIndResiduals(data2, 0.05);
+            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
             PcStable pc2 = new PcStable(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();

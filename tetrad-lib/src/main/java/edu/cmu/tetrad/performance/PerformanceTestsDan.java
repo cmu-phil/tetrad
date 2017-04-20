@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.IndTestIndResiduals;
+import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -171,7 +171,7 @@ public class PerformanceTestsDan {
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            final IndTestIndResiduals independenceTestGFci = new IndTestIndResiduals(cov, alphaGFci);
+            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
             final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
 
             out6.println("GFCI.PAG");
@@ -190,7 +190,7 @@ public class PerformanceTestsDan {
 
             out8.println("PATTERN OVER MEASURED VARIABLES");
 
-            final IndTestIndResiduals independencePc = new IndTestIndResiduals(cov, alphaPc);
+            final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 
             Pc pc = new Pc(independencePc);
             pc.setVerbose(false);

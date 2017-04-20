@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndTestIndResiduals;
+import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -81,8 +81,8 @@ public class TestIndTestFisherZ {
         DataSet data1 = im1.simulateData(500, false);
         DataSet data2 = im2.simulateData(500, false);
 
-        IndependenceTest test1 = new IndTestIndResiduals(data1, 0.05);
-        IndependenceTest test2 = new IndTestIndResiduals(data2, 0.05);
+        IndependenceTest test1 = new IndTestFisherZ(data1, 0.05);
+        IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
 
         test1.isIndependent(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
         double p1 = test1.getPValue();

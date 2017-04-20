@@ -117,7 +117,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Alpha not set.");
             }
 
-            test = new IndTestIndResiduals(dataSet, params.getAlpha());
+            test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
         }  else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {

@@ -143,7 +143,7 @@ public class Mimbuild2 {
         this.latentsCov = latentscov;
         Graph graph;
 
-        Cpc search = new Cpc(new IndTestIndResiduals(latentscov, alpha));
+        Cpc search = new Cpc(new IndTestFisherZ(latentscov, alpha));
         search.setKnowledge(knowledge);
         graph = search.search();
 
