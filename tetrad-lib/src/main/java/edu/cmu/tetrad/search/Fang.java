@@ -85,7 +85,7 @@ public final class Fang implements GraphSearch {
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
-    
+
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
         System.out.println("FAS");
@@ -119,24 +119,11 @@ public final class Fang implements GraphSearch {
                     double c3[] = cov(x, y, -1, 0);
                     double c4[] = cov(x, y, 0, -1);
 
-                    double z = getZ(c[1]);
-                    double z1 = getZ(c1[1]);
-                    double z2 = getZ(c2[1]);
-
-                    double diff1 = z - z1;
-                    double diff2 = z - z2;
-
-                    final double t1 = diff1 / (sqrt(1.0 / c[3] + 1.0 / c1[3]));
-                    final double t2 = diff2 / (sqrt(1.0 / c[3] + 1.0 / c2[3]));
-
-                    double p1 = 1.0 - new TDistribution(2 * (c[3] + c1[3]) - 2).cumulativeProbability(abs(t1) / 2.0);
-                    double p2 = 1.0 - new TDistribution(2 * (c[3] + c2[3]) - 2).cumulativeProbability(abs(t2) / 2.0);
-
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (p1 <= alpha && p2 <= alpha) {
+                    } else if (equals(c, c1) && equals(c, c2)) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -145,8 +132,8 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (!((signum(c[0]) == signum(c1[0]) && signum(c[0]) == signum(c3[0]))
-                            || (signum(c[0]) == signum(c2[0]) && signum(c[0]) == signum(c4[0])))) {
+                    } else if (!(sameSign(c, c1) && sameSign(c, c3)
+                            || (sameSign(c, c2) && sameSign(c, c4)))) {
                         Edge edge1 = Edges.directedEdge(X, Y);
                         Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -155,10 +142,12 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if ((c2[2] > c1[2]) == (abs(c1[0]) > abs(c2[0]))) {
+                    } else if (c2[2] > c1[2] && abs(c1[0]) < abs(c2[0])) {
+                        graph.addDirectedEdge(Y, X);
+                    } else if (c1[3] > c2[3] && abs(c2[0]) < abs(c1[0])) {
                         graph.addDirectedEdge(X, Y);
                     } else {
-                        graph.addDirectedEdge(Y, X);
+                        graph.addUndirectedEdge(X, Y);
                     }
                 }
             }
@@ -171,6 +160,19 @@ public final class Fang implements GraphSearch {
         this.elapsed = stop - start;
 
         return graph;
+    }
+
+    private boolean equals(double[] c1, double[] c2) {
+        double z = getZ(c1[1]);
+        double z1 = getZ(c2[1]);
+        double diff1 = z - z1;
+        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
+        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
+        return p1 <= alpha;
+    }
+
+    private boolean sameSign(double[] c1, double[] c2) {
+        return signum(c1[1]) == signum(c2[1]);
     }
 
     private double[] cov(double[] x, double[] y, int xInc, int yInc) {
@@ -240,12 +242,13 @@ public final class Fang implements GraphSearch {
         double sx = sqrt(exx - ex * ex);
         double sy = sqrt(eyy - ey * ey);
 
-        return new double[]{sxy, sxy / (sx * sy), sx * sx, (double) n};
+        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
     }
 
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
+
     public int getDepth() {
         return depth;
     }
