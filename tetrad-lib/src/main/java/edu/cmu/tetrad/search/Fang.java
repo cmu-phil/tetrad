@@ -142,12 +142,10 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (c2[2] > c1[2] && abs(c1[0]) < abs(c2[0])) {
-                        graph.addDirectedEdge(Y, X);
-                    } else if (c1[3] > c2[3] && abs(c2[0]) < abs(c1[0])) {
+                    } else if (c2[3] > c1[3] == abs(c2[0]) > abs(c1[0])) {
                         graph.addDirectedEdge(X, Y);
                     } else {
-                        graph.addUndirectedEdge(X, Y);
+                        graph.addDirectedEdge(Y, X);
                     }
                 }
             }

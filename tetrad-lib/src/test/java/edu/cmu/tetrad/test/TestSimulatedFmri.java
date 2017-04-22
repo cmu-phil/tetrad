@@ -142,7 +142,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
+//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 

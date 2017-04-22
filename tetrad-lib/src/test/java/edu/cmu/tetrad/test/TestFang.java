@@ -583,6 +583,33 @@ public class TestFang {
         return new double[]{(exx - ex * ex), (double) n};
     }
 
+    private double[] mean(double[] x, int condition, double[] var, double cutoff) {
+        double exx = 0.0;
+        double ex = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition == 0) {
+                exx += x[k] * x[k];
+                ex += x[k];
+                n++;
+            } else if (condition == 1) {
+                if (var[k] > cutoff) {
+                    exx += x[k] * x[k];
+                    ex += x[k];
+                    n++;
+                }
+            }
+        }
+
+//        n = x.length;
+
+        exx /= n;
+        ex /= n;
+
+        return new double[]{ex, (double) n};
+    }
+
     private double[] cor(double[] x, double[] y, int xInc, int yInc) {
         double exy = 0.0;
         double exx = 0.0;
@@ -809,7 +836,10 @@ public class TestFang {
                 throw new RuntimeException(e);
             }
 
-            DataSet std = dataSet;// DataUtils.standardizeData(dataSet);
+
+            DataSet std = DataUtils.standardizeData(dataSet);
+
+//            System.out.println(new CovarianceMatrix(std));
 
             List<Node> nodes = std.getVariables();
             double[][] colData = std.getDoubleData().transpose().toArray();
@@ -823,13 +853,22 @@ public class TestFang {
             double x0 = 0.0;
             double y0 = 0.0;
 
-            double cxyx = cov(x, y, 1, x, x0)[0];
-            double cxyy = cov(x, y, 1, y, y0)[0];
+            double cxy = cov(x, y, 0, x, x0)[0];
+            double cxz = cov(x, z, 0, y, y0)[0];
 
+            double cxyx = cov(x, y, 1, x, x0)[0];
+            double cxzx = cov(x, z, 1, x, x0)[0];
+            double cxyy = cov(x, y, 1, y, y0)[0];
             double cxzy = cov(x, z, 1, y, y0)[0];
 
             double vxx = var(x, 1, x, x0)[0];
             double vxy = var(x, 1, y, y0)[0];
+            double vyx = var(y, 1, x, y0)[0];
+            double vyy = var(y, 1, y, y0)[0];
+
+            double mxy = var(x, 1, y, y0)[0];
+
+            double vx = var(x, 0, x, x0)[0];
 
             double cxeyy = cxyy - a * vxy - b * cxzy;
 
@@ -838,14 +877,38 @@ public class TestFang {
             {
                 System.out.println();
 
-                double Cxy = a + b * c;
-                double Cxyx = vxx * Cxy;
-                double Cxyy = vxy * Cxy;
-                double Cxeyy = cxyy - vxy * Cxy;
+                double Cxy = cov(x, y, 0, 0)[0];
+                double Cxyx = vxy * Cxy;
+                double Cxeyy = vyy * Cxy - vxy * (Cxy);
+                double Cxyy = vxy * Cxy + Cxeyy;
 
-                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
-                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
-                System.out.println("(abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyy) > abs(Cxyx)) == (vxy > vxx)));
+                Cxyy = vyy * Cxy;
+
+                double q = (Cxyy - vxy * Cxy) / (vxy * Cxy);
+
+//                System.out.println("q = " + q);
+//
+//                System.out.println("vxx = " + vxx + " vxy = " + vxy + " vyy = " + vyy);
+
+//                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
+//                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
+//                System.out.println(" (abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyx) > abs(Cxyy)) == (vxy > vxx)));
+//
+//                double r1 = cxy * vxy + b * cxz * vxy;
+//                double r2 = cxyy + b * cxzy;
+//
+//                double r1 = vxx * cxz;
+//                double r2 = cxzx;
+//                System.out.println("r1 = " + r1 + " r2 = " + r2);
+
+//                double r1 = vxx * (a * vx + b * cxz);
+//                double r2 = a * vxx + b * cxzx;
+//                double r3 = cxyx;
+//                System.out.println("r1 = " + r1 + " r2 = " + r2 + " r3 = " + r3);
+
+                System.out.println("cxyy = " + cxyy + " vxy + " + vxy + " cxy = " + cxy + " vxy * cxy = " + vxy * cxy);
+                System.out.println("cxyy = " + cxyy + " vyy + " + vyy + " cxy = " + cxy + " vyy * cxy = " + vyy * cxy);
+                System.out.println("cxzy = " + cxzy + " vxy + " + vxy + " cxz = " + cxz + " vxy * cxz = " + vxy * cxz);
             }
         }
     }
