@@ -44,6 +44,6 @@ public class ExampleSave {
         Simulation simulation = new LinearFisherModel(new RandomForward());
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.saveToFiles("mina", simulation, parameters);
+        comparison.saveToFiles("comparisonRuben", simulation, parameters);
     }
 }
