@@ -29,7 +29,6 @@ import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -46,7 +45,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.correlation;
@@ -229,7 +227,6 @@ public class TestFang {
 
     }
 
-    @Test
     public void TestPwwd7() {
         Parameters parameters = new Parameters();
 
@@ -308,7 +305,6 @@ public class TestFang {
         comparison.compareFromSimulations("comparisonpwwd", simulations, algorithms, statistics, parameters);
     }
 
-    @Test
     public void testSkeptical() {
         int misoriented = 0;
         int total = 200;
@@ -746,12 +742,25 @@ public class TestFang {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
 
-    @Test
     public void testSkeptical2() {
         int total = 20;
         int count1 = 0;
         int count2 = 0;
         int sampleSize = 10000;
+
+        List<Double> LCxeyy = new ArrayList<>();
+        List<Double> LCxyx = new ArrayList<>();
+        List<Double> LCxyy = new ArrayList<>();
+        List<Double> Lcxeyy = new ArrayList<>();
+        List<Double> Lcxyx = new ArrayList<>();
+        List<Double> Lcxyy = new ArrayList<>();
+
+        List<Double> Lcxzx = new ArrayList<>();
+        List<Double> Lvxx_cxz = new ArrayList<>();
+        List<Double> Lcxzy = new ArrayList<>();
+        List<Double> Lvxy_cxz = new ArrayList<>();
+//                List<Double> Lcxyy = new ArrayList<>();
+        List<Double> Lvyy_cxy = new ArrayList<>();
 
 
         for (int index = 0; index < total; index++) {
@@ -890,9 +899,16 @@ public class TestFang {
 //
 //                System.out.println("vxx = " + vxx + " vxy = " + vxy + " vyy = " + vyy);
 
-//                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
-//                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
-//                System.out.println(" (abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyx) > abs(Cxyy)) == (vxy > vxx)));
+                LCxeyy.add(Cxeyy);
+                LCxyx.add(Cxyx);
+                LCxyy.add(Cxyy);
+                Lcxeyy.add(cxeyy);
+                Lcxyx.add(cxyx);
+                Lcxyy.add(cxyy);
+
+                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
+                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
+                System.out.println(" (abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyx) > abs(Cxyy)) == (vxy > vxx)));
 //
 //                double r1 = cxy * vxy + b * cxz * vxy;
 //                double r2 = cxyy + b * cxzy;
@@ -906,11 +922,72 @@ public class TestFang {
 //                double r3 = cxyx;
 //                System.out.println("r1 = " + r1 + " r2 = " + r2 + " r3 = " + r3);
 
-                System.out.println("cxyy = " + cxyy + " vxy + " + vxy + " cxy = " + cxy + " vxy * cxy = " + vxy * cxy);
-                System.out.println("cxyy = " + cxyy + " vyy + " + vyy + " cxy = " + cxy + " vyy * cxy = " + vyy * cxy);
-                System.out.println("cxzy = " + cxzy + " vxy + " + vxy + " cxz = " + cxz + " vxy * cxz = " + vxy * cxz);
+
+                Lcxzx.add(cxzx);
+                Lvxx_cxz.add(vxx * cxz);
+                Lcxzy.add(cxzy);
+                Lvxy_cxz.add(vxy * cxz);
+                Lvyy_cxy.add(vyy * cxy);
+
+
+                System.out.println("cxzx = " + cxzx + " vxx * cxz = " + vxx * cxz);
+//                System.out.println("cxzy = " + cxzy + " vxy * cxz = " + vxy * cxz);
+//                System.out.println("cxyy = " + cxyy + " vyy * cxy = " + vyy * cxy);
             }
         }
+
+        System.out.println();
+
+        System.out.println("mean(cxzx) = " + avg(Lcxzx) + " mean(vxx * cxz) = " + avg(Lvxx_cxz));
+        System.out.println("mean(cxzy) = " + avg(Lcxzy) + " mean(vxy * cxz) = " + avg(Lvxy_cxz));
+        System.out.println("mean(cxyy) = " + avg(Lcxyy) + " mean(vyy * cxy) = " + avg(Lvyy_cxy));
+
+        System.out.println();
+
+        System.out.println("cor(cxzx, vxx * cxz) = " + Lcor(Lcxzx, Lvxx_cxz));
+        System.out.println("cor(cxzy, vxy * cxz) = " + Lcor(Lcxzy, Lvxy_cxz));
+        System.out.println("cor(cxyy, vyy * cxy) = " + Lcor(Lcxyy, Lvyy_cxy));
+
+        System.out.println();
+
+        System.out.println("mean(Cxeyy) = " + avg(LCxeyy) + " mean(Cxyx) = " + avg(LCxyx) + " mean(Cxyy) = " + avg(LCxyy));
+        System.out.println("mean(cxeyy) = " + avg(Lcxeyy) + " mean(cxyx) = " + avg(Lcxyx) + " mean(cxyy) = " + avg(Lcxyy));
+
+        System.out.println();
+
+        System.out.println("cor(Cxeyy, cxeyy) = " + Lcor(LCxeyy, Lcxeyy));
+        System.out.println("cor(Cxyx, cxyx) = " + Lcor(LCxyx, Lcxyx));
+        System.out.println("cor(Cxyy, cxyy) = " + Lcor(LCxyy, Lcxyy));
+    }
+
+    private String Lcor(List<Double> L1, List<Double> L2) {
+        double[] l1 = new double[L1.size()];
+        double[] l2 = new double[L2.size()];
+
+        for (int i = 0; i < L1.size(); i++) {
+            l1[i] = L1.get(i);
+            l2[i] = L2.get(i);
+        }
+
+        double cor = correlation(l1, l2);
+
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        return nf.format(cor);
+    }
+
+    private String avg(List<Double> list) {
+        double sum = 0.0;
+
+        for (double d : list) {
+            sum += d;
+        }
+
+        double avg = sum / list.size();
+
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        return nf.format(avg);
     }
 
     @Test
@@ -1068,7 +1145,7 @@ public class TestFang {
     }
 
     public static void main(String... args) {
-        new TestFang().TestPwwd7();
+        new TestFang().testSkeptical2();
     }
 }
 

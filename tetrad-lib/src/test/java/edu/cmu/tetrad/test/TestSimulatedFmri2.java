@@ -38,7 +38,7 @@ public class TestSimulatedFmri2 {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 10);
+        parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-15);
 
