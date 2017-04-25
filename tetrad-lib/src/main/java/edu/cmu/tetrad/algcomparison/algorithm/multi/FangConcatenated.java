@@ -28,7 +28,14 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+
+        List<DataSet> centered = new ArrayList<>(dataSets);
+
+        for (DataSet dataSet : dataSets) {
+            centered.add(DataUtils.standardizeData(dataSet));
+        }
+
+        DataSet dataSet = DataUtils.concatenate(centered);
         edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));

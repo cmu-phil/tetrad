@@ -58,6 +58,13 @@ public final class Fang implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
+    // Cutoff for x.
+    private double x0 = 0.0;
+
+    // Cutoff for y.
+    private double y0 = 0.0;
+
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
@@ -99,6 +106,9 @@ public final class Fang implements GraphSearch {
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
         System.out.println("Orientation");
+
+//        setX0(0);
+//        setY0(0);
 
         Graph graph = new EdgeListGraph(variables);
 
@@ -192,7 +202,7 @@ public final class Fang implements GraphSearch {
                 ey += y[k];
                 n++;
             } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > 0.0) {
+                if (x[k] > x0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -201,7 +211,7 @@ public final class Fang implements GraphSearch {
                     n++;
                 }
             } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > 0.0) {
+                if (y[k] > y0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -210,7 +220,7 @@ public final class Fang implements GraphSearch {
                     n++;
                 }
             } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < 0.0) {
+                if (x[k] < x0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -219,7 +229,7 @@ public final class Fang implements GraphSearch {
                     n++;
                 }
             } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < 0.0) {
+                if (y[k] < y0) {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
@@ -291,6 +301,34 @@ public final class Fang implements GraphSearch {
     }
 
     /**
+     * @return X cutoff.
+     */
+    public double getX0() {
+        return x0;
+    }
+
+    /**
+     * @param x0 X cutoff.
+     */
+    public void setX0(double x0) {
+        this.x0 = x0;
+    }
+
+    /**
+     * @return Y cutoff.
+     */
+    public double getY0() {
+        return y0;
+    }
+
+    /**
+     * @param y0 Y cutoff.
+     */
+    public void setY0(double y0) {
+        this.y0 = y0;
+    }
+
+    /**
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
@@ -313,6 +351,7 @@ public final class Fang implements GraphSearch {
     private double getZ(double r) {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
+
 }
 
 
