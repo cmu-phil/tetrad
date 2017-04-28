@@ -76,9 +76,9 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public Graph getComparisonGraph(Graph graph) {
         if (compareToTrue) {
-            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
-        } else {
             return new EdgeListGraph(graph);
+        } else {
+            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
         }
     }
 
