@@ -107,9 +107,6 @@ public final class Fang implements GraphSearch {
 
         System.out.println("Orientation");
 
-//        setX0(0);
-//        setY0(0);
-
         Graph graph = new EdgeListGraph(variables);
 
         for (int i = 0; i < variables.size(); i++) {
