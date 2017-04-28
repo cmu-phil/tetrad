@@ -145,7 +145,7 @@ public class TestFang {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-    @Test
+//    @Test
     public void TestSmith() {
         Parameters parameters = new Parameters();
 
@@ -1158,20 +1158,6 @@ public class TestFang {
         NumberFormat nf = new DecimalFormat("0.000");
 
         return nf.format(avg);
-    }
-
-    @Test
-    public void test3() {
-
-        double a = RandomUtil.getInstance().nextUniform(-1, 1);
-        double b = RandomUtil.getInstance().nextUniform(-1, 1);
-        double c = RandomUtil.getInstance().nextUniform(-1, 1);
-        double vy = RandomUtil.getInstance().nextUniform(-1, 1);
-        double cxy = RandomUtil.getInstance().nextUniform(-1, 1);
-
-        double vey = (a * a - 1) * vy - (b * b - 2 * b * c - 2 * ((1 - b) * vy - a * cxy));
-
-        System.out.println(vey);
     }
 
     private double[] exy(double[] x, double[] y, int xInc, int yInc) {

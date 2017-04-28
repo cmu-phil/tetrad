@@ -158,7 +158,7 @@ public class TestSimulatedFmri {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-    @Test
+//    @Test
     public void testTough() {
         Parameters parameters = new Parameters();
 

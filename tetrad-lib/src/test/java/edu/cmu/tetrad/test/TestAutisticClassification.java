@@ -446,7 +446,7 @@ public class TestAutisticClassification {
         return replaced;
     }
 
-    @Test
+//    @Test
     public void testForBiwei() {
         Parameters parameters = new Parameters();
 
@@ -502,7 +502,6 @@ public class TestAutisticClassification {
 
     public static void main(String... args) {
         new TestAutisticClassification().testAutistic();
-        ;
     }
 }
 
