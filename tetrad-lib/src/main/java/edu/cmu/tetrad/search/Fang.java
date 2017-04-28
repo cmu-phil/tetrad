@@ -124,9 +124,6 @@ public final class Fang implements GraphSearch {
                 double[] c1 = cov(x, y, 1, 0);
                 double[] c2 = cov(x, y, 0, 1);
 
-                double vxx = c1[2];
-                double vxy = c2[2];
-
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
                     double c[] = cov(x, y, 0, 0);
                     double c3[] = cov(x, y, -1, 0);
