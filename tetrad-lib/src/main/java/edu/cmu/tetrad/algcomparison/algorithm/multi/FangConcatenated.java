@@ -32,7 +32,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         List<DataSet> centered = new ArrayList<>(dataSets);
 
         for (DataSet dataSet : dataSets) {
-            centered.add(DataUtils.standardizeData(dataSet));
+            centered.add(DataUtils.center(dataSet));
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);

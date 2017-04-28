@@ -124,6 +124,9 @@ public final class Fang implements GraphSearch {
                 double[] c1 = cov(x, y, 1, 0);
                 double[] c2 = cov(x, y, 0, 1);
 
+                double vxx = c1[2];
+                double vxy = c2[2];
+
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
                     double c[] = cov(x, y, 0, 0);
                     double c3[] = cov(x, y, -1, 0);
@@ -152,10 +155,12 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (c2[3] > c1[3] == abs(c2[0]) > abs(c1[0])) {
+                    } else if (abs(c2[0]) > abs(c1[0])) {
                         graph.addDirectedEdge(X, Y);
-                    } else {
+                    } else if (abs(c2[0]) < abs(c1[0])) {
                         graph.addDirectedEdge(Y, X);
+                    } else {
+                        graph.addUndirectedEdge(X, Y);
                     }
                 }
             }
@@ -169,6 +174,7 @@ public final class Fang implements GraphSearch {
 
         return graph;
     }
+
 
     private boolean equals(double[] c1, double[] c2) {
         double z = getZ(c1[1]);

@@ -537,8 +537,6 @@ public class TestFang {
             }
         }
 
-//        n = x.length;
-
         exx /= n;
         eyy /= n;
         exy /= n;
@@ -577,6 +575,54 @@ public class TestFang {
         ex /= n;
 
         return new double[]{(exx - ex * ex), (double) n};
+    }
+
+    private double[] e(double[] x, int condition, double[] var, double cutoff) {
+        double exx = 0.0;
+        double ex = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition == 0) {
+                exx += x[k] * x[k];
+                ex += x[k];
+                n++;
+            } else if (condition == 1) {
+                if (var[k] > cutoff) {
+                    exx += x[k] * x[k];
+                    ex += x[k];
+                    n++;
+                }
+            }
+        }
+
+//        n = x.length;
+
+        exx /= n;
+        ex /= n;
+
+        return new double[]{(ex), (double) n};
+    }
+
+    private double[] e(double[] x, double[] y, int condition, double[] var, double cutoff) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition == 0) {
+                exy += x[k] * y[k];
+                n++;
+            } else if (condition == 1) {
+                if (var[k] > cutoff) {
+                    exy += x[k] * y[k];
+                    n++;
+                }
+            }
+        }
+
+        exy /= n;
+
+        return new double[]{(exy), (double) n};
     }
 
     private double[] mean(double[] x, int condition, double[] var, double cutoff) {
@@ -859,7 +905,7 @@ public class TestFang {
             double[] y = colData[j];
             double[] z = colData[k];
 
-            double x0 = 0.0;
+            double x0 = -5;
             double y0 = 0.0;
 
             double cxy = cov(x, y, 0, x, x0)[0];
@@ -874,6 +920,29 @@ public class TestFang {
             double vxy = var(x, 1, y, y0)[0];
             double vyx = var(y, 1, x, y0)[0];
             double vyy = var(y, 1, y, y0)[0];
+
+            double vzy = var(z, 1, y, 0)[0];
+            double vzx = var(z, 1, x, 0)[0];
+
+            double exx = e(x, 1, x, 0)[0];
+            double eyy = e(y, 1, y, 0)[0];
+            double exy = e(x, 1, y, 0)[0];
+            double exz_0 = e(x, z, 0, x, 0)[0];
+            double exz_y = e(x, z, 1, y, y0)[0];
+            double exz_x = e(x, z, 1, x, x0)[0];
+
+            double exy_0 = e(x, y, 0, y, 0)[0];
+            double exy_x = e(x, y, 1, y, 0)[0];
+
+            double exx_0 = e(x, x, 0, x, x0)[0];
+            double exx_x = e(x, x, 1, x, x0)[0];
+
+            double eyy_0 = e(y, y, 0, y, y0)[0];
+            double eyy_x = e(y, y, 1, y, y0)[0];
+
+            double ezy = e(z, 1, y, y0)[0];
+            double ezx = e(z, 1, x, x0)[0];
+
 
             double mxy = var(x, 1, y, y0)[0];
 
@@ -893,6 +962,8 @@ public class TestFang {
 
                 Cxyy = vyy * Cxy;
 
+
+
                 double q = (Cxyy - vxy * Cxy) / (vxy * Cxy);
 
 //                System.out.println("q = " + q);
@@ -906,10 +977,10 @@ public class TestFang {
                 Lcxyx.add(cxyx);
                 Lcxyy.add(cxyy);
 
-                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
-                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
-                System.out.println(" (abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyx) > abs(Cxyy)) == (vxy > vxx)));
-//
+//                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
+//                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
+//                System.out.println(" (abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyx) > abs(Cxyy)) == (vxy > vxx)));
+////
 //                double r1 = cxy * vxy + b * cxz * vxy;
 //                double r2 = cxyy + b * cxzy;
 //
@@ -930,34 +1001,133 @@ public class TestFang {
                 Lvyy_cxy.add(vyy * cxy);
 
 
-                System.out.println("cxzx = " + cxzx + " vxx * cxz = " + vxx * cxz);
+//                System.out.println("cxzx = " + cxzx + " vxx * cxz = " + vxx * cxz);
 //                System.out.println("cxzy = " + cxzy + " vxy * cxz = " + vxy * cxz);
 //                System.out.println("cxyy = " + cxyy + " vyy * cxy = " + vyy * cxy);
+
+//                (var(Y | Y > 0) + 1/n2 ( ΣY>0Y  ΣY>0Z))
+//                  / (var(X | X > 0)  + 1/n2 ( ΣX>0X  ΣX>0Z)) 		a[d, k]
+//
+//                System.out.println("exz_0 = " + exz_0 + " exz_x = " + exz_x);
+//                System.out.println("exy_0 = " + exy_0 + " exy_x = " + exy_x);
+//                System.out.println("exx_0 = " + exx_0 + " exx_x = " + exx_x);
+//                System.out.println("eyy_0 = " + eyy_0 + " eyy_x = " + eyy_x);
+//
+//                System.out.println("cxyy = " + nf.format(cxyy));
+//                System.out.println("cxyx = " + nf.format(cxyx));
+//
+//                System.out.println("vyy = " + nf.format(vyy) + " eyy * ezy = " + nf.format(eyy * ezy)
+//                        + " vyy + eyy * ezy + eyy * exy = " + nf.format(vyy + eyy * ezy + eyy * exy));
+//
+//                System.out.println("vxx = " + nf.format(vxx) + " exx * ezx = " + nf.format(exx * ezx)
+//                        + " vxx + exx * ezx = " + nf.format(vxx + exx * ezx));
+
+
+
+//                System.out.println("q = " + q);
+//
+//                System.out.println("vxx = " + vxx + " vxy = " + vxy + " vyy = " + vyy);
+
+                LCxeyy.add(Cxeyy);
+                LCxyx.add(Cxyx);
+                LCxyy.add(Cxyy);
+                Lcxeyy.add(cxeyy);
+                Lcxyx.add(cxyx);
+                Lcxyy.add(cxyy);
+
+//                System.out.println("Cxeyy = " + nf.format(Cxeyy) + " Cxyx = " + nf.format(Cxyx) + " Cxyy = " + nf.format(Cxyy));
+//                System.out.println(" cxeyy = " + nf.format(cxeyy) + " cxyx = " + nf.format(cxyx) + " cxyy = " + nf.format(cxyy));
+//                System.out.println(" (abs(Cxyy) > abs(Cxyx)) == (vxy > vxx) " + ((abs(Cxyx) > abs(Cxyy)) == (vxy > vxx)));
+////
+//                double r1 = cxy * vxy + b * cxz * vxy;
+//                double r2 = cxyy + b * cxzy;
+//
+//                double r1 = vxx * cxz;
+//                double r2 = cxzx;
+//                System.out.println("r1 = " + r1 + " r2 = " + r2);
+
+//                double r1 = vxx * (a * vx + b * cxz);
+//                double r2 = a * vxx + b * cxzx;
+//                double r3 = cxyx;
+//                System.out.println("r1 = " + r1 + " r2 = " + r2 + " r3 = " + r3);
+
+
+                Lcxzx.add(cxzx);
+                Lvxx_cxz.add(vxx * cxz);
+                Lcxzy.add(cxzy);
+                Lvxy_cxz.add(vxy * cxz);
+                Lvyy_cxy.add(vyy * cxy);
+
+
+//                System.out.println("cxzx = " + cxzx + " vxx * cxz = " + vxx * cxz);
+//                System.out.println("cxzy = " + cxzy + " vxy * cxz = " + vxy * cxz);
+//                System.out.println("cxyy = " + cxyy + " vyy * cxy = " + vyy * cxy);
+
+//                (var(Y | Y > 0) + 1/n2 ( ΣY>0Y  ΣY>0Z))
+//                  / (var(X | X > 0)  + 1/n2 ( ΣX>0X  ΣX>0Z)) 		a[d, k]
+
+                System.out.println("vxx  " + vxx + " vxy = " + vxy);
+//
+                System.out.println("exz_0 = " + exz_0 + " exz_x = " + exz_x + " exz_y = " + exz_y);
+
+                System.out.println("exx = " + exx + " ezx = " + ezx);
+                System.out.println("exy = " + exy + " ezy = " + ezy);
+
+                double cxzx2 = exz_x - exx * ezx;
+                double cxzy2 = exz_y - exy * ezy;
+
+                System.out.println("cxzx = " + cxzx + " cxzy = " + cxzy);
+                System.out.println("cxzx2 = " + cxzx2 + " cxzy2 = " + cxzy2);
+
+
+//                System.out.println("cxyy = " + nf.format(cxyy));
+//                System.out.println("cxyx = " + nf.format(cxyx));
+//
+//                System.out.println("vyy = " + nf.format(vyy) + " eyy * ezy = " + nf.format(eyy * ezy)
+//                        + " vyy + eyy * ezy + eyy * exy = " + nf.format(vyy + eyy * ezy + eyy * exy));
+//
+//                System.out.println("vxx = " + nf.format(vxx) + " exx * ezx = " + nf.format(exx * ezx)
+//                        + " vxx + exx * ezx = " + nf.format(vxx + exx * ezx));
+
+
+//                System.out.println("a = " + (cxyy - cxyx) / (vxy - vxx));
+//                System.out.println("a2 = " + (cxyy - cxyx) / (vxy - vxx + cxeyy));
+
+//                System.out.println("cxyy - cxyx = " + (cxyy - cxyx));
+//                System.out.println("a * (vxy - vxx) = " + a * (vxy - vxx)
+//                        + " " + " a * (vxy - vxx) + cxeyy =" + (a * (vxy - vxx) + cxeyy));
+
+//                System.out.println("cxz = " + cxz + " cxzx = " + cxzx + " cxzy = " + cxzy);
+
+                //' + " " + (abs(0.5 * (vxy - vxx) + cxeyy)));
+
+                //' + " " + (abs(0.5 * (vxy - vxx) + cxeyy)));
+
             }
         }
 
-        System.out.println();
-
-        System.out.println("mean(cxzx) = " + avg(Lcxzx) + " mean(vxx * cxz) = " + avg(Lvxx_cxz));
-        System.out.println("mean(cxzy) = " + avg(Lcxzy) + " mean(vxy * cxz) = " + avg(Lvxy_cxz));
-        System.out.println("mean(cxyy) = " + avg(Lcxyy) + " mean(vyy * cxy) = " + avg(Lvyy_cxy));
-
-        System.out.println();
-
-        System.out.println("cor(cxzx, vxx * cxz) = " + Lcor(Lcxzx, Lvxx_cxz));
-        System.out.println("cor(cxzy, vxy * cxz) = " + Lcor(Lcxzy, Lvxy_cxz));
-        System.out.println("cor(cxyy, vyy * cxy) = " + Lcor(Lcxyy, Lvyy_cxy));
-
-        System.out.println();
-
-        System.out.println("mean(Cxeyy) = " + avg(LCxeyy) + " mean(Cxyx) = " + avg(LCxyx) + " mean(Cxyy) = " + avg(LCxyy));
-        System.out.println("mean(cxeyy) = " + avg(Lcxeyy) + " mean(cxyx) = " + avg(Lcxyx) + " mean(cxyy) = " + avg(Lcxyy));
+//        System.out.println();
+//
+//        System.out.println("mean(cxzx) = " + avg(Lcxzx) + " mean(vxx * cxz) = " + avg(Lvxx_cxz));
+//        System.out.println("mean(cxzy) = " + avg(Lcxzy) + " mean(vxy * cxz) = " + avg(Lvxy_cxz));
+//        System.out.println("mean(cxyy) = " + avg(Lcxyy) + " mean(vyy * cxy) = " + avg(Lvyy_cxy));
+//
+//        System.out.println();
+//
+//        System.out.println("cor(cxzx, vxx * cxz) = " + Lcor(Lcxzx, Lvxx_cxz));
+//        System.out.println("cor(cxzy, vxy * cxz) = " + Lcor(Lcxzy, Lvxy_cxz));
+//        System.out.println("cor(cxyy, vyy * cxy) = " + Lcor(Lcxyy, Lvyy_cxy));
 
         System.out.println();
 
-        System.out.println("cor(Cxeyy, cxeyy) = " + Lcor(LCxeyy, Lcxeyy));
-        System.out.println("cor(Cxyx, cxyx) = " + Lcor(LCxyx, Lcxyx));
-        System.out.println("cor(Cxyy, cxyy) = " + Lcor(LCxyy, Lcxyy));
+//        System.out.println("mean(Cxeyy) = " + avg(LCxeyy) + " mean(Cxyx) = " + avg(LCxyx) + " mean(Cxyy) = " + avg(LCxyy));
+//        System.out.println("mean(cxeyy) = " + avg(Lcxeyy) + " mean(cxyx) = " + avg(Lcxyx) + " mean(cxyy) = " + avg(Lcxyy));
+//
+//        System.out.println();
+//
+//        System.out.println("cor(Cxeyy, cxeyy) = " + Lcor(LCxeyy, Lcxeyy));
+//        System.out.println("cor(Cxyx, cxyx) = " + Lcor(LCxyx, Lcxyx));
+//        System.out.println("cor(Cxyy, cxyy) = " + Lcor(LCxyy, Lcxyy));
     }
 
     private String Lcor(List<Double> L1, List<Double> L2) {

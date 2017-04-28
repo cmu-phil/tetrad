@@ -1,30 +1,30 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
+import edu.cmu.tetrad.search.MVPScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for MVP BIC score.
  *
  * @author jdramsey
  */
-public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
+public class MvpBicScore implements ScoreWrapper, Experimental {
     static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        final ConditionalGaussianScore conditionalGaussianScore
-                = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet), 1,  false);
-        conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        return conditionalGaussianScore;
+        double structurePrior = parameters.getDouble("structurePrior");
+        int fDegree = parameters.getInt("fDegree");
+        return new MVPScore(DataUtils.getMixedDataSet(dataSet), structurePrior, fDegree);
     }
 
     @Override
@@ -40,9 +40,8 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("cgExact");
-        parameters.add("assumeMixed");
+        parameters.add("structurePrior");
+        parameters.add("fDegree");
         return parameters;
     }
 }
