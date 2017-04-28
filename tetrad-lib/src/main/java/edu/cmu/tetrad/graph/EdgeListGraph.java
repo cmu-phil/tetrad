@@ -1070,7 +1070,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             removeEdges(from, to);
             addEdge(new Edge(from, to, Endpoint.TAIL, endPoint));
             return true;
-        } else if (edges.size() == 1) {
+        } else if (edges.size() >= 1) {
             Edge edge = edges.get(0);
             Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
 
@@ -1356,6 +1356,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         for (Edge edge : new ArrayList<>(edgesSet)) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
+
             setEndpoint(a, b, endpoint);
             setEndpoint(b, a, endpoint);
         }
@@ -1916,7 +1917,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     public boolean isHighlighted(Edge edge) {
-        return highlightedEdges.contains(edge);
+        return highlightedEdges != null && highlightedEdges.contains(edge);
     }
 
     public boolean isParameterizable(Node node) {

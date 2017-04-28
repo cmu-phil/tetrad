@@ -207,14 +207,6 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
         return bump > 0;//lastBumpThreshold;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-
-    }
-
     @Override
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();

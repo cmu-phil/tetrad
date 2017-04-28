@@ -138,7 +138,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
         DataSet ds = (DataSet) getDataModelList().get(0);
 
 //        WGfci fges = new WGfci(ds);
-//        fges.setAlpha(4);
+//        fges.setCorrErrorsAlpha(4);
 //        Graph graph = fges.search();
 
         WFges fges = new WFges(ds);
@@ -146,7 +146,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
         Graph graph = fges.search();
 
 //        WFges fges = new WFges(ds);
-//        fges.setAlpha(4);
+//        fges.setCorrErrorsAlpha(4);
 //        Graph g = fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
@@ -164,12 +164,12 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 
 //        WFges fges = new WFges(ds);
 //        fges.setMaxIndegree(-1);
-//        fges.setAlpha(4);
+//        fges.setCorrErrorsAlpha(4);
 //        Graph graph = fges.search();
 
 //        WFges fges = new WFges(ds);
 //        fges.setMaxIndegree(5);
-//        fges.setAlpha(8);
+//        fges.setCorrErrorsAlpha(8);
 //        Graph g =  fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);

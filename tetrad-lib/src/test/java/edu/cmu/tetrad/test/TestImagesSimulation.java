@@ -71,7 +71,7 @@ public class TestImagesSimulation {
 //        parameters.set("scaleFreeDeltaIn", 3);
 //        parameters.set("scaleFreeDeltaOut", .1);
 
-        parameters.set("numRandomSelections", 1);
+        parameters.set("numRuns", 1);
         parameters.set("randomSelectionSize", 3);
 
         Statistics statistics = new Statistics();

@@ -203,7 +203,7 @@
 //        throw new UnsupportedOperationException();
 //    }
 //
-//    public void setAlpha(double penaltyDiscount) {
+//    public void setCorrErrorsAlpha(double penaltyDiscount) {
 //        this.penaltyDiscount = penaltyDiscount;
 //    }
 //

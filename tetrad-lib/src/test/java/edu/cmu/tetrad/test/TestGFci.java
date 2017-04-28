@@ -286,7 +286,6 @@ public class TestGFci {
 		long stop = System.currentTimeMillis();
 
 		System.out.println("Elapsed " + (stop - start) + " ms");
-
 	}
 }
 

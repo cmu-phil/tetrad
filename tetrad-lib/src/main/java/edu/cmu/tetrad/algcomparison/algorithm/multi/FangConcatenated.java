@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fang;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -29,16 +28,19 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);
-        Fang search = new Fang(_dataSets);
-        search.setDepth(parameters.getInt("depth"));
-        search.setAlpha(parameters.getDouble("alpha"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        return getGraph(search);
-    }
 
-    private Graph getGraph(Fang search) {
+        List<DataSet> centered = new ArrayList<>(dataSets);
+
+        for (DataSet dataSet : dataSets) {
+            centered.add(DataUtils.center(dataSet));
+        }
+
+        DataSet dataSet = DataUtils.concatenate(centered);
+        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
+        search.setDepth(parameters.getInt("depth"));
+        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+        search.setKnowledge(knowledge);
         return search.search();
     }
 
@@ -65,13 +67,10 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-
         parameters.add("depth");
-        parameters.add("alpha");
         parameters.add("penaltyDiscount");
-
-        parameters.add("numRandomSelections");
+        parameters.add("twoCycleAlpha");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

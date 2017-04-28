@@ -69,8 +69,29 @@ public class ConditionalGaussianLikelihood {
     // "Cell" consisting of all rows.
     private final ArrayList<Integer> all;
 
+    // Discretize the parents
+    private boolean discretize = false;
+
     // A constant.
     private static double LOG2PI = log(2.0 * Math.PI);
+
+    private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents) {
+        List<List<Integer>> cells = new ArrayList<>();
+        HashMap<String, Integer> keys = new HashMap<>();
+        for(int i = 0; i < dataSet.getNumRows(); i++) {
+            String key = "";
+            for (int j = 0; j < discrete_parents.size(); j++) {
+                key += ((Integer) dataSet.getInt(i, dataSet.getColumn(discrete_parents.get(j)))).toString();
+            }
+            if(!keys.containsKey(key)) {
+                keys.put(key, cells.size());
+                cells.add(keys.get(key), new ArrayList<Integer>());
+            }
+            cells.get(keys.get(key)).add(i);
+        }
+
+        return cells;
+    }
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
@@ -133,7 +154,7 @@ public class ConditionalGaussianLikelihood {
         }
 
         this.dataSet = useErsatzVariables();
-        this.adTree = AdTrees.getAdLeafTree(this.dataSet);
+        this.adTree = new AdLeafTree(this.dataSet);
 
         all = new ArrayList<>();
         for (int i = 0; i < dataSet.getNumRows(); i++) all.add(i);
@@ -228,6 +249,10 @@ public class ConditionalGaussianLikelihood {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    public void setDiscretize(boolean discretize) {
+        this.discretize = discretize;
+    }
+
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
@@ -238,13 +263,15 @@ public class ConditionalGaussianLikelihood {
         A = new ArrayList<>(A);
         X = new ArrayList<>(X);
 
-        if (target instanceof DiscreteVariable) {
-            for (ContinuousVariable x : new ArrayList<>(X)) {
-                final Node variable = dataSet.getVariable(x.getName());
+        if (discretize) {
+            if (target instanceof DiscreteVariable) {
+                for (ContinuousVariable x : new ArrayList<>(X)) {
+                    final Node variable = dataSet.getVariable(x.getName());
 
-                if (variable != null) {
-                    A.add((DiscreteVariable) variable);
-                    X.remove(x);
+                    if (variable != null) {
+                        A.add((DiscreteVariable) variable);
+                        X.remove(x);
+                    }
                 }
             }
         }
@@ -258,6 +285,7 @@ public class ConditionalGaussianLikelihood {
         double c1 = 0, c2 = 0;
 
         List<List<Integer>> cells = adTree.getCellLeaves(A);
+        //List<List<Integer>> cells = partition(A);
 
         for (List<Integer> cell : cells) {
             int a = cell.size();
@@ -348,6 +376,3 @@ public class ConditionalGaussianLikelihood {
         return p * (p + 1) / 2;
     }
 }
-
-
-

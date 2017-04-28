@@ -22,16 +22,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.graph.*;
 import org.apache.commons.math3.distribution.TDistribution;
 
-import java.util.ArrayList;
+import java.awt.*;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.mean;
 import static java.lang.Math.*;
 
 /**
@@ -48,11 +44,7 @@ public final class Fang implements GraphSearch {
 
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
-    private List<DataSet> dataSets = null;
-
-    // nonGaussian[i] is true iff the i'th variable is judged non-Gaussian by the
-    // Anderson-Darling test.
-    private boolean[] nonGaussian;
+    private DataSet dataSet = null;
 
     // For the Fast Adjacency Search.
     private int depth = -1;
@@ -60,14 +52,24 @@ public final class Fang implements GraphSearch {
     // For the SEM BIC score, for the Fast Adjacency Search.
     private double penaltyDiscount = 1;
 
-    // For the T tests of equality and the Anderson-Darling tests.
-    private double alpha = 0.05;
+    // Alpha for orienting 2-cycles. Usually needs to be low.
+    private double alpha = 1e-6;
+
+    // Knowledge the the search will obey, of forbidden and required edges.
+    private IKnowledge knowledge = new Knowledge2();
+
+    // Cutoff for x.
+    private double x0 = 0.0;
+
+    // Cutoff for y.
+    private double y0 = 0.0;
+
 
     /**
-     * @param dataSets These datasets must all have the same variables, in the same order.
+     * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fang(List<DataSet> dataSets) {
-        this.dataSets = dataSets;
+    public Fang(DataSet dataSet) {
+        this.dataSet = dataSet;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -84,33 +86,30 @@ public final class Fang implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(DataUtils.center(dataSet));
+        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
-        DataSet dataSet = DataUtils.concatenate(_dataSets);
-
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
-
         List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-        nonGaussian = new boolean[colData.length];
+        System.out.println("FAS");
 
-        for (int i = 0; i < colData.length; i++) {
-            final double p = new AndersonDarlingTest(colData[i]).getP();
-            nonGaussian[i] = p < alpha;
-        }
-
-        final int n = dataSet.getNumRows();
-        double T = new TDistribution(n - 1).inverseCumulativeProbability(1.0 - alpha / 2.0);
-
-        FasStableConcurrent fas = new FasStableConcurrent(null, test);
+        Fas fas = new Fas(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
-        Graph graph0 = fas.search();
+        fas.setKnowledge(knowledge);
+        Graph G0 = fas.search();
+
+        SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
+
+        System.out.println("Orientation");
+
+//        setX0(0);
+//        setY0(0);
+
         Graph graph = new EdgeListGraph(variables);
 
         for (int i = 0; i < variables.size(); i++) {
@@ -118,73 +117,47 @@ public final class Fang implements GraphSearch {
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
-                final double[] xData = colData[i];
-                final double[] yData = colData[j];
+                // Standardized.
+                final double[] x = colData[i];
+                final double[] y = colData[j];
 
-                double[] p1 = new double[n];
-                double[] p2 = new double[n];
-                double[] p3 = new double[n];
-                double[] p4 = new double[n];
-                double[] xy = new double[n];
-                double[] r = new double[n];
+                double[] c1 = cov(x, y, 1, 0);
+                double[] c2 = cov(x, y, 0, 1);
 
-                for (int k = 0; k < n; k++) {
-                    double x = xData[k];
-                    double y = yData[k];
+                double vxx = c1[2];
+                double vxy = c2[2];
 
-                    p1[k] = pos(x) * y;
-                    p2[k] = x * pos(y);
-                    p3[k] = -pos(-x) * y;
-                    p4[k] = x * -pos(-y);
+                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
+                    double c[] = cov(x, y, 0, 0);
+                    double c3[] = cov(x, y, -1, 0);
+                    double c4[] = cov(x, y, 0, -1);
 
-                    xy[k] = x * y;
-                    r[k] = g(x) * y - x * g(y);
-                }
-
-                double cov = mean(xy, n);
-                double cov1 = mean(p1, n);
-                double cov2 = mean(p2, n);
-                double cov3 = mean(p3, n);
-                double cov4 = mean(p4, n);
-
-                double t1 = (mean(p1, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double t2 = (mean(p2, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double t3 = (mean(p3, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double t4 = (mean(p4, n) - 0.0) / (sd(r, n) / sqrt(n));
-                double tr = (mean(r, n) - 0.0) / (sd(r, n) / sqrt(n));
-
-                boolean ng = isNonGaussian(i) || isNonGaussian(j);
-
-                int numZero = 0;
-
-                if (abs(t1) < T) numZero++;
-                if (abs(t2) < T) numZero++;
-                if (abs(t3) < T) numZero++;
-                if (abs(t4) < T) numZero++;
-
-                int numNonZero = 0;
-
-                if (abs(t1) > T) numNonZero++;
-                if (abs(t2) > T) numNonZero++;
-                if (abs(t3) > T) numNonZero++;
-                if (abs(t4) > T) numNonZero++;
-
-                if (abs(tr) > 10 || graph0.isAdjacentTo(variables.get(i), variables.get(j))) {
-                    if (signum(cov1) == -signum(cov)
-                            || signum(cov2) == -signum(cov)
-                            || signum(cov3) == -signum(cov)
-                            || signum(cov4) == -signum(cov)) {
+                    if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
+                    } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (numZero > 0 && numNonZero > 0) {
+                    } else if (equals(c, c1) && equals(c, c2)) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.GREEN);
+                        edge2.setLineColor(Color.GREEN);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (!(sameSign(c, c1) && sameSign(c, c3)
+                            || (sameSign(c, c2) && sameSign(c, c4)))) {
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
+
+                        edge1.setLineColor(Color.RED);
+                        edge2.setLineColor(Color.RED);
+
+                        graph.addEdge(edge1);
+                        graph.addEdge(edge2);
+                    } else if (abs(c2[0]) > abs(c1[0])) {
                         graph.addDirectedEdge(X, Y);
-                        graph.addDirectedEdge(Y, X);
-                    } else if (ng && abs(tr) <= T) {
-                        graph.addDirectedEdge(X, Y);
-                        graph.addDirectedEdge(Y, X);
-                    } else if (ng && tr > T) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (ng && tr < -T) {
+                    } else if (abs(c2[0]) < abs(c1[0])) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
@@ -193,17 +166,103 @@ public final class Fang implements GraphSearch {
             }
         }
 
+        System.out.println();
+        System.out.println("Done");
+
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
-        System.out.println(graph);
-
         return graph;
+    }
+
+
+    private boolean equals(double[] c1, double[] c2) {
+        double z = getZ(c1[1]);
+        double z1 = getZ(c2[1]);
+        double diff1 = z - z1;
+        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
+        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
+        return p1 <= alpha;
+    }
+
+    private boolean sameSign(double[] c1, double[] c2) {
+        return signum(c1[1]) == signum(c2[1]);
+    }
+
+    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (xInc == 0 && yInc == 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            } else if (xInc == 1 && yInc == 0) {
+                if (x[k] > x0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == 1) {
+                if (y[k] > y0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 0) {
+                if (x[k] < x0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == -1) {
+                if (y[k] < y0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        eyy /= n;
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+        double sxy = exy - ex * ey;
+        double sx = sqrt(exx - ex * ex);
+        double sy = sqrt(eyy - ey * ey);
+
+        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
     }
 
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
+
     public int getDepth() {
         return depth;
     }
@@ -224,23 +283,6 @@ public final class Fang implements GraphSearch {
     }
 
     /**
-     * @return The alpha value used for T tests of equality and non-Gaussianity tests,
-     * by default 0.05.
-     */
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * @param alpha The alpha value used for T tests of equality and non-Gaussianity tests.
-     *              The default is 0.05. The test used for non-Gaussianity is the Anderson-
-     *              Darling test.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
      * @return Returns the penalty discount used for the adjacency search. The default is 1,
      * though a higher value is recommended, say, 2, 3, or 4.
      */
@@ -257,37 +299,65 @@ public final class Fang implements GraphSearch {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * @param alpha Alpha for orienting 2-cycles. Needs to be on the low side usually. Default 1e-6.
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    /**
+     * @return X cutoff.
+     */
+    public double getX0() {
+        return x0;
+    }
+
+    /**
+     * @param x0 X cutoff.
+     */
+    public void setX0(double x0) {
+        this.x0 = x0;
+    }
+
+    /**
+     * @return Y cutoff.
+     */
+    public double getY0() {
+        return y0;
+    }
+
+    /**
+     * @param y0 Y cutoff.
+     */
+    public void setY0(double y0) {
+        this.y0 = y0;
+    }
+
+    /**
+     * @return the current knowledge.
+     */
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * @param knowledge Knowledge of forbidden and required edges.
+     */
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     //======================================== PRIVATE METHODS ====================================//
 
-    private boolean isNonGaussian(int i) {
-        return nonGaussian[i];
+    private boolean knowledgeOrients(Node left, Node right) {
+        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
-    private double g(double x) {
-        return log(Math.cosh(Math.max(x, 0)));
+    private double getZ(double r) {
+        return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
 
-    private double pos(double x) {
-        return x < 0 ? 0 : x;
-    }
-
-    private static double sd(double array[], int N) {
-        return Math.pow(ssx(array, N) / (N - 1), .5);
-    }
-
-    private static double ssx(double array[], int N) {
-        int i;
-        double difference;
-        double meanValue = mean(array, N);
-        double sum = 0.0;
-
-        for (i = 0; i < N; i++) {
-            difference = array[i] - meanValue;
-            sum += difference * difference;
-        }
-
-        return sum;
-    }
 }
 
 

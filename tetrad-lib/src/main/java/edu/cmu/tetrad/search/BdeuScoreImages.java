@@ -74,7 +74,7 @@ public class BdeuScoreImages implements IBDeuScore {
                 DataSet dataSet = (DataSet) model;
 
                 if (!dataSet.isDiscrete()) {
-                    throw new IllegalArgumentException("Datasets must be continuous.");
+                    throw new IllegalArgumentException("Datasets must be discrete.");
                 }
 
                 scores.add(new BDeuScore(dataSet));
@@ -188,14 +188,6 @@ public class BdeuScoreImages implements IBDeuScore {
     @Override
     public List<Node> getVariables() {
         return variables;
-    }
-
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-
     }
 
     @Override

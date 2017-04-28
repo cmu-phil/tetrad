@@ -29,7 +29,9 @@ public class TwoCycleRecall implements Statistic {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
         double TwoCycleTp = adjConfusion.getTwoCycleTp();
         double TwoCycleFn = adjConfusion.getTwoCycleFn();
-        return TwoCycleTp / (TwoCycleTp + TwoCycleFn);
+        double recall = TwoCycleTp / (TwoCycleTp + TwoCycleFn);
+//        if (recall == 0) recall = Double.NaN;
+        return recall;
 
     }
 

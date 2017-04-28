@@ -88,7 +88,7 @@ public class ParamDescriptions {
         put("pixelDigitalization", new ParamDescription("Pixel digitalization", 0.025, 0.0, Double.MAX_VALUE));
         put("includeDishAndChipColumns", new ParamDescription("Yes if Dish and Chip columns should be included in output", true));
 
-        put("numRandomSelections", new ParamDescription("The number random selections of data sets that should be taken", 1));
+        put("numRuns", new ParamDescription("The number runs", 1));
         put("randomSelectionSize", new ParamDescription("The number of datasets that should be taken in each random sample", 1));
 
         put("maxit", new ParamDescription("MAXIT parameter (GLASSO)", 10000, 1, Integer.MAX_VALUE));
@@ -151,10 +151,17 @@ public class ParamDescriptions {
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
 
-        put("symmetricFirstStep", new ParamDescription(
-                "Yes if the heuristic a symmetric first step should be used for FGES",
-                false));
+        put("ngAlpha", new ParamDescription(
+                "Alpha for testing non-Gaussianity",
+                0.05, 0.0, 1.0));
 
+        put("twoCycleAlpha", new ParamDescription(
+                "Alpha orienting 2-cycles",
+                1e-6, 0.0, 1.0));
+
+        put("symmetricFirstStep", new ParamDescription(
+                "Yes if the first step step for FGES should do scoring for both X->Y and Y->X",
+                false));
     }
 
     public static ParamDescriptions instance() {

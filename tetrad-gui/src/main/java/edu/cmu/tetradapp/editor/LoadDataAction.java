@@ -77,6 +77,13 @@ final class LoadDataAction extends AbstractAction {
         JFileChooser chooser = getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
+
+        String path = Preferences.userRoot().get("fileSaveLocation", null);
+
+        if (path != null) {
+            chooser.setSelectedFile(new File(path));
+        }
+
         int _ret = chooser.showOpenDialog(this.dataEditor);
 
         if (_ret == JFileChooser.CANCEL_OPTION) {

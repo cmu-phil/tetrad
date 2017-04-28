@@ -300,14 +300,6 @@ public class DirichletScore implements LocalDiscreteScore, Score {
         return bump > lastBumpThreshold;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-
-    }
-
     @Override
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();

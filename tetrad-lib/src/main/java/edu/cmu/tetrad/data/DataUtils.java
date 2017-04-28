@@ -397,23 +397,24 @@ public final class DataUtils {
         return outList.get(0);
     }
 
-//    public static double[] centerData(double[] data) {
-//        double[] data2 = new double[data.length];
-//
-//        double sum = 0.0;
-//
-//        for (int i = 0; i < data2.length; i++) {
-//            sum += data[i];
-//        }
-//
-//        double mean = sum / data.length;
-//
-//        for (int i = 0; i < data.length; i++) {
-//            data2[i] = data[i] - mean;
-//        }
-//
-//        return data2;
-//    }
+    /**
+     * Centers the array in place.
+     */
+    public static void centerData(double[] data) {
+        double[] data2 = new double[data.length];
+
+        double sum = 0.0;
+
+        for (int i = 0; i < data2.length; i++) {
+            sum += data[i];
+        }
+
+        double mean = sum / data.length;
+
+        for (int i = 0; i < data.length; i++) {
+            data2[i] -= mean;
+        }
+    }
 
     public static TetradMatrix centerData(TetradMatrix data) {
         TetradMatrix data2 = data.copy();

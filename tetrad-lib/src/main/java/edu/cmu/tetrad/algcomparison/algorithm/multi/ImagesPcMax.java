@@ -74,7 +74,7 @@ public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
 
-        parameters.add("numRandomSelections");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

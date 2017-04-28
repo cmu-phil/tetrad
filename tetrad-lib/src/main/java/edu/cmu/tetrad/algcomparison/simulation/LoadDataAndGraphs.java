@@ -7,10 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +34,13 @@ public class LoadDataAndGraphs implements Simulation {
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
-                    File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
-                    System.out.println("Loading graph from " + file2.getAbsolutePath());
-                    this.graphs.add(GraphUtils.loadGraphTxt(file2));
+                    try {
+                        File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
+                        System.out.println("Loading graph from " + file2.getAbsolutePath());
+                        this.graphs.add(GraphUtils.loadGraphTxt(file2));
+                    } catch (Exception e) {
+                        this.graphs.add(null);
+                    }
 
                     GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
 

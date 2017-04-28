@@ -178,7 +178,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                     DiscreteVariable ersatz = erstatzNodes.get(x);
 
                     if (ersatz == null) {
-                        ersatz = new DiscreteVariable("Ersatz_" + x.getName(), 3);
+                        ersatz = new DiscreteVariable("Ersatz_" + x.getName(), RandomUtil.getInstance().nextInt(3)+2);
                         erstatzNodes.put((ContinuousVariable) x, ersatz);
                         erstatzNodesReverse.put(ersatz.getName(), (ContinuousVariable) x);
                         AG.addNode(ersatz);

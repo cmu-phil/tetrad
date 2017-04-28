@@ -27,10 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesCcd;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
@@ -504,7 +501,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         switch (name) {
             case FGES:
-                algorithm = new Fges(scoreWrapper);
+                algorithm = new Fges(scoreWrapper, false);
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -598,7 +595,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new MBFS(independenceWrapper);
                 break;
             case PcMax:
-                algorithm = new PcMax(independenceWrapper);
+                algorithm = new PcMax(independenceWrapper, false);
                 break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);
