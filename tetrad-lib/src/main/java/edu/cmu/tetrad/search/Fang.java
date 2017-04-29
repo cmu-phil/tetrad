@@ -240,6 +240,8 @@ public final class Fang implements GraphSearch {
             }
         }
 
+        n = x.length;
+
         exx /= n;
         eyy /= n;
         exy /= n;
