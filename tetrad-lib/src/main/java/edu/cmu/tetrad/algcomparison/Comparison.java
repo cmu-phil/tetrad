@@ -1239,6 +1239,8 @@ public class Comparison {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
+                    } else if (Double.isNaN(stat)) {
+                        table.setToken(t + 1, initialColumn + statIndex, "*");
                     } else {
                         table.setToken(t + 1, initialColumn + statIndex,
                                 Math.abs(stat) < Math.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
