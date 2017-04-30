@@ -162,6 +162,10 @@ public class ParamDescriptions {
         put("symmetricFirstStep", new ParamDescription(
                 "Yes if the first step step for FGES should do scoring for both X->Y and Y->X",
                 false));
+
+        put("discretize", new ParamDescription(
+                "True if variables should be discretized when child is discrete",
+                true));
     }
 
     public static ParamDescriptions instance() {

@@ -133,7 +133,13 @@ public class Parameters implements TetradSerializable {
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name, boolean defaultValue) {
-        return (Boolean) get(name, defaultValue);
+        Object b = get(name, defaultValue);
+
+        if (b == null || !(b instanceof Boolean)) {
+            return false;
+        }
+
+        return (Boolean) b;
     }
 
     /**
