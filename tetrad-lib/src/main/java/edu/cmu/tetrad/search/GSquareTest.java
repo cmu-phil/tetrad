@@ -84,7 +84,7 @@ public final class GSquareTest extends ChiSquareTest {
      * summing up g square and degrees of freedom for each conditional table in turn, where rows or columns that consist
      * entirely of zeros have been removed.
      */
-    public GSquareTest.Result calcGSquare(int[] testIndices) {
+    public synchronized GSquareTest.Result calcGSquare(int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
