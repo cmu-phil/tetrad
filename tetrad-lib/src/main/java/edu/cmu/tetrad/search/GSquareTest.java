@@ -25,7 +25,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.ProbUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Performs conditional independence tests of discrete data using the G Square method. Degrees of freedom are calculated
@@ -120,11 +122,12 @@ public final class GSquareTest extends ChiSquareTest {
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            long total = this.getCellTable().calcMargin(coords, bothVars);
+            long total = 0;// this.getCellTable().calcMargin(coords, bothVars);
 
-            if (total == 0) {
-                continue;
-            }
+            double _gSquare = 0.0;
+
+            List<Double> e = new ArrayList<>();
+            List<Long> o = new ArrayList<>();
 
             for (int i = 0; i < numRows; i++) {
                 for (int j = 0; j < numCols; j++) {
@@ -151,13 +154,20 @@ public final class GSquareTest extends ChiSquareTest {
                         continue;
                     }
 
-                    double expected =
-                            (double) (sumCol * sumRow) / (double) total;
+                    total += observed;
 
-                    if (observed != 0) {
-                        g2 += 2.0 * observed * Math.log(observed / expected);
-                    }
+                    e.add((double) sumCol * sumRow);
+                    o.add(observed);
                 }
+            }
+
+            for (int i = 0; i < o.size(); i++) {
+                double expected = e.get(i) / (double) total;
+                _gSquare += Math.pow(o.get(i) - expected, 2.0) / expected;
+            }
+
+            if (total == 0) {
+                continue;
             }
 
             int numAttestedRows = 0;
@@ -175,7 +185,12 @@ public final class GSquareTest extends ChiSquareTest {
                 }
             }
 
-            df += (numAttestedRows - 1) * (numAttestedCols - 1);
+            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
+
+            if (_df > 0) {
+                g2 += _gSquare;
+                df += _df;
+            }
         }
 
         // If df == 0, return indep.
