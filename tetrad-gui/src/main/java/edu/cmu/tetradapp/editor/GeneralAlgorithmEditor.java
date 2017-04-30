@@ -94,7 +94,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
 
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
+        String helpHS = "/resources/javahelp/TetradHelp.xml";
 
         try {
             URL url = this.getClass().getResource(helpHS);
