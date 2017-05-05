@@ -121,6 +121,12 @@ public final class Fang implements GraphSearch {
                 double[] c1 = cov(x, y, 1, 0);
                 double[] c2 = cov(x, y, 0, 1);
 
+                double vxx = var(x, 1, x, x0)[0];
+                double vxy = var(x, 1, y, y0)[0];
+                double vyx = var(y, 1, x, x0)[0];
+                double vyy = var(y, 1, y, y0)[0];
+
+
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
                     double c[] = cov(x, y, 0, 0);
                     double c3[] = cov(x, y, -1, 0);
@@ -149,11 +155,19 @@ public final class Fang implements GraphSearch {
 
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
-                    } else if (abs(c1[0]) > abs(c2[0])) {
+                    }
+//                    else if (vxy > vxx) {
+//                        graph.addDirectedEdge(X, Y);
+//                    }
+//                    else if (vxx > vxy) {
+//                        graph.addDirectedEdge(Y, X);
+//                    }
+                    else if (abs(c1[0]) > abs(c2[0])) {
                         graph.addDirectedEdge(X, Y);
                     } else if (abs(c1[0]) < abs(c2[0])) {
                         graph.addDirectedEdge(Y, X);
-                    } else {
+                    }
+                    else {
                         graph.addUndirectedEdge(X, Y);
                     }
                 }
@@ -253,6 +267,33 @@ public final class Fang implements GraphSearch {
         double sy = sqrt(eyy - ey * ey);
 
         return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
+    }
+
+    private double[] var(double[] x, int condition, double[] var, double cutoff) {
+        double exx = 0.0;
+        double ex = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition == 0) {
+                exx += x[k] * x[k];
+                ex += x[k];
+                n++;
+            } else if (condition == 1) {
+                if (var[k] > cutoff) {
+                    exx += x[k] * x[k];
+                    ex += x[k];
+                    n++;
+                }
+            }
+        }
+
+//        n = x.length;
+
+        exx /= n;
+        ex /= n;
+
+        return new double[]{(exx - ex * ex), (double) n};
     }
 
     /**
