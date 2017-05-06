@@ -280,7 +280,7 @@ public class TestFges {
         g.addDirectedEdge(x4, x3);
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        FgesMb2 fges = new FgesMb2(new GraphScore(g));
+        FgesMb fges = new FgesMb(new GraphScore(g));
 //        fges.setHeuristicSpeedup(false);
         Graph pattern2 = fges.search(x1);
 
@@ -292,8 +292,10 @@ public class TestFges {
 
     @Test
     public void testFgesMbFromGraph() {
+        RandomUtil.getInstance().setSeed(1450184147770L);
+
         int numNodes = 20;
-        int numIterations = 10;
+        int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
@@ -316,7 +318,7 @@ public class TestFges {
 
             Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
 
-            FgesMb2 fgesMb = new FgesMb2(fgesScore);
+            FgesMb fgesMb = new FgesMb(fgesScore);
             Graph mb2 = fgesMb.search(x1);
 
             assertEquals(mb1, mb2);

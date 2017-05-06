@@ -787,8 +787,10 @@ public class TestFang {
     }
 
     public void testSkeptical2() {
-        int total = 100;
         int sampleSize = 1000;
+
+        int count = 0;
+        int total = 100;
 
         List<Double> Lcxyx = new ArrayList<>();
         List<Double> Lvxx_cxy = new ArrayList<>();
@@ -830,7 +832,9 @@ public class TestFang {
                 pm.setNodeExpression(Y, "a * X + b * Z + E_Y");
                 pm.setNodeExpression(Z, "E_Z");
 
-                final String errors = "(Beta(2, 8) - (2 / (2 + 8))) / sqrt((2 * 8) / ((2 + 8) * (2 + 8) * (2 + 8 + 1)))";
+//                final String errors = "(Beta(2, 8) - (2 / (2 + 8))) / sqrt((2 * 8) / ((2 + 8) * (2 + 8) * (2 + 8 + 1)))";
+                final String errors = "N(0, 1)";
+//                final String errors = "Beta(2, 5)";
                 pm.setNodeExpression(e1, errors);
                 pm.setNodeExpression(e2, errors);
                 pm.setNodeExpression(e3, errors);
@@ -929,7 +933,6 @@ public class TestFang {
             double cxyy = cov(x, y, 1, y, cutoff)[0];
 
 
-
             double vxx = var(x, 1, x, cutoff)[0];
             double vxy = var(x, 1, y, cutoff)[0];
             double vyx = var(y, 1, x, cutoff)[0];
@@ -938,12 +941,12 @@ public class TestFang {
 //                System.out.println("vxx = " + vxx + " vxy = " + vxy);
 //            System.out.println("vxx = " + vxx + " exx * exx = " + exx * exx + " exxx = " + exxx);
 //            System.out.println("    vxy = " + vxy + " exy * exy = " + exy * exy + " exxy = " + exxy);
-            System.out.println("  vx = " + vx + " vy = " + vy);
-            System.out.println("  vxx = " + vxx + " vxy = " + vxy + " a = " + a);
+//            System.out.println("  vx = " + vx + " vy = " + vy);
+//            System.out.println("  vxx = " + vxx + " vxy = " + vxy + " a = " + a);
 //            System.out.println("  exxx = " + exxx);
 //            System.out.println("  exx = " + exx);
 //            System.out.println("  exxx - ex * ex = " + (exxx - exx * exx));
-            System.out.println("  a * vxx = " + a * vxx + " a * vxy = " + a * vxy + " covariance(eyy, xy) = " + StatUtils.covariance(epsilonyy, xp));
+//            System.out.println("  a * vxx = " + a * vxx + " a * vxy = " + a * vxy + " covariance(eyy, xy) = " + StatUtils.covariance(epsilonyy, xp));
 //            System.out.println("   sum = " + (a * vxy + covariance(epsilonyy, xp)));
 //            System.out.println("   proportion = " + ((a * vxy) / covariance(epsilonyy, xp)));
 ////            System.out.println("  a * vxy = " + a * vxy + " a * exxy + exy * exy = " + (a * exxy + exy * exy));
@@ -951,10 +954,14 @@ public class TestFang {
 //            System.out.println("    E(epsilon | Y > 0) * E(xp | Y > 0) = " + StatUtils.mean(epsilonyy) * StatUtils.mean(xp));
 //            System.out.println("    covariance(epsilonyy, xp) = " + StatUtils.covariance(epsilonyy, xp));
 //            System.out.println("    cxyx = " + cxyx + " cxyy = " + cxyy);
+//            System.out.println("    vxx > vxy = " + (vxx > vxy));
+            System.out.println("    abs(cxyx) > abs(cxyy) = " + (abs(cxyx) > abs(cxyy)));
+
+            count += abs(cxyx) > abs(cxyy) ? 1 : 0;
 
 //            System.out.println(vxy > vxx);
 
-            System.out.println();
+//            System.out.println();
         }
 
         {
@@ -962,6 +969,8 @@ public class TestFang {
 //                System.out.println(abs(cxyx / vxx) > abs(cxyy / vyy));
 //                System.out.println(abs(cxyx) > abs(cxyy));
         }
+
+        System.out.println(count + " / " + total);
     }
 
     private String Lcor(List<Double> L1, List<Double> L2) {
