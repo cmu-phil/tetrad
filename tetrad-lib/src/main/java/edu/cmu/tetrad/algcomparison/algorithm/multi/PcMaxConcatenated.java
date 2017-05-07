@@ -46,6 +46,7 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setKnowledge(knowledge);
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 

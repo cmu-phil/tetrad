@@ -48,6 +48,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
         search.setKnowledge(knowledge);
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 

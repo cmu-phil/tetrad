@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -832,14 +833,14 @@ public class TestFang {
                 pm.setNodeExpression(Y, "a * X + b * Z + E_Y");
                 pm.setNodeExpression(Z, "E_Z");
 
-//                final String errors = "(Beta(2, 8) - (2 / (2 + 8))) / sqrt((2 * 8) / ((2 + 8) * (2 + 8) * (2 + 8 + 1)))";
-                final String errors = "N(0, 1)";
+                final String errors = "(Beta(2, 8) - (2 / (2 + 8))) / sqrt((2 * 8) / ((2 + 8) * (2 + 8) * (2 + 8 + 1)))";
+//                final String errors = "N(0, 1)";
 //                final String errors = "Beta(2, 5)";
                 pm.setNodeExpression(e1, errors);
                 pm.setNodeExpression(e2, errors);
                 pm.setNodeExpression(e3, errors);
 
-                final String coef = "Split(-.9, -.05, .05, .9)";
+                final String coef = "Split(-.4, -.05, .05, .4)";
 
                 pm.setParameterExpression("a", coef);
                 pm.setParameterExpression("b", coef);
@@ -863,7 +864,10 @@ public class TestFang {
 
             List<Double> _xp = new ArrayList<>();
 
-            DataSet std = DataUtils.standardizeData(dataSet);
+//            DataSet std = DataUtils.standardizeData(dataSet);
+            DataSet std = dataSet;
+
+            System.out.println(new CovarianceMatrix(std));
 
             List<Node> nodes = std.getVariables();
             double[][] colData = std.getDoubleData().transpose().toArray();
@@ -955,7 +959,7 @@ public class TestFang {
 //            System.out.println("    covariance(epsilonyy, xp) = " + StatUtils.covariance(epsilonyy, xp));
 //            System.out.println("    cxyx = " + cxyx + " cxyy = " + cxyy);
 //            System.out.println("    vxx > vxy = " + (vxx > vxy));
-            System.out.println("    abs(cxyx) > abs(cxyy) = " + (abs(cxyx) > abs(cxyy)));
+            System.out.println("    abs(cxyx) > abs(cxyy) = " + (abs(cxyx) > abs(cxyy)) + " cxyx = " + cxyx + " a = " + a);
 
             count += abs(cxyx) > abs(cxyy) ? 1 : 0;
 

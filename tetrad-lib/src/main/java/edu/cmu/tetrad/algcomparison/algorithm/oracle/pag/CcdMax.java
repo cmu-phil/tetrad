@@ -36,6 +36,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 
