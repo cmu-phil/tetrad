@@ -840,7 +840,7 @@ public class TestFang {
                 pm.setNodeExpression(e2, errors);
                 pm.setNodeExpression(e3, errors);
 
-                final String coef = "Split(-.4, -.05, .05, .4)";
+                final String coef = "Split(-.6, -.1, .1, .6)";
 
                 pm.setParameterExpression("a", coef);
                 pm.setParameterExpression("b", coef);
@@ -864,10 +864,10 @@ public class TestFang {
 
             List<Double> _xp = new ArrayList<>();
 
-//            DataSet std = DataUtils.standardizeData(dataSet);
-            DataSet std = dataSet;
+            DataSet std = DataUtils.standardizeData(dataSet);
+//            DataSet std = dataSet;
 
-            System.out.println(new CovarianceMatrix(std));
+//            System.out.println(new CovarianceMatrix(std));
 
             List<Node> nodes = std.getVariables();
             double[][] colData = std.getDoubleData().transpose().toArray();
@@ -959,14 +959,15 @@ public class TestFang {
 //            System.out.println("    covariance(epsilonyy, xp) = " + StatUtils.covariance(epsilonyy, xp));
 //            System.out.println("    cxyx = " + cxyx + " cxyy = " + cxyy);
 //            System.out.println("    vxx > vxy = " + (vxx > vxy));
-            System.out.println("    abs(cxyx) > abs(cxyy) = " + (abs(cxyx) > abs(cxyy)) + " cxyx = " + cxyx + " a = " + a);
+//            System.out.println("    abs(cxyx) > abs(cxyy) = " + (abs(cxyx) > abs(cxyy)) + " cxyx = " + cxyx + " a = " + a);
 
-            count += abs(cxyx) > abs(cxyy) ? 1 : 0;
+            boolean b1 = abs(cxyx) > abs(cxyy);
 
-//            System.out.println(vxy > vxx);
+            System.out.println("    abs(cxyx) > abs(cxyy) = " + b1);
 
-//            System.out.println();
+            count += b1 ? 1 : 0;
         }
+
 
         {
 //                System.out.println(cxy - cxyx / vxx > cxy - cxyy / vyy);

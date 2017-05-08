@@ -279,15 +279,26 @@ public class TestFges {
         g.addDirectedEdge(x4, x2);
         g.addDirectedEdge(x4, x3);
 
-        Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        FgesMb fges = new FgesMb(new GraphScore(g));
-//        fges.setHeuristicSpeedup(false);
-        Graph pattern2 = fges.search(x1);
+        GraphScore fgesScore = new GraphScore(g);
 
-//        System.out.println(pattern1);
-//        System.out.println(pattern2);
+        Fges fges = new Fges(fgesScore);
+        Graph pattern1 = fges.search();
 
-        assertEquals(pattern1, pattern2);
+        Set<Node> mb = new HashSet<>();
+        mb.add(x1);
+
+        mb.addAll(pattern1.getAdjacentNodes(x1));
+
+        for (Node child : pattern1.getChildren(x1)) {
+            mb.addAll(pattern1.getParents(child));
+        }
+
+        Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
+
+        FgesMb fgesMb = new FgesMb(fgesScore);
+        Graph mb2 = fgesMb.search(x1);
+
+        assertEquals(mb1, mb2);
     }
 
     @Test
@@ -1445,9 +1456,9 @@ public class TestFges {
         return dag;
     }
 
-    public static void main(String... args) {
-        new TestFges().testBestAlgorithms();
-    }
+//    public static void main(String... args) {
+//        new TestFges().testBestAlgorithms();
+//    }
 }
 
 
