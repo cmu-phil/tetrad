@@ -268,18 +268,18 @@ public class TestFges {
         Node x3 = new GraphNode("X3");
         Node x4 = new GraphNode("X4");
 
-        Graph g = new EdgeListGraph();
-        g.addNode(x1);
-        g.addNode(x2);
-        g.addNode(x3);
-        g.addNode(x4);
+        Graph dag = new EdgeListGraph();
+        dag.addNode(x1);
+        dag.addNode(x2);
+        dag.addNode(x3);
+        dag.addNode(x4);
 
-        g.addDirectedEdge(x1, x2);
-        g.addDirectedEdge(x1, x3);
-        g.addDirectedEdge(x4, x2);
-        g.addDirectedEdge(x4, x3);
+        dag.addDirectedEdge(x1, x2);
+        dag.addDirectedEdge(x1, x3);
+        dag.addDirectedEdge(x4, x2);
+        dag.addDirectedEdge(x4, x3);
 
-        GraphScore fgesScore = new GraphScore(g);
+        GraphScore fgesScore = new GraphScore(dag);
 
         Fges fges = new Fges(fgesScore);
         Graph pattern1 = fges.search();
