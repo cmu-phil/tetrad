@@ -5,7 +5,7 @@ jdk:
 
 branches:
   only:
-  - development
+  - development, fang
 
 env:
   global:
