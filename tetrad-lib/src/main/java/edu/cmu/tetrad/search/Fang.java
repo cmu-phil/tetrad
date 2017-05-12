@@ -23,11 +23,14 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.util.List;
 
+import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.*;
 
 /**
@@ -64,6 +67,11 @@ public final class Fang implements GraphSearch {
     // Cutoff for y.
     private double y0 = 0.0;
 
+    // Whether variables should be multiplied by the signs of the skewnesses.
+    private boolean empirical = true;
+
+    // Whether RSkew should be used.
+    private boolean rskew = false;
 
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
@@ -88,12 +96,20 @@ public final class Fang implements GraphSearch {
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
+        RegressionDataset regression = new RegressionDataset(dataSet);
+
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(penaltyDiscount);
         IndependenceTest test = new IndTestScore(score, dataSet);
         List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+
+//        if (empirical) {
+//            for (int i = 0; i < colData.length; i++) {
+//                colData[i] = reverse(colData[i]);
+//            }
+//        }
 
         System.out.println("FAS");
 
@@ -115,60 +131,103 @@ public final class Fang implements GraphSearch {
                 Node Y = variables.get(j);
 
                 // Standardized.
-                final double[] x = colData[i];
-                final double[] y = colData[j];
+                double[] x = colData[i];
+                double[] y = colData[j];
 
                 double[] c1 = cov(x, y, 1, 0);
                 double[] c2 = cov(x, y, 0, 1);
-
-                double vxx = var(x, 1, x, x0)[0];
-                double vxy = var(x, 1, y, y0)[0];
-                double vyx = var(y, 1, x, x0)[0];
-                double vyy = var(y, 1, y, y0)[0];
-
 
                 if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
                     double c[] = cov(x, y, 0, 0);
                     double c3[] = cov(x, y, -1, 0);
                     double c4[] = cov(x, y, 0, -1);
 
+                    boolean orientLeftRight = true;
+
+                    if (true) {
+                        {
+                            List<Node> adj = graph.getAdjacentNodes(X);
+                            adj.remove(Y);
+
+                            RegressionResult result = regression.regress(X, adj);
+                            double[] residuals = result.getResiduals().toArray();
+                            double skewness = skewness(residuals);
+                            System.out.println("skewness x residual = " + skewness);
+                            double s = Math.signum(skewness);
+
+//                            if (abs(s) < 1e-8) orientLeftRight = false;
+
+                            for (int t = 0; t < x.length; t++) {
+                                x[t] = s * x[t];
+                            }
+                        }
+
+                        {
+                            List<Node> adj = graph.getAdjacentNodes(Y);
+                            adj.remove(X);
+
+                            RegressionResult result = regression.regress(Y, adj);
+                            double[] residuals = result.getResiduals().toArray();
+                            double skewness = skewness(residuals);
+                            System.out.println("skewness y residual = " + skewness);
+                            double s = Math.signum(skewness);
+
+//                            if (abs(s) < 1e-8) orientLeftRight = false;
+
+                            for (int t = 0; t < y.length; t++) {
+                                y[t] = s * y[t];
+                            }
+                        }
+                    }
+
+                    double[] c5 = cov(x, y, 1, 0);
+                    double[] c6 = cov(x, y, 0, 1);
+
+
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (equals(c, c1) && equals(c, c2)) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else if (!(sameSign(c, c1) && sameSign(c, c3)
-                            || (sameSign(c, c2) && sameSign(c, c4)))) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.RED);
-                        edge2.setLineColor(Color.RED);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
                     }
-//                    else if (vxy > vxx) {
-//                        graph.addDirectedEdge(X, Y);
+//                    else if (equals(c, c1) && equals(c, c2)) {
+//                        Edge edge1 = Edges.directedEdge(X, Y);
+//                        Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                        edge1.setLineColor(Color.GREEN);
+//                        edge2.setLineColor(Color.GREEN);
+//
+//                        graph.addEdge(edge1);
+//                        graph.addEdge(edge2);
 //                    }
-//                    else if (vxx > vxy) {
-//                        graph.addDirectedEdge(Y, X);
+//                    else if (!(sameSign(c, c1) && sameSign(c, c3)
+//                            || (sameSign(c, c2) && sameSign(c, c4)))) {
+//                        Edge edge1 = Edges.directedEdge(X, Y);
+//                        Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                        edge1.setLineColor(Color.RED);
+//                        edge2.setLineColor(Color.RED);
+//
+//                        graph.addEdge(edge1);
+//                        graph.addEdge(edge2);
 //                    }
-                    else if (abs(c1[0]) > abs(c2[0])) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (abs(c1[0]) < abs(c2[0])) {
-                        graph.addDirectedEdge(Y, X);
-                    }
                     else {
-                        graph.addUndirectedEdge(X, Y);
+                        if (rskew) {
+                            if (orientLeftRight && c5[5] > c6[6]) {
+                                graph.addDirectedEdge(X, Y);
+                            } else if (orientLeftRight && c5[5] < c6[6]) {
+                                graph.addDirectedEdge(Y, X);
+                            } else {
+                                graph.addUndirectedEdge(X, Y);
+                            }
+                        } else {
+                            if (orientLeftRight && abs(c5[0]) > abs(c6[0])) {
+                                graph.addDirectedEdge(X, Y);
+                            } else if (orientLeftRight && abs(c5[0]) < abs(c6[0])) {
+                                graph.addDirectedEdge(Y, X);
+                            } else {
+                                graph.addUndirectedEdge(X, Y);
+                            }
+                        }
                     }
                 }
             }
@@ -205,6 +264,9 @@ public final class Fang implements GraphSearch {
         double ex = 0.0;
         double ey = 0.0;
 
+        double egx = 0.0;
+        double egy = 0.0;
+
         int n = 0;
 
         for (int k = 0; k < x.length; k++) {
@@ -214,6 +276,9 @@ public final class Fang implements GraphSearch {
                 eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
+                egx += g(x[k]);
+                egy += g(y[k]);
+
                 n++;
             } else if (xInc == 1 && yInc == 0) {
                 if (x[k] > x0) {
@@ -222,6 +287,8 @@ public final class Fang implements GraphSearch {
                     eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
+                    egx += g(x[k]);
+                    egy += g(y[k]);
                     n++;
                 }
             } else if (xInc == 0 && yInc == 1) {
@@ -231,6 +298,8 @@ public final class Fang implements GraphSearch {
                     eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
+                    egx += g(x[k]);
+                    egy += g(y[k]);
                     n++;
                 }
             } else if (xInc == -1 && yInc == 0) {
@@ -240,6 +309,8 @@ public final class Fang implements GraphSearch {
                     eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
+                    egx += g(x[k]);
+                    egy += g(y[k]);
                     n++;
                 }
             } else if (xInc == 0 && yInc == -1) {
@@ -249,24 +320,32 @@ public final class Fang implements GraphSearch {
                     eyy += y[k] * y[k];
                     ex += x[k];
                     ey += y[k];
+                    egx += g(x[k]);
+                    egy += g(y[k]);
                     n++;
                 }
             }
         }
 
-        n = x.length;
+//        n = x.length;
 
         exx /= n;
         eyy /= n;
         exy /= n;
         ex /= n;
         ey /= n;
+        egx /= x.length;
+        egy /= x.length;
 
         double sxy = exy - ex * ey;
         double sx = sqrt(exx - ex * ex);
         double sy = sqrt(eyy - ey * ey);
 
-        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
+        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n, egx, egy};
+    }
+
+    private double g(double x) {
+        return log(cosh(max(0, x)));
     }
 
     private double[] var(double[] x, int condition, double[] var, double cutoff) {
@@ -395,6 +474,31 @@ public final class Fang implements GraphSearch {
         return 0.5 * (log(1.0 + r) - log(1.0 - r));
     }
 
+    private double[] reverse(double[] x) {
+        double s = Math.signum(skewness(x));
+
+        for (int i = 0; i < x.length; i++) {
+            x[i] = s * x[i];
+        }
+
+        return x;
+    }
+
+    public boolean isEmpirical() {
+        return empirical;
+    }
+
+    public void setEmpirical(boolean empirical) {
+        this.empirical = empirical;
+    }
+
+    public boolean isRskew() {
+        return rskew;
+    }
+
+    public void setRskew(boolean rskew) {
+        this.rskew = rskew;
+    }
 }
 
 

@@ -19,17 +19,19 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class FangConcatenated2 implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
+    private boolean rskew = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated() {
+    public FangConcatenated2() {
         this.empirical = false;
     }
 
-    public FangConcatenated(boolean empirical) {
+    public FangConcatenated2(boolean empirical, boolean rskew) {
         this.empirical = empirical;
+        this.rskew = rskew;
     }
 
     @Override
@@ -44,6 +46,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         DataSet dataSet = DataUtils.concatenate(centered);
         edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
         search.setEmpirical(empirical);
+        search.setRskew(rskew);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -64,7 +67,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public String getDescription() {
         return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)"
-                + (empirical ? " (Empirical)" : "");
+                + (empirical ? " (Empirical)" : "") + (rskew ? " (RSkew) " : "");
     }
 
     @Override

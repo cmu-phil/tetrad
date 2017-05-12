@@ -5,6 +5,8 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.FasLofs;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -19,35 +21,37 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class FasRSkewConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated() {
+    public FasRSkewConcatenated() {
         this.empirical = false;
     }
 
-    public FangConcatenated(boolean empirical) {
+    public FasRSkewConcatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
     @Override
     public Graph search(List<DataSet> dataSets, Parameters parameters) {
+        DataSet dataSet = DataUtils.concatenate(dataSets);
+        FasLofs search;
 
-        List<DataSet> centered = new ArrayList<>(dataSets);
-
-        for (DataSet dataSet : dataSets) {
-            centered.add(DataUtils.center(dataSet));
+        if (empirical) {
+            search = new FasLofs(dataSet, Lofs2.Rule.RSkewE);
+        } else {
+            search = new FasLofs(dataSet, Lofs2.Rule.RSkew);
         }
 
-        DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
-        search.setEmpirical(empirical);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
+        return getGraph(search);
+    }
+
+    private Graph getGraph(FasLofs search) {
         return search.search();
     }
 
@@ -63,8 +67,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)"
-                + (empirical ? " (Empirical)" : "");
+        return "FAS followed by RSkew " + (empirical ? "Empirical " : "");
     }
 
     @Override
@@ -77,7 +80,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         List<String> parameters = new ArrayList<>();
         parameters.add("depth");
         parameters.add("penaltyDiscount");
-        parameters.add("twoCycleAlpha");
+
         parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 

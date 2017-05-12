@@ -21,9 +21,15 @@ import java.util.List;
  */
 public class Fang implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
+    private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
     public Fang() {
+        this.empirical = false;
+    }
+
+    public Fang(boolean empirical) {
+        this.empirical = empirical;
     }
 
     private Graph getGraph(edu.cmu.tetrad.search.Fang search) {
@@ -33,6 +39,7 @@ public class Fang implements Algorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang((DataSet) dataSet);
+        search.setEmpirical(empirical);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
