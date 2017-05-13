@@ -65,10 +65,6 @@ public class TestSimulatedFmri {
         statistics.add(new TwoCycleFalseNegative2());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
-
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 1.0);
-        statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 1.0);
         statistics.setWeight("2CP", 1.0);
         statistics.setWeight("2CR", 1.0);
@@ -76,7 +72,7 @@ public class TestSimulatedFmri {
 
         Simulations simulations = new Simulations();
 
-        String dir = "/Users/jdramsey/Downloads/Cycles_Data_fMRI/";
+        String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
         String subdir = "data_noise";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
@@ -137,10 +133,10 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FangConcatenated());
 
         algorithms.add(new FangConcatenated2(false, false));
-        algorithms.add(new FangConcatenated2(false, true));
-//
-        algorithms.add(new FangConcatenated2(true, false));
-        algorithms.add(new FangConcatenated2(true, true));
+//        algorithms.add(new FangConcatenated2(false, true));
+
+//        algorithms.add(new FangConcatenated2(true, false));
+//        algorithms.add(new FangConcatenated2(true, true));
 
 //        algorithms.add(new FasRSkewConcatenated(true));
 
