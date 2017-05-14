@@ -28,12 +28,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.FasLofs;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndSingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -824,15 +823,15 @@ public class TestFang {
 //                final String errors = "Uniform(0, 1)";
 //                final String errors = "(Beta(2, 8) - (2 / (2 + 8))) / sqrt((2 * 8) / ((2 + 8) * (2 + 8) * (2 + 8 + 1)))";
 //                final String errors = "N(0, 1)";
-                final String errors = "Beta(2, 8)";
+//                final String errors = "Beta(2, 8)";
 
 
                 reverse = false;
 //                reverse = true;
 
-                pm.setParameterExpression("a", "0.7");
-                pm.setNodeExpression(eX, "-Beta(2, 8)");
-                pm.setNodeExpression(eY, "-Beta(2, 8)");
+                pm.setParameterExpression("a", "0.3");
+                pm.setNodeExpression(eX, "Beta(2, 5)");
+                pm.setNodeExpression(eY, "Beta(2, 5)");
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
@@ -852,9 +851,14 @@ public class TestFang {
             double[] x = colData[i];
             double[] y = colData[j];
 
+//            if (reverse) {
+//                x = reverse(x);
+//                y = reverse(y);
+//            }
+
             if (reverse) {
-                x = reverse(x);
-                y = reverse(y);
+                x = reverse(x, y);
+                y = reverse(y, x);
             }
 
 
@@ -875,6 +879,19 @@ public class TestFang {
 
     private double[] reverse(double[] x) {
         double s = Math.signum(StatUtils.skewness(x));
+
+        for (int i = 0; i < x.length; i++) {
+            x[i] = s * x[i];
+        }
+
+        return x;
+    }
+
+    private double[] reverse(double[] x, double[] y) {
+        RegressionResult result = RegressionDataset.regress(x, new double[][]{y});
+        double[] residuals = result.getResiduals().toArray();
+
+        double s = Math.signum(StatUtils.skewness(residuals));
 
         for (int i = 0; i < x.length; i++) {
             x[i] = s * x[i];

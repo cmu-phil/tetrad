@@ -220,8 +220,8 @@ public class RegressionDataset implements Regression {
                 bArray, tArray, pArray, seArray, r2, rss, alpha, _yHat, _res);
     }
 
-    public RegressionResult regress(double[] target, double[][] regressors) {
-        int n = getRows().length;
+    public static RegressionResult regress(double[] target, double[][] regressors) {
+        int n = target.length;
         int k = regressors.length + 1;
 
         String[] regressorNames = new String[regressors.length];
@@ -250,8 +250,8 @@ public class RegressionDataset implements Regression {
         TetradMatrix yHat2 = x.times(b2);
         if (yHat.columns() == 0) yHat2 = y.like();
 
-        TetradMatrix res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-        this.res2 = res2.getColumn(0);
+        TetradMatrix _res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+        TetradVector res2 = _res2.getColumn(0);
 
         double rss = rss(x, y, b);
         double se = Math.sqrt(rss / (n - k));
@@ -280,7 +280,7 @@ public class RegressionDataset implements Regression {
 
 
         return new RegressionResult(true, regressorNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, alpha, _yHat, _res);
+                bArray, tArray, pArray, seArray, r2, rss, 0.05, _yHat, _res);
     }
 
     public RegressionResult regress(Node target, Node... regressors) {
@@ -352,7 +352,7 @@ public class RegressionDataset implements Regression {
      * @param b the regression coefficients.
      * @return the residual sum of squares.
      */
-    private double rss(TetradMatrix x, TetradMatrix y, TetradMatrix b) {
+    private static double rss(TetradMatrix x, TetradMatrix y, TetradMatrix b) {
         double rss = 0.0;
 
         for (int i = 0; i < x.rows(); i++) {
@@ -370,7 +370,7 @@ public class RegressionDataset implements Regression {
         return rss;
     }
 
-    private double tss(TetradMatrix y) {
+    private static double tss(TetradMatrix y) {
         // first calculate the mean
         double mean = 0.0;
 
