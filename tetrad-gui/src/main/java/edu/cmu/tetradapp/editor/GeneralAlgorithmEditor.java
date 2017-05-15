@@ -578,7 +578,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new CcdMax(independenceWrapper);
                 break;
             case FANG:
-                algorithm = new FangConcatenated();
+                algorithm = new FangConcatenated2();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);

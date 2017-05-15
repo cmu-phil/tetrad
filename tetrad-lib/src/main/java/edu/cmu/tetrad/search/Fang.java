@@ -30,6 +30,7 @@ import org.apache.commons.math3.distribution.TDistribution;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.sun.tools.javac.util.Constants.format;
@@ -130,66 +131,91 @@ public final class Fang implements GraphSearch {
 
         Graph graph = new EdgeListGraph(variables);
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Node X = variables.get(i);
-                Node Y = variables.get(j);
+        for (int iter = 0; iter < 1; iter++) {
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = i + 1; j < variables.size(); j++) {
+                    Node X = variables.get(i);
+                    Node Y = variables.get(j);
 
-                // Standardized.
-                double[] x = colData[i];
-                double[] y = colData[j];
+                    if (graph.isAdjacentTo(X, Y)) continue;
 
-                double[] c1 = cov(x, y, 1, 0);
-                double[] c2 = cov(x, y, 0, 1);
+                    // Standardized.
+                    double[] x = colData[i];
+                    double[] y = colData[j];
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double c[] = cov(x, y, 0, 0);
-                    double c3[] = cov(x, y, -1, 0);
-                    double c4[] = cov(x, y, 0, -1);
+                    double[] c1 = cov(x, y, 1, 0);
+                    double[] c2 = cov(x, y, 0, 1);
 
-                    double[] c5 = cov(x, y, 1, 0);
-                    double[] c6 = cov(x, y, 0, 1);
+                    if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
+                        double c[] = cov(x, y, 0, 0);
+                        double c3[] = cov(x, y, -1, 0);
+                        double c4[] = cov(x, y, 0, -1);
+
+                        double[] c5 = cov(x, y, 1, 0);
+                        double[] c6 = cov(x, y, 0, 1);
+                        double[] c7 = cov(x, y, -1, 0);
+                        double[] c8 = cov(x, y, 0, -1);
+
+//                        RegressionResult resultx = regression.regress(X, graph.getParents(X));
+//                        double[] residualsx = resultx.getResiduals().toArray();
+//                        double skewnessx = skewness(residualsx);
+//
+//                        RegressionResult resulty = regression.regress(Y, graph.getParents(Y));
+//                        double[] residualsy = resulty.getResiduals().toArray();
+//                        double skewnessy = skewness(residualsy);
+
+                        RegressionResult resultxy = regression.regress(Y, union(graph.getParents(Y), X));
+                        double[] residualsxy = resultxy.getResiduals().toArray();
+                        double skewnessxy = skewness(residualsxy);
+
+                        RegressionResult resultyx = regression.regress(X, union(graph.getParents(X), Y));
+                        double[] residualsyx = resultyx.getResiduals().toArray();
+                        double skewnessyx = skewness(residualsyx);
 
 
-                    if (knowledgeOrients(X, Y)) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (knowledgeOrients(Y, X)) {
-                        graph.addDirectedEdge(Y, X);
-                    } else if (equals(c, c1) && equals(c, c2)) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
+                        if (knowledgeOrients(X, Y)) {
+                            graph.addDirectedEdge(X, Y);
+                        } else if (knowledgeOrients(Y, X)) {
+                            graph.addDirectedEdge(Y, X);
+                        } else if (skewnessxy > 0 && skewnessyx > 0 && equals(c, c1) && equals(c, c2)) {
+                            Edge edge1 = Edges.directedEdge(X, Y);
+                            Edge edge2 = Edges.directedEdge(Y, X);
 
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
+                            edge1.setLineColor(Color.GREEN);
+                            edge2.setLineColor(Color.GREEN);
 
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else if (!(sameSign(c, c1) && sameSign(c, c3)
-                            || (sameSign(c, c2) && sameSign(c, c4)))) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
+                            graph.addEdge(edge1);
+                            graph.addEdge(edge2);
+                        } else if (skewnessxy > 0 && skewnessyx > 0 && !(sameSign(c, c1) && sameSign(c, c3)
+                                || (sameSign(c, c2) && sameSign(c, c4)))) {
+                            Edge edge1 = Edges.directedEdge(X, Y);
+                            Edge edge2 = Edges.directedEdge(Y, X);
 
-                        edge1.setLineColor(Color.RED);
-                        edge2.setLineColor(Color.RED);
+                            edge1.setLineColor(Color.RED);
+                            edge2.setLineColor(Color.RED);
 
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
-                    } else {
-                        if (false) {
-                            if (c5[5] > c6[6]) {
-                                graph.addDirectedEdge(X, Y);
-                            } else if (c5[5] < c6[6]) {
-                                graph.addDirectedEdge(Y, X);
-                            } else {
-                                graph.addUndirectedEdge(X, Y);
-                            }
+                            graph.addEdge(edge1);
+                            graph.addEdge(edge2);
                         } else {
-                            if (abs(c5[0]) > abs(c6[0])) {
-                                graph.addDirectedEdge(X, Y);
-                            } else if (abs(c5[0]) < abs(c6[0])) {
-                                graph.addDirectedEdge(Y, X);
-                            } else {
-                                graph.addUndirectedEdge(X, Y);
+//                        if (false) {
+//                            if (c5[5] > c6[6]) {
+//                                graph.addDirectedEdge(X, Y);
+//                            } else if (c5[5] < c6[6]) {
+//                                graph.addDirectedEdge(Y, X);
+//                            } else {
+//                                graph.addUndirectedEdge(X, Y);
+//                            }
+//                        } else
+                            {
+
+
+                                if (abs(c5[0]) > abs(c6[0]) && skewnessxy > 0) {
+                                    graph.addDirectedEdge(X, Y);
+                                } else if (abs(c5[0]) < abs(c6[0]) && skewnessyx > 0) {
+                                    graph.addDirectedEdge(Y, X);
+                                } else {
+                                    graph.addUndirectedEdge(X, Y);
+                                }
                             }
                         }
                     }
@@ -210,7 +236,7 @@ public final class Fang implements GraphSearch {
             RegressionResult result = regression.regress(x, graph.getParents(x));
             double[] residuals = result.getResiduals().toArray();
             double skewness = skewness(residuals);
-            System.out.println("Node " + x + " skewness(residual) = " + skewness);
+            System.out.println("Node " + x + " skewness(residual) = " + skewness + " parents = " + graph.getParents(x));
 
             for (int i = 0; i < cutoffs.length; i++) {
                 if (skewness < cutoffs[i] * sigma) {
@@ -228,7 +254,6 @@ public final class Fang implements GraphSearch {
 
         for (int i = 0; i < cutoffs.length; i++) {
             double number = counts[i] / (double) total;
-
 
 
             System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
@@ -251,6 +276,12 @@ public final class Fang implements GraphSearch {
         this.elapsed = stop - start;
 
         return graph;
+    }
+
+    private List<Node> union(List<Node> parents, Node N) {
+        List<Node> union = new ArrayList<>(parents);
+        union.add(N);
+        return union;
     }
 
 
