@@ -47,9 +47,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static edu.cmu.tetrad.util.StatUtils.covariance;
-import static edu.cmu.tetrad.util.StatUtils.mean;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
@@ -861,6 +859,9 @@ public class TestFang {
                 y = reverse(y, x);
             }
 
+            printSkewness("x residual", x);
+            printSkewness("y residual", y, x);
+
 
             double cutoff = 0.0;
 
@@ -877,8 +878,14 @@ public class TestFang {
         System.out.println(count + " / " + total);
     }
 
+    private void printSkewness(String label, double[] x, double[]...y) {
+        RegressionResult result = RegressionDataset.regress(x, y);
+        double[] residual = result.getResiduals().toArray();
+        System.out.println("skewness " + label + ":" + skewness(residual));
+    }
+
     private double[] reverse(double[] x) {
-        double s = Math.signum(StatUtils.skewness(x));
+        double s = Math.signum(skewness(x));
 
         for (int i = 0; i < x.length; i++) {
             x[i] = s * x[i];
@@ -891,7 +898,7 @@ public class TestFang {
         RegressionResult result = RegressionDataset.regress(x, new double[][]{y});
         double[] residuals = result.getResiduals().toArray();
 
-        double s = Math.signum(StatUtils.skewness(residuals));
+        double s = Math.signum(skewness(residuals));
 
         for (int i = 0; i < x.length; i++) {
             x[i] = s * x[i];
