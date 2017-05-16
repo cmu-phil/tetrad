@@ -131,22 +131,38 @@ public final class SearchGraphUtils {
                 }
 
                 List<Node> augmentedSet = new LinkedList<>(sepset);
-                augmentedSet.add(y);
 
-//                if (test.splitDetermines(Collections.singletonList(y), x, z)) {
-//                    continue;
-//                }
+                if (!augmentedSet.contains(y)) {
+                    augmentedSet.add(y);
+                }
 
                 if (test.determines(sepset, y)) {
-                    TetradLogger.getInstance().log("info", sepset + " determines " + y);
+                    TetradLogger.getInstance().log("info", sepset + " determinessepsetx " + y);
                     continue;
                 }
 
-                boolean splitDeterminexSepsetXZ = test.determines(sepset, x) || test.determines(sepset, z);
-                boolean splitDeterminesAugmentedSetXZ = test.determines(augmentedSet, x) || test.determines(augmentedSet, z);
+                boolean determinessepsetx = test.determines(sepset, x);
+                boolean determinessepsety = test.determines(sepset, z);
+                boolean determinesaugx = test.determines(augmentedSet, x);
+                boolean determinesaugy = test.determines(augmentedSet, z);
 
-                if (!splitDeterminexSepsetXZ && !splitDeterminesAugmentedSetXZ) {
-                    TetradLogger.getInstance().log("info", sepset + " split determines " + x + " and " + z);
+                if (determinessepsetx) {
+                    System.out.println(SearchLogUtils.determinismDetected(sepset, x));
+                    continue;
+                }
+
+                if (determinessepsety) {
+                    System.out.println(SearchLogUtils.determinismDetected(sepset, y));
+                    continue;
+                }
+
+                if (determinesaugx) {
+                    System.out.println(SearchLogUtils.determinismDetected(sepset, x));
+                    continue;
+                }
+
+                if (determinesaugy) {
+                    System.out.println(SearchLogUtils.determinismDetected(sepset, y));
                     continue;
                 }
 

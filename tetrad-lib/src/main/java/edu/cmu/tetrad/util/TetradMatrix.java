@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
+import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.commons.math3.linear.*;
 
 import java.io.IOException;
@@ -209,7 +210,7 @@ public class TetradMatrix implements TetradSerializable {
         return new TetradMatrix(apacheData.getSubMatrix(i, j, k, l));
     }
 
-    public TetradMatrix inverse() {
+    public TetradMatrix inverse() throws SingularMatrixException {
         if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
 
         // Trying for a speedup by not having to construct the matrix factorization.
@@ -227,6 +228,8 @@ public class TetradMatrix implements TetradSerializable {
             double d = apacheData.getEntry(1, 1);
 
             double delta = a * d - b * c;
+
+            if (delta == 0) throw new SingularMatrixException();
 
             TetradMatrix inverse = new TetradMatrix(2, 2);
             inverse.set(0, 0, d);
@@ -253,6 +256,8 @@ public class TetradMatrix implements TetradSerializable {
 
             final double denom = -a12 * a21 * a33 + a11 * a22 * a33 - a13 * a22 * a31 +
                     a12 * a23 * a31 + a13 * a21 * a32 - a11 * a23 * a32;
+
+            if (denom == 0) throw new SingularMatrixException();
 
             double[][] inverse = new double[][]
                     {
@@ -302,6 +307,8 @@ public class TetradMatrix implements TetradSerializable {
                     a11 * a22 * a34 * a43 - a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 +
                     a13 * a21 * a32 * a44 - a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 +
                     a11 * a22 * a33 * a44;
+
+            if (denom == 0) throw new SingularMatrixException();
 
             double[][] inverse = new double[][]
 

@@ -25,6 +25,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -1766,9 +1767,8 @@ public final class StatUtils {
         try {
             TetradMatrix inverse = submatrix.inverse();
             return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Double.NaN;
+        } catch (SingularMatrixException e) {
+            throw e;
         }
     }
 

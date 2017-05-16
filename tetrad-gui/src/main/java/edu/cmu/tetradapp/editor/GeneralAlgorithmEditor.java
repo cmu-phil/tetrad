@@ -150,6 +150,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PCD, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
@@ -521,6 +522,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new Pc(independenceWrapper);
+                }
+                break;
+            case PCD:
+                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+                    algorithm = new Pcd(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                } else {
+                    algorithm = new Pcd(independenceWrapper);
                 }
                 break;
             case CPC:
@@ -998,7 +1006,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
+        PC, PCD, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,

@@ -185,7 +185,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
                         matrix.set(i, i, v);
 
                         if (v == 0) {
-                            System.out.println("Zero variance! " + variables.get(i));
+                            System.out.println("    Zero variance! " + variables.get(i));
                         }
                     }
 

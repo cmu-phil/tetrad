@@ -74,6 +74,10 @@ public class SearchLogUtils {
                 ")";
     }
 
+    public static String determinismDetected(List sepset, Node x) {
+        return "Determinism detected: " + sepset + " -> " + x.getName();
+    }
+
     public static String independenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
 

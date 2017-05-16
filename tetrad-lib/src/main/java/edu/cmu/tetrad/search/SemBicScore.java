@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.log;
 
 /**
@@ -97,9 +96,11 @@ public class SemBicScore implements Score {
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= 0) {
-                if (isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
-                }
+//                if (isVerbose()) {
+//                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
+//                }
+
+                printDeterminism(i, parents);
 
                 return Double.NaN;
             }
@@ -109,20 +110,24 @@ public class SemBicScore implements Score {
             s2 = ((n) / (double) (n - k)) * s2;
             return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
         } catch (Exception e) {
-            boolean removedOne = true;
+            printDeterminism(i, parents);
 
-            while (removedOne) {
-                List<Integer> _parents = new ArrayList<>();
-                for (int parent : parents) _parents.add(parent);
-                _parents.removeAll(forbidden);
-                parents = new int[_parents.size()];
-                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
-            }
-
+//            boolean removedOne = true;
+//
+//            while (removedOne) {
+//                List<Integer> _parents = new ArrayList<>();
+//                for (int parent : parents) _parents.add(parent);
+//                _parents.removeAll(forbidden);
+//                parents = new int[_parents.size()];
+//                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
+//                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
+//            }
+//
             return Double.NaN;
         }
     }
+
+
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -280,6 +285,17 @@ public class SemBicScore implements Score {
         }
 
         return false;
+    }
+
+    private void printDeterminism(int i, int[] parents) {
+        List<Node> _sel = new ArrayList<>();
+
+        for (int m = 0; m < parents.length; m++) {
+            _sel.add(variables.get(parents[m]));
+        }
+
+        Node x = variables.get(i);
+        System.out.println(SearchLogUtils.determinismDetected(_sel, x));
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
