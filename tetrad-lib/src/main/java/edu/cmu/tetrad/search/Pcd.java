@@ -270,7 +270,7 @@ public class Pcd implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
         SearchGraphUtils.pcdOrientC(sepsets, getIndependenceTest(), knowledge, graph);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
+//        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

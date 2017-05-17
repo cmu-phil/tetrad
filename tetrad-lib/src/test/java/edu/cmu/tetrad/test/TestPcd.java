@@ -46,7 +46,7 @@ public class TestPcd {
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
      * X2 --> X4, X3 --> X4.
      */
-    @Test
+//    @Test
     public void testSearch1() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
@@ -55,7 +55,7 @@ public class TestPcd {
     /**
      * This will fail if the orientation loop doesn't continue after the first orientation.
      */
-    @Test
+//    @Test
     public void testSearch2() {
         checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
                 "A-->D,A---B,B-->D,C-->D,D-->E");
@@ -64,7 +64,7 @@ public class TestPcd {
     /**
      * This will fail if the orientation loop doesn't continue after the first orientation.
      */
-    @Test
+//    @Test
     public void testSearch3() {
         IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");

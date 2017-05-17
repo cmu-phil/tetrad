@@ -136,23 +136,23 @@ public final class SearchGraphUtils {
                     augmentedSet.add(y);
                 }
 
-                if (test.determines(sepset, y)) {
-                    TetradLogger.getInstance().log("info", sepset + " determinessepsetx " + y);
-                    continue;
-                }
+//                if (test.determines(sepset, y)) {
+//                    TetradLogger.getInstance().log("info", sepset + " determinessepsetx " + y);
+//                    continue;
+//                }
 
                 boolean determinessepsetx = test.determines(sepset, x);
-                boolean determinessepsety = test.determines(sepset, z);
+                boolean determinessepsetz = test.determines(sepset, z);
                 boolean determinesaugx = test.determines(augmentedSet, x);
-                boolean determinesaugy = test.determines(augmentedSet, z);
+                boolean determinesaugz = test.determines(augmentedSet, z);
 
                 if (determinessepsetx) {
                     System.out.println(SearchLogUtils.determinismDetected(sepset, x));
                     continue;
                 }
 
-                if (determinessepsety) {
-                    System.out.println(SearchLogUtils.determinismDetected(sepset, y));
+                if (determinessepsetz) {
+                    System.out.println(SearchLogUtils.determinismDetected(sepset, z));
                     continue;
                 }
 
@@ -161,8 +161,8 @@ public final class SearchGraphUtils {
                     continue;
                 }
 
-                if (determinesaugy) {
-                    System.out.println(SearchLogUtils.determinismDetected(sepset, y));
+                if (determinesaugz) {
+                    System.out.println(SearchLogUtils.determinismDetected(sepset, z));
                     continue;
                 }
 
