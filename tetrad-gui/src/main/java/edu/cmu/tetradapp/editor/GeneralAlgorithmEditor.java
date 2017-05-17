@@ -156,6 +156,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.FGESD, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -503,6 +504,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         switch (name) {
             case FGES:
                 algorithm = new Fges(scoreWrapper, false);
+
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                algorithm = new Fges(scoreWrapper);
+//                }
+                break;
+            case FGESD:
+                algorithm = new FgesD(scoreWrapper, false);
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -1006,7 +1016,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCD, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
+        PC, PCD, PCStable, CPC, CPCStable, FGES, FGESD, /*PcLocal,*/ PcMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
