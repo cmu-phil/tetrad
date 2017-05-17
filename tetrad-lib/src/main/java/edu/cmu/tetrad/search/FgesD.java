@@ -896,7 +896,7 @@ public final class FgesD implements GraphSearch, GraphScorer {
             boolean inserted = insert(x, y, T, bump);
             if (!inserted) continue;
 
-            if (bump > 0 && !Double.isInfinite(bump)) {
+            if (bump > 0) {// && !Double.isInfinite(bump)) {
                 totalScore += bump;
             }
 
@@ -956,7 +956,7 @@ public final class FgesD implements GraphSearch, GraphScorer {
             boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
             if (!deleted) continue;
 
-            if (bump > 0 && !Double.isInfinite(bump)) {
+            if (bump > 0) {// && !Double.isInfinite(bump)) {
                 totalScore += bump;
             }
 
@@ -1426,9 +1426,10 @@ public final class FgesD implements GraphSearch, GraphScorer {
         set.addAll(graph.getParents(y));
         double v = scoreGraphChange(y, set, x, hashIndices);
 
-        if (Double.isNaN(v)) {
-            return Double.POSITIVE_INFINITY;
-        }
+//        if (Double.isNaN(v)) {
+//            return Double.NaN;
+////            return Double.POSITIVE_INFINITY;
+//        }
 
         return v;
     }

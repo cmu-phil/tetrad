@@ -4,13 +4,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.SemBicScoreD;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.PrintStream;
@@ -54,7 +53,8 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         edu.cmu.tetrad.search.FgesD search
-                = new edu.cmu.tetrad.search.FgesD(score.getScore(dataSet, parameters));
+                = new edu.cmu.tetrad.search.FgesD(
+                        new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet)));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
