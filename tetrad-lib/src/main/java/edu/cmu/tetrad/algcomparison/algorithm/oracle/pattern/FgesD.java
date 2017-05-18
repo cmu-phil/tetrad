@@ -52,9 +52,20 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.FgesD search
-                = new edu.cmu.tetrad.search.FgesD(
-                        new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet)));
+        edu.cmu.tetrad.search.FgesD search;
+
+        if (dataSet instanceof ICovarianceMatrix) {
+            search = new edu.cmu.tetrad.search.FgesD(
+                    new SemBicScoreD((ICovarianceMatrix) dataSet));
+
+        } else if (dataSet instanceof DataSet) {
+            search = new edu.cmu.tetrad.search.FgesD(
+                    new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet)));
+
+        } else {
+            throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
+        }
+
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
