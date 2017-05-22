@@ -612,6 +612,11 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     @Override
+    public DataModel copy() {
+        return null;
+    }
+
+    @Override
     public void setValue(int i, int j, double v) {
         if (i == j) {
             matrix.set(i, j, v);

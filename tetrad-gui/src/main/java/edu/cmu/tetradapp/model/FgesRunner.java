@@ -147,7 +147,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
                     score.setStructurePrior(structurePrior);
                     fges = new Fges(score);
                 } else {
-                    MixedBicScore gesScore = new MixedBicScore(dataSet);
+                    ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet, 1, false);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     fges = new Fges(gesScore);
                 }

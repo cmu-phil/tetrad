@@ -211,7 +211,7 @@ public final class GSquareTest extends ChiSquareTest {
 ////        this.cellTable.addToTable(selectFromArray(data, testIndices),
 ////                CellTable.COLUMN_MAJOR);
 //
-//        this.getCellTable().addToTable(getDataSet(), testIndices);
+//        this.getCellTable().addToTable(getDataModel(), testIndices);
 //
 //        // Indicator arrays to tell the cell table which margins
 //        // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -263,7 +263,7 @@ public final class GSquareTest extends ChiSquareTest {
 //
 //        // Reset the cell table for the columns referred to in
 //        // 'testIndices.' Do cell coefs for those columns.
-//        this.getCellTable().addToTable(getDataSet(), testIndices);
+//        this.getCellTable().addToTable(getDataModel(), testIndices);
 //
 //        // Indicator arrays to tell the cell table which margins
 //        // to calculate. For x _||_ y | z1, z2, ..., we want to

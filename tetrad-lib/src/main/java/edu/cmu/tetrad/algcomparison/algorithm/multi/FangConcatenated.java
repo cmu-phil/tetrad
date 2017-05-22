@@ -33,12 +33,12 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
 
         List<DataSet> centered = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
-            centered.add(DataUtils.center(dataSet));
+        for (DataModel dataSet : dataSets) {
+            centered.add(DataUtils.center((DataSet) dataSet));
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
@@ -53,7 +53,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override

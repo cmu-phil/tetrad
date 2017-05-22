@@ -126,6 +126,11 @@ public class MVPScore implements Score {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
     }
 
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
 }
 
 

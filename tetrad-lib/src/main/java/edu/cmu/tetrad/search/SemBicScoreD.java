@@ -67,6 +67,7 @@ public class SemBicScoreD implements Score {
 
     // Variables that caused computational problems and so are to be avoided.
     private Set<Integer> forbidden = new HashSet<>();
+    private double determinismThreshold = 0.1;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -86,7 +87,7 @@ public class SemBicScoreD implements Score {
      */
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
-        double small = 0.05;
+        double small = getDeterminismThreshold();
 
         try {
             double s2 = getCovariances().getValue(i, i);
@@ -343,6 +344,44 @@ public class SemBicScoreD implements Score {
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(log(sampleSize));
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        int i = variables.indexOf(y);
+
+        int[] parents = new int[z.size()];
+
+        for (int t = 0; t < z.size(); t++) {
+            parents[t] = variables.indexOf(z.get(t));
+        }
+
+        double small = getDeterminismThreshold();
+
+        try {
+            double s2 = getCovariances().getValue(i, i);
+
+            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
+            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
+
+            if (s2 <= small) {
+                printDeterminism(i, parents);
+                return true;
+            }
+        } catch (Exception e) {
+            printDeterminism(i, parents);
+        }
+
+        return false;
+    }
+
+    public double getDeterminismThreshold() {
+        return determinismThreshold;
+    }
+
+    public void setDeterminismThreshold(double determinismThreshold) {
+        this.determinismThreshold = determinismThreshold;
     }
 }
 

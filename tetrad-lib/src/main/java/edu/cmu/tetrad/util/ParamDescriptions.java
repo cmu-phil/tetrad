@@ -166,6 +166,11 @@ public class ParamDescriptions {
         put("discretize", new ParamDescription(
                 "True if variables should be discretized when child is discrete",
                 true));
+
+        put("determinismThreshold", new ParamDescription(
+                "Threshold for judging a regression of a variable onto its parents to be deternimistic",
+                0.1, 0.0, Double.POSITIVE_INFINITY));
+
     }
 
     public static ParamDescriptions instance() {

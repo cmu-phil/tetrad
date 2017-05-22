@@ -210,6 +210,11 @@ public class BDeScore implements LocalDiscreteScore {
     public int getMaxDegree() {
         return 1000;
     }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
 }
 
 

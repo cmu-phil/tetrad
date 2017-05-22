@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -88,7 +89,7 @@ public class LoadDataAndGraphs implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -119,7 +120,7 @@ public class LoadDataAndGraphs implements Simulation {
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 

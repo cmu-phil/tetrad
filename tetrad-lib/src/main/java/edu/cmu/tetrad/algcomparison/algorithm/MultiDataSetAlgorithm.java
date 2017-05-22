@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -20,4 +21,4 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * @param parameters The paramters of the search.
      * @return The result graph.
      */
-    Graph search(List<DataSet> dataSet, Parameters parameters);}
+    Graph search(List<DataModel> dataSet, Parameters parameters);}

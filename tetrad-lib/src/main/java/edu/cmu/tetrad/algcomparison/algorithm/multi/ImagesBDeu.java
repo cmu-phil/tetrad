@@ -31,16 +31,16 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataModel> dataModels = new ArrayList<>();
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+//        List<DataModel> dataModels = new ArrayList<>();
+//
+//        for (DataSet dataSet : dataSets) {
+//            dataModels.add(dataSet);
+//        }
 
-        for (DataSet dataSet : dataSets) {
-            dataModels.add(dataSet);
-        }
-
-        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(new BdeuScoreImages(dataModels));
+        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(new BdeuScoreImages(dataSets));
         search.setFaithfulnessAssumed(true);
-        IKnowledge knowledge = dataModels.get(0).getKnowledge();
+        IKnowledge knowledge = dataSets.get(0).getKnowledge();
         search.setKnowledge(knowledge);
 
         return search.search();
@@ -48,7 +48,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getDiscreteDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
     }
 
     @Override

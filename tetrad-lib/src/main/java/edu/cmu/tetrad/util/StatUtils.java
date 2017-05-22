@@ -114,8 +114,8 @@ public final class StatUtils {
         int count = 0;
 
         for (int i = 0; i < N; i++) {
-            if (!Double.isNaN( data.get(i))) {
-                sum +=  data.get(i);
+            if (!Double.isNaN(data.get(i))) {
+                sum += data.get(i);
                 count++;
             }
         }
@@ -1764,12 +1764,8 @@ public final class StatUtils {
 //        return cov / Math.sqrt(var1 * var2);
 
 
-        try {
-            TetradMatrix inverse = submatrix.inverse();
-            return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
-        } catch (SingularMatrixException e) {
-            throw e;
-        }
+        TetradMatrix inverse = submatrix.inverse();
+        return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
     /**

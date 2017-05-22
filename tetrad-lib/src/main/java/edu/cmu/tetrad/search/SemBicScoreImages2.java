@@ -247,7 +247,7 @@ public class SemBicScoreImages2 implements Score {
 
     // Calculates the BIC score.
 //    private double score(double residualVariance, int n, double logn, int p, double c) {
-//        int cols = getDataSet().getNumColumns();
+//        int cols = getDataModel().getNumColumns();
 //        double q = 2 / (double) cols;
 //
 //        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
@@ -316,6 +316,11 @@ public class SemBicScoreImages2 implements Score {
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(sampleSize));
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
     }
 }
 

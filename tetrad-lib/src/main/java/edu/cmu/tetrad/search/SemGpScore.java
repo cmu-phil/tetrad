@@ -199,7 +199,7 @@
 //        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
 //    }
 //
-//    public DataSet getDataSet() {
+//    public DataSet getDataModel() {
 //        throw new UnsupportedOperationException();
 //    }
 //

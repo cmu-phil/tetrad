@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -64,7 +65,7 @@ public class BayesNetSimulation implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -106,7 +107,7 @@ public class BayesNetSimulation implements Simulation {
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 

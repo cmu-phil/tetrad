@@ -21,9 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
@@ -32,8 +37,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Math.abs;
-
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
  * Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
@@ -41,7 +44,7 @@ import static java.lang.Math.abs;
  * @author Joseph Ramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
-public final class IndTestFisherZ implements IndependenceTest {
+public final class IndTestFisherZD implements IndependenceTest {
 
     /**
      * The covariance matrix.
@@ -94,7 +97,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestFisherZ(DataSet dataSet, double alpha) {
+    public IndTestFisherZD(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -121,7 +124,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
+    public IndTestFisherZD(TetradMatrix data, List<Node> variables, double alpha) {
         this.dataSet = ColtDataSet.makeContinuousData(variables, data);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
@@ -134,7 +137,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
+    public IndTestFisherZD(ICovarianceMatrix covMatrix, double alpha) {
         this.covMatrix = covMatrix;
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(variables);
@@ -168,7 +171,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
 
         double alphaNew = getAlpha();
-        return new IndTestFisherZ(newCovMatrix, alphaNew);
+        return new IndTestFisherZD(newCovMatrix, alphaNew);
     }
 
     /**

@@ -2,6 +2,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -96,7 +97,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -116,7 +117,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 

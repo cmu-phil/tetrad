@@ -4,15 +4,16 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScoreD;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,24 +21,45 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Pcd implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class Pcd implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
+//    private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Pcd(IndependenceWrapper test) {
-        this.test = test;
-    }
+//    public Pcd(IndependenceWrapper test) {
+//        this.test = test;
+//    }
 
-    public Pcd(IndependenceWrapper test, Algorithm initialGraph) {
-        this.test = test;
-        this.initialGraph = initialGraph;
+//    public Pcd(IndependenceWrapper test, Algorithm initialGraph) {
+////        this.test = test;
+//        this.initialGraph = initialGraph;
+//    }
+
+    public Pcd() {
+//        this.test = test;
+//        this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test.getTest(dataSet, parameters));
+        IndTestScore test;
+
+        if (dataSet instanceof ICovarianceMatrix) {
+            SemBicScoreD score = new SemBicScoreD((ICovarianceMatrix) dataSet);
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+            test = new IndTestScore(score);
+        } else if (dataSet instanceof DataSet) {
+            SemBicScoreD score = new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet));
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+            test = new IndTestScore(score);
+        } else {
+            throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
+        }
+
+        edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
@@ -46,25 +68,25 @@ public class Pcd implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        return SearchGraphUtils.patternForDag(graph);
     }
 
     @Override
     public String getDescription() {
-        return "PC (\"Peter and Clark\") using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "PC (\"Peter and Clark\") Deternimistic";
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
         parameters.add("depth");
+        parameters.add("determinismThreshold");
         parameters.add("verbose");
         return parameters;
     }

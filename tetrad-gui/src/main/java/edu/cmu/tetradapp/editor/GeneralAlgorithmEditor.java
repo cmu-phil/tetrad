@@ -123,6 +123,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         continuousTests.add(TestType.Fisher_Z);
         continuousTests.add(TestType.Correlation_T);
         continuousTests.add(TestType.SEM_BIC);
+        continuousTests.add(TestType.SEM_BICD);
         continuousTests.add(TestType.Conditional_Correlation);
         continuousTests.add(TestType.Conditional_Gaussian_LRT);
 
@@ -150,7 +151,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PCD, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PCD, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
@@ -512,7 +513,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                }
                 break;
             case FGESD:
-                algorithm = new FgesD(scoreWrapper, false);
+                algorithm = new FgesD();
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -536,9 +537,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case PCD:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Pcd(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                    algorithm = new Pcd();
                 } else {
-                    algorithm = new Pcd(independenceWrapper);
+                    algorithm = new Pcd();
                 }
                 break;
             case CPC:
@@ -703,6 +704,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case SEM_BIC:
                 scoreWrapper = new SemBicScore();
                 break;
+            case SEM_BICD:
+                scoreWrapper = new SemBicScoreD();
+                break;
             case D_SEPARATION:
                 scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
                 break;
@@ -738,6 +742,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case SEM_BIC:
                 independenceWrapper = new SemBicTest();
+                break;
+            case SEM_BICD:
+                independenceWrapper = new SemBicDTest();
                 break;
             case D_SEPARATION:
                 independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
@@ -1036,10 +1043,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
+        SEM_BIC, SEM_BICD, D_SEPARATION, Discrete_BIC_Test, Correlation_T
     }
 
-    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
+    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, SEM_BICD, D_SEPARATION}
 }
 
 

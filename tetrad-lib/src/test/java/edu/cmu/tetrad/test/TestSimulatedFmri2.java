@@ -40,12 +40,19 @@ public class TestSimulatedFmri2 {
 
         parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-15);
+        parameters.set("twoCycleAlpha", 1e-3);
 
         parameters.set("numRuns", 10);
+        parameters.set("randomSelectionSize", 10);
+
+//        parameters.set("penaltyDiscount", 6);
+//        parameters.set("depth", -1);
+//        parameters.set("twoCycleAlpha", 1e-15);
+//
+//        parameters.set("numRuns", 10);
 
         // For automatically generated concatenations if you're doing them.
-        parameters.set("randomSelectionSize", 5);
+//        parameters.set("randomSelectionSize", 5);
 
         parameters.set("Structure", "Placeholder");
 
@@ -73,7 +80,7 @@ public class TestSimulatedFmri2 {
 
         Simulations simulations = new Simulations();
 
-        String dir =  "/Users/jdramsey/Downloads/CyclesTestingData/";
+        String dir =  "/Users/user/Downloads/CyclesTestingData/";
         String subdir = "data_fslfilter_concat";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(

@@ -171,6 +171,11 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return 1000;
     }
 
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
     private double score1(int i, int[] parents) {
         int p = parents.length;
 

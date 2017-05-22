@@ -13,6 +13,7 @@ import edu.cmu.tetrad.search.SemBicScoreD;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,24 +25,11 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
-    private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FgesD(ScoreWrapper score) {
-        this.score = score;
+    public FgesD() {
         this.compareToTrue = false;
-    }
-
-    public FgesD(ScoreWrapper score, boolean compareToTrueGraph) {
-        this.score = score;
-        this.compareToTrue = compareToTrueGraph;
-    }
-
-
-    public FgesD(ScoreWrapper score, Algorithm initialGraph) {
-        this.score = score;
-        this.initialGraph = initialGraph;
     }
 
     @Override
@@ -55,12 +43,16 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.FgesD search;
 
         if (dataSet instanceof ICovarianceMatrix) {
-            search = new edu.cmu.tetrad.search.FgesD(
-                    new SemBicScoreD((ICovarianceMatrix) dataSet));
+            SemBicScoreD score = new SemBicScoreD((ICovarianceMatrix) dataSet);
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+            search = new edu.cmu.tetrad.search.FgesD(score);
 
         } else if (dataSet instanceof DataSet) {
-            search = new edu.cmu.tetrad.search.FgesD(
-                    new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet)));
+            SemBicScoreD score = new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet));
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+            score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
+            search = new edu.cmu.tetrad.search.FgesD(score);
 
         } else {
             throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
@@ -86,7 +78,7 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        if (compareToTrue) {
+        if (false) {
             return new EdgeListGraph(graph);
         } else {
             return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
@@ -95,20 +87,22 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
+        return "FGESD (Fast Greedy Equivalence Search Deterministic)";
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
         parameters.add("symmetricFirstStep");
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
+        parameters.add("determinismThreshold");
         parameters.add("verbose");
         return parameters;
     }

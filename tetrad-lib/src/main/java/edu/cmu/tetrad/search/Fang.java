@@ -23,17 +23,17 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.skewness;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
@@ -108,12 +108,6 @@ public final class Fang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-//        if (empirical) {
-//            for (int i = 0; i < colData.length; i++) {
-//                colData[i] = reverse(colData[i]);
-//            }
-//        }
-
         System.out.println("FAS");
 
         Fas fas = new Fas(test);
@@ -122,155 +116,263 @@ public final class Fang implements GraphSearch {
         fas.setKnowledge(knowledge);
         Graph G0 = fas.search();
 
-
-
-        RegressionDataset regressionStd = new RegressionDataset(dataSet);
-
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
         System.out.println("Orientation");
 
         Graph graph = new EdgeListGraph(variables);
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Node X = variables.get(i);
-                Node Y = variables.get(j);
+        for (Edge edge : G0.getEdges()) {
+            Node X = edge.getNode1();
+            Node Y = edge.getNode2();
 
-                // Standardized.
-                double[] x = colData[i];
-                double[] y = colData[j];
+            int i = variables.indexOf(X);
+            int j = variables.indexOf(Y);
 
-                double[] c1 = cov(x, y, 1, 0);
-                double[] c2 = cov(x, y, 0, 1);
+            if (graph.isAdjacentTo(X, Y)) continue;
 
-                if (G0.isAdjacentTo(X, Y) || abs(c1[1]) - abs(c2[1]) > .3) {
-                    double c[] = cov(x, y, 0, 0);
-                    double c3[] = cov(x, y, -1, 0);
-                    double c4[] = cov(x, y, 0, -1);
+            // Standardized.
+            double[] x = colData[i];
+            double[] y = colData[j];
 
-                    boolean orientLeftRight = true;
+            double[] c5 = cov(x, y, 1, 0);
+            double[] c6 = cov(x, y, 0, 1);
 
-                    if (false) {
-                        {
-                            List<Node> adj = graph.getAdjacentNodes(X);
-                            adj.remove(Y);
+            RegressionResult resultxy = regression.regress(Y, union(graph.getParents(Y), X));
+            double[] residualsxy = resultxy.getResiduals().toArray();
 
-                            RegressionResult result = regression.regress(X, adj);
-                            double[] residuals = result.getResiduals().toArray();
-                            double skewness = skewness(residuals);
-                            System.out.println("skewness x residual = " + skewness);
-                            double s = Math.signum(skewness);
+            double skewnessxy = skewness(residualsxy);
 
-//                            if (abs(s) < 1e-8) orientLeftRight = false;
+            RegressionResult resultyx = regression.regress(X, union(graph.getParents(X), Y));
+            double[] residualsyx = resultyx.getResiduals().toArray();
+            double skewnessyx = skewness(residualsyx);
 
-                            for (int t = 0; t < x.length; t++) {
-                                x[t] = s * x[t];
-                            }
-                        }
+            double sum = 0.0;
+            int nn = 0;
 
-                        {
-                            List<Node> adj = graph.getAdjacentNodes(Y);
-                            adj.remove(X);
+            List<Double> sList = new ArrayList<>();
 
-                            RegressionResult result = regression.regress(Y, adj);
-                            double[] residuals = result.getResiduals().toArray();
-                            double skewness = skewness(residuals);
-                            System.out.println("skewness y residual = " + skewness);
-                            double s = Math.signum(skewness);
+            for (int k = 0; k < x.length; k++) {
+                double _xy = x[k] * y[k];
 
-//                            if (abs(s) < 1e-8) orientLeftRight = false;
+                double d1 = (x[k] > 0 ? _xy : 0);
+                double d2 = (y[k] > 0 ? _xy : 0);
 
-                            for (int t = 0; t < y.length; t++) {
-                                y[t] = s * y[t];
-                            }
-                        }
-                    }
+                if (d1 - d2 != 0) {
+                    sum += d1 - d2;
+                    nn++;
 
-                    double[] c5 = cov(x, y, 1, 0);
-                    double[] c6 = cov(x, y, 0, 1);
+                    sList.add(d1 - d2);
+                }
+            }
 
-                    double[][] sublists = sublists(x, y);
+            double e = sum / nn;
 
-                    double[] xp = sublists[0];
-                    double[] yp = sublists[1];
-                    double[] xn = sublists[2];
-                    double[] yn = sublists[3];
+            double[] _s = new double[sList.size()];
 
-                    RegressionResult r1 = regressionStd.regress(xp, new double[][]{yp});
-                    RegressionResult r2 = regressionStd.regress(xn, new double[][]{yn});
+            for (int k = 0; k < _s.length; k++) {
+                _s[k] = sList.get(k);
+            }
 
-                    RegressionResult r3 = regressionStd.regress(yp, new double[][]{xp});
-                    RegressionResult r4 = regressionStd.regress(yn, new double[][]{xn});
+            double t = (e) / (sd(_s) / sqrt(nn));
+            double p = 1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t));
 
-                    double d1 = 0.0;
+            if (knowledgeOrients(X, Y)) {
+                graph.addDirectedEdge(X, Y);
+            } else if (knowledgeOrients(Y, X)) {
+                graph.addDirectedEdge(Y, X);
+            } else if (skewnessxy > 0 && skewnessyx > 0 && p > alpha) {
+                Edge edge1 = Edges.directedEdge(X, Y);
+                Edge edge2 = Edges.directedEdge(Y, X);
 
-                    for (int r = 0; r < x.length; r++) {
-                        double p1 = r1.getPredictedValue(new double[]{x[i]});
-                        double p2 = r2.getPredictedValue(new double[]{x[i]});
+                edge1.setLineColor(Color.GREEN);
+                edge2.setLineColor(Color.GREEN);
 
-                        d1 += abs(p1 - p2);
-                    }
-
-
-                    double d2 = 0.0;
-
-                    for (int r = 0; r < x.length; r++) {
-                        double p1 = r3.getPredictedValue(new double[]{x[i]});
-                        double p2 = r4.getPredictedValue(new double[]{x[i]});
-
-                        d2 += abs(p1 - p2);
-                    }
-
-
-                    double t = 0.2;
-
-                    if (knowledgeOrients(X, Y)) {
+                graph.addEdge(edge1);
+                graph.addEdge(edge2);
+            } else {
+                if (false) {
+                    if (c5[5] > c6[6] && skewnessxy > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (knowledgeOrients(Y, X)) {
+                    } else if (c5[5] < c6[6] && skewnessyx > 0) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (equals(c, c1) && equals(c, c2)) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-
-                        edge1.setLineColor(Color.GREEN);
-                        edge2.setLineColor(Color.GREEN);
-
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
+                    } else {
+                        graph.addUndirectedEdge(X, Y);
                     }
-//                    else if (!(sameSign(c, c1) && sameSign(c, c3)
-//                            || (sameSign(c, c2) && sameSign(c, c4)))) {
+                } else {
+                    if (abs(c5[0]) > abs(c6[0]) && skewnessxy > 0) {
+                        graph.addDirectedEdge(X, Y);
+                    } else if (abs(c5[0]) < abs(c6[0]) && skewnessyx > 0) {
+                        graph.addDirectedEdge(Y, X);
+                    } else {
+//                        graph.addUndirectedEdge(X, Y);
+                    }
+                }
+            }
+        }
+
+//        for (int i = 0; i < variables.size(); i++) {
+//            for (int j = i + 1; j < variables.size(); j++) {
+//                Node X = variables.get(i);
+//                Node Y = variables.get(j);
+//
+//                if (graph.isAdjacentTo(X, Y)) continue;
+//
+//                // Standardized.
+//                double[] x = colData[i];
+//                double[] y = colData[j];
+//
+//                if (G0.isAdjacentTo(X, Y) /*|| abs(c1[4] - c2[4]) > .3*/) {
+////                    double[] c = cov(x, y, 0, 0);
+////
+////                    double[] c1 = cov(x, y, 1, 0);
+////                    double[] c2 = cov(x, y, 0, 1);
+////
+////                    double[] c3 = cov(x, y, -1, 0);
+////                    double[] c4 = cov(x, y, 0, -1);
+//
+//                    double[] c5 = cov(x, y, 1, 0);
+//                    double[] c6 = cov(x, y, 0, 1);
+//
+//                    RegressionResult resultxy = regression.regress(Y, union(graph.getParents(Y), X));
+//                    double[] residualsxy = resultxy.getResiduals().toArray();
+//
+//                    double skewnessxy = skewness(residualsxy);
+//
+//                    RegressionResult resultyx = regression.regress(X, union(graph.getParents(X), Y));
+//                    double[] residualsyx = resultyx.getResiduals().toArray();
+//                    double skewnessyx = skewness(residualsyx);
+//
+//                    double sum = 0.0;
+//                    int nn = 0;
+//
+//                    List<Double> sList = new ArrayList<>();
+//
+//                    for (int k = 0; k < x.length; k++) {
+//                        double _xy = x[k] * y[k];
+//
+//                        double d1 = (x[k] > 0 ? _xy : 0);
+//                        double d2 = (y[k] > 0 ? _xy : 0);
+//
+//                        if (d1 - d2 != 0) {
+//                            sum += d1 - d2;
+//                            nn++;
+//
+//                            sList.add(d1 - d2);
+//                        }
+//                    }
+//
+//                    double e = sum / nn;
+//
+//                    double[] _s = new double[sList.size()];
+//
+//                    for (int k = 0; k < _s.length; k++) {
+//                        _s[k] = sList.get(k);
+//                    }
+//
+//                    double t = (e) / (sd(_s) / sqrt(nn));
+//                    double p = 1.0 - new TDistribution( nn - 1).cumulativeProbability(abs(t));
+//
+//                    if (knowledgeOrients(X, Y)) {
+//                        graph.addDirectedEdge(X, Y);
+//                    } else if (knowledgeOrients(Y, X)) {
+//                        graph.addDirectedEdge(Y, X);
+//                    } else if (skewnessxy > 0 && skewnessyx > 0 && p > alpha) {
 //                        Edge edge1 = Edges.directedEdge(X, Y);
 //                        Edge edge2 = Edges.directedEdge(Y, X);
 //
-//                        edge1.setLineColor(Color.RED);
-//                        edge2.setLineColor(Color.RED);
+//                        edge1.setLineColor(Color.GREEN);
+//                        edge2.setLineColor(Color.GREEN);
 //
 //                        graph.addEdge(edge1);
 //                        graph.addEdge(edge2);
 //                    }
-                    else if (d1 > d2) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (d1 < d2) {
-                        graph.addDirectedEdge(X, Y);
-                    }
+////                    else if (/*skewnessxy > 0 && skewnessyx > 0 &&*/ !((sameSign(c, c1) && sameSign(c, c3))
+////                            || (sameSign(c, c2) && sameSign(c, c4)))) {
+////                        Edge edge1 = Edges.directedEdge(X, Y);
+////                        Edge edge2 = Edges.directedEdge(Y, X);
+////
+////                        edge1.setLineColor(Color.RED);
+////                        edge2.setLineColor(Color.RED);
+////
+////                        graph.addEdge(edge1);
+////                        graph.addEdge(edge2);
+////                    }
 //                    else {
-//                        if (rskew) {
-//                            if (orientLeftRight && c5[5] > c6[6]) {
+//                        if (false) {
+//                            if (c5[5] > c6[6] && skewnessxy > 0) {
 //                                graph.addDirectedEdge(X, Y);
-//                            } else if (orientLeftRight && c5[5] < c6[6]) {
+//                            } else if (c5[5] < c6[6] && skewnessyx > 0) {
 //                                graph.addDirectedEdge(Y, X);
 //                            } else {
 //                                graph.addUndirectedEdge(X, Y);
 //                            }
 //                        } else {
-//
+//                            if (abs(c5[0]) > abs(c6[0]) && skewnessxy > 0) {
+//                                graph.addDirectedEdge(X, Y);
+//                            } else if (abs(c5[0]) < abs(c6[0]) && skewnessyx > 0) {
+//                                graph.addDirectedEdge(Y, X);
+//                            } else {
+//                                graph.addUndirectedEdge(X, Y);
+//                            }
 //                        }
 //                    }
+//                }
+//            }
+//        }
+
+        double sigma = Math.pow(6.0 / dataSet.getNumRows(), 0.5);
+
+        double[] cutoffs = new double[]{-10, -3, -2, -1.5, -1, -0.5, 0,
+                .5, 1, 1.5, 2, 3, 10};
+        int[] counts = new int[cutoffs.length];
+        int total = 0;
+
+        double sumSkew = 0.0;
+
+        for (
+                Node x : graph.getNodes())
+
+        {
+            RegressionResult result = regression.regress(x, graph.getParents(x));
+            double[] residuals = result.getResiduals().toArray();
+            double skewness = skewness(residuals);
+            System.out.println("Node " + x + " skewness(residual) = " + skewness + " parents = " + graph.getParents(x));
+
+            for (int i = 0; i < cutoffs.length; i++) {
+                if (skewness < cutoffs[i] * sigma) {
+                    counts[i]++;
                 }
             }
+
+            total++;
+            sumSkew += skewness;
         }
+
+        double avgSkew = sumSkew / (double) total;
+
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        for (
+                int i = 0;
+                i < cutoffs.length; i++)
+
+        {
+            double number = counts[i] / (double) total;
+
+
+            System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
+                    cutoffs[i] * sigma, number, 1.0 - number);
+
+//            System.out.println("Below " + nf.format(cutoffs[i]) + " * sigma % = " + nf.format(number)
+//                    + "   1 - % = " + nf.format(1.0 -  number));
+        }
+
+        System.out.println();
+        System.out.println();
+        System.out.println("Avg skew " + avgSkew);
+        System.out.println("N = " + dataSet.getNumRows());
+        System.out.println("Sigma = " + nf.format(sigma));
 
         System.out.println();
         System.out.println("Done");
@@ -279,6 +381,27 @@ public final class Fang implements GraphSearch {
         this.elapsed = stop - start;
 
         return graph;
+    }
+
+    private double[] avgDiff(double[] x, double[] y) {
+        List<Double> _diff = new ArrayList<>();
+
+        for (int k = 0; k < x.length; k++) {
+            double d = (x[k] > 0 ? x[k] * y[k] : 0) - (y[k] > 0 ? -(x[k] * y[k]) : 0);
+            if (d != 0) _diff.add(d);
+//            _diff.add(d);
+        }
+
+        double[] diff = new double[_diff.size()];
+        for (int k = 0; k < _diff.size(); k++) diff[k] = _diff.get(k);
+
+        return new double[]{mean(diff), sd(diff), diff.length};
+    }
+
+    private List<Node> union(List<Node> parents, Node N) {
+        List<Node> union = new ArrayList<>(parents);
+        union.add(N);
+        return union;
     }
 
 
@@ -297,6 +420,7 @@ public final class Fang implements GraphSearch {
 
     private double[] cov(double[] x, double[] y, int xInc, int yInc) {
         double exy = 0.0;
+        double exyxy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
 
@@ -311,17 +435,18 @@ public final class Fang implements GraphSearch {
         for (int k = 0; k < x.length; k++) {
             if (xInc == 0 && yInc == 0) {
                 exy += x[k] * y[k];
+                exyxy += x[k] * y[k] * x[k] * y[k];
                 exx += x[k] * x[k];
                 eyy += y[k] * y[k];
                 ex += x[k];
                 ey += y[k];
                 egx += g(x[k]);
                 egy += g(y[k]);
-
                 n++;
             } else if (xInc == 1 && yInc == 0) {
                 if (x[k] > x0) {
                     exy += x[k] * y[k];
+                    exyxy += x[k] * y[k] * x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
                     ex += x[k];
@@ -333,6 +458,7 @@ public final class Fang implements GraphSearch {
             } else if (xInc == 0 && yInc == 1) {
                 if (y[k] > y0) {
                     exy += x[k] * y[k];
+                    exyxy += x[k] * y[k] * x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
                     ex += x[k];
@@ -344,6 +470,7 @@ public final class Fang implements GraphSearch {
             } else if (xInc == -1 && yInc == 0) {
                 if (x[k] < x0) {
                     exy += x[k] * y[k];
+                    exyxy += x[k] * y[k] * x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
                     ex += x[k];
@@ -355,6 +482,7 @@ public final class Fang implements GraphSearch {
             } else if (xInc == 0 && yInc == -1) {
                 if (y[k] < y0) {
                     exy += x[k] * y[k];
+                    exyxy += x[k] * y[k] * x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
                     ex += x[k];
@@ -366,50 +494,20 @@ public final class Fang implements GraphSearch {
             }
         }
 
-//        n = x.length;
-
         exx /= n;
         eyy /= n;
         exy /= n;
+        exyxy /= n;
         ex /= n;
         ey /= n;
         egx /= x.length;
         egy /= x.length;
 
-        double sxy = exy;
+        double sxy = exy - ex * ey;
         double sx = sqrt(exx - ex * ex);
         double sy = sqrt(eyy - ey * ey);
 
-        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n, egx, egy};
-    }
-
-    private double[][] sublists(double[] x, double[] y) {
-        List<Double> xp = new ArrayList<>();
-        List<Double> yp = new ArrayList<>();
-        List<Double> xn = new ArrayList<>();
-        List<Double> yn = new ArrayList<>();
-
-        for (int k = 0; k < x.length; k++) {
-            if (x[k] > 0) {
-                xp.add(x[k]);
-                yp.add(y[k]);
-            } else {
-                xn.add(x[k]);
-                yn.add(y[k]);
-            }
-        }
-
-        double[] _xp = new double[xp.size()];
-        double[] _yp = new double[yp.size()];
-        double[] _xn = new double[xn.size()];
-        double[] _yn = new double[yn.size()];
-
-        for (int i = 0; i < xp.size(); i++) _xp[i] = xp.get(i);
-        for (int i = 0; i < yp.size(); i++) _yp[i] = yp.get(i);
-        for (int i = 0; i < xn.size(); i++) _xn[i] = xn.get(i);
-        for (int i = 0; i < yn.size(); i++) _yn[i] = yn.get(i);
-
-        return new double[][]{_xp, _yp, _xn, _yn};
+        return new double[]{exy, exx, eyy, exyxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n, egx, egy};
     }
 
     private double g(double x) {

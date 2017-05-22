@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.*;
 
@@ -81,7 +80,7 @@ public class LinearSineSimulation implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -110,7 +109,7 @@ public class LinearSineSimulation implements Simulation {
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 

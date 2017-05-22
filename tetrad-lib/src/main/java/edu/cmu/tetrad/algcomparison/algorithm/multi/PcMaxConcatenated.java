@@ -39,7 +39,13 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
+        }
+
         DataSet dataSet = DataUtils.concatenate(dataSets);
         edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
                 test.getTest(dataSet, parameters));
@@ -52,7 +58,7 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override

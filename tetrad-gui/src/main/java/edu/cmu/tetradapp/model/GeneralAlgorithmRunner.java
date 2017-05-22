@@ -255,7 +255,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     Collections.shuffle(dataSets);
 
-                    List<DataSet> sub = new ArrayList<>();
+                    List<DataModel> sub = new ArrayList<>();
 
                     for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
                         sub.add(dataSets.get(j));

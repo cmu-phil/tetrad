@@ -124,9 +124,15 @@ public final class SearchGraphUtils {
                     continue;
                 }
 
-                List<Node> sepset = set.get(x, z);
+                List<Node> sepset = sepset(graph, x, z, new HashSet<Node>(), new HashSet<Node>(),
+                        -1, test);
+                        //set.get(x, z);
 
                 if (sepset == null) {
+                    continue;
+                }
+
+                if (sepset.contains(y)) {
                     continue;
                 }
 
@@ -136,33 +142,23 @@ public final class SearchGraphUtils {
                     augmentedSet.add(y);
                 }
 
-//                if (test.determines(sepset, y)) {
-//                    TetradLogger.getInstance().log("info", sepset + " determinessepsetx " + y);
-//                    continue;
-//                }
-
-                boolean determinessepsetx = test.determines(sepset, x);
-                boolean determinessepsetz = test.determines(sepset, z);
-                boolean determinesaugx = test.determines(augmentedSet, x);
-                boolean determinesaugz = test.determines(augmentedSet, z);
-
-                if (determinessepsetx) {
+                if (test.determines(sepset, x)) {
                     System.out.println(SearchLogUtils.determinismDetected(sepset, x));
                     continue;
                 }
 
-                if (determinessepsetz) {
+                if (test.determines(sepset, z)) {
                     System.out.println(SearchLogUtils.determinismDetected(sepset, z));
                     continue;
                 }
 
-                if (determinesaugx) {
-                    System.out.println(SearchLogUtils.determinismDetected(sepset, x));
+                if (test.determines(augmentedSet, x)) {
+                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, x));
                     continue;
                 }
 
-                if (determinesaugz) {
-                    System.out.println(SearchLogUtils.determinismDetected(sepset, z));
+                if (test.determines(augmentedSet, z)) {
+                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, z));
                     continue;
                 }
 
@@ -174,11 +170,47 @@ public final class SearchGraphUtils {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
+                System.out.println(SearchLogUtils.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
                 TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
             }
         }
 
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+    }
+
+    private static List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, int depth,
+                              IndependenceTest independenceTest) {
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.addAll(graph.getAdjacentNodes(c));
+        adj.remove(c);
+        adj.remove(a);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
+            if (d <= adj.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+
+                WHILE:
+                while ((choice = gen.next()) != null) {
+                    Set<Node> v2 = GraphUtils.asSet(choice, adj);
+                    v2.addAll(containing);
+                    v2.removeAll(notContaining);
+                    v2.remove(a);
+                    v2.remove(c);
+
+//                    if (isForbidden(a, c, new ArrayList<>(v2)))
+
+                    independenceTest.isIndependent(a, c, new ArrayList<>(v2));
+                    double p2 = independenceTest.getScore();
+
+                    if (p2 < 0) {
+                        return new ArrayList<>(v2);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     //    /**

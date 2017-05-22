@@ -401,7 +401,7 @@ public class TestFges {
 
         simulation.createData(parameters);
 
-        DataSet dataSet = simulation.getDataSet(0);
+        DataSet dataSet = (DataSet) simulation.getDataModel(0);
         Graph trueGraph = simulation.getTrueGraph(0);
 
 //        trueGraph = SearchGraphUtils.patternForDag(trueGraph);

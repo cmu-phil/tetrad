@@ -147,6 +147,11 @@ public class ConditionalGaussianScore implements Score {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
     }
 
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
     public double getPenaltyDiscount() {
         return penaltyDiscount;
     }

@@ -84,7 +84,7 @@ public abstract class AbstractDataSimulationCli extends AbstractApplicationCli i
         simulation.createData(getParameters());
 
         writeGraphToFile(simulation.getTrueGraph(0));
-        writeDatasetToFile(simulation.getDataSet(0));
+        writeDatasetToFile((DataSet) simulation.getDataModel(0));
     }
 
     protected void writeGraphToFile(Graph graph) {

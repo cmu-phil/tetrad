@@ -35,8 +35,15 @@ public class FasRSkewConcatenated implements MultiDataSetAlgorithm, HasKnowledge
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
+        }
+
         DataSet dataSet = DataUtils.concatenate(dataSets);
+
         FasLofs search;
 
         if (empirical) {
@@ -57,7 +64,7 @@ public class FasRSkewConcatenated implements MultiDataSetAlgorithm, HasKnowledge
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override

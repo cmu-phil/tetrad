@@ -31,8 +31,15 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
+        }
+
         DataSet dataSet = DataUtils.concatenate(dataSets);
+
         edu.cmu.tetrad.search.FasLofs search = new FasLofs(dataSet, rule);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -46,7 +53,7 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override

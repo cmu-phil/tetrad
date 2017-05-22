@@ -27,7 +27,6 @@ import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
@@ -239,8 +238,8 @@ public class Simulation extends DataWrapper implements SessionModel,
     public DataModelList getDataModelList() {
         DataModelList list = new DataModelList();
 
-        for (int i = 0; i < simulation.getNumDataSets(); i++) {
-            list.add(simulation.getDataSet(i));
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
+            list.add(simulation.getDataModel(i));
         }
 
         return list;
@@ -252,8 +251,8 @@ public class Simulation extends DataWrapper implements SessionModel,
     public List<DataModel> getDataModels() {
         List<DataModel> list = new ArrayList<>();
 
-        for (int i = 0; i < simulation.getNumDataSets(); i++) {
-            list.add(simulation.getDataSet(i));
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
+            list.add(simulation.getDataModel(i));
         }
 
         return list;
@@ -273,7 +272,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public void createSimulation() {
-        if (simulation.getNumDataSets() == 0) {
+        if (simulation.getNumDataModels() == 0) {
             simulation.createData(parameters);
         }
     }
@@ -285,7 +284,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     public List<Graph> getGraphs() {
         List<Graph> graphs = new ArrayList<>();
 
-        for (int i = 0; i < simulation.getNumDataSets(); i++) {
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
             graphs.add(simulation.getTrueGraph(i));
         }
 

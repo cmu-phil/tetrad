@@ -88,7 +88,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -117,7 +117,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 
