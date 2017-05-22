@@ -147,6 +147,15 @@ public final class Fang implements GraphSearch {
             double[] residualsyx = resultyx.getResiduals().toArray();
             double skewnessyx = skewness(residualsyx);
 
+            RegressionResult resultxx = regression.regress(X, graph.getParents(X));
+            double[] residualsxx = resultxx.getResiduals().toArray();
+
+            double skewnessxx = skewness(residualsxx);
+
+            RegressionResult resultyy = regression.regress(Y, graph.getParents(Y));
+            double[] residualsyy = resultyy.getResiduals().toArray();
+            double skewnessyy = skewness(residualsyy);
+
             double sum = 0.0;
             int nn = 0;
 
@@ -200,9 +209,9 @@ public final class Fang implements GraphSearch {
                         graph.addUndirectedEdge(X, Y);
                     }
                 } else {
-                    if (abs(c5[0]) > abs(c6[0]) && skewnessxy > 0) {
+                    if (abs(c5[0]) > abs(c6[0]) && skewnessyy > 0 && skewnessxy > 0) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (abs(c5[0]) < abs(c6[0]) && skewnessyx > 0) {
+                    } else if (abs(c5[0]) < abs(c6[0]) && skewnessxx > 0 && skewnessyx > 0) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
