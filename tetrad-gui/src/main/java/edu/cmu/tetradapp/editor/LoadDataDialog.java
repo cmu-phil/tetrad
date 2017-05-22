@@ -736,14 +736,17 @@ final class LoadDataDialog extends JPanel {
             System.out.println("Validating file index = " + i);
 
             // Validate each individual file
-            String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
+            String output = "";
 
             DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
             // validation is null for mixed data, for now - Zhou
             if (validation == null) {
-                output = output + "<p>Fake validation for mixed data...</p>";
+                output = output + "<p>No validation for mixed data...</p>";
             } else {
+                // Validate each individual file
+                output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
+
                 List<ValidationResult> results = validation.getValidationResults();
 
                 List<ValidationResult> infos = new LinkedList<>();
