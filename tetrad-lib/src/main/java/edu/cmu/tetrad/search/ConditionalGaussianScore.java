@@ -43,19 +43,34 @@ public class ConditionalGaussianScore implements Score {
 
     private double penaltyDiscount = 1;
     private int numCategoriesToDiscretize = 3;
-    private double sp;
+    private double structurePrior;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet, double sp, boolean discretize) {
+    public ConditionalGaussianScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.sp = sp;
+        this.setStructurePrior(1);
+        this.likelihood.setDiscretize(true);
+        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
+    }
+    
+    /**
+     * Constructs the score using a covariance matrix.
+     */
+    public ConditionalGaussianScore(DataSet dataSet, double structurePrior, boolean discretize) {
+        if (dataSet == null) {
+            throw new NullPointerException();
+        }
+
+        this.dataSet = dataSet;
+        this.variables = dataSet.getVariables();
+        this.setStructurePrior(structurePrior);
 
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
         this.likelihood.setDiscretize(discretize);
@@ -78,11 +93,11 @@ public class ConditionalGaussianScore implements Score {
     }
 
     private double getStructurePrior(int[] parents) {
-        if (sp <= 0) { return 0; }
+        if (getStructurePrior() <= 0) { return 0; }
         else {
             int i = parents.length + 1;
             int c = dataSet.getNumColumns();
-            double p = sp / (double) c;
+            double p = getStructurePrior() / (double) c;
             return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
         }
     }
@@ -162,6 +177,14 @@ public class ConditionalGaussianScore implements Score {
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
+
+    public double getStructurePrior() {
+        return structurePrior;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 }
 
