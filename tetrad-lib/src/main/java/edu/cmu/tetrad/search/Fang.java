@@ -205,7 +205,7 @@ public final class Fang implements GraphSearch {
                     } else if (abs(c5[0]) < abs(c6[0]) && skewnessyx > 0) {
                         graph.addDirectedEdge(Y, X);
                     } else {
-//                        graph.addUndirectedEdge(X, Y);
+                        graph.addUndirectedEdge(X, Y);
                     }
                 }
             }

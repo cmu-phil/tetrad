@@ -59,7 +59,7 @@ public class ConditionalGaussianScore implements Score {
         this.likelihood.setDiscretize(true);
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
     }
-    
+
     /**
      * Constructs the score using a covariance matrix.
      */

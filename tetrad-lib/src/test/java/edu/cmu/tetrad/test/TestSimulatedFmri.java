@@ -28,9 +28,24 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
+
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Pulling this test out for Madelyn.
@@ -44,7 +59,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha",  1e-3);
+        parameters.set("twoCycleAlpha", 1e-3);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -159,7 +174,7 @@ public class TestSimulatedFmri {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-//    @Test
+    //    @Test
     public void testTough() {
         Parameters parameters = new Parameters();
 
@@ -236,6 +251,53 @@ public class TestSimulatedFmri {
         comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
+    @Test
+    public void testClark() {
+
+        Node x = new ContinuousVariable("X");
+        Node y = new ContinuousVariable("Y");
+        Node z = new ContinuousVariable("Z");
+
+        Graph g = new EdgeListGraph();
+        g.addNode(x);
+        g.addNode(y);
+        g.addNode(z);
+
+        g.addDirectedEdge(x, y);
+        g.addDirectedEdge(z, x);
+        g.addDirectedEdge(z, y);
+
+        GeneralizedSemPm pm = new GeneralizedSemPm(g);
+
+        List<Node> errorNodes = pm.getErrorNodes();
+
+        try {
+            pm.setNodeExpression(g.getNode("X"), "0.5 * Z + E_X");
+            pm.setNodeExpression(g.getNode("Y"), "0.5 * X + 0.5 * Z + E_Y");
+            pm.setNodeExpression(g.getNode("Z"), "E_Z");
+
+            pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), "Beta(2, 5))");
+            pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), "Beta(2, 5)");
+            pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), "N(0, 1)");
+
+//            pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), "Beta(2, 5)");
+//            pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), "Beta(2, 5)");
+//            pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), "Beta(2, 5)");
+        } catch (ParseException e) {
+            System.out.println(e);
+        }
+
+        GeneralizedSemIm im = new GeneralizedSemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+
+        edu.cmu.tetrad.search.Fang fang = new edu.cmu.tetrad.search.Fang(data);
+        fang.setPenaltyDiscount(2);
+        fang.setAlpha(0.5);
+        Graph out = fang.search();
+
+        System.out.println(out);
     }
 
     public static void main(String... args) {
