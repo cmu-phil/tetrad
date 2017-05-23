@@ -207,7 +207,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box fileTypeOption1Box = Box.createHorizontalBox();
-        fileTypeOption1Box.setPreferredSize(new Dimension(200, 30));
+        fileTypeOption1Box.setPreferredSize(new Dimension(160, 30));
         fileTypeOption1Box.add(tabularRadioButton);
 
         // Option 2
@@ -255,26 +255,26 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box dataTypeOption1Box = Box.createHorizontalBox();
-        dataTypeOption1Box.setPreferredSize(new Dimension(200, 30));
+        dataTypeOption1Box.setPreferredSize(new Dimension(160, 30));
         dataTypeOption1Box.add(contRadioButton);
 
         // Option 2
         Box dataTypeOption2Box = Box.createHorizontalBox();
-        dataTypeOption2Box.setPreferredSize(new Dimension(200, 30));
+        dataTypeOption2Box.setPreferredSize(new Dimension(160, 30));
         dataTypeOption2Box.add(discRadioButton);
 
         // Option 3
         Box dataTypeOption3Box = Box.createHorizontalBox();
-        dataTypeOption3Box.setPreferredSize(new Dimension(240, 30));
+        dataTypeOption3Box.setPreferredSize(new Dimension(320, 30));
         dataTypeOption3Box.add(mixedRadioButton);
 
         // Threshold label
-        JLabel thresholdLabel = new JLabel(", threshold: ");
+        JLabel maxDiscCatLabel = new JLabel(", max discrete categories: ");
 
         // Add info icon next to label to show tooltip on mouseover
-        JLabel thresholdLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        JLabel maxDiscCatLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
         // Add tooltip on mouseover the info icon
-        thresholdLabelInfoIcon.setToolTipText("Integral columns with up to N (specify here) distinct values are discrete.");
+        maxDiscCatLabelInfoIcon.setToolTipText("Integral columns with up to N (specify here) distinct values are discrete.");
 
         // Threshold value field
         mixedThresholdIntField = new IntTextField(0, 3);
@@ -305,8 +305,8 @@ final class DataLoaderSettings extends JPanel {
             }
         });
 
-        dataTypeOption3Box.add(thresholdLabel);
-        dataTypeOption3Box.add(thresholdLabelInfoIcon);
+        dataTypeOption3Box.add(maxDiscCatLabel);
+        dataTypeOption3Box.add(maxDiscCatLabelInfoIcon);
         dataTypeOption3Box.add(mixedThresholdIntField);
 
         dataTypeBox.add(dataTypeLabelBox);
@@ -413,7 +413,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box valueDelimiterOption1Box = Box.createHorizontalBox();
-        valueDelimiterOption1Box.setPreferredSize(new Dimension(200, 30));
+        valueDelimiterOption1Box.setPreferredSize(new Dimension(160, 30));
         valueDelimiterOption1Box.add(whitespaceDelimiterRadioButton);
 
         // Option 2
@@ -495,12 +495,12 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box firstRowVarNamesOption1Box = Box.createHorizontalBox();
-        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(200, 30));
+        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(160, 30));
         firstRowVarNamesOption1Box.add(firstRowVarNamesYesRadioButton);
 
         // Option 2
         Box firstRowVarNamesOption2Box = Box.createHorizontalBox();
-        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(200, 30));
+        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(160, 30));
         firstRowVarNamesOption2Box.add(firstRowVarNamesNoRadioButton);
 
         // Add to firstRowVarNamesBox
@@ -561,18 +561,18 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box caseIdProvidedOption1Box = Box.createHorizontalBox();
-        caseIdProvidedOption1Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption1Box.setPreferredSize(new Dimension(160, 30));
         caseIdProvidedOption1Box.add(idNoneRadioButton);
 
         // Option 2
         Box caseIdProvidedOption2Box = Box.createHorizontalBox();
-        caseIdProvidedOption2Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption2Box.setPreferredSize(new Dimension(160, 30));
         caseIdProvidedOption2Box.add(idUnlabeledFirstColRadioButton);
 
         // Option 3
         Box caseIdProvidedOption3Box = Box.createHorizontalBox();
         // Make this box a little longer because we don't want the text field too small
-        caseIdProvidedOption3Box.setPreferredSize(new Dimension(240, 30));
+        caseIdProvidedOption3Box.setPreferredSize(new Dimension(300, 30));
         caseIdProvidedOption3Box.add(idLabeledColRadioButton);
         caseIdProvidedOption3Box.add(idStringField);
 
@@ -634,17 +634,17 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box commentMarkerOption1Box = Box.createHorizontalBox();
-        commentMarkerOption1Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption1Box.setPreferredSize(new Dimension(160, 30));
         commentMarkerOption1Box.add(commentDoubleSlashRadioButton);
 
         // Option 2
         Box commentMarkerOption2Box = Box.createHorizontalBox();
-        commentMarkerOption2Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption2Box.setPreferredSize(new Dimension(160, 30));
         commentMarkerOption2Box.add(commentPondRadioButton);
 
         // Option 3
         Box commentMarkerOption3Box = Box.createHorizontalBox();
-        commentMarkerOption3Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
         commentMarkerOption3Box.add(commentOtherRadioButton);
         commentMarkerOption3Box.add(commentStringField);
 
@@ -690,17 +690,17 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box quoteCharOption1Box = Box.createHorizontalBox();
-        quoteCharOption1Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption1Box.setPreferredSize(new Dimension(160, 30));
         quoteCharOption1Box.add(noneQuoteRadioButton);
 
         // Option 2
         Box quoteCharOption2Box = Box.createHorizontalBox();
-        quoteCharOption2Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption2Box.setPreferredSize(new Dimension(160, 30));
         quoteCharOption2Box.add(doubleQuoteRadioButton);
 
         // Option 3
         Box quoteCharOption3Box = Box.createHorizontalBox();
-        quoteCharOption3Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption3Box.setPreferredSize(new Dimension(260, 30));
         quoteCharOption3Box.add(singleQuoteRadioButton);
 
         quoteCharBox.add(quoteCharLabelBox);
@@ -738,17 +738,17 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box missingValueMarkerOption1Box = Box.createHorizontalBox();
-        missingValueMarkerOption1Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption1Box.setPreferredSize(new Dimension(160, 30));
         missingValueMarkerOption1Box.add(missingValueStarRadioButton);
 
         // Option 2
         Box missingValueMarkerOption2Box = Box.createHorizontalBox();
-        missingValueMarkerOption2Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption2Box.setPreferredSize(new Dimension(160, 30));
         missingValueMarkerOption2Box.add(missingValueQuestionRadioButton);
 
         // Option 3
         Box missingValueMarkerOption3Box = Box.createHorizontalBox();
-        missingValueMarkerOption3Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
         missingValueMarkerOption3Box.add(missingValueOtherRadioButton);
         missingValueMarkerOption3Box.add(missingStringField);
 
