@@ -59,7 +59,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", 1e-3);
+        parameters.set("twoCycleAlpha", .01);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -294,6 +294,53 @@ public class TestSimulatedFmri {
 
         edu.cmu.tetrad.search.Fang fang = new edu.cmu.tetrad.search.Fang(data);
         fang.setPenaltyDiscount(2);
+        fang.setAlpha(0.5);
+        Graph out = fang.search();
+
+        System.out.println(out);
+    }
+
+    @Test
+    public void testClark2() {
+
+        Node x = new ContinuousVariable("X");
+        Node y = new ContinuousVariable("Y");
+        Node z = new ContinuousVariable("Z");
+
+        Graph g = new EdgeListGraph();
+        g.addNode(x);
+        g.addNode(y);
+        g.addNode(z);
+
+        g.addDirectedEdge(x, y);
+        g.addDirectedEdge(x, z);
+        g.addDirectedEdge(y, z);
+
+        GeneralizedSemPm pm = new GeneralizedSemPm(g);
+
+        List<Node> errorNodes = pm.getErrorNodes();
+
+        try {
+            pm.setNodeExpression(g.getNode("X"), "E_X");
+            pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
+            pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
+
+            pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), "pow(Uniform(0, 5), 3)");
+            pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), "pow(Uniform(0, 5), 3)");
+            pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), "pow(Uniform(0, 5), 3)");
+
+//            pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), "Beta(2, 5)");
+//            pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), "Beta(2, 5)");
+//            pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), "Beta(2, 5)");
+        } catch (ParseException e) {
+            System.out.println(e);
+        }
+
+        GeneralizedSemIm im = new GeneralizedSemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+
+        edu.cmu.tetrad.search.Fang fang = new edu.cmu.tetrad.search.Fang(data);
+        fang.setPenaltyDiscount(1);
         fang.setAlpha(0.5);
         Graph out = fang.search();
 

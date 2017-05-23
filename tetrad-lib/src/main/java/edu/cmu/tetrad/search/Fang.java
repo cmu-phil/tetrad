@@ -139,21 +139,21 @@ public final class Fang implements GraphSearch {
             double[] c6 = cov(x, y, 0, 1);
 
             RegressionResult resultxy = regression.regress(Y, union(graph.getParents(Y), X));
-            double[] residualsxy = resultxy.getResiduals().toArray();
+            double[] residualsxy = regression.getResidualsWithoutFirstRegressor().toArray();
 
             double skewnessxy = skewness(residualsxy);
 
             RegressionResult resultyx = regression.regress(X, union(graph.getParents(X), Y));
-            double[] residualsyx = resultyx.getResiduals().toArray();
+            double[] residualsyx = regression.getResidualsWithoutFirstRegressor().toArray();
             double skewnessyx = skewness(residualsyx);
 
             RegressionResult resultxx = regression.regress(X, graph.getParents(X));
-            double[] residualsxx = resultxx.getResiduals().toArray();
+            double[] residualsxx = regression.getResidualsWithoutFirstRegressor().toArray();
 
             double skewnessxx = skewness(residualsxx);
 
             RegressionResult resultyy = regression.regress(Y, graph.getParents(Y));
-            double[] residualsyy = resultyy.getResiduals().toArray();
+            double[] residualsyy = regression.getResidualsWithoutFirstRegressor().toArray();
             double skewnessyy = skewness(residualsyy);
 
             double sum = 0.0;
@@ -190,7 +190,7 @@ public final class Fang implements GraphSearch {
                 graph.addDirectedEdge(X, Y);
             } else if (knowledgeOrients(Y, X)) {
                 graph.addDirectedEdge(Y, X);
-            } else if (skewnessxy > 0 && skewnessyx > 0 && p > alpha) {
+            } else if (p > alpha) {
                 Edge edge1 = Edges.directedEdge(X, Y);
                 Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -201,17 +201,17 @@ public final class Fang implements GraphSearch {
                 graph.addEdge(edge2);
             } else {
                 if (false) {
-                    if (c5[5] > c6[6] && skewnessxy > 0) {
+                    if (c5[5] > c6[6]) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (c5[5] < c6[6] && skewnessyx > 0) {
+                    } else if (c5[5] < c6[6]) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
                     }
                 } else {
-                    if (abs(c5[0]) > abs(c6[0]) && skewnessyy > 0 && skewnessxy > 0) {
+                    if (abs(c5[0]) > abs(c6[0])) {
                         graph.addDirectedEdge(X, Y);
-                    } else if (abs(c5[0]) < abs(c6[0]) && skewnessxx > 0 && skewnessyx > 0) {
+                    } else if (abs(c5[0]) < abs(c6[0])) {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
@@ -330,6 +330,18 @@ public final class Fang implements GraphSearch {
 //            }
 //        }
 
+        printHistogram(dataSet, regression, graph);
+
+        System.out.println();
+        System.out.println("Done");
+
+        long stop = System.currentTimeMillis();
+        this.elapsed = stop - start;
+
+        return graph;
+    }
+
+    private void printHistogram(DataSet dataSet, RegressionDataset regression, Graph graph) {
         double sigma = Math.pow(6.0 / dataSet.getNumRows(), 0.5);
 
         double[] cutoffs = new double[]{-10, -3, -2, -1.5, -1, -0.5, 0,
@@ -339,12 +351,9 @@ public final class Fang implements GraphSearch {
 
         double sumSkew = 0.0;
 
-        for (
-                Node x : graph.getNodes())
-
-        {
+        for (Node x : graph.getNodes()){
             RegressionResult result = regression.regress(x, graph.getParents(x));
-            double[] residuals = result.getResiduals().toArray();
+            double[] residuals = regression.getResidualsWithoutFirstRegressor().toArray();
             double skewness = skewness(residuals);
             System.out.println("Node " + x + " skewness(residual) = " + skewness + " parents = " + graph.getParents(x));
 
@@ -382,14 +391,6 @@ public final class Fang implements GraphSearch {
         System.out.println("Avg skew " + avgSkew);
         System.out.println("N = " + dataSet.getNumRows());
         System.out.println("Sigma = " + nf.format(sigma));
-
-        System.out.println();
-        System.out.println("Done");
-
-        long stop = System.currentTimeMillis();
-        this.elapsed = stop - start;
-
-        return graph;
     }
 
     private double[] avgDiff(double[] x, double[] y) {
@@ -502,6 +503,8 @@ public final class Fang implements GraphSearch {
                 }
             }
         }
+
+        n = x.length;
 
         exx /= n;
         eyy /= n;
