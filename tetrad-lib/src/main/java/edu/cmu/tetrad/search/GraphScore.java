@@ -188,6 +188,11 @@ public class GraphScore implements Score {
         return 1000;
     }
 
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
     public int getSampleSize() {
         return 0;
     }

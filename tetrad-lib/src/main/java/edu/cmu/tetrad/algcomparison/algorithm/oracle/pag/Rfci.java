@@ -32,6 +32,7 @@ public class Rfci implements Algorithm, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
+        search.setDepth(parameters.getInt("depth"));
         search.setMaxPathLength(parameters.getInt("maxPathLength"));
         search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
         return search.search();

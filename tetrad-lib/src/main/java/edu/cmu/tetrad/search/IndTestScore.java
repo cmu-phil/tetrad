@@ -81,7 +81,13 @@ public class IndTestScore implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
+        List<Node> z1 = new ArrayList<>(z);
+
+        if (determines(z1, x)) return false;
+        if (determines(z1, y)) return false;
+
         double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
+        if (Double.isNaN(v)) throw new IllegalArgumentException();
         this.bump = v;
         return v < 0;
     }
@@ -160,7 +166,7 @@ public class IndTestScore implements IndependenceTest {
      * @return true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException();
+        return score.determines(z, y);
     }
 
     /**

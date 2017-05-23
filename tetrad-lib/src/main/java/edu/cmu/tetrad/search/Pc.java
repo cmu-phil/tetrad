@@ -40,7 +40,7 @@ import java.util.Set;
 public class Pc implements GraphSearch {
 
     /**
-     * The independence test used for the PC search.
+     * The independence test used for the PC search.g
      */
     private IndependenceTest independenceTest;
 
@@ -230,7 +230,7 @@ public class Pc implements GraphSearch {
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>
-     * All of the given nodes must be in the domain of the given conditional independence test.
+     * All of the given nodes must be in the domatein of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
         IFas fas = null;

@@ -149,7 +149,7 @@ public class Mimbuild2 {
 
 //        try {
 //            Ges search = new Ges(latentscov);
-//            search.setAlpha(penaltyDiscount);
+//            search.setDepErrorsAlpha(penaltyDiscount);
 //            search.setKnowledge(knowledge);
 //            graph = search.search();
 //        } catch (Exception e) {

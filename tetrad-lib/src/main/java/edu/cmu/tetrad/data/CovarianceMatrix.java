@@ -24,7 +24,6 @@ package edu.cmu.tetrad.data;
 //import cern.colt.matrix.DoubleMatrix2D;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.stat.Variance;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -186,7 +185,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
                         matrix.set(i, i, v);
 
                         if (v == 0) {
-                            System.out.println("Zero variance! " + variables.get(i));
+                            System.out.println("    Zero variance! " + variables.get(i));
                         }
                     }
 
@@ -613,6 +612,11 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     @Override
+    public DataModel copy() {
+        return null;
+    }
+
+    @Override
     public void setValue(int i, int j, double v) {
         if (i == j) {
             matrix.set(i, j, v);
@@ -649,13 +653,13 @@ public class CovarianceMatrix implements ICovarianceMatrix {
                     "Sample size must be at least 1.");
         }
 
-        for (int i = 0; i < matrix.rows(); i++) {
-            for (int j = 0; j < matrix.columns(); j++) {
-                if (Double.isNaN(matrix.get(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
-                }
-            }
-        }
+//        for (int i = 0; i < matrix.rows(); i++) {
+//            for (int j = 0; j < matrix.columns(); j++) {
+//                if (Double.isNaN(matrix.get(i, j))) {
+//                    throw new IllegalArgumentException("Please remove or impute missing values.");
+//                }
+//            }
+//        }
     }
 
     /**

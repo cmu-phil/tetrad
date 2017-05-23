@@ -56,7 +56,8 @@ public class Gfci implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription();
+        return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription() +
+                " and " + score.getDescription();
     }
 
     @Override

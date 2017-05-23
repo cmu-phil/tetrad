@@ -195,14 +195,6 @@ public class BDeScore implements LocalDiscreteScore {
         return bump > -20;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-
-    }
-
     @Override
     public Node getVariable(String targetName) {
         for (Node node : dataSet.getVariables()) {
@@ -217,6 +209,11 @@ public class BDeScore implements LocalDiscreteScore {
     @Override
     public int getMaxDegree() {
         return 1000;
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
     }
 }
 

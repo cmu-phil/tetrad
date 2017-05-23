@@ -22,7 +22,7 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         final ConditionalGaussianScore conditionalGaussianScore
-                = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet));
+                = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getBoolean("discretize"));
         conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
@@ -44,6 +44,8 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
         parameters.add("penaltyDiscount");
         parameters.add("cgExact");
         parameters.add("assumeMixed");
+        parameters.add("structurePrior");
+        parameters.add("discretize");
         return parameters;
     }
 }

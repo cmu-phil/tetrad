@@ -294,8 +294,8 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
         for (int i = 0; i < path.size() - 1; i++) {
             double edgeCoef = 0;
-            edgeCoef = semIm.getEdgeCoefficient(path.get(i), path.get(i + 1));
-            if (Double.isNaN(edgeCoef)) edgeCoef = semIm.getEdgeCoefficient(path.get(i + 1), path.get(i));
+            edgeCoef = semIm.getEdgeCoef(path.get(i), path.get(i + 1));
+            if (Double.isNaN(edgeCoef)) edgeCoef = semIm.getEdgeCoef(path.get(i + 1), path.get(i));
 
             if (!Double.isNaN(edgeCoef)) {
                 r *= edgeCoef;

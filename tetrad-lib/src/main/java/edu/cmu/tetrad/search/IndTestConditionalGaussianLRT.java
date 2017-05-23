@@ -79,8 +79,6 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
-
         int _x = nodesHash.get(x);
         int _y = nodesHash.get(y);
 

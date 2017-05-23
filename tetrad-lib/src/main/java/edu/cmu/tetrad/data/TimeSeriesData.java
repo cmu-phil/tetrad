@@ -128,6 +128,16 @@ public final class TimeSeriesData implements DataModel {
         return false;
     }
 
+    @Override
+    public Node getVariable(String name) {
+        return null;
+    }
+
+    @Override
+    public DataModel copy() {
+        return null;
+    }
+
     public final List<Node> getVariables() {
         List<String> varNames = getVariableNames();
         List<Node> vars = new LinkedList<>();

@@ -154,6 +154,11 @@ public class ScoredIndTest implements Score {
         return 1000;
     }
 
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
 }
 
 

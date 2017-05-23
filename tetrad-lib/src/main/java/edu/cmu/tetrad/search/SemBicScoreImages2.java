@@ -74,6 +74,7 @@ public class SemBicScoreImages2 implements Score {
             throw new NullPointerException();
         }
 
+        this.penaltyDiscount = 2;
         this.variables = dataModels.get(0).getVariables();
 
         covariances = new ArrayList<>();
@@ -107,9 +108,7 @@ public class SemBicScoreImages2 implements Score {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
         double lik = 0.0;
 
-        int m = covariances.size();
-
-        for (int k = 0; k < m; k++) {
+        for (int k = 0; k < covariances.size(); k++) {
             double residualVariance = getCovariances(k).getValue(i, i);
             TetradMatrix covxx = getSelection1(getCovariances(k), parents);
 
@@ -128,7 +127,9 @@ public class SemBicScoreImages2 implements Score {
                     return Double.NaN;
                 }
 
-                lik += -0.5 * sampleSize * Math.log(residualVariance);
+                int cols = getCovariances(0).getDimension();
+                double q = 2 / (double) cols;
+                lik += -sampleSize * Math.log(residualVariance);
             } catch (Exception e) {
                 boolean removedOne = true;
 
@@ -145,10 +146,9 @@ public class SemBicScoreImages2 implements Score {
             }
         }
 
+        int p = parents.length;
         double c = getPenaltyDiscount();
-        int N = sampleSize;
-        int dof = 2 * m + 1;
-        return 2.0 * lik - c * m * dof * Math.log(N);
+        return 2 * lik - c * (p + 1) * Math.log(covariances.size() * sampleSize);
     }
 
     @Override
@@ -236,14 +236,6 @@ public class SemBicScoreImages2 implements Score {
         return variables;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-        this.penaltyDiscount = alpha;
-    }
-
     // Calculates the BIC score.
     private double score(double residualVariance, int n, double logn, int p, double c) {
         int cols = getCovariances(0).getDimension();
@@ -255,7 +247,7 @@ public class SemBicScoreImages2 implements Score {
 
     // Calculates the BIC score.
 //    private double score(double residualVariance, int n, double logn, int p, double c) {
-//        int cols = getDataSet().getNumColumns();
+//        int cols = getDataModel().getNumColumns();
 //        double q = 2 / (double) cols;
 //
 //        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
@@ -324,6 +316,11 @@ public class SemBicScoreImages2 implements Score {
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(sampleSize));
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
     }
 }
 

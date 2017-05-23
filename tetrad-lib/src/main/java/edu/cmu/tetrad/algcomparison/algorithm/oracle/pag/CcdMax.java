@@ -29,8 +29,6 @@ public class CcdMax implements Algorithm, HasKnowledge {
     public Graph search(DataModel dataSet, Parameters parameters) {
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
-        search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
         search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
@@ -38,6 +36,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 
@@ -66,9 +65,6 @@ public class CcdMax implements Algorithm, HasKnowledge {
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
-        parameters.add("assumeIID");
-        parameters.add("collapseTiers");
-        parameters.add("gaussianErrors");
         return parameters;
     }
 

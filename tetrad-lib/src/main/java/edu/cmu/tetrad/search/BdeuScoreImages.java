@@ -74,7 +74,7 @@ public class BdeuScoreImages implements IBDeuScore {
                 DataSet dataSet = (DataSet) model;
 
                 if (!dataSet.isDiscrete()) {
-                    throw new IllegalArgumentException("Datasets must be continuous.");
+                    throw new IllegalArgumentException("Datasets must be discrete.");
                 }
 
                 scores.add(new BDeuScore(dataSet));
@@ -190,14 +190,6 @@ public class BdeuScoreImages implements IBDeuScore {
         return variables;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-
-    }
-
     @Override
     public int getSampleSize() {
         return scores.get(0).getSampleSize();
@@ -278,6 +270,11 @@ public class BdeuScoreImages implements IBDeuScore {
     @Override
     public int getMaxDegree() {
         return 1000;
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
     }
 }
 

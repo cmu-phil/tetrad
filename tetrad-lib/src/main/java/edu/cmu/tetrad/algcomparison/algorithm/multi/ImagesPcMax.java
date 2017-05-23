@@ -30,7 +30,13 @@ public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
+        }
+
         SemBicScoreImages3 score = new SemBicScoreImages3(dataSets);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
@@ -44,7 +50,7 @@ public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override
@@ -74,7 +80,7 @@ public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
 
-        parameters.add("numRandomSelections");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

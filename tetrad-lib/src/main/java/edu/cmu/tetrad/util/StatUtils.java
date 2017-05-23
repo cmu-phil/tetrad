@@ -25,6 +25,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -113,8 +114,8 @@ public final class StatUtils {
         int count = 0;
 
         for (int i = 0; i < N; i++) {
-            if (!Double.isNaN( data.get(i))) {
-                sum +=  data.get(i);
+            if (!Double.isNaN(data.get(i))) {
+                sum += data.get(i);
                 count++;
             }
         }
@@ -1763,13 +1764,8 @@ public final class StatUtils {
 //        return cov / Math.sqrt(var1 * var2);
 
 
-        try {
-            TetradMatrix inverse = submatrix.inverse();
-            return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Double.NaN;
-        }
+        TetradMatrix inverse = submatrix.inverse();
+        return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
     /**
@@ -1955,22 +1951,8 @@ public final class StatUtils {
     }
 
     public static double getZForAlpha(double alpha) {
-        double low = 0.0;
-        double high = 20.0;
-        double mid = 5.0;
         NormalDistribution dist = new NormalDistribution(0, 1);
-
-        while (high - low > 1e-4) {
-            mid = (high + low) / 2.0;
-            double _alpha = 2.0 * (1.0 - dist.cumulativeProbability(Math.abs(mid)));
-
-            if (_alpha > alpha) {
-                low = mid;
-            } else {
-                high = mid;
-            }
-        }
-        return mid;
+        return dist.inverseCumulativeProbability(1.0 - alpha / 2.0);
     }
 
     public static double getChiSquareCutoff(double alpha, int df) {

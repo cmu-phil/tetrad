@@ -362,7 +362,9 @@ public class Fas implements IFas {
 
         if (knowledge.isForbidden(name1, name2) &&
                 knowledge.isForbidden(name2, name1)) {
-            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+//            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+//                    "forbidden by background knowledge.");
+            System.out.println(Edges.undirectedEdge(x, y) + " because it was " +
                     "forbidden by background knowledge.");
 
             return true;

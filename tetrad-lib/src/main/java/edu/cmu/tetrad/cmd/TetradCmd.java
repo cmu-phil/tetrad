@@ -364,8 +364,8 @@ public final class TetradCmd {
             } else if ("-rfci".equalsIgnoreCase(token)) {
                 this.rfciUsed = true;
             } else if ("-nodsep".equalsIgnoreCase(token)) {
-                this.nodsep = true;            } 
-            else if ("-silent".equalsIgnoreCase(token)) {
+                this.nodsep = true;
+            } else if ("-silent".equalsIgnoreCase(token)) {
                 this.silent = true;
             } else if ("-condcorr".equalsIgnoreCase(token)) {
                 this.useConditionalCorrelation = true;
@@ -495,6 +495,8 @@ public final class TetradCmd {
 
         if ("pc".equalsIgnoreCase(algorithmName)) {
             runPc();
+        } else if ("fang".equalsIgnoreCase(algorithmName)) {
+            runFang();
         } else if ("pc.stable".equalsIgnoreCase(algorithmName)) {
             runPcStable();
         } else if ("cpc".equalsIgnoreCase(algorithmName)) {
@@ -593,6 +595,41 @@ public final class TetradCmd {
         pc.setDepth(getDepth());
         pc.setKnowledge(getKnowledge());
         pc.setVerbose(verbose);
+
+        // Convert back to Graph..
+        Graph resultGraph = pc.search();
+
+        // PrintUtil outputStreamPath problem and graphs.
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
+
+        writeGraph(resultGraph);
+    }
+
+    private void runFang() {
+        if (this.data == null && this.covarianceMatrix == null) {
+            throw new IllegalStateException("Data did not load correctly.");
+        }
+
+        if (verbose) {
+            systemPrint("FANG");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
+
+            TetradLogger.getInstance().addOutputStream(System.out);
+
+            TetradLogger.getInstance().setEventsToLog("info", "independencies", "knowledgeOrientations",
+                    "impliedOrientations", "graph");
+//            TetradLogger.getInstance().setForceLog(true);
+
+            TetradLogger.getInstance().log("info", "Testing it.");
+        }
+
+        Fang pc = new Fang(data);
+        pc.setAlpha(significance);
+        pc.setPenaltyDiscount(penaltyDiscount);
+        pc.setDepth(depth);
+        pc.setKnowledge(getKnowledge());
 
         // Convert back to Graph..
         Graph resultGraph = pc.search();

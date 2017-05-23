@@ -296,6 +296,11 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     public int getMaxDegree() {
         return 1000;
     }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
 }
 
 

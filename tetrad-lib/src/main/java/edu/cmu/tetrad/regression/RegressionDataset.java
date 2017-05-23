@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -219,6 +220,69 @@ public class RegressionDataset implements Regression {
                 bArray, tArray, pArray, seArray, r2, rss, alpha, _yHat, _res);
     }
 
+    public static RegressionResult regress(double[] target, double[][] regressors) {
+        int n = target.length;
+        int k = regressors.length + 1;
+
+        String[] regressorNames = new String[regressors.length];
+        for (int i = 0; i < regressors.length; i++) {
+            regressorNames[i] = "X" + (i + 1);
+        }
+
+        TetradMatrix y = new TetradMatrix(new double[][]{target}).transpose();
+        TetradMatrix x = new TetradMatrix(regressors).transpose();
+
+        TetradMatrix xT = x.transpose();
+        TetradMatrix xTx = xT.times(x);
+        TetradMatrix xTxInv = xTx.inverse();
+        TetradMatrix xTy = xT.times(y);
+        TetradMatrix b = xTxInv.times(xTy);
+
+        TetradMatrix yHat = x.times(b);
+        if (yHat.columns() == 0) yHat = y.like();
+
+        TetradMatrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+
+        TetradVector _yHat = yHat.getColumn(0);
+        TetradVector _res = res.getColumn(0);
+
+        TetradMatrix b2 = b.copy();
+        TetradMatrix yHat2 = x.times(b2);
+        if (yHat.columns() == 0) yHat2 = y.like();
+
+        TetradMatrix _res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+        TetradVector res2 = _res2.getColumn(0);
+
+        double rss = rss(x, y, b);
+        double se = Math.sqrt(rss / (n - k));
+        double tss = tss(y);
+        double r2 = 1.0 - (rss / tss);
+
+        TetradVector sqErr = new TetradVector(x.columns());
+        TetradVector t = new TetradVector(x.columns());
+        TetradVector p = new TetradVector(x.columns());
+
+        for (int i = 0; i < x.columns(); i++) {
+            double _s = se * se * xTxInv.get(i, i);
+            double _se = Math.sqrt(_s);
+            double _t = b.get(i, 0) / _se;
+            double _p = 2 * (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
+
+            sqErr.set(i, _se);
+            t.set(i, _t);
+            p.set(i, _p);
+        }
+
+        double[] bArray = b.columns() == 0 ? new double[0] : b.getColumn(0).toArray();
+        double[] tArray = t.toArray();
+        double[] pArray = p.toArray();
+        double[] seArray = sqErr.toArray();
+
+
+        return new RegressionResult(true, regressorNames, n,
+                bArray, tArray, pArray, seArray, r2, rss, 0.05, _yHat, _res);
+    }
+
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);
@@ -288,7 +352,7 @@ public class RegressionDataset implements Regression {
      * @param b the regression coefficients.
      * @return the residual sum of squares.
      */
-    private double rss(TetradMatrix x, TetradMatrix y, TetradMatrix b) {
+    private static double rss(TetradMatrix x, TetradMatrix y, TetradMatrix b) {
         double rss = 0.0;
 
         for (int i = 0; i < x.rows(); i++) {
@@ -306,7 +370,7 @@ public class RegressionDataset implements Regression {
         return rss;
     }
 
-    private double tss(TetradMatrix y) {
+    private static double tss(TetradMatrix y) {
         // first calculate the mean
         double mean = 0.0;
 

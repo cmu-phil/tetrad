@@ -45,7 +45,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
         IndTestProducer, GraphSource, IFgesRunner, Indexable {
     static final long serialVersionUID = 23L;
 
-    private transient FgesMb2 fges;
+    private transient FgesMb fges;
     private int index;
     private ArrayList<ScoredGraph> topGraphs;
 
@@ -161,7 +161,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             target = gesScore.getVariable(targetName);
-            fges = new FgesMb2(gesScore);
+            fges = new FgesMb(gesScore);
             fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
             fges.setVerbose(true);
@@ -172,7 +172,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
                 SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                 target = score.getVariable(targetName);
                 score.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
-                fges = new FgesMb2(score);
+                fges = new FgesMb(score);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((Parameters) getParameters()).getSamplePrior();
                 double structurePrior = 1;//((Parameters) getParameters()).getStructurePrior();
@@ -180,7 +180,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 target = score.getVariable(targetName);
-                fges = new FgesMb2(score);
+                fges = new FgesMb(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -189,7 +189,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
             gesScore.setPenaltyDiscount(params.getDouble("alpha", 0.001));
             gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
             target = gesScore.getVariable(targetName);
-            fges = new FgesMb2(gesScore);
+            fges = new FgesMb(gesScore);
         }
         else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
@@ -213,12 +213,12 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
                     SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
                     target = fgesScore.getVariable(targetName);
-                    fges = new FgesMb2(fgesScore);
+                    fges = new FgesMb(fgesScore);
                 } else {
                     SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
                     target = fgesScore.getVariable(targetName);
-                    fges = new FgesMb2(fgesScore);
+                    fges = new FgesMb(fgesScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = getParams().getDouble("structurePrior", 1);
@@ -230,9 +230,9 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
                 target = fgesScore.getVariable(targetName);
 
                 if (params.getBoolean("firstNontriangular", false)) {
-                    fges = new FgesMb2(fgesScore);
+                    fges = new FgesMb(fgesScore);
                 } else {
-                    fges = new FgesMb2(fgesScore);
+                    fges = new FgesMb(fgesScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -256,11 +256,11 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //
 //                if (dataSet.isContinuous()) {
 //                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
-//                            getParameters().getAlpha());
+//                            getParameters().getDepErrorsAlpha());
 //                    fges = new FgesMb(gesScore, target);
 //                } else if (dataSet.isDiscrete()) {
 //                    double structurePrior = 1;
-//                    double samplePrior = getParameters().getAlpha();
+//                    double samplePrior = getParameters().getDepErrorsAlpha();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -271,7 +271,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //            } else if (dataModel instanceof ICovarianceMatrix) {
 //                cov = (ICovarianceMatrix) dataModel;
 //                SemBicScore score = new SemBicScore(cov,
-//                        getParameters().getAlpha());
+//                        getParameters().getDepErrorsAlpha());
 //                target = cov.getVariable(targetName);
 //                fges = new FgesMb(score, target);
 //            } else {
@@ -288,7 +288,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 //            int depth = getParameters().getMaxDegree();
 //
 //            ScoredIndTest fgesScore = new ScoredIndTest(getIndependenceTest());
-//            fgesScore.setAlternativePenalty(getParameters().getAlpha());
+//            fgesScore.setParameter1(getParameters().getDepErrorsAlpha());
 //            FgesMb search = new FgesMb(fgesScore, target);
 //            search.setKnowledge(knowledge);
 //            search.setMaxDegree(depth);

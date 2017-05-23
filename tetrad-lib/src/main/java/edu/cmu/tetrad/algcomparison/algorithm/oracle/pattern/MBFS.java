@@ -39,6 +39,7 @@ public class MBFS implements Algorithm, HasKnowledge {
                 parameters.getInt("depth")
         );
 
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
 
         this.targetName = parameters.getString("targetName");

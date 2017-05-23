@@ -20,7 +20,7 @@ public class Cyclic implements RandomGraph {
         return GraphUtils.cyclicGraph3(parameters.getInt("numMeasures"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"), parameters.getDouble("probCycle"),
-                parameters.getDouble("probTwoCycle"));
+                parameters.getInt("probTwoCycle"));
     }
 
     @Override

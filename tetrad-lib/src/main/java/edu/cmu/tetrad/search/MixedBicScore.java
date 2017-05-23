@@ -206,6 +206,11 @@ public class MixedBicScore implements Score {
         return (int) Math.ceil(Math.log(sampleSize));
     }
 
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }

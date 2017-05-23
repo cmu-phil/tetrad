@@ -1072,7 +1072,7 @@ public class PerformanceTests {
         Graph estPattern;
         long elapsed;
 
-        FgesMb2 fges;
+        FgesMb fges;
         List<Node> vars;
 
         if (continuous) {
@@ -1120,7 +1120,7 @@ public class PerformanceTests {
             System.out.println(new Date());
             System.out.println("\nStarting FGES-MB");
 
-            fges = new FgesMb2(score);
+            fges = new FgesMb(score);
             fges.setVerbose(false);
             fges.setNumPatternsToStore(0);
             fges.setOut(System.out);
@@ -1165,7 +1165,7 @@ public class PerformanceTests {
 
             long time4 = System.currentTimeMillis();
 
-            fges = new FgesMb2(score);
+            fges = new FgesMb(score);
             fges.setVerbose(false);
             fges.setNumPatternsToStore(0);
             fges.setOut(System.out);
@@ -1694,7 +1694,7 @@ public class PerformanceTests {
 //
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
-//            GFci.setAlpha(penaltyDiscount);
+//            GFci.setCorrErrorsAlpha(penaltyDiscount);
 //            GFci.setMaxDegree(depth);
 //            GFci.setMaxPathLength(maxPathLength);
 //            GFci.setPossibleDsepSearchDone(true);
