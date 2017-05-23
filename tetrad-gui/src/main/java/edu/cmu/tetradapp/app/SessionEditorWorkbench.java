@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.*;
@@ -29,14 +28,13 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
-
-import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.rmi.MarshalledObject;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * Adds the functionality needed to turn an abstract workbench into a workbench
@@ -58,7 +56,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     private SimulationStudy simulationStudy;
 
     //=========================CONSTRUCTORS==============================//
-
     /**
      * Constructs a new workbench for the given SessionWrapper.
      */
@@ -79,15 +76,14 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         super.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("cloneMe".equals(evt.getPropertyName())) {
-                    SessionEditorNode sessionEditorNode =
-                            (SessionEditorNode) evt.getNewValue();
-                    SessionNodeWrapper wrapper =
-                            (SessionNodeWrapper) sessionEditorNode.getModelNode();
+                    SessionEditorNode sessionEditorNode
+                            = (SessionEditorNode) evt.getNewValue();
+                    SessionNodeWrapper wrapper
+                            = (SessionNodeWrapper) sessionEditorNode.getModelNode();
                     Object result;
                     try {
                         result = new MarshalledObject(wrapper).get();
-                    }
-                    catch (Exception e1) {
+                    } catch (Exception e1) {
                         e1.printStackTrace();
                         throw new IllegalStateException("Could not clone.");
                     }
@@ -116,12 +112,10 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     //==========================PUBLIC METHODS===========================//
-
     /**
      * @return a SessionNodeWrapper for a new SessionNode, the type of which is
      * determined by the next button type, and the name of which is the next
-     * button type (a String) appended with the next available positive
-     * integer.
+     * button type (a String) appended with the next available positive integer.
      *
      * @see #getNextButtonType
      */
@@ -133,8 +127,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 
         String name = nextUniqueName(this.nextButtonType, getGraph());
         Class[] modelClasses = getModelClasses(this.nextButtonType);
-        SessionNode newNode =
-                new SessionNode(this.nextButtonType, name, modelClasses);
+        SessionNode newNode
+                = new SessionNode(this.nextButtonType, name, modelClasses);
 
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
         nodeWrapper.setButtonType(this.nextButtonType);
@@ -175,10 +169,10 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node modelNodeA = modelEdge.getNode1();
         Node modelNodeB = modelEdge.getNode2();
-        DisplayNode displayNodeA =
-                (DisplayNode) (getModelNodesToDisplay().get(modelNodeA));
-        DisplayNode displayNodeB =
-                (DisplayNode) (getModelNodesToDisplay().get(modelNodeB));
+        DisplayNode displayNodeA
+                = (DisplayNode) (getModelNodesToDisplay().get(modelNodeA));
+        DisplayNode displayNodeB
+                = (DisplayNode) (getModelNodesToDisplay().get(modelNodeB));
 
         if ((displayNodeA == null) || (displayNodeB == null)) {
             return null;
@@ -190,7 +184,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         return new SessionEditorEdge(sessionEditorNodeA, sessionEditorNodeB,
                 SessionEditorEdge.UNRANDOMIZED);
     }
-
 
     /**
      * Resets the session wrapper that this editor is editing to the given
@@ -237,8 +230,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      */
     public String getNextButtonType() {
         if (this.nextButtonType == null) {
-            throw new NullPointerException("getNextButtonType() was called " +
-                    "when there was no next button type set.");
+            throw new NullPointerException("getNextButtonType() was called "
+                    + "when there was no next button type set.");
         }
 
         return this.nextButtonType;
@@ -281,7 +274,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     //===========================PRIVATE METHODS========================//
-
     /**
      * Adds a label to the session editor node for the given session node
      * indicating how many times the simulation study will run that node. If the
@@ -292,16 +284,15 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
             throw new NullPointerException("Node must not be null.");
         }
 
-        SessionNodeWrapper sessionNodeWrapper =
-                getSessionNodeWrapper(sessionNode);
+        SessionNodeWrapper sessionNodeWrapper
+                = getSessionNodeWrapper(sessionNode);
         int repetitions = sessionNode.getRepetition();
 
         if (repetitions > 1) {
             JLabel label = new JLabel("x " + repetitions);
             label.setForeground(Color.red);
             setNodeLabel(sessionNodeWrapper, label, 0, 0);
-        }
-        else {
+        } else {
             setNodeLabel(sessionNodeWrapper, null, 0, 0);
         }
     }
@@ -329,18 +320,16 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 //                }
 //            }
 //        }
-
         throw new NullPointerException("Session node wrapper not in map.");
     }
 
     /**
      * @return the model classes associated with the given button type.
      *
-     * @throws NullPointerException if no classes are stored for the given
-     *                              type.
+     * @throws NullPointerException if no classes are stored for the given type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
-            TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
 
         if (nodeConfig == null) {
@@ -381,8 +370,3 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         return base + i;
     }
 }
-
-
-
-
-

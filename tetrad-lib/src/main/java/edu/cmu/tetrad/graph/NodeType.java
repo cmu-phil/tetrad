@@ -72,7 +72,7 @@ public final class NodeType implements TetradSerializable {
     // Declarations required for serialization.
     private static int nextOrdinal = 0;
     private final int ordinal = nextOrdinal++;
-    private static final NodeType[] TYPES = {MEASURED, LATENT, ERROR, NO_TYPE, RANDOMIZE, LOCK};
+    public static final NodeType[] TYPES = {MEASURED, LATENT, ERROR, NO_TYPE, RANDOMIZE, LOCK};
 
     Object readResolve() throws ObjectStreamException {
         return TYPES[ordinal]; // Canonicalize.

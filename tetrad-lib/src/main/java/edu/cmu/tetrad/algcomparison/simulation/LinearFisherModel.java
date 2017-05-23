@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.dist.Split;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -91,6 +92,24 @@ public class LinearFisherModel implements Simulation, TakesData {
             simulator.setVerbose(parameters.getBoolean("verbose"));
 
             DataSet dataSet;
+
+//            if (shocks == null) {
+//                dataSet = simulator.simulateDataFisher(
+//                        simulator.getUncorrelatedGaussianShocks(parameters.getInt("sampleSize")),
+//                        parameters.getInt("intervalBetweenShocks"),
+//                        parameters.getInt("intervalBetweenRecordings"),
+//                        parameters.getDouble("fisherEpsilon")
+//                );
+//            } else {
+//                DataSet _shocks = (DataSet) shocks.get(i);
+//
+//                dataSet = simulator.simulateDataFisher(
+//                        _shocks.getDoubleData().toArray(),
+//                        parameters.getInt("intervalBetweenShocks"),
+//                        parameters.getInt("intervalBetweenRecordings"),
+//                        parameters.getDouble("fisherEpsilon")
+//                );
+//            }
 
             if (shocks == null) {
                 dataSet = simulator.simulateDataFisher(

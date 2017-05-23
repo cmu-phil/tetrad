@@ -23,6 +23,8 @@ package edu.cmu.tetrad.test;
 
 import jdepend.framework.JDepend;
 import jdepend.framework.JavaPackage;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -36,6 +38,7 @@ import static org.junit.Assert.fail;
 /**
  * Checks for package cycles.
  */
+@Ignore
 public class TestCyclicity {
     private JDepend jdepend;
 

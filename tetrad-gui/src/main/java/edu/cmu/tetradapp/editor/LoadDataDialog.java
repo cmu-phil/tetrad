@@ -18,27 +18,35 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.StringTextField;
-import edu.cmu.tetradapp.util.WatchedProcess;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.pitt.dbmi.data.preview.BasicDataPreviewer;
+import edu.pitt.dbmi.data.preview.DataPreviewer;
+import edu.pitt.dbmi.data.validation.DataValidation;
+import edu.pitt.dbmi.data.validation.ValidationResult;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 /**
  * Panel (to be put in a dialog) for letting the user choose how a data file
@@ -47,788 +55,840 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class LoadDataDialog extends JPanel {
-    private final JTabbedPane pane;
-    private transient DataModel[] dataModels;
 
-    private JRadioButton comment1RadioButton;
-    private JRadioButton comment2RadioButton;
-    private StringTextField commentStringField;
+    private List<File> loadedFiles;
 
-    private JRadioButton delimiter1RadioButton;          
-    private JRadioButton delimiter2RadioButton;
-    private JRadioButton delimiter3RadioButton;
+    private List<String> validationResults;
 
-    //    private JRadioButton delimiter4RadioButton;
-    //    private StringTextField delimiterStringField;
-    private JRadioButton quote1RadioButton;
+    private List<String> failedFiles;
 
-    private JCheckBox varNamesCheckBox;
-    private JCheckBox idsSupplied;
-    private JRadioButton id1RadioButton;
-    private JRadioButton id2RadioButton;
-    private StringTextField idStringField;
+    private DataLoaderSettings dataLoaderSettings;
 
-    private JRadioButton missing1RadioButton;
-    private JRadioButton missing2RadioButton;
-    private StringTextField missingStringField;
+    private DataModelList dataModelList;
 
-    private IntTextField maxIntegralDiscreteIntField;
-    private JLabel maxIntegralLabel1;
-    private JLabel maxIntegralLabel2;
+    private JTextPane validationResultTextPane;
 
-    private int fileIndex = 0;
+    private JTextArea filePreviewTextArea;
+
+    private final int previewFromLine;
+
+    private final int previewToLine;
+
+    private final int previewNumOfCharactersPerLine;
+
+    private JList fileList;
+
+    private JList validationFileList;
+
+    private JDialog loadingIndicatorDialog;
+
+    private JScrollPane filesToValidateScrollPane;
+
+    private DefaultListModel fileListModel;
+
+    private DefaultListModel validatedFileListModel;
+
+    private Box filePreviewBox;
+
+    private Box validationResultsBox;
+
+    private String previewBoxBorderTitle;
+
+    private String validationResultsContainerBorderTitle;
+
+    private final String defaulyPreviewBoxBorderTitle;
+
+    private Box container;
+
+    private Box settingsContainer;
+
+    private Box previewContainer;
+
+    private Box buttonsContainer;
+
+    private Box fileListBox;
+
+    private Box basicSettingsBox;
+
+    private Box advancedSettingsBox;
+
+    private Box validationResultsContainer;
+
+    private Box filesToValidateBox;
+
+    private Box validationSummaryBox;
+
+    private Box validationMessageBox;
+
+    private Box buttonsBox;
+
+    private JButton addFileButton;
+
+    private JButton settingsButton;
+
+    private JButton validateButton;
+
+    private JButton loadButton;
 
     //================================CONSTRUCTOR=======================//
+    public LoadDataDialog(File... files) {
+        // Add all files into the loadedFiles list - Zhou
+        // Arrays.asList: Returns a fixed-size list backed by the specified array.
+        // You can't add to it; you can't remove from it. You can't structurally modify the List.
+        // Create a LinkedList, which supports remove().
+        this.loadedFiles = new LinkedList<>(Arrays.asList(files));
 
-    public LoadDataDialog(final File... files) {
-        if (files.length == 0) {
-            throw new IllegalArgumentException("Must specify at least one file.");
-        }
+        // List is an Interface, you cannot instantiate an Interface
+        // ArrayList is an implementation of List which can be instantiated
+        // The default size of ArrayList if 10
+        // Here we define validationResults as ArrayList for quick retrival by index
+        this.validationResults = new ArrayList<>();
 
-        this.dataModels = new DataModel[files.length];
+        this.failedFiles = new ArrayList<>();
 
-        // Tabular/covariance.
-        JRadioButton tabularRadioButton = new JRadioButton("Tabular Data");
-        JRadioButton covarianceRadioButton = new JRadioButton("Covariance Data");
+        this.filePreviewTextArea = new JTextArea();
 
-        tabularRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataTabularPreference", "tabular");
+        // Show preview from the first line to line 20,
+        // only display up to 100 chars per line,
+        // apend ... if longer than that
+        this.previewFromLine = 1;
+        this.previewToLine = 20;
+        this.previewNumOfCharactersPerLine = 100;
 
-                }
-            }
-        });
+        this.fileListModel = new DefaultListModel();
 
-        ButtonGroup group1 = new ButtonGroup();
-        group1.add(tabularRadioButton);
-        group1.add(covarianceRadioButton);
+        this.validatedFileListModel = new DefaultListModel();
 
-        String tabularPreference = Preferences.userRoot().get("loadDataTabularPreference", "tabular");
+        this.defaulyPreviewBoxBorderTitle = "Data Preview: ";
 
-        if ("tabular".equals(tabularPreference)) {
-            tabularRadioButton.setSelected(true);
-        } else if ("covariance".equals(tabularPreference)) {
-            covarianceRadioButton.setSelected(true);
-        } else {
-            throw new IllegalStateException("Unexpected preference.");
-        }
+        this.dataModelList = new DataModelList();
 
+        this.validationResultTextPane = new JTextPane();
 
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataTabularPreference", "covariance");
-
-                }
-            }
-        });
-
-        // Comment prefix.
-        comment1RadioButton = new JRadioButton("//");
-        comment2RadioButton = new JRadioButton("#");
-        JRadioButton comment3RadioButton = new JRadioButton("Other: ");
-
-        comment1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "//");
-
-                }
-            }
-        });
-
-        comment2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "#");
-
-                }
-            }
-        });
-
-        comment3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataCommentPreference", "Other");
-
-                }
-            }
-        });
-
-        ButtonGroup group2 = new ButtonGroup();
-        group2.add(comment1RadioButton);
-        group2.add(comment2RadioButton);
-        group2.add(comment3RadioButton);
-
-        String commentPreference = Preferences.userRoot().get("loadDataCommentPreference", "//");
-
-        if ("//".equals(commentPreference)) {
-            comment1RadioButton.setSelected(true);
-        } else if ("#".equals(commentPreference)) {
-            comment2RadioButton.setSelected(true);
-        } else {
-            comment3RadioButton.setSelected(true);
-        }
-
-        // Comment string field
-        String otherCommentPreference = Preferences.userRoot().get("dataLoaderCommentString", "@");
-        commentStringField = new StringTextField(otherCommentPreference, 4);
-
-        commentStringField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-        commentStringField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-        // Delimiter
-        delimiter1RadioButton = new JRadioButton("Whitespace");
-        delimiter2RadioButton = new JRadioButton("Tab");
-        delimiter3RadioButton = new JRadioButton("Comma");
-//        delimiter4RadioButton = new JRadioButton("Other: ");
-//        delimiterStringField = new StringTextField("", 4);
-
-
-        delimiter1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Whitespace");
-
-                }
-            }
-        });
-
-        delimiter2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Tab");
-
-                }
-            }
-        });
-
-        delimiter3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataDelimiterPreference", "Comma");
-
-                }
-            }
-        });
-
-        ButtonGroup group3 = new ButtonGroup();
-        group3.add(delimiter1RadioButton);
-        group3.add(delimiter2RadioButton);
-        group3.add(delimiter3RadioButton);
-
-        String delimiterPreference = Preferences.userRoot().get("loadDataDelimiterPreference", "Whitespace");
-
-        if ("Whitespace".equals(delimiterPreference)) {
-            delimiter1RadioButton.setSelected(true);
-        } else if ("Tab".equals(delimiterPreference)) {
-            delimiter2RadioButton.setSelected(true);
-        } else {
-            delimiter3RadioButton.setSelected(true);
-        }
-
-        // Quote char
-        quote1RadioButton = new JRadioButton("\"");
-        JRadioButton quote2RadioButton = new JRadioButton("'");
-
-        quote1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "\"");
-
-                }
-            }
-        });
-
-        quote2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataQuotePreference", "'");
-                }
-            }
-        });
-
-        ButtonGroup group4 = new ButtonGroup();
-        group4.add(quote1RadioButton);
-        group4.add(quote2RadioButton);
-
-        String quotePreference = Preferences.userRoot().get("loadDataQuotePreference", "\"");
-
-        if ("\"".equals(quotePreference)) {
-            quote1RadioButton.setSelected(true);
-        } else if ("'".equals(quotePreference)) {
-            quote2RadioButton.setSelected(true);
-        }
-
-        // Log empty tokens
-        JCheckBox logEmptyTokens = new JCheckBox("Log Empty Tokens");
-        logEmptyTokens.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        logEmptyTokens.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataLogEmptyTokens", "deselected");
-                }
-            }
-        });
-
-        String logEmptyTokensPreference = Preferences.userRoot().get("loadDataLogEmptyTokens", "\"");
-
-        if ("selected".equals(logEmptyTokensPreference)) {
-            logEmptyTokens.setSelected(true);
-        } else {
-            logEmptyTokens.setSelected(false);
-        }
-
-        // Var names checkbox.
-        varNamesCheckBox = new JCheckBox("Variable names in first row of data");
-        varNamesCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        varNamesCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataVarNames", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataVarNames", "deselected");
-                }
-            }
-        });
-
-        varNamesCheckBox.setSelected(Preferences.userRoot().get("loadDataVarNames", "selected").equals("selected"));
-
-        // Ids Supplied.
-        idsSupplied = new JCheckBox("Case ID's provided");
-        idsSupplied.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-
-                if (checkBox.isSelected()) {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "selected");
-                } else {
-                    Preferences.userRoot().put("loadDataIdsSuppliedPreference", "deselected");
-                }
-            }
-        });
-
-        boolean idsSuppliedPreference = "selected".equals(Preferences.userRoot().get("loadDataIdsSuppliedPreference", "deselected"));
-        idsSupplied.setSelected(idsSuppliedPreference);
-
-        // ID radio buttons
-        id1RadioButton = new JRadioButton("Unlabeled first column");
-        id2RadioButton = new JRadioButton("Column labeled: ");
-        idStringField = new StringTextField("", 4);
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        idsSupplied.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox button = (JCheckBox) e.getSource();
-                boolean selected = button.isSelected();
-
-                id1RadioButton.setEnabled(selected);
-                id2RadioButton.setEnabled(selected);
-                idStringField.setEditable(selected);
-            }
-        });
-
-        id1RadioButton.setEnabled(idsSuppliedPreference);
-        id2RadioButton.setEnabled(idsSuppliedPreference);
-        idStringField.setEditable(idsSuppliedPreference);
-
-        ButtonGroup group5 = new ButtonGroup();
-        group5.add(id1RadioButton);
-        group5.add(id2RadioButton);
-        id1RadioButton.setSelected(true);
-
-//
-//        varNamesCheckBox.setSelected(true);
-
-//        Missing value marker
-        missing1RadioButton = new JRadioButton("*");
-        missing2RadioButton = new JRadioButton("?");
-        JRadioButton missing3RadioButton = new JRadioButton("Other: ");
-
-        missing1RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "*");
-
-                }
-            }
-        });
-
-        missing2RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "?");
-
-                }
-            }
-        });
-
-        missing3RadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                if (button.isSelected()) {
-                    Preferences.userRoot().put("loadDataMissingPreference", "Other");
-
-                }
-            }
-        });
-
-        ButtonGroup group6 = new ButtonGroup();
-        group6.add(missing1RadioButton);
-        group6.add(missing2RadioButton);
-        group6.add(missing3RadioButton);
-        missing1RadioButton.setSelected(true);
-
-        String missingPreference = Preferences.userRoot().get("loadDataMissingPreference", "*");
-
-        if ("*".equals(missingPreference)) {
-            missing1RadioButton.setSelected(true);
-        } else if ("?".equals(missingPreference)) {
-            missing2RadioButton.setSelected(true);
-        } else {
-            missing3RadioButton.setSelected(true);
-        }
-
-        String otherMissingPreference = Preferences.userRoot().get("dataLoaderOtherMissingPreference", "");
-
-        // Missing string field
-        missingStringField = new StringTextField(otherMissingPreference, 6);
-        String missingStringText = Preferences.userRoot().get("dataLoaderMissingString", "Missing");
-        missingStringField.setText(missingStringText);
-
-        missingStringField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                Preferences.userRoot().put("dataLoaderMaxIntegral", value);
-                return value;
-            }
-        });
-
-
-        maxIntegralDiscreteIntField = new IntTextField(0, 3);
-
-        int maxIntegralPreference = Preferences.userRoot().getInt("dataLoaderMaxIntegral", 0);
-        maxIntegralDiscreteIntField.setValue(maxIntegralPreference);
-
-        maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (value >= 0) {
-                    Preferences.userRoot().putInt("dataLoaderMaxIntegral", value);
-                    return value;
-                }
-                else {
-                    return oldValue;
-                }
-            }
-        });
-
-        final JTextArea fileTextArea = new JTextArea();
-        final JTextArea anomaliesTextArea = new JTextArea();
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        JScrollPane scroll1 = new JScrollPane(fileTextArea);
-        scroll1.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("File", scroll1);
-        JScrollPane scroll2 = new JScrollPane(anomaliesTextArea);
-        scroll2.setPreferredSize(new Dimension(500, 400));
-        tabbedPane.addTab("Loading Log", scroll2);
-
-        final JLabel progressLabel = new JLabel(getProgressString(0, files.length, dataModels));
-        progressLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-        JButton previousButton = new JButton("Previous");
-        JButton nextButton = new JButton("Next");
-        JButton loadButton = new JButton("Load");
-        JButton loadAllButton = new JButton("Load All");
-
-        final JLabel fileNameLabel = new JLabel("File: " + files[fileIndex].getName());
-        fileNameLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-
-        // Construct button groups.
-
-        idStringField.setText("ID");
-//        delimiterStringField.setText(";");
-
-        // Setup file text area.
-//        fileTextArea.setEditable(false);
-        fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        setText(files[fileIndex], fileTextArea);
-
-        maxIntegralLabel1 = new JLabel("Integral columns with up to ");
-        maxIntegralLabel2 = new JLabel(" values are discrete.");
-
-        if (tabularRadioButton.isSelected()) {
-            enableTabularObjects();
-        }
-        else if (covarianceRadioButton.isSelected()) {
-            enableCovarianceObjects();
-        }
-
-        // Layout.
-        RegularDataPanel r1 = new RegularDataPanel(files);
-        FastDataPanel r2 = new FastDataPanel(files);
-
-        pane = new JTabbedPane();
-        pane.add("Regular", r1);
-        pane.add("Fast", r2);
-
-        Box c = Box.createVerticalBox();
-
-        Box c1 = Box.createHorizontalBox();
-//        JScrollPane scrollPane = new JScrollPane(tabbedPane);
-//        scrollPane.setPreferredSize(new Dimension(500, 400));
-//        c1.add(scrollPane);
-        c1.add(tabbedPane);
-        c.add(c1);
-
-        Box c2 = Box.createHorizontalBox();
-        c2.add(Box.createHorizontalGlue());
-
-        if (files.length > 1) {
-            c2.add(progressLabel);
-        }
-
-        c2.add(Box.createHorizontalStrut(10));
-
-        if (files.length > 1) {
-            c2.add(previousButton);
-            c2.add(nextButton);
-        }
-
-        c2.add(loadButton);
-
-        if (files.length > 1) {
-            c2.add(loadAllButton);
-        }
-
-        c2.setBorder(new EmptyBorder(4, 4, 4, 4));
-        c.add(c2);
-        c.setBorder(new TitledBorder("Source File and Loading Log"));
-
-        Box a = Box.createHorizontalBox();
-        a.add(pane);
-        a.add(c);
-        setLayout(new BorderLayout());
-
-        Box d = Box.createHorizontalBox();
-        d.add(fileNameLabel);
-        d.add(Box.createHorizontalGlue());
-
-        Box e = Box.createVerticalBox();
-        e.add(d);
-        e.add(Box.createVerticalStrut(10));
-        e.add(a);
-
-        add(e, BorderLayout.CENTER);
-
-        // Listeners.
-
-        previousButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-                if (fileIndex > 0) {
-                    fileIndex--;
-                }
-
-                setText(files[fileIndex], fileTextArea);
-                progressLabel.setText(getProgressString(fileIndex, files.length, dataModels));
-
-                tabbedPane.setSelectedIndex(0);
-                fileNameLabel.setText("File: " + files[fileIndex].getName());
-            }
-        });
-
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-                if (fileIndex < files.length - 1) {
-                    fileIndex++;
-                }
-
-                setText(files[fileIndex], fileTextArea);
-                progressLabel.setText(getProgressString(fileIndex, files.length, dataModels));
-
-                tabbedPane.setSelectedIndex(0);
-                fileNameLabel.setText("File: " + files[fileIndex].getName());
-            }
-        });
-
-        loadButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
-
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        Window owner = (Window) getTopLevelAncestor();
-
-                        new WatchedProcess(owner) {
-                            public void watch() {
-                                loadDataSelect(fileIndex, anomaliesTextArea, tabbedPane, files, progressLabel);
-//                                DataModel dataModel = loadDataSelect(anomaliesTextArea, tabbedPane, files, progressLabel);
-//                                if (dataModel == null) throw new NullPointerException("Data not loaded.");
-//                                addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        loadAllButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
-
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        Window owner = (Window) getTopLevelAncestor();
-
-                        new WatchedProcess(owner) {
-                            public void watch() {
-                                for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-                                    loadDataSelect(fileIndex, anomaliesTextArea, tabbedPane, files, progressLabel);
-                                }
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        tabularRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableTabularObjects();
-            }
-        });
-
-        covarianceRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enableCovarianceObjects();
-            }
-        });
-    }
-
-    private void loadDataSelect(int fileIndex, JTextArea anomaliesTextArea, JTabbedPane tabbedPane, File[] files, JLabel progressLabel) {
-        System.out.println("File index = " + fileIndex);
-
-        Component selectedComponent = pane.getSelectedComponent();
-
-        if (selectedComponent instanceof RegularDataPanel) {
-            DataModel dataModel = ((RegularDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, tabbedPane, files,
-                    progressLabel);
-            if (dataModel == null) throw new NullPointerException("Data not loaded.");
-            addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-        }
-        else if (selectedComponent instanceof FastDataPanel) {
-            DataModel dataModel = ((FastDataPanel) selectedComponent).loadData(fileIndex, anomaliesTextArea, tabbedPane, files,
-                    progressLabel);
-            if (dataModel == null) throw new NullPointerException("Data not loaded.");
-            addDataModel(dataModel, fileIndex, files[fileIndex].getName());
-        }
-        else {
-            throw new IllegalStateException("Just regular and fast data loaders.");
-        }
-    }
-
-    private void enableCovarianceObjects() {
-        idsSupplied.setEnabled(false);
-        id1RadioButton.setEnabled(false);
-        id2RadioButton.setEnabled(false);
-        idStringField.setEnabled(false);
-        maxIntegralLabel1.setEnabled(false);
-        maxIntegralLabel2.setEnabled(false);
-        maxIntegralDiscreteIntField.setEnabled(false);
-        varNamesCheckBox.setEnabled(false);
-    }
-
-    private void enableTabularObjects() {
-        idsSupplied.setEnabled(true);
-        idStringField.setEnabled(true);
-        maxIntegralLabel1.setEnabled(true);
-        maxIntegralLabel2.setEnabled(true);
-        maxIntegralDiscreteIntField.setEnabled(true);
-        varNamesCheckBox.setEnabled(true);
-
-
-        if (idsSupplied.isSelected()) {
-            id1RadioButton.setEnabled(true);
-            id2RadioButton.setEnabled(true);
-            idStringField.setEnabled(true);
-        }
+        this.loadingIndicatorDialog = new JDialog();
     }
 
     //==============================PUBLIC METHODS=========================//
+    public void showDataLoaderDialog() {
+        // Overall container
+        // contains data preview panel, loading params panel, and load button
+        container = Box.createVerticalBox();
+        // Must set the size of container, otherwise validationResultsContainer gets shrinked
+        container.setPreferredSize(new Dimension(900, 590));
 
-    public DataModelList getDataModels() {
-        DataModelList dataModelList = new DataModelList();
+        // Data loading params
+        // The data loading params apply to all slected files
+        // the users should know that the selected files should share these settings - Zhou
+        dataLoaderSettings = new DataLoaderSettings(loadedFiles);
 
-        for (DataModel dataModel : dataModels) {
-            if (dataModel != null) dataModelList.add(dataModel);
+        // Basic settings
+        basicSettingsBox = dataLoaderSettings.basicSettings();
+
+        // Advanced settings
+        advancedSettingsBox = dataLoaderSettings.advancedSettings();
+
+        // Contains file list and format/options
+        settingsContainer = Box.createVerticalBox();
+
+        settingsContainer.add(basicSettingsBox);
+        settingsContainer.add(Box.createVerticalStrut(10));
+        settingsContainer.add(advancedSettingsBox);
+        //advancedSettingsBox.setVisible(false);
+
+        // Add some padding between settingsContainer and preview container
+        settingsContainer.add(Box.createVerticalStrut(10));
+
+        // Add to overall container
+        container.add(settingsContainer);
+
+        // Preview container, contains file list and raw data preview
+        previewContainer = Box.createHorizontalBox();
+        previewContainer.setPreferredSize(new Dimension(900, 250));
+
+        // Show all chosen files in a list
+        for (File file : loadedFiles) {
+            // Add each file name to the list model
+            fileListModel.addElement(file.getName());
         }
 
-        return dataModelList;
+        fileList = new JList(fileListModel);
+        // This mode specifies that only a single item can be selected at any point of time
+        fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // Default to select the first file in the list and show its preview
+        fileList.setSelectedIndex(0);
+
+        // List listener
+        // use an anonymous inner class to implement the event listener interface
+        fileList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int fileIndex = fileList.getMinSelectionIndex();
+                    if (fileIndex < 0) {
+                        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+                        filePreviewTextArea.setText("");
+                    } else {
+                        // Update the border title and show preview
+                        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(fileIndex).getName();
+                        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+                        setPreview(loadedFiles.get(fileIndex), filePreviewTextArea);
+                    }
+                }
+            }
+        });
+
+        // Right click mouse on file name to show the close option
+        fileList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    final int index = fileList.getSelectedIndex();
+
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem close = new JMenuItem("Remove this selected file from the loading list");
+                    menu.add(close);
+
+                    Point point = e.getPoint();
+                    menu.show(fileList, point.x, point.y);
+
+                    close.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // Can't remove if there's only one file left
+                            if (loadedFiles.size() == 1) {
+                                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                                        "You can't remove when there's only one file.");
+                            } else {
+                                // Close tab to show confirmation dialog
+                                int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                                        "Are you sure you want to remove this data file from the data loading list?",
+                                        "Confirm", JOptionPane.OK_CANCEL_OPTION,
+                                        JOptionPane.WARNING_MESSAGE);
+
+                                if (selectedAction == JOptionPane.OK_OPTION) {
+                                    // Remove the file from list model
+                                    fileListModel.remove(index);
+
+                                    // Also need to remove it from data structure
+                                    // Shifts any subsequent elements to the left in the list
+                                    System.out.println("Removing file of index = " + index + " from data loading list");
+                                    loadedFiles.remove(index);
+
+                                    // Reset the default selection and corresponding preview content
+                                    fileList.setSelectedIndex(0);
+                                    setPreview(loadedFiles.get(0), filePreviewTextArea);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        // Put the list in a scrollable area
+        JScrollPane fileListScrollPane = new JScrollPane(fileList);
+        fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+
+        fileListBox = Box.createVerticalBox();
+        fileListBox.setMinimumSize(new Dimension(305, 250));
+        fileListBox.setMaximumSize(new Dimension(305, 250));
+        fileListBox.add(fileListScrollPane);
+
+        // Add gap between file list and add new file button
+        fileListBox.add(Box.createVerticalStrut(10));
+
+        // Add new files button
+        addFileButton = new JButton("Add more files to the loading list ...");
+
+        // Add file button listener
+        addFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Show file chooser
+                JFileChooser fileChooser = new JFileChooser();
+                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+                fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
+                fileChooser.resetChoosableFileFilters();
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                // Only allow to add one file at a time
+                fileChooser.setMultiSelectionEnabled(true);
+                // Customize dialog title bar text
+                fileChooser.setDialogTitle("Add more files");
+                // The second argument sets both the title for the dialog window and the label for the approve button
+                int _ret = fileChooser.showDialog(container, "Choose");
+
+                if (_ret == JFileChooser.CANCEL_OPTION) {
+                    return;
+                }
+
+                // File array that contains only one file
+                final File[] newFiles = fileChooser.getSelectedFiles();
+
+                // Add newly added files to the loading list
+                for (File newFile : newFiles) {
+                    // Do not add the same file twice
+                    if (!loadedFiles.contains(newFile)) {
+                        loadedFiles.add(newFile);
+                        // Also add new file name to the file list model
+                        fileListModel.addElement(newFile.getName());
+                    }
+                }
+            }
+        });
+
+        fileListBox.add(addFileButton);
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String fileListBoxBorderTitle = "Files (right click to remove selected file)";
+        fileListBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(fileListBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        previewContainer.add(fileListBox);
+        // Add some gap between file list and preview box
+        previewContainer.add(Box.createHorizontalStrut(10), 1);
+
+        filePreviewBox = Box.createVerticalBox();
+        filePreviewBox.setMinimumSize(new Dimension(585, 250));
+        filePreviewBox.setMaximumSize(new Dimension(585, 250));
+
+        // Setup file text area.
+        // We don't want the users to edit in the preview area - Zhou
+        filePreviewTextArea.setEditable(false);
+        filePreviewTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        // Set the default preview for the default selected file
+        setPreview(loadedFiles.get(0), filePreviewTextArea);
+
+        // Add the scrollable text area in a scroller
+        final JScrollPane filePreviewScrollPane = new JScrollPane(filePreviewTextArea);
+        filePreviewBox.add(filePreviewScrollPane);
+
+        // Add gap between preview text area and the help instruction
+        filePreviewBox.add(Box.createVerticalStrut(10));
+
+        JLabel previewInstructionText = new JLabel(String.format("Showing from line %d to line %d, up to %d characters per line", previewFromLine, previewToLine, previewNumOfCharactersPerLine));
+
+        // Add the instruction
+        filePreviewBox.add(previewInstructionText);
+
+        // Show the default selected filename as preview border title
+        previewBoxBorderTitle = defaulyPreviewBoxBorderTitle + loadedFiles.get(0).getName();
+
+        // Use a titled border with 5 px inside padding - Zhou
+        filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(previewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Add to preview container
+        previewContainer.add(filePreviewBox);
+
+        // Add to overall container
+        container.add(previewContainer);
+
+        // Validation result
+        validationResultsContainer = Box.createVerticalBox();
+
+        validationSummaryBox = Box.createHorizontalBox();
+
+        JLabel validationSummaryText = new JLabel("Please review. You can change the settings or add/remove files by clicking the Settings button.");
+
+        validationSummaryBox.add(validationSummaryText);
+
+        validationResultsBox = Box.createHorizontalBox();
+
+        // A list of files to review
+        filesToValidateBox = Box.createVerticalBox();
+        filesToValidateBox.setMinimumSize(new Dimension(305, 430));
+        filesToValidateBox.setMaximumSize(new Dimension(305, 430));
+
+        // Create a new list model based on validation results
+        validationFileList = new JList(validatedFileListModel);
+        // This mode specifies that only a single item can be selected at any point of time
+        validationFileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // List listener
+        validationFileList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int fileIndex = validationFileList.getSelectedIndex();
+                    // -1 means no selection
+                    if (fileIndex != -1) {
+                        setValidationResult(validationResults.get(fileIndex), validationResultTextPane);
+                    }
+                }
+            }
+        });
+
+        // Put the list in a scrollable area
+        filesToValidateScrollPane = new JScrollPane(validationFileList);
+        filesToValidateScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+
+        filesToValidateBox.add(filesToValidateScrollPane);
+
+        validationResultsBox.add(filesToValidateBox);
+
+        // Add gap between file list and message content
+        validationResultsBox.add(Box.createHorizontalStrut(10), 1);
+
+        // Review content, contains errors or summary of loading
+        validationMessageBox = Box.createVerticalBox();
+        validationMessageBox.setMinimumSize(new Dimension(560, 430));
+        validationMessageBox.setMaximumSize(new Dimension(560, 430));
+
+        validationResultTextPane.setContentType("text/html");
+        validationResultTextPane.setEditable(false);
+
+        final JScrollPane summaryScrollPane = new JScrollPane(validationResultTextPane);
+        validationMessageBox.add(summaryScrollPane);
+
+        validationResultsBox.add(validationMessageBox);
+
+        // Put things into container
+        validationResultsContainer.add(validationSummaryBox);
+        validationResultsContainer.add(Box.createVerticalStrut(10));
+        validationResultsContainer.add(validationResultsBox);
+
+        // Show the default selected filename as preview border title
+        validationResultsContainerBorderTitle = "Validate";
+
+        // Use a titled border with 5 px inside padding - Zhou
+        validationResultsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(validationResultsContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Add to overall container
+        container.add(validationResultsContainer);
+        // Hide by default
+        validationResultsContainer.setVisible(false);
+
+        // Buttons
+        // Settings button
+        settingsButton = new JButton("< Settings");
+
+        // Step 2 backward button listener
+        settingsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Show file list
+                fileListBox.setVisible(true);
+
+                basicSettingsBox.setVisible(true);
+
+                // Show options
+                advancedSettingsBox.setVisible(true);
+
+                // Show preview
+                previewContainer.setVisible(true);
+
+                // Hide summary
+                validationResultsContainer.setVisible(false);
+
+                // Hide step 1 backward button
+                settingsButton.setVisible(false);
+
+                // Show validate button
+                validateButton.setVisible(true);
+
+                // Hide finish button
+                loadButton.setVisible(false);
+
+                // Reset the list model
+                validatedFileListModel.clear();
+
+                // Removes all elements for each new validation
+                validationResults.clear();
+
+                // Also reset the failedFiles list
+                failedFiles.clear();
+            }
+        });
+
+        // Validate button
+        validateButton = new JButton("Validate >");
+
+        // Step 3 button listener
+        validateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // First we want to do some basic form validation/checks
+                // to eliminate user errors
+                List<String> inputErrors = new ArrayList();
+
+                if (!dataLoaderSettings.isColumnLabelSpecified()) {
+                    inputErrors.add("- Please specify the case ID column label.");
+                }
+
+                if (!dataLoaderSettings.isOtherCommentMarkerSpecified()) {
+                    inputErrors.add("- Please specify the comment marker.");
+                }
+
+                // Show all errors in one popup
+                if (!inputErrors.isEmpty()) {
+                    String inputErrorMessages = "";
+                    for (String error : inputErrors) {
+                        inputErrorMessages = inputErrorMessages + error + "\n";
+                    }
+                    JOptionPane.showMessageDialog(container, inputErrorMessages, "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Disable the button and change the button text
+                validateButton.setEnabled(false);
+                validateButton.setText("Validating ...");
+
+                // New thread to run the validation and hides the loading indicator
+                // and shows the validation results once the validation process is done - Zhou
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Validate all files and set error messages
+                        validateAllFiles();
+
+                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                        // SwingUtilities.invokeLater means that this call will return immediately
+                        // as the event is placed in Event Dispatcher Queue,
+                        // and run() method will run asynchronously
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Hide the loading indicator
+                                hideLoadingIndicator();
+
+                                // Show result summary
+                                validationResultsContainer.setVisible(true);
+
+                                // Hide all inside settingsContainer
+                                fileListBox.setVisible(false);
+                                basicSettingsBox.setVisible(false);
+                                advancedSettingsBox.setVisible(false);
+
+                                // Use previewContainer instead of previewBox
+                                // since the previewContainer also contains padding
+                                previewContainer.setVisible(false);
+
+                                // Show step 2 backward button
+                                settingsButton.setVisible(true);
+
+                                // Hide validate button
+                                validateButton.setVisible(false);
+
+                                // Show finish button
+                                loadButton.setVisible(true);
+
+                                // Determine if enable the finish button or not
+                                if (failedFiles.size() > 0) {
+                                    // Disable it
+                                    loadButton.setEnabled(false);
+                                } else {
+                                    // Enable it
+                                    loadButton.setEnabled(true);
+                                }
+
+                                // Enable the button and hange back the button text
+                                validateButton.setEnabled(true);
+                                validateButton.setText("Validate >");
+                            }
+                        });
+                    }
+                }).start();
+
+                // Create the loading indicator dialog and show
+                showLoadingIndicator("Validating...");
+            }
+        });
+
+        // Load button
+        loadButton = new JButton("Load");
+
+        // Load data button listener
+        loadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Change button text
+                loadButton.setEnabled(false);
+                loadButton.setText("Loading ...");
+
+                // Load all data files and hide the loading indicator once done
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Load all data files via data reader
+                            loadAllFiles();
+                        } catch (IOException ex) {
+                            Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        // Schedule a Runnable which will be executed on the Event Dispatching Thread
+                        // SwingUtilities.invokeLater means that this call will return immediately
+                        // as the event is placed in Event Dispatcher Queue,
+                        // and run() method will run asynchronously
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Hide the loading indicator
+                                hideLoadingIndicator();
+
+                                // Close the data loader dialog
+                                Window w = SwingUtilities.getWindowAncestor(loadButton);
+                                if (w != null) {
+                                    w.setVisible(false);
+                                }
+                            }
+                        });
+                    }
+                }).start();
+
+                // Create the loading indicator dialog and show
+                showLoadingIndicator("Loading...");
+            }
+        });
+
+        // Buttons container
+        buttonsContainer = Box.createVerticalBox();
+
+        // Add some padding between preview/summary and buttons container
+        buttonsContainer.add(Box.createVerticalStrut(20));
+
+        // Buttons box
+        buttonsBox = Box.createHorizontalBox();
+        buttonsBox.add(settingsButton);
+        // Don't use Box.createHorizontalStrut(20)
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(validateButton);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(loadButton);
+
+        // Default to only show step forward button
+        settingsButton.setVisible(false);
+        loadButton.setVisible(false);
+        // Add to buttons container
+        buttonsContainer.add(buttonsBox);
+
+        // Add to overall container
+        container.add(buttonsContainer);
+
+        // Dialog without dialog buttons, because we use Load button to handle data loading
+        // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
+        // will close automatically once we click one of the buttons.
+        // We don't want to do this. We want to keep the data loader dialog in the backgroud of the
+        // logging info dialog and close it if all files are loaded successfully.
+        // Otherwise, still keep the data loader dialog there if fail to load any files - Zhou
+        // Here no need to use the returned value since we are not handling the action buttons
+        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+                "Data File Loader", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
     }
 
-    private static void setText(File file, JTextArea textArea) {
-        try {
-            textArea.setText("");
+    /**
+     * Create the loading indicator dialog and show
+     */
+    private void showLoadingIndicator(String message) {
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        // An indeterminate progress bar continuously displays animation
+        progressBar.setIndeterminate(true);
 
-            BufferedReader in = new BufferedReader(new FileReader(file));
-            StringBuilder text = new StringBuilder();
-            String line;
+        Box dataLoadingIndicatorBox = Box.createVerticalBox();
+        dataLoadingIndicatorBox.setPreferredSize(new Dimension(200, 60));
 
-            while ((line = in.readLine()) != null) {
-                text.append(line.substring(0, line.length())).append("\n");
+        JLabel label = new JLabel(message);
+        // JLabel label = new JLabel(message, SwingConstants.CENTER); doesn't
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                if (text.length() > 50000) {
-                    textArea.append("(This is a large file that begins as follows...)\n");
-                    textArea.setEditable(false);
-                    break;
+        Box progressBarBox = Box.createHorizontalBox();
+        progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
+        progressBarBox.add(progressBar);
+        progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
+
+        // Put the label on top of progress bar
+        dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
+        dataLoadingIndicatorBox.add(label);
+        dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
+        dataLoadingIndicatorBox.add(progressBarBox);
+
+        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
+        // Set modal true to block user input to other top-level windows when shown
+        loadingIndicatorDialog = new JDialog(ancestor, true);
+        // Remove the whole dialog title bar
+        loadingIndicatorDialog.setUndecorated(true);
+        loadingIndicatorDialog.getContentPane().add(dataLoadingIndicatorBox);
+        loadingIndicatorDialog.pack();
+        loadingIndicatorDialog.setLocationRelativeTo(JOptionUtils.centeringComp());
+
+        loadingIndicatorDialog.setVisible(true);
+    }
+
+    /**
+     * Hide the loading indicator
+     */
+    private void hideLoadingIndicator() {
+        loadingIndicatorDialog.setVisible(false);
+        // Also release all of the native screen resources used by this dialog
+        loadingIndicatorDialog.dispose();
+    }
+
+    /**
+     * Validate files with specified settings
+     *
+     * @return
+     */
+    private void validateAllFiles() {
+        for (int i = 0; i < loadedFiles.size(); i++) {
+            System.out.println("Validating file index = " + i);
+
+            // Validate each individual file
+            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
+
+            String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
+
+            List<ValidationResult> results = validation.getValidationResults();
+
+            List<ValidationResult> infos = new LinkedList<>();
+            // Just leave the warnings here to future use - Zhou
+            List<ValidationResult> warnings = new LinkedList<>();
+            List<ValidationResult> errors = new LinkedList<>();
+            for (ValidationResult result : results) {
+                switch (result.getCode()) {
+                    case INFO:
+                        infos.add(result);
+                        break;
+                    case WARNING:
+                        warnings.add(result);
+                        break;
+                    default:
+                        errors.add(result);
                 }
             }
 
-            textArea.append(text.toString());
+            // Show some file info
+            if (!infos.isEmpty()) {
+                output = output + "<p><b>File info: </b></p>";
+                for (ValidationResult info : infos) {
+                    // More examples of how to get attributes for customized parsing
+//                    Object obj = info.getAttributes().get(ROW_NUMBER);
+//                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
+//                    obj = info.getAttributes().get(COLUMN_COUNT);
+//                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
+//                    System.out.printf("numOfLines: %d%n", numOfLines);
+//                    System.out.printf("numOfColumns: %d%n", numOfColumns);
 
-            if (!textArea.isEditable()) {
-                textArea.append(". . .");
+                    output = output + "<p>" + info.getMessage() + "</p>";
+                }
             }
 
+            // Show warning messages
+            if (!warnings.isEmpty()) {
+                output = output + "<p style=\"color: orange;\"><b>Warning: </b></p>";
+                for (ValidationResult warning : warnings) {
+                    output = output + "<p style=\"color: orange;\">" + warning.getMessage() + "</p>";
+                }
+            }
+
+            // Show errors if found
+            if (!errors.isEmpty()) {
+                int errorCount = errors.size();
+
+                String errorCountString = (errorCount > 1) ? " errors" : " error";
+                output = output + "<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following " + errorCount + errorCountString + " and validate again:</b></p>";
+
+                for (ValidationResult error : errors) {
+                    // Remember to excape the html tags if the data file contains any
+                    output = output + "<p style=\"color: red;\">" + escapeHtml4(error.getMessage()) + "</p>";
+                }
+
+                // Also add the file name to failed list
+                // this determines if to show the Load button
+                failedFiles.add(loadedFiles.get(i).getName());
+            } else {
+                output = output + "<p style=\"color: green;\"><b>Validation passed with no error!</b></p>";
+            }
+
+            validationResults.add(output);
+        }
+
+        showValidationResults();
+    }
+
+    private void showValidationResults() {
+        // Create the validation file list with marker prefix
+        // so users know if this file passed the validation or not
+        // just by looking at the file name prefix - Zhou
+        for (int i = 0; i < loadedFiles.size(); i++) {
+            // Default to the check mark
+            String unicodePrefix = "\u2713";
+            if (failedFiles.contains(loadedFiles.get(i).getName())) {
+                // Cross mark
+                unicodePrefix = "\u2717";
+            }
+            // Add the unicode marker
+            validatedFileListModel.addElement("[" + unicodePrefix + "] " + loadedFiles.get(i).getName());
+        }
+
+        // Set the default selected file
+        // that's why we don't set the default selection when creating the JList
+        validationFileList.setSelectedIndex(0);
+
+        // Display validation result of the first file by default
+        setValidationResult(validationResults.get(0), validationResultTextPane);
+    }
+
+    /**
+     * Add all files to model once all can be loaded successfully
+     */
+    private void loadAllFiles() throws IOException {
+        // Try to load each file and store the file name for failed loading
+        for (int i = 0; i < loadedFiles.size(); i++) {
+            DataModel dataModel = dataLoaderSettings.loadDataWithSettings(loadedFiles.get(i));
+
+            // Add to dataModelList for further use
+            if (dataModel != null) {
+                // Must setName() here, file names will be used by the spreadsheet - Zhou
+                dataModel.setName(loadedFiles.get(i).getName());
+                dataModelList.add(dataModel);
+                System.out.println("File index = " + i + " has been loaded successfully");
+            }
+        }
+    }
+
+    /**
+     * This is called by LoadDataAction.java
+     *
+     * @return
+     */
+    public DataModelList getDataModels() {
+        return dataModelList;
+    }
+
+    /**
+     * Set the validation result content
+     *
+     * @param output
+     * @param textPane
+     */
+    private void setValidationResult(String output, JTextPane textPane) {
+        // Wrap the output in html
+        textPane.setText("<html><body style=\"font-family: Monospaced; font-size: 10px; white-space:nowrap; \"" + output + "</body></html>");
+        // Scroll back to top left
+        textPane.setCaretPosition(0);
+    }
+
+    /**
+     * Set the file preview content
+     *
+     * @param file
+     * @param textArea
+     */
+    private void setPreview(File file, JTextArea textArea) {
+        try {
+            textArea.setText("");
+            DataPreviewer dataPreviewer = new BasicDataPreviewer(file);
+            List<String> linePreviews = dataPreviewer.getPreviews(previewFromLine, previewToLine, previewNumOfCharactersPerLine);
+            for (String line : linePreviews) {
+                textArea.append(line + "\n");
+            }
             textArea.setCaretPosition(0);
-            in.close();
-        }
-        catch (IOException e) {
-            textArea.append("<<<ERROR READING FILE>>>");
-            textArea.setEditable(false);
+        } catch (IOException ex) {
+            Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-//    private static void setText(File file, JTextArea textArea) {
-//        try {
-//            FileReader in = new FileReader(file);
-//            CharArrayWriter out = new CharArrayWriter();
-//            int c;
-//
-//            while ((c = in.read()) != -1) {
-//                out.write(c);
-//            }
-//
-//            textArea.setText(out.toString());
-//
-//            textArea.setCaretPosition(0);
-//            in.close();
-//        }
-//        catch (IOException e) {
-//            textArea.append("<<<ERROR READING FILE>>>");
-//        }
-//    }
-
-
-    private String getCommentString() {
-        if (comment1RadioButton.isSelected()) {
-            return "//";
-        } else if (comment2RadioButton.isSelected()) {
-            return "#";
-        } else {
-            return commentStringField.getText();
-        }
-    }
-
-    private DelimiterType getDelimiterType() {
-        if (delimiter1RadioButton.isSelected()) {
-            return DelimiterType.WHITESPACE;
-        } else if (delimiter2RadioButton.isSelected()) {
-            return DelimiterType.TAB;
-        } else if (delimiter3RadioButton.isSelected()) {
-            return DelimiterType.COMMA;
-        } else {
-//            return delimiterStringField.getText();
-            throw new IllegalArgumentException("Unexpected delimiter selection.");
-        }
-    }
-
-    private char getQuoteChar() {
-        if (quote1RadioButton.isSelected()) {
-            return '"';
-        } else {
-            return '\'';
-        }
-    }
-
-    private boolean isVarNamesFirstRow() {
-        return varNamesCheckBox.isSelected();
-    }
-
-    private boolean isIdsSupplied() {
-        return idsSupplied.isSelected();
-    }
-
-    private String getIdLabel() {
-        if (id1RadioButton.isSelected()) {
-            return null;
-        } else {
-            return idStringField.getText();
-        }
-    }
-
-    private String getMissingValue() {
-        if (missing1RadioButton.isSelected()) {
-            return "*";
-        } else if (missing2RadioButton.isSelected()) {
-            return "?";
-        } else {
-            return missingStringField.getText();
-        }
-    }
-
-    private int getMaxDiscrete() {
-        return maxIntegralDiscreteIntField.getValue();
-    }
-
-    private void addDataModel(DataModel dataModel, int index, String name) {
-        if (dataModel == null) throw new NullPointerException();
-
-        dataModel.setName(name);
-        this.dataModels[index] = dataModel;
-    }
-
-    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
-        return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
-    }
 }
-
-
