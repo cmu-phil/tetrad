@@ -171,6 +171,10 @@ public class ParamDescriptions {
                 "Threshold for judging a regression of a variable onto its parents to be deternimistic",
                 0.1, 0.0, Double.POSITIVE_INFINITY));
 
+        put("numCategoriesToDiscretize", new ParamDescription(
+                "The number of categories to use when discretizing continuous variables",
+                3, 2, Integer.MAX_VALUE));
+
     }
 
     public static ParamDescriptions instance() {
