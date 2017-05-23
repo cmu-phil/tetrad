@@ -154,7 +154,7 @@ public class LinearFisherModel implements Simulation, TakesData {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -196,7 +196,7 @@ public class LinearFisherModel implements Simulation, TakesData {
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 

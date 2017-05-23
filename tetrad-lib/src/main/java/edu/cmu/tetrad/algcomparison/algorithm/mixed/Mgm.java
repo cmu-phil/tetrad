@@ -20,7 +20,7 @@ import java.util.List;
 public class Mgm implements Algorithm {
     static final long serialVersionUID = 23L;
     public Graph search(DataModel ds, Parameters parameters) {
-        DataSet _ds = DataUtils.getContinuousDataSet(ds);
+        DataSet _ds = DataUtils.getMixedDataSet(ds);
         MGM m = new MGM(_ds, new double[]{
                 parameters.getDouble("mgmParam1"),
                 parameters.getDouble("mgmParam2"),

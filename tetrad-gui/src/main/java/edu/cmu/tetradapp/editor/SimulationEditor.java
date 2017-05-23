@@ -23,9 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.*;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.algcomparison.utils.TakesData;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -79,11 +77,11 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             List<Graph> trueGraphs = new ArrayList<>();
             DataModelList dataModelList = new DataModelList();
 
-            int numDataSets = simulation.getSimulation().getNumDataSets();
+            int numDataSets = simulation.getSimulation().getNumDataModels();
 
             for (int i = 0; i < numDataSets; i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
-                dataModelList.add(simulation.getSimulation().getDataSet(i));
+                dataModelList.add(simulation.getSimulation().getDataModel(i));
             }
 
             graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(trueGraphs, new Parameters()));
@@ -172,7 +170,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         firePropertyChange("modelChanged", null, null);
 
                         List<Graph> graphs = new ArrayList<>();
-                        for (int i = 0; i < _simulation.getNumDataSets(); i++) {
+                        for (int i = 0; i < _simulation.getNumDataModels(); i++) {
                             graphs.add(_simulation.getTrueGraph(i));
                         }
 
@@ -267,7 +265,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 Graph trueGraph = _simulation.getTrueGraph(0);
                 edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
                 List<Graph> graphs = new ArrayList<>();
-                for (int i = 0; i < _simulation.getNumDataSets(); i++) {
+                for (int i = 0; i < _simulation.getNumDataModels(); i++) {
                     graphs.add(_simulation.getTrueGraph(i));
                 }
 
@@ -276,8 +274,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                 DataModelList list = new DataModelList();
 
-                for (int i = 0; i < _simulation.getNumDataSets(); i++) {
-                    list.add(_simulation.getDataSet(i));
+                for (int i = 0; i < _simulation.getNumDataModels(); i++) {
+                    list.add(_simulation.getDataModel(i));
                 }
 
                 wrapper.setDataModelList(list);
@@ -351,7 +349,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         List<Graph> graphs = new ArrayList<>();
-        for (int i = 0; i < _simulation.getNumDataSets(); i++) {
+        for (int i = 0; i < _simulation.getNumDataModels(); i++) {
             graphs.add(_simulation.getTrueGraph(i));
         }
 

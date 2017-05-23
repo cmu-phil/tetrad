@@ -79,6 +79,7 @@ public final class GraphUtils {
      */
     public static void circleLayout(Graph graph, int centerx, int centery,
             int radius) {
+        if (graph == null) return;
         List<Node> nodes = graph.getNodes();
 
         Collections.sort(nodes, new Comparator<Node>() {
@@ -2471,9 +2472,8 @@ public final class GraphUtils {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new IllegalStateException();
         }
-
-        throw new IllegalStateException();
     }
 
     public static Graph loadGraphJson(File file) {

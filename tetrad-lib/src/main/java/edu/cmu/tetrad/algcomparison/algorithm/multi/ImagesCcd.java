@@ -28,12 +28,14 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataModel> dataModels = new ArrayList<>();
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
-            dataModels.add(dataSet);
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
         }
+
+        DataSet dataSet = DataUtils.concatenate(dataSets);
 
         SemBicScoreImages score = new SemBicScoreImages(dataModels);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -48,12 +50,13 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
         search.setKnowledge(knowledge);
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override

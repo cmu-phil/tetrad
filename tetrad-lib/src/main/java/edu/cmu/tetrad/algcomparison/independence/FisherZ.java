@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import com.sun.org.apache.bcel.internal.generic.ICONST;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.search.IndTestFisherZ;

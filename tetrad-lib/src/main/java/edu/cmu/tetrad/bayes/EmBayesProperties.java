@@ -168,13 +168,13 @@ public final class EmBayesProperties {
 //            gf.addNode(node);
 //        }
 //
-//        EmBayesProperties scorerf = new EmBayesProperties(getDataSet(), gg);
-//        EmBayesProperties scorerg = new EmBayesProperties(getDataSet(), gf);
+//        EmBayesProperties scorerf = new EmBayesProperties(getDataModel(), gg);
+//        EmBayesProperties scorerg = new EmBayesProperties(getDataModel(), gf);
 //
 //        double[] scoresf = scorerf.logsProbDataGivenStructure();
 //        double[] scoresg = scorerg.logsProbDataGivenStructure();
 //
-//        int n = getDataSet().getNumRows();
+//        int n = getDataModel().getNumRows();
 //
 //        double v1 = 0.0;
 //
@@ -217,7 +217,7 @@ public final class EmBayesProperties {
 //     * Calculates  log(P(Data | structure)) using Andrew Moore's formula.
 //     */
 //    public final double logProbDataGivenStructure2() {
-//        DataSetProbs probs = new DataSetProbs(getDataSet());
+//        DataSetProbs probs = new DataSetProbs(getDataModel());
 //
 //        double r = dataSet.getNumRows();
 //        double score = 0.0;

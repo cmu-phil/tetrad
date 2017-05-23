@@ -31,6 +31,7 @@ public class CpcStable implements Algorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.CpcStable search = new edu.cmu.tetrad.search.CpcStable(test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         return search.search();
     }

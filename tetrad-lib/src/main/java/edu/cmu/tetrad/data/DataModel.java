@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
@@ -58,6 +59,10 @@ public interface DataModel
     boolean isDiscrete();
 
     boolean isMixed();
+
+    Node getVariable(String name);
+
+    DataModel copy();
 }
 
 

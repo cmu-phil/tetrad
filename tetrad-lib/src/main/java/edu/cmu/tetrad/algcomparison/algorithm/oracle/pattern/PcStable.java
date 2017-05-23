@@ -44,6 +44,7 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         edu.cmu.tetrad.search.PcStable search = new edu.cmu.tetrad.search.PcStable(test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
 

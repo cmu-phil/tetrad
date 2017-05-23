@@ -761,9 +761,9 @@ public final class LargeScaleSimulation {
     }
 
     public double[][] getUncorrelatedNonGausianShocks(int sampleSize) {
-        TDistribution normal = new TDistribution(new Well1024a(++seed), 6);
+//        TDistribution normal = new TDistribution(new Well1024a(++seed), 6);
 //       BetaDistribution normal = new BetaDistribution(new Well1024a(++seed), 1, 2);
-//        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
+        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
 
         int numVars = variableNodes.size();
         setupModel(numVars);
@@ -772,7 +772,7 @@ public final class LargeScaleSimulation {
 
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < numVars; j++) {
-                shocks[i][j] = normal.sample();// * sqrt(errorVars[j]);
+                shocks[i][j] = normal.sample() * sqrt(errorVars[j]);
             }
         }
 

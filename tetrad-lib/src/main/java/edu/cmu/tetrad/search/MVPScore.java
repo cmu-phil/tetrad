@@ -21,18 +21,17 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.List;
+import java.util.*;
 
 /**
- * Implements a conditional Gaussian BIC score for FGES.
+ * Implements a mixed variable polynomial BIC score for fGES.
  *
- * @author Joseph Ramsey
+ * @author Bryan Andrews
  */
-public class SemBicScore2 implements Score {
+public class MVPScore implements Score {
 
     private DataSet dataSet;
 
@@ -40,42 +39,30 @@ public class SemBicScore2 implements Score {
     private List<Node> variables;
 
     // Likelihood function
-    private SemLikelihood2 likelihood;
+    private MVPLikelihood likelihood;
 
-    private double penaltyDiscount = 1;
+    // Log number of instances
+    private double logn;
 
-    /**
-     * Constructs the score using a covariance matrix.
-     */
-    public SemBicScore2(DataSet dataSet) {
-        if (dataSet == null) {
+    public MVPScore(DataSet dataSet, double structurePrior, int fDegree) {
+
+            if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-
-        this.likelihood = new SemLikelihood2(new CovarianceMatrixOnTheFly(dataSet));
+        this.likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree);
+        this.logn = Math.log(dataSet.getNumRows());
     }
 
-    /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
-     */
     public double localScore(int i, int... parents) {
-        SemLikelihood2.Ret ret = likelihood.getLikelihood(i, parents);
 
-        int N = dataSet.getNumRows();
-        double lik = ret.getLik();
-        int k = ret.getDof();
+        double lik = likelihood.getLik(i, parents);
+        double dof = likelihood.getDoF(i, parents);
+        double sp = likelihood.getStructurePrior(parents.length);
 
-        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N);
-    }
-
-    private double getStructurePrior(int[] parents) {
-        int i = parents.length + 1;
-        int c = dataSet.getNumColumns();
-        double p = 2 / (double) c;
-        return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
+        return 2.0 * lik - dof * logn + sp;
     }
 
     public double localScoreDiff(int x, int y, int[] z) {
@@ -122,16 +109,9 @@ public class SemBicScore2 implements Score {
         return variables;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double alpha) {
-
-    }
-
     @Override
     public Node getVariable(String targetName) {
+
         for (Node node : variables) {
             if (node.getName().equals(targetName)) {
                 return node;
@@ -146,13 +126,11 @@ public class SemBicScore2 implements Score {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
     }
 
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
 }
 
 

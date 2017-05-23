@@ -63,7 +63,7 @@ public class Lofs2 {
     private Graph pattern;
     private List<DataSet> dataSets;
     private List<TetradMatrix> matrices;
-    private double alpha = 1.0;
+    private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
     private List<String> varnames;
@@ -393,11 +393,11 @@ public class Lofs2 {
                 }
             }
 
-            double p = pValue(node, parents);
-
-            if (p > alpha) {
-                continue;
-            }
+//            double p = pValue(node, parents);
+//
+//            if (p > alpha) {
+//                continue;
+//            }
 
             for (double score : scoreReports.keySet()) {
                 TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
@@ -520,15 +520,15 @@ public class Lofs2 {
 
                 double p3 = pValue(y, condyPlus);
 
-                if (p3 > alpha) {
-                    continue;
-                }
+//                if (p3 > alpha) {
+//                    continue;
+//                }
 
                 double p4 = pValue(y, condyMinus);
 
-                if (p4 > alpha) {
-                    continue;
-                }
+//                if (p4 > alpha) {
+//                    continue;
+//                }
 
                 boolean forbiddenLeft = knowledge.isForbidden(y.getName(), x.getName());
                 boolean forbiddenRight = knowledge.isForbidden(x.getName(), y.getName());
@@ -705,9 +705,6 @@ public class Lofs2 {
     }
 
     private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
-        if (graph.getEdge(x, y).isDirected()) return;
-        if (graph.getEdges(x, y).size() > 1) return;
-
         String xname = x.getName();
         String yname = y.getName();
 
@@ -749,10 +746,7 @@ public class Lofs2 {
         graph.removeEdges(x, y);
 //        double epsilon = 0;
 
-        if (deltaX < epsilon && deltaY < epsilon) {
-            graph.addDirectedEdge(x, y);
-            graph.addDirectedEdge(y, x);
-        } else if (deltaY > deltaX) {
+        if (deltaY > deltaX) {
             graph.addDirectedEdge(x, y);
         } else {
             graph.addDirectedEdge(y, x);
@@ -1323,10 +1317,6 @@ public class Lofs2 {
             nodesHash.put(nodes.get(i), i);
         }
 
-//        if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//            graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//        }
-
         for (Edge edge : graph.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -1342,8 +1332,6 @@ public class Lofs2 {
             double[] xx = new double[xData.length];
             double[] yy = new double[yData.length];
 
-            double corrxy = StatUtils.correlation(xData, yData);
-
             for (int i = 0; i < xData.length; i++) {
                 double xi = xData[i];
                 double yi = yData[i];
@@ -1358,55 +1346,15 @@ public class Lofs2 {
             double mxx = mean(xx);
             double myy = mean(yy);
 
-            double R = regressionCoef(xData, yData);
-
-            double[] D = new double[xx.length];
-
-            for (int i = 0; i < xx.length; i++) {
-                D[i] = xx[i] - yy[i];
-            }
-
-            double md = mean(D);
-            double sd = sd(D);
-            int n = xx.length;
-
-            double td = (md - 0.0) / (sd / sqrt(n));
-            double tda = 2 * (1.0 - new TDistribution(n - 1).cumulativeProbability(abs(td)));
-
-//            double varxx = variance(xx);
-//            double varyy = variance(yy);
-//            double sp = (varxx + varyy) / 2.0;
-//            double tp = (mxx - myy) / (sp * sqrt(2.0 / n));
-//            double ta = 2 * (1.0 - new TDistribution(2 * n - 2).cumulativeProbability(Math.abs(tp)));
-
             graph.removeEdge(edge);
 
-            double xa = new AndersonDarlingTest(xData).getP();
-            double ya = new AndersonDarlingTest(yData).getP();
-
-            System.out.println("Edge " + edge + ": corr(x, y) = " + corrxy + " xa = " + xa + " ya = " + ya +
-                    " td = " + td + " mxx = " + mxx + " myy = " + myy);
-
-            double alpha = 0.01;
-
-            if ((xa < alpha && ya < alpha) && (signum(mxx) == -signum(myy) || abs(td) < 1.96)) {
-                graph.addDirectedEdge(x, y);
-                graph.addDirectedEdge(y, x);
-                System.out.println("\n    ORIENTING " + edge + " AS A TWO CYCLE: " + "xa = " + xa + " ya = " + ya +
-                        " td = " + td + " tda = " + tda + " mxx = " + mxx + " myy = " + myy + " R = " + R + "\n");
-            } else if (mxx > myy) {
+            if (mxx > myy) {
                 graph.addDirectedEdge(x, y);
             } else if (myy > mxx) {
                 graph.addDirectedEdge(y, x);
             } else {
                 graph.addUndirectedEdge(x, y);
             }
-
-            // 1-10
-            // 2-3
-            // 11-17
-            // 12-20
-            // 15-19
         }
 
         return graph;

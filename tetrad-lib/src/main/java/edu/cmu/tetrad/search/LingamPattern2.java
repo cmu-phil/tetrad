@@ -125,12 +125,12 @@ public class LingamPattern2 {
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
         NumberFormat nf = new DecimalFormat("0.0000");
 
-//        TetradMatrix m = getDataSet().getDoubleData();
+//        TetradMatrix m = getDataModel().getDoubleData();
 
-//        for (int j = 0; j < getDataSet().getNumColumns(); j++) {
+//        for (int j = 0; j < getDataModel().getNumColumns(); j++) {
 //            double[] x = m.viewColumn(j).toArray();
 //            double p = new AndersonDarlingTest(x).getP();
-//            System.out.println(getDataSet().getVariable(j) + ": " + nf.format(p));
+//            System.out.println(getDataModel().getVariable(j) + ": " + nf.format(p));
 //        }
 
 //        System.out.println();
@@ -173,8 +173,8 @@ public class LingamPattern2 {
 //
 //        TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Residuals\n");
 //
-//        for (int j = 0; j < getDataSet().getNumColumns(); j++) {
-//            TetradLogger.getInstance().log("normalityTests", getDataSet().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
+//        for (int j = 0; j < getDataModel().getNumColumns(); j++) {
+//            TetradLogger.getInstance().log("normalityTests", getDataModel().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
 //        }
 
 //        System.out.println();

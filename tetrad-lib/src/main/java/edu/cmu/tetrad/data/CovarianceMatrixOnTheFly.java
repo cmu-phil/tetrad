@@ -728,6 +728,11 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     @Override
+    public DataModel copy() {
+        return null;
+    }
+
+    @Override
     public void setValue(int i, int j, double v) {
         throw new IllegalArgumentException();
 //        if (i == j) {

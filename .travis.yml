@@ -6,6 +6,7 @@ jdk:
 branches:
   only:
   - development
+  - fang
 
 
 env:
@@ -14,7 +15,7 @@ env:
   - secure: CvgCaARwQXuVuiZxOXLtfVmgCS5yXkKJCbXSFB/3aJzCrGTSP8X+ihmXHoZ5/S3Z+KZNAWUwUI9N2dvYH03VqZV9obj/Qox5lNc0oO/xgNe9tXVrbartLslL1DMOkzCXoWf9rq8fys32rXcbuRjq8TKTebBAHnxC8CxJE3ptQa17DSQffLqo4nhRyJGLGwsGOrMCY5hviIVxgjbvjDwA0rbId8eyl9/3+wWAx2V8UPKUnlQgneiV/tsDjPpuY7Y6+OJEUEDObjSJCYhGdqDA3+CqDjFTF2aTTVpzf86YW7ke9j43vbGff/yrG53uzUIngqY5B641PI6H9D1echmPSKP0MHA/tVR+CfydzarBQE3xlwS8amnQ0edeOD/byf7TdztLjSr2VH4dlGQRQ0YbuSXf2VrP2kCLE5Yukx3IeLcJ5lMh9yjl0NdOUG/z+kCKPGnLm9PxDBJ0uhXbdFF7i1w0Jvt5VjVu/+Xqml8PDOPqVZ09Bwpz+6bTDkUDKmttkiX2LntH/2459PlLVMm7/6D+7hWdCpBXzi1bLi9g3VjIO80DMFMYUB9ibHJfEY0jZNMyyGZ9ihz8IiHH6lxOSMF1JH/e0D3l3m08dq29X9C4xtWu5DCGAe2rq2xUwgJxSVfWczJeXAGEaOVL/fk/NI7ptz8R6XEjmKopupp0+g4=
 
 after_success:
-- mvn deploy --settings settings.xml -DskipTests=true -B
+  - mvn deploy --settings settings.xml -DskipTests=true -B
 
 before_script:
   - echo "MAVEN_OPTS='-Xmx3g'" > ~/.mavenrc

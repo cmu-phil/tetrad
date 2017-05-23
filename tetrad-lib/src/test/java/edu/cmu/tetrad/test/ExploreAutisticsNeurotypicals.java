@@ -45,7 +45,7 @@ public final class ExploreAutisticsNeurotypicals {
 
     public void printEdgeData() {
         String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
-//        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
+//        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOee.2012.04.20/data/USM_Datasets";
         List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
         List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
         List<List<Graph>> graphs = reconcileNodes(allGraphs);

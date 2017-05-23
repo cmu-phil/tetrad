@@ -820,7 +820,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         private Box buildTextButton() {
             GraphSelectionTextInputAction action
                     = new GraphSelectionTextInputAction(GraphSelectionEditorPanel.this,
-                            wrapper, sourceList, selectedList);
+                    wrapper, sourceList, selectedList);
             JButton sort = new JButton(action);
             sort.setFont(sort.getFont().deriveFont(11f));
             sort.setMargin(new Insets(3, 3, 3, 3));
@@ -1134,7 +1134,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
          * clipboard.
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
-                JList<Node> sourceList, JList<Node> selectedList) {
+                                             JList<Node> sourceList, JList<Node> selectedList) {
             super("Text Input...");
             this.component = component;
             this.wrapper = wrapper;

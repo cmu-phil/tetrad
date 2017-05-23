@@ -50,7 +50,7 @@ public class HsimRun {
             Fges fges = new Fges(score);
             fges.setVerbose(false);
             fges.setNumPatternsToStore(0);
-//            fges.setAlpha(penaltyDiscount);
+//            fges.setCorrErrorsAlpha(penaltyDiscount);
             //fges.setOut(out);
             //fges.setFaithfulnessAssumed(true);
             //fges.setMaxIndegree(1);
@@ -106,7 +106,7 @@ public class HsimRun {
             Fges fgesOut = new Fges(_score);
             fgesOut.setVerbose(false);
             fgesOut.setNumPatternsToStore(0);
-//            fgesOut.setAlpha(2.0);
+//            fgesOut.setCorrErrorsAlpha(2.0);
             //fgesOut.setOut(out);
             //fgesOut.setFaithfulnessAssumed(true);
             // fgesOut.setMaxIndegree(1);

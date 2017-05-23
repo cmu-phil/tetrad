@@ -28,7 +28,6 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -130,22 +129,13 @@ public class Comparison {
         // are set in the parameters object.
         List<SimulationWrapper> simulationWrappers = new ArrayList<>();
 
-        int numRuns = -1;
+        int numRuns = parameters.getInt("numRuns");
 
         for (Simulation simulation : simulations.getSimulations()) {
             List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
 
             for (SimulationWrapper wrapper : wrappers) {
                 wrapper.createData(wrapper.getSimulationSpecificParameters());
-
-                int _numRuns = wrapper.getSimulationSpecificParameters().getInt("numRuns");
-
-                if (numRuns == -1) {
-                    numRuns = _numRuns;
-                } else if (numRuns != _numRuns) {
-                    throw new IllegalArgumentException("The simulation all need to have the same number of runs.");
-                }
-
                 simulationWrappers.add(wrapper);
             }
         }
@@ -388,14 +378,14 @@ public class Comparison {
                 dir1.mkdirs();
                 dir2.mkdirs();
 
-                for (int j = 0; j < simulationWrapper.getNumDataSets(); j++) {
+                for (int j = 0; j < simulationWrapper.getNumDataModels(); j++) {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     GraphUtils.saveGraph(simulationWrapper.getTrueGraph(j), file2, false);
 
                     File file = new File(dir2, "data." + (j + 1) + ".txt");
                     Writer out = new FileWriter(file);
-                    DataSet dataSet = simulationWrapper.getDataSet(j);
-                    DataWriter.writeRectangularData(dataSet, out, '\t');
+                    DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
+                    DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
                 }
 
@@ -733,51 +723,51 @@ public class Comparison {
             }
         }
 
-        if (!isParallelized()) {
+//        if (!isParallelized()) {
             for (AlgorithmTask task : tasks) {
                 task.compute();
             }
-        } else {
-            class Task extends RecursiveTask<Boolean> {
-                List<AlgorithmTask> tasks;
+//        } else {
+//            class Task extends RecursiveTask<Boolean> {
+//                List<AlgorithmTask> tasks;
+//
+//                public Task(List<AlgorithmTask> tasks) {
+//                    this.tasks = tasks;
+//                }
+//
+//                @Override
+//                protected Boolean compute() {
+//                    Queue<AlgorithmTask> tasks = new ArrayDeque<>();
+//
+//                    for (AlgorithmTask task : this.tasks) {
+//                        tasks.add(task);
+//                        task.fork();
+//
+//                        for (AlgorithmTask _task : new ArrayList<>(tasks)) {
+//                            if (_task.isDone()) {
+//                                _task.join();
+//                                tasks.remove(_task);
+//                            }
+//                        }
+//
+//                        while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
+//                            AlgorithmTask _task = tasks.poll();
+//                            _task.join();
+//                        }
+//                    }
+//
+//                    for (AlgorithmTask task : tasks) {
+//                        task.join();
+//                    }
+//
+//                    return true;
+//                }
+//            }
 
-                public Task(List<AlgorithmTask> tasks) {
-                    this.tasks = tasks;
-                }
-
-                @Override
-                protected Boolean compute() {
-                    Queue<AlgorithmTask> tasks = new ArrayDeque<>();
-
-                    for (AlgorithmTask task : this.tasks) {
-                        tasks.add(task);
-                        task.fork();
-
-                        for (AlgorithmTask _task : new ArrayList<>(tasks)) {
-                            if (_task.isDone()) {
-                                _task.join();
-                                tasks.remove(_task);
-                            }
-                        }
-
-                        while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
-                            AlgorithmTask _task = tasks.poll();
-                            _task.join();
-                        }
-                    }
-
-                    for (AlgorithmTask task : tasks) {
-                        task.join();
-                    }
-
-                    return true;
-                }
-            }
-
-            Task task = new Task(tasks);
-
-            ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-        }
+//            Task task = new Task(tasks);
+//
+//            ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+//        }
 
         return allStats;
     }
@@ -879,7 +869,7 @@ public class Comparison {
         AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getAlgSimIndex());
         AlgorithmWrapper algorithmWrapper = algorithmSimulationWrapper.getAlgorithmWrapper();
         SimulationWrapper simulationWrapper = algorithmSimulationWrapper.getSimulationWrapper();
-        DataSet data = simulationWrapper.getDataSet(run.getRunIndex());
+        DataModel data = simulationWrapper.getDataModel(run.getRunIndex());
         Graph trueGraph = simulationWrapper.getTrueGraph(run.getRunIndex());
 
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
@@ -898,23 +888,23 @@ public class Comparison {
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
                 List<Integer> indices = new ArrayList<>();
-                int numDataSets = simulationWrapper.getSimulation().getNumDataSets();
-                for (int i = 0; i < numDataSets; i++) indices.add(i);
+                int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
+                for (int i = 0; i < numDataModels; i++) indices.add(i);
                 Collections.shuffle(indices);
 
-                List<DataSet> dataSets = new ArrayList<>();
+                List<DataModel> dataModels = new ArrayList<>();
                 int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt(
                         "randomSelectionSize");
-                for (int i = 0; i < Math.min(numDataSets, randomSelectionSize); i++) {
-                    dataSets.add(simulationWrapper.getSimulation().getDataSet(indices.get(i)));
+                for (int i = 0; i < Math.min(numDataModels, randomSelectionSize); i++) {
+                    dataModels.add(simulationWrapper.getSimulation().getDataModel(indices.get(i)));
                 }
 
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = ((MultiDataSetAlgorithm) algorithm).search(dataSets, _params);
+                out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
-                DataSet dataSet = copyData ? data.copy() : data;
+                DataModel DataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = algorithm.search(dataSet, _params);
+                out = algorithm.search(DataModel, _params);
             }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
@@ -1248,6 +1238,8 @@ public class Comparison {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
+                    } else if (Double.isNaN(stat)) {
+                        table.setToken(t + 1, initialColumn + statIndex, "*");
                     } else {
                         table.setToken(t + 1, initialColumn + statIndex,
                                 Math.abs(stat) < Math.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
@@ -1320,13 +1312,13 @@ public class Comparison {
         return newOrder;
     }
 
-    private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
+    private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataModel DataModel) {
         if (discrete1 && discrete2) {
             Graph newGraph = new EdgeListGraph(graph.getNodes());
 
             for (Edge edge : graph.getEdges()) {
-                Node node1 = dataSet.getVariable(edge.getNode1().getName());
-                Node node2 = dataSet.getVariable(edge.getNode2().getName());
+                Node node1 = DataModel.getVariable(edge.getNode1().getName());
+                Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof DiscreteVariable &&
                         node2 instanceof DiscreteVariable) {
@@ -1339,8 +1331,8 @@ public class Comparison {
             Graph newGraph = new EdgeListGraph(graph.getNodes());
 
             for (Edge edge : graph.getEdges()) {
-                Node node1 = dataSet.getVariable(edge.getNode1().getName());
-                Node node2 = dataSet.getVariable(edge.getNode2().getName());
+                Node node1 = DataModel.getVariable(edge.getNode1().getName());
+                Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof ContinuousVariable &&
                         node2 instanceof ContinuousVariable) {
@@ -1353,8 +1345,8 @@ public class Comparison {
             Graph newGraph = new EdgeListGraph(graph.getNodes());
 
             for (Edge edge : graph.getEdges()) {
-                Node node1 = dataSet.getVariable(edge.getNode1().getName());
-                Node node2 = dataSet.getVariable(edge.getNode2().getName());
+                Node node1 = DataModel.getVariable(edge.getNode1().getName());
+                Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof DiscreteVariable &&
                         node2 instanceof ContinuousVariable) {
@@ -1383,8 +1375,8 @@ public class Comparison {
         }
 
         @Override
-        public Graph search(DataModel dataSet, Parameters parameters) {
-            return algorithm.search(dataSet, this.parameters);
+        public Graph search(DataModel DataModel, Parameters parameters) {
+            return algorithm.search(DataModel, this.parameters);
         }
 
         @Override
@@ -1448,8 +1440,8 @@ public class Comparison {
         }
 
         @Override
-        public Graph search(DataModel dataSet, Parameters parameters) {
-            return algorithmWrapper.getAlgorithm().search(dataSet, parameters);
+        public Graph search(DataModel DataModel, Parameters parameters) {
+            return algorithmWrapper.getAlgorithm().search(DataModel, parameters);
         }
 
         @Override
@@ -1487,7 +1479,7 @@ public class Comparison {
         static final long serialVersionUID = 23L;
         private Simulation simulation;
         private List<Graph> graphs;
-        private List<DataSet> dataSets;
+        private List<DataModel> dataModels;
         private Parameters parameters;
 
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
@@ -1502,27 +1494,27 @@ public class Comparison {
         public void createData(Parameters parameters) {
             simulation.createData(parameters);
             this.graphs = new ArrayList<>();
-            this.dataSets = new ArrayList<>();
-            for (int i = 0; i < simulation.getNumDataSets(); i++) {
+            this.dataModels = new ArrayList<>();
+            for (int i = 0; i < simulation.getNumDataModels(); i++) {
                 this.graphs.add(simulation.getTrueGraph(i));
-                this.dataSets.add(simulation.getDataSet(i));
+                this.dataModels.add(simulation.getDataModel(i));
             }
         }
 
         @Override
-        public int getNumDataSets() {
-            return dataSets.size();
+        public int getNumDataModels() {
+            return dataModels.size();
         }
 
         @Override
         public Graph getTrueGraph(int index) {
-            if (graphs == null) return null;
+            if (graphs.get(index) == null) return null;
             else return new EdgeListGraph(graphs.get(index));
         }
 
         @Override
-        public DataSet getDataSet(int index) {
-            return dataSets.get(index);
+        public DataModel getDataModel(int index) {
+            return dataModels.get(index);
         }
 
         @Override

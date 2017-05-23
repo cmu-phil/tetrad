@@ -53,6 +53,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -267,32 +268,45 @@ public class TestFges {
         Node x3 = new GraphNode("X3");
         Node x4 = new GraphNode("X4");
 
-        Graph g = new EdgeListGraph();
-        g.addNode(x1);
-        g.addNode(x2);
-        g.addNode(x3);
-        g.addNode(x4);
+        Graph dag = new EdgeListGraph();
+        dag.addNode(x1);
+        dag.addNode(x2);
+        dag.addNode(x3);
+        dag.addNode(x4);
 
-        g.addDirectedEdge(x1, x2);
-        g.addDirectedEdge(x1, x3);
-        g.addDirectedEdge(x4, x2);
-        g.addDirectedEdge(x4, x3);
+        dag.addDirectedEdge(x1, x2);
+        dag.addDirectedEdge(x1, x3);
+        dag.addDirectedEdge(x4, x2);
+        dag.addDirectedEdge(x4, x3);
 
-        Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        FgesMb2 fges = new FgesMb2(new GraphScore(g));
-//        fges.setHeuristicSpeedup(false);
-        Graph pattern2 = fges.search(x1);
+        GraphScore fgesScore = new GraphScore(dag);
 
-//        System.out.println(pattern1);
-//        System.out.println(pattern2);
+        Fges fges = new Fges(fgesScore);
+        Graph pattern1 = fges.search();
 
-        assertEquals(pattern1, pattern2);
+        Set<Node> mb = new HashSet<>();
+        mb.add(x1);
+
+        mb.addAll(pattern1.getAdjacentNodes(x1));
+
+        for (Node child : pattern1.getChildren(x1)) {
+            mb.addAll(pattern1.getParents(child));
+        }
+
+        Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
+
+        FgesMb fgesMb = new FgesMb(fgesScore);
+        Graph mb2 = fgesMb.search(x1);
+
+        assertEquals(mb1, mb2);
     }
 
     @Test
     public void testFgesMbFromGraph() {
+        RandomUtil.getInstance().setSeed(1450184147770L);
+
         int numNodes = 20;
-        int numIterations = 10;
+        int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
@@ -315,7 +329,7 @@ public class TestFges {
 
             Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
 
-            FgesMb2 fgesMb = new FgesMb2(fgesScore);
+            FgesMb fgesMb = new FgesMb(fgesScore);
             Graph mb2 = fgesMb.search(x1);
 
             assertEquals(mb1, mb2);
@@ -387,7 +401,7 @@ public class TestFges {
 
         simulation.createData(parameters);
 
-        DataSet dataSet = simulation.getDataSet(0);
+        DataSet dataSet = (DataSet) simulation.getDataModel(0);
         Graph trueGraph = simulation.getTrueGraph(0);
 
 //        trueGraph = SearchGraphUtils.patternForDag(trueGraph);
@@ -395,7 +409,7 @@ public class TestFges {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test = new FisherZ();
 
-        Algorithm fges  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
+        Algorithm fges  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score, false);
 
         Graph fgesGraph = fges.search(dataSet, parameters);
 
@@ -1373,9 +1387,78 @@ public class TestFges {
 
     }
 
-    public static void main(String... args) {
-        new TestFges().testBestAlgorithms();
+    @Test
+    public void test7() {
+        for (int i = 0; i < 10; i++) {
+
+            Graph graph = GraphUtils.randomGraph(10, 0,
+                    10, 10, 10, 10, false);
+            SemPm semPm = new SemPm(graph);
+            SemIm semIm = new SemIm(semPm);
+            DataSet dataSet = semIm.simulateData(1000, false);
+
+            Fges fges = new Fges(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+            Graph pattern = fges.search();
+
+            Graph dag = dagFromPattern(pattern);
+
+            assertFalse(dag.existsDirectedCycle());
+        }
     }
+
+    private Graph dagFromPattern(Graph pattern) {
+        Graph dag = new EdgeListGraph(pattern);
+
+        MeekRules rules = new MeekRules();
+
+        WHILE:
+        while (true) {
+            List<Edge> edges = new ArrayList<>(dag.getEdges());
+
+            for (Edge edge : edges) {
+                if (Edges.isUndirectedEdge(edge)) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    List<Node> okx = dag.getAdjacentNodes(x);
+                    okx.removeAll(dag.getChildren(x));
+                    okx.remove(y);
+
+                    List<Node> oky = dag.getAdjacentNodes(y);
+                    oky.removeAll(dag.getChildren(y));
+                    oky.remove(x);
+
+                    if (!okx.isEmpty()) {
+                        Node other = okx.get(0);
+                        dag.removeEdge(other, x);
+                        dag.removeEdge(y, x);
+                        dag.addDirectedEdge(other, x);
+                        dag.addDirectedEdge(y, x);
+                    } else if (!oky.isEmpty()) {
+                        Node other = oky.get(0);
+                        dag.removeEdge(other, y);
+                        dag.removeEdge(x, y);
+                        dag.addDirectedEdge(other, y);
+                        dag.addDirectedEdge(x, y);
+                    } else {
+                        dag.removeEdge(x, y);
+                        dag.addDirectedEdge(x, y);
+                    }
+
+                    rules.orientImplied(dag);
+                    continue WHILE;
+                }
+            }
+
+            break;
+        }
+
+        return dag;
+    }
+
+//    public static void main(String... args) {
+//        new TestFges().testBestAlgorithms();
+//    }
 }
 
 

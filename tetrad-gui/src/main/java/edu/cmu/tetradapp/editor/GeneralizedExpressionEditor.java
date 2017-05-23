@@ -761,7 +761,7 @@ class GeneralizedExpressionEditor extends JComponent {
                 {">", " > "},
                 {"Normal(mean, sd)", "Normal(%, %)"},
                 {"TruncNormal(mean, sd, low, high)", "TruncNormal(%, %, %, %)"},
-                {"Uniform(mean, sd)", "Uniform(%, %)"},
+                {"Uniform(low, high)", "Uniform(%, %)"},
                 {"StudentT(df)", "StudentT(%)"},
                 {"Beta(alpha, beta)", "Beta(%, %)"},
                 {"Gamma(alpha, lambda)", "Gamma(%, %)"},

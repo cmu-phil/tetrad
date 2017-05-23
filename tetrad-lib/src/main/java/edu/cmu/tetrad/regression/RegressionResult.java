@@ -152,9 +152,9 @@ public class RegressionResult implements TetradSerializable {
                             int n, double[] b, double[] t,
                             double[] p, double[] se, double r2,
                             double rss, double alpha, TetradVector yHat, TetradVector res) {
-        if (regressorNames == null) {
-            throw new NullPointerException();
-        }
+//        if (regressorNames == null) {
+//            throw new NullPointerException();
+//        }
 
         if (b == null) {
             throw new NullPointerException();

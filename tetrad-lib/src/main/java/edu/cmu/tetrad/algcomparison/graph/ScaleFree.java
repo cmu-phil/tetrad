@@ -17,7 +17,7 @@ public class ScaleFree implements RandomGraph {
     @Override
     public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
         return GraphUtils.scaleFreeGraph(
-                parameters.getInt("numMeasures"),
+                parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
                 parameters.getInt("numLatents"),
                 parameters.getDouble("scaleFreeAlpha"),
                 parameters.getDouble("scaleFreeBeta"),

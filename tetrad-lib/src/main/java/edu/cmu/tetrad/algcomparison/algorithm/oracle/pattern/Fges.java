@@ -24,13 +24,21 @@ import java.util.List;
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
+    private boolean compareToTrue = false;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Fges(ScoreWrapper score) {
         this.score = score;
+        this.compareToTrue = false;
     }
+
+    public Fges(ScoreWrapper score, boolean compareToTrueGraph) {
+        this.score = score;
+        this.compareToTrue = compareToTrueGraph;
+    }
+
 
     public Fges(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
@@ -51,7 +59,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
-        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+//        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
 
         Object obj = parameters.get("printStedu.cmream");
         if (obj instanceof PrintStream) {
@@ -67,8 +75,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-//        return new EdgeListGraph(graph);
-        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        if (compareToTrue) {
+            return new EdgeListGraph(graph);
+        } else {
+            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        }
     }
 
     @Override
@@ -101,4 +112,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.knowledge = knowledge;
     }
 
+    public void setCompareToTrue(boolean compareToTrue) {
+        this.compareToTrue = compareToTrue;
+    }
 }

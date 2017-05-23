@@ -31,6 +31,7 @@ public class Ccd implements Algorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                 test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt("depth"));
         search.setApplyR1(parameters.getBoolean("applyR1"));
 
         return search.search();

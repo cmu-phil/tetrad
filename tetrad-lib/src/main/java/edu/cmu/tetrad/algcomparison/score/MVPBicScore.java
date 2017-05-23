@@ -3,9 +3,8 @@ package edu.cmu.tetrad.algcomparison.score;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.search.ConditionalGaussianScore;
+import edu.cmu.tetrad.search.MVPScore;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.SemBicScore2;
 import edu.cmu.tetrad.util.Experimental;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -13,23 +12,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for MVP BIC Score.
  *
- * @author jdramsey
+ * @author Bryan Andrews
  */
-public class SemBic2Score implements ScoreWrapper, Experimental {
+public class MVPBicScore implements ScoreWrapper, Experimental {
     static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        final SemBicScore2 score = new SemBicScore2(DataUtils.getContinuousDataSet(dataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        return score;
+        return new MVPScore(DataUtils.getMixedDataSet(dataSet),
+                parameters.getDouble("structurePrior", 0),
+                parameters.getInt("fDegree", -1));
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Gaussian BIC Score";
+        return "Mixed Variable Polynomial BIC Score";
     }
 
     @Override
@@ -40,9 +39,8 @@ public class SemBic2Score implements ScoreWrapper, Experimental {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("cgExact");
-        parameters.add("assumeMixed");
+        parameters.add("structurePrior");
+        parameters.add("fDegree");
         return parameters;
     }
 }
