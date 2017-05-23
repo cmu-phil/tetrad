@@ -27,7 +27,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FangConcatenated;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesBDeu;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesCcd;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
@@ -38,29 +41,56 @@ import edu.cmu.tetrad.algcomparison.score.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
+import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
+import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
+import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
+import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
+import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
+import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParamRequest;
+import edu.pitt.dbmi.tetrad.db.entity.AlgorithmParameter;
+import edu.pitt.dbmi.tetrad.db.entity.DataValidation;
+import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
+import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
+import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
+import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
 
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -68,8 +98,13 @@ import java.util.List;
  * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
+ * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ *
  */
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
+
+    private static final long serialVersionUID = -5719467682865706447L;
+
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
     private final JButton searchButton1 = new JButton("Search");
@@ -86,6 +121,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private Box knowledgePanel;
     private JLabel whatYouChose;
 
+    private final TetradDesktop desktop;
+    private HpcJobInfo hpcJobInfo;
+
+    private String jsonResult;
+
     //=========================CONSTRUCTORS============================//
 
     /**
@@ -94,7 +134,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
 
-        String helpHS = "/resources/javahelp/TetradHelp.xml";
+        String helpHS = "/resources/javahelp/TetradHelp.hs";
 
         try {
             URL url = this.getClass().getResource(helpHS);
@@ -123,7 +163,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         continuousTests.add(TestType.Fisher_Z);
         continuousTests.add(TestType.Correlation_T);
         continuousTests.add(TestType.SEM_BIC);
-        continuousTests.add(TestType.SEM_BICD);
         continuousTests.add(TestType.Conditional_Correlation);
         continuousTests.add(TestType.Conditional_Gaussian_LRT);
 
@@ -151,13 +190,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.PCD, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-//        descriptions.add(new AlgorithmDescription(AlgName.FGESD, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -177,8 +214,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.search_for_Markov_blankets, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.produce_undirected_graphs, OracleType.Test));
 
-        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.ALL, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.produce_undirected_graphs, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.produce_undirected_graphs, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.produce_undirected_graphs, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.search_for_structure_over_latents, OracleType.None));
@@ -372,10 +409,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         });
 
         setAlgorithm();
+
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
 
     private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
         class MyKnowledgeInput implements KnowledgeBoxInput {
+
+            private static final long serialVersionUID = 1344090367098647696L;
+
             private String name;
             private List<Node> variables;
             private List<String> varNames;
@@ -462,13 +504,372 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-                runner.execute();
-                graphEditor.replace(runner.getGraphs());
-                graphEditor.validate();
-                firePropertyChange("modelChanged", null, null);
-                pane.setSelectedComponent(graphEditor);
+                HpcAccount hpcAccount = null;
+
+                AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+                switch (name) {
+                    case FGES:
+                    case GFCI:
+                        hpcAccount = showRemoteComputingOptions(name);
+                        break;
+                    default:
+                }
+
+                if (hpcAccount == null) {
+                    runner.execute();
+                    graphEditor.replace(runner.getGraphs());
+                    graphEditor.validate();
+                    firePropertyChange("modelChanged", null, null);
+                    pane.setSelectedComponent(graphEditor);
+                } else {
+                    try {
+                        doRemoteCompute(runner, hpcAccount);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         };
+    }
+
+    private HpcAccount showRemoteComputingOptions(AlgName name) {
+        List<HpcAccount> hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();
+
+        if (hpcAccounts == null || hpcAccounts.size() == 0) {
+            return null;
+        }
+
+        String no_answer = "No, thanks";
+        String yes_answer = "Please run it on ";
+
+        Object[] options = new String[hpcAccounts.size() + 1];
+        options[0] = no_answer;
+        for (int i = 0; i < hpcAccounts.size(); i++) {
+            String connName = hpcAccounts.get(i).getConnectionName();
+            options[i + 1] = yes_answer + connName;
+        }
+
+        int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
+                "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (n == 0)
+            return null;
+        return hpcAccounts.get(n - 1);
+    }
+
+    private void doRemoteCompute(final GeneralAlgorithmRunner runner, final HpcAccount hpcAccount) throws Exception {
+
+        // **********************
+        // Show progress panel *
+        // **********************
+
+        Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
+        final JDialog progressDialog = new JDialog(ancestor, "HPC Job Submission's Progress...", false);
+
+        Dimension progressDim = new Dimension(500, 150);
+
+        JTextArea progressTextArea = new JTextArea();
+        progressTextArea.setPreferredSize(progressDim);
+        progressTextArea.setEditable(false);
+
+        JScrollPane progressScroller = new JScrollPane(progressTextArea);
+        progressScroller.setAlignmentX(LEFT_ALIGNMENT);
+
+        progressDialog.setLayout(new BorderLayout());
+        progressDialog.getContentPane().add(progressScroller, BorderLayout.CENTER);
+        progressDialog.pack();
+        Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
+        progressDialog.setLocation((screenDim.width - progressDim.width) / 2,
+                (screenDim.height - progressDim.height) / 2);
+        progressDialog.setVisible(true);
+
+        int totalProcesses = 4;
+        String newline = "\n";
+        String tab = "\t";
+        int progressTextLength = 0;
+
+        DataModel dataModel = runner.getDataModel();
+
+        // 1. Generate temp file
+        Path file = null;
+        Path prior = null;
+        try {
+            // ****************************
+            // Data Preparation Progress *
+            // ****************************
+            String dataMessage = String.format("1/%1$d Data Preparation", totalProcesses);
+            progressTextArea.append(dataMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            file = Files.createTempFile("Tetrad-data-", ".txt");
+            // System.out.println(file.toAbsolutePath().toString());
+            List<String> tempLine = new ArrayList<>();
+
+            // Header
+            List<Node> variables = dataModel.getVariables();
+            if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
+                variables = runner.getSourceGraph().getNodes();
+            }
+
+            String vars = StringUtils.join(variables.toArray(), tab);
+            tempLine.add(vars);
+
+            // Data
+            DataSet dataSet = (DataSet) dataModel;
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                String line = null;
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    String cell = null;
+                    if (dataSet.isContinuous()) {
+                        cell = String.valueOf(dataSet.getDouble(i, j));
+                    } else {
+                        cell = String.valueOf(dataSet.getInt(i, j));
+                    }
+                    if (line == null) {
+                        line = cell;
+                    } else {
+                        line = line + "\t" + cell;
+                    }
+                }
+                tempLine.add(line);
+            }
+
+            // for (String line : tempLine) {
+            // System.out.println(line);
+            // }
+
+            Files.write(file, tempLine);
+
+            // Get file's MD5 hash and use it as its identifier
+            String datasetMd5 = MessageDigestHash.computeMD5Hash(file);
+
+            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+            progressTextArea.append(newline);
+            progressTextArea.updateUI();
+
+            // ***************************************
+            // Prior Knowledge Preparation Progress *
+            // ***************************************
+            String priorMessage = String.format("2/%1$d Prior Knowledge Preparation", totalProcesses);
+            progressTextArea.append(priorMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            // 2. Generate temp prior knowledge file
+            Knowledge2 knowledge = (Knowledge2) dataModel.getKnowledge();
+            if (knowledge != null && !knowledge.isEmpty()) {
+                prior = Files.createTempFile(file.getFileName().toString(), ".prior");
+                knowledge.saveKnowledge(Files.newBufferedWriter(prior));
+
+                progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+                progressTextArea.append(newline);
+                progressTextArea.updateUI();
+            } else {
+                progressTextArea.replaceRange("Skipped", progressTextLength, progressTextArea.getText().length());
+                progressTextArea.append(newline);
+                progressTextArea.updateUI();
+            }
+            // Get knowledge file's MD5 hash and use it as its identifier
+            String priorKnowledgeMd5 = null;
+            if (prior != null) {
+                priorKnowledgeMd5 = MessageDigestHash.computeMD5Hash(prior);
+            }
+
+            // *******************************************
+            // Algorithm Parameter Preparation Progress *
+            // *******************************************
+            String algorMessage = String.format("3/%1$d Algorithm Preparation", totalProcesses);
+            progressTextArea.append(algorMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            // 3.1 Algorithm name
+            String algorithmName = AbstractAlgorithmRequest.FGES;
+            Algorithm algorithm = runner.getAlgorithm();
+            System.out.println("Algorithm: " + algorithm.getDescription());
+            AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+            switch (name) {
+                case FGES:
+                    algorithmName = AbstractAlgorithmRequest.FGES;
+                    if (dataModel.isDiscrete()) {
+                        algorithmName = AbstractAlgorithmRequest.FGES_DISCRETE;
+                    }
+                    break;
+                case GFCI:
+                    algorithmName = AbstractAlgorithmRequest.GFCI;
+                    if (dataModel.isDiscrete()) {
+                        algorithmName = AbstractAlgorithmRequest.GFCI_DISCRETE;
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            // 3.2 Parameters
+            AlgorithmParamRequest algorithmParamRequest = new AlgorithmParamRequest();
+
+            // Dataset and Prior paths
+            String datasetPath = file.toAbsolutePath().toString();
+            System.out.println(datasetPath);
+            algorithmParamRequest.setDatasetPath(datasetPath);
+            algorithmParamRequest.setDatasetMd5(datasetMd5);
+            if (prior != null) {
+                String priorKnowledgePath = prior.toAbsolutePath().toString();
+                System.out.println(priorKnowledgePath);
+                algorithmParamRequest.setPriorKnowledgePath(priorKnowledgePath);
+                algorithmParamRequest.setPriorKnowledgeMd5(priorKnowledgeMd5);
+            }
+
+            // VariableType
+            if (dataModel.isContinuous()) {
+                algorithmParamRequest.setVariableType("continuous");
+            } else {
+                algorithmParamRequest.setVariableType("discrete");
+            }
+
+            // FileDelimiter
+            String fileDelimiter = "tab"; // Pre-determined
+            algorithmParamRequest.setFileDelimiter(fileDelimiter);
+
+            // Default Data Validation Parameters
+            DataValidation dataValidation = new DataValidation();
+            dataValidation.setUniqueVarName(true);
+            if (dataModel.isContinuous()) {
+                dataValidation.setNonZeroVariance(true);
+            } else {
+                dataValidation.setCategoryLimit(true);
+            }
+            algorithmParamRequest.setDataValidation(dataValidation);
+
+            List<AlgorithmParameter> AlgorithmParameters = new ArrayList<>();
+
+            Parameters parameters = runner.getParameters();
+            List<String> parameterNames = runner.getAlgorithm().getParameters();
+            for (String parameter : parameterNames) {
+                String value = parameters.get(parameter).toString();
+                System.out.println("parameter: " + parameter + "\tvalue: " + value);
+                if (value != null) {
+                    AlgorithmParameter algorParam = new AlgorithmParameter();
+                    algorParam.setParameter(parameter);
+                    algorParam.setValue(value);
+                    AlgorithmParameters.add(algorParam);
+                }
+            }
+
+            algorithmParamRequest.setAlgorithmParameters(AlgorithmParameters);
+
+            String maxHeapSize = null;
+            do {
+                maxHeapSize = JOptionPane.showInputDialog(progressDialog, "Enter Your Request Java Max Heap Size (GB):",
+                        "5");
+            } while (maxHeapSize != null && !StringUtils.isNumeric(maxHeapSize));
+
+            if (maxHeapSize != null) {
+                JvmOption jvmOption = new JvmOption();
+                jvmOption.setParameter("maxHeapSize");
+                jvmOption.setValue(maxHeapSize);
+                List<JvmOption> jvmOptions = new ArrayList<>();
+                jvmOptions.add(jvmOption);
+                algorithmParamRequest.setJvmOptions(jvmOptions);
+            }
+
+            // Hpc parameters
+            final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
+            JsonWebToken jsonWebToken = HpcAccountUtils.getJsonWebToken(hpcAccountManager, hpcAccount);
+            if (jsonWebToken.getWallTime() != null) {
+                // User allowed to customize the job's wall time
+                String[] wallTime = jsonWebToken.getWallTime();
+                Object userwallTime = JOptionPane.showInputDialog(progressDialog, "Wall Time:",
+                        "Choose Your Wall Time (in Hour)", JOptionPane.QUESTION_MESSAGE, null, wallTime, wallTime[0]);
+
+                if (wallTime != null && userwallTime != null) {
+                    HpcParameter hpcParameter = new HpcParameter();
+                    hpcParameter.setKey("walltime");
+                    hpcParameter.setValue(userwallTime.toString());
+                    System.out.println("walltime: " + userwallTime.toString());
+                    algorithmParamRequest.setHpcParameters(Collections.singletonList(hpcParameter));
+                }
+            }
+
+            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+            progressTextArea.append(newline);
+            progressTextArea.updateUI();
+
+            // ********************************
+            // Adding HPC Job Queue Progress *
+            // ********************************
+            String dbMessage = String.format("4/%1$d HPC Job Queue Submission", totalProcesses);
+            progressTextArea.append(dbMessage);
+            progressTextArea.append(tab);
+
+            progressTextLength = progressTextArea.getText().length();
+
+            progressTextArea.append("Preparing...");
+            progressTextArea.updateUI();
+
+            HpcJobManager hpcJobManager = desktop.getHpcJobManager();
+
+            // 4.1 Save HpcJobInfo
+            hpcJobInfo = new HpcJobInfo();
+            hpcJobInfo.setAlgorithmName(algorithmName);
+            hpcJobInfo.setAlgorithmParamRequest(algorithmParamRequest);
+            hpcJobInfo.setStatus(-1);
+            hpcJobInfo.setHpcAccount(hpcAccount);
+            hpcJobManager.submitNewHpcJobToQueue(hpcJobInfo, this);
+
+            progressTextArea.replaceRange("Done", progressTextLength, progressTextArea.getText().length());
+            progressTextArea.append(newline);
+            progressTextArea.updateUI();
+
+            this.jsonResult = null;
+
+            JOptionPane.showMessageDialog(ancestor, "The " + hpcJobInfo.getAlgorithmName() + " job on the "
+                    + hpcJobInfo.getHpcAccount().getConnectionName() + " node is in the queue successfully!");
+
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } finally {
+            progressDialog.setVisible(false);
+            progressDialog.dispose();
+        }
+
+        (new HpcJobActivityAction("")).actionPerformed(null);
+
+    }
+
+    public void setAlgorithmResult(String jsonResult) {
+        this.jsonResult = jsonResult;
+
+        final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
+        final List<Graph> graphs = new ArrayList<>();
+        graphs.add(graph);
+        int size = runner.getGraphs().size();
+        for (int index = 0; index < size; index++) {
+            runner.getGraphs().remove(index);
+        }
+        runner.getGraphs().add(graph);
+        graphEditor.replace(graphs);
+        graphEditor.validate();
+        System.out.println("Remote graph result assigned to runner!");
+        firePropertyChange("modelChanged", null, null);
+        pane.setSelectedComponent(graphEditor);
+    }
+
+    public void setAlgorithmErrorResult(String errorResult) {
+        JOptionPane.showMessageDialog(desktop, jsonResult);
+        throw new IllegalArgumentException(errorResult);
     }
 
     public Algorithm getAlgorithmFromInterface() {
@@ -504,16 +905,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         switch (name) {
             case FGES:
-                algorithm = new Fges(scoreWrapper, false);
-
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                algorithm = new Fges(scoreWrapper);
-//                }
-                break;
-            case FGESD:
-                algorithm = new FgesD();
+                algorithm = new Fges(scoreWrapper);
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -533,13 +925,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
                     algorithm = new Pc(independenceWrapper);
-                }
-                break;
-            case PCD:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Pcd();
-                } else {
-                    algorithm = new Pcd();
                 }
                 break;
             case CPC:
@@ -597,7 +982,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new CcdMax(independenceWrapper);
                 break;
             case FANG:
-                algorithm = new FangConcatenated2();
+                algorithm = new FangConcatenated();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -704,9 +1089,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case SEM_BIC:
                 scoreWrapper = new SemBicScore();
                 break;
-            case SEM_BICD:
-                scoreWrapper = new SemBicScoreD();
-                break;
             case D_SEPARATION:
                 scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
                 break;
@@ -742,9 +1124,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case SEM_BIC:
                 independenceWrapper = new SemBicTest();
-                break;
-            case SEM_BICD:
-                independenceWrapper = new SemBicDTest();
                 break;
             case D_SEPARATION:
                 independenceWrapper = new DSeparationTest(new SingleGraph(runner.getSourceGraph()));
@@ -989,7 +1368,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     public boolean finalizeEditor() {
         List<Graph> graphs = runner.getGraphs();
 
-        if (graphs == null || graphs.isEmpty()) {
+        if (hpcJobInfo == null && (graphs == null || graphs.isEmpty())) {
             int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;
@@ -1023,7 +1402,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCD, PCStable, CPC, CPCStable, FGES, FGESD, /*PcLocal,*/ PcMax, FAS,
+        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
@@ -1043,12 +1422,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, SEM_BICD, D_SEPARATION, Discrete_BIC_Test, Correlation_T
+        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
     }
 
-    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, SEM_BICD, D_SEPARATION}
+    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
+
 }
-
-
-
-

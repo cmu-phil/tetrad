@@ -18,19 +18,16 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.prefs.Preferences;
+import javax.swing.*;
 
 /**
  * New data loading action.
@@ -40,7 +37,7 @@ import java.util.prefs.Preferences;
 final class LoadDataAction extends AbstractAction {
 
     /**
-     * The dataEditor into which data is loaded.                          -
+     * The dataEditor into which data is loaded. -
      */
     private DataEditor dataEditor;
 
@@ -73,48 +70,29 @@ final class LoadDataAction extends AbstractAction {
 //                return;
 //            }
 //        }
-
         JFileChooser chooser = getJFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        // Sets the file chooser to allow multiple file selections
         chooser.setMultiSelectionEnabled(true);
-
-        String path = Preferences.userRoot().get("fileSaveLocation", null);
-
-        if (path != null) {
-            chooser.setSelectedFile(new File(path));
-        }
-
-        int _ret = chooser.showOpenDialog(this.dataEditor);
+        // Customize dialog title bar text
+        chooser.setDialogTitle("Choose data files (choose multiple files with Ctrl or Shift key)");
+        // The second argument sets both the title for the dialog window and the label for the approve button
+        int _ret = chooser.showDialog(this.dataEditor, "Choose");
 
         if (_ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
 
-        final File[] files = chooser.getSelectedFiles();
-
-        // Can this happen?
-        if (files == null) {
-            return;
-        }
-
-        if (files.length == 0) {
-            return;
-        }
+        // Files array
+        File[] files = chooser.getSelectedFiles();
 
         Preferences.userRoot().put("fileSaveLocation", files[0].getParent());
 
         DataModelList dataModelList;
 
-        final LoadDataDialog dialog = new LoadDataDialog(files);
-
-        int ret = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), dialog,
-                "File Loader", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, new String[]{"Save", "Cancel"},
-                "Save");
-
-        if (ret == JOptionPane.CANCEL_OPTION) {
-            return;
-        }
+        // Show the data loader dialog to preview data ata and set their parameters
+        LoadDataDialog loadData = new LoadDataDialog(files);
+        loadData.showDataLoaderDialog();
 
         boolean keepData = false;
 
@@ -127,7 +105,7 @@ final class LoadDataAction extends AbstractAction {
             keepData = option == 1;
         }
 
-        DataModelList _dataModelList = dialog.getDataModels();
+        DataModelList _dataModelList = loadData.getDataModels();
 
         if (_dataModelList.isEmpty()) {
 //            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -149,7 +127,6 @@ final class LoadDataAction extends AbstractAction {
     }
 
     //======================= private methods =========================//
-
     /**
      * States whether the data is empty.
      */
@@ -167,17 +144,13 @@ final class LoadDataAction extends AbstractAction {
         return true;
     }
 
-
     private static JFileChooser getJFileChooser() {
         JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
+        String sessionSaveLocation
+                = Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         return chooser;
     }
 }
-
-
-
