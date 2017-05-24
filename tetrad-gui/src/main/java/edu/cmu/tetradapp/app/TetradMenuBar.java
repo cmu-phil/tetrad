@@ -227,7 +227,7 @@ final class TetradMenuBar extends JMenuBar {
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
-//        String helpHS = "/resources/javahelp/TetradHelp.xml";
+//        String helpHS = "/resources/javahelp/TetradHelp.hs";
 //        HelpSet hs;
 //
 //        try {
