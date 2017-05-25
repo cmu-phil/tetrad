@@ -164,16 +164,25 @@ public class ParamDescriptions {
                 false));
 
         put("discretize", new ParamDescription(
-                "True if variables should be discretized when child is discrete",
+                "Yes if continuous variables should be discretized when child is discrete",
                 true));
 
         put("determinismThreshold", new ParamDescription(
                 "Threshold for judging a regression of a variable onto its parents to be deternimistic",
                 0.1, 0.0, Double.POSITIVE_INFINITY));
 
+        put("cgExact", new ParamDescription(
+                "Yes if the exact algorithm should be used for continuous parents and discrete children",
+                false));
+
         put("numCategoriesToDiscretize", new ParamDescription(
-                "The number of categories to use when discretizing continuous variables",
+                "The number of categories used to discretize continuous variables, if necessary",
                 3, 2, Integer.MAX_VALUE));
+
+        put("maxPathLength", new ParamDescription(
+                "The maximum length for any discriminating path. -1 if unlimited",
+                -1, -1, Integer.MAX_VALUE));
+
 
     }
 

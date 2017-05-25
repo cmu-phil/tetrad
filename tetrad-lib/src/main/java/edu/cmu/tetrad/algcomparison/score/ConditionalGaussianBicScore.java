@@ -42,10 +42,9 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
-        parameters.add("cgExact");
-        parameters.add("assumeMixed");
         parameters.add("structurePrior");
         parameters.add("discretize");
+        parameters.add("numCategoriesToDiscretize");
         return parameters;
     }
 }
