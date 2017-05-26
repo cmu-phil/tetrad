@@ -38,6 +38,7 @@ import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.covariance.CovarianceDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.ContinuousTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.DataFileValidation;
+import edu.pitt.dbmi.data.validation.tabular.MixedTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.TabularDataValidation;
 import edu.pitt.dbmi.data.validation.tabular.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
@@ -70,7 +71,7 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton contRadioButton;
     private JRadioButton discRadioButton;
     private JRadioButton mixedRadioButton;
-    private IntTextField mixedThresholdIntField;
+    private IntTextField maxNumOfDiscCategoriesField;
 
     private JRadioButton commentDoubleSlashRadioButton;
     private JRadioButton commentPondRadioButton;
@@ -276,12 +277,12 @@ final class DataLoaderSettings extends JPanel {
         // Add tooltip on mouseover the info icon
         maxDiscCatLabelInfoIcon.setToolTipText("Integral columns with up to N (specify here) distinct values are discrete.");
 
-        // Threshold value field
-        mixedThresholdIntField = new IntTextField(0, 3);
+        // Max number of discrete categories
+        maxNumOfDiscCategoriesField = new IntTextField(0, 3);
         // 0 by default
-        mixedThresholdIntField.setValue(0);
+        maxNumOfDiscCategoriesField.setValue(0);
 
-        mixedThresholdIntField.setFilter(new IntTextField.Filter() {
+        maxNumOfDiscCategoriesField.setFilter(new IntTextField.Filter() {
             @Override
             public int filter(int value, int oldValue) {
                 if (value >= 0) {
@@ -293,7 +294,7 @@ final class DataLoaderSettings extends JPanel {
         });
 
         // Event listener
-        mixedThresholdIntField.addMouseListener(new MouseAdapter() {
+        maxNumOfDiscCategoriesField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
@@ -307,7 +308,7 @@ final class DataLoaderSettings extends JPanel {
 
         dataTypeOption3Box.add(maxDiscCatLabel);
         dataTypeOption3Box.add(maxDiscCatLabelInfoIcon);
-        dataTypeOption3Box.add(mixedThresholdIntField);
+        dataTypeOption3Box.add(maxNumOfDiscCategoriesField);
 
         dataTypeBox.add(dataTypeLabelBox);
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -893,6 +894,10 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
+    private int getMaxNumOfDiscCategories() {
+        return maxNumOfDiscCategoriesField.getValue();
+    }
+
     /**
      * Validate each file based on the specified settings
      *
@@ -913,8 +918,7 @@ final class DataLoaderSettings extends JPanel {
             } else if (discRadioButton.isSelected()) {
                 validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
             } else if (mixedRadioButton.isSelected()) {
-                // Using empty list until we have validation for mixed data - Zhou
-                return validation;
+                validation = new MixedTabularDataFileValidation(getMaxNumOfDiscCategories(), file, delimiter);
             } else {
                 throw new UnsupportedOperationException("Unsupported selection of Data Type!");
             }
@@ -1000,8 +1004,7 @@ final class DataLoaderSettings extends JPanel {
             } else if (discRadioButton.isSelected()) {
                 dataReader = new VerticalDiscreteTabularDataReader(file, delimiter);
             } else if (mixedRadioButton.isSelected()) {
-                int numberOfDiscreteCategories = mixedThresholdIntField.getValue();
-                dataReader = new MixedTabularDataFileReader(numberOfDiscreteCategories, file, delimiter);
+                dataReader = new MixedTabularDataFileReader(getMaxNumOfDiscCategories(), file, delimiter);
             } else {
                 throw new UnsupportedOperationException("Unsupported data type!");
             }
