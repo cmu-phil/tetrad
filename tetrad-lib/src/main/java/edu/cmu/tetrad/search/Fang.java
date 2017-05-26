@@ -351,9 +351,11 @@ public final class Fang implements GraphSearch {
 
         double sumSkew = 0.0;
 
-        for (Node x : graph.getNodes()){
+        for (Node x : graph.getNodes()) {
+            if (graph.getParents(x).isEmpty()) continue;
+
             RegressionResult result = regression.regress(x, graph.getParents(x));
-            double[] residuals = regression.getResidualsWithoutFirstRegressor().toArray();
+            double[] residuals = result.getResiduals().toArray();
             double skewness = skewness(residuals);
             System.out.println("Node " + x + " skewness(residual) = " + skewness + " parents = " + graph.getParents(x));
 
@@ -371,13 +373,8 @@ public final class Fang implements GraphSearch {
 
         NumberFormat nf = new DecimalFormat("0.000");
 
-        for (
-                int i = 0;
-                i < cutoffs.length; i++)
-
-        {
+        for ( int i = 0; i < cutoffs.length; i++) {
             double number = counts[i] / (double) total;
-
 
             System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
                     cutoffs[i] * sigma, number, 1.0 - number);

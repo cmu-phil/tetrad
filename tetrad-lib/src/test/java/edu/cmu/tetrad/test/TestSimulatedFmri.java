@@ -256,8 +256,8 @@ public class TestSimulatedFmri {
     @Test
     public void testClark() {
 
-        double f = 1.05;
-        int N = 1000;
+        double f = 1.7;
+        int N = 240;
 
         {
             Node x = new ContinuousVariable("X");
