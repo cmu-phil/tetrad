@@ -19,39 +19,30 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangConcatenated2 implements MultiDataSetAlgorithm, HasKnowledge {
+public class EFangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
-    private boolean rskew = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated2() {
+    public EFangConcatenated() {
         this.empirical = false;
     }
 
-    public FangConcatenated2(boolean empirical, boolean rskew) {
+    public EFangConcatenated(boolean empirical) {
         this.empirical = empirical;
-        this.rskew = rskew;
     }
 
     @Override
-    public Graph search(List<DataModel> dataModels,  Parameters parameters) {
-        List<DataSet> dataSets = new ArrayList<>();
-
-        for (DataModel dataModel : dataModels) {
-            dataSets.add((DataSet) dataModel);
-        }
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
 
         List<DataSet> centered = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
-            centered.add(DataUtils.center(dataSet));
+        for (DataModel dataSet : dataSets) {
+            centered.add(DataUtils.center((DataSet) dataSet));
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
-        search.setEmpirical(empirical);
-        search.setRskew(rskew);
+        edu.cmu.tetrad.search.EFang search = new edu.cmu.tetrad.search.EFang(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
@@ -72,7 +63,7 @@ public class FangConcatenated2 implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public String getDescription() {
         return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)"
-                + (empirical ? " (Empirical)" : "") + (rskew ? " (RSkew) " : "");
+                + (empirical ? " (Empirical)" : "");
     }
 
     @Override

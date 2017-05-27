@@ -73,10 +73,10 @@ public class PasteLayoutAction extends AbstractAction
         DataFlavor flavor = new DataFlavor(LayoutSelection.class, "Layout");
 
         try {
-            Graph layoutGrpah = (Graph) selection.getTransferData(flavor);
+            Graph layoutGraph = (Graph) selection.getTransferData(flavor);
 
-            if (layoutGrpah != null) {
-                this.layoutEditable.layoutByGraph(layoutGrpah);
+            if (layoutGraph != null) {
+                this.layoutEditable.layoutByGraph(layoutGraph);
             }
         }
         catch (Exception e1) {

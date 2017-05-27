@@ -145,13 +145,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
 
-//        algorithms.add(new FangConcatenated());
-
-        algorithms.add(new FangConcatenated2(false, false));
-//        algorithms.add(new FangConcatenated2(false, true));
-
-//        algorithms.add(new FangConcatenated2(true, false));
-//        algorithms.add(new FangConcatenated2(true, true));
+        algorithms.add(new FangConcatenated(false));
 
 //        algorithms.add(new FasRSkewConcatenated(true));
 
@@ -256,8 +250,8 @@ public class TestSimulatedFmri {
     @Test
     public void testClark() {
 
-        double f = 1.7;
-        int N = 240;
+        double f = 1.2;
+        int N = 512;
 
         {
             Node x = new ContinuousVariable("X");
