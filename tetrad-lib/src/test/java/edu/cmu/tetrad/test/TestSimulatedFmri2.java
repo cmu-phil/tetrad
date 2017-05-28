@@ -23,6 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.EFang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.EFangConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -40,7 +42,7 @@ public class TestSimulatedFmri2 {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .01);
+        parameters.set("twoCycleAlpha", .6);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -65,8 +67,8 @@ public class TestSimulatedFmri2 {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -128,7 +130,7 @@ public class TestSimulatedFmri2 {
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMax(new SemBicTest(), true));
-        algorithms.add(new Fang());
+        algorithms.add(new EFang());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R3));

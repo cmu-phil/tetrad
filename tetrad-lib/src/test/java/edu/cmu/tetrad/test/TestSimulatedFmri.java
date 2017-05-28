@@ -59,7 +59,7 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .01);
+        parameters.set("twoCycleAlpha", .5);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -76,8 +76,8 @@ public class TestSimulatedFmri {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
         statistics.setWeight("AHR", 1.0);
@@ -145,7 +145,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
 
-        algorithms.add(new FangConcatenated(false));
+        algorithms.add(new EFangConcatenated(false));
 
 //        algorithms.add(new FasRSkewConcatenated(true));
 
@@ -191,8 +191,8 @@ public class TestSimulatedFmri {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 

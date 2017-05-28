@@ -1232,13 +1232,16 @@ public final class StatUtils {
             thirdMoment += s * s * s;
         }
 
+        double ess = secondMoment / N;
+        double esss = thirdMoment / (N - 1);
+
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
                     "when the variance is zero.");
         }
 
         //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
-        return thirdMoment / Math.pow(secondMoment, 1.5);
+        return ess / Math.pow(esss, 1.5);
     }
 
     /**

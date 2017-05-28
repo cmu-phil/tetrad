@@ -31,6 +31,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
@@ -123,6 +124,16 @@ public final class EFang implements GraphSearch {
 
         Graph graph = new EdgeListGraph(variables);
 
+        for (int i = 0; i < colData.length; i++) {
+            double skewness = skewness(colData[i]);
+
+            if (skewness < -.4) {
+                for (int k = 0; k < colData[i].length; k++) {
+                    colData[i][k] *= -1;
+                }
+            }
+        }
+
         for (Edge edge : G0.getEdges()) {
             Node X = edge.getNode1();
             Node Y = edge.getNode2();
@@ -133,32 +144,15 @@ public final class EFang implements GraphSearch {
             if (graph.isAdjacentTo(X, Y)) continue;
 
             // Standardized.
+
+            double sum = 0.0;
+            int nn = 0;
+
             double[] x = colData[i];
             double[] y = colData[j];
 
             double[] c5 = cov(x, y, 1, 0);
             double[] c6 = cov(x, y, 0, 1);
-
-            RegressionResult resultxy = regression.regress(Y, union(graph.getParents(Y), X));
-            double[] residualsxy = regression.getResidualsWithoutFirstRegressor().toArray();
-
-            double skewnessxy = skewness(residualsxy);
-
-            RegressionResult resultyx = regression.regress(X, union(graph.getParents(X), Y));
-            double[] residualsyx = regression.getResidualsWithoutFirstRegressor().toArray();
-            double skewnessyx = skewness(residualsyx);
-
-            RegressionResult resultxx = regression.regress(X, graph.getParents(X));
-            double[] residualsxx = regression.getResidualsWithoutFirstRegressor().toArray();
-
-            double skewnessxx = skewness(residualsxx);
-
-            RegressionResult resultyy = regression.regress(Y, graph.getParents(Y));
-            double[] residualsyy = regression.getResidualsWithoutFirstRegressor().toArray();
-            double skewnessyy = skewness(residualsyy);
-
-            double sum = 0.0;
-            int nn = 0;
 
             List<Double> sList = new ArrayList<>();
 
@@ -185,7 +179,11 @@ public final class EFang implements GraphSearch {
             }
 
             double t = (e) / (sd(_s) / sqrt(nn));
-            double p = 1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t));
+            double p = 2 * (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t / 2)));
+
+            double rho = correlation(x, y);
+
+            double R = rho * (c5[0] - c6[0]);
 
             if (knowledgeOrients(X, Y)) {
                 graph.addDirectedEdge(X, Y);
@@ -200,135 +198,25 @@ public final class EFang implements GraphSearch {
 
                 graph.addEdge(edge1);
                 graph.addEdge(edge2);
-            } else if (abs(c5[0]) > abs(c6[0])) {
+            } else if (R > 0) {
                 graph.addDirectedEdge(X, Y);
-            } else if (abs(c5[0]) < abs(c6[0])) {
+            } else if (R < 0) {
                 graph.addDirectedEdge(Y, X);
             } else {
                 graph.addUndirectedEdge(X, Y);
             }
         }
 
-//        for (int i = 0; i < variables.size(); i++) {
-//            for (int j = i + 1; j < variables.size(); j++) {
-//                Node X = variables.get(i);
-//                Node Y = variables.get(j);
-//
-//                if (graph.isAdjacentTo(X, Y)) continue;
-//
-//                // Standardized.
-//                double[] x = colData[i];
-//                double[] y = colData[j];
-//
-//                if (G0.isAdjacentTo(X, Y) /*|| abs(c1[4] - c2[4]) > .3*/) {
-////                    double[] c = cov(x, y, 0, 0);
-////
-////                    double[] c1 = cov(x, y, 1, 0);
-////                    double[] c2 = cov(x, y, 0, 1);
-////
-////                    double[] c3 = cov(x, y, -1, 0);
-////                    double[] c4 = cov(x, y, 0, -1);
-//
-//                    double[] c5 = cov(x, y, 1, 0);
-//                    double[] c6 = cov(x, y, 0, 1);
-//
-//                    RegressionResult resultxy = regression.regress(Y, union(graph.getParents(Y), X));
-//                    double[] residualsxy = resultxy.getResiduals().toArray();
-//
-//                    double skewnessxy = skewness(residualsxy);
-//
-//                    RegressionResult resultyx = regression.regress(X, union(graph.getParents(X), Y));
-//                    double[] residualsyx = resultyx.getResiduals().toArray();
-//                    double skewnessyx = skewness(residualsyx);
-//
-//                    double sum = 0.0;
-//                    int nn = 0;
-//
-//                    List<Double> sList = new ArrayList<>();
-//
-//                    for (int k = 0; k < x.length; k++) {
-//                        double _xy = x[k] * y[k];
-//
-//                        double d1 = (x[k] > 0 ? _xy : 0);
-//                        double d2 = (y[k] > 0 ? _xy : 0);
-//
-//                        if (d1 - d2 != 0) {
-//                            sum += d1 - d2;
-//                            nn++;
-//
-//                            sList.add(d1 - d2);
-//                        }
-//                    }
-//
-//                    double e = sum / nn;
-//
-//                    double[] _s = new double[sList.size()];
-//
-//                    for (int k = 0; k < _s.length; k++) {
-//                        _s[k] = sList.get(k);
-//                    }
-//
-//                    double t = (e) / (sd(_s) / sqrt(nn));
-//                    double p = 1.0 - new TDistribution( nn - 1).cumulativeProbability(abs(t));
-//
-//                    if (knowledgeOrients(X, Y)) {
-//                        graph.addDirectedEdge(X, Y);
-//                    } else if (knowledgeOrients(Y, X)) {
-//                        graph.addDirectedEdge(Y, X);
-//                    } else if (skewnessxy > 0 && skewnessyx > 0 && p > alpha) {
-//                        Edge edge1 = Edges.directedEdge(X, Y);
-//                        Edge edge2 = Edges.directedEdge(Y, X);
-//
-//                        edge1.setLineColor(Color.GREEN);
-//                        edge2.setLineColor(Color.GREEN);
-//
-//                        graph.addEdge(edge1);
-//                        graph.addEdge(edge2);
-//                    }
-////                    else if (/*skewnessxy > 0 && skewnessyx > 0 &&*/ !((sameSign(c, c1) && sameSign(c, c3))
-////                            || (sameSign(c, c2) && sameSign(c, c4)))) {
-////                        Edge edge1 = Edges.directedEdge(X, Y);
-////                        Edge edge2 = Edges.directedEdge(Y, X);
-////
-////                        edge1.setLineColor(Color.RED);
-////                        edge2.setLineColor(Color.RED);
-////
-////                        graph.addEdge(edge1);
-////                        graph.addEdge(edge2);
-////                    }
-//                    else {
-//                        if (false) {
-//                            if (c5[5] > c6[6] && skewnessxy > 0) {
-//                                graph.addDirectedEdge(X, Y);
-//                            } else if (c5[5] < c6[6] && skewnessyx > 0) {
-//                                graph.addDirectedEdge(Y, X);
-//                            } else {
-//                                graph.addUndirectedEdge(X, Y);
-//                            }
-//                        } else {
-//                            if (abs(c5[0]) > abs(c6[0]) && skewnessxy > 0) {
-//                                graph.addDirectedEdge(X, Y);
-//                            } else if (abs(c5[0]) < abs(c6[0]) && skewnessyx > 0) {
-//                                graph.addDirectedEdge(Y, X);
-//                            } else {
-//                                graph.addUndirectedEdge(X, Y);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-    printHistogram(dataSet, regression, graph);
+        printHistogram(dataSet, regression, graph);
 
         System.out.println();
         System.out.println("Done");
 
-    long stop = System.currentTimeMillis();
-        this.elapsed =stop -start;
+        long stop = System.currentTimeMillis();
+        this.elapsed = stop - start;
 
         return graph;
-}
+    }
 
     private void printHistogram(DataSet dataSet, RegressionDataset regression, Graph graph) {
         double sigma = Math.pow(6.0 / dataSet.getNumRows(), 0.5);
@@ -339,14 +227,26 @@ public final class EFang implements GraphSearch {
         int total = 0;
 
         double sumSkew = 0.0;
+        double sd = sqrt(6.0 / dataSet.getNumRows());
 
         for (Node x : graph.getNodes()) {
-            if (graph.getParents(x).isEmpty()) continue;
-
             RegressionResult result = regression.regress(x, graph.getParents(x));
             double[] residuals = result.getResiduals().toArray();
             double skewness = skewness(residuals);
-            System.out.println("Node " + x + " skewness(residual) = " + skewness + " parents = " + graph.getParents(x));
+            System.out.println("Node " + x + " skewness(residual) = " + (skewness) + " parents = " + graph.getParents(x));
+
+            double skewnessX = skewness(dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray());
+            System.out.println("Node " + x + " skewness(node) = " + (skewnessX));
+
+//            for (Node y : graph.getParents(x)) {
+//                double[] _x = dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray();
+//                double[] _y = dataSet.getDoubleData().getColumn(dataSet.getColumn(y)).toArray();
+//
+//                double rho = correlation(_x, _y);
+//                System.out.println(y + "--> " + x + " rho = " + rho);
+//            }
+
+            System.out.println();
 
             for (int i = 0; i < cutoffs.length; i++) {
                 if (skewness < cutoffs[i] * sigma) {
@@ -357,6 +257,7 @@ public final class EFang implements GraphSearch {
             total++;
             sumSkew += skewness;
         }
+
 
         double avgSkew = sumSkew / (double) total;
 
@@ -377,41 +278,6 @@ public final class EFang implements GraphSearch {
         System.out.println("Avg skew " + avgSkew);
         System.out.println("N = " + dataSet.getNumRows());
         System.out.println("Sigma = " + nf.format(sigma));
-    }
-
-    private double[] avgDiff(double[] x, double[] y) {
-        List<Double> _diff = new ArrayList<>();
-
-        for (int k = 0; k < x.length; k++) {
-            double d = (x[k] > 0 ? x[k] * y[k] : 0) - (y[k] > 0 ? -(x[k] * y[k]) : 0);
-            if (d != 0) _diff.add(d);
-//            _diff.add(d);
-        }
-
-        double[] diff = new double[_diff.size()];
-        for (int k = 0; k < _diff.size(); k++) diff[k] = _diff.get(k);
-
-        return new double[]{mean(diff), sd(diff), diff.length};
-    }
-
-    private List<Node> union(List<Node> parents, Node N) {
-        List<Node> union = new ArrayList<>(parents);
-        union.add(N);
-        return union;
-    }
-
-
-    private boolean equals(double[] c1, double[] c2) {
-        double z = getZ(c1[1]);
-        double z1 = getZ(c2[1]);
-        double diff1 = z - z1;
-        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
-        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
-        return p1 <= alpha;
-    }
-
-    private boolean sameSign(double[] c1, double[] c2) {
-        return signum(c1[1]) == signum(c2[1]);
     }
 
     private double[] cov(double[] x, double[] y, int xInc, int yInc) {
@@ -512,33 +378,6 @@ public final class EFang implements GraphSearch {
         return log(cosh(max(0, x)));
     }
 
-    private double[] var(double[] x, int condition, double[] var, double cutoff) {
-        double exx = 0.0;
-        double ex = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition == 0) {
-                exx += x[k] * x[k];
-                ex += x[k];
-                n++;
-            } else if (condition == 1) {
-                if (var[k] > cutoff) {
-                    exx += x[k] * x[k];
-                    ex += x[k];
-                    n++;
-                }
-            }
-        }
-
-//        n = x.length;
-
-        exx /= n;
-        ex /= n;
-
-        return new double[]{(exx - ex * ex), (double) n};
-    }
-
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
@@ -601,20 +440,6 @@ public final class EFang implements GraphSearch {
     }
 
     /**
-     * @return Y cutoff.
-     */
-    public double getY0() {
-        return y0;
-    }
-
-    /**
-     * @param y0 Y cutoff.
-     */
-    public void setY0(double y0) {
-        this.y0 = y0;
-    }
-
-    /**
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
@@ -632,28 +457,6 @@ public final class EFang implements GraphSearch {
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
-    }
-
-    private double getZ(double r) {
-        return 0.5 * (log(1.0 + r) - log(1.0 - r));
-    }
-
-    private double[] reverse(double[] x) {
-        double s = Math.signum(skewness(x));
-
-        for (int i = 0; i < x.length; i++) {
-            x[i] = s * x[i];
-        }
-
-        return x;
-    }
-
-    public boolean isEmpirical() {
-        return empirical;
-    }
-
-    public void setEmpirical(boolean empirical) {
-        this.empirical = empirical;
     }
 
     public boolean isRskew() {
