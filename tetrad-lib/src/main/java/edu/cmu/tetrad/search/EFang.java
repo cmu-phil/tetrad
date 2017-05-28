@@ -61,7 +61,7 @@ public final class EFang implements GraphSearch {
     private double penaltyDiscount = 1;
 
     // Alpha for orienting 2-cycles. Usually needs to be low.
-    private double alpha = 1e-6;
+    private double alpha = .3;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
