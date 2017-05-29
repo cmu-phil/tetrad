@@ -66,9 +66,6 @@ public final class EFang implements GraphSearch {
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // Cutoff for x.
-    private double x0 = 0.0;
-
     // Cutoff for y.
     private double y0 = 0.0;
 
@@ -110,8 +107,6 @@ public final class EFang implements GraphSearch {
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
 
-        System.out.println("FAS");
-
         FasStable fas = new FasStable(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
@@ -120,17 +115,13 @@ public final class EFang implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
-        System.out.println("Orientation");
-
         Graph graph = new EdgeListGraph(variables);
 
         for (int i = 0; i < colData.length; i++) {
             double skewness = skewness(colData[i]);
 
-            if (skewness < -.4) {
-                for (int k = 0; k < colData[i].length; k++) {
-                    colData[i][k] *= -1;
-                }
+            for (int k = 0; k < colData[i].length; k++) {
+                colData[i][k] *= signum(skewness);
             }
         }
 
@@ -143,47 +134,45 @@ public final class EFang implements GraphSearch {
 
             if (graph.isAdjacentTo(X, Y)) continue;
 
-            // Standardized.
-
-            double sum = 0.0;
-            int nn = 0;
+            double sum1 = 0.0;
+            double sum2 = 0.0;
 
             double[] x = colData[i];
             double[] y = colData[j];
 
-            double[] c5 = cov(x, y, 1, 0);
-            double[] c6 = cov(x, y, 0, 1);
-
             List<Double> sList = new ArrayList<>();
 
             for (int k = 0; k < x.length; k++) {
-                double _xy = x[k] * y[k];
+//                double f1 = y[k] * g(x[k]);
+//                double f2 = x[k] * g(y[k]);
 
-                double d1 = (x[k] > 0 ? _xy : 0);
-                double d2 = (y[k] > 0 ? _xy : 0);
+                double f1 = y[k] * h(x[k]);
+                double f2 = x[k] * h(y[k]);
 
-                if (d1 - d2 != 0) {
-                    sum += d1 - d2;
-                    nn++;
+                sum1 += f1;
+                sum2 += f2;
 
-                    sList.add(d1 - d2);
+                if (f1 - f2 != 0) {
+                    sList.add(f1 - f2);
                 }
             }
 
-            double e = sum / nn;
-
             double[] _s = new double[sList.size()];
+            double sum = 0.0;
 
             for (int k = 0; k < _s.length; k++) {
                 _s[k] = sList.get(k);
+                sum += _s[k];
             }
+
+            int n = x.length;
+            int nn = _s.length;
+            double e = sum / nn;
 
             double t = (e) / (sd(_s) / sqrt(nn));
             double p = 2 * (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t / 2)));
-
             double rho = correlation(x, y);
-
-            double R = rho * (c5[0] - c6[0]);
+            double R = rho * (sum1 / n - sum2 / n);
 
             if (knowledgeOrients(X, Y)) {
                 graph.addDirectedEdge(X, Y);
@@ -230,32 +219,18 @@ public final class EFang implements GraphSearch {
         double sd = sqrt(6.0 / dataSet.getNumRows());
 
         for (Node x : graph.getNodes()) {
-            RegressionResult result = regression.regress(x, graph.getParents(x));
-            double[] residuals = result.getResiduals().toArray();
-            double skewness = skewness(residuals);
-            System.out.println("Node " + x + " skewness(residual) = " + (skewness) + " parents = " + graph.getParents(x));
-
             double skewnessX = skewness(dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray());
-            System.out.println("Node " + x + " skewness(node) = " + (skewnessX));
-
-//            for (Node y : graph.getParents(x)) {
-//                double[] _x = dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray();
-//                double[] _y = dataSet.getDoubleData().getColumn(dataSet.getColumn(y)).toArray();
-//
-//                double rho = correlation(_x, _y);
-//                System.out.println(y + "--> " + x + " rho = " + rho);
-//            }
-
+            System.out.println("Node " + x + " skewness(x) = " + skewnessX);
             System.out.println();
 
             for (int i = 0; i < cutoffs.length; i++) {
-                if (skewness < cutoffs[i] * sigma) {
+                if (skewnessX < cutoffs[i] * sigma) {
                     counts[i]++;
                 }
             }
 
             total++;
-            sumSkew += skewness;
+            sumSkew += skewnessX;
         }
 
 
@@ -263,119 +238,29 @@ public final class EFang implements GraphSearch {
 
         NumberFormat nf = new DecimalFormat("0.000");
 
-        for (int i = 0; i < cutoffs.length; i++) {
-            double number = counts[i] / (double) total;
+//        for (int i = 0; i < cutoffs.length; i++) {
+//            double number = counts[i] / (double) total;
+//
+//            System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
+//                    cutoffs[i] * sigma, number, 1.0 - number);
+//
+////            System.out.println("Below " + nf.format(cutoffs[i]) + " * sigma % = " + nf.format(number)
+////                    + "   1 - % = " + nf.format(1.0 -  number));
+//        }
 
-            System.out.printf("\nBelow %5.1f (= %6.3f) Percent = %5.3f, 1 - Percent = %5.3f", cutoffs[i],
-                    cutoffs[i] * sigma, number, 1.0 - number);
-
-//            System.out.println("Below " + nf.format(cutoffs[i]) + " * sigma % = " + nf.format(number)
-//                    + "   1 - % = " + nf.format(1.0 -  number));
-        }
-
-        System.out.println();
-        System.out.println();
+//        System.out.println();
+//        System.out.println();
         System.out.println("Avg skew " + avgSkew);
         System.out.println("N = " + dataSet.getNumRows());
-        System.out.println("Sigma = " + nf.format(sigma));
-    }
-
-    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
-        double exy = 0.0;
-        double exyxy = 0.0;
-        double exx = 0.0;
-        double eyy = 0.0;
-
-        double ex = 0.0;
-        double ey = 0.0;
-
-        double egx = 0.0;
-        double egy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (xInc == 0 && yInc == 0) {
-                exy += x[k] * y[k];
-                exyxy += x[k] * y[k] * x[k] * y[k];
-                exx += x[k] * x[k];
-                eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                egx += g(x[k]);
-                egy += g(y[k]);
-                n++;
-            } else if (xInc == 1 && yInc == 0) {
-                if (x[k] > x0) {
-                    exy += x[k] * y[k];
-                    exyxy += x[k] * y[k] * x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    egx += g(x[k]);
-                    egy += g(y[k]);
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == 1) {
-                if (y[k] > y0) {
-                    exy += x[k] * y[k];
-                    exyxy += x[k] * y[k] * x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    egx += g(x[k]);
-                    egy += g(y[k]);
-                    n++;
-                }
-            } else if (xInc == -1 && yInc == 0) {
-                if (x[k] < x0) {
-                    exy += x[k] * y[k];
-                    exyxy += x[k] * y[k] * x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    egx += g(x[k]);
-                    egy += g(y[k]);
-                    n++;
-                }
-            } else if (xInc == 0 && yInc == -1) {
-                if (y[k] < y0) {
-                    exy += x[k] * y[k];
-                    exyxy += x[k] * y[k] * x[k] * y[k];
-                    exx += x[k] * x[k];
-                    eyy += y[k] * y[k];
-                    ex += x[k];
-                    ey += y[k];
-                    egx += g(x[k]);
-                    egy += g(y[k]);
-                    n++;
-                }
-            }
-        }
-
-        n = x.length;
-
-        exx /= n;
-        eyy /= n;
-        exy /= n;
-        exyxy /= n;
-        ex /= n;
-        ey /= n;
-        egx /= x.length;
-        egy /= x.length;
-
-        double sxy = exy - ex * ey;
-        double sx = sqrt(exx - ex * ex);
-        double sy = sqrt(eyy - ey * ey);
-
-        return new double[]{exy, exx, eyy, exyxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n, egx, egy};
+//        System.out.println("Sigma = " + nf.format(sigma));
     }
 
     private double g(double x) {
         return log(cosh(max(0, x)));
+    }
+
+    private double h(double x) {
+        return max(0, x);
     }
 
     /**
@@ -423,20 +308,6 @@ public final class EFang implements GraphSearch {
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    /**
-     * @return X cutoff.
-     */
-    public double getX0() {
-        return x0;
-    }
-
-    /**
-     * @param x0 X cutoff.
-     */
-    public void setX0(double x0) {
-        this.x0 = x0;
     }
 
     /**
