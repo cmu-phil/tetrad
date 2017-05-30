@@ -47,6 +47,7 @@ public class EFangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
         return search.search();
     }
 

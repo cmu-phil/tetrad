@@ -42,6 +42,7 @@ public class EFang implements Algorithm, HasKnowledge {
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
         return getGraph(search);
     }
 

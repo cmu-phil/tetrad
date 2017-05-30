@@ -24,14 +24,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
@@ -75,6 +73,9 @@ public final class EFang implements GraphSearch {
     // Whether RSkew should be used.
     private boolean rskew = false;
 
+    // Variables with skewness less than this value will be reversed in sign.
+    private double thresholdForReversing = 0.0;
+
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
@@ -106,6 +107,7 @@ public final class EFang implements GraphSearch {
         List<Node> variables = dataSet.getVariables();
 
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+        double[][] colData2 = dataSet.getDoubleData().transpose().toArray();
 
         FasStable fas = new FasStable(test);
         fas.setDepth(getDepth());
@@ -120,8 +122,10 @@ public final class EFang implements GraphSearch {
         for (int i = 0; i < colData.length; i++) {
             double skewness = skewness(colData[i]);
 
-            for (int k = 0; k < colData[i].length; k++) {
-                colData[i][k] *= signum(skewness);
+            if (skewness < getThresholdForReversing()) {
+                for (int k = 0; k < colData[i].length; k++) {
+                    colData[i][k] *= signum(skewness);
+                }
             }
         }
 
@@ -132,30 +136,34 @@ public final class EFang implements GraphSearch {
             int i = variables.indexOf(X);
             int j = variables.indexOf(Y);
 
-            if (graph.isAdjacentTo(X, Y)) continue;
-
-            double sum1 = 0.0;
-            double sum2 = 0.0;
-
             double[] x = colData[i];
             double[] y = colData[j];
 
             List<Double> sList = new ArrayList<>();
 
-            for (int k = 0; k < x.length; k++) {
-//                double f1 = y[k] * g(x[k]);
-//                double f2 = x[k] * g(y[k]);
+            double sum1 = 0.0;
+            double sum2 = 0.0;
 
+            for (int k = 0; k < x.length; k++) {
                 double f1 = y[k] * h(x[k]);
                 double f2 = x[k] * h(y[k]);
 
                 sum1 += f1;
                 sum2 += f2;
 
-                if (f1 - f2 != 0) {
-                    sList.add(f1 - f2);
-                }
+//                if (f1 - f2 != 0) {
+                sList.add(f1 - f2);
+//                }
             }
+
+            double[] x1 = colData2[i];
+            double[] y1 = colData2[j];
+
+            double[] c = cov(x1, y1, 0, 0);
+            double[] c1 = cov(x1, y1, 1, 0);
+            double[] c2 = cov(x1, y1, 0, 1);
+            double c3[] = cov(x1, y1, -1, 0);
+            double c4[] = cov(x1, y1, 0, -1);
 
             double[] _s = new double[sList.size()];
             double sum = 0.0;
@@ -169,8 +177,8 @@ public final class EFang implements GraphSearch {
             int nn = _s.length;
             double e = sum / nn;
 
-            double t = (e) / (sd(_s) / sqrt(nn));
-            double p = 2 * (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t / 2)));
+            double t = e / (sd(_s) / sqrt(nn));
+            double p = (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t)));
             double rho = correlation(x, y);
             double R = rho * (sum1 / n - sum2 / n);
 
@@ -178,7 +186,18 @@ public final class EFang implements GraphSearch {
                 graph.addDirectedEdge(X, Y);
             } else if (knowledgeOrients(Y, X)) {
                 graph.addDirectedEdge(Y, X);
-            } else if (p > alpha) {
+            }
+//            else if (p > alpha) {
+//                Edge edge1 = Edges.directedEdge(X, Y);
+//                Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                edge1.setLineColor(Color.GREEN);
+//                edge2.setLineColor(Color.GREEN);
+//
+//                graph.addEdge(edge1);
+//                graph.addEdge(edge2);
+//            }
+            else if (equals(c, c1) && equals(c, c2)) {
                 Edge edge1 = Edges.directedEdge(X, Y);
                 Edge edge2 = Edges.directedEdge(Y, X);
 
@@ -187,7 +206,18 @@ public final class EFang implements GraphSearch {
 
                 graph.addEdge(edge1);
                 graph.addEdge(edge2);
-            } else if (R > 0) {
+            } else if (!(sameSign(c, c1) && sameSign(c, c3)
+                    || (sameSign(c, c2) && sameSign(c, c4)))) {
+                Edge edge1 = Edges.directedEdge(X, Y);
+                Edge edge2 = Edges.directedEdge(Y, X);
+
+                edge1.setLineColor(Color.RED);
+                edge2.setLineColor(Color.RED);
+
+                graph.addEdge(edge1);
+                graph.addEdge(edge2);
+            }
+            else if (R > 0) {
                 graph.addDirectedEdge(X, Y);
             } else if (R < 0) {
                 graph.addDirectedEdge(Y, X);
@@ -221,7 +251,7 @@ public final class EFang implements GraphSearch {
         for (Node x : graph.getNodes()) {
             double skewnessX = skewness(dataSet.getDoubleData().getColumn(dataSet.getColumn(x)).toArray());
             System.out.println("Node " + x + " skewness(x) = " + skewnessX);
-            System.out.println();
+//            System.out.println();
 
             for (int i = 0; i < cutoffs.length; i++) {
                 if (skewnessX < cutoffs[i] * sigma) {
@@ -251,6 +281,7 @@ public final class EFang implements GraphSearch {
 //        System.out.println();
 //        System.out.println();
         System.out.println("Avg skew " + avgSkew);
+        System.out.println("Skew standard deviation = " + sd);
         System.out.println("N = " + dataSet.getNumRows());
 //        System.out.println("Sigma = " + nf.format(sigma));
     }
@@ -337,6 +368,108 @@ public final class EFang implements GraphSearch {
     public void setRskew(boolean rskew) {
         this.rskew = rskew;
     }
+
+    /**
+     * @return Variables with skewness less than this value will be reversed in sign.
+     */
+    public double getThresholdForReversing() {
+        return thresholdForReversing;
+    }
+
+    /**
+     * @param thresholdForReversing Variables with skewness less than this value will be reversed in sign.
+     */
+    public void setThresholdForReversing(double thresholdForReversing) {
+        this.thresholdForReversing = thresholdForReversing;
+    }
+
+    private double[] cov(double[] x, double[] y, int xInc, int yInc) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (xInc == 0 && yInc == 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            } else if (xInc == 1 && yInc == 0) {
+                if (x[k] > 0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == 1) {
+                if (y[k] > 0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == -1 && yInc == 0) {
+                if (x[k] < 0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            } else if (xInc == 0 && yInc == -1) {
+                if (y[k] < 0) {
+                    exy += x[k] * y[k];
+                    exx += x[k] * x[k];
+                    eyy += y[k] * y[k];
+                    ex += x[k];
+                    ey += y[k];
+                    n++;
+                }
+            }
+        }
+
+        exx /= n;
+        eyy /= n;
+        exy /= n;
+        ex /= n;
+        ey /= n;
+
+        double sxy = exy - ex * ey;
+        double sx = sqrt(exx - ex * ex);
+        double sy = sqrt(eyy - ey * ey);
+
+        return new double[]{sxy, sxy / (sx * sy), sx * sx, sy * sy, (double) n};
+    }
+
+    private boolean equals(double[] c1, double[] c2) {
+        double z = getZ(c1[1]);
+        double z1 = getZ(c2[1]);
+        double diff1 = z - z1;
+        final double t1 = diff1 / (sqrt(1.0 / c1[4] + 1.0 / c2[4]));
+        double p1 = 1.0 - new TDistribution(2 * (c1[4] + c2[4]) - 2).cumulativeProbability(abs(t1) / 2.0);
+        return p1 <= alpha;
+    }
+
+    private boolean sameSign(double[] c1, double[] c2) {
+        return signum(c1[1]) == signum(c2[1]);
+    }
+
+    private double getZ(double r) {
+        return 0.5 * (log(1.0 + r) - log(1.0 - r));
+    }
+
 }
 
 

@@ -30,13 +30,13 @@ public class SpecialGraphClark implements RandomGraph {
         g.addNode(y);
         g.addNode(z);
 
-        g.addDirectedEdge(x, y);
-        g.addDirectedEdge(z, x);
-        g.addDirectedEdge(z, y);
-//
 //        g.addDirectedEdge(x, y);
-//        g.addDirectedEdge(x, z);
-//        g.addDirectedEdge(y, z);
+//        g.addDirectedEdge(z, x);
+//        g.addDirectedEdge(z, y);
+
+        g.addDirectedEdge(x, y);
+        g.addDirectedEdge(x, z);
+        g.addDirectedEdge(y, z);
 //
         return g;
     }

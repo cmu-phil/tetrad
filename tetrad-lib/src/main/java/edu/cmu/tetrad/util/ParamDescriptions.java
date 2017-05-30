@@ -183,6 +183,9 @@ public class ParamDescriptions {
                 "The maximum length for any discriminating path. -1 if unlimited",
                 -1, -1, Integer.MAX_VALUE));
 
+        put("thresholdForReversing", new ParamDescription(
+                "Variables with skewnesses less than this value will be reversed in sign",
+                0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
     }
 

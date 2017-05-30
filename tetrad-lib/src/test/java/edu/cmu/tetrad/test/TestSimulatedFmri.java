@@ -59,7 +59,8 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .05);
+        parameters.set("twoCycleAlpha", 1e-9);
+        parameters.set("thresholdForReversing", -0.00);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -291,6 +292,7 @@ public class TestSimulatedFmri {
                 edu.cmu.tetrad.search.EFang fang = new edu.cmu.tetrad.search.EFang(data);
                 fang.setPenaltyDiscount(penaltyDiscount);
                 fang.setAlpha(alpha);
+                fang.setThresholdForReversing(-.3);
                 Graph out = fang.search();
 
                 System.out.println(out);
@@ -331,6 +333,7 @@ public class TestSimulatedFmri {
                 edu.cmu.tetrad.search.EFang fang = new edu.cmu.tetrad.search.EFang(data);
                 fang.setPenaltyDiscount(penaltyDiscount);
                 fang.setAlpha(alpha);
+                fang.setThresholdForReversing(0.0);
                 Graph out = fang.search();
 
                 System.out.println(out);
