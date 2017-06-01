@@ -495,7 +495,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         "Bayes net",
                         "Structural Equation Model",
                         "Linear Fisher Model",
-                        "General Structural Equation Model Special",
+//                        "General Structural Equation Model Special",
                         "Lee & Hastie",
                         "Time Series"
                 };
@@ -504,10 +504,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         "Bayes net",
                         "Structural Equation Model",
                         "Linear Fisher Model",
-                        "General Structural Equation Model Special",
+//                        "General Structural Equation Model Special",
                         "Lee & Hastie",
                         "Time Series",
-                        "Boolean Glass"
+//                        "Boolean Glass"
                 };
             }
         }

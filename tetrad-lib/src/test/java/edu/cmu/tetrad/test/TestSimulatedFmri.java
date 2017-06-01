@@ -60,7 +60,7 @@ public class TestSimulatedFmri {
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
         parameters.set("twoCycleAlpha", 1e-9);
-        parameters.set("thresholdForReversing", -0.00);
+        parameters.set("thresholdForReversing", -5);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);

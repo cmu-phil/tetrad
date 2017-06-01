@@ -191,18 +191,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_BDeu, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_SEM_BIC, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.EFANG, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.EFANG   , AlgType.forbid_latent_common_causes, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
@@ -229,7 +228,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.RSkewE, AlgType.orient_pairwise, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.Skew, AlgType.orient_pairwise, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
+//        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
 
         mappedDescriptions = new HashMap<>();
 
@@ -1011,10 +1010,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case MGM:
                 algorithm = new Mgm();
                 break;
-            case IMaGES_BDeu:
+            case IMaGES_Discrete:
                 algorithm = new ImagesBDeu();
                 break;
-            case IMaGES_SEM_BIC:
+            case IMaGES_Continuous:
                 algorithm = new ImagesSemBic();
                 break;
             case IMaGES_CCD:
@@ -1407,7 +1406,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
-        IMaGES_BDeu, IMaGES_SEM_BIC, IMaGES_CCD,
+        IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
         EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn

@@ -68,6 +68,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Fges(new BdeuScore(), false).getParameters();
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
         return parameters;
     }
