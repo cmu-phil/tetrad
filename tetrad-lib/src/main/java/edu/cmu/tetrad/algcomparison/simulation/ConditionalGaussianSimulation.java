@@ -88,7 +88,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -117,7 +117,7 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 
@@ -178,7 +178,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                     DiscreteVariable ersatz = erstatzNodes.get(x);
 
                     if (ersatz == null) {
-                        ersatz = new DiscreteVariable("Ersatz_" + x.getName(), 3);
+                        ersatz = new DiscreteVariable("Ersatz_" + x.getName(), RandomUtil.getInstance().nextInt(3)+2);
                         erstatzNodes.put((ContinuousVariable) x, ersatz);
                         erstatzNodesReverse.put(ersatz.getName(), (ContinuousVariable) x);
                         AG.addNode(ersatz);

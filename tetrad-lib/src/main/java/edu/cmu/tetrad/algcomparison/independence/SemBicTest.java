@@ -16,8 +16,17 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        SemBicScore score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        SemBicScore score = null;
+
+        if (dataSet instanceof ICovarianceMatrix) {
+            score = new SemBicScore((ICovarianceMatrix) dataSet);
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        } else {
+            score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
+            score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+
+        }
+
         return new IndTestScore(score, dataSet);
     }
 

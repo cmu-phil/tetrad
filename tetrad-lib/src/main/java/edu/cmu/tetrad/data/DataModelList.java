@@ -233,6 +233,16 @@ public final class DataModelList extends AbstractList<DataModel>
         return false;
     }
 
+    @Override
+    public Node getVariable(String name) {
+        return null;
+    }
+
+    @Override
+    public DataModel copy() {
+        return null;
+    }
+
     public int hashCode() {
         int hashcode = 17;
         hashcode += 17 * name.hashCode();

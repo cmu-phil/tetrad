@@ -44,6 +44,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
 
 //        if (initial != null) {

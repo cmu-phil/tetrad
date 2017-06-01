@@ -69,7 +69,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenu loggingMenu = new JMenu("Logging");
         JMenu templateMenu = new JMenu("Pipelines");
         JMenu windowMenu = new JMenu("Window");
-        JMenu helpMenu = new JMenu("Help");
+        JMenu helpMenu = new JMenu("About");
 
         add(fileMenu);
         add(editMenu);
@@ -227,25 +227,25 @@ final class TetradMenuBar extends JMenuBar {
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
-        HelpSet hs;
-
-        try {
-            URL url = this.getClass().getResource(helpHS);
-            hs = new HelpSet(null, url);
-        } catch (Exception ee) {
-            System.out.println( "HelpSet " + ee.getMessage());
-            System.out.println("HelpSet "+ helpHS +" not found");
-            return;
-        }
-
-        final HelpBroker hb = hs.createHelpBroker();
-
-        JMenuItem help = new JMenuItem("Tetrad Help");
-        help.addActionListener(new CSH.DisplayHelpFromSource( hb ));
-//        helpMenu.add(help);
-
-        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
+//        String helpHS = "/resources/javahelp/TetradHelp.hs";
+//        HelpSet hs;
+//
+//        try {
+//            URL url = this.getClass().getResource(helpHS);
+//            hs = new HelpSet(null, url);
+//        } catch (Exception ee) {
+//            System.out.println("HelpSet " + ee.getMessage());
+//            System.out.println("HelpSet " + helpHS + " not found");
+//            return;
+//        }
+//
+//        final HelpBroker hb = hs.createHelpBroker();
+//
+//        JMenuItem help = new JMenuItem("Tetrad Help");
+//        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
+////        helpMenu.add(help);
+//
+//        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
 
         helpMenu.add(new AboutTetradAction());
         helpMenu.add(new WarrantyAction());

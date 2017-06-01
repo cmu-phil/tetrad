@@ -75,7 +75,11 @@ public class Parameters implements TetradSerializable {
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name) {
-        return (Boolean) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        try {
+            return (Boolean) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        } catch (Exception e) {
+            throw new RuntimeException("ERROR: Parameter " + name + " was not actually boolean.");
+        }
     }
 
     /**
@@ -129,7 +133,13 @@ public class Parameters implements TetradSerializable {
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name, boolean defaultValue) {
-        return (Boolean) get(name, defaultValue);
+        Object b = get(name, defaultValue);
+
+        if (b == null || !(b instanceof Boolean)) {
+            return false;
+        }
+
+        return (Boolean) b;
     }
 
     /**
@@ -175,7 +185,8 @@ public class Parameters implements TetradSerializable {
 //            }
         } else {
             if (getNumValues(name) != 1) {
-                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+                System.out.println("ERROR. Parameter '" + name + "' was not listed among the algorithm parameters "
+                        + "for this algorithm. Skipping this run.\n");
             }
 
             return objects[0];

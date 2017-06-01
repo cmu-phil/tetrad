@@ -50,5 +50,7 @@ public interface Score {
     Node getVariable(String targetName);
 
     int getMaxDegree();
+
+    boolean determines(List<Node> z, Node y);
 }
 

@@ -306,6 +306,21 @@ public class SemBicScore implements Score {
     public int getMaxDegree() {
         return (int) Math.ceil(log(sampleSize));
     }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        int i = variables.indexOf(y);
+
+        int[] k = new int[z.size()];
+
+        for (int t = 0; t < z.size(); t++) {
+            k[t] = variables.indexOf(z.get(t));
+        }
+
+        double v = localScore(i, k);
+
+        return Double.isNaN(v);
+    }
 }
 
 

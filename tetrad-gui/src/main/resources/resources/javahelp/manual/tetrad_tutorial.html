@@ -713,7 +713,7 @@ sup {
 <td style="text-align: center"><img src="images/search_box.png" alt=""></td>
 </tr>
 <tr>
-<td style="text-align: center">2. (a) Choose output type (here a PAG). (b) Choose an algorithm (here GFCI). (c) Choose parameters (here alpha = 0.05, and &quot;one-edge faithfulness&quot; = &quot;no&quot;). (d) Click &quot;search&quot;.</td>
+<td style="text-align: center">2. (a) Choose output type (here a PAG). (b) Choose an algorithm (here GFCI). (c) Choose parameters (here depErrorsAlpha = 0.05, and &quot;one-edge faithfulness&quot; = &quot;no&quot;). (d) Click &quot;search&quot;.</td>
 <td style="text-align: center"><img src="images/search_params.png" alt=""></td>
 </tr>
 <tr>
@@ -817,13 +817,13 @@ sup {
 
 <p>\(X = \varepsilon_1 \\
 Z = \varepsilon_2 \\
-Y = \alpha X + \beta Z + \varepsilon_3\)</p>
+Y = \depErrorsAlpha X + \beta Z + \varepsilon_3\)</p>
 
 <p>Where the errors \(\varepsilon_1, \varepsilon_2, \varepsilon_3\) are independent random variables with Gaussian distributions. </p>
 
-<p>A SEM Parametric Model (SEM PM) includes the graph, plus a list of all parameters needed to specify the probability distribution. In this example, the parameters are \(\alpha, \beta, \mu_{\varepsilon_1}, \mu_{\varepsilon_2}, \mu_{\varepsilon_3}, \sigma_{\varepsilon_1}, \sigma_{\varepsilon_2}\), and \(\sigma_{\varepsilon_3}\). However, in the SEM PM object the <em>values</em> of those parameters are undetermined; the values are specified in the instantiated model (see below).</p>
+<p>A SEM Parametric Model (SEM PM) includes the graph, plus a list of all parameters needed to specify the probability distribution. In this example, the parameters are \(\depErrorsAlpha, \beta, \mu_{\varepsilon_1}, \mu_{\varepsilon_2}, \mu_{\varepsilon_3}, \sigma_{\varepsilon_1}, \sigma_{\varepsilon_2}\), and \(\sigma_{\varepsilon_3}\). However, in the SEM PM object the <em>values</em> of those parameters are undetermined; the values are specified in the instantiated model (see below).</p>
 
-<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one variable is related to its parent by a quadratic equation: \(Y = \alpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
+<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one variable is related to its parent by a quadratic equation: \(Y = \depErrorsAlpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
 
 <p><strong>Note</strong>: Although generalized SEM PMs give you more freedom than standard SEM PMs, they require you to make more decisions. You must specify the parametric form of the distribution. If you don&#39;t, Tetrad cannot learn the model from data. Right now there are no nonparametric model fitting methods in Tetrad. </p>
 
@@ -831,7 +831,7 @@ Y = \alpha X + \beta Z + \varepsilon_3\)</p>
 
 <p><img src="images/sem_im_schema.png" alt="sem pm"></p>
 
-<p>The SEM Instantiated Model (SEM IM) <em>assigns values</em> to all those parameters – in this example, to \(\alpha\) and \(\beta\), and to the means and variances of the errors \(\boldsymbol{\varepsilon}\).</p>
+<p>The SEM Instantiated Model (SEM IM) <em>assigns values</em> to all those parameters – in this example, to \(\depErrorsAlpha\) and \(\beta\), and to the means and variances of the errors \(\boldsymbol{\varepsilon}\).</p>
 
 <p><strong>How SEM IMs are made</strong>:  You can start with a SEM PM and a dataset, in which case Tetrad will estimate the model parameters from your data. If you want to generate synthetic data, you can start with a SEM PM and specify the parameter values (either by choosing them randomly, or inputting specific values by hand). </p>
 

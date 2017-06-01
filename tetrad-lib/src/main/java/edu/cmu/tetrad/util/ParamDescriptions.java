@@ -88,7 +88,7 @@ public class ParamDescriptions {
         put("pixelDigitalization", new ParamDescription("Pixel digitalization", 0.025, 0.0, Double.MAX_VALUE));
         put("includeDishAndChipColumns", new ParamDescription("Yes if Dish and Chip columns should be included in output", true));
 
-        put("numRandomSelections", new ParamDescription("The number random selections of data sets that should be taken", 1));
+        put("numRuns", new ParamDescription("The number runs", 1));
         put("randomSelectionSize", new ParamDescription("The number of datasets that should be taken in each random sample", 1));
 
         put("maxit", new ParamDescription("MAXIT parameter (GLASSO)", 10000, 1, Integer.MAX_VALUE));
@@ -151,9 +151,38 @@ public class ParamDescriptions {
                 "The maximum number of distinct values in a column for discrete variables",
                 0, 0, Integer.MAX_VALUE));
 
+        put("ngAlpha", new ParamDescription(
+                "Alpha for testing non-Gaussianity",
+                0.05, 0.0, 1.0));
+
+        put("twoCycleAlpha", new ParamDescription(
+                "Alpha orienting 2-cycles",
+                1e-6, 0.0, 1.0));
+
         put("symmetricFirstStep", new ParamDescription(
-                "Yes if the heuristic a symmetric first step should be used for FGES",
+                "Yes if the first step step for FGES should do scoring for both X->Y and Y->X",
                 false));
+
+        put("discretize", new ParamDescription(
+                "Yes if continuous variables should be discretized when child is discrete",
+                true));
+
+        put("determinismThreshold", new ParamDescription(
+                "Threshold for judging a regression of a variable onto its parents to be deternimistic",
+                0.1, 0.0, Double.POSITIVE_INFINITY));
+
+        put("cgExact", new ParamDescription(
+                "Yes if the exact algorithm should be used for continuous parents and discrete children",
+                false));
+
+        put("numCategoriesToDiscretize", new ParamDescription(
+                "The number of categories used to discretize continuous variables, if necessary",
+                3, 2, Integer.MAX_VALUE));
+
+        put("maxPathLength", new ParamDescription(
+                "The maximum length for any discriminating path. -1 if unlimited",
+                -1, -1, Integer.MAX_VALUE));
+
 
     }
 

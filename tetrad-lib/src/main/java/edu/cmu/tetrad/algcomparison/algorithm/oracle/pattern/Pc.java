@@ -38,6 +38,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();

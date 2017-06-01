@@ -182,13 +182,13 @@ final class ConstructTemplateAction extends AbstractAction {
         String graph = nextName("Graph");
         String pm = nextName("PM");
         String im = nextName("IM");
-        String data = nextName("Data");
+        String data = nextName("Simulation");
         String search = nextName("Search");
 
         nodes.add(addNode("Graph", graph, leftX, 100));
         nodes.add(addNode("PM", pm, leftX, 200));
         nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Data", data, leftX, 400));
+        nodes.add(addNode("Simulation", data, leftX, 400));
         nodes.add(addNode("Search", search, 125 + leftX, 400));
 
         addEdge(graph, pm);
@@ -209,13 +209,13 @@ final class ConstructTemplateAction extends AbstractAction {
 
         List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
+        String data = nextName("Simulation");
         String search = nextName("Search");
-        String compare = nextName("Comparison");
+        String compare = nextName("Compare");
 
-        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Simulation", data, leftX, 100));
         nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Comparison", compare, 80 + leftX, 200));
+        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
 
         addEdge(data, search);
         addEdge(data, compare);

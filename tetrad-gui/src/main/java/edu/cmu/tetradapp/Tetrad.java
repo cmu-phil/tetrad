@@ -113,12 +113,7 @@ public final class Tetrad implements PropertyChangeListener {
         Locale.setDefault(Locale.US);
 
         // Check if we should skip checking for latest version
-        if (argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0) {
-            skipLatest = true;
-        } else {
-            skipLatest = false;
-        }
-
+        skipLatest = argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0;
 
         new Tetrad().launchFrame();
     }
@@ -214,6 +209,11 @@ public final class Tetrad implements PropertyChangeListener {
 
         SplashScreen.hide();
 
+//        try {
+//            Preferences.userRoot().clear();
+//        } catch (BackingStoreException e) {
+//            e.printStackTrace();
+//        }
 
     }
 

@@ -33,11 +33,12 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
-        List<DataModel> dataModels = new ArrayList<>();
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
 
-        for (DataSet dataSet : dataSets) {
-            dataModels.add(dataSet);
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
         }
 
         edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new IndTestScore(
@@ -50,7 +51,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new Fges(new SemBicScore()).getParameters();
+        List<String> parameters = new Fges(new SemBicScore(), false).getParameters();
         parameters.add("randomSelectionSize");
         return parameters;
     }

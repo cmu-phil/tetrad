@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
@@ -46,7 +47,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSet;
     }
 
@@ -61,7 +62,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return numDataSets;
     }
 

@@ -64,6 +64,14 @@ public class TestTetradCmd extends TestCase {
 
     }
 
+    public void test5() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "src/test/resources/eigenvox2.txt",
+                "-datatype", "continuous", "-algorithm", "fges", "-penaltydiscount", "3",
+                "-whitespace", "-silent"});
+
+
+    }
+
     public static Test suite() {
         return new TestSuite(TestTetradCmd.class);
     }

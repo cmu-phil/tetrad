@@ -33,6 +33,6 @@ public class TwoCycleFalsePositive implements Statistic {
 
     @Override
     public double getNormValue(double value) {
-        return value;
+        return 1.0 - Math.tanh(value);
     }
 }

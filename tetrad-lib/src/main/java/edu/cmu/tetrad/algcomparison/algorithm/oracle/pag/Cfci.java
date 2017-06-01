@@ -33,6 +33,7 @@ public class Cfci implements Algorithm, HasKnowledge {
         edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
         search.setKnowledge(knowledge);
         search.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed"));
+        search.setDepth(parameters.getInt("depth"));
         return search.search();
     }
 

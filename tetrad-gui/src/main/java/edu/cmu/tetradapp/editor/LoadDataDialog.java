@@ -736,9 +736,9 @@ final class LoadDataDialog extends JPanel {
             System.out.println("Validating file index = " + i);
 
             // Validate each individual file
-            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
-
             String output = "<p>Validation result of " + loadedFiles.get(i).getName() + ": </p>";
+
+            DataValidation validation = dataLoaderSettings.validateDataWithSettings(loadedFiles.get(i));
 
             List<ValidationResult> results = validation.getValidationResults();
 
@@ -764,12 +764,12 @@ final class LoadDataDialog extends JPanel {
                 output = output + "<p><b>File info: </b></p>";
                 for (ValidationResult info : infos) {
                     // More examples of how to get attributes for customized parsing
-//                    Object obj = info.getAttributes().get(ROW_NUMBER);
-//                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
-//                    obj = info.getAttributes().get(COLUMN_COUNT);
-//                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
-//                    System.out.printf("numOfLines: %d%n", numOfLines);
-//                    System.out.printf("numOfColumns: %d%n", numOfColumns);
+                    //                    Object obj = info.getAttributes().get(ROW_NUMBER);
+                    //                    int numOfLines = (obj instanceof Integer) ? (Integer) obj : 0;
+                    //                    obj = info.getAttributes().get(COLUMN_COUNT);
+                    //                    int numOfColumns = (obj instanceof Integer) ? (Integer) obj : 0;
+                    //                    System.out.printf("numOfLines: %d%n", numOfLines);
+                    //                    System.out.printf("numOfColumns: %d%n", numOfColumns);
 
                     output = output + "<p>" + info.getMessage() + "</p>";
                 }

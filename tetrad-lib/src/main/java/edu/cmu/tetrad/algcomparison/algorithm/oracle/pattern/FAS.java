@@ -31,6 +31,8 @@ public class FAS implements Algorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(test.getTest(dataSet, parameters));
+        search.setDepth(parameters.getInt("depth"));
+        search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
 
         return search.search();

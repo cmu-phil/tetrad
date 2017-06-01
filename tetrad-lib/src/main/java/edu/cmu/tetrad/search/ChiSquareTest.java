@@ -27,7 +27,9 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.ProbUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Calculates marginal chi square test results for a discrete dataset.
@@ -90,7 +92,7 @@ public class ChiSquareTest {
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
      */
-    public ChiSquareTest.Result calcChiSquare(int[] testIndices) {
+    public synchronized ChiSquareTest.Result calcChiSquare(int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -128,11 +130,12 @@ public class ChiSquareTest {
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            long total = this.getCellTable().calcMargin(coords, bothVars);
+            long total = 0;// this.getCellTable().calcMargin(coords, bothVars);
 
-            if (total == 0) {
-                continue;
-            }
+            double _xSquare = 0.0;
+
+            List<Double> e = new ArrayList<>();
+            List<Long> o = new ArrayList<>();
 
             for (int i = 0; i < numRows; i++) {
                 for (int j = 0; j < numCols; j++) {
@@ -159,9 +162,20 @@ public class ChiSquareTest {
                         continue;
                     }
 
-                    double expected = (double) (sumCol * sumRow) / (double) total;
-                    xSquare += Math.pow(observed - expected, 2.0) / expected;
+                    total += observed;
+
+                    e.add((double) sumCol * sumRow);
+                    o.add(observed);
                 }
+            }
+
+            for (int i = 0; i < o.size(); i++) {
+                double expected = e.get(i) / (double) total;
+                _xSquare += Math.pow(o.get(i) - expected, 2.0) / expected;
+            }
+
+            if (total == 0) {
+                continue;
             }
 
             int numAttestedRows = 0;
@@ -179,14 +193,19 @@ public class ChiSquareTest {
                 }
             }
 
-            df += (numAttestedRows - 1) * (numAttestedCols - 1);
+            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
+
+            if (_df > 0) {
+                xSquare += _xSquare;
+                df += _df;
+            }
         }
 
         // If df == 0, return indep.
         // Actually if you don't know one way or the other, you should return dependent. jdramsey 12/22/2015
         if (df == 0) {
             double pValue = 1.0;
-            boolean indep = false;
+            boolean indep = true;
             return new ChiSquareTest.Result(xSquare, pValue, df, indep);
         }
 
@@ -261,7 +280,7 @@ public class ChiSquareTest {
 //
 //        // Reset the cell table for the columns referred to in
 //        // 'testIndices.' Do cell coefs for those columns.
-//        this.getCellTable().addToTable(getDataSet(), testIndices);
+//        this.getCellTable().addToTable(getDataModel(), testIndices);
 //
 //        // Indicator arrays to tell the cell table which margins
 //        // to calculate. For x _||_ y | z1, z2, ..., we want to

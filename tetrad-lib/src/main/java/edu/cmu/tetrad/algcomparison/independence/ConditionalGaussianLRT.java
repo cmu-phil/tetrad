@@ -43,8 +43,10 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
-        parameters.add("assumeMixed");
         parameters.add("penaltyDiscount");
+        parameters.add("structurePrior");
+        parameters.add("discretize");
+        parameters.add("numCategoriesToDiscretize");
         return parameters;
     }
 

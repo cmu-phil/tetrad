@@ -325,9 +325,9 @@ public final class OrientCollidersMaxP {
                     v2.remove(a);
                     v2.remove(c);
 
-                    if (isForbidden(a, c, new ArrayList<>(v2)))
+//                    if (isForbidden(a, c, new ArrayList<>(v2)))
 
-                        getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
                     double p2 = getIndependenceTest().getScore();
 
                     if (p2 < 0) {

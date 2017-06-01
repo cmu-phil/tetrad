@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Wraps the IMaGES algorithm for continuous variables.
- * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
@@ -31,31 +29,17 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataSet> dataSets, Parameters parameters) {
-//        List<DataModel> dataModels = new ArrayList<>();
-//        IKnowledge knowledge = null;
-//
-//        for (DataSet dataSet : dataSets) {
-//            dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
-//            dataModels.add(dataSet);
-//
-//            if (knowledge == null) {
-//                knowledge = dataSet.getKnowledge();
-//            }
-//        }
-//
-//        SemBicScoreImages images = new SemBicScoreImages(dataModels);
-//        images.setPenaltyDiscount(1);
-//        IndependenceTest test = new IndTestScore(images);
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : dataModels) {
+            dataSets.add((DataSet) dataModel);
+        }
 
         DataSet dataSet = DataUtils.concatenate(dataSets);
-        dataSet = TimeSeriesUtils.createLagData(dataSet, parameters.getInt("numLags"));
-        IKnowledge knowledge = dataSet.getKnowledge();
 
         IndependenceTest test = this.test.getTest(dataSet, parameters);
         edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
-        search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
-        search.setOrientConcurrentFeedbackLoops(parameters.getBoolean("orientVisibleFeedbackLoops"));
         search.setDoColliderOrientations(parameters.getBoolean("doColliderOrientation"));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
@@ -63,17 +47,12 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setApplyOrientAwayFromCollider(parameters.getBoolean("applyR1"));
         search.setUseOrientTowardDConnections(parameters.getBoolean("orientTowardDConnections"));
-
-        Graph search1 = search.search();
-
-
-
-        return search1;
+        return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
     }
 
     @Override
@@ -83,7 +62,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CCD-Max using the IMaGEs score for continuous variables";
+        return "CCD-Max (Cyclic Discovery Search Max), concatenting datasets, using " + test.getDescription();
     }
 
     @Override
@@ -93,9 +72,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-
+        List<String> parameters = test.getParameters();
         parameters.add("depth");
         parameters.add("orientVisibleFeedbackLoops");
         parameters.add("doColliderOrientation");
@@ -103,10 +80,8 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("maxPOrientationMaxPathLength");
         parameters.add("applyR1");
         parameters.add("orientTowardDConnections");
-        parameters.add("assumeIID");
-        parameters.add("collapseTiers");
 
-        parameters.add("numRandomSelections");
+        parameters.add("numRuns");
         parameters.add("randomSelectionSize");
 
         return parameters;

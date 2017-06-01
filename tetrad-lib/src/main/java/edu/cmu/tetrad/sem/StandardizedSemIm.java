@@ -283,7 +283,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @param b a->b
      * @return The coefficient for a->b.
      */
-    public double getEdgeCoefficient(Node a, Node b) {
+    public double getEdgeCoef(Node a, Node b) {
         Edge edge = Edges.directedEdge(a, b);
         Double d = edgeParameters.get(edge);
 
@@ -313,7 +313,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
     public double getParameterValue(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
-            return getEdgeCoefficient(edge.getNode1(), edge.getNode2());
+            return getEdgeCoef(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
             return getErrorCovariance(edge.getNode1(), edge.getNode2());
         } else {
@@ -871,7 +871,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
         for (Node parent : parents) {
             if (parent == error) continue;
-            double coef = getEdgeCoefficient(parent, child);
+            double coef = getEdgeCoef(parent, child);
             otherVariance += coef * coef;
         }
 
@@ -886,13 +886,13 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
                 double coef1, coef2;
 
                 if (node1.getNodeType() != NodeType.ERROR) {
-                    coef1 = getEdgeCoefficient(node1, child);
+                    coef1 = getEdgeCoef(node1, child);
                 } else {
                     coef1 = 1;
                 }
 
                 if (node2.getNodeType() != NodeType.ERROR) {
-                    coef2 = getEdgeCoefficient(node2, child);
+                    coef2 = getEdgeCoef(node2, child);
                 } else {
                     coef2 = 1;
                 }
@@ -916,9 +916,9 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
                         } else if (!edgeParameters.containsKey(edge)) {
                             factor = 1;
                         } else if (semGraph.isParentOf(_node1, _node2)) {
-                            factor = getEdgeCoefficient(_node1, _node2);
+                            factor = getEdgeCoef(_node1, _node2);
                         } else {
-                            factor = getEdgeCoefficient(_node2, _node1);
+                            factor = getEdgeCoef(_node2, _node1);
                         }
 
                         product *= factor;

@@ -9,7 +9,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.FgesMb2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -46,8 +45,7 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
-        FgesMb2 search
-                = new FgesMb2(score);
+        edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
 

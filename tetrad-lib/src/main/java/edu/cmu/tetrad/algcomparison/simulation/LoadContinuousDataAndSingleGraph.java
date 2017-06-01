@@ -1,14 +1,12 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
@@ -76,8 +74,8 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 
-        if (parameters.get("numRandomSelections") != null) {
-            parameters.set("numRuns", parameters.get("numRandomSelections"));
+        if (parameters.get("numRuns") != null) {
+            parameters.set("numRuns", parameters.get("numRuns"));
         } else {
             parameters.set("numRuns", dataSets.size());
         }
@@ -91,7 +89,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     }
 
     @Override
-    public DataSet getDataSet(int index) {
+    public DataModel getDataModel(int index) {
         return dataSets.get(index);
     }
 
@@ -111,7 +109,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     }
 
     @Override
-    public int getNumDataSets() {
+    public int getNumDataModels() {
         return dataSets.size();
     }
 
