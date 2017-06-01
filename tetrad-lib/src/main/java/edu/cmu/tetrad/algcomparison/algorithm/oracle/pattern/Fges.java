@@ -12,7 +12,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -39,7 +38,6 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.compareToTrue = compareToTrueGraph;
     }
 
-
     public Fges(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
         this.initialGraph = initialGraph;
@@ -61,7 +59,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setMaxDegree(parameters.getInt("maxDegree"));
 //        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
 
-        Object obj = parameters.get("printStedu.cmream");
+        Object obj = parameters.get("printStream");
         if (obj instanceof PrintStream) {
             search.setOut((PrintStream) obj);
         }
