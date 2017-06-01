@@ -407,11 +407,11 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
                     simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+//                } else if (simulationItem.equals(simulationItems[3])) {
+//                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
+                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
@@ -434,14 +434,14 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()),
                             simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
+//                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
+//                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
+                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[6])) {
-                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
-                    simulation.setFixedGraph(true);
+//                } else if (simulationItem.equals(simulationItems[6])) {
+//                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+//                    simulation.setFixedGraph(true);
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
