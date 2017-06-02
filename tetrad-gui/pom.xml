@@ -6,7 +6,7 @@
     <parent>
         <groupId>edu.cmu</groupId>
         <artifactId>tetrad</artifactId>
-        <version>6.3.0-SNAPSHOT</version>
+        <version>6.4.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
@@ -128,7 +128,22 @@
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>data-reader</artifactId>
-            <version>0.1.4</version>
+            <version>0.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.pitt.dbmi</groupId>
+            <artifactId>causal-cmd</artifactId>
+            <version>0.2.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>edu.pitt.dbmi</groupId>
+                    <artifactId>data-reader</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>edu.cmu</groupId>
+                    <artifactId>tetrad-lib</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>

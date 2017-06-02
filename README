@@ -3,20 +3,13 @@ are a user of Tetrad, or even a novice, if you are
 willing, would you please consider giving us feedback
 on what you like about it or don't like about it? It
 would be most appreciated. Just open up an issue (click
-on the Issues tab, above). We'll get the message. 
-Thanks in advance! :)
+on the Issues tab, above).
 
 An introduction to Tetrad can be found here:
 
 www.phil.cmu.edu/tetrad
 
-The programmer's website is here:
-
-www.phil.cmu.edu/tetrad/maven
-
-Javadocs are here:
-
-http://cmu-phil.github.io/tetrad/tetrad-lib-apidocs/
+Javadocs can be found by running the javadocs command on the project once checked out.
 
 Downloads directory is here:
 
@@ -29,11 +22,6 @@ https://github.com/cmu-phil/tetrad/wiki
 The issue tracker is here:
 
 https://github.com/cmu-phil/tetrad/issues
-
-This is a Maven port of an existing Ant-based project
-that's been under development for many years in the
-Department of Philosophy at Carnegie Mellon University.
-The port was made on 10/27/2015.
 
 For instructions on how to set this project up in 
 IntelliJ IDEA, see the Wiki. Alternatively, you can 
@@ -49,27 +37,15 @@ tetrad
 pitt
 tetradapp
 
-The  tetrad package contains the "model" code; the 
-tetradapp package contains the "view" (GUI) code. The 
-model code is packaged as the lib-tetrad submodule; the 
-view code is packaged as  the tetrad submodule; these 
-can be downloaded separately n the above downloads directory.
+The  tetrad-lib package contains the "model" code; the 
+tetrad-gui package contains the "view" (GUI) code.
 
-Contributions are welcome; we will handle these via the
+We have a (small) team working (part-time) on this code,
+but if you have contributions to me, please feel free.
+If you have suggestions or bug reports, please subit 
+those to the github issue tracker. If you have code
+contributions, these will be handled via the
 issue tracker and the GitHub pull-request procedure. As 
 usual, please fork the repository if you'd like to work on 
-it. Comments are also welcome.
-
-We will try to straighten out our websites soon. Sorry.
-
-Still in the process of cleaning up the code for general use,
-sorry. Some files may be removed in the process.
-
-IntelliJ IDEA files were removed from the repository; if
-these got removed in your fork, just set up the IntelliJ
-project again (without cloning it again, that is). See
-Wiki.
-
-Don't be too impressed with the high version number. Tetrad
-has gone through many phases, in more than one programming
-language. The Java versions are 4 and 5 (the current).
+it; contributions will be handled through the usual
+github review method by pull request.

@@ -20,26 +20,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import edu.pitt.dbmi.data.ContinuousTabularDataset;
-import edu.pitt.dbmi.data.CovarianceDataset;
+import edu.pitt.dbmi.causal.cmd.util.TetradDataUtils;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
-import edu.pitt.dbmi.data.VerticalDiscreteTabularDataset;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataReader;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
-import edu.pitt.dbmi.data.reader.tabular.DiscreteVarInfo;
+import edu.pitt.dbmi.data.reader.tabular.MixedTabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import edu.pitt.dbmi.data.util.TextFileUtils;
@@ -47,6 +38,7 @@ import edu.pitt.dbmi.data.validation.DataValidation;
 import edu.pitt.dbmi.data.validation.covariance.CovarianceDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.ContinuousTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.DataFileValidation;
+import edu.pitt.dbmi.data.validation.tabular.MixedTabularDataFileValidation;
 import edu.pitt.dbmi.data.validation.tabular.TabularDataValidation;
 import edu.pitt.dbmi.data.validation.tabular.VerticalDiscreteTabularDataFileValidation;
 import java.awt.*;
@@ -58,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -80,6 +71,7 @@ final class DataLoaderSettings extends JPanel {
     private JRadioButton contRadioButton;
     private JRadioButton discRadioButton;
     private JRadioButton mixedRadioButton;
+    private IntTextField maxNumOfDiscCategoriesField;
 
     private JRadioButton commentDoubleSlashRadioButton;
     private JRadioButton commentPondRadioButton;
@@ -147,9 +139,13 @@ final class DataLoaderSettings extends JPanel {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 // Just enable disabled buttons, do not change the previous selections - Zhou
                 if (button.isSelected()) {
-                    // Enable the discrete radio button if it's disabled by clicking covariance data
+                    // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
                     if (!discRadioButton.isEnabled()) {
                         discRadioButton.setEnabled(true);
+                    }
+
+                    if (!mixedRadioButton.isEnabled()) {
+                        mixedRadioButton.setEnabled(true);
                     }
 
                     // Enable variable names in first row
@@ -186,8 +182,9 @@ final class DataLoaderSettings extends JPanel {
                     // When Covariance data is selected, data type can only be Continuous,
                     contRadioButton.setSelected(true);
 
-                    //will disallow the users to choose Discrete
+                    //will disallow the users to choose Discrete and mixed data
                     discRadioButton.setEnabled(false);
+                    mixedRadioButton.setEnabled(false);
 
                     // Both Yes and No of Variable names in first row need to be disabled
                     // Because the first row should be number of cases
@@ -211,7 +208,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box fileTypeOption1Box = Box.createHorizontalBox();
-        fileTypeOption1Box.setPreferredSize(new Dimension(200, 30));
+        fileTypeOption1Box.setPreferredSize(new Dimension(160, 30));
         fileTypeOption1Box.add(tabularRadioButton);
 
         // Option 2
@@ -259,20 +256,65 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box dataTypeOption1Box = Box.createHorizontalBox();
-        dataTypeOption1Box.setPreferredSize(new Dimension(200, 30));
+        dataTypeOption1Box.setPreferredSize(new Dimension(160, 30));
         dataTypeOption1Box.add(contRadioButton);
 
         // Option 2
         Box dataTypeOption2Box = Box.createHorizontalBox();
-        dataTypeOption2Box.setPreferredSize(new Dimension(200, 30));
+        dataTypeOption2Box.setPreferredSize(new Dimension(160, 30));
         dataTypeOption2Box.add(discRadioButton);
+
+        // Option 3
+        Box dataTypeOption3Box = Box.createHorizontalBox();
+        dataTypeOption3Box.setPreferredSize(new Dimension(320, 30));
+        dataTypeOption3Box.add(mixedRadioButton);
+
+        // Threshold label
+        JLabel maxDiscCatLabel = new JLabel(", max discrete categories: ");
+
+        // Add info icon next to label to show tooltip on mouseover
+        JLabel maxDiscCatLabelInfoIcon = new JLabel(new ImageIcon(ImageUtils.getImage(this, "information_small_white.png")));
+        // Add tooltip on mouseover the info icon
+        maxDiscCatLabelInfoIcon.setToolTipText("Integral columns with up to N (specify here) distinct values are discrete.");
+
+        // Max number of discrete categories
+        maxNumOfDiscCategoriesField = new IntTextField(0, 3);
+        // 0 by default
+        maxNumOfDiscCategoriesField.setValue(0);
+
+        maxNumOfDiscCategoriesField.setFilter(new IntTextField.Filter() {
+            @Override
+            public int filter(int value, int oldValue) {
+                if (value >= 0) {
+                    return value;
+                } else {
+                    return oldValue;
+                }
+            }
+        });
+
+        // Event listener
+        maxNumOfDiscCategoriesField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                // Select the "Mixed" radio button when users click the input field
+                if (!mixedRadioButton.isSelected()) {
+                    mixedRadioButton.setSelected(true);
+                }
+            }
+        });
+
+        dataTypeOption3Box.add(maxDiscCatLabel);
+        dataTypeOption3Box.add(maxDiscCatLabelInfoIcon);
+        dataTypeOption3Box.add(maxNumOfDiscCategoriesField);
 
         dataTypeBox.add(dataTypeLabelBox);
         dataTypeBox.add(Box.createRigidArea(new Dimension(10, 1)));
         dataTypeBox.add(dataTypeOption1Box);
         dataTypeBox.add(dataTypeOption2Box);
-        // Hide mixed option for now until we have that in fast data reader - Zhou
-        //dataTypeBox.add(mixedRadioButton);
+        dataTypeBox.add(dataTypeOption3Box);
         dataTypeBox.add(Box.createHorizontalGlue());
 
         basicSettingsBox.add(dataTypeBox);
@@ -372,7 +414,7 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box valueDelimiterOption1Box = Box.createHorizontalBox();
-        valueDelimiterOption1Box.setPreferredSize(new Dimension(200, 30));
+        valueDelimiterOption1Box.setPreferredSize(new Dimension(160, 30));
         valueDelimiterOption1Box.add(whitespaceDelimiterRadioButton);
 
         // Option 2
@@ -454,12 +496,12 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box firstRowVarNamesOption1Box = Box.createHorizontalBox();
-        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(200, 30));
+        firstRowVarNamesOption1Box.setPreferredSize(new Dimension(160, 30));
         firstRowVarNamesOption1Box.add(firstRowVarNamesYesRadioButton);
 
         // Option 2
         Box firstRowVarNamesOption2Box = Box.createHorizontalBox();
-        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(200, 30));
+        firstRowVarNamesOption2Box.setPreferredSize(new Dimension(160, 30));
         firstRowVarNamesOption2Box.add(firstRowVarNamesNoRadioButton);
 
         // Add to firstRowVarNamesBox
@@ -520,18 +562,18 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box caseIdProvidedOption1Box = Box.createHorizontalBox();
-        caseIdProvidedOption1Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption1Box.setPreferredSize(new Dimension(160, 30));
         caseIdProvidedOption1Box.add(idNoneRadioButton);
 
         // Option 2
         Box caseIdProvidedOption2Box = Box.createHorizontalBox();
-        caseIdProvidedOption2Box.setPreferredSize(new Dimension(200, 30));
+        caseIdProvidedOption2Box.setPreferredSize(new Dimension(160, 30));
         caseIdProvidedOption2Box.add(idUnlabeledFirstColRadioButton);
 
         // Option 3
         Box caseIdProvidedOption3Box = Box.createHorizontalBox();
         // Make this box a little longer because we don't want the text field too small
-        caseIdProvidedOption3Box.setPreferredSize(new Dimension(240, 30));
+        caseIdProvidedOption3Box.setPreferredSize(new Dimension(300, 30));
         caseIdProvidedOption3Box.add(idLabeledColRadioButton);
         caseIdProvidedOption3Box.add(idStringField);
 
@@ -593,17 +635,17 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box commentMarkerOption1Box = Box.createHorizontalBox();
-        commentMarkerOption1Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption1Box.setPreferredSize(new Dimension(160, 30));
         commentMarkerOption1Box.add(commentDoubleSlashRadioButton);
 
         // Option 2
         Box commentMarkerOption2Box = Box.createHorizontalBox();
-        commentMarkerOption2Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption2Box.setPreferredSize(new Dimension(160, 30));
         commentMarkerOption2Box.add(commentPondRadioButton);
 
         // Option 3
         Box commentMarkerOption3Box = Box.createHorizontalBox();
-        commentMarkerOption3Box.setPreferredSize(new Dimension(200, 30));
+        commentMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
         commentMarkerOption3Box.add(commentOtherRadioButton);
         commentMarkerOption3Box.add(commentStringField);
 
@@ -649,17 +691,17 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box quoteCharOption1Box = Box.createHorizontalBox();
-        quoteCharOption1Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption1Box.setPreferredSize(new Dimension(160, 30));
         quoteCharOption1Box.add(noneQuoteRadioButton);
 
         // Option 2
         Box quoteCharOption2Box = Box.createHorizontalBox();
-        quoteCharOption2Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption2Box.setPreferredSize(new Dimension(160, 30));
         quoteCharOption2Box.add(doubleQuoteRadioButton);
 
         // Option 3
         Box quoteCharOption3Box = Box.createHorizontalBox();
-        quoteCharOption3Box.setPreferredSize(new Dimension(200, 30));
+        quoteCharOption3Box.setPreferredSize(new Dimension(260, 30));
         quoteCharOption3Box.add(singleQuoteRadioButton);
 
         quoteCharBox.add(quoteCharLabelBox);
@@ -697,17 +739,17 @@ final class DataLoaderSettings extends JPanel {
 
         // Option 1
         Box missingValueMarkerOption1Box = Box.createHorizontalBox();
-        missingValueMarkerOption1Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption1Box.setPreferredSize(new Dimension(160, 30));
         missingValueMarkerOption1Box.add(missingValueStarRadioButton);
 
         // Option 2
         Box missingValueMarkerOption2Box = Box.createHorizontalBox();
-        missingValueMarkerOption2Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption2Box.setPreferredSize(new Dimension(160, 30));
         missingValueMarkerOption2Box.add(missingValueQuestionRadioButton);
 
         // Option 3
         Box missingValueMarkerOption3Box = Box.createHorizontalBox();
-        missingValueMarkerOption3Box.setPreferredSize(new Dimension(200, 30));
+        missingValueMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
         missingValueMarkerOption3Box.add(missingValueOtherRadioButton);
         missingValueMarkerOption3Box.add(missingStringField);
 
@@ -727,37 +769,6 @@ final class DataLoaderSettings extends JPanel {
 
         advancedSettingsBox.add(Box.createVerticalStrut(5));
 
-
-        /* Hide this since mixed data is not ready - Zhou
-
-        // Max number of disc columns
-        Box maxIntegralDiscreteBox = Box.createHorizontalBox();
-
-        maxIntegralLabel1 = new JLabel("Integral columns with up to ");
-        maxIntegralLabel2 = new JLabel(" distinct values are discrete.");
-
-        maxIntegralDiscreteIntField = new IntTextField(0, 3);
-
-        // 0 by default
-        maxIntegralDiscreteIntField.setValue(0);
-
-        maxIntegralDiscreteIntField.setFilter(new IntTextField.Filter() {
-            @Override
-            public int filter(int value, int oldValue) {
-                if (value >= 0) {
-                    return value;
-                } else {
-                    return oldValue;
-                }
-            }
-        });
-
-        maxIntegralDiscreteBox.add(maxIntegralLabel1);
-        maxIntegralDiscreteBox.add(maxIntegralDiscreteIntField);
-        maxIntegralDiscreteBox.add(maxIntegralLabel2);
-        maxIntegralDiscreteBox.add(Box.createHorizontalGlue());
-        advancedSettingsBox.add(maxIntegralDiscreteBox);
-         */
         // Use a titled border with 5 px inside padding - Zhou
         String borderTitle = "Advanced Settings (apply to all files)";
         advancedSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(borderTitle), new EmptyBorder(5, 5, 5, 5)));
@@ -883,6 +894,10 @@ final class DataLoaderSettings extends JPanel {
         }
     }
 
+    private int getMaxNumOfDiscCategories() {
+        return maxNumOfDiscCategoriesField.getValue();
+    }
+
     /**
      * Validate each file based on the specified settings
      *
@@ -898,13 +913,14 @@ final class DataLoaderSettings extends JPanel {
         if (tabularRadioButton.isSelected()) {
             TabularDataValidation validation = null;
 
-            // Mixed data type is not supported yest- Zhou
             if (contRadioButton.isSelected()) {
                 validation = new ContinuousTabularDataFileValidation(file, delimiter);
             } else if (discRadioButton.isSelected()) {
                 validation = new VerticalDiscreteTabularDataFileValidation(file, delimiter);
+            } else if (mixedRadioButton.isSelected()) {
+                validation = new MixedTabularDataFileValidation(getMaxNumOfDiscCategories(), file, delimiter);
             } else {
-                throw new UnsupportedOperationException("Mixed data type is not yet supported!");
+                throw new UnsupportedOperationException("Unsupported selection of Data Type!");
             }
 
             // Header in first row or not
@@ -982,13 +998,15 @@ final class DataLoaderSettings extends JPanel {
         if (tabularRadioButton.isSelected()) {
             TabularDataReader dataReader = null;
 
-            // Mixed data type is not supported yest- Zhou
+            // Continuous, discrete, mixed
             if (contRadioButton.isSelected()) {
                 dataReader = new ContinuousTabularDataFileReader(file, delimiter);
             } else if (discRadioButton.isSelected()) {
                 dataReader = new VerticalDiscreteTabularDataReader(file, delimiter);
+            } else if (mixedRadioButton.isSelected()) {
+                dataReader = new MixedTabularDataFileReader(getMaxNumOfDiscCategories(), file, delimiter);
             } else {
-                throw new UnsupportedOperationException("Mixed data type is not yet supported!");
+                throw new UnsupportedOperationException("Unsupported data type!");
             }
 
             // Header in first row or not
@@ -1024,18 +1042,8 @@ final class DataLoaderSettings extends JPanel {
                 throw new UnsupportedOperationException("Unexpected 'Case ID column to ignore' selection.");
             }
 
-            if (dataset instanceof ContinuousTabularDataset) {
-                ContinuousTabularDataset contDataset = (ContinuousTabularDataset) dataset;
-                // Convert continuous dataset to dataModel
-                dataModel = new BoxDataSet(
-                        new DoubleDataBox(contDataset.getData()),
-                        variablesToContinuousNodes(contDataset.getVariables()));
-            } else if (dataset instanceof VerticalDiscreteTabularDataset) {
-                VerticalDiscreteTabularDataset vDataset = (VerticalDiscreteTabularDataset) dataset;
-                dataModel = new BoxDataSet(new VerticalIntDataBox(vDataset.getData()), variablesToDiscreteNodes(vDataset.getVariableInfos()));
-            } else {
-                throw new UnsupportedOperationException("Not yet supported!");
-            }
+            // Box Dataset to DataModel
+            dataModel = TetradDataUtils.toDataModel(dataset);
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
             CovarianceDataReader dataReader = new LowerCovarianceDataReader(file, delimiter);
@@ -1053,50 +1061,14 @@ final class DataLoaderSettings extends JPanel {
             }
 
             Dataset dataset = dataReader.readInData();
-            CovarianceDataset covarianceDataset = (CovarianceDataset) dataset;
 
-            List<Node> variables = variablesToContinuousNodes(covarianceDataset.getVariables());
-            TetradMatrix tetradMatrix = new TetradMatrix(covarianceDataset.getData());
-            // Convert dataset to dataModel
-            dataModel = new CovarianceMatrix(variables, tetradMatrix, covarianceDataset.getNumberOfCases());
+            // Box Dataset to DataModel
+            dataModel = TetradDataUtils.toDataModel(dataset);
         } else {
-            throw new UnsupportedOperationException("Not yet supported!");
+            throw new UnsupportedOperationException("Unsupported selection of File Type!");
         }
 
         return dataModel;
-    }
-
-    /**
-     * Convert variables to continuous nodes
-     *
-     * @param variables
-     * @return
-     */
-    private List<Node> variablesToContinuousNodes(List<String> variables) {
-        List<Node> nodes = new LinkedList<>();
-
-        for (String variable : variables) {
-            nodes.add(new ContinuousVariable(variable));
-        }
-
-        return nodes;
-    }
-
-    /**
-     * Convert variables to discrete nodes
-     *
-     * @param variables
-     * @return
-     */
-    private List<Node> variablesToDiscreteNodes(DiscreteVarInfo[] varInfos) {
-        List<Node> nodes = new LinkedList<>();
-
-        for (DiscreteVarInfo varInfo : varInfos) {
-            // Will change later
-            nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
-        }
-
-        return nodes;
     }
 
 }
