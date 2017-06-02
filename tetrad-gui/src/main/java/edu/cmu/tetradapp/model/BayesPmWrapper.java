@@ -216,7 +216,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
 
 //            params.set("initializationMode", "automatic");
 
-            if (params.getString("initializationMode", "manualRetain").equals("manual")) {
+            if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
                 lowerBound = upperBound = 2;
 
 
@@ -231,6 +231,7 @@ public class BayesPmWrapper implements SessionModel, GraphSource {
                 throw new IllegalStateException("Unrecognized type.");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }

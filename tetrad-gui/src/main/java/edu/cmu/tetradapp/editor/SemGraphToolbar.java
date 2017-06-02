@@ -163,23 +163,11 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
         workbench.setWorkbenchMode(mode);
 
         if (mode == GraphWorkbench.ADD_NODE) {
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            Image image = ImageUtils.getImage(this, "cursorImage.png");
-            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-            setCursor(c);
+            setCursor(workbench.getCursor());
         } else if (mode == GraphWorkbench.ADD_EDGE) {
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
-            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-            setCursor(c);
+            setCursor(workbench.getCursor());
         } else {
-//            Toolkit toolkit = Toolkit.getDefaultToolkit();
-//            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
-//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-//            setCursor(c);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-//            setCursor(workbench.getCursor());
         }
     }
 
