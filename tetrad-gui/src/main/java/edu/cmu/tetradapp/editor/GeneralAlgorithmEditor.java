@@ -513,6 +513,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
 
                 if (hpcAccount == null) {
+                    graphEditor.saveLayout();
                     runner.execute();
                     graphEditor.replace(runner.getGraphs());
                     graphEditor.validate();
