@@ -99,7 +99,7 @@ public class ParamDescriptions {
         put("thr", new ParamDescription("THR parameter (GLASSO)", 1e-4, 0.0, Double.MAX_VALUE));
 
         put("targetName", new ParamDescription("Target name", ""));
-        put("verbose", new ParamDescription("Yes if verbose output should be printed to standard out", false));
+        put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
         put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", false));
 
         put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
@@ -183,6 +183,9 @@ public class ParamDescriptions {
                 "The maximum length for any discriminating path. -1 if unlimited",
                 -1, -1, Integer.MAX_VALUE));
 
+        put("thresholdForReversing", new ParamDescription(
+                "Variables with skewnesses less than this value will be reversed in sign",
+                0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
     }
 

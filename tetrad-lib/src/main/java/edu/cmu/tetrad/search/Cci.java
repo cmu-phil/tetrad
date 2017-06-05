@@ -255,6 +255,10 @@ public final class Cci {
             // No need to center; the covariance calculation does that.
             for (int i = 0; i < N; i++) {
                 residuals[i] = data.getEntry(i, _x);
+
+                if (Double.isNaN(residuals[i])) {
+                    residuals[i] = 0;
+                }
             }
 
             return residuals;
@@ -283,11 +287,17 @@ public final class Cci {
 
             double xi = data.getEntry(i, _x);
 
+            if (Double.isNaN(xi)) xi = 0.0;
+
             for (int j = i + 1; j < N; j++) {
+
+                // Skips NaN values.
                 double d = distance(data, _z, i, j);
                 double k = kernel(d / h);
 
                 double xj = data.getEntry(j, _x);
+
+                if (Double.isNaN(xj)) xj = 0.0;
 
                 sums[i] += k * xj;
                 weights[i] += k;
@@ -300,6 +310,9 @@ public final class Cci {
         for (int i = 0; i < N; i++) {
             double xi = data.getEntry(i, _x);
 
+            if (Double.isNaN(xi)) xi = 0.0;
+
+            // Skips NaN values.
             double d = distance(data, _z, i, i);
             double k = kernel(d / h);
 
@@ -309,6 +322,10 @@ public final class Cci {
 
         for (int i = 0; i < residuals.length; i++) {
             residuals[i] = data.getEntry(i, _x) - sums[i] / weights[i];
+
+            if (Double.isNaN(residuals[i])) {
+                residuals[i] = 0;
+            }
         }
 
         return residuals;
@@ -383,7 +400,10 @@ public final class Cci {
 
         for (int yCol : yCols) {
             double d = data.getEntry(i, yCol) - data.getEntry(j, yCol);
-            sum += d * d;
+
+            if (!Double.isNaN(d)) {
+                sum += d * d;
+            }
         }
 
         return sqrt(sum);

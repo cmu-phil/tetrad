@@ -42,7 +42,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class SemGraphWrapper implements SessionModel, GraphSource,
-		KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel {
+		KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {
 	static final long serialVersionUID = 23L;
 	private int numModels = 1;
 	private int modelIndex = 0;
@@ -56,7 +56,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	/**
 	 * @serial Cannot be null.
 	 */
-	private List<SemGraph> graphs;
+	private List<Graph> graphs;
 	private Map<String, String> allParamSettings;
 	private Parameters parameters = new Parameters();
 
@@ -349,6 +349,10 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		graphs = new ArrayList<>();
 		graphs.add(new SemGraph(graph));
 		log();
+	}
+
+	public List<Graph> getGraphs() {
+		return graphs;
 	}
 }
 

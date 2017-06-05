@@ -43,6 +43,7 @@ import java.util.*;
  * for the nonlinear nonGaussian case.
  *
  * @author Joseph Ramsey
+ * @deprecated
  */
 public final class IndTestKciMatlab implements IndependenceTest {
 

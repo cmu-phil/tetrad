@@ -336,6 +336,8 @@ class SemPmGraphicalEditor extends JPanel {
         targetPanel.setLayout(new BorderLayout());
         add(targetPanel, BorderLayout.CENTER);
 
+        semPm().getGraph().setShowErrorTerms(true);
+
         setSemPm();
     }
 
@@ -440,8 +442,8 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     public void resetLabels() {
-        for (Object o : graph().getEdges()) {
-            resetEdgeLabel((Edge) (o));
+        for (Edge edge : graph().getEdges()) {
+            resetEdgeLabel(edge);
         }
 
         List nodes = graph().getNodes();
@@ -453,7 +455,7 @@ class SemPmGraphicalEditor extends JPanel {
         workbench().repaint();
     }
 
-    private void resetEdgeLabel(Edge edge) {
+    private void  resetEdgeLabel(Edge edge) {
         Parameter parameter = getEdgeParameter(edge);
 
         if (parameter != null) {

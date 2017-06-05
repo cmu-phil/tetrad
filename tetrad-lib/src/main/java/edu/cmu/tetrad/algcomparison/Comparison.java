@@ -42,6 +42,8 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
 
@@ -71,6 +73,8 @@ public class Comparison {
     private boolean sortByUtility = false;
     private String filePath = null;
     private boolean parallelized = true;
+    private boolean savePatterns = false;
+    private boolean savePags = false;
 
     /**
      * Compares algorithms.
@@ -375,18 +379,46 @@ public class Comparison {
 
                 File dir1 = new File(subdir, "graph");
                 File dir2 = new File(subdir, "data");
+
                 dir1.mkdirs();
                 dir2.mkdirs();
 
+                File dir3 = null;
+
+                if (isSavePatterns()) {
+                    dir3 = new File(subdir, "patterns");
+                    dir3.mkdirs();
+                }
+
+                File dir4 = null;
+
+                if (isSavePags()) {
+                    dir4 = new File(subdir, "pags");
+                    dir4.mkdirs();
+                }
+
+
                 for (int j = 0; j < simulationWrapper.getNumDataModels(); j++) {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(simulationWrapper.getTrueGraph(j), file2, false);
+                    Graph graph = simulationWrapper.getTrueGraph(j);
+
+                    GraphUtils.saveGraph(graph, file2, false);
 
                     File file = new File(dir2, "data." + (j + 1) + ".txt");
                     Writer out = new FileWriter(file);
                     DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
                     DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
+
+                    if (isSavePatterns()) {
+                        File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
+                        GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
+                    }
+
+                    if (isSavePags()) {
+                        File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
+                        GraphUtils.saveGraph(new DagToPag2(graph).convert(), file4, false);
+                    }
                 }
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
@@ -827,6 +859,34 @@ public class Comparison {
 
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
+    }
+
+    /**
+     * @return True if patterns should be saved out.
+     */
+    public boolean isSavePatterns() {
+        return savePatterns;
+    }
+
+    /**
+     * @param savePatterns True if patterns should be saved out.
+     */
+    public void setSavePatterns(boolean savePatterns) {
+        this.savePatterns = savePatterns;
+    }
+
+    /**
+     * @return True if patterns should be saved out.
+     */
+    public boolean isSavePags() {
+        return savePags;
+    }
+
+    /**
+     * @param savePags True if patterns should be saved out.
+     */
+    public void setSavePags(boolean savePags) {
+        this.savePags = savePags;
     }
 
     private class AlgorithmTask extends RecursiveTask<Boolean> {
