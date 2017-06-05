@@ -751,14 +751,15 @@ public class Comparison {
                 AlgorithmTask task = new AlgorithmTask(algorithmSimulationWrappers,
                         algorithmWrappers, simulationWrappers,
                         statistics, numGraphTypes, allStats, run);
-                tasks.add(task);
+                task.compute();
+//                tasks.add(task);
             }
         }
 
 //        if (!isParallelized()) {
-            for (AlgorithmTask task : tasks) {
-                task.compute();
-            }
+//            for (AlgorithmTask task : tasks) {
+//                task.compute();
+//            }
 //        } else {
 //            class Task extends RecursiveTask<Boolean> {
 //                List<AlgorithmTask> tasks;

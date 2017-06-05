@@ -25,8 +25,13 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -41,11 +46,30 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
-        parameters.set("sampleSize", 500);
-        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("minCategories", 2);
+        parameters.set("maxCategories", 2);
+
+        parameters.set("numRuns", 50);
+        parameters.set("differentGraphs", false);
+        parameters.set("sampleSize", 1000);
+
+        parameters.set("numMeasures", 20);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 2);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("sampleSize", 1000);
+
+        parameters.set("alpha", .01);
+        parameters.set("depth", -1);
+
+        parameters.set("samplePrior", 1);
+        parameters.set("structurePrior", 1);
+
+        parameters.set("penaltyDiscount", 1);
 
         Statistics statistics = new Statistics();
 
@@ -65,24 +89,32 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+        algorithms.add(new Pc(new ChiSquare()));
+        algorithms.add(new Pc(new BDeuTest()));
+        algorithms.add(new PcStable(new ChiSquare()));
+        algorithms.add(new PcStable(new BDeuTest()));
+        algorithms.add(new Cpc(new ChiSquare()));
+        algorithms.add(new Cpc(new BDeuTest()));
+        algorithms.add(new CpcStable(new ChiSquare()));
+        algorithms.add(new CpcStable(new BDeuTest()));
+        algorithms.add(new PcMax(new ChiSquare(), false));
+        algorithms.add(new PcMax(new BDeuTest(), false));
+        algorithms.add(new Fges(new DiscreteBicScore(), false));
+        algorithms.add(new Fges(new BdeuScore(), false));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new SemSimulation(new RandomForward()));
+        simulations.add(new BayesNetSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
-        comparison.setShowUtilities(true);
-        comparison.setParallelized(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+//        comparison.setParallelized(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        comparison.compareFromSimulations("comparison_richard", simulations, algorithms, statistics, parameters);
     }
 }
 
