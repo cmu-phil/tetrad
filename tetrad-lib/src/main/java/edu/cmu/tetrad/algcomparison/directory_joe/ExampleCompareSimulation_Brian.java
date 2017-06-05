@@ -19,36 +19,49 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.ruben;
+package edu.cmu.tetrad.algcomparison.directory_joe;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianOtherBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * An example script to load in data sets and graphs from files and analyze them. The
- * files loaded must be in the same format as
- * </p>
- * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
- * </p>
- * saves them. For other formats, specialty data loaders can be written to implement the
- * Simulation interface.
+ * An example script to simulate data and run a comparison analysis on it.
  *
  * @author jdramsey
  */
-public class ExampleCompareFromFiles {
+public class ExampleCompareSimulation_Brian {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        // Can leave the simulation parameters out since
-        // we're loading from file here
-        parameters.set("alpha", .0001);
-        parameters.set("depth", 4);
-        parameters.set("penaltyDiscount", 2);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 100, 200, 300);
+        parameters.set("avgDegree", 2, 4);
+        parameters.set("sampleSize", 1000);
+        parameters.set("minCategories", 2);
+        parameters.set("maxCategories", 5);
+        parameters.set("percentDiscrete", 50);
+        parameters.set("differentGraphs", true);
 
-        parameters.set("numRuns", 1);
+        parameters.set("maxDegree", 5);
+        parameters.set("maxIndegree", 5);
+        parameters.set("maxOutdegree", 5);
+
+//        parameters.set("quadraticLow", 0);
+//        parameters.set("quadraticHigh", 0);
+//        parameters.set("cubicLow", 0);
+//        parameters.set("cubicHigh", 0);
+
+
+        parameters.set("structurePrior", -1, 1);
+        parameters.set("discretize", false);
 
         Statistics statistics = new Statistics();
 
@@ -56,35 +69,26 @@ public class ExampleCompareFromFiles {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new TailPrecision());
-        statistics.add(new TailRecall());
-        statistics.add(new MathewsCorrAdj());
-        statistics.add(new MathewsCorrArrow());
-        statistics.add(new F1Adj());
-        statistics.add(new F1Arrow());
-        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
-
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
-        statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 0.5);
-        statistics.setWeight("TP", 1.0);
-        statistics.setWeight("TR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fang());
+        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianOtherBicScore()));
+
+        Simulations simulations = new Simulations();
+
+        simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(false);
-        comparison.setSortByUtility(true);
-        comparison.setShowUtilities(true);
-        comparison.setParallelized(false);
-        comparison.setSaveGraphs(true);
 
-        comparison.compareFromFiles("comparisonRuben", algorithms, statistics, parameters);
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setParallelized(false);
+
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 }
 

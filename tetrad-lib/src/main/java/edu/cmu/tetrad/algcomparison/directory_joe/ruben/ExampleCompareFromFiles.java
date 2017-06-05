@@ -19,11 +19,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.mina;
+package edu.cmu.tetrad.algcomparison.directory_joe.ruben;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -43,19 +43,25 @@ public class ExampleCompareFromFiles {
         Parameters parameters = new Parameters();
 
         // Can leave the simulation parameters out since
-        // we're loading from file here.
+        // we're loading from file here
+        parameters.set("alpha", .0001);
+        parameters.set("depth", 4);
         parameters.set("penaltyDiscount", 2);
-        parameters.set("numRuns", 5);
-        parameters.set("randomSelectionSize", 10);
+
+        parameters.set("numRuns", 1);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("avgDegree"));
-        statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new TailPrecision());
+        statistics.add(new TailRecall());
+        statistics.add(new MathewsCorrAdj());
+        statistics.add(new MathewsCorrArrow());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
         statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
@@ -63,20 +69,22 @@ public class ExampleCompareFromFiles {
         statistics.setWeight("AR", 0.5);
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
+        statistics.setWeight("TP", 1.0);
+        statistics.setWeight("TR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new ImagesSemBic());
+        algorithms.add(new Fang());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(false);
+        comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
-        comparison.setParallelized(true);
+        comparison.setParallelized(false);
         comparison.setSaveGraphs(true);
 
-        comparison.compareFromFiles("mina", algorithms, statistics, parameters);
+        comparison.compareFromFiles("comparisonRuben", algorithms, statistics, parameters);
     }
 }
 

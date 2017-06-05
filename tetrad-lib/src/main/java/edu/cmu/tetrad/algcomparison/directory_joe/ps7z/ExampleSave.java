@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.ps7z;
+package edu.cmu.tetrad.algcomparison.directory_joe.ps7z;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;

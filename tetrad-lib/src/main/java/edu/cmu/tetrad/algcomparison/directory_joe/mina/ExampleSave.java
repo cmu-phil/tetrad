@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.ruben;
+package edu.cmu.tetrad.algcomparison.directory_joe.mina;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
@@ -44,6 +44,6 @@ public class ExampleSave {
         Simulation simulation = new LinearFisherModel(new RandomForward());
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.saveToFiles("comparisonRuben", simulation, parameters);
+        comparison.saveToFiles("mina", simulation, parameters);
     }
 }
