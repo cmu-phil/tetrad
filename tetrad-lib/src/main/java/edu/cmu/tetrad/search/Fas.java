@@ -314,22 +314,22 @@ public class Fas implements IFas {
                         getSepsets().set(x, y, empty);
                     }
 
-//                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-//                            nf.format(test.getScore()));
-//
-//                    if (verbose) {
-//                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-//                                nf.format(test.getScore()));
-//                    }
+                    if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage(
+                                SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                                nf.format(test.getScore()));
+                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                                nf.format(test.getScore()));
+                    }
 
                 } else if (!forbiddenEdge(x, y)) {
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
 
-                    if (verbose) {
-                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
-                    }
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+//                                nf.format(test.getScore()));
+//                    }
                 }
             }
         }
@@ -421,7 +421,7 @@ public class Fas implements IFas {
                             getSepsets().set(x, y, condSet);
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) +
+                                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) +
                                         " score = " + nf.format(test.getScore()));
                                 out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getScore()));
                             }

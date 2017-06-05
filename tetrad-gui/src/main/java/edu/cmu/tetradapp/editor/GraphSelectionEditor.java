@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.*;
+
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -71,6 +72,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private List<GraphWorkbench> workbenches;
     private GraphPropertiesAction graphAction;
     private TriplesAction triplesAction;
+    private Map<String, List<Integer>> layoutGraph;
+    private int prevSelected = 0;
 
     /**
      * Constructs a graph selection editor.
@@ -80,6 +83,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     public GraphSelectionEditor(final GraphSelectionWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException("The regression wrapper is required.");
+        }
+
+        if (layoutGraph == null) {
+            layoutGraph = new HashMap<>();
         }
 
         // Initialize helpSet - Zhou
@@ -391,8 +398,19 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                         + "Try a smaller selection.");
             }
 
-            GraphUtils.circleLayout(selection, 200, 200, 150);
-//            GraphUtils.fruchtermanReingoldLayout(selection);
+            if (!layoutGraph.isEmpty()) {
+                for (Node node : selection.getNodes()) {
+                    List<Integer> center = layoutGraph.get(node.getName());
+
+                    if (center != null) {
+                        node.setCenter(center.get(0), center.get(1));
+                    }
+                }
+            } else {
+                GraphUtils.circleLayout(selection, 200, 200, 150);
+//                GraphUtils.fruchtermanReingoldLayout(selection);
+            }
+
             GraphWorkbench workbench = getWorkbench(i);
             workbench.setGraph(selection);
             List<Node> selected = wrapper.getSelectedVariables();
@@ -497,11 +515,53 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         if (selectedIndex == -1) {
             selectedIndex = 0;
         }
-        return workbenches.get(selectedIndex);
+
+        return getWorkbench(selectedIndex);
+
+//        Graph graph = workbenches.get(selectedIndex).getGraph();
+//
+//        for (Node node : graph.getNodes()) {
+//            List<Integer> center = layoutGraph.get(node.getName());
+//
+//            if (center != null) {
+//                node.setCenter(center.get(0), center.get(1));
+//            }
+//        }
+//
+//        return workbenches.get(selectedIndex);
     }
 
     public GraphWorkbench getWorkbench(int selectionIndex) {
+        Graph layout = workbenches.get(prevSelected).getGraph();
+        setLayoutGraph(layout);
+
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        if (selectedIndex == -1) {
+            selectedIndex = 0;
+        }
+
+        Graph graph = workbenches.get(selectedIndex).getGraph();
+
+        for (Node node : graph.getNodes()) {
+            List<Integer> center = layoutGraph.get(node.getName());
+
+            if (center != null) {
+                node.setCenter(center.get(0), center.get(1));
+            }
+        }
+
+        prevSelected = selectedIndex;
+
         return workbenches.get(selectionIndex);
+    }
+
+    public void saveLayout() {
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        if (selectedIndex == -1) {
+            selectedIndex = 0;
+        }
+        Graph layout = wrapper.getSelectionGraph(selectedIndex);
+        setLayoutGraph(layout);
     }
 
     @Override
@@ -521,10 +581,31 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     public void replace(List<Graph> graphs) {
+        for (Graph graph : graphs) {
+            for (Node node : graph.getNodes()) {
+                List<Integer> center = layoutGraph.get(node.getName());
+
+                if (center != null) {
+                    node.setCenter(center.get(0), center.get(1));
+                }
+            }
+        }
+
         wrapper.setGraphs(graphs);
         resetWorkbenchScrolls(wrapper);
         resetGraphs(wrapper);
         editorPanel.reset();
+    }
+
+    private void setLayoutGraph(Graph graph) {
+        layoutGraph.clear();
+
+        for (Node node : graph.getNodes()) {
+            List<Integer> center = new ArrayList<>();
+            center.add(node.getCenterX());
+            center.add(node.getCenterY());
+            this.layoutGraph.put(node.getName(), center);
+        }
     }
 
     /**

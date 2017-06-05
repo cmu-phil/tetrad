@@ -34,7 +34,7 @@ import java.rmi.MarshalledObject;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class LayoutSelection implements Transferable {
+public class LayoutSelection implements Transferable {
 
     /**
      * The list of session nodes that constitutes the selection.

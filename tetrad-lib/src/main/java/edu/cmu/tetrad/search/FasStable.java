@@ -308,10 +308,9 @@ public class FasStable implements IFas {
                         getSepsets().set(x, y, empty);
                     }
 
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                            nf.format(test.getPValue()));
-
                     if (verbose) {
+                        TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+                                nf.format(test.getPValue()));
                         out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
                                 nf.format(test.getPValue()));
                     }
@@ -320,10 +319,10 @@ public class FasStable implements IFas {
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
 
-                    if (verbose) {
-                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                nf.format(test.getPValue()));
-                    }
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+//                                nf.format(test.getPValue()));
+//                    }
                 }
             }
         }
@@ -419,7 +418,7 @@ public class FasStable implements IFas {
                             getSepsets().set(x, y, condSet);
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
+                                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
                                         nf.format(test.getPValue()));
                                 out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
                             }

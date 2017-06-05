@@ -40,6 +40,7 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -70,6 +71,7 @@ public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("depth");
         parameters.add("useMaxPOrientationHeuristic");
         parameters.add("maxPOrientationMaxPathLength");
+        parameters.add("verbose");
         return parameters;
     }
 

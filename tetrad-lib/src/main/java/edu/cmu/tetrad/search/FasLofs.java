@@ -84,7 +84,7 @@ public final class FasLofs implements GraphSearch {
 
         System.out.println("FAS");
 
-        Fas fas = new Fas(test);
+        FasStable fas = new FasStable(test);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setKnowledge(knowledge);

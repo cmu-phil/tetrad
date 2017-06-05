@@ -1232,13 +1232,16 @@ public final class StatUtils {
             thirdMoment += s * s * s;
         }
 
+        double ess = secondMoment / N;
+        double esss = thirdMoment / (N - 1);
+
         if (secondMoment == 0) {
             throw new ArithmeticException("StatUtils.skew:  There is no skew " +
                     "when the variance is zero.");
         }
 
         //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
-        return thirdMoment / Math.pow(secondMoment, 1.5);
+        return esss / Math.pow(ess, 1.5);
     }
 
     /**
@@ -1248,23 +1251,25 @@ public final class StatUtils {
      */
     public static double skewness(double array[], int N) {
         double mean = StatUtils.mean(array, N);
-        double variance = StatUtils.variance(array, N);
-        double skew = 0.0;
+        double secondMoment = 0.0; // StatUtils.variance(array, N);
+        double thirdMoment = 0.0;
 
         for (int j = 0; j < N; j++) {
             double s = array[j] - mean;
-
-            skew += s * s * s;
+            secondMoment += s * s;
+            thirdMoment += s * s * s;
         }
 
-//        if (variance == 0) {
-//            throw new ArithmeticException("StatUtils.skew:  There is no skew " +
-//                    "when the variance is zero.");
-//        }
+        double ess = secondMoment / N;
+        double esss = thirdMoment / (N - 1);
 
-        skew /= (N * Math.pow(variance, 1.5));
+        if (secondMoment == 0) {
+            throw new ArithmeticException("StatUtils.skew:  There is no skew " +
+                    "when the variance is zero.");
+        }
 
-        return skew;
+        //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
+        return esss / Math.pow(ess, 1.5);
     }
 
     public static double[] removeNaN(double[] x1) {

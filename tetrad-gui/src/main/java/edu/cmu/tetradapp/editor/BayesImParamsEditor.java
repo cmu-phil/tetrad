@@ -87,7 +87,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
             manually.setSelected(true);
             randomEveryTime.setEnabled(false);
             randomEveryTime.setSelected(false);
-        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomRatain")) {
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomRetain")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(false);

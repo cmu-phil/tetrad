@@ -1426,9 +1426,43 @@ public final class SearchGraphUtils {
         return graph;
     }
 
-    public static Graph dagFromPattern(Graph pattern) {
-        DagInPatternIterator dags = new DagInPatternIterator(pattern);
-        return dags.next();
+    public static Graph dagFromPattern(Graph graph) {
+        Graph dag = new EdgeListGraph(graph);
+
+        MeekRules rules = new MeekRules();
+        rules.orientImplied(graph);
+
+        WHILE:
+        while (true) {
+            Set<Edge> edges = dag.getEdges();
+
+            for (Edge edge : edges) {
+                if (Edges.isUndirectedEdge(edge)) {
+                    Node node1 = edge.getNode1();
+                    Node node2 = edge.getNode2();
+
+                    if (!(dag.isAncestorOf(node2, node1)) && !dag.getParents(node2).isEmpty()) {
+                        edge.setEndpoint2(Endpoint.ARROW);
+                    }
+                    else if (!dag.getParents(node1).isEmpty()) {
+                        edge.setEndpoint1(Endpoint.ARROW);
+                    }
+                    else {
+                        throw new IllegalArgumentException("Can't orient " + edge);
+                    }
+
+                    rules.orientImplied(dag);
+                    continue WHILE;
+                }
+            }
+
+            break;
+        }
+
+        return dag;
+
+//        DagInPatternIterator dags = new DagInPatternIterator(pattern);
+//        return dags.next();
 
 //        MeekRules rules = new MeekRules();
 //        rules.orientImplied(graph);

@@ -103,7 +103,13 @@ public class TabularComparisonEditor extends JPanel {
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                table.setToken(i + 1, j + 1, nf.format(dataSet.getDouble(i, j)));
+                double d = dataSet.getDouble(i, j);
+
+                if (Double.isNaN(d)) {
+                    table.setToken(i + 1, j + 1, "*");
+                } else {
+                    table.setToken(i + 1, j + 1, nf.format(d));
+                }
             }
         }
 
@@ -111,14 +117,24 @@ public class TabularComparisonEditor extends JPanel {
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             double sum = 0.0;
+            int count = 0;
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                sum += dataSet.getDouble(i, j);
+                double d = dataSet.getDouble(i, j);
+
+                if (!Double.isNaN(d)) {
+                    sum += d;
+                    count++;
+                }
             }
 
-            double avg = sum / dataSet.getNumRows();
+            double avg = sum / count;
 
-            table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
+            if (Double.isNaN(avg)) {
+                table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, "*");
+            } else {
+                table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
+            }
         }
 
         table.setToken(dataSet.getNumRows() + 2 - 1, 0, "Avg");

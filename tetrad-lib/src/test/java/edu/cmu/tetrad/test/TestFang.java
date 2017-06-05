@@ -76,8 +76,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -165,8 +165,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -247,8 +247,8 @@ public class TestFang {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 

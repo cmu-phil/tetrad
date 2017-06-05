@@ -1,12 +1,13 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.search.ConditionalGaussianOtherScore;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +17,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
+public class ConditionalGaussianOtherBicScore implements ScoreWrapper, Experimental {
     static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        final ConditionalGaussianScore conditionalGaussianScore
-                = new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getBoolean("discretize"));
+        final ConditionalGaussianOtherScore conditionalGaussianScore
+                = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getBoolean("discretize"));
         conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
@@ -30,7 +31,7 @@ public class  ConditionalGaussianBicScore implements ScoreWrapper, Experimental 
 
     @Override
     public String getDescription() {
-        return "Conditional Gaussian BIC Score";
+        return "Conditional Gaussian Other BIC Score";
     }
 
     @Override

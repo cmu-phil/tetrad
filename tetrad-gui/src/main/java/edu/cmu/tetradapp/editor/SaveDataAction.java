@@ -111,8 +111,17 @@ final class SaveDataAction extends AbstractAction {
             return;
         }
 
+        if (dataModel instanceof DataModelList) {
+            if (((DataModelList) dataModel).size() == 1) {
+                dataModel = ((DataModelList) dataModel).get(0);
+            }
+        }
+
+        String name = dataModel.getName();
+        if (name == null) name = "data";
+
         if (dataModel instanceof DataSet) {
-            File file = EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
+            File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             if (file == null) {
                 return;
@@ -145,7 +154,7 @@ final class SaveDataAction extends AbstractAction {
 
             out.close();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            File file = EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
+            File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             if (file == null) {
                 return;
@@ -164,25 +173,11 @@ final class SaveDataAction extends AbstractAction {
 
             out.close();
         } else if (dataModel instanceof DataModelList) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Pick the name of the first file, e.g. data.txt." +
-                    " A series of files will be generated based on this name, e.g. data1.txt, data2.txt, etc.");
-
-            File file = EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
-
-            if (file == null) {
-                return;
-            }
+            File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             char delimiter = '\t';
 
-            if (file.getName().endsWith(".csv")) {
-                delimiter = ',';
-            }
-
             DataModelList list = (DataModelList) dataModel;
-
-            String[] tokens = file.getName().split(".txt");
-            String base = tokens[0];
 
             for (int i = 0; i < list.size(); i++) {
 
@@ -194,12 +189,12 @@ final class SaveDataAction extends AbstractAction {
                     PrintWriter out;
 
                     try {
-                        File file1 = new File(file.getParent() + "/" + base + "." + (i + 1) + ".txt");
+                        File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
                         System.out.println(file1);
                         out = new PrintWriter(new FileOutputStream(file1));
                     } catch (IOException e) {
                         throw new IllegalArgumentException(
-                                "Output file could not be opened: " + file);
+                                "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
                     }
 
                     DataSet dataSet = (DataSet) ((DataModelList) dataModel).get(i);
@@ -213,6 +208,19 @@ final class SaveDataAction extends AbstractAction {
                     }
 
                     out.close();
+                } else if (_dataModel instanceof ICovarianceMatrix) {
+                    PrintWriter out;
+
+                    try {
+                        File file1 = new File(file.getParent(),file.getName() + "_" + (i + 1) + ".txt");
+                        System.out.println(file1);
+                        out = new PrintWriter(new FileOutputStream(file1));
+                    } catch (IOException e) {
+                        throw new IllegalArgumentException(
+                                "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
+                    }
+
+                    DataWriter.writeCovMatrix((ICovarianceMatrix) _dataModel, out, nf);
                 }
             }
         } else {

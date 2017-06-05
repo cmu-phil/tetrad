@@ -19,16 +19,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class EFangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated() {
+    public EFangConcatenated() {
         this.empirical = false;
     }
 
-    public FangConcatenated(boolean empirical) {
+    public EFangConcatenated(boolean empirical) {
         this.empirical = empirical;
     }
 
@@ -42,11 +42,12 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
+        edu.cmu.tetrad.search.EFang search = new edu.cmu.tetrad.search.EFang(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
         return search.search();
     }
 
