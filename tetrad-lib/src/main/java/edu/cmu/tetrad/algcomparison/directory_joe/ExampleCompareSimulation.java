@@ -67,7 +67,7 @@ public class ExampleCompareSimulation {
         parameters.set("depth", -1);
 
         parameters.set("samplePrior", 1);
-        parameters.set("structurePrior", 1);
+        parameters.set("structurePrior", 3);
 
         parameters.set("penaltyDiscount", 1);
 
