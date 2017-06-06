@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,49 +18,32 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class FangConcatenated2 implements MultiDataSetAlgorithm, HasKnowledge {
+public class EFang implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
-    private boolean rskew = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FangConcatenated2() {
+    public EFang() {
         this.empirical = false;
     }
 
-    public FangConcatenated2(boolean empirical, boolean rskew) {
+    public EFang(boolean empirical) {
         this.empirical = empirical;
-        this.rskew = rskew;
     }
 
-    @Override
-    public Graph search(List<DataModel> dataModels,  Parameters parameters) {
-        List<DataSet> dataSets = new ArrayList<>();
-
-        for (DataModel dataModel : dataModels) {
-            dataSets.add((DataSet) dataModel);
-        }
-
-        List<DataSet> centered = new ArrayList<>();
-
-        for (DataSet dataSet : dataSets) {
-            centered.add(DataUtils.center(dataSet));
-        }
-
-        DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.Fang search = new edu.cmu.tetrad.search.Fang(dataSet);
-        search.setEmpirical(empirical);
-        search.setRskew(rskew);
-        search.setDepth(parameters.getInt("depth"));
-        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
-        search.setKnowledge(knowledge);
+    private Graph getGraph(edu.cmu.tetrad.search.EFang search) {
         return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+        edu.cmu.tetrad.search.EFang search = new edu.cmu.tetrad.search.EFang((DataSet) dataSet);
+        search.setDepth(parameters.getInt("depth"));
+        search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        search.setAlpha(parameters.getDouble("twoCycleAlpha"));
+        search.setKnowledge(knowledge);
+        search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
+        return getGraph(search);
     }
 
     @Override
@@ -71,8 +53,7 @@ public class FangConcatenated2 implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)"
-                + (empirical ? " (Empirical)" : "") + (rskew ? " (RSkew) " : "");
+        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
     }
 
     @Override
@@ -86,8 +67,6 @@ public class FangConcatenated2 implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add("depth");
         parameters.add("penaltyDiscount");
         parameters.add("twoCycleAlpha");
-        parameters.add("numRuns");
-        parameters.add("randomSelectionSize");
 
         return parameters;
     }

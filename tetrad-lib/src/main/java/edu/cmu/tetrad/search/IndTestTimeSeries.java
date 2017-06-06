@@ -39,6 +39,7 @@ import java.util.List;
  * Structural Vector Autoregressions."</p>
  *
  * @author Joseph Ramsey
+ * @deprecated
  */
 public final class IndTestTimeSeries implements IndependenceTest {
 

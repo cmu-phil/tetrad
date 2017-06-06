@@ -59,7 +59,8 @@ public class TestSimulatedFmri {
 
         parameters.set("penaltyDiscount", 4);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .01);
+        parameters.set("twoCycleAlpha", 1e-9);
+        parameters.set("thresholdForReversing", -5);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -76,8 +77,8 @@ public class TestSimulatedFmri {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
         statistics.setWeight("AHR", 1.0);
@@ -145,13 +146,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
 
-//        algorithms.add(new FangConcatenated());
-
-        algorithms.add(new FangConcatenated2(false, false));
-//        algorithms.add(new FangConcatenated2(false, true));
-
-//        algorithms.add(new FangConcatenated2(true, false));
-//        algorithms.add(new FangConcatenated2(true, true));
+        algorithms.add(new EFangConcatenated(false));
 
 //        algorithms.add(new FasRSkewConcatenated(true));
 
@@ -197,8 +192,8 @@ public class TestSimulatedFmri {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 
@@ -256,90 +251,97 @@ public class TestSimulatedFmri {
     @Test
     public void testClark() {
 
-        double f = 1.05;
-        int N = 1000;
+        double f = .1;
+        int N = 512;
+        double alpha = 1.0;
+        double penaltyDiscount = 1.0;
 
-        {
-            Node x = new ContinuousVariable("X");
-            Node y = new ContinuousVariable("Y");
-            Node z = new ContinuousVariable("Z");
+        for (int i = 0; i < 100; i++) {
+            {
+                Node x = new ContinuousVariable("X");
+                Node y = new ContinuousVariable("Y");
+                Node z = new ContinuousVariable("Z");
 
-            Graph g = new EdgeListGraph();
-            g.addNode(x);
-            g.addNode(y);
-            g.addNode(z);
+                Graph g = new EdgeListGraph();
+                g.addNode(x);
+                g.addNode(y);
+                g.addNode(z);
 
-            g.addDirectedEdge(x, y);
-            g.addDirectedEdge(z, x);
-            g.addDirectedEdge(z, y);
+                g.addDirectedEdge(x, y);
+                g.addDirectedEdge(z, x);
+                g.addDirectedEdge(z, y);
 
-            GeneralizedSemPm pm = new GeneralizedSemPm(g);
+                GeneralizedSemPm pm = new GeneralizedSemPm(g);
 
-            try {
-                pm.setNodeExpression(g.getNode("X"), "0.5 * Z + E_X");
-                pm.setNodeExpression(g.getNode("Y"), "0.5 * X + 0.5 * Z + E_Y");
-                pm.setNodeExpression(g.getNode("Z"), "E_Z");
+                try {
+                    pm.setNodeExpression(g.getNode("X"), "0.5 * Z + E_X");
+                    pm.setNodeExpression(g.getNode("Y"), "0.5 * X + 0.5 * Z + E_Y");
+                    pm.setNodeExpression(g.getNode("Z"), "E_Z");
 
-                String error = "pow(Uniform(0, 1), " + f + ")";
-                pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
-                pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
-                pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-            } catch (ParseException e) {
-                System.out.println(e);
+                    String error = "pow(Uniform(0, 1), " + f + ")";
+                    pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
+                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
+                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
+                } catch (ParseException e) {
+                    System.out.println(e);
+                }
+
+                GeneralizedSemIm im = new GeneralizedSemIm(pm);
+                DataSet data = im.simulateData(N, false);
+
+                edu.cmu.tetrad.search.EFang fang = new edu.cmu.tetrad.search.EFang(data);
+                fang.setPenaltyDiscount(penaltyDiscount);
+                fang.setAlpha(alpha);
+                fang.setThresholdForReversing(-.3);
+                Graph out = fang.search();
+
+                System.out.println(out);
             }
 
-            GeneralizedSemIm im = new GeneralizedSemIm(pm);
-            DataSet data = im.simulateData(N, false);
+            {
+                Node x = new ContinuousVariable("X");
+                Node y = new ContinuousVariable("Y");
+                Node z = new ContinuousVariable("Z");
 
-            edu.cmu.tetrad.search.Fang fang = new edu.cmu.tetrad.search.Fang(data);
-            fang.setPenaltyDiscount(1);
-            fang.setAlpha(0.5);
-            Graph out = fang.search();
+                Graph g = new EdgeListGraph();
+                g.addNode(x);
+                g.addNode(y);
+                g.addNode(z);
 
-            System.out.println(out);
-        }
+                g.addDirectedEdge(x, y);
+                g.addDirectedEdge(x, z);
+                g.addDirectedEdge(y, z);
 
-        {
-            Node x = new ContinuousVariable("X");
-            Node y = new ContinuousVariable("Y");
-            Node z = new ContinuousVariable("Z");
+                GeneralizedSemPm pm = new GeneralizedSemPm(g);
 
-            Graph g = new EdgeListGraph();
-            g.addNode(x);
-            g.addNode(y);
-            g.addNode(z);
+                try {
+                    pm.setNodeExpression(g.getNode("X"), "E_X");
+                    pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
+                    pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
 
-            g.addDirectedEdge(x, y);
-            g.addDirectedEdge(x, z);
-            g.addDirectedEdge(y, z);
+                    String error = "pow(Uniform(0, 1), " + f + ")";
+                    pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
+                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
+                    pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
+                } catch (ParseException e) {
+                    System.out.println(e);
+                }
 
-            GeneralizedSemPm pm = new GeneralizedSemPm(g);
+                GeneralizedSemIm im = new GeneralizedSemIm(pm);
+                DataSet data = im.simulateData(N, false);
 
-            try {
-                pm.setNodeExpression(g.getNode("X"), "E_X");
-                pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
-                pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
+                edu.cmu.tetrad.search.EFang fang = new edu.cmu.tetrad.search.EFang(data);
+                fang.setPenaltyDiscount(penaltyDiscount);
+                fang.setAlpha(alpha);
+                fang.setThresholdForReversing(0.0);
+                Graph out = fang.search();
 
-                String error = "pow(Uniform(0, 1), " + f + ")";
-                pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
-                pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
-                pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-            } catch (ParseException e) {
-                System.out.println(e);
+                System.out.println(out);
+
             }
-
-            GeneralizedSemIm im = new GeneralizedSemIm(pm);
-            DataSet data = im.simulateData(N, false);
-
-            edu.cmu.tetrad.search.Fang fang = new edu.cmu.tetrad.search.Fang(data);
-            fang.setPenaltyDiscount(1);
-            fang.setAlpha(0.5);
-            Graph out = fang.search();
-
-            System.out.println(out);
-
         }
     }
+
 
     @Test
     public void testClark2() {

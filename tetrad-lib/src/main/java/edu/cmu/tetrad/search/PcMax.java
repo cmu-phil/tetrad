@@ -188,7 +188,7 @@ public class PcMax implements GraphSearch {
         Fas fas = new Fas(initialGraph, getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(false);
+        fas.setVerbose(verbose);
 //        fas.setRecordSepsets(false);
         graph = fas.search();
 

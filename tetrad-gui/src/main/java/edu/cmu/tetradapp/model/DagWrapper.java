@@ -43,7 +43,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IndTestProducer,
-        SimulationParamsSource {
+        SimulationParamsSource, MultipleGraphSource {
     static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex = 0;
@@ -299,6 +299,10 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     public void setGraph(Graph graph) {
         this.dags = new ArrayList<>();
         this.dags.add(graph);
+    }
+
+    public List<Graph> getGraphs() {
+        return dags;
     }
 }
 

@@ -23,6 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.EFang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.EFangConcatenated;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fang;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -38,9 +40,10 @@ public class TestSimulatedFmri2 {
     public void TestCycles_Data_fMRI_FANG() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 6);
         parameters.set("depth", -1);
-        parameters.set("twoCycleAlpha", .01);
+        parameters.set("twoCycleAlpha", 1e-12);
+        parameters.set("thresholdForReversing", 1);
 
         parameters.set("numRuns", 10);
         parameters.set("randomSelectionSize", 10);
@@ -65,8 +68,8 @@ public class TestSimulatedFmri2 {
         statistics.add(new ArrowheadRecall());
         statistics.add(new TwoCyclePrecision());
         statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive2());
-        statistics.add(new TwoCycleFalseNegative2());
+        statistics.add(new TwoCycleFalsePositive());
+        statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
         statistics.add(new ElapsedTime());
 

@@ -407,11 +407,11 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[2])) {
                     simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+//                } else if (simulationItem.equals(simulationItems[3])) {
+//                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[3])) {
-                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
-                } else if (simulationItem.equals(simulationItems[5])) {
+                } else if (simulationItem.equals(simulationItems[4])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
@@ -495,7 +495,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         "Bayes net",
                         "Structural Equation Model",
                         "Linear Fisher Model",
-                        "General Structural Equation Model Special",
+//                        "General Structural Equation Model Special",
                         "Lee & Hastie",
                         "Time Series"
                 };
@@ -504,10 +504,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         "Bayes net",
                         "Structural Equation Model",
                         "Linear Fisher Model",
-                        "General Structural Equation Model Special",
+//                        "General Structural Equation Model Special",
                         "Lee & Hastie",
                         "Time Series",
-                        "Boolean Glass"
+//                        "Boolean Glass"
                 };
             }
         }
