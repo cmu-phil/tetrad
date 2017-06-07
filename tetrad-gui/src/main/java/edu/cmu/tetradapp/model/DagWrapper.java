@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
@@ -31,7 +30,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -44,6 +42,7 @@ import java.util.*;
  */
 public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IndTestProducer,
         SimulationParamsSource, MultipleGraphSource {
+
     static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex = 0;
@@ -57,13 +56,12 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     /**
      * @serial Cannot be null.
      */
-    private List<Graph> dags;
+    private List<Dag> dags;
     private Map<String, String> allParamSettings;
     private Parameters parameters;
     private Dag graph;
 
     //=============================CONSTRUCTORS==========================//
-
     public DagWrapper(Dag graph) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
@@ -77,7 +75,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     public DagWrapper(Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            setDag( new Dag());
+            setDag(new Dag());
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             setDag(new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), params)));
@@ -86,9 +84,16 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(GraphSource graphSource, Parameters parameters) {
-        if (graphSource instanceof  Simulation) {
+        if (graphSource instanceof Simulation) {
             Simulation simulation = (Simulation) graphSource;
-            this.dags = simulation.getGraphs();
+            List<Graph> graphs = simulation.getGraphs();
+
+            this.dags = new ArrayList<>();
+
+            for (Graph graph : graphs) {
+                this.dags.add(new Dag(graph));
+            }
+
             this.numModels = dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
@@ -132,9 +137,17 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(DataWrapper wrapper) {
-        if (wrapper instanceof  Simulation) {
+        if (wrapper instanceof Simulation) {
             Simulation simulation = (Simulation) wrapper;
-            this.dags = simulation.getGraphs();
+
+            List<Graph> graphs = simulation.getGraphs();
+
+            this.dags = new ArrayList<>();
+
+            for (Graph graph : graphs) {
+                this.dags.add(new Dag(graph));
+            }
+
             this.numModels = dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
@@ -188,7 +201,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     //================================PUBLIC METHODS=======================//
-
     public Graph getDag() {
         return dags.get(getModelIndex());
     }
@@ -200,11 +212,9 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     //============================PRIVATE METHODS========================//
-
-
     private void log() {
         TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph",  getGraph() + "");
+        TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
     /**
@@ -242,21 +252,21 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         this.name = name;
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
     @Override
     public Map<String, String> getParamSettings() {
@@ -298,15 +308,12 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     public void setGraph(Graph graph) {
         this.dags = new ArrayList<>();
-        this.dags.add(graph);
+        this.dags.add(new Dag(graph));
     }
 
     public List<Graph> getGraphs() {
-        return dags;
+        List<Graph> graphs = new ArrayList<>();
+        graphs.addAll(dags);
+        return graphs;
     }
 }
-
-
-
-
-
