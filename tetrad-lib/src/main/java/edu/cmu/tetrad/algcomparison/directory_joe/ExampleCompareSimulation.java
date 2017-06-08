@@ -47,8 +47,8 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("minCategories", 4);
-        parameters.set("maxCategories", 4);
+        parameters.set("minCategories", 3);
+        parameters.set("maxCategories", 3);
 
         parameters.set("numRuns", 50);
         parameters.set("differentGraphs", true);
