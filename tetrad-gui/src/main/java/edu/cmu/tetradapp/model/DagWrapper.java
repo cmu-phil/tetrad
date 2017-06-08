@@ -37,7 +37,7 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Holds a tetrad dag with all of the constructors necessary for it to serve as
+ * Holds a tetrad dag with all of the constructors necessary for it <></>o serve as
  * a model for the tetrad application.
  *
  * @author Joseph Ramsey
@@ -57,7 +57,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     /**
      * @serial Cannot be null.
      */
-    private List<Graph> dags;
+    private List<Dag> dags;
     private Map<String, String> allParamSettings;
     private Parameters parameters;
     private Dag graph;
@@ -88,7 +88,14 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     public DagWrapper(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof  Simulation) {
             Simulation simulation = (Simulation) graphSource;
-            this.dags = simulation.getGraphs();
+            List<Graph> graphs = simulation.getGraphs();
+
+            this.dags = new ArrayList<>();
+
+            for (Graph graph : graphs) {
+                this.dags.add(new Dag(graph));
+            }
+
             this.numModels = dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
@@ -134,7 +141,15 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     public DagWrapper(DataWrapper wrapper) {
         if (wrapper instanceof  Simulation) {
             Simulation simulation = (Simulation) wrapper;
-            this.dags = simulation.getGraphs();
+
+            List<Graph> graphs = simulation.getGraphs();
+
+            this.dags = new ArrayList<>();
+
+            for (Graph graph : graphs) {
+                this.dags.add(new Dag(graph));
+            }
+
             this.numModels = dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
@@ -298,11 +313,13 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     public void setGraph(Graph graph) {
         this.dags = new ArrayList<>();
-        this.dags.add(graph);
+        this.dags.add(new Dag(graph));
     }
 
     public List<Graph> getGraphs() {
-        return dags;
+        List<Graph> graphs = new ArrayList<>();
+        graphs.addAll(dags);
+        return graphs;
     }
 }
 

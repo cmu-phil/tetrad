@@ -27,6 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.DiscreteBicTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
@@ -46,11 +47,11 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("minCategories", 2);
-        parameters.set("maxCategories", 2);
+        parameters.set("minCategories", 4);
+        parameters.set("maxCategories", 4);
 
         parameters.set("numRuns", 50);
-        parameters.set("differentGraphs", false);
+        parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
         parameters.set("numMeasures", 20);
@@ -61,7 +62,7 @@ public class ExampleCompareSimulation {
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
-        parameters.set("sampleSize", 1000);
+        parameters.set("sampleSize", 500);
 
         parameters.set("alpha", .01);
         parameters.set("depth", -1);
@@ -90,14 +91,19 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new ChiSquare()));
+//        algorithms.add(new Pc(new DiscreteBicTest()));
         algorithms.add(new Pc(new BDeuTest()));
         algorithms.add(new PcStable(new ChiSquare()));
+//        algorithms.add(new PcStable(new DiscreteBicTest()));
         algorithms.add(new PcStable(new BDeuTest()));
         algorithms.add(new Cpc(new ChiSquare()));
+//        algorithms.add(new Cpc(new DiscreteBicTest()));
         algorithms.add(new Cpc(new BDeuTest()));
         algorithms.add(new CpcStable(new ChiSquare()));
+//        algorithms.add(new CpcStable(new DiscreteBicTest()));
         algorithms.add(new CpcStable(new BDeuTest()));
         algorithms.add(new PcMax(new ChiSquare(), false));
+//        algorithms.add(new PcMax(new DiscreteBicTest(), false));
         algorithms.add(new PcMax(new BDeuTest(), false));
         algorithms.add(new Fges(new DiscreteBicScore(), false));
         algorithms.add(new Fges(new BdeuScore(), false));

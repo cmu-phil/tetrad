@@ -149,7 +149,7 @@ public final class DagEditor extends JPanel
 
     private void editGraph(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
-        GraphToolbar toolbar = new GraphToolbar(getWorkbench());
+        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
         JScrollPane scroll = new JScrollPane();
         scroll.setPreferredSize(new Dimension(450, 450));
