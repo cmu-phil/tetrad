@@ -44,8 +44,10 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
@@ -149,7 +151,7 @@ public final class DagEditor extends JPanel
 
     private void editGraph(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
-        GraphToolbar toolbar = new GraphToolbar(getWorkbench());
+        DagGraphToolbar toolbar = new DagGraphToolbar(getWorkbench());
         JMenuBar menuBar = createGraphMenuBar();
         JScrollPane scroll = new JScrollPane();
         scroll.setPreferredSize(new Dimension(450, 450));

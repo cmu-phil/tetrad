@@ -407,7 +407,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     }
                 }
             } else {
-                GraphUtils.circleLayout(selection, 200, 200, 150);
+//                GraphUtils.circleLayout(selection, 200, 200, 150);
 //                GraphUtils.fruchtermanReingoldLayout(selection);
             }
 

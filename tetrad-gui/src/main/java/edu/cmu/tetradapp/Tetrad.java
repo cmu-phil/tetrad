@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp;
 
 import edu.cmu.tetrad.graph.NodeEqualityMode;
@@ -38,13 +37,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
 
-
 /**
- * <p>Launches Tetrad as an application.  The intended class path in either case
- * is "edu.cmu.tetradapp.Tetrad", so care should be taken not to move this class
+ * <p>
+ * Launches Tetrad as an application. The intended class path in either case is
+ * "edu.cmu.tetradapp.Tetrad", so care should be taken not to move this class
  * out of the "INSTANCE" package. The launch itself is carried out by the method
  * "launchFrame()", which generates a new frame for the application.</p>
- * <p>Note to programmers: <b>Please don't make any changes to this class.</b>
+ * <p>
+ * Note to programmers: <b>Please don't make any changes to this class.</b>
  * If you need another way of launching Tetrad for special purposes, it's easy
  * enough to create a copy of this class with a different name and modify
  * it.</p>
@@ -66,10 +66,9 @@ public final class Tetrad implements PropertyChangeListener {
     /**
      * The main application title.
      */
-    private final String mainTitle =
-            "Tetrad " + Version.currentViewableVersion()
+    private final String mainTitle
+            = "Tetrad " + Version.currentViewableVersion()
                     .toString();
-
 
     /**
      * Skip latest version checking
@@ -77,12 +76,10 @@ public final class Tetrad implements PropertyChangeListener {
     private static boolean skipLatest;
 
     //==============================CONSTRUCTORS===========================//
-
     public Tetrad() {
     }
 
     //==============================PUBLIC METHODS=========================//
-
     /**
      * Responds to "exitProgram" property change events by disposing of the
      * Tetrad IV frame and exiting if possible.
@@ -96,13 +93,15 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     /**
-     * <p>Launches Tetrad as an application.  One way to launch Tetrad IV as an
+     * <p>
+     * Launches Tetrad as an application. One way to launch Tetrad IV as an
      * application is the following:</p>
      * <pre>java -cp jarname.jar INSTANCE.Tetrad</pre>
-     * <p>where "jarname.jar" is a jar containing all of the classes of
-     * Tetrad IV, properly compiled, along with all of the auxiliary jar
-     * contents and all of the images which Tetrad IV uses, all in their proper
-     * relative directories.</p>
+     * <p>
+     * where "jarname.jar" is a jar containing all of the classes of Tetrad IV,
+     * properly compiled, along with all of the auxiliary jar contents and all
+     * of the images which Tetrad IV uses, all in their proper relative
+     * directories.</p>
      *
      * @param argv --skip-latest argument will skip checking for latest version.
      */
@@ -114,12 +113,11 @@ public final class Tetrad implements PropertyChangeListener {
 
         // Check if we should skip checking for latest version
         skipLatest = argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0;
-
+        
         new Tetrad().launchFrame();
     }
 
     //===============================PRIVATE METHODS=======================//
-
     private static void setLookAndFeel() {
         try {
             String os = System.getProperties().getProperty("os.name");
@@ -143,7 +141,7 @@ public final class Tetrad implements PropertyChangeListener {
      * want to launch it as an applet.)
      */
     private void launchFrame() {
-
+        
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
@@ -161,7 +159,17 @@ public final class Tetrad implements PropertyChangeListener {
         // order are important. jdramsey 12/14/02
         this.frame = new JFrame(this.mainTitle) {
             public Dimension getPreferredSize() {
-                return Toolkit.getDefaultToolkit().getScreenSize();
+                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+                double width = size.getWidth();
+                double height = size.getHeight();
+                double minSize = Math.min(width, height);
+                
+                height = minSize / 2;
+                width = minSize * 0.75;
+                
+                return new Dimension((int) width, (int) height);
+//                return Toolkit.getDefaultToolkit().getScreenSize();
+
 //                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 //                return new Dimension(size.width - 100, size.height - 100);
             }
@@ -184,13 +192,12 @@ public final class Tetrad implements PropertyChangeListener {
 //        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         SplashScreen.show(getFrame(), "Loading Tetrad...", 1000, skipLatest);
-
+        
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
 
         // This doesn't let the user resize the main window.
 //        getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
-
         Image image = ImageUtils.getImage(this, "tyler16.png");
         getFrame().setIconImage(image);
 
@@ -200,13 +207,13 @@ public final class Tetrad implements PropertyChangeListener {
         getFrame().setVisible(true);
         getFrame().setDefaultCloseOperation(
                 WindowConstants.DO_NOTHING_ON_CLOSE);
-
+        
         getFrame().addWindowListener(new WindowAdapter() {
             public void windowClosing(final WindowEvent e) {
                 exitApplication();
             }
         });
-
+        
         SplashScreen.hide();
 
 //        try {
@@ -214,7 +221,6 @@ public final class Tetrad implements PropertyChangeListener {
 //        } catch (BackingStoreException e) {
 //            e.printStackTrace();
 //        }
-
     }
 
     /**
@@ -222,33 +228,28 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private void exitApplication() {
         boolean succeeded = getDesktop().closeAllSessions();
-
+        
         if (!succeeded) {
             return;
         }
-
+        
         getFrame().setVisible(false);
         getFrame().dispose();
         TetradLogger.getInstance().removeNextOutputStream();
-
+        
         try {
             System.exit(0);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
+    
     private JFrame getFrame() {
         return frame;
     }
-
+    
     private TetradDesktop getDesktop() {
         return desktop;
     }
-
+    
 }
-
-
-
-
-
