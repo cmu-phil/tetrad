@@ -554,56 +554,25 @@ sup {
 <p>. </p>
 
 <blockquote>
+
 <p><strong>GUI example:</strong></p>
-
-<p>I&#39;ll use the <a href="https://archive.ics.uci.edu/ml/datasets/Acute+Inflammations">&#39;Acute Inflammations&#39; (AI) dataset</a> from UC Irvine&#39;s <a href="https://archive.ics.uci.edu/ml/index.html">repository of datasets for machine learning</a>. I&#39;ve done four things to make the data cleaner and easier to import into Tetrad:</p>
-
-<ol>
-<li>The AI dataset uses commas for a decimal point. I replaced them with periods.</li>
-<li>I removed invisible characters.</li>
-<li>I put variable names at the top of the file.</li>
-<li>I dichotomized the &#39;temperature&#39; variable into a binary indicator I named &#39;fever&#39;, using 39°C as the cutoff (the temperature distribution is bimodal and the low point between the modes is about 39).</li>
-</ol>
-
-<p>You can download my modified file <a href="">here</a>. </p>
-
+<p>In this example we'll load a 'mixed' data set, a data set that contains both discrete and continuous values.</p>
 <p>To create a dataset object in Tetrad, do the following:</p>
-
 <table>
 <thead>
-<tr>
-<th style="text-align: center">Step</th>
-<th style="text-align: center">Screenshots</th>
-</tr>
+<tr><th style="text-align:center">Step</th><th style="text-align:center">Screenshots</th></tr>
 </thead>
-
 <tbody>
-<tr>
-<td style="text-align: center">1. Place a data box on the workspace; double click to open it.</td>
-<td style="text-align: center"><img src="images/place_data_box.png" alt="place data"></td>
-</tr>
-<tr>
-<td style="text-align: center">2. Select &quot;data&quot; from the drop-down menu.</td>
-<td style="text-align: center"><img src="images/choose_data.png" alt="choose data"></td>
-</tr>
-<tr>
-<td style="text-align: center">3. Select File -&gt; Load. Choose the AI dataset file.</td>
-<td style="text-align: center"><img src="images/choose_load_data.png" alt="choose load data"></td>
-</tr>
-<tr>
-<td style="text-align: center">4. Make sure the loading options are set like so, and click &quot;Load&quot;.</td>
-<td style="text-align: center"><img src="images/click_load.png" alt=""></td>
-</tr>
-<tr>
-<td style="text-align: center">5. Click &quot;Save&quot;.</td>
-<td style="text-align: center"><img src="images/save_data.png" alt=""></td>
-</tr>
-<tr>
-<td style="text-align: center">6. Click &quot;Done&quot;.</td>
-<td style="text-align: center"><img src="images/click_done_data.png" alt=""></td>
-</tr>
+<tr><td style="text-align:center">1. Place a data box on the work space; double click to open it.</td><td style="text-align:center"><img src="images/data_loader_1.png" alt="Place data box"></td></tr>
+<tr><td style="text-align:center">2. Click &quot;file&quot; and then &quot;load&quot; in the drop down menu and the data loader window will appear.</td><td style="text-align:center"><img src="images/data_loader_2.png" alt="Click file and load"></td></tr>
+<tr><td style="text-align:center">3. Choose a file to load.</td><td style="text-align:center"><img src="images/data_loader_3.png" alt="Choose load data"></td></tr>
+<tr><td style="text-align:center">4. Make sure the loading options are set according to your file properties and click &quot;Validate&quot;.</td><td style="text-align:center"><img src="images/data_loader_4.png" alt="Click Validate"></td></tr>
+<tr><td style="text-align:center">5. Click &quot;Load&quot; if there are no errors.</td><td style="text-align:center"><img src="images/data_loader_5.png" alt="Load on no errors"></td></tr>
+<tr><td style="text-align:center">6. The loaded data will appear in the data loader window.</td><td style="text-align:center"><img src="images/data_loader_6.png" alt="Review loaded data"></td></tr>
 </tbody>
 </table>
+
+
 </blockquote>
 
 <hr>
@@ -713,7 +682,7 @@ sup {
 <td style="text-align: center"><img src="images/search_box.png" alt=""></td>
 </tr>
 <tr>
-<td style="text-align: center">2. (a) Choose output type (here a PAG). (b) Choose an algorithm (here GFCI). (c) Choose parameters (here depErrorsAlpha = 0.05, and &quot;one-edge faithfulness&quot; = &quot;no&quot;). (d) Click &quot;search&quot;.</td>
+<td style="text-align: center">2. (a) Choose output type (here a PAG). (b) Choose an algorithm (here GFCI). (c) Choose parameters (here alpha = 0.05, and &quot;one-edge faithfulness&quot; = &quot;no&quot;). (d) Click &quot;search&quot;.</td>
 <td style="text-align: center"><img src="images/search_params.png" alt=""></td>
 </tr>
 <tr>
@@ -817,13 +786,13 @@ sup {
 
 <p>\(X = \varepsilon_1 \\
 Z = \varepsilon_2 \\
-Y = \depErrorsAlpha X + \beta Z + \varepsilon_3\)</p>
+Y = \alpha X + \beta Z + \varepsilon_3\)</p>
 
 <p>Where the errors \(\varepsilon_1, \varepsilon_2, \varepsilon_3\) are independent random variables with Gaussian distributions. </p>
 
-<p>A SEM Parametric Model (SEM PM) includes the graph, plus a list of all parameters needed to specify the probability distribution. In this example, the parameters are \(\depErrorsAlpha, \beta, \mu_{\varepsilon_1}, \mu_{\varepsilon_2}, \mu_{\varepsilon_3}, \sigma_{\varepsilon_1}, \sigma_{\varepsilon_2}\), and \(\sigma_{\varepsilon_3}\). However, in the SEM PM object the <em>values</em> of those parameters are undetermined; the values are specified in the instantiated model (see below).</p>
+<p>A SEM Parametric Model (SEM PM) includes the graph, plus a list of all parameters needed to specify the probability distribution. In this example, the parameters are \(\alpha, \beta, \mu_{\varepsilon_1}, \mu_{\varepsilon_2}, \mu_{\varepsilon_3}, \sigma_{\varepsilon_1}, \sigma_{\varepsilon_2}\), and \(\sigma_{\varepsilon_3}\). However, in the SEM PM object the <em>values</em> of those parameters are undetermined; the values are specified in the instantiated model (see below).</p>
 
-<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one variable is related to its parent by a quadratic equation: \(Y = \depErrorsAlpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
+<p>If you choose a <strong>generalized</strong> SEM PM, you have the freedon to specify non-linear relationships between parent and child variables, and a non-Gaussian distribution for each node. For example, you might say one variable is related to its parent by a quadratic equation: \(Y = \alpha X + \beta X^2 + \varepsilon\). You could specify that the error term \(\varepsilon\) had, say, a Uniform(0,1) distribution.</p>
 
 <p><strong>Note</strong>: Although generalized SEM PMs give you more freedom than standard SEM PMs, they require you to make more decisions. You must specify the parametric form of the distribution. If you don&#39;t, Tetrad cannot learn the model from data. Right now there are no nonparametric model fitting methods in Tetrad. </p>
 
@@ -831,7 +800,7 @@ Y = \depErrorsAlpha X + \beta Z + \varepsilon_3\)</p>
 
 <p><img src="images/sem_im_schema.png" alt="sem pm"></p>
 
-<p>The SEM Instantiated Model (SEM IM) <em>assigns values</em> to all those parameters – in this example, to \(\depErrorsAlpha\) and \(\beta\), and to the means and variances of the errors \(\boldsymbol{\varepsilon}\).</p>
+<p>The SEM Instantiated Model (SEM IM) <em>assigns values</em> to all those parameters – in this example, to \(\alpha\) and \(\beta\), and to the means and variances of the errors \(\boldsymbol{\varepsilon}\).</p>
 
 <p><strong>How SEM IMs are made</strong>:  You can start with a SEM PM and a dataset, in which case Tetrad will estimate the model parameters from your data. If you want to generate synthetic data, you can start with a SEM PM and specify the parameter values (either by choosing them randomly, or inputting specific values by hand). </p>
 
