@@ -899,6 +899,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 for (String name : list) {
                     if (getTier() >= 0) {
                         try {
+                            getKnowledge().removeFromTiers(name);
                             getKnowledge().addToTier(getTier(), name);
 
                             notifyKnowledge();
