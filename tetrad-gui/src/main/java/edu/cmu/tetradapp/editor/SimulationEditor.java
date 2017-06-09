@@ -81,7 +81,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 dataModelList.add(simulation.getSimulation().getDataModel(i));
             }
 
-            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(Collections.<Graph>emptyList(), new Parameters()));
+            graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(trueGraphs, new Parameters()));
             DataWrapper wrapper = new DataWrapper(new Parameters());
             wrapper.setDataModelList(dataModelList);
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
