@@ -122,8 +122,8 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                final int minNumCategories = parameters.getInt("minCategories");
-                final int maxNumCategories = parameters.getInt("maxCategories");
+                final int minNumCategories = parameters.getInt("numCategories");
+                final int maxNumCategories = parameters.getInt("numCategories");
                 final int value = pickNumCategories(minNumCategories, maxNumCategories);
                 nd.put(shuffledOrder.get(i).getName(), value);
             } else {
