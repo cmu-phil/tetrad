@@ -138,7 +138,14 @@ final class ConstructTemplateAction extends AbstractAction {
     //=============================PRIVATE METHODS========================//
 
     private int getLeftX() {
-        Component[] components = getSessionWorkbench().getComponents();
+        SessionEditorIndirectRef sessionEditorRef =
+                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench sessionWorkbench =
+                sessionEditor.getSessionWorkbench();
+        sessionWorkbench.deselectAll();
+
+        Component[] components = sessionWorkbench.getComponents();
         int leftX = 0;
 
         for (Component component : components) {
@@ -392,10 +399,18 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private SessionWrapper getSessionWrapper() {
-        if (sessionWrapper == null) {
-            this.sessionWrapper = getSessionWorkbench().getSessionWrapper();
-        }
-        return sessionWrapper;
+        SessionEditorIndirectRef sessionEditorRef =
+                DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench sessionWorkbench =
+                sessionEditor.getSessionWorkbench();
+        sessionWorkbench.deselectAll();
+        return sessionWorkbench.getSessionWrapper();
+
+//        if (sessionWrapper == null) {
+//            this.sessionWrapper = getSessionWorkbench().getSessionWrapper();
+//        }
+//        return sessionWrapper;
     }
 
     private SessionEditorWorkbench getSessionWorkbench() {
@@ -485,8 +500,3 @@ final class ConstructTemplateAction extends AbstractAction {
         return config.getModels();
     }
 }
-
-
-
-
-
