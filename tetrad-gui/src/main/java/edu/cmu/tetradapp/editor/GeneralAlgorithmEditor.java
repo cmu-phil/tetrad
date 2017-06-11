@@ -153,6 +153,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         discreteTests.add(TestType.ChiSquare);
         discreteTests.add(TestType.GSquare);
         discreteTests.add(TestType.Discrete_BIC_Test);
+        discreteTests.add(TestType.BDeu_Test);
         discreteTests.add(TestType.Conditional_Gaussian_LRT);
 
         List<TestType> continuousTests = new ArrayList<>();
@@ -1123,6 +1124,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case GSquare:
                 independenceWrapper = new GSquare();
                 break;
+            case Discrete_BIC_Test:
+                independenceWrapper = new DiscreteBicTest();
+                break;
+            case BDeu_Test:
+                independenceWrapper = new BDeuTest();
+                break;
             case SEM_BIC:
                 independenceWrapper = new SemBicTest();
                 break;
@@ -1423,7 +1430,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
+        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, BDeu_Test, Correlation_T
     }
 
     public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}

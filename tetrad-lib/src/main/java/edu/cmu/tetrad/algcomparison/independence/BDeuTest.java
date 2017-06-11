@@ -14,20 +14,20 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class DiscreteBicTest implements IndependenceWrapper {
+public class BDeuTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        Score score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
-//        score.setSamplePrior(parameters.getDouble("samplePrior"));
-//        score.setStructurePrior(parameters.getDouble("structurePrior"));
+        BDeuScore score = new BDeuScore(DataUtils.getDiscreteDataSet(dataSet));
+        score.setSamplePrior(parameters.getDouble("samplePrior"));
+        score.setStructurePrior(parameters.getDouble("structurePrior"));
         return new IndTestScore(score);
     }
 
     @Override
     public String getDescription() {
-        return "Discrete BIC test";
+        return "BDeu test";
     }
 
     @Override
@@ -38,8 +38,8 @@ public class DiscreteBicTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-//        parameters.add("samplePrior");
-//        parameters.add("structurePrior");
+        parameters.add("samplePrior");
+        parameters.add("structurePrior");
         return parameters;
     }
 }
