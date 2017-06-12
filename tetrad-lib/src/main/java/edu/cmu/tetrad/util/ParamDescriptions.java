@@ -194,6 +194,10 @@ public class ParamDescriptions {
         put("varimaxPlotted", new ParamDescription(
                 "Yes if varimax solution should be plotted (maximizes variances)",
                 true));
+
+        put("convergenceThreshold", new ParamDescription(
+                "Threshold for converegence",
+                0.001, 0, Double.POSITIVE_INFINITY));
     }
 
     public static ParamDescriptions instance() {

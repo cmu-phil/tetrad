@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
@@ -24,16 +25,14 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
-    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
+    private ScoreWrapper score = new SemBicScoreDeterministic();
 
-    public FgesFA(ScoreWrapper score) {
-        this.score = score;
+    public FgesFA() {
         this.compareToTrue = false;
     }
 
-    public FgesFA(ScoreWrapper score, boolean compareToTrueGraph) {
-        this.score = score;
+    public FgesFA(boolean compareToTrueGraph) {
         this.compareToTrue = compareToTrueGraph;
     }
 
@@ -42,9 +41,10 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         dataSet = DataUtils.center((DataSet) dataSet);
         CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
         edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(covarianceMatrix);
+        analysis.setConvergenceThreshold(parameters.getDouble("convergenceThreshold"));
 
         TetradMatrix unrotatedL = analysis.successiveResidual();
-        TetradMatrix rotatedL = edu.cmu.tetrad.search.FactorAnalysis.successiveFactorVarimax(unrotatedL);
+        TetradMatrix rotatedL = analysis.successiveFactorVarimax(unrotatedL);
 
         ICovarianceMatrix cov2 = new CovarianceMatrix(covarianceMatrix.getVariables(), rotatedL.times(rotatedL.transpose()),
                 covarianceMatrix.getSampleSize());
@@ -91,6 +91,8 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("faithfulnessAssumed");
         parameters.add("maxDegree");
         parameters.add("verbose");
+        parameters.add("determinismThreshold");
+        parameters.add("convergenceThreshold");
         return parameters;
     }
 

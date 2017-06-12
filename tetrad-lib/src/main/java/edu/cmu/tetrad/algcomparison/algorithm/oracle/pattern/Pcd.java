@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScoreDetermistic;
+import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -42,12 +42,12 @@ public class Pcd implements Algorithm, HasKnowledge {
         IndTestScore test;
 
         if (dataSet instanceof ICovarianceMatrix) {
-            SemBicScoreDetermistic score = new SemBicScoreDetermistic((ICovarianceMatrix) dataSet);
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
             test = new IndTestScore(score);
         } else if (dataSet instanceof DataSet) {
-            SemBicScoreDetermistic score = new SemBicScoreDetermistic(new CovarianceMatrix((DataSet) dataSet));
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
             test = new IndTestScore(score);

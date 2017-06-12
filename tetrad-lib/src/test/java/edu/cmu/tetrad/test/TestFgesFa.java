@@ -59,8 +59,9 @@ public class TestFgesFa {
         parameters.set("maxDegree", 100);
         parameters.set("verbose", false);
 
-        ScoreWrapper score = new SemBicScoreDeterministic();
-        FgesFA alg = new FgesFA(score);
+        parameters.set("determinismThreshold", 1);
+
+        FgesFA alg = new FgesFA();
         Graph pattern = alg.search(dataSet, parameters);
 
         System.out.println(pattern);

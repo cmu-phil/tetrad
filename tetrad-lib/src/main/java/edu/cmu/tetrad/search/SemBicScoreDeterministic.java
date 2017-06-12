@@ -41,7 +41,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreDetermistic implements Score {
+public class SemBicScoreDeterministic implements Score {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
@@ -72,7 +72,7 @@ public class SemBicScoreDetermistic implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreDetermistic(ICovarianceMatrix covariances) {
+    public SemBicScoreDeterministic(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -87,7 +87,7 @@ public class SemBicScoreDetermistic implements Score {
      */
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
-        double small = getDeterminismThreshold();
+        double small = 1e-7;//getDeterminismThreshold();
 
         try {
             double s2 = getCovariances().getValue(i, i);
@@ -97,23 +97,14 @@ public class SemBicScoreDetermistic implements Score {
             TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
+            int n = getSampleSize();
+            int k = 2 * p + 1;
+
             if (s2 <= small) {
-//                if (isVerbose()) {
-//                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
-//                }
-
-//                s2 = (p + 1) * 1e-5;
-
                 printDeterminism(i, parents);
-
-//                return Double.POSITIVE_INFINITY;
-
                 s2 = small;
             }
 
-            int n = getSampleSize();
-            int k = 2 * p + 1;
-            s2 = ((n) / (double) (n - k)) * s2;
             return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
         } catch (Exception e) {
             printDeterminism(i, parents);
@@ -132,12 +123,9 @@ public class SemBicScoreDetermistic implements Score {
             int p = parents.length;
             int n = getSampleSize();
             int k = 2 * p + 1;
-            double s2 = small;
-//            s2 = ((n) / (double) (n - k)) * s2;
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+            return -(n) * log(small) - getPenaltyDiscount() * k * log(n);
         }
     }
-
 
 
     @Override
@@ -146,12 +134,6 @@ public class SemBicScoreDetermistic implements Score {
 
         double v1 = localScore(y, append(z, x));
         double v2 = localScore(y, z);
-
-//        if (v1 == Double.POSITIVE_INFINITY || v2 == Double.POSITIVE_INFINITY) {
-//            return 0;
-//        }
-
-
         return v1 - v2;
     }
 

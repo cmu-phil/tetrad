@@ -916,7 +916,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                }
                 break;
             case FGES_FA:
-                algorithm = new FgesFA(scoreWrapper);
+                algorithm = new FgesFA();
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));

@@ -25,11 +25,12 @@ public class FactorAnalysis implements Algorithm {
         }
 
         edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(selectedModel);
+        analysis.setConvergenceThreshold(parameters.getDouble("convergenceThreshold"));
 
         double threshold = parameters.getDouble("fa_threshold");
 
         TetradMatrix unrotatedSolution = analysis.successiveResidual();
-        TetradMatrix rotatedSolution = edu.cmu.tetrad.search.FactorAnalysis.successiveFactorVarimax(unrotatedSolution);
+        TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
@@ -133,6 +134,7 @@ public class FactorAnalysis implements Algorithm {
         List<String> params = new ArrayList<>();
         params.add("fa_threshold");
         params.add("varimaxPlotted");
+        params.add("convergenceThreshold");
         params.add("verbose");
         return params;
     }

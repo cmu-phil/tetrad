@@ -1418,7 +1418,9 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
-        return scoreGraphChange(y, set, x, hashIndices);
+        double v = scoreGraphChange(y, set, x, hashIndices);
+        if (Double.isNaN(v)) return Double.NEGATIVE_INFINITY;
+        return v;
     }
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
@@ -1427,7 +1429,12 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(graph.getParents(y));
         set.remove(x);
-        return -scoreGraphChange(y, set, x, hashIndices);
+
+        double v = scoreGraphChange(y, set, x, hashIndices);
+
+        if (Double.isNaN(v)) return Double.POSITIVE_INFINITY;
+
+        return -v;
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
