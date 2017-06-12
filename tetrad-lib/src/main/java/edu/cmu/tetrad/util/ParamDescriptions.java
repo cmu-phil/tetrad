@@ -187,6 +187,13 @@ public class ParamDescriptions {
                 "Variables with skewnesses less than this value will be reversed in sign",
                 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
+        put("fa_threshold", new ParamDescription(
+                "Threshold above which matrix elements are considered significant",
+                0.2, 0, Double.POSITIVE_INFINITY));
+
+        put("varimaxPlotted", new ParamDescription(
+                "Yes if varimax solution should be plotted (maximizes variances)",
+                true));
     }
 
     public static ParamDescriptions instance() {

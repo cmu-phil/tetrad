@@ -41,7 +41,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreD implements Score {
+public class SemBicScoreDetermistic implements Score {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
@@ -72,7 +72,7 @@ public class SemBicScoreD implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreD(ICovarianceMatrix covariances) {
+    public SemBicScoreDetermistic(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }

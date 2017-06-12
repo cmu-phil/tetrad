@@ -4,55 +4,53 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradMatrix;
+
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * FGES (the heuristic version).
  *
  * @author jdramsey
  */
-public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private ScoreWrapper score;
-    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fges(ScoreWrapper score) {
+    public FgesFA(ScoreWrapper score) {
         this.score = score;
         this.compareToTrue = false;
     }
 
-    public Fges(ScoreWrapper score, boolean compareToTrueGraph) {
+    public FgesFA(ScoreWrapper score, boolean compareToTrueGraph) {
         this.score = score;
         this.compareToTrue = compareToTrueGraph;
     }
 
-    public Fges(ScoreWrapper score, Algorithm initialGraph) {
-        this.score = score;
-        this.initialGraph = initialGraph;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
+        dataSet = DataUtils.center((DataSet) dataSet);
+        CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
+        edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(covarianceMatrix);
 
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
-        }
+        TetradMatrix unrotatedL = analysis.successiveResidual();
+        TetradMatrix rotatedL = edu.cmu.tetrad.search.FactorAnalysis.successiveFactorVarimax(unrotatedL);
+
+        ICovarianceMatrix cov2 = new CovarianceMatrix(covarianceMatrix.getVariables(), rotatedL.times(rotatedL.transpose()),
+                covarianceMatrix.getSampleSize());
 
         edu.cmu.tetrad.search.Fges search
-                = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
+                = new edu.cmu.tetrad.search.Fges(score.getScore(cov2, parameters));
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
@@ -62,10 +60,6 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
         Object obj = parameters.get("printStream");
         if (obj instanceof PrintStream) {
             search.setOut((PrintStream) obj);
-        }
-
-        if (initial != null) {
-            search.setInitialGraph(initial);
         }
 
         return search.search();
