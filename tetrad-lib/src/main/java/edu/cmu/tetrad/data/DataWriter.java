@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
+import java.util.List;
 
 /**
  * Provides static methods for saving data to files.
@@ -185,27 +186,35 @@ public final class DataWriter {
      * @param out The writer to write the output to.
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
-                                      PrintWriter out, NumberFormat nf) {
-        int numVars = covMatrix.getVariableNames().size();
+            PrintWriter out, NumberFormat nf) {
 //        out.println("/Covariance");
         out.println(covMatrix.getSampleSize());
 
-        for (int i = 0; i < numVars; i++) {
-            String name = covMatrix.getVariableNames().get(i);
-            out.print(name + "\t");
-        }
+        List<String> variables = covMatrix.getVariableNames();
+        int numVars = variables.size();
 
-        out.println();
+        int varCount = 0;
+        for (String variable : variables) {
+            varCount++;
+            if (varCount < numVars) {
+                out.print(variable);
+                out.print("\t");
+            } else {
+                out.println(variable);
+            }
+        }
 
         for (int j = 0; j < numVars; j++) {
             for (int i = 0; i <= j; i++) {
-                if (Double.isNaN(covMatrix.getValue(i, j))) {
-                    out.print("*" + "\t");
+                double value = covMatrix.getValue(i, j);
+                if (Double.isNaN(value)) {
+                    out.print("*");
                 } else {
-                    out.print(nf.format(covMatrix.getValue(i, j)) + "\t");
+                    out.print(nf.format(value));
                 }
+                
+                out.print((i < j)  ? "\t" : "\n");
             }
-            out.println();
         }
         out.flush();
         out.close();
