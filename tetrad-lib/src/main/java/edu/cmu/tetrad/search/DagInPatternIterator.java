@@ -241,6 +241,7 @@ public class DagInPatternIterator {
                 graph.removeEdges(edge.getNode1(), edge.getNode2());
 
                 graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
+                graph.setHighlighted(graph.getEdge(edge.getNode2(), edge.getNode1()), true);
 
                 edges.add(graph.getEdge(edge.getNode2(), edge.getNode1()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
@@ -272,6 +273,7 @@ public class DagInPatternIterator {
                 Graph graph = new EdgeListGraphSingleConnections(this.graph);
                 graph.removeEdges(edge.getNode1(), edge.getNode2());
                 graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                graph.setHighlighted(graph.getEdge(edge.getNode1(), edge.getNode2()), true);
 
                 edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
