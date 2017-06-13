@@ -293,6 +293,10 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     private void setEditorToEdge(Edge edge) {
+        if (edge.getNode1().getNodeType() == NodeType.ERROR || edge.getNode2().getNodeType() == NodeType.ERROR) {
+            return;
+        }
+
         if (editingEdge != null) {
             try {
                 double value = Double.parseDouble(valueField.getText());

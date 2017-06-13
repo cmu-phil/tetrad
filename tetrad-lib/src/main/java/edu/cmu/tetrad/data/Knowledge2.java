@@ -775,7 +775,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private void ensureTiers(int tier) {
-        for (int i = tierSpecs.size(); i <= tier; i++) {
+        for (int i = tierSpecs.size() + 1; i <= tier; i++) {
             tierSpecs.add(new LinkedHashSet<MyNode>());
 
             for (int j = 0; j < i; j++) {
