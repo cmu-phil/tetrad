@@ -1246,12 +1246,14 @@ public abstract class AbstractWorkbench extends JComponent
             return;
         }
 
-        if (graph.isHighlighted(modelEdge)) displayEdge.setHighlighted(true);
+        if (graph.isHighlighted(modelEdge)) {
+            displayEdge.setHighlighted(true);
+        }
 
         boolean dashed = modelEdge.getProperties().contains(Edge.Property.nl) || modelEdge.isDashed();
 
         Color lineColor = modelEdge.getProperties().contains(Edge.Property.dd) ?
-                Color.green : modelEdge.getLineColor();
+                Color.green : graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
 
         displayEdge.setLineColor(lineColor);
         displayEdge.setDashed(dashed);

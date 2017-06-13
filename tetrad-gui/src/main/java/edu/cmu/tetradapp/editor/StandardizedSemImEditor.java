@@ -107,14 +107,14 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 
-        errorTerms = new JMenuItem();
-
-        if (shown) {
-            errorTerms.setText("Hide Error Terms");
-        }
-        else {
-            errorTerms.setText("Show Error Terms");
-        }
+//        errorTerms = new JMenuItem();
+//
+//        if (shown) {
+//            errorTerms.setText("Hide Error Terms");
+//        }
+//        else {
+//            errorTerms.setText("Show Error Terms");
+//        }
 
         errorTerms.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -142,7 +142,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //        } else {
 //            errorTerms.setText("Show Error Terms");
 //        }
-//
+
 //        errorTerms.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
 //                JMenuItem menuItem = (JMenuItem) e.getSource();
@@ -159,12 +159,12 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //            }
 //        });
 
-        JMenu params = new JMenu("Parameters");
-        params.add(errorTerms);
+//        JMenu params = new JMenu("Parameters");
+//        params.add(errorTerms);
 //        params.addSeparator();
 //        params.addSeparator();
 
-        menuBar.add(params);
+//        menuBar.add(params);
         menuBar.add(new LayoutMenu(this));
 
         add(menuBar, BorderLayout.NORTH);

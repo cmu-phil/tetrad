@@ -53,6 +53,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private List<String> variableNames = new ArrayList<>();
     private final Graph sourceGraph = new EdgeListGraph();
     private IKnowledge knowledge = new Knowledge2();
+    private int numTiers = 3;
+
 
     public KnowledgeBoxModel(GeneralAlgorithmRunner runner) {
         this.knowledge = runner.getKnowledge();
@@ -185,6 +187,14 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     void setKnowledgeBoxInput(KnowledgeBoxInput knowledgeBoxInput) {
         this.knowledgeBoxInput = knowledgeBoxInput;
+    }
+
+    public int getNumTiers() {
+        return numTiers;
+    }
+
+    public void setNumTiers(int numTiers) {
+        this.numTiers = numTiers;
     }
 }
 
