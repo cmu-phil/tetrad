@@ -573,7 +573,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                     if (symmetricFirstStep) {
                         double bump2 = score.localScoreDiff(child, parent);
-                        bump = bump > bump2 ? bump : bump2;
+                        bump = bump < bump2 ? bump : bump2;
                     }
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;

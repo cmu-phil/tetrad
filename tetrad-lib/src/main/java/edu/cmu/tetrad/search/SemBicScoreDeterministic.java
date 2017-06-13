@@ -87,7 +87,7 @@ public class SemBicScoreDeterministic implements Score {
      */
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
-        double small = 1e-7;//getDeterminismThreshold();
+        double small = getDeterminismThreshold();
 
         try {
             double s2 = getCovariances().getValue(i, i);
@@ -124,6 +124,8 @@ public class SemBicScoreDeterministic implements Score {
             int n = getSampleSize();
             int k = 2 * p + 1;
             return -(n) * log(small) - getPenaltyDiscount() * k * log(n);
+
+//            return Double.NaN;
         }
     }
 

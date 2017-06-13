@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -49,8 +50,8 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         ICovarianceMatrix cov2 = new CovarianceMatrix(covarianceMatrix.getVariables(), rotatedL.times(rotatedL.transpose()),
                 covarianceMatrix.getSampleSize());
 
-        edu.cmu.tetrad.search.Fges search
-                = new edu.cmu.tetrad.search.Fges(score.getScore(cov2, parameters));
+        Score score = this.score.getScore(cov2, parameters);
+        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));

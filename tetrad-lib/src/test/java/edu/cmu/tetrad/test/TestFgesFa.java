@@ -57,7 +57,9 @@ public class TestFgesFa {
         parameters.set("symmetricFirstStep", true);
         parameters.set("faithfulnessAssumed", false);
         parameters.set("maxDegree", 100);
-        parameters.set("verbose", false);
+        parameters.set("verbose", true);
+        parameters.set("determinismThreshold", .2);
+        parameters.set("convergenceThreshold", 1e-7);
 
         parameters.set("determinismThreshold", 1);
 

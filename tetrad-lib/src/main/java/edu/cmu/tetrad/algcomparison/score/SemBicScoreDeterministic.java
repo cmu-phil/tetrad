@@ -28,7 +28,7 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score";
+        return "Sem BIC Score Deterministic";
     }
 
     @Override
