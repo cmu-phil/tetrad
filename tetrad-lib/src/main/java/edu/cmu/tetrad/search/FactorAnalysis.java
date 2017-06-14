@@ -41,7 +41,7 @@ import java.util.Vector;
  * @author Mike Freenor
  */
 public class FactorAnalysis {
-    private CorrelationMatrix correlationMatrix;
+    private CovarianceMatrix correlationMatrix;
 
     // method-specific fields that get used
     private Vector<Double> dValues;
@@ -101,6 +101,12 @@ public class FactorAnalysis {
 
         TetradMatrix residual = correlationMatrix.getMatrix();
 
+//        for (int i = 0; i < residual.rows(); i++) {
+//            for (int j = 0; j < residual.columns(); j++) {
+//                if (residual.get(i, j) < 0.01) residual.set(i, j, 0.0);
+//            }
+//        }
+
         TetradMatrix unitVector = new TetradMatrix(residual.rows(), 1);
         for (int i = 0; i < unitVector.rows(); i++) {
             unitVector.set(i, 0, 1);
@@ -113,8 +119,9 @@ public class FactorAnalysis {
             while (vectorSum(dValues) / residual.trace() < 2) {
 
                 //calculate new residual matrix
-                residual = residual.minus(factorLoadingVectors.lastElement()
-                        .times(factorLoadingVectors.lastElement().transpose()));
+                TetradMatrix f = factorLoadingVectors.lastElement();
+
+                residual = residual.minus(f.times(f.transpose()));
                 if (!successiveResidualHelper(residual, unitVector)) break;
 
                 failSafe++;
@@ -149,9 +156,11 @@ public class FactorAnalysis {
             unitColumn.set(i, 0, 1);
         }
 
-        TetradMatrix sumCols = residuals.lastElement().transpose().times(unitColumn);
-        TetradMatrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(residuals.lastElement()).times(sumCols).get(0, 0)));
-        TetradMatrix vVector = residuals.lastElement().times(wVector);
+        TetradMatrix r = residuals.lastElement();
+
+        TetradMatrix sumCols = r.transpose().times(unitColumn);
+        TetradMatrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
+        TetradMatrix vVector = r.times(wVector);
 
         for (int k = 0; k < normalizedFactorLoadings.columns(); k++) {
 
@@ -170,35 +179,43 @@ public class FactorAnalysis {
             Vector<TetradMatrix> bVectors = new Vector<>();
             double alpha1 = Double.NaN;
 
-            hVectors.add(new TetradMatrix(residuals.lastElement().columns(), 1));
-            TetradVector rowFromFactorLoading = residuals.lastElement().getRow(lIndex);
+            r = residuals.lastElement();
+
+            hVectors.add(new TetradMatrix(r.columns(), 1));
+            TetradVector rowFromFactorLoading = r.getRow(lIndex);
 
             for (int j = 0; j < hVectors.lastElement().rows(); j++) {
                 hVectors.lastElement().set(j, 0, rowFromFactorLoading.get(j));
             }
 
             for (int i = 0; i < 200; i++) {
-                TetradMatrix bVector = residuals.lastElement().times(hVectors.get(i));
+                TetradMatrix bVector = r.times(hVectors.get(i));
                 double averageSumSquaresBVector = unitColumn.transpose().times(matrixExp(bVector, 2))
                         .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
 
                 TetradMatrix betaVector = matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
-                TetradMatrix uVector = residuals.lastElement().transpose().times(betaVector);
+                TetradMatrix uVector = r.transpose().times(betaVector);
 
                 double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
                 bVectors.add(bVector);
 
                 hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
-                if (!Double.isNaN(alpha1) && Math.abs((alpha2 - alpha1)) < convergenceThreshold) {
+                if (!Double.isNaN(alpha1) && Math.abs((alpha2 - alpha1)) < getConvergenceThreshold()) {
                     break;
                 }
 
                 alpha1 = alpha2;
             }
 
-            rotatedFactorVectors.add(bVectors.lastElement());
-            residuals.add((residuals.lastElement()).minus(bVectors.lastElement().times(hVectors.lastElement().transpose())));
+            TetradMatrix b = bVectors.lastElement();
+//
+//            for (int i = 0; i < b.rows(); i++) {
+//                if (b.get(i, 0) < 0.1) b.set(i, 0, 0.0);
+//            }
+
+            rotatedFactorVectors.add(b);
+            residuals.add(r.minus(b.times(hVectors.lastElement().transpose())));
         }
 
         TetradMatrix result = factorLoadingMatrix.like();
@@ -256,22 +273,17 @@ public class FactorAnalysis {
      * Return the final i'th factor loading as our best approximation.
      */
     private boolean successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector) {
-        TetradMatrix uVector = residual.times(approximationVector);
-        TetradMatrix lVector = approximationVector.transpose().times(uVector);
-        double dScalar = Math.sqrt(lVector.get(0, 0));
-
-        TetradMatrix factorLoading = uVector.scalarMult(1.0 / dScalar);
-
-        double d1 = dScalar;
+        TetradMatrix lVector = approximationVector.transpose().times(residual).times(approximationVector);
+        double d1 = Math.sqrt(lVector.get(0, 0));
+        TetradMatrix f = residual.times(approximationVector).scalarMult(1.0 / d1);
 
         for (int i = 0; i < 100; i++) {
-            TetradMatrix oldFactorLoading = factorLoading;
-            TetradMatrix newUVector = residual.times(factorLoading);
-            TetradMatrix newLScalar = oldFactorLoading.transpose().times(newUVector);
-            double d2 = Math.sqrt(newLScalar.get(0, 0));
-            factorLoading = newUVector.scalarMult(1.0 / d2);
+            TetradMatrix oldF = f;
+            TetradMatrix l = oldF.transpose().times(residual).times(oldF);
+            double d2 = Math.sqrt(l.get(0, 0));
+            f = (residual.times(oldF)).scalarMult(1.0 / d2);
 
-            if (Math.abs((d2 - d1)) < convergenceThreshold) {
+            if (Math.abs((d2 - d1)) < getConvergenceThreshold()) {
                 break;
             }
 
@@ -281,7 +293,7 @@ public class FactorAnalysis {
         if (d1 < 1) return false;
 
         this.dValues.add(d1);
-        this.factorLoadingVectors.add(factorLoading);
+        this.factorLoadingVectors.add(f);
         return true;
     }
 
@@ -331,6 +343,9 @@ public class FactorAnalysis {
         return result;
     }
 
+    public double getConvergenceThreshold() {
+        return convergenceThreshold;
+    }
 }
 
 

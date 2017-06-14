@@ -1419,7 +1419,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         set.addAll(t);
         set.addAll(graph.getParents(y));
         double v = scoreGraphChange(y, set, x, hashIndices);
-        if (Double.isNaN(v)) return Double.NEGATIVE_INFINITY;
+        if (Double.isNaN(v)) return Double.POSITIVE_INFINITY;
         return v;
     }
 
@@ -1432,7 +1432,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         double v = scoreGraphChange(y, set, x, hashIndices);
 
-        if (Double.isNaN(v)) return Double.POSITIVE_INFINITY;
+        if (Double.isNaN(v)) return Double.NEGATIVE_INFINITY;
 
         return -v;
     }
