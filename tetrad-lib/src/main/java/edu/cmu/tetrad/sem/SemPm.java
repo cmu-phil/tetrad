@@ -123,7 +123,7 @@ public final class SemPm implements PM, TetradSerializable {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.graph = graph;
+        this.graph = new SemGraph(graph);
         this.graph.setShowErrorTerms(false);
 
         initializeNodes(graph);
