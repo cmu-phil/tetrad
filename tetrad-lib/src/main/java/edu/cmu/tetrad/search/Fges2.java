@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -52,7 +54,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fges implements GraphSearch, GraphScorer {
+public final class Fges2 implements GraphSearch, GraphScorer {
 
     /**
      * Internal.
@@ -187,7 +189,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * values in case of conditional independence. See Chickering (2002),
      * locally consistent scoring criterion.
      */
-    public Fges(Score score) {
+    public Fges2(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -1171,7 +1173,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > 0) {
+                if (bump > 0 && !Double.isInfinite(bump)) {
                     addArrow(a, b, naYX, T, bump);
                 }
 
@@ -1291,7 +1293,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                 double bump = deleteEval(a, b, diff, naYX, hashIndices);
 
-                if (bump > 0.0) {
+                if (bump > 0.0 && !Double.isInfinite(bump)) {
                     addArrow(a, b, naYX, h, bump);
                 }
             }
@@ -1418,7 +1420,9 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
-        return scoreGraphChange(y, set, x, hashIndices);
+        double v = scoreGraphChange(y, set, x, hashIndices);
+        if (Double.isNaN(v)) return Double.POSITIVE_INFINITY;
+        return v;
     }
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
@@ -1427,7 +1431,12 @@ public final class Fges implements GraphSearch, GraphScorer {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(graph.getParents(y));
         set.remove(x);
-        return -scoreGraphChange(y, set, x, hashIndices);
+
+        double v = scoreGraphChange(y, set, x, hashIndices);
+
+        if (Double.isNaN(v)) return Double.NEGATIVE_INFINITY;
+
+        return -v;
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).

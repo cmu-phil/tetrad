@@ -193,7 +193,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.FGES_FA, AlgType.forbid_latent_common_causes, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.FGES_FA, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -204,7 +204,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_la  tent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));

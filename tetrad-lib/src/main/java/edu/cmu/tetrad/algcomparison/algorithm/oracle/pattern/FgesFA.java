@@ -46,23 +46,12 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         TetradMatrix unrotatedL = analysis.successiveResidual();
         TetradMatrix rotatedL = analysis.successiveFactorVarimax(unrotatedL);
 
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        String output = "Unrotated Factor Loading Matrix:\n";
-        double threshold = parameters.getDouble("fa_threshold");
-
-        output += tableString(unrotatedL, nf, Double.POSITIVE_INFINITY);
-
-        if (unrotatedL.columns() != 1) {
-            output += "\n\nRotated Matrix (using sequential varimax):\n";
-            output += tableString(rotatedL, nf, threshold);
-        }
-
 
         ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), rotatedL.times(rotatedL.transpose()),
                 covarianceMatrix.getSampleSize());
 
         Score score = this.score.getScore(covFa, parameters);
-        edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+        edu.cmu.tetrad.search.Fges2 search = new edu.cmu.tetrad.search.Fges2(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
@@ -75,6 +64,17 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         if (parameters.getBoolean("verbose")) {
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            String output = "Unrotated Factor Loading Matrix:\n";
+            double threshold = parameters.getDouble("fa_threshold");
+
+            output += tableString(unrotatedL, nf, Double.POSITIVE_INFINITY);
+
+            if (unrotatedL.columns() != 1) {
+                output += "\n\nRotated Matrix (using sequential varimax):\n";
+                output += tableString(rotatedL, nf, threshold);
+            }
+
             System.out.println(output);
             TetradLogger.getInstance().forceLogMessage(output);
         }
