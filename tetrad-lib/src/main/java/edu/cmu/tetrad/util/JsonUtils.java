@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -109,12 +110,17 @@ public class JsonUtils {
 		Endpoint endpoint1 = Endpoint.TYPES[jObj.getJSONObject("endpoint1").getInt("ordinal")];
 		Endpoint endpoint2 = Endpoint.TYPES[jObj.getJSONObject("endpoint2").getInt("ordinal")];
 		Edge edge = new Edge(node1, node2, endpoint1, endpoint2);
-		// properties
-		JSONArray jArray = jObj.getJSONArray("properties");
-		if(jArray != null){
-			for (int i = 0; i < jArray.length(); i++) {
-				edge.addProperty(parseJSONObjectToEdgeProperty(jArray.getString(i)));
-			}
+		try {
+		    // properties
+		    JSONArray jArray = jObj.getJSONArray("properties");
+		    if(jArray != null){
+		    	for (int i = 0; i < jArray.length(); i++) {
+		    		edge.addProperty(parseJSONObjectToEdgeProperty(jArray.getString(i)));
+		    	}
+		    }
+		} catch (JSONException e) {
+		    // TODO Auto-generated catch block
+		    //e.printStackTrace();
 		}
 		return edge;
 	}
