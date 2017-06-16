@@ -1,8 +1,10 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.MVPScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
@@ -18,10 +20,13 @@ import java.util.List;
  */
 public class MVPBicScore implements ScoreWrapper, Experimental {
     static final long serialVersionUID = 23L;
+    private DataSet dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        return new MVPScore(DataUtils.getMixedDataSet(dataSet),
+        DataSet mixedDataSet = DataUtils.getMixedDataSet(dataSet);
+        this.dataSet = mixedDataSet;
+        return new MVPScore(mixedDataSet,
                 parameters.getDouble("structurePrior", 0),
                 parameters.getInt("fDegree", -1));
     }
@@ -42,5 +47,10 @@ public class MVPBicScore implements ScoreWrapper, Experimental {
         parameters.add("structurePrior");
         parameters.add("fDegree");
         return parameters;
+    }
+
+    @Override
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 }

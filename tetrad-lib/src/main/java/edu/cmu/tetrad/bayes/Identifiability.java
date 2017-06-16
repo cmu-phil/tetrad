@@ -232,7 +232,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 				/*
 				int[] variableValues = getVariableValues(i);
 				 
-				String nodeName = getVariables().get(j).getNode();
+				String nodeName = getVariable().get(j).getNode();
 				Node node = bayesIm.getNode(nodeName);
 				targetProp.setCategory(bayesIm.getNodeIndex(node), 
 									   variableValues[j]);		
@@ -592,7 +592,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             throw new NullPointerException();
         }
 
-		if (!targetProp.getVariableSource().getVariables().equals(bayesIm.getVariables())) {
+		if (!targetProp.getVariableSource().getVariable().equals(bayesIm.getVariable())) {
             throw new IllegalArgumentException("The variable list for the " +
 				"given bayesIm must be compatible with the variable list " +
 				"for the targetProp.");
