@@ -89,15 +89,19 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + getStructurePrior(parents);
+        // added the penalty discount back
+        
+        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + 2.0 * getStructurePrior(parents);
     }
 
+    // fixed the structure prior
+    
     private double getStructurePrior(int[] parents) {
         if (getStructurePrior() <= 0) { return 0; }
         else {
             int i = parents.length + 1;
             int c = dataSet.getNumColumns();
-            double p = getStructurePrior() / (double) c;
+            double p = getStructurePrior() / (double) (c - 1);
             return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
         }
     }
