@@ -65,6 +65,8 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequiredByGroups = true;
     private boolean showForbiddenByGroups = true;
     private JTextArea textArea;
+
+    // Unused, moved to KnowledgeBoxModel. Keeping for serialization. Can delete after a while. 2017.06.17
     private int numTiers = 2;
     private final KnowledgeBoxModel knowledgeBoxModel;
     private JTabbedPane tabbedPane = null;
@@ -229,11 +231,11 @@ public class KnowledgeBoxEditor extends JPanel {
     // }
 
     private Box tierDisplay() {
-        if (numTiers < 0) {
+        if (getNumTiers() < 0) {
             int numTiers = getKnowledge().getNumTiers();
             int _default = (int) (Math.pow(varNames.size(), 0.5) + 1);
             numTiers = numTiers < _default ? _default : numTiers;
-            this.numTiers = numTiers;
+            setNumDisplayTiers(numTiers);
         }
 
         Box b = Box.createVerticalBox();
@@ -800,11 +802,11 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private int getNumTiers() {
-        return numTiers;
+        return knowledgeBoxModel.getNumTiers();
     }
 
     private void setNumTiers(int numTiers) {
-        this.numTiers = numTiers;
+        knowledgeBoxModel.setNumTiers(numTiers);
     }
 
     private Graph getSourceGraph() {
@@ -899,6 +901,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 for (String name : list) {
                     if (getTier() >= 0) {
                         try {
+                            getKnowledge().removeFromTiers(name);
                             getKnowledge().addToTier(getTier(), name);
 
                             notifyKnowledge();

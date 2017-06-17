@@ -2237,9 +2237,9 @@ public final class SearchGraphUtils {
 //            }
 //        }
 //
-//        PatternToDag search = new PatternToDag(new Pattern(newGraph));
-//        Graph dag = search.patternToDagMeekRules();
-//        DataGraphUtils.arrangeBySourceGraph(dag, graph);
+//        PatternToDag search = new PatternToDag(new EdgeListGraph(newGraph));
+//        Graph dag = search.patternToDagMeek();
+//        GraphUtils.arrangeBySourceGraph(dag, graph);
 //        return dag;
     }
 
