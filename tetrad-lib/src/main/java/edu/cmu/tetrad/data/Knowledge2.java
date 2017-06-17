@@ -352,6 +352,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             names.add(MyNode.getName());
         }
 
+        Collections.sort(names);
         return names;
     }
 
@@ -944,6 +945,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         for (MyNode MyNode : myNodes) {
             names.add(MyNode.getName());
         }
+        Collections.sort(names);
         return new ArrayList<>(names);
     }
 
