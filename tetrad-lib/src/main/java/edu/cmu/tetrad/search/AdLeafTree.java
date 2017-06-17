@@ -193,7 +193,9 @@ public class AdLeafTree {
 
             for (int i : supRows) {
                 int index = discreteData[col][i];
-                rows.get(index).add(i);
+                if (index != -99) {
+                    rows.get(index).add(i);
+                }
             }
         }
 
