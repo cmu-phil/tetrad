@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -47,4 +48,10 @@ public interface ScoreWrapper extends HasParameters, TetradSerializable {
      * @return A list of String names of parameters.
      */
     List<String> getParameters();
+
+    /**
+     * Returns the variable with the given name.
+     */
+    Node getVariable(String name);
+
 }
