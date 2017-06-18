@@ -167,6 +167,20 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
+
+        for (int i = 0; i < evidence.getNumNodes(); i++) {
+            if (evidence.isManipulated(i)) {
+                for (int j = 0; j < evidence.getNumCategories(i); j++) {
+                    if (evidence.getProposition().isAllowed(i, j)) {
+                        manipulatedBayesIm.setProbability(i, 0, j, 1.0);
+                    } else {
+                        manipulatedBayesIm.setProbability(i, 0, j, 0.0);
+                    }
+                }
+            }
+        }
+
+
         this.bayesImProbs = new BayesImProbs(manipulatedBayesIm);
         this.updatedBayesIm = null;
     }
