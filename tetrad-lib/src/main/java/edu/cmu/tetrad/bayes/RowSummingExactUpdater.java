@@ -167,7 +167,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
-        this.bayesImProbs = new BayesImProbs(bayesIm);
+        this.bayesImProbs = new BayesImProbs(manipulatedBayesIm);
         this.updatedBayesIm = null;
     }
 
