@@ -798,6 +798,12 @@ final class LoadDataDialog extends JPanel {
                 // Also add the file name to failed list
                 // this determines if to show the Load button
                 failedFiles.add(loadedFiles.get(i).getName());
+            } else if (loadedFiles.get(i).length() == 0) {
+                // We don't allow users to load empty file
+                output = output + "<p style=\"color: red;\"><b>This is an empty data file!</b></p>";
+                // Also add the file name to failed list
+                // this determines if to show the Load button
+                failedFiles.add(loadedFiles.get(i).getName());
             } else {
                 output = output + "<p style=\"color: green;\"><b>Validation passed with no error!</b></p>";
             }
