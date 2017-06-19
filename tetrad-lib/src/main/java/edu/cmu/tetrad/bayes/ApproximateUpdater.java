@@ -250,7 +250,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         // Construct the sample.
         while (numCounted < 1000 && ++numSurveyed < 10000) {
-            int[] point = getSinglePoint(getManipulatedBayesIm(), tiers);
+            int[] point = getSinglePoint(getBayesIm(), tiers);
 
             if (evidence.getProposition().isPermissibleCombination(point)) {
                 numCounted++;
