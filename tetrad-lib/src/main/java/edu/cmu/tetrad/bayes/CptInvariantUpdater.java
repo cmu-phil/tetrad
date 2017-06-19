@@ -205,7 +205,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     //==============================PRIVATE METHODS=======================//
 
     private BayesIm createdManipulatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
     }
 
     private BayesPm createManipulatedBayesPm(Dag updatedGraph) {
