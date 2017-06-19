@@ -26,6 +26,8 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
+import static edu.cmu.tetrad.search.XdslXmlConstants.ROW;
+
 /**
  * Calculates the discrete BIC score.
  */
@@ -133,16 +135,19 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
         int[] myChild = data[node];
 
+        ROW:
         for (int i = 0; i < sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
+                if (myParents[p][i] == -99) continue ROW;
                 parentValues[p] = myParents[p][i];
             }
 
             int childValue = myChild[i];
 
             if (childValue == -99) {
-                throw new IllegalStateException("Please remove or impute missing " +
-                        "values (record " + i + " column " + i + ")");
+                continue ROW;
+//                throw new IllegalStateException("Please remove or impute missing " +
+//                        "values (record " + i + " column " + i + ")");
             }
 
             int rowIndex = getRowIndex(dims, parentValues);

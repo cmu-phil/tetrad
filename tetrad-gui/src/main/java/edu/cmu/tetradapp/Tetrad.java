@@ -160,12 +160,9 @@ public final class Tetrad implements PropertyChangeListener {
         this.frame = new JFrame(this.mainTitle) {
             public Dimension getPreferredSize() {
                 Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-                double width = size.getWidth();
-                double height = size.getHeight();
-                double minSize = Math.min(width, height);
-                
-                height = minSize / 2;
-                width = minSize * 0.75;
+                double minLength = Math.min(size.getWidth(), size.getHeight());
+                double height = minLength * 0.8;
+                double width = height * (4.0 / 3);
                 
                 return new Dimension((int) width, (int) height);
 //                return Toolkit.getDefaultToolkit().getScreenSize();
@@ -195,6 +192,7 @@ public final class Tetrad implements PropertyChangeListener {
         
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
+        getFrame().setLocationRelativeTo(null);
 
         // This doesn't let the user resize the main window.
 //        getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);

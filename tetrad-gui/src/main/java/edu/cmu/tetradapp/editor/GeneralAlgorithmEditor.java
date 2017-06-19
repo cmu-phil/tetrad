@@ -99,6 +99,12 @@ import java.util.List;
  */
 public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
+    // Note: When adding an algorithm, make sure you do all of the following:
+    // 1. Add a new type to private enum AlgName.
+    // 2. Add a desription for it to final List<AlgorithmDescription> descriptions.
+    // 3. In private Algorithm getAlgorithm, add a new case to the switch statement returning
+    // an instance of the algorithm.
+
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
