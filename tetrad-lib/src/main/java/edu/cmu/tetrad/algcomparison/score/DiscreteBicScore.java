@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
@@ -16,9 +17,11 @@ import java.util.List;
  */
 public class DiscreteBicScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
+    private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        this.dataSet = dataSet;
         edu.cmu.tetrad.search.BicScore score
                 = new edu.cmu.tetrad.search.BicScore(DataUtils.getDiscreteDataSet(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -40,5 +43,10 @@ public class DiscreteBicScore implements ScoreWrapper {
         List<String> paramDescriptions = new ArrayList<>();
         paramDescriptions.add("penaltyDiscount");
         return paramDescriptions;
+    }
+
+    @Override
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 }

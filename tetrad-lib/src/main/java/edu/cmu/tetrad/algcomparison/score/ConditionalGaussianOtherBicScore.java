@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.score;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditionalGaussianOtherScore;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
@@ -19,9 +20,11 @@ import java.util.List;
  */
 public class ConditionalGaussianOtherBicScore implements ScoreWrapper, Experimental {
     static final long serialVersionUID = 23L;
+    private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        this.dataSet = dataSet;
         final ConditionalGaussianOtherScore conditionalGaussianScore
                 = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getBoolean("discretize"));
         conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -48,5 +51,10 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper, Experimen
         parameters.add("structurePrior");
         parameters.add("discretize");
         return parameters;
+    }
+
+    @Override
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 }
