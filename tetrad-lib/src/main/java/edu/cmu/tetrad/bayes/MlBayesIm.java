@@ -1365,7 +1365,35 @@ public final class MlBayesIm implements BayesIm {
                 copyValuesFromOldToNew(oldNodeIndex, oldRowIndex, nodeIndex,
                         rowIndex, oldBayesIm);
             } else {
-                overwriteRow(nodeIndex, rowIndex, initializationMethod);
+                if (parents[nodeIndex].length == 0) {
+
+                    // This is the case where the edges into a node have been removed by a manipulation.
+                    // What we want to do here is calculate the sum of each row in a conditional probability
+                    // table and normalize. jdramsey 20170617
+
+                    int size = oldBayesIm.getNumColumns(nodeIndex);
+                    double[] row = new double[size];
+
+                    for (int j = 0; j < oldBayesIm.getNumColumns(nodeIndex); j++) {
+                        for (int i = 0; i < oldBayesIm.getNumRows(nodeIndex); i++) {
+                            row[i] += oldBayesIm.getProbability(nodeIndex, i, j);
+                        }
+                    }
+
+                    double sum = 0.0;
+
+                    for (int j = 0; j < oldBayesIm.getNumColumns(nodeIndex); j++) {
+                        sum += row[j];
+                    }
+
+                    for (int j = 0; j < oldBayesIm.getNumColumns(nodeIndex); j++) {
+                        row[j] /= sum;
+                    }
+
+                    probs[nodeIndex][rowIndex] = row;
+                } else {
+                    overwriteRow(nodeIndex, rowIndex, initializationMethod);
+                }
             }
         }
     }
