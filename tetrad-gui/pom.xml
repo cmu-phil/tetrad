@@ -127,11 +127,6 @@
         </dependency>
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>data-reader</artifactId>
-            <version>0.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
             <artifactId>causal-cmd</artifactId>
             <version>0.2.0</version>
             <exclusions>
