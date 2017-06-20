@@ -21,10 +21,10 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import edu.pitt.dbmi.causal.cmd.util.TetradDataUtils;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
@@ -63,7 +63,9 @@ import javax.swing.border.EmptyBorder;
  */
 final class DataLoaderSettings extends JPanel {
 
-    private List<File> files;
+    private static final long serialVersionUID = -7597768949622586036L;
+
+    private final List<File> files;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -1043,7 +1045,7 @@ final class DataLoaderSettings extends JPanel {
             }
 
             // Box Dataset to DataModel
-            dataModel = TetradDataUtils.toDataModel(dataset);
+            dataModel = DataConvertUtils.toDataModel(dataset);
         } else if (covarianceRadioButton.isSelected()) {
             // Covariance data can only be continuous
             CovarianceDataReader dataReader = new LowerCovarianceDataReader(file, delimiter);
@@ -1063,7 +1065,7 @@ final class DataLoaderSettings extends JPanel {
             Dataset dataset = dataReader.readInData();
 
             // Box Dataset to DataModel
-            dataModel = TetradDataUtils.toDataModel(dataset);
+            dataModel = DataConvertUtils.toDataModel(dataset);
         } else {
             throw new UnsupportedOperationException("Unsupported selection of File Type!");
         }
