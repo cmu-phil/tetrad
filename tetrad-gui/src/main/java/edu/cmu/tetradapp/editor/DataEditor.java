@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.*;
@@ -29,10 +28,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.TabularComparison;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -40,6 +35,9 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Displays data objects and allows users to edit these objects as well as load
@@ -64,7 +62,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     private final Parameters parameters;
 
     //==========================CONSTUCTORS===============================//
-
     /**
      * Constructs the data editor with an empty list of data displays.
      */
@@ -162,10 +159,10 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     //==========================PUBLIC METHODS=============================//
-
     /**
-     * Replaces the getModel Datamodels with the given one. Note, that by calling this
-     * you are removing ALL the getModel data-models, they will be lost forever!
+     * Replaces the getModel Datamodels with the given one. Note, that by
+     * calling this you are removing ALL the getModel data-models, they will be
+     * lost forever!
      *
      * @param model - The model, must not be null
      */
@@ -215,7 +212,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         dataWrapper.setDataModelList(dataModelList);
     }
 
-
     /**
      * Sets this editor to display contents of the given data model wrapper.
      */
@@ -263,7 +259,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         validate();
     }
-
 
     public final void reset(DataModelList extraModels) {
         tabbedPane().removeAll();
@@ -321,7 +316,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         firePropertyChange("modelChanged", null, null);
     }
-
 
     /**
      * @return the data sets that's currently in front.
@@ -392,13 +386,12 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     //=============================PRIVATE METHODS======================//
-
     private static void removeEmptyModels(DataModelList dataModelList) {
         for (int i = dataModelList.size() - 1; i >= 0; i--) {
             DataModel dataModel = dataModelList.get(i);
 
-            if (dataModel instanceof DataSet &&
-                    ((DataSet) dataModel).getNumColumns() == 0) {
+            if (dataModel instanceof DataSet
+                    && ((DataSet) dataModel).getNumColumns() == 0) {
                 if (dataModelList.size() > 1) {
                     dataModelList.remove(dataModel);
                 }
@@ -456,12 +449,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenu editMenu = new JMenu("Edit");
 
         JMenuItem clearCells = new JMenuItem("Clear Cells");
-        final JMenuItem deleteSelectedRowsOrColumns =
-                new JMenuItem("Delete Selected Rows or Columns");
-        final JMenuItem deleteNamedColumns =
-                new JMenuItem("Delete named columns");
-        final JMenuItem selectNamedColumns =
-                new JMenuItem("Select named columns");
+        final JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
+        final JMenuItem deleteNamedColumns = new JMenuItem("Delete named columns");
+        final JMenuItem selectNamedColumns = new JMenuItem("Select named columns");
         JMenuItem copyCells = new JMenuItem("Copy Cells");
         JMenuItem cutCells = new JMenuItem("Cut Cells");
         JMenuItem pasteCells = new JMenuItem("Paste Cells");
@@ -480,24 +470,24 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         clearCells.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                TabularDataJTable table =
-                        (TabularDataJTable) getSelectedJTable();
+                TabularDataJTable table
+                        = (TabularDataJTable) getSelectedJTable();
                 table.clearSelected();
             }
         });
 
-        final ActionListener deleteActionListener = new ActionListener() {
+        final ActionListener deleteSelectedRowsOrColumnsActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JTable table = getSelectedJTable();
 
                 if (table instanceof TabularDataJTable) {
                     TabularDataJTable tableTabular = (TabularDataJTable) table;
 
-                    if (!tableTabular.getRowSelectionAllowed() ||
-                            !tableTabular.getColumnSelectionAllowed()) {
+                    // When getRowSelectionAllowed() is false, getColumnSelectionAllowed() must be true, vise versa.
+                    // But both can be true since we can select a data cell - Zhou
+                    if (!tableTabular.getRowSelectionAllowed() || !tableTabular.getColumnSelectionAllowed()) {
                         tableTabular.deleteSelected();
                     }
-
                 } else if (table instanceof CovMatrixJTable) {
                     CovMatrixJTable covTable = (CovMatrixJTable) table;
                     covTable.deleteSelected();
@@ -506,7 +496,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
         };
 
-        deleteSelectedRowsOrColumns.addActionListener(deleteActionListener);
+        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
 
         final ActionListener removeNamedColumnsActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -519,8 +509,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
-                        TabularDataJTable tableTabular =
-                                (TabularDataJTable) getJTableAt(i);
+                        TabularDataJTable tableTabular
+                                = (TabularDataJTable) getJTableAt(i);
 
                         DataSet dataSet = tableTabular.getDataSet();
 
@@ -535,10 +525,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                         TabularDataTable model = (TabularDataTable) jTable.getModel();
                         model.fireTableDataChanged();
 
-
 //                        TabularDataTable table = new TabularDataTable(dataSet);
 //                        tableTabular.setModel(table);
-
 //                        jTable.getModel().fireTableDataChanged();
                     }
                 }
@@ -562,8 +550,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
-                        TabularDataJTable tableTabular =
-                                (TabularDataJTable) getJTableAt(i);
+                        TabularDataJTable tableTabular
+                                = (TabularDataJTable) getJTableAt(i);
 
                         DataSet dataSet = tableTabular.getDataSet();
 
@@ -578,10 +566,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                         TabularDataTable model = (TabularDataTable) jTable.getModel();
                         model.fireTableDataChanged();
 
-
 //                        TabularDataTable table = new TabularDataTable(dataSet);
 //                        tableTabular.setModel(table);
-
 //                        jTable.getModel().fireTableDataChanged();
                     }
                 }
@@ -627,8 +613,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
-                        TabularDataJTable tableTabular =
-                                (TabularDataJTable) getJTableAt(i);
+                        TabularDataJTable tableTabular
+                                = (TabularDataJTable) getJTableAt(i);
 
                         DataSet dataSet = tableTabular.getDataSet();
 
@@ -654,8 +640,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
         });
 
-        JCheckBoxMenuItem categoryNames =
-                new JCheckBoxMenuItem("Show Category Names");
+        JCheckBoxMenuItem categoryNames
+                = new JCheckBoxMenuItem("Show Category Names");
         JTable selectedJTable = getSelectedJTable();
 
         if (selectedJTable != null && selectedJTable instanceof TabularDataJTable) {
@@ -666,8 +652,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         categoryNames.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JTable selectedJTable = getSelectedJTable();
-                TabularDataJTable tableTabular =
-                        (TabularDataJTable) selectedJTable;
+                TabularDataJTable tableTabular
+                        = (TabularDataJTable) selectedJTable;
                 JCheckBoxMenuItem source = (JCheckBoxMenuItem) e.getSource();
                 tableTabular.setShowCategoryNames(source.isSelected());
             }
@@ -763,7 +749,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //                }
 //            });
 //        }
-
 //        JMenuItem nonsingularityCheck = new JMenuItem("Check nonsingularity");
 //
 //        nonsingularityCheck.addActionListener(new ActionListener() {
@@ -813,7 +798,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //        if (getDataWrapper().getSelectedDataModel() instanceof CovarianceMatrix) {
 //            tools.add(nonsingularityCheck);
 //        }
-
         int vkBackSpace = KeyEvent.VK_BACK_SPACE;
         int vkDelete = KeyEvent.VK_DELETE;
 
@@ -827,7 +811,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         Action deleteAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                deleteActionListener.actionPerformed(null);
+                deleteSelectedRowsOrColumnsActionListener.actionPerformed(null);
             }
         };
 
@@ -939,7 +923,3 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         return parameters;
     }
 }
-
-
-
-
