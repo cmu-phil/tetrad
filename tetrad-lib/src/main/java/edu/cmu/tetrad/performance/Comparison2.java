@@ -7,14 +7,16 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.io.TabularContinuousDataReader;
-import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
-
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -23,10 +25,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.io.*;
 
 /**
- * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
+ * Does a comparison of algorithm results across algorithm type, sample sizes,
+ * etc.
  *
  * @author jdramsey 2016.03.24
  * @author dmalinsky 2016.05.20
@@ -34,8 +36,8 @@ import java.io.*;
 public class Comparison2 {
 
     /**
-     * Simulates data from model parameterizing the given DAG, and runs the algorithm on that data,
-     * printing out error statistics.
+     * Simulates data from model parameterizing the given DAG, and runs the
+     * algorithm on that data, printing out error statistics.
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet = null;
@@ -47,14 +49,17 @@ public class Comparison2 {
 
         if (params.isDataFromFile()) {
 
-            /** Set path to the data directory **/
+            /**
+             * Set path to the data directory *
+             */
             String path = "/Users/dmalinsky/Documents/research/data/danexamples";
-
 
             File dir = new File(path);
             File[] files = dir.listFiles();
 
-            if (files == null) throw new NullPointerException("No files in " + path);
+            if (files == null) {
+                throw new NullPointerException("No files in " + path);
+            }
 
             for (File file : files) {
 
@@ -74,12 +79,12 @@ public class Comparison2 {
                 if (file.getName().startsWith("graph") && file.getName().endsWith(trialGraph)) {
 
                     Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
-                    Character delimiter = '\t';
+                    Delimiter delimiter = Delimiter.TAB;
 
                     if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
                         try {
-                            edu.cmu.tetrad.io.DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
-                            dataSet = dataReader.readInData();
+                            TabularDataReader dataReader = new ContinuousTabularDataFileReader(dataFile.toFile(), delimiter);
+                            dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -89,8 +94,8 @@ public class Comparison2 {
 
                     } else {
                         try {
-                            edu.cmu.tetrad.io.DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
-                            dataSet = dataReader.readInData();
+                            TabularDataReader dataReader = new VerticalDiscreteTabularDataReader(dataFile.toFile(), delimiter);
+                            dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -106,10 +111,7 @@ public class Comparison2 {
             System.out.println("current data set file = " + params.getDataFile());
         } // end isDataFromFile()
 
-
-
-
-        if (params.isNoData()){
+        if (params.isNoData()) {
             List<Node> nodes = new ArrayList<>();
             for (int i = 0; i < params.getNumVars(); i++) {
                 nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -118,14 +120,18 @@ public class Comparison2 {
             trueDag = GraphUtils.randomGraphRandomForwardEdges(
                     nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
-            /** added 5.25.16 for tsFCI **/
+            /**
+             * added 5.25.16 for tsFCI *
+             */
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                 trueDag = TimeSeriesUtils.graphToLagGraph(trueDag);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
-            /***************************/
+            /**
+             * ************************
+             */
 
             test = new IndTestDSep(trueDag);
             score = new GraphScore(trueDag);
@@ -137,43 +143,59 @@ public class Comparison2 {
             long time1 = System.currentTimeMillis();
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 Pc search = new Pc(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 Cpc search = new Cpc(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 PcLocal search = new PcLocal(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCMax) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 PcMax search = new PcMax(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
-                if (score == null) throw new IllegalArgumentException("Score not set.");
+                if (score == null) {
+                    throw new IllegalArgumentException("Score not set.");
+                }
                 Fges search = new Fges(score);
                 //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new DagToPag(trueDag).convert());
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 GFci search = new GFci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new DagToPag(trueDag).convert());
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-                if (test == null) throw new IllegalArgumentException("Test not set.");
+                if (test == null) {
+                    throw new IllegalArgumentException("Test not set.");
+                }
                 TsFci search = new TsFci(test);
                 IKnowledge knowledge = getKnowledge(trueDag);
                 search.setKnowledge(knowledge);
@@ -189,7 +211,6 @@ public class Comparison2 {
 
             long elapsed = time2 - time1;
             result.setElapsed(elapsed);
-
 
             result.setTrueDag(trueDag);
 
@@ -225,14 +246,18 @@ public class Comparison2 {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
-                /** added 6.08.16 for tsFCI **/
+                /**
+                 * added 6.08.16 for tsFCI *
+                 */
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                     trueDag = GraphUtils.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                     trueDag = TimeSeriesUtils.graphToLagGraph(trueDag);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
-                /***************************/
+                /**
+                 * ************************
+                 */
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
@@ -244,15 +269,20 @@ public class Comparison2 {
 
                 LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
 
-                /** added 6.08.16 for tsFCI **/
+                /**
+                 * added 6.08.16 for tsFCI *
+                 */
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-                    sim.setCoefRange(0.20,0.50);
+                    sim.setCoefRange(0.20, 0.50);
                 }
-                /***************************/
+                /**
+                 * ************************
+                 */
 
 //                dataSet = sim.simulateDataAcyclic(params.getSampleSize());
-
-                /** added 6.08.16 for tsFCI **/
+                /**
+                 * added 6.08.16 for tsFCI *
+                 */
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
 ////                    System.out.println("Coefs matrix : " + sim.getCoefs());
 //                    System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
@@ -272,7 +302,7 @@ public class Comparison2 {
                     int tierSize = params.getNumVars();
                     int[] sub = new int[tierSize];
                     int[] sub2 = new int[tierSize];
-                    for(int i = 0; i < tierSize; i++){
+                    for (int i = 0; i < tierSize; i++) {
                         sub[i] = i;
                         sub2[i] = tierSize + i;
                     }
@@ -295,13 +325,15 @@ public class Comparison2 {
                         isStableTetradMatrix = TimeSeriesUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
                         System.out.println("isStableTetradMatrix? : " + isStableTetradMatrix);
                         attempt++;
-                    } while ((!isStableTetradMatrix) && attempt<=5);
-                    if (!isStableTetradMatrix){
+                    } while ((!isStableTetradMatrix) && attempt <= 5);
+                    if (!isStableTetradMatrix) {
                         System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
-                        System.out.println("Made " + (attempt-1) + " attempts to get stable matrix.");
+                        System.out.println("Made " + (attempt - 1) + " attempts to get stable matrix.");
                         sim.setCoefRange(0.15, 0.3);
                         dataSet = sim.simulateDataFisher(params.getSampleSize());
-                    } else System.out.println("Coefficient matrix is stable.");
+                    } else {
+                        System.out.println("Coefficient matrix is stable.");
+                    }
                 }
 
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
@@ -351,7 +383,7 @@ public class Comparison2 {
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        }  else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
+        } else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -379,8 +411,7 @@ public class Comparison2 {
             score = semBicScore;
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        }
-        else if (params.getScore() == ComparisonParameters.ScoreType.BDeu) {
+        } else if (params.getScore() == ComparisonParameters.ScoreType.BDeu) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -409,43 +440,59 @@ public class Comparison2 {
         long time1 = System.currentTimeMillis();
 
         if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCMax) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             PcMax search = new PcMax(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
-            if (score == null) throw new IllegalArgumentException("Score not set.");
+            if (score == null) {
+                throw new IllegalArgumentException("Score not set.");
+            }
             Fges search = new Fges(score);
             //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
+            if (test == null) {
+                throw new IllegalArgumentException("Test not set.");
+            }
             TsFci search = new TsFci(test);
             IKnowledge knowledge = getKnowledge(trueDag);
             search.setKnowledge(knowledge);
@@ -459,7 +506,6 @@ public class Comparison2 {
 
         long elapsed = time2 - time1;
         result.setElapsed(elapsed);
-
 
         result.setTrueDag(trueDag);
 
@@ -478,7 +524,6 @@ public class Comparison2 {
 ////        return dataset;
 //        return null;
 //    }
-
     // changed return type of 'summarize' to TextTable
     public static TextTable summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
@@ -561,7 +606,6 @@ public class Comparison2 {
         return getTextTable(dataSet, cols, new DecimalFormat("0.00")); //deleted .toString()
     }
 
-
     private static TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
         TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
 
@@ -610,11 +654,11 @@ public class Comparison2 {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -630,19 +674,16 @@ public class Comparison2 {
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-
                 String prefix1 = getPrefix(name1);
                 String prefix2 = getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-
                 int index1 = getIndex(name1);
                 int index2 = getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-
                 if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
@@ -650,21 +691,20 @@ public class Comparison2 {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName())-getLag(o2.getName());
+                    return getLag(o1.getName()) - getLag(o2.getName());
                 }
             }
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
 //                laglist.add(lag);
             }
@@ -677,9 +717,11 @@ public class Comparison2 {
 
     public static String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
+        } else {
+            return tempS.substring(0, tempS.indexOf(':'));
+        }
     }
 
     public static String getPrefix(String s) {
@@ -697,7 +739,7 @@ public class Comparison2 {
 //        if(s.indexOf(':')== -1) return s;
 //        String tmp = s.substring(0,s.indexOf(':')-1);
 //        return tmp;
-        return s.substring(0,1);
+        return s.substring(0, 1);
     }
 
     public static int getIndex(String s) {
@@ -713,11 +755,15 @@ public class Comparison2 {
     }
 
     public static int getLag(String s) {
-        if(s.indexOf(':')== -1) return 0;
-        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        if (s.indexOf(':') == -1) {
+            return 0;
+        }
+        String tmp = s.substring(s.indexOf(':') + 1, s.length());
         return (Integer.parseInt(tmp));
     }
 
-    public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed}
+    public enum TableColumn {
+        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
+        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+    }
 }
