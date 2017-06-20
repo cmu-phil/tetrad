@@ -1505,18 +1505,21 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="MIMBuild" acronym="MIMBuild" help="mimbuild"-->
-            <!--category="Multiple Indicator Model searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="details" description="Misc Fine Details" default="on"/>-->
-            <!--<event id="maxmodel" description="Max P Value Model" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.MimBuildRunner-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.MimbuildEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
+
+            <!--Restored Mimbuild on 6/20/2017 -->          
+            <model name="MIMBuild" acronym="MIMBuild" help="mimbuild"
+            category="Multiple Indicator Model searches">
+            <logger>
+            <event id="info" description="Information" default="on"/>
+            <event id="details" description="Misc Fine Details" default="on"/>
+            <event id="maxmodel" description="Max P Value Model" default="on"/>
+            </logger>
+            <model-class>edu.cmu.tetradapp.model.MimBuildRunner
+            </model-class>
+            <editor-class>edu.cmu.tetradapp.editor.MimbuildEditor
+            </editor-class>
+            </model>
+
             <!--<model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"-->
             <!--category="Multiple Indicator Model searches">-->
             <!--<logger>-->
