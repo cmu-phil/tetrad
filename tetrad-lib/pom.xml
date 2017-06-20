@@ -1,173 +1,173 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>edu.cmu</groupId>
-		<artifactId>tetrad</artifactId>
-		<version>6.4.0-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>edu.cmu</groupId>
+        <artifactId>tetrad</artifactId>
+        <version>6.4.0-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>tetrad-lib</artifactId>
+    <artifactId>tetrad-lib</artifactId>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.2</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<manifestEntries>
-										<Main-Class>edu.cmu.tetrad.cmd.TetradCmd</Main-Class>
-										<Permissions>all-permissions</Permissions>
-									</manifestEntries>
-								</transformer>
-							</transformers>
-							<minimizeJar>true</minimizeJar>
-							<shadedArtifactAttached>true</shadedArtifactAttached>
-							<shadedClassifierName>tetradcmd</shadedClassifierName> <!-- Any name that makes sense -->
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!--<plugin> -->
-			<!--<groupId>org.apache.maven.plugins</groupId> -->
-			<!--<artifactId>maven-gpg-plugin</artifactId> -->
-			<!--<version>1.6</version> -->
-			<!--<executions> -->
-			<!--<execution> -->
-			<!--<id>sign-artifacts</id> -->
-			<!--<phase>verify</phase> -->
-			<!--<goals> -->
-			<!--<goal>sign</goal> -->
-			<!--</goals> -->
-			<!--</execution> -->
-			<!--</executions> -->
-			<!--</plugin> -->
-		</plugins>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>2.10</version>
-			</extension>
-		</extensions>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>edu.cmu.tetrad.cmd.TetradCmd</Main-Class>
+                                        <Permissions>all-permissions</Permissions>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>tetradcmd</shadedClassifierName> <!-- Any name that makes sense -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--<plugin> -->
+            <!--<groupId>org.apache.maven.plugins</groupId> -->
+            <!--<artifactId>maven-gpg-plugin</artifactId> -->
+            <!--<version>1.6</version> -->
+            <!--<executions> -->
+            <!--<execution> -->
+            <!--<id>sign-artifacts</id> -->
+            <!--<phase>verify</phase> -->
+            <!--<goals> -->
+            <!--<goal>sign</goal> -->
+            <!--</goals> -->
+            <!--</execution> -->
+            <!--</executions> -->
+            <!--</plugin> -->
+        </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.10</version>
+            </extension>
+        </extensions>
+    </build>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>3.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>colt</groupId>
-			<artifactId>colt</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-		</dependency>
-		<dependency>
-			<groupId>xom</groupId>
-			<artifactId>xom</artifactId>
-			<version>1.2.5</version>
-		</dependency>
-		<dependency>
-			<groupId>jdepend</groupId>
-			<artifactId>jdepend</artifactId>
-			<version>2.9.1</version>
-		</dependency>
-		<dependency>
-			<groupId>gov.nist.math</groupId>
-			<artifactId>jama</artifactId>
-			<version>1.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-			<version>0.9.10</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
+        </dependency>
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>jdepend</groupId>
+            <artifactId>jdepend</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.nist.math</groupId>
+            <artifactId>jama</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
-		<dependency>
-			<groupId>javax.help</groupId>
-			<artifactId>javahelp</artifactId>
-			<version>2.0.05</version>
-		</dependency>
+        <!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
+        <dependency>
+            <groupId>javax.help</groupId>
+            <artifactId>javahelp</artifactId>
+            <version>2.0.05</version>
+        </dependency>
 
-		<!-- for communication with CCD latest server -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.7</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
-		</dependency>
+        <!-- for communication with CCD latest server -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.json/json -->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20160810</version>
-		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20160810</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
-	<!--<distributionManagement> -->
-	<!--<repository> -->
-	<!--<id>www.phil.cmu.edu_tetrad</id> -->
-	<!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url> -->
-	<!--</repository> -->
-	<!--<site> -->
-	<!--<id>www.phil.cmu.edu_tetrad</id> -->
-	<!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url> -->
-	<!--</site> -->
-	<!--</distributionManagement> -->
+    <!--<distributionManagement> -->
+    <!--<repository> -->
+    <!--<id>www.phil.cmu.edu_tetrad</id> -->
+    <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url> -->
+    <!--</repository> -->
+    <!--<site> -->
+    <!--<id>www.phil.cmu.edu_tetrad</id> -->
+    <!--<url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url> -->
+    <!--</site> -->
+    <!--</distributionManagement> -->
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<!--<scm> -->
-	<!--<connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection> -->
-	<!--<url>scm:git:git@github.com:cmu-phil/tetrad.git</url> -->
-	<!--<developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection> -->
-	<!--<tag>HEAD</tag> -->
-	<!--</scm> -->
+    <!--<scm> -->
+    <!--<connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection> -->
+    <!--<url>scm:git:git@github.com:cmu-phil/tetrad.git</url> -->
+    <!--<developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection> -->
+    <!--<tag>HEAD</tag> -->
+    <!--</scm> -->
 
 </project>
