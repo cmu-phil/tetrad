@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -26,21 +25,22 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.util.DataConvertUtils;
+import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.junit.Test;
-
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author Joseph Ramsey
@@ -104,15 +104,14 @@ public class TestGFci {
         int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
 
         int[][] expectedCounts = {
-                {0, 0, 0, 0, 0, 0},
-                {0, 4, 0, 0, 0, 1},
-                {0, 0, 3, 0, 0, 1},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-        };
+            {0, 0, 0, 0, 0, 0},
+            {0, 4, 0, 0, 0, 1},
+            {0, 0, 3, 0, 0, 1},
+            {0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0},};
 
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
@@ -225,71 +224,66 @@ public class TestGFci {
         DagToPag dagToPag = new DagToPag(g);
         dagToPag.setVerbose(false);
     }
-    
+
     @Test
-	public void testRandomDiscreteData() {
-		int sampleSize = 1000;
+    public void testRandomDiscreteData() {
+        int sampleSize = 1000;
 
-		Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
-		Dag dag = new Dag(g);
-		BayesPm bayesPm = new BayesPm(dag);
-		BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
+        Dag dag = new Dag(g);
+        BayesPm bayesPm = new BayesPm(dag);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-		DataSet data = bayesIm.simulateData(sampleSize, false);
+        DataSet data = bayesIm.simulateData(sampleSize, false);
 
-		IndependenceTest test = new IndTestChiSquare(data, 0.05);
-		BDeuScore bDeuScore = new BDeuScore(data);
-		bDeuScore.setSamplePrior(1.0);
-		bDeuScore.setStructurePrior(1.0);
+        IndependenceTest test = new IndTestChiSquare(data, 0.05);
+        BDeuScore bDeuScore = new BDeuScore(data);
+        bDeuScore.setSamplePrior(1.0);
+        bDeuScore.setStructurePrior(1.0);
 
-		GFci gFci = new GFci(test, bDeuScore);
-		gFci.setFaithfulnessAssumed(true);
+        GFci gFci = new GFci(test, bDeuScore);
+        gFci.setFaithfulnessAssumed(true);
 
-		long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-		gFci.search();
+        gFci.search();
 
-		long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
 
-		System.out.println("Elapsed " + (stop - start) + " ms");
+        System.out.println("Elapsed " + (stop - start) + " ms");
 
-		DagToPag dagToPag = new DagToPag(g);
-		dagToPag.setVerbose(false);
-	}
+        DagToPag dagToPag = new DagToPag(g);
+        dagToPag.setVerbose(false);
+    }
 
-	@Test
-	public void testDiscreteData() throws IOException {
-		double alpha = 0.05;
-		char delimiter = '\t';
-		Path dataFile = Paths.get("./src/test/resources/sim_discrete_data_20vars_100cases.txt");
+    @Test
+    public void testDiscreteData() throws IOException {
+        double alpha = 0.05;
+        char delimiter = '\t';
+        Path dataFile = Paths.get("./src/test/resources/sim_discrete_data_20vars_100cases.txt");
 
-		VerticalTabularDiscreteDataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
-		DataSet dataSet = dataReader.readInData();
+        TabularDataReader dataReader = new VerticalDiscreteTabularDataReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delimiter));
+        DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
 
-		IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
+        IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
 
-		BDeuScore score = new BDeuScore(dataSet);
-		score.setStructurePrior(1.0);
-		score.setSamplePrior(1.0);
+        BDeuScore score = new BDeuScore(dataSet);
+        score.setStructurePrior(1.0);
+        score.setSamplePrior(1.0);
 
-		GFci gFci = new GFci(indTest, score);
-		gFci.setFaithfulnessAssumed(true);
-		gFci.setMaxDegree(-1);
-		gFci.setMaxPathLength(-1);
-		gFci.setCompleteRuleSetUsed(false);
-		gFci.setVerbose(true);
+        GFci gFci = new GFci(indTest, score);
+        gFci.setFaithfulnessAssumed(true);
+        gFci.setMaxDegree(-1);
+        gFci.setMaxPathLength(-1);
+        gFci.setCompleteRuleSetUsed(false);
+        gFci.setVerbose(true);
 
-		long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-		gFci.search();
+        gFci.search();
 
-		long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
 
-		System.out.println("Elapsed " + (stop - start) + " ms");
-	}
+        System.out.println("Elapsed " + (stop - start) + " ms");
+    }
 }
-
-
-
-
-
