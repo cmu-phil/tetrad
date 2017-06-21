@@ -494,7 +494,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return a copy of the covariance matrix.
+     * @return a the covariance matrix (not a copy).
      */
     public final TetradMatrix getMatrix() {
         return matrix;

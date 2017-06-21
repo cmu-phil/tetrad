@@ -28,7 +28,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 
+import java.util.LinkedList;
 import java.util.Vector;
+
+import static java.lang.Math.abs;
 
 /**
  * Useful references: "Factor Analysis of Data Matrices" - Paul Horst (1965) This work has good specifications and
@@ -41,19 +44,20 @@ import java.util.Vector;
  * @author Mike Freenor
  */
 public class FactorAnalysis {
-    private CovarianceMatrix correlationMatrix;
+    private CovarianceMatrix covariance;
 
     // method-specific fields that get used
-    private Vector<Double> dValues;
-    private Vector<TetradMatrix> factorLoadingVectors;
-    private double convergenceThreshold;
+    private LinkedList<Double> dValues;
+    private LinkedList<TetradMatrix> factorLoadingVectors;
+    private double threshold = 0.001;
+    private int numFactors = 2;
 
     public FactorAnalysis(ICovarianceMatrix covarianceMatrix) {
-        this.correlationMatrix = new CorrelationMatrix(covarianceMatrix);
+        this.covariance = new CorrelationMatrix(covarianceMatrix);
     }
 
     public FactorAnalysis(DataSet dataSet) {
-        this.correlationMatrix = new CorrelationMatrix(dataSet);
+        this.covariance = new CovarianceMatrix(dataSet);
     }
 
     //================= COMMUNALITY ESTIMATES =================//
@@ -96,37 +100,23 @@ public class FactorAnalysis {
      * At the end of the method, the list of column vectors is actually assembled into a TetradMatrix.
      */
     public TetradMatrix successiveResidual() {
-        this.factorLoadingVectors = new Vector<>();
-        this.dValues = new Vector<>();
+        this.factorLoadingVectors = new LinkedList<>();
+        this.dValues = new LinkedList<>();
 
-        TetradMatrix residual = correlationMatrix.getMatrix();
-
-//        for (int i = 0; i < residual.rows(); i++) {
-//            for (int j = 0; j < residual.columns(); j++) {
-//                if (residual.get(i, j) < 0.01) residual.set(i, j, 0.0);
-//            }
-//        }
-
+        TetradMatrix residual = covariance.getMatrix().copy();
         TetradMatrix unitVector = new TetradMatrix(residual.rows(), 1);
+
         for (int i = 0; i < unitVector.rows(); i++) {
             unitVector.set(i, 0, 1);
         }
 
-        //find the first factor loading vector
-        if (successiveResidualHelper(residual, unitVector)) {
-            int failSafe = 0;
+        for (int i = 0; i < getNumFactors(); i++) {
+            boolean found = successiveResidualHelper(residual, unitVector);
 
-            while (vectorSum(dValues) / residual.trace() < 2) {
+            if (!found) break;
 
-                //calculate new residual matrix
-                TetradMatrix f = factorLoadingVectors.lastElement();
-
-                residual = residual.minus(f.times(f.transpose()));
-                if (!successiveResidualHelper(residual, unitVector)) break;
-
-                failSafe++;
-                if (failSafe > 500) break;
-            }
+            TetradMatrix f = factorLoadingVectors.getLast();
+            residual = residual.minus(f.times(f.transpose()));
         }
 
         TetradMatrix result = new TetradMatrix(residual.rows(), factorLoadingVectors.size());
@@ -201,7 +191,7 @@ public class FactorAnalysis {
 
                 hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
-                if (!Double.isNaN(alpha1) && Math.abs((alpha2 - alpha1)) < getConvergenceThreshold()) {
+                if (!Double.isNaN(alpha1) && abs((alpha2 - alpha1)) < getThreshold()) {
                     break;
                 }
 
@@ -209,10 +199,6 @@ public class FactorAnalysis {
             }
 
             TetradMatrix b = bVectors.lastElement();
-//
-//            for (int i = 0; i < b.rows(); i++) {
-//                if (b.get(i, 0) < 0.1) b.set(i, 0, 0.0);
-//            }
 
             rotatedFactorVectors.add(b);
             residuals.add(r.minus(b.times(hVectors.lastElement().transpose())));
@@ -231,8 +217,8 @@ public class FactorAnalysis {
         return result;
     }
 
-    public void setConvergenceThreshold(double convergenceThreshold) {
-        this.convergenceThreshold = convergenceThreshold;
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
     }
 
     // ------------------Private methods-------------------//
@@ -273,36 +259,33 @@ public class FactorAnalysis {
      * Return the final i'th factor loading as our best approximation.
      */
     private boolean successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector) {
-        TetradMatrix lVector = approximationVector.transpose().times(residual).times(approximationVector);
-        double d1 = Math.sqrt(lVector.get(0, 0));
-        TetradMatrix f = residual.times(approximationVector).scalarMult(1.0 / d1);
+        TetradMatrix l0 = approximationVector.transpose().times(residual).times(approximationVector);
+
+        if (l0.get(0, 0) < 0) {
+            return false;
+        }
+
+        double d = Math.sqrt(l0.get(0, 0));
+        TetradMatrix f = residual.times(approximationVector).scalarMult(1.0 / d);
 
         for (int i = 0; i < 100; i++) {
-            TetradMatrix oldF = f;
-            TetradMatrix l = oldF.transpose().times(residual).times(oldF);
-            double d2 = Math.sqrt(l.get(0, 0));
-            f = (residual.times(oldF)).scalarMult(1.0 / d2);
+            TetradMatrix ui = residual.times(f);
+            TetradMatrix li = f.transpose().times(ui);
+            double di = Math.sqrt(li.get(0, 0));
 
-            if (Math.abs((d2 - d1)) < getConvergenceThreshold()) {
+            if (abs((d - di)) <= getThreshold()) {
                 break;
             }
 
-            d1 = d2;
+            d = di;
+            f = ui.scalarMult(1.0 / d);
         }
 
-        if (d1 < 1) return false;
-
-        this.dValues.add(d1);
+        this.dValues.add(d);
         this.factorLoadingVectors.add(f);
         return true;
     }
 
-
-    private static double vectorSum(Vector<Double> vector) {
-        double sum = 0;
-        for (double a : vector) sum += a;
-        return sum;
-    }
 
     //designed for normalizing a vector.
     //as usual, vectors are treated as matrices to simplify operations elsewhere
@@ -343,8 +326,16 @@ public class FactorAnalysis {
         return result;
     }
 
-    public double getConvergenceThreshold() {
-        return convergenceThreshold;
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public int getNumFactors() {
+        return numFactors;
+    }
+
+    public void setNumFactors(int numFactors) {
+        this.numFactors = numFactors;
     }
 }
 

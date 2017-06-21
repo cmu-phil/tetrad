@@ -181,6 +181,8 @@ public final class Fges2 implements GraphSearch, GraphScorer {
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
+    private Set<Node> noMoreParents = new HashSet<>();
+
     //===========================CONSTRUCTORS=============================//
 
     /**
@@ -572,20 +574,19 @@ public final class Fges2 implements GraphSearch, GraphScorer {
                     int child = hashIndices.get(y);
                     int parent = hashIndices.get(x);
                     double bump = score.localScoreDiff(parent, child);
+                    double bump2 = score.localScoreDiff(child, parent);
 
-                    if (symmetricFirstStep) {
-                        double bump2 = score.localScoreDiff(child, parent);
-                        bump = bump > bump2 ? bump : bump2;
-                    }
+//                    if (symmetricFirstStep) {
+//                        double bump2 = score.localScoreDiff(child, parent);
+//                        bump = bump > bump2 ? bump : bump2;
+//                    }
 
                     if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
 
-                    if (bump > 0) {
+                    if (bump > 0 && bump2 > 0) {
                         final Edge edge = Edges.undirectedEdge(x, y);
                         effectEdgesGraph.addEdge(edge);
-                    }
 
-                    if (bump > 0) {
                         addArrow(x, y, emptySet, emptySet, bump);
                         addArrow(y, x, emptySet, emptySet, bump);
                     }
@@ -896,7 +897,9 @@ public final class Fges2 implements GraphSearch, GraphScorer {
             boolean inserted = insert(x, y, T, bump);
             if (!inserted) continue;
 
-            totalScore += bump;
+            if (!Double.isNaN(bump)) {
+                totalScore += bump;
+            }
 
             Set<Node> visited = reapplyOrientation(x, y, null);
             Set<Node> toProcess = new HashSet<>();
@@ -954,7 +957,9 @@ public final class Fges2 implements GraphSearch, GraphScorer {
             boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
             if (!deleted) continue;
 
-            totalScore += bump;
+            if (!Double.isNaN(bump)) {
+                totalScore += bump;
+            }
 
             clearArrow(x, y);
 
@@ -1173,7 +1178,9 @@ public final class Fges2 implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (bump > 0 && !Double.isInfinite(bump)) {
+                if (Double.isNaN(bump)) bump = Double.MIN_VALUE;
+
+                if (bump > 0 || Double.isNaN(bump)) {
                     addArrow(a, b, naYX, T, bump);
                 }
 
@@ -1293,7 +1300,7 @@ public final class Fges2 implements GraphSearch, GraphScorer {
 
                 double bump = deleteEval(a, b, diff, naYX, hashIndices);
 
-                if (bump > 0.0 && !Double.isInfinite(bump)) {
+                if (bump > 0.0) {// || Double.isNaN(bump)) {
                     addArrow(a, b, naYX, h, bump);
                 }
             }
@@ -1421,7 +1428,7 @@ public final class Fges2 implements GraphSearch, GraphScorer {
         set.addAll(t);
         set.addAll(graph.getParents(y));
         double v = scoreGraphChange(y, set, x, hashIndices);
-        if (Double.isNaN(v)) return Double.POSITIVE_INFINITY;
+//        if (Double.isNaN(v)) return 1e-10;
         return v;
     }
 
@@ -1434,15 +1441,23 @@ public final class Fges2 implements GraphSearch, GraphScorer {
 
         double v = scoreGraphChange(y, set, x, hashIndices);
 
-        if (Double.isNaN(v)) return Double.NEGATIVE_INFINITY;
+//        if (Double.isNaN(v)) return 1e-10;
 
         return -v;
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
     private boolean insert(Node x, Node y, Set<Node> T, double bump) {
+        if (Double.isNaN(bump)) {
+            System.out.println();
+        }
+
         if (graph.isAdjacentTo(x, y)) {
             return false; // The initial graph may already have put this edge in the graph.
+        }
+
+        if (noMoreParents.contains(y)) {
+            return false;
         }
 
         Edge trueEdge = null;
@@ -1456,6 +1471,10 @@ public final class Fges2 implements GraphSearch, GraphScorer {
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return false;
 
         graph.addDirectedEdge(x, y);
+
+        if (bump == Double.MIN_VALUE) {
+            noMoreParents.add(y);
+        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";

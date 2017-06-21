@@ -21,9 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgesFA;
-import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.GesMe;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
@@ -63,7 +61,7 @@ public class TestFgesFa {
 
         parameters.set("determinismThreshold", 1);
 
-        FgesFA alg = new FgesFA();
+        GesMe alg = new GesMe();
         Graph pattern = alg.search(dataSet, parameters);
 
         System.out.println(pattern);

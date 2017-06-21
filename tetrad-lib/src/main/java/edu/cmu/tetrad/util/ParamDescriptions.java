@@ -191,13 +191,23 @@ public class ParamDescriptions {
                 "Threshold above which matrix elements are considered significant",
                 0.2, 0, Double.POSITIVE_INFINITY));
 
-        put("varimaxPlotted", new ParamDescription(
-                "Yes if varimax solution should be plotted (maximizes variances)",
+        put("useVarimax", new ParamDescription(
+                "Yes if the Varimax solution should be used",
                 true));
 
         put("convergenceThreshold", new ParamDescription(
                 "Threshold for converegence",
                 0.001, 0, Double.POSITIVE_INFINITY));
+
+        put("numFactors", new ParamDescription(
+                "The number of factors to be extracted",
+                1, 1, Integer.MAX_VALUE));
+
+        put("enforceMinimumLeafNodes", new ParamDescription(
+                "Yes if a minimum number of leaf nodes should be enforced",
+                true));
+
+
     }
 
     public static ParamDescriptions instance() {

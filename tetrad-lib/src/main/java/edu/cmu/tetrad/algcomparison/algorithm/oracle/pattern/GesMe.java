@@ -8,52 +8,134 @@ import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import static java.lang.Math.sqrt;
 
 /**
  * FGES (the heuristic version).
  *
  * @author jdramsey
  */
-public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private IKnowledge knowledge = new Knowledge2();
     private ScoreWrapper score = new SemBicScoreDeterministic();
 
-    public FgesFA() {
+    public GesMe() {
         setCompareToTrue(false);
     }
 
-    public FgesFA(boolean compareToTrueGraph) {
+    public GesMe(boolean compareToTrueGraph) {
         setCompareToTrue(compareToTrueGraph);
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        dataSet = DataUtils.center((DataSet) dataSet);
+//        dataSet = DataUtils.center((DataSet) dataSet);
         CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
         edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(covarianceMatrix);
-        analysis.setConvergenceThreshold(parameters.getDouble("convergenceThreshold"));
+        analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
+//        analysis.setNumFactors(parameters.getInt("numFactors"));
+        analysis.setNumFactors(((DataSet) dataSet).getNumColumns());
 
-        TetradMatrix unrotatedL = analysis.successiveResidual();
-        TetradMatrix rotatedL = analysis.successiveFactorVarimax(unrotatedL);
+        TetradMatrix unrotated = analysis.successiveResidual();
+        TetradMatrix rotated = analysis.successiveFactorVarimax(unrotated);
+
+        if (parameters.getBoolean("verbose")) {
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+            String output = "Unrotated Factor Loading Matrix:\n";
+
+            output += tableString(unrotated, nf, Double.POSITIVE_INFINITY);
+
+            if (unrotated.columns() != 1) {
+                output += "\n\nRotated Matrix (using sequential varimax):\n";
+                output += tableString(rotated, nf, parameters.getDouble("fa_threshold"));
+            }
+
+            System.out.println(output);
+            TetradLogger.getInstance().forceLogMessage(output);
+        }
+
+        TetradMatrix L;
+
+        if (parameters.getBoolean("useVarimax")) {
+            L = rotated;
+        } else {
+            L = unrotated;
+        }
 
 
-        ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), rotatedL.times(rotatedL.transpose()),
+        ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), L.times(L.transpose()),
                 covarianceMatrix.getSampleSize());
+
+        final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < vars.length; i++) indices.add(i);
+
+        Collections.sort(indices, new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return -Double.compare(vars[o1], vars[o2]);
+            }
+        });
+
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        for (int i = 0; i < indices.size(); i++) {
+            System.out.println(nf.format(vars[indices.get(i)]) + " ");
+        }
+
+        System.out.println();
+
+        int n = vars.length;
+
+        int cutoff = (int) (n * ((sqrt(8 * n + 1) - 1) / (2 * n)));
+
+        List<Node> nodes = covarianceMatrix.getVariables();
+
+        List<Node> leaves = new ArrayList<>();
+
+        for (int i = 0; i < cutoff; i++) {
+            leaves.add(nodes.get(indices.get(i)));
+        }
+
+        IKnowledge knowledge2 = new Knowledge2();
+
+        for (Node v : nodes) {
+            if (leaves.contains(v)) {
+                knowledge2.addToTier(2, v.getName());
+            } else {
+                knowledge2.addToTier(1, v.getName());
+            }
+        }
+
+        knowledge2.setTierForbiddenWithin(2, true);
+
+        System.out.println("knowledge2 = " + knowledge2);
 
         Score score = this.score.getScore(covFa, parameters);
         edu.cmu.tetrad.search.Fges2 search = new edu.cmu.tetrad.search.Fges2(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
-        search.setKnowledge(knowledge);
+
+        if (parameters.getBoolean("enforceMinimumLeafNodes")) {
+            search.setKnowledge(knowledge2);
+        }
+
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
         search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
@@ -64,15 +146,15 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         }
 
         if (parameters.getBoolean("verbose")) {
-            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
             String output = "Unrotated Factor Loading Matrix:\n";
             double threshold = parameters.getDouble("fa_threshold");
 
-            output += tableString(unrotatedL, nf, Double.POSITIVE_INFINITY);
+            output += tableString(L, nf, Double.POSITIVE_INFINITY);
 
-            if (unrotatedL.columns() != 1) {
-                output += "\n\nRotated Matrix (using sequential varimax):\n";
-                output += tableString(rotatedL, nf, threshold);
+            if (L.columns() != 1) {
+                output += "\n\nL:\n";
+                output += tableString(L, nf, threshold);
             }
 
             System.out.println(output);
@@ -110,18 +192,22 @@ public class FgesFA implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.add("verbose");
         parameters.add("determinismThreshold");
         parameters.add("convergenceThreshold");
+        parameters.add("fa_threshold");
+        parameters.add("numFactors");
+        parameters.add("useVarimax");
+        parameters.add("enforceMinimumLeafNodes");
         return parameters;
     }
 
-    @Override
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
+//    @Override
+//    public IKnowledge getKnowledge() {
+//        return knowledge;
+//    }
+//
+//    @Override
+//    public void setKnowledge(IKnowledge knowledge) {
+//        this.knowledge = knowledge;
+//    }
 
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;

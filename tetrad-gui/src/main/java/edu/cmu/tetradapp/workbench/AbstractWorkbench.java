@@ -1436,7 +1436,8 @@ public abstract class AbstractWorkbench extends JComponent
                 // Add model edge to model; this will result in an event fired
                 // back from the model to add a display edge, so we can remove
                 // the tracked edge and forget about it.
-                getGraph().addEdge(modelEdge);
+                graph.addEdge(modelEdge);
+                setGraph(graph);
                 firePropertyChange("modelChanged", null, null);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -199,7 +199,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.FGES_FA, AlgType.forbid_latent_common_causes, OracleType.None));
+        descriptions.add(new AlgorithmDescription(AlgName.GesMe, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -921,8 +921,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                algorithm = new Fges(scoreWrapper);
 //                }
                 break;
-            case FGES_FA:
-                algorithm = new FgesFA();
+            case GesMe:
+                algorithm = new GesMe();
 
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -1432,7 +1432,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum AlgName {
         PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
-        FgesMb, FGES_FA, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
+        FgesMb, GesMe, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,

@@ -25,23 +25,13 @@ public class FactorAnalysis implements Algorithm {
         }
 
         edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(selectedModel);
-        analysis.setConvergenceThreshold(parameters.getDouble("convergenceThreshold"));
+        analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
+        analysis.setNumFactors(parameters.getInt("numFactors"));
 
         double threshold = parameters.getDouble("fa_threshold");
 
         TetradMatrix unrotatedSolution = analysis.successiveResidual();
         TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-        String output = "Unrotated Factor Loading Matrix:\n";
-
-        output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
-
-        if (unrotatedSolution.columns() != 1) {
-            output += "\n\nRotated Matrix (using sequential varimax):\n";
-            output += tableString(rotatedSolution, nf, threshold);
-        }
 
         SemGraph graph = new SemGraph();
 
@@ -54,7 +44,7 @@ public class FactorAnalysis implements Algorithm {
 
         Vector<Node> factors = new Vector<>();
 
-        if (parameters.getBoolean("varimaxPlotted")) {
+        if (parameters.getBoolean("useVarimax")) {
             for (int i = 0; i < rotatedSolution.columns(); i++) {
                 ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
                 factor.setNodeType(NodeType.LATENT);
@@ -87,6 +77,17 @@ public class FactorAnalysis implements Algorithm {
         }
 
         if (parameters.getBoolean("verbose")) {
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+            String output = "Unrotated Factor Loading Matrix:\n";
+
+            output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
+
+            if (unrotatedSolution.columns() != 1) {
+                output += "\n\nRotated Matrix (using sequential varimax):\n";
+                output += tableString(rotatedSolution, nf, threshold);
+            }
+
             System.out.println(output);
             TetradLogger.getInstance().forceLogMessage(output);
         }
@@ -133,7 +134,8 @@ public class FactorAnalysis implements Algorithm {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add("fa_threshold");
-        params.add("varimaxPlotted");
+        params.add("numFactors");
+        params.add("useVarimax");
         params.add("convergenceThreshold");
         params.add("verbose");
         return params;
