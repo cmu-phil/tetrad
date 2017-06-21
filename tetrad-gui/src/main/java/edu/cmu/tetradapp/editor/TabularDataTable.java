@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -26,10 +25,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
-
-import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import javax.swing.table.AbstractTableModel;
 
 /**
  * Wraps a dataSet which is possibly smaller than the display window in a larger
@@ -84,18 +82,19 @@ class TabularDataTable extends AbstractTableModel {
      * this number will be at least 30.
      */
     public int getColumnCount() {
-        return (dataSet.getNumColumns() < 30) ? 30 :
-                dataSet.getNumColumns() + getNumLeadingCols() + 1;
+        return (dataSet.getNumColumns() < 30) ? 30
+                : dataSet.getNumColumns() + getNumLeadingCols() + 1;
     }
 
     /**
-     * @return the value at the given (row, col) coordinates of the table as
-     * an Object.  If the variable for the col is a DiscreteVariable, the String
-     * value (as opposed to the integer index value) is extracted and
-     * returned. If the coordinates are out of range of the wrapped table model,
-     * 'null' is returned. Otherwise, the value stored in the wrapped table
-     * model at the given coordinates is returned.
+     * @return the value at the given (row, col) coordinates of the table as an
+     * Object. If the variable for the col is a DiscreteVariable, the String
+     * value (as opposed to the integer index value) is extracted and returned.
+     * If the coordinates are out of range of the wrapped table model, 'null' is
+     * returned. Otherwise, the value stored in the wrapped table model at the
+     * given coordinates is returned.
      */
+    @Override
     public Object getValueAt(int row, int col) {
         int columnIndex = col - getNumLeadingCols();
         int rowIndex = row - 2;
@@ -109,22 +108,19 @@ class TabularDataTable extends AbstractTableModel {
 //            }
 //        }
 //        else
-        if (col >= getNumLeadingCols() &&
-                col < dataSet.getNumColumns() + getNumLeadingCols()) {
+        if (col >= getNumLeadingCols()
+                && col < dataSet.getNumColumns() + getNumLeadingCols()) {
             Node variable = dataSet.getVariable(columnIndex);
 
             if (row == 0) {
                 boolean discrete = variable instanceof DiscreteVariable;
-                return "C" + Integer.toString(columnIndex + 1) +
-                        (discrete ? "-T" : "");
-            }
-            else if (row == 1) {
+                return "C" + Integer.toString(columnIndex + 1)
+                        + (discrete ? "-T" : "");
+            } else if (row == 1) {
                 return dataSet.getVariable(columnIndex).getName();
-            }
-            else if (rowIndex >= dataSet.getNumRows()) {
+            } else if (rowIndex >= dataSet.getNumRows()) {
                 return null;
-            }
-            else {
+            } else {
                 if (variable instanceof DiscreteVariable) {
                     ((DiscreteVariable) variable).setCategoryNamesDisplayed(
                             isCategoryNamesShown());
@@ -134,13 +130,11 @@ class TabularDataTable extends AbstractTableModel {
 
                 if (((Variable) variable).isMissingValue(value)) {
                     return "*";
-                }
-                else {
+                } else {
                     return value;
                 }
             }
-        }
-        else if (col >= dataSet.getNumColumns() + getNumLeadingCols()) {
+        } else if (col >= dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 0) {
                 return "C" + Integer.toString(columnIndex + 1);
             }
@@ -154,12 +148,12 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * Sets the value at the given (row, col) coordinates of the table as
-     * an Object.  If the variable for the col is a DiscreteVariable, the String
-     * value (as opposed to the integer index value) is extracted and
-     * returned. If the coordinates are out of range of the wrapped table model,
-     * 'null' is returned. Otherwise, the value stored in the wrapped table
-     * model at the given coordinates is returned.
+     * Sets the value at the given (row, col) coordinates of the table as an
+     * Object. If the variable for the col is a DiscreteVariable, the String
+     * value (as opposed to the integer index value) is extracted and returned.
+     * If the coordinates are out of range of the wrapped table model, 'null' is
+     * returned. Otherwise, the value stored in the wrapped table model at the
+     * given coordinates is returned.
      */
     public void setValueAt(Object value, int row, int col) {
         if (col == 0) {
@@ -177,33 +171,28 @@ class TabularDataTable extends AbstractTableModel {
 //            }
 //        }
 //        else
-        if (col >= getNumLeadingCols() &&
-                col < dataSet.getNumColumns() + getNumLeadingCols()) {
+        if (col >= getNumLeadingCols()
+                && col < dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
                 setColumnName(col, value);
-            }
-            else if (row > 1) {
+            } else if (row > 1) {
                 try {
                     pasteIntoColumn(row, col, value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     pcs.firePropertyChange("modelChanged", null, null);
                     return;
                 }
             }
-        }
-        else {
+        } else {
             addColumnsOutTo(col);
 
             if (row == 1) {
                 setColumnName(col, newColumnName((String) value));
-            }
-            else if (row > 1) {
+            } else if (row > 1) {
                 try {
                     pasteIntoColumn(row, col, value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     pcs.firePropertyChange("modelChanged", null, null);
                     return;
@@ -220,7 +209,7 @@ class TabularDataTable extends AbstractTableModel {
      */
     private void addColumnsOutTo(int col) {
         for (int i = dataSet.getNumColumns() + getNumLeadingCols();
-             i <= col; i++) {
+                i <= col; i++) {
             ContinuousVariable var = new ContinuousVariable("");
             dataSet.addVariable(var);
 
@@ -259,7 +248,9 @@ class TabularDataTable extends AbstractTableModel {
         String oldName = dataSet.getVariable(col - getNumLeadingCols()).getName();
         String newName = (String) value;
 
-        if (oldName.equals(newName)) return;
+        if (oldName.equals(newName)) {
+            return;
+        }
 
 //        try {
 //            pcs.firePropertyChange("propesedVariableNameChange", oldName, newName);
@@ -269,7 +260,6 @@ class TabularDataTable extends AbstractTableModel {
 //        }
 //
 //        pcs.firePropertyChange("variableNameChange", oldName, newName);
-
         dataSet.getVariable(col - getNumLeadingCols()).setName(newName);
         pcs.firePropertyChange("modelChanged", null, null);
         pcs.firePropertyChange("variableNameChanged", oldName, newName);
@@ -301,9 +291,9 @@ class TabularDataTable extends AbstractTableModel {
             quoted = true;
         }
 
-        if (!(variable instanceof DiscreteVariable) &&
-                isEmpty(dataSet, dataCol) &&
-                (quoted || !isNumber((String) value))) {
+        if (!(variable instanceof DiscreteVariable)
+                && isEmpty(dataSet, dataCol)
+                && (quoted || !isNumber((String) value))) {
             variable = swapDiscreteColumnForContinuous(col);
         }
 
@@ -350,8 +340,7 @@ class TabularDataTable extends AbstractTableModel {
         try {
             Double.parseDouble(value);
             return true;
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
     }
@@ -363,9 +352,8 @@ class TabularDataTable extends AbstractTableModel {
         return dataSet;
     }
 
-
-    public void setDataSet(DataSet data){
-        if(data == null){
+    public void setDataSet(DataSet data) {
+        if (data == null) {
             throw new NullPointerException("Data set was null.");
         }
         this.dataSet = data;
@@ -375,7 +363,7 @@ class TabularDataTable extends AbstractTableModel {
         /*
       The number of initial "special" columns not used to display the data
       set.
-     */
+         */
         int numLeadingRows = 2;
         return numLeadingRows;
     }
@@ -384,7 +372,7 @@ class TabularDataTable extends AbstractTableModel {
         /*
       The number of initial "special" columns not used to display the data
       set.
-     */
+         */
         int numLeadingCols = 1;
         return numLeadingCols;
     }
@@ -402,8 +390,3 @@ class TabularDataTable extends AbstractTableModel {
         pcs.addPropertyChangeListener(listener);
     }
 }
-
-
-
-
-
