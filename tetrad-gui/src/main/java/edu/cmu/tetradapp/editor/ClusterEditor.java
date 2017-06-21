@@ -18,20 +18,11 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.MeasurementModelWrapper;
-
-import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -41,6 +32,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Edits which variables get assigned to which clusters.
@@ -48,6 +46,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class ClusterEditor extends JPanel {
+
     private List<String> varNames;
     private Clusters clusters;
     private JPanel clustersPanel;
@@ -112,8 +111,8 @@ public final class ClusterEditor extends JPanel {
         b1.add(new JLabel("Not in cluster:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("# Clusters = "));
-        SpinnerNumberModel spinnerNumberModel =
-                new SpinnerNumberModel(clusters.getNumClusters(), 0, 1000, 1);
+        SpinnerNumberModel spinnerNumberModel
+                = new SpinnerNumberModel(clusters.getNumClusters(), 3, 100, 1);
         spinnerNumberModel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
@@ -148,11 +147,10 @@ public final class ClusterEditor extends JPanel {
             int numStoredClusters = getClustersPrivate().getNumClusters();
             int n = (int) Math.pow(getVarNames().size(), 0.5);
             int defaultNumClusters = n + 1;
-            int numClusters2 = numStoredClusters <
-                    defaultNumClusters ? defaultNumClusters : numStoredClusters;
+            int numClusters2 = numStoredClusters
+                    < defaultNumClusters ? defaultNumClusters : numStoredClusters;
             clusters.setNumClusters(numClusters2);
-        }
-        else {
+        } else {
             clusters.setNumClusters(numClusters);
         }
 
@@ -166,10 +164,10 @@ public final class ClusterEditor extends JPanel {
     private Box getClusterBoxes(int numClusters) {
         Box c = Box.createVerticalBox();
 
-        List varsNotInCluster =
-                getClustersPrivate().getVarsNotInCluster(getVarNames());
-        JList l1 =
-                new DragDropList(varsNotInCluster, -1, JList.HORIZONTAL_WRAP);
+        List varsNotInCluster
+                = getClustersPrivate().getVarsNotInCluster(getVarNames());
+        JList l1
+                = new DragDropList(varsNotInCluster, -1, JList.HORIZONTAL_WRAP);
         l1.setBorder(null);
 
         Box b2 = Box.createHorizontalBox();
@@ -228,6 +226,7 @@ public final class ClusterEditor extends JPanel {
 
     public class DragDropList extends JList implements DropTargetListener,
             DragSourceListener, DragGestureListener {
+
         private List movedList;
 
         /**
@@ -260,8 +259,7 @@ public final class ClusterEditor extends JPanel {
                     if (isSelected) {
                         comp.setForeground(Color.BLACK);
                         comp.setBackground(selectedFillColor);
-                    }
-                    else {
+                    } else {
                         comp.setForeground(Color.BLACK);
                         comp.setBackground(fillColor);
                     }
@@ -304,8 +302,7 @@ public final class ClusterEditor extends JPanel {
 
             if (list == null) {
                 getToolkit().beep();
-            }
-            else {
+            } else {
                 this.movedList = list;
                 ListSelection transferable = new ListSelection(list);
                 dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
@@ -325,13 +322,12 @@ public final class ClusterEditor extends JPanel {
                     if (getCluster() >= 0) {
                         try {
                             getClustersPrivate().addToCluster(getCluster(), name);
-                            DefaultListModel model =
-                                    (DefaultListModel) getModel();
+                            DefaultListModel model
+                                    = (DefaultListModel) getModel();
                             model.addElement(name);
                             sort(model);
                             dropTargetDropEvent.dropComplete(true);
-                        }
-                        catch (IllegalStateException e) {
+                        } catch (IllegalStateException e) {
                             String s = e.getMessage();
 
                             if (!"".equals(s)) {
@@ -346,8 +342,7 @@ public final class ClusterEditor extends JPanel {
                             e.printStackTrace();
                             dropTargetDropEvent.dropComplete(false);
                         }
-                    }
-                    else {
+                    } else {
                         getClustersPrivate().removeFromClusters(name);
                         DefaultListModel model = (DefaultListModel) getModel();
                         model.addElement(name);
@@ -355,11 +350,9 @@ public final class ClusterEditor extends JPanel {
                         dropTargetDropEvent.dropComplete(true);
                     }
                 }
-            }
-            catch (UnsupportedFlavorException e) {
+            } catch (UnsupportedFlavorException e) {
                 e.printStackTrace();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -425,7 +418,7 @@ public final class ClusterEditor extends JPanel {
          * Supported dataflavors--only one.
          */
         private final DataFlavor[] dataFlavors = new DataFlavor[]{
-                new DataFlavor(ListSelection.class, "String List Selection")};
+            new DataFlavor(ListSelection.class, "String List Selection")};
 
         /**
          * Constructs a new selection with the given list of graph nodes.
@@ -440,16 +433,15 @@ public final class ClusterEditor extends JPanel {
         }
 
         /**
-         * @return an object which represents the data to be transferred.  The
+         * @return an object which represents the data to be transferred. The
          * class of the object returned is defined by the representation class
          * of the flavor.
          *
          * @param flavor the requested flavor for the data
          * @throws java.io.IOException if the data is no longer available in the
-         *                             requested flavor.
-         * @throws java.awt.datatransfer.UnsupportedFlavorException
-         *                             if the requested data flavor is not
-         *                             supported.
+         * requested flavor.
+         * @throws java.awt.datatransfer.UnsupportedFlavorException if the
+         * requested data flavor is not supported.
          * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
          */
         public Object getTransferData(DataFlavor flavor)
@@ -467,7 +459,7 @@ public final class ClusterEditor extends JPanel {
          *
          * @param flavor the requested flavor for the data
          * @return boolean indicating whether or not the data flavor is
-         *         supported
+         * supported
          */
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             return flavor.equals(getTransferDataFlavors()[0]);
@@ -475,19 +467,15 @@ public final class ClusterEditor extends JPanel {
 
         /**
          * Returns an array of DataFlavor objects indicating the flavors the
-         * data can be provided in.  The array should be ordered according to
+         * data can be provided in. The array should be ordered according to
          * preference for providing the data (from most richly descriptive to
          * least descriptive).
          *
          * @return an array of data flavors in which this data can be
-         *         transferred
+         * transferred
          */
         public DataFlavor[] getTransferDataFlavors() {
             return this.dataFlavors;
         }
     }
 }
-
-
-
-

@@ -46,8 +46,10 @@ import java.util.regex.Pattern;
  * (The /data section is required.) Without sectioning, it is assumed that no
  * variables will be defined in advance and that there will be no knowledge.
  *
+ * @deprecated replaced by readers in edu.pitt.dbmi.data.reader.tabular package
  * @author Joseph Ramsey
  */
+@Deprecated
 public final class DataReader implements IDataReader {
 
     /**
@@ -220,8 +222,8 @@ public final class DataReader implements IDataReader {
      * Parses the given files for a tabular data set, returning a
      * RectangularDataSet if successful.
      *
-     * @throws IOException if the file cannot be read.
-//     * @deprecated use the data readers from edu.cmu.tetrad.io package // Can't deprecate this yet.
+     * @throws IOException if the file cannot be read. // * @deprecated use the
+     * data readers from edu.cmu.tetrad.io package // Can't deprecate this yet.
      */
     @Override
     public DataSet parseTabular(File file) throws IOException {
@@ -538,7 +540,6 @@ public final class DataReader implements IDataReader {
 //                int multiplier = Integer.parseInt(token);
 //                dataSet.setMultiplier(row, multiplier);
 //            }
-
             int col = -1;
 
             while (tokenizer1.hasMoreTokens()) {
@@ -1023,7 +1024,7 @@ public final class DataReader implements IDataReader {
 
         public DataSetDescription(List<Node> variables, int numRows, int idIndex,
                 boolean variablesSectionIncluded, Pattern delimiter
-//                , boolean multColumnIncluded
+        //                , boolean multColumnIncluded
         ) {
             this.variables = variables;
             this.numRows = numRows;
@@ -1211,7 +1212,6 @@ public final class DataReader implements IDataReader {
 //            variables.remove(0);
 //            varNames.remove(0);
 //        }
-
         // Print out a report of the variable definitions guessed at (or
         // read in through the /variables section or specified as known
         // variables.
