@@ -7,7 +7,6 @@ import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDataReader;
-import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,13 +24,6 @@ public class HsimRun {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
         try {
-
-            //==== tried with BigDataSetUtility ==============
-            Set<String> eVars = new HashSet<String>();
-            //eVars.add("MULT");
-            DataSet regularDataSet = BigDataSetUtility.readInDiscreteData(new File(readfilename), delimiter, eVars);
-            // ======done with BigDataSetUtility=============
-
             Path dataFile = Paths.get(readfilename);
 
             TabularDataReader dataReader = new VerticalDiscreteTabularDataReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delimiter));
@@ -84,7 +76,7 @@ public class HsimRun {
             }
 
             //===========Apply the hybrid resimulation===============
-            Hsim hsim = new Hsim(estDAG, simnodes, regularDataSet);
+            Hsim hsim = new Hsim(estDAG, simnodes, dataSet);
             DataSet newDataSet = hsim.hybridsimulate();
 
             //write output to a new file
@@ -92,7 +84,7 @@ public class HsimRun {
 
             //=======Run FGES on the output data, and compare it to the original learned graph
             Path dataFileOut = Paths.get(filenameOut);
-            TabularDataReader dataReaderOut = new VerticalDiscreteTabularDataReader(dataFile.toFile(), DelimiterUtils.toDelimiter(delimiter));
+            TabularDataReader dataReaderOut = new VerticalDiscreteTabularDataReader(dataFileOut.toFile(), DelimiterUtils.toDelimiter(delimiter));
 
             DataSet dataSetOut = (DataSet) DataConvertUtils.toDataModel(dataReaderOut.readInData());
 
