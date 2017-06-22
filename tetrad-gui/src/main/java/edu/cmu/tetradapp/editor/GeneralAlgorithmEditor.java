@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
@@ -70,15 +69,6 @@ import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
 import edu.pitt.dbmi.tetrad.db.entity.HpcJobInfo;
 import edu.pitt.dbmi.tetrad.db.entity.HpcParameter;
 import edu.pitt.dbmi.tetrad.db.entity.JvmOption;
-
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -90,6 +80,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Edits some algorithm to search for Markov blanket patterns.
@@ -104,7 +100,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // 2. Add a desription for it to final List<AlgorithmDescription> descriptions.
     // 3. In private Algorithm getAlgorithm, add a new case to the switch statement returning
     // an instance of the algorithm.
-
     private static final long serialVersionUID = -5719467682865706447L;
 
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
@@ -129,7 +124,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
 
     //=========================CONSTRUCTORS============================//
-
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
@@ -152,8 +146,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
         scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
 
-        Dimension dim = searchButton1.getPreferredSize();
-        searchButton1Size = new Dimension(dim.width + 5, dim.height + 5);
+        // Set the search button size
+        searchButton1Size = new Dimension(150, 30);
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -251,7 +245,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        if (runner.getDataModelList() == null) {
 //            throw new NullPointerException("No data has been provided.");
 //        }
-
         List<TestType> tests;
 
         DataModelList dataModelList = runner.getDataModelList();
@@ -479,7 +472,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             throw new IllegalArgumentException("No source of variables!");
         }
 
-
         List<String> varNames = new ArrayList<>();
 
         for (Node node : variables) {
@@ -555,8 +547,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         int n = JOptionPane.showOptionDialog(this, "Would you like to execute a " + name + " search in the cloud?",
                 "A Silly Question", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        if (n == 0)
+        if (n == 0) {
             return null;
+        }
         return hpcAccounts.get(n - 1);
     }
 
@@ -565,7 +558,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // **********************
         // Show progress panel *
         // **********************
-
         Frame ancestor = (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
         final JDialog progressDialog = new JDialog(ancestor, "HPC Job Submission's Progress...", false);
 
@@ -645,7 +637,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             // for (String line : tempLine) {
             // System.out.println(line);
             // }
-
             Files.write(file, tempLine);
 
             // Get file's MD5 hash and use it as its identifier
@@ -905,7 +896,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private Algorithm getAlgorithm(AlgName name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
         Algorithm algorithm;
-
 
         switch (name) {
             case FGES:
@@ -1200,8 +1190,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     //=============================== Public Methods ==================================//
-
-
     private JPanel getParametersPane() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -1272,11 +1260,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-
         searchButton1.setPreferredSize(searchButton1Size);
-        searchButton1.setMaximumSize(searchButton1Size);
 
-        searchButton1.setFont(new Font("Dialog", Font.BOLD, 16));
+        searchButton1.setFont(new Font("Dialog", Font.BOLD, 14));
 
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
@@ -1385,6 +1371,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private class AlgorithmDescription {
+
         private AlgName algName;
         private AlgType algType;
         private OracleType oracleType;
@@ -1419,7 +1406,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn
     }
 
-    private enum OracleType {None, Test, Score, Both}
+    private enum OracleType {
+        None, Test, Score, Both
+    }
 
     private enum AlgType {
         ALL, forbid_latent_common_causes, allow_latent_common_causes, /*DAG, */
@@ -1432,6 +1421,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
     }
 
-    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
+    public enum ScoreType {
+        BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION
+    }
 
 }
