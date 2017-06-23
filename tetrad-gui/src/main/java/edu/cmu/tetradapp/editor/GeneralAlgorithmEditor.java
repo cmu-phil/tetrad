@@ -104,8 +104,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
-    private final JButton searchButton1 = new JButton("Search");
-    private final JButton searchButton2 = new JButton("Search");
+    private final JButton algorithmTabSearchBtn = new JButton("Search");
+    private final JButton knowledgeTabSearchBtn = new JButton("Search");
     private final JTabbedPane pane;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
@@ -114,7 +114,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
-    private final Dimension searchButton1Size;
+    private final Dimension algorithmTabSearchBtnSize;
     private Box knowledgePanel;
     private JLabel whatYouChose;
 
@@ -147,7 +147,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
 
         // Set the search button size
-        searchButton1Size = new Dimension(150, 30);
+        algorithmTabSearchBtnSize = new Dimension(150, 30);
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -390,14 +390,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             pane.setSelectedComponent(graphEditor);
         }
 
-        searchButton1.addActionListener(new ActionListener() {
+        algorithmTabSearchBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 doSearch(runner);
             }
         });
 
-        searchButton2.addActionListener(new ActionListener() {
+        knowledgeTabSearchBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 doSearch(runner);
@@ -489,7 +489,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         f.add(knowledgeEditor);
         Box g = Box.createHorizontalBox();
         g.add(Box.createHorizontalGlue());
-        g.add(searchButton2);
+        g.add(knowledgeTabSearchBtn);
         g.add(Box.createHorizontalGlue());
         f.add(g);
         return f;
@@ -1260,9 +1260,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        searchButton1.setPreferredSize(searchButton1Size);
+        algorithmTabSearchBtn.setPreferredSize(algorithmTabSearchBtnSize);
 
-        searchButton1.setFont(new Font("Dialog", Font.BOLD, 14));
+        algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
@@ -1277,7 +1277,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d3.add(algNamesDropdown);
         d3.add(explain2);
         d3.add(new JLabel("    "));
-        d3.add(searchButton1);
+        d3.add(algorithmTabSearchBtn);
         d3.add(Box.createHorizontalGlue());
 
         Box d1 = Box.createHorizontalBox();
