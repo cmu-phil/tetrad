@@ -102,10 +102,12 @@ public class SemBicScoreDeterministic implements Score {
             s2 = 0;
         }
 
+//        System.out.println(s2);
+
         int n = getSampleSize();
         int k = 2 * p + 1;
 
-        if (s2 <= small) {
+        if (s2 < small) {
             s2 = 0;
         }
 
@@ -124,6 +126,14 @@ public class SemBicScoreDeterministic implements Score {
 
         double v1 = localScore(y, append(z, x));
         double v2 = localScore(y, z);
+        double v3 = localScore(y, x);
+
+        if (Double.isNaN(v1) && !Double.isNaN(v2) && !Double.isNaN(v3)) {
+            return Double.NaN;
+        } else if (Double.isNaN(v1) || Double.isNaN(v2) || Double.isNaN(v3)) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
         return v1 - v2;
     }
 

@@ -1178,7 +1178,10 @@ public final class Fges2 implements GraphSearch, GraphScorer {
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
-                if (Double.isNaN(bump)) bump = Double.MIN_VALUE;
+                if (Double.isNaN(bump)) {
+                    bump = Double.MIN_VALUE;
+                }
+//                if (bump == Double.NEGATIVE_INFINITY) bump = Double.MAX_VALUE;
 
                 if (bump > 0 || Double.isNaN(bump)) {
                     addArrow(a, b, naYX, T, bump);
@@ -1276,6 +1279,8 @@ public final class Fges2 implements GraphSearch, GraphScorer {
             }
         }
 
+        if (noMoreParents.contains(b)) return;
+
         Set<Node> naYX = getNaYX(a, b);
 
         List<Node> _naYX = new ArrayList<>(naYX);
@@ -1299,6 +1304,8 @@ public final class Fges2 implements GraphSearch, GraphScorer {
                 }
 
                 double bump = deleteEval(a, b, diff, naYX, hashIndices);
+
+                if (bump == Double.NEGATIVE_INFINITY) bump = Double.NaN;
 
                 if (bump > 0.0) {// || Double.isNaN(bump)) {
                     addArrow(a, b, naYX, h, bump);
@@ -1508,6 +1515,18 @@ public final class Fges2 implements GraphSearch, GraphScorer {
                 out.println(message);
             }
         }
+
+        int yIndex = hashIndices.get(y);
+        int[] parentIndices = new int[graph.getParents(y).size()];
+
+        int count = 0;
+        for (Node parent : graph.getParents(y)) {
+            parentIndices[count++] = hashIndices.get(parent);
+        }
+
+        double _score = score.localScore(yIndex, parentIndices);
+
+        if (Double.isNaN(_score)) noMoreParents.add(y);
 
         return true;
     }

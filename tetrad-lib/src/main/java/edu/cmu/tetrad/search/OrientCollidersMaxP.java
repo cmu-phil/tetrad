@@ -131,14 +131,8 @@ public final class OrientCollidersMaxP {
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
-        // Most independent ones first.
-        Collections.sort(tripleList, new Comparator<Triple>() {
-
-            @Override
-            public int compare(Triple o1, Triple o2) {
-                return Double.compare(scores.get(o2), scores.get(o1));
-            }
-        });
+        // Sorted order to avoid order dependence.
+        Collections.sort(tripleList, (o1, o2) -> -Double.compare(scores.get(o2), scores.get(o1)));
 
         for (Triple triple : tripleList) {
             Node a = triple.getX();
@@ -146,9 +140,9 @@ public final class OrientCollidersMaxP {
             Node c = triple.getZ();
 
             if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
-                orientCollider(graph, a, b, c);
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+//                orientCollider(graph, a, b, c);
             }
         }
     }
@@ -176,7 +170,9 @@ public final class OrientCollidersMaxP {
                 if (existsShortPath(a, c, maxPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
-                    testColliderHeuristic(graph, scores, a, b, c);
+                    if (!testColliderHeuristic(graph, scores, a, b, c)) {
+                        testColliderMaxP(graph, scores, a, b, c);
+                    }
                 }
             } else {
                 testColliderMaxP(graph, scores, a, b, c);
@@ -225,13 +221,22 @@ public final class OrientCollidersMaxP {
         }
     }
 
-    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {
+    private boolean testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {
         if (knowledge.isForbidden(a.getName(), b.getName())) {
-            return;
+            return false;
         }
 
         if (knowledge.isForbidden(c.getName(), b.getName())) {
-            return;
+            return false;
+        }
+
+        // Skip triples that are shielded.
+        if (graph.isAdjacentTo(a, c)) {
+            return false;
+        }
+
+        if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
+            return false;
         }
 
         independenceTest.isIndependent(a, c);
@@ -239,20 +244,13 @@ public final class OrientCollidersMaxP {
         independenceTest.isIndependent(a, c, b);
         double s2 = independenceTest.getScore();
 
-        boolean mycollider2 = s2 > s1;
-
-        // Skip triples that are shielded.
-        if (graph.isAdjacentTo(a, c)) {
-            return;
-        }
-
-        if (graph.getEdges(a, b).size() > 1 || graph.getEdges(b, c).size() > 1) {
-            return;
-        }
+        boolean mycollider2 = s1 < s2;
 
         if (mycollider2) {
-            colliders.put(new Triple(a, b, c), Math.abs(s2));
+            colliders.put(new Triple(a, b, c), s2);
         }
+
+        return true;
     }
 
     private void orientCollider(Graph graph, Node a, Node b, Node c) {

@@ -47,10 +47,11 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
     public Graph search(DataModel dataSet, Parameters parameters) {
 //        dataSet = DataUtils.center((DataSet) dataSet);
         CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
+
         edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(covarianceMatrix);
         analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
-//        analysis.setNumFactors(parameters.getInt("numFactors"));
-        analysis.setNumFactors(((DataSet) dataSet).getNumColumns());
+        analysis.setNumFactors(parameters.getInt("numFactors"));
+//        analysis.setNumFactors(((DataSet) dataSet).getNumColumns());
 
         TetradMatrix unrotated = analysis.successiveResidual();
         TetradMatrix rotated = analysis.successiveFactorVarimax(unrotated);
@@ -80,8 +81,12 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         }
 
 
+        TetradMatrix residual = analysis.getResidual();
+
         ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), L.times(L.transpose()),
                 covarianceMatrix.getSampleSize());
+
+        System.out.println(covFa);
 
         final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
         List<Integer> indices = new ArrayList<>();
@@ -129,6 +134,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         System.out.println("knowledge2 = " + knowledge2);
 
         Score score = this.score.getScore(covFa, parameters);
+
         edu.cmu.tetrad.search.Fges2 search = new edu.cmu.tetrad.search.Fges2(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
 
@@ -160,6 +166,8 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             System.out.println(output);
             TetradLogger.getInstance().forceLogMessage(output);
         }
+
+        System.out.println("residual = " + residual);
 
         return search.search();
     }
