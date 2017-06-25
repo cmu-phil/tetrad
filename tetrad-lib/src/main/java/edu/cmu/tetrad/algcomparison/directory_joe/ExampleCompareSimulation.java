@@ -111,7 +111,7 @@ public class ExampleCompareSimulation {
 //        algorithms.add(new PcStable(new FisherZ()));
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
-        algorithms.add(new PcMax(new FisherZ(), false));
+        algorithms.add(new PcStableMax(new FisherZ(), false));
         algorithms.add(new Fges(new FisherZScore(), false));
 //        algorithms.add(new PcMax(new SemBicTest(), false));
 //        algorithms.add(new Fges(new SemBicScore(), false));
