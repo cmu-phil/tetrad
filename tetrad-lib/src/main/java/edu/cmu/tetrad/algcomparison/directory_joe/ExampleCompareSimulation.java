@@ -25,12 +25,10 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.DiscreteBicTest;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
@@ -51,21 +49,36 @@ public class ExampleCompareSimulation {
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 2);
+        parameters.set("numRuns", 1);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
         parameters.set("numMeasures", 500);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 10);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.7);
+//        parameters.set("varLow");
+//        parameters.set("varHigh");
+//        parameters.set("verbose");
+//        parameters.set("coefSymmetric");
+//        parameters.set("numRuns");
+//        parameters.set("percentDiscrete");
+//        parameters.set("numCategories");
+//        parameters.set("differentGraphs");
+//        parameters.set("sampleSize");
+//        parameters.set("intervalBetweenShocks");
+//        parameters.set("intervalBetweenRecordings");
+//        parameters.set("fisherEpsilon");
+
         parameters.set("sampleSize", 1000);
 
-        parameters.set("alpha", 0.01);
+        parameters.set("alpha", 1e-10);
         parameters.set("depth", -1);
         parameters.set("penaltyDiscount", 4);
 
@@ -79,7 +92,7 @@ public class ExampleCompareSimulation {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new NumBidirectedEdges());
+//        statistics.add(new NumBidirectedEdges());
 //        statistics.add(new MathewsCorrAdj());
 //        statistics.add(new MathewsCorrArrow());
 //        statistics.add(new F1Adj());
@@ -87,8 +100,10 @@ public class ExampleCompareSimulation {
 //        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
+        statistics.setWeight("AP", 0.25);
+        statistics.setWeight("AR", 0.25);
+        statistics.setWeight("AHP", 0.25);
+        statistics.setWeight("AHR", 0.25);
 
         Algorithms algorithms = new Algorithms();
 
@@ -97,6 +112,8 @@ public class ExampleCompareSimulation {
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
         algorithms.add(new PcMax(new FisherZ(), false));
+        algorithms.add(new Fges(new FisherZScore(), false));
+//        algorithms.add(new PcMax(new SemBicTest(), false));
 //        algorithms.add(new Fges(new SemBicScore(), false));
 
         Simulations simulations = new Simulations();
@@ -108,7 +125,7 @@ public class ExampleCompareSimulation {
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
-        comparison.setShowUtilities(false);
+        comparison.setShowUtilities(true);
 //        comparison.setParallelized(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
