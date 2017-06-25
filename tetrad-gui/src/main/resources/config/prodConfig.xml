@@ -1086,7 +1086,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="PC-Max" acronym="PC-Max" help="pcmax" category="forbid_latent_common_causes Searches">-->
+            <!--<model name="PC-Max" acronym="PC-Max" help="pcstablemax" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="independencies" description="Independencies" default="on"/>-->
@@ -1097,7 +1097,7 @@
             <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.PcMaxRunner</model-class>-->
+            <!--<model-cledu.cmu.tetradapp.model.PcStableMaxRunnerRunnernner</model-class>-->
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
@@ -1226,7 +1226,7 @@
             <!--<event id="details" description="Misc Fine Details"/>-->
             <!--</logger>-->
             <!--<model-class>edu.cmu.tetradapp.model.PcLocalRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
+            <!--<editor-cledu.cmu.tetradapp.editor.PcStableLocalSearchEditorEditoritor-->
             <!--</editor-class>-->
             <!--</model>-->
             <!--<model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="forbid_latent_common_causes Searches">-->
@@ -1243,10 +1243,10 @@
             <!--<event id="details" description="Misc Fine Details"/>-->
             <!--</logger>-->
             <!--<model-class>edu.cmu.tetradapp.model.CpcLocalRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor-->
+            <!--<editor-cledu.cmu.tetradapp.editor.PcStableLocalSearchEditorEditoritor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="forbid_latent_common_causes Searches">-->
+            <!--<model naPcStableMaxLocalocal" acronPcStableMaxLocalocal" help="pcstablemaxlocal" category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->

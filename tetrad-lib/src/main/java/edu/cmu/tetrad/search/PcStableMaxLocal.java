@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Joseph Ramsey (this version).
  */
-public class PcMaxLocal implements GraphSearch {
+public class PcStableMaxLocal implements GraphSearch {
 
     /**
      * The independence test used for the PC search.
@@ -78,11 +78,11 @@ public class PcMaxLocal implements GraphSearch {
     /**
      * Constructs a PC Local search with the given independence oracle.
      */
-    public PcMaxLocal(IndependenceTest independenceTest) {
+    public PcStableMaxLocal(IndependenceTest independenceTest) {
         this(independenceTest, null);
     }
 
-    public PcMaxLocal(IndependenceTest independenceTest, Graph graph) {
+    public PcStableMaxLocal(IndependenceTest independenceTest, Graph graph) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }

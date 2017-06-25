@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class PcMaxLocalRunner extends AbstractAlgorithmRunner
+public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
@@ -51,7 +51,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcMaxLocalRunner(DataWrapper dataWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -61,7 +61,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcMaxLocalRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableMaxLocalRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -69,7 +69,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxLocalRunner(Graph graph, Parameters params) {
+    public PcStableMaxLocalRunner(Graph graph, Parameters params) {
         super(graph, params);
         this.sourceGraph = graph;
     }
@@ -77,24 +77,24 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxLocalRunner(GraphWrapper graphWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
         this.sourceGraph = graphWrapper.getGraph();
     }
 
-    public PcMaxLocalRunner(DagWrapper graphWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(DagWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getDag(), params);
     }
 
-    public PcMaxLocalRunner(SemGraphWrapper graphWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(SemGraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcMaxLocalRunner(IndependenceFactsModel model, Parameters params) {
+    public PcStableMaxLocalRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public PcMaxLocalRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableMaxLocalRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -103,8 +103,8 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static PcMaxLocalRunner serializableInstance() {
-        return new PcMaxLocalRunner(Dag.serializableInstance(), new Parameters());
+    public static PcStableMaxLocalRunner serializableInstance() {
+        return new PcStableMaxLocalRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -127,7 +127,7 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
         IndependenceTest independenceTest = getIndependenceTest();
         Parameters testParams = getParams();
 
-        PcMaxLocal search = new PcMaxLocal(independenceTest);
+        PcStableMaxLocal search = new PcStableMaxLocal(independenceTest);
 
         search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 

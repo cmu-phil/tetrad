@@ -7,8 +7,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.CcdMax;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.PcStableMax;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -22,19 +21,19 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
+    public PcStableMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;
         this.compareToTrue = compareToTrue;
     }
 
-    public PcMaxConcatenated(IndependenceWrapper test) {
+    public PcStableMaxConcatenated(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -47,7 +46,7 @@ public class PcMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(dataSets);
-        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
+        PcStableMax search = new PcStableMax(
                 test.getTest(dataSet, parameters));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));

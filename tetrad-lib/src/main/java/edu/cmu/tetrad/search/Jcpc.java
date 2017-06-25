@@ -204,7 +204,7 @@ public class Jcpc implements GraphSearch {
         IndependenceTest test = getIndependenceTest();
         Score score = getScore();
 
-        PcMax search = new PcMax(test);
+        PcStableMax search = new PcStableMax(test);
         search.setKnowledge(getKnowledge());
         Graph graph = search.search();
 
@@ -321,7 +321,7 @@ public class Jcpc implements GraphSearch {
 //
 //        applyMeek(nodes, graph);
 ////
-//        search = new PcMaxLocal(test);
+//        search = new PcStableMaxLocal(test);
 //        search.setKnowledge(getKnowledge());
 //        search.setInitialGraph(new EdgeListGraph(graph));
 //        search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());

@@ -57,7 +57,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class PcLocalSearchEditor extends AbstractSearchEditor
+public class PcStableLocalSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, DoNotScroll {
 
     private JTextArea modelStatsText;
@@ -66,15 +66,15 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public PcLocalSearchEditor(PcLocalRunner runner) {
+    public PcStableLocalSearchEditor(PcLocalRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcLocalSearchEditor(CpcLocalRunner runner) {
+    public PcStableLocalSearchEditor(CpcLocalRunner runner) {
         super(runner, "Result E-forbid_latent_common_causes");
     }
 
-    public PcLocalSearchEditor(PcMaxLocalRunner runner) {
+    public PcStableLocalSearchEditor(PcStableMaxLocalRunner runner) {
         super(runner, "Result E-forbid_latent_common_causes");
     }
 

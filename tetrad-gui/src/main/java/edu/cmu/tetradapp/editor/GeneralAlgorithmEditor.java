@@ -30,7 +30,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.algorithm.other.FactorAnalysis;
 import edu.cmu.tetrad.algcomparison.algorithm.other.Glasso;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -160,7 +159,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         discreteTests.add(TestType.ChiSquare);
         discreteTests.add(TestType.GSquare);
         discreteTests.add(TestType.Discrete_BIC_Test);
-        discreteTests.add(TestType.BDeu_Test);
         discreteTests.add(TestType.Conditional_Gaussian_LRT);
 
         List<TestType> continuousTests = new ArrayList<>();
@@ -183,7 +181,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         List<ScoreType> continuousScores = new ArrayList<>();
         continuousScores.add(ScoreType.SEM_BIC);
-        continuousScores.add(ScoreType.FisherZScore);
         continuousScores.add(ScoreType.Conditional_Gaussian_BIC);
 
         List<ScoreType> mixedScores = new ArrayList<>();
@@ -198,9 +195,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.GesMe, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -211,7 +207,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_la  tent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
         descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
@@ -224,7 +220,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.produce_undirected_graphs, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.produce_undirected_graphs, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Factor_Analysis, AlgType.produce_undirected_graphs, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.search_for_structure_over_latents, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.Fofc, AlgType.search_for_structure_over_latents, OracleType.None));
@@ -922,15 +917,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                algorithm = new Fges(scoreWrapper);
 //                }
                 break;
-            case GesMe:
-                algorithm = new GesMe();
-
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Fges(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                algorithm = new Fges(scoreWrapper);
-//                }
-                break;
 //            case FgesMeasurement:
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new FgesMeasurement(scoreWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -1019,8 +1005,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);
                 break;
-            case PcMax:
-                algorithm = new PcMax(independenceWrapper, false);
+            case PcStableMax:
+                algorithm = new PcStableMax(independenceWrapper, false);
                 break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);
@@ -1042,9 +1028,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case GLASSO:
                 algorithm = new Glasso();
-                break;
-            case Factor_Analysis:
-                algorithm = new FactorAnalysis();
                 break;
             case Bpc:
                 algorithm = new Bpc();
@@ -1113,9 +1096,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case SEM_BIC:
                 scoreWrapper = new SemBicScore();
                 break;
-            case FisherZScore:
-                scoreWrapper = new FisherZScore();
-                break;
             case D_SEPARATION:
                 scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
                 break;
@@ -1148,12 +1128,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case GSquare:
                 independenceWrapper = new GSquare();
-                break;
-            case Discrete_BIC_Test:
-                independenceWrapper = new DiscreteBicTest();
-                break;
-            case BDeu_Test:
-                independenceWrapper = new BDeuTest();
                 break;
             case SEM_BIC:
                 independenceWrapper = new SemBicTest();
@@ -1435,13 +1409,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
-        FgesMb, GesMe, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
+        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
+        FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
-        GLASSO, Factor_Analysis,
+        GLASSO,
         EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn
     }
 
@@ -1455,10 +1429,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private enum TestType {
         ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, BDeu_Test, Correlation_T
+        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
     }
 
-    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION,
-        FisherZScore}
+    public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION}
 
 }
