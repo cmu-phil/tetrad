@@ -42,7 +42,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class PcMax implements GraphSearch {
+public class PcStableMax implements GraphSearch {
 
     /**
      * The independence test used for the PC search. This can  be a test based on a score.
@@ -94,7 +94,7 @@ public class PcMax implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public PcMax(IndependenceTest independenceTest) {
+    public PcStableMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }

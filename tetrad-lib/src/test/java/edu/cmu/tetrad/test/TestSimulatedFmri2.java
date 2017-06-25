@@ -130,7 +130,7 @@ public class TestSimulatedFmri2 {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcMax(new SemBicTest(), true));
+//        algorithms.add(new PcStableMax(new SemBicTest(), true));
         algorithms.add(new Fang());
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
@@ -140,7 +140,7 @@ public class TestSimulatedFmri2 {
 //        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcMaxConcatenated(new SemBicTest(), true));
+//        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
 //        algorithms.add(new FangConcatenated());
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));

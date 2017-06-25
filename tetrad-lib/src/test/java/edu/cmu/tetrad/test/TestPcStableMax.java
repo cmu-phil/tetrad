@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Joseph Ramsey
  */
-public class TestPcMax {
+public class TestPcStableMax {
 
     /**
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
@@ -112,7 +112,7 @@ public class TestPcMax {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        PcMax pc = new PcMax(new IndTestFisherZ(dataSet, 0.11));
+        PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
         Graph pattern = pc.search();
@@ -171,7 +171,7 @@ public class TestPcMax {
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
         Score score = new GraphScore(graph);
-        PcMax pc = new PcMax(independence);
+        PcStableMax pc = new PcStableMax(independence);
 
         // Set up search.
         pc.setKnowledge(knowledge);
