@@ -23,14 +23,12 @@ import java.util.List;
 public class FisherZScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
-    private double alpha;
-    private IndTestFisherZ test;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         double alpha = parameters.getDouble("alpha");
-        test = new IndTestFisherZ((DataSet) dataSet, alpha);
+        IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
         return new ScoredIndTest(test);
     }
 
@@ -54,10 +52,5 @@ public class FisherZScore implements ScoreWrapper {
     @Override
     public Node getVariable(String name) {
         return dataSet.getVariable(name);
-    }
-
-    public void setAlpha(double alpha) {
-        test.setAlpha(alpha);
-        this.alpha = alpha;
     }
 }
