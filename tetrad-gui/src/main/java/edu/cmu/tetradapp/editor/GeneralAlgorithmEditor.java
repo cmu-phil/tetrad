@@ -34,7 +34,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -879,18 +878,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Algorithm algorithm = getAlgorithm(name, independenceWrapper, scoreWrapper);
 
-        if (algorithm instanceof HasKnowledge) {
-            if (knowledgePanel == null) {
-                knowledgePanel = getKnowledgePanel(runner);
-            }
-
-            pane.remove(graphEditor);
-            pane.add("Knowledge", knowledgePanel);
-            pane.add("Output Graphs", graphEditor);
-        } else {
-            pane.remove(knowledgePanel);
-        }
-
+        // Hide the knowledge tab - Zhou
+//        if (algorithm instanceof HasKnowledge) {
+//            if (knowledgePanel == null) {
+//                knowledgePanel = getKnowledgePanel(runner);
+//            }
+//
+//            pane.remove(graphEditor);
+//            pane.add("Knowledge", knowledgePanel);
+//            pane.add("Output Graphs", graphEditor);
+//        } else {
+//            pane.remove(knowledgePanel);
+//        }
         return algorithm;
     }
 
