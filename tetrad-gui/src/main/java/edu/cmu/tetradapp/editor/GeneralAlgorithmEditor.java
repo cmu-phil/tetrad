@@ -38,7 +38,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -50,10 +49,8 @@ import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
-import edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
-import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.ImageUtils;
@@ -408,92 +405,92 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
 
-    private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
-        class MyKnowledgeInput implements KnowledgeBoxInput {
-
-            private static final long serialVersionUID = 1344090367098647696L;
-
-            private String name;
-            private List<Node> variables;
-            private List<String> varNames;
-
-            public MyKnowledgeInput(List<Node> variables, List<String> varNames) {
-                this.variables = variables;
-                this.varNames = varNames;
-            }
-
-            @Override
-            public Graph getSourceGraph() {
-                return null;
-            }
-
-            @Override
-            public Graph getResultGraph() {
-                return null;
-            }
-
-            @Override
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public List<Node> getVariables() {
-                return variables;
-            }
-
-            @Override
-            public List<String> getVariableNames() {
-                return varNames;
-            }
-        }
-
-        List<Node> variables = null;
-        MyKnowledgeInput myKnowledgeInput;
-
-        if (runner.getDataModel() != null) {
-            DataModelList dataModelList = runner.getDataModelList();
-            if (dataModelList.size() > 0) {
-                variables = dataModelList.get(0).getVariables();
-            }
-        }
-
-        if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
-            variables = runner.getSourceGraph().getNodes();
-        }
-
-        if (variables == null) {
-            throw new IllegalArgumentException("No source of variables!");
-        }
-
-        List<String> varNames = new ArrayList<>();
-
-        for (Node node : variables) {
-            varNames.add(node.getName());
-        }
-
-        myKnowledgeInput = new MyKnowledgeInput(variables, varNames);
-
-        JPanel knowledgePanel = new JPanel();
-        knowledgePanel.setLayout(new BorderLayout());
-        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(new KnowledgeBoxInput[]{myKnowledgeInput}, parameters);
-        knowledgeBoxModel.setKnowledge(runner.getKnowledge());
-        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(knowledgeBoxModel);
-        Box f = Box.createVerticalBox();
-        f.add(knowledgeEditor);
-        Box g = Box.createHorizontalBox();
-        g.add(Box.createHorizontalGlue());
-        g.add(knowledgeTabSearchBtn);
-        g.add(Box.createHorizontalGlue());
-        f.add(g);
-        return f;
-    }
-
+    // Hide knowledge tab - Zhou
+//    private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
+//        class MyKnowledgeInput implements KnowledgeBoxInput {
+//
+//            private static final long serialVersionUID = 1344090367098647696L;
+//
+//            private String name;
+//            private List<Node> variables;
+//            private List<String> varNames;
+//
+//            public MyKnowledgeInput(List<Node> variables, List<String> varNames) {
+//                this.variables = variables;
+//                this.varNames = varNames;
+//            }
+//
+//            @Override
+//            public Graph getSourceGraph() {
+//                return null;
+//            }
+//
+//            @Override
+//            public Graph getResultGraph() {
+//                return null;
+//            }
+//
+//            @Override
+//            public void setName(String name) {
+//                this.name = name;
+//            }
+//
+//            @Override
+//            public String getName() {
+//                return name;
+//            }
+//
+//            @Override
+//            public List<Node> getVariables() {
+//                return variables;
+//            }
+//
+//            @Override
+//            public List<String> getVariableNames() {
+//                return varNames;
+//            }
+//        }
+//
+//        List<Node> variables = null;
+//        MyKnowledgeInput myKnowledgeInput;
+//
+//        if (runner.getDataModel() != null) {
+//            DataModelList dataModelList = runner.getDataModelList();
+//            if (dataModelList.size() > 0) {
+//                variables = dataModelList.get(0).getVariables();
+//            }
+//        }
+//
+//        if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
+//            variables = runner.getSourceGraph().getNodes();
+//        }
+//
+//        if (variables == null) {
+//            throw new IllegalArgumentException("No source of variables!");
+//        }
+//
+//        List<String> varNames = new ArrayList<>();
+//
+//        for (Node node : variables) {
+//            varNames.add(node.getName());
+//        }
+//
+//        myKnowledgeInput = new MyKnowledgeInput(variables, varNames);
+//
+//        JPanel knowledgePanel = new JPanel();
+//        knowledgePanel.setLayout(new BorderLayout());
+//        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(new KnowledgeBoxInput[]{myKnowledgeInput}, parameters);
+//        knowledgeBoxModel.setKnowledge(runner.getKnowledge());
+//        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(knowledgeBoxModel);
+//        Box f = Box.createVerticalBox();
+//        f.add(knowledgeEditor);
+//        Box g = Box.createHorizontalBox();
+//        g.add(Box.createHorizontalGlue());
+//        g.add(knowledgeTabSearchBtn);
+//        g.add(Box.createHorizontalGlue());
+//        f.add(g);
+//        return f;
+//    }
     private void doSearch(final GeneralAlgorithmRunner runner) {
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
