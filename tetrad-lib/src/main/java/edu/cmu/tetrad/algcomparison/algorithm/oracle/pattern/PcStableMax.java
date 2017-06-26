@@ -20,21 +20,21 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class PcMax implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcMax(IndependenceWrapper test, boolean compareToTrue) {
+    public PcStableMax(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;
         this.compareToTrue = compareToTrue;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(
+        edu.cmu.tetrad.search.PcStableMax search = new edu.cmu.tetrad.search.PcStableMax(
                 test.getTest(dataSet, parameters));
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));

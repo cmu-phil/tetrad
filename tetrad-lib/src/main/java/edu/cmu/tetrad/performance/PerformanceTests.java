@@ -262,10 +262,10 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testPcMax(int numVars, double edgeFactor, int numCases, double alpha) {
+    public void testPcStableMax(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = -1;
 
-        init(new File("long.pcmax." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Max algorithm");
+        init(new File("long.pcstablemax." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Max algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -307,7 +307,7 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        PcMax pcStable = new PcMax(test);
+        PcStableMax pcStable = new PcStableMax(test);
 //        pcStable.setVerbose(false);
 //        pcStable.setDepth(depth);
 //        pcStable.setOut(out);
@@ -2426,21 +2426,21 @@ public class PerformanceTests {
 
 
 //        performanceTests.testPcStable(20000, 1, 1000, .00001);
-        performanceTests.testPcMax(5000, 1, 1000, .0001);
-//        performanceTests.testPcMax(5000, 5, 1000, .0001);
+        performanceTests.testPcStableMax(5000, 1, 1000, .0001);
+//        performanceTests.testPcStableMax(5000, 5, 1000, .0001);
 //        performanceTests.testFges(5000, 5, 1000, 4);
 
 //        performanceTests.testPcStable(10000, 1, 1000, .0001);
-//        performanceTests.testPcMax(10000, 1, 1000, .0001);
+//        performanceTests.testPcStableMax(10000, 1, 1000, .0001);
 //
 //        performanceTests.testPcStable(10000, 1, 1000, .001);
-//        performanceTests.testPcMax(10000, 1, 1000, .001);
+//        performanceTests.testPcStableMax(10000, 1, 1000, .001);
 //
 //        performanceTests.testPcStable(10000, 1, 1000, .01);
-//        performanceTests.testPcMax(10000, 1, 1000, .01);
+//        performanceTests.testPcStableMax(10000, 1, 1000, .01);
 //
 //        performanceTests.testPcStable(10000, 1, 1000, .05);
-//        performanceTests.testPcMax(10000, 1, 1000, .05);
+//        performanceTests.testPcStableMax(10000, 1, 1000, .05);
 
     }
 }

@@ -163,11 +163,11 @@ public class Comparison2 {
                 PcLocal search = new PcLocal(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCMax) {
+            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                PcMax search = new PcMax(test);
+                PcStableMax search = new PcStableMax(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
@@ -460,11 +460,11 @@ public class Comparison2 {
             PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCMax) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            PcMax search = new PcMax(test);
+            PcStableMax search = new PcStableMax(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {

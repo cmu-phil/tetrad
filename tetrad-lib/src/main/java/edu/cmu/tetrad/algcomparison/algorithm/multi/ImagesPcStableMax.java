@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.PcStableMax;
 import edu.cmu.tetrad.search.SemBicScoreImages3;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -22,11 +23,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
+public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
-    public ImagesPcMax() {
+    public ImagesPcStableMax() {
     }
 
     @Override
@@ -40,7 +41,7 @@ public class ImagesPcMax implements MultiDataSetAlgorithm, HasKnowledge {
         SemBicScoreImages3 score = new SemBicScoreImages3(dataSets);
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
-        edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(test);
+        PcStableMax search = new PcStableMax(test);
         search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
         search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         search.setKnowledge(knowledge);

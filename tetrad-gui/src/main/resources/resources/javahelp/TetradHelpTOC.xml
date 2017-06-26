@@ -67,8 +67,8 @@
                 <tocitem text="PC" target="pc"/>
                 <tocitem text="PCD" target="pcd"/>
                 <tocitem text="PCLocal" target="pclocal"/>
-                <tocitem text="PCMax" target="pcmax"/>
-                <tocitem text="PCMaxLocal" target="pcmaxlocal"/>
+                <tocitem text="PCStableMax" target="pcstablemax"/>
+                <tocitem text="PCStableMaxLocal" target="pcstablemaxlocal"/>
                 <tocitem text="PCstable" target="pcstable"/>
                 <tocitem text="Purify" target="purify"/>
                 <tocitem text="R1" target="r1"/>

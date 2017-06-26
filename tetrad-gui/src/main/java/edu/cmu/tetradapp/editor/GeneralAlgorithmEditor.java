@@ -195,7 +195,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -1005,8 +1005,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);
                 break;
-            case PcMax:
-                algorithm = new PcMax(independenceWrapper, false);
+            case PcStableMax:
+                algorithm = new PcStableMax(independenceWrapper, false);
                 break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);
@@ -1409,7 +1409,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
+        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
