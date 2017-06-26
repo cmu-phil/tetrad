@@ -1260,6 +1260,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
+        // Playing with Harry's mockup - Zhou
+        // Output Goals, use checkboxes to allow multiple goals
+        Box outputGoalsBox = Box.createHorizontalBox();
+        JLabel outputGoalsLabel = new JLabel("Output Goals (check all that apply)");
+        JCheckBox pairwiseOrientation = new JCheckBox("Pairwise orientation");
+        JCheckBox markovBlanket = new JCheckBox("Markov blanket");
+        JCheckBox undirectedGraph = new JCheckBox("Undirected graph");
+        JCheckBox causalGraph = new JCheckBox("Causal graph");
+
+        outputGoalsBox.add(outputGoalsLabel);
+        outputGoalsBox.add(pairwiseOrientation);
+        outputGoalsBox.add(markovBlanket);
+        outputGoalsBox.add(undirectedGraph);
+        outputGoalsBox.add(causalGraph);
+
+        // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
         label3.setFont(new Font("Dialog", Font.BOLD, 13));
@@ -1301,6 +1317,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d0.add(Box.createHorizontalGlue());
 
         Box c = Box.createVerticalBox();
+
+        // Add mockup UI - Zhou
+        c.add(outputGoalsBox);
+
         c.add(d3);
         c.add(d1);
         c.add(d2);
