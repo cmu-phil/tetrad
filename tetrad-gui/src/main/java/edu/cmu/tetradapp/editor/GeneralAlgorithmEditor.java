@@ -111,13 +111,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final Parameters parameters;
     private final HelpSet helpSet;
     private final Dimension algorithmTabSearchBtnSize;
-    private Box knowledgePanel;
+    //private Box knowledgePanel;
     private JLabel whatYouChose;
 
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
 
     private String jsonResult;
+
+    private final Dimension labelSize;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -237,6 +239,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setLayout(new BorderLayout());
 
         whatYouChose = new JLabel();
+
+        // All labels should share the save size - Zhou
+        this.labelSize = new Dimension(260, 30);
 
 //        if (runner.getDataModelList() == null) {
 //            throw new NullPointerException("No data has been provided.");
@@ -1263,115 +1268,306 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Playing with Harry's mockup - Zhou
         // Output Goals, use checkboxes to allow multiple goals
         Box outputGoalsBox = Box.createHorizontalBox();
-        JLabel outputGoalsLabel = new JLabel("Output Goals (check all that apply): ");
-        JCheckBox outputGoalsPairwiseOrientation = new JCheckBox("Pairwise orientation");
-        JCheckBox outputGoalsMarkovBlanket = new JCheckBox("Markov blanket");
-        JCheckBox outputGoalsUndirectedGraph = new JCheckBox("Undirected graph");
-        JCheckBox outputGoalsCausalGraph = new JCheckBox("Causal graph");
 
-        outputGoalsBox.add(outputGoalsLabel);
-        outputGoalsBox.add(outputGoalsPairwiseOrientation);
-        outputGoalsBox.add(outputGoalsMarkovBlanket);
-        outputGoalsBox.add(outputGoalsUndirectedGraph);
-        outputGoalsBox.add(outputGoalsCausalGraph);
+        // Add label into this label box to size
+        Box outputGoalsLabelBox = Box.createHorizontalBox();
+        outputGoalsLabelBox.setPreferredSize(labelSize);
+        outputGoalsLabelBox.add(new JLabel("Output Goals (check all that apply): "));
+
+        // Option 1
+        Box outputGoalsOption1Box = Box.createHorizontalBox();
+        outputGoalsOption1Box.setPreferredSize(new Dimension(160, 30));
+        JCheckBox outputGoalsPairwiseOrientation = new JCheckBox("Pairwise orientation");
+        outputGoalsOption1Box.add(outputGoalsPairwiseOrientation);
+
+        // Option 2
+        Box outputGoalsOption2Box = Box.createHorizontalBox();
+        outputGoalsOption2Box.setPreferredSize(new Dimension(160, 30));
+        JCheckBox outputGoalsMarkovBlanket = new JCheckBox("Markov blanket");
+        outputGoalsOption2Box.add(outputGoalsMarkovBlanket);
+
+        // Option 3
+        Box outputGoalsOption3Box = Box.createHorizontalBox();
+        outputGoalsOption3Box.setPreferredSize(new Dimension(160, 30));
+        JCheckBox outputGoalsUndirectedGraph = new JCheckBox("Undirected graph");
+        outputGoalsOption3Box.add(outputGoalsUndirectedGraph);
+
+        // Option 4
+        Box outputGoalsOption4Box = Box.createHorizontalBox();
+        outputGoalsOption4Box.setPreferredSize(new Dimension(160, 30));
+        JCheckBox outputGoalsCausalGraph = new JCheckBox("Causal graph");
+        outputGoalsOption4Box.add(outputGoalsCausalGraph);
+
+        outputGoalsBox.add(outputGoalsLabelBox);
+        outputGoalsBox.add(outputGoalsOption1Box);
+        outputGoalsBox.add(outputGoalsOption2Box);
+        outputGoalsBox.add(outputGoalsOption3Box);
+        outputGoalsBox.add(outputGoalsOption4Box);
+        // We need this glue, otherwise the components are centered instead of left aligned - Zhou
+        outputGoalsBox.add(Box.createHorizontalGlue());
 
         // Include unmeasured confounders?
         Box includeUnmeasuredConfoundersBox = Box.createHorizontalBox();
-        JLabel includeUnmeasuredConfoundersLabel = new JLabel("Include unmeasured confounders? ");
-        JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
-        JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
-        JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("That's what I want to know");
 
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabel);
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersYes);
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersNo);
-        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersUnknown);
+        // Add label into this label box to size
+        Box includeUnmeasuredConfoundersLabelBox = Box.createHorizontalBox();
+        includeUnmeasuredConfoundersLabelBox.setPreferredSize(labelSize);
+        includeUnmeasuredConfoundersLabelBox.add(new JLabel("Include unmeasured confounders? "));
+
+        // Option 1
+        Box includeUnmeasuredConfoundersOption1Box = Box.createHorizontalBox();
+        includeUnmeasuredConfoundersOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
+        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
+
+        // Option 2
+        Box includeUnmeasuredConfoundersOption2Box = Box.createHorizontalBox();
+        includeUnmeasuredConfoundersOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
+        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
+
+        // Option 3
+        Box includeUnmeasuredConfoundersOption3Box = Box.createHorizontalBox();
+        includeUnmeasuredConfoundersOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("That's what I want to know");
+        includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
+
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabelBox);
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption1Box);
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption2Box);
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
+        includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
         // Data type
         Box dataTypeBox = Box.createHorizontalBox();
-        JLabel dataTypeLabel = new JLabel("Include unmeasured confounders? ");
-        JRadioButton dataTypeCont = new JRadioButton("Continuous");
-        JRadioButton dataTypeDisc = new JRadioButton("Discrete");
-        JRadioButton dataTypeMixed = new JRadioButton("Mixed");
 
-        dataTypeBox.add(dataTypeLabel);
-        dataTypeBox.add(dataTypeCont);
-        dataTypeBox.add(dataTypeDisc);
-        dataTypeBox.add(dataTypeMixed);
+        // Add label into this label box to size
+        Box dataTypeLabelBox = Box.createHorizontalBox();
+        dataTypeLabelBox.setPreferredSize(labelSize);
+        dataTypeLabelBox.add(new JLabel("What type of variables? "));
+
+        // Option 1
+        Box dataTypeOption1Box = Box.createHorizontalBox();
+        dataTypeOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton dataTypeCont = new JRadioButton("Continuous");
+        dataTypeOption1Box.add(dataTypeCont);
+
+        // Option 2
+        Box dataTypeOption2Box = Box.createHorizontalBox();
+        dataTypeOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton dataTypeDisc = new JRadioButton("Discrete");
+        dataTypeOption2Box.add(dataTypeDisc);
+
+        // Option 2
+        Box dataTypeOption3Box = Box.createHorizontalBox();
+        dataTypeOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton dataTypeMixed = new JRadioButton("Mixed");
+        dataTypeOption3Box.add(dataTypeMixed);
+
+        dataTypeBox.add(dataTypeLabelBox);
+        dataTypeBox.add(dataTypeOption1Box);
+        dataTypeBox.add(dataTypeOption2Box);
+        dataTypeBox.add(dataTypeOption3Box);
+        dataTypeBox.add(Box.createHorizontalGlue());
 
         // How many variables
         Box howManyVariablesBox = Box.createHorizontalBox();
-        JLabel howManyVariablesLabel = new JLabel("How many variables do you have? ");
-        JRadioButton howManyVariablesS = new JRadioButton("3-30");
-        JRadioButton howManyVariablesM = new JRadioButton("31-300");
-        JRadioButton howManyVariablesL = new JRadioButton("301-3000");
-        JRadioButton howManyVariablesXL = new JRadioButton("> 3000");
 
-        howManyVariablesBox.add(howManyVariablesLabel);
-        howManyVariablesBox.add(howManyVariablesS);
-        howManyVariablesBox.add(howManyVariablesM);
-        howManyVariablesBox.add(howManyVariablesL);
-        howManyVariablesBox.add(howManyVariablesXL);
+        // Add label into this label box to size
+        Box howManyVariablesLabelBox = Box.createHorizontalBox();
+        howManyVariablesLabelBox.setPreferredSize(labelSize);
+        howManyVariablesLabelBox.add(new JLabel("How many variables do you have? "));
+
+        // Option 1
+        Box howManyVariablesOption1Box = Box.createHorizontalBox();
+        howManyVariablesOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton howManyVariablesS = new JRadioButton("3-30");
+        howManyVariablesOption1Box.add(howManyVariablesS);
+
+        // Option 2
+        Box howManyVariablesOption2Box = Box.createHorizontalBox();
+        howManyVariablesOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton howManyVariablesM = new JRadioButton("31-300");
+        howManyVariablesOption2Box.add(howManyVariablesM);
+
+        // Option 3
+        Box howManyVariablesOption3Box = Box.createHorizontalBox();
+        howManyVariablesOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton howManyVariablesL = new JRadioButton("301-3000");
+        howManyVariablesOption3Box.add(howManyVariablesL);
+
+        // Option 4
+        Box howManyVariablesOption4Box = Box.createHorizontalBox();
+        howManyVariablesOption4Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton howManyVariablesXL = new JRadioButton("> 3000");
+        howManyVariablesOption4Box.add(howManyVariablesXL);
+
+        howManyVariablesBox.add(howManyVariablesLabelBox);
+        howManyVariablesBox.add(howManyVariablesOption1Box);
+        howManyVariablesBox.add(howManyVariablesOption2Box);
+        howManyVariablesBox.add(howManyVariablesOption3Box);
+        howManyVariablesBox.add(howManyVariablesOption4Box);
+        howManyVariablesBox.add(Box.createHorizontalGlue());
 
         // Multiple datasets?
         Box multipleDatasetsBox = Box.createHorizontalBox();
-        JLabel multipleDatasetsLabel = new JLabel("Do you have multiple datasets? ");
-        JRadioButton multipleDatasetsYes = new JRadioButton("Yes");
-        JRadioButton multipleDatasetsNo = new JRadioButton("No");
 
-        multipleDatasetsBox.add(multipleDatasetsLabel);
-        multipleDatasetsBox.add(multipleDatasetsYes);
-        multipleDatasetsBox.add(multipleDatasetsNo);
+        // Add label into this label box to size
+        Box multipleDatasetsLabelBox = Box.createHorizontalBox();
+        multipleDatasetsLabelBox.setPreferredSize(labelSize);
+        multipleDatasetsLabelBox.add(new JLabel("Do you have multiple datasets? "));
+
+        // Option 1
+        Box multipleDatasetsOption1Box = Box.createHorizontalBox();
+        multipleDatasetsOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton multipleDatasetsYes = new JRadioButton("Yes");
+        multipleDatasetsOption1Box.add(multipleDatasetsYes);
+
+        // Option 2
+        Box multipleDatasetsOption2Box = Box.createHorizontalBox();
+        multipleDatasetsOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton multipleDatasetsNo = new JRadioButton("No");
+        multipleDatasetsOption2Box.add(multipleDatasetsNo);
+
+        multipleDatasetsBox.add(multipleDatasetsLabelBox);
+        multipleDatasetsBox.add(multipleDatasetsOption1Box);
+        multipleDatasetsBox.add(multipleDatasetsOption2Box);
+        multipleDatasetsBox.add(Box.createHorizontalGlue());
 
         // Does the generating model include cycles?
         Box generatingModelIncludeCyclesBox = Box.createHorizontalBox();
-        JLabel generatingModelIncludeCyclesLabel = new JLabel("Does the generating model include cycles? ");
-        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("Yes (I have equilibrium data)");
-        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("Yes (My data is not from an equilibrium state)");
-        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
 
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesLabel);
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesBoxYes1);
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesBoxYes2);
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesBoxNo);
+        // Add label into this label box to size
+        Box generatingModelIncludeCyclesLabelBox = Box.createHorizontalBox();
+        generatingModelIncludeCyclesLabelBox.setPreferredSize(labelSize);
+        generatingModelIncludeCyclesLabelBox.add(new JLabel("Does the generating model include cycles? "));
+
+        // Option 1
+        Box generatingModelIncludeCyclesOption1Box = Box.createHorizontalBox();
+        generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("Yes (I have equilibrium data)");
+        generatingModelIncludeCyclesOption1Box.add(generatingModelIncludeCyclesBoxYes1);
+
+        // Option 2
+        Box generatingModelIncludeCyclesOption2Box = Box.createHorizontalBox();
+        generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("Yes (My data is not from an equilibrium state)");
+        generatingModelIncludeCyclesOption2Box.add(generatingModelIncludeCyclesBoxYes2);
+
+        // Option 3
+        Box generatingModelIncludeCyclesOption3Box = Box.createHorizontalBox();
+        generatingModelIncludeCyclesOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
+        generatingModelIncludeCyclesOption3Box.add(generatingModelIncludeCyclesBoxNo);
+
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesLabelBox);
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption1Box);
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption2Box);
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption3Box);
+        generatingModelIncludeCyclesBox.add(Box.createHorizontalGlue());
 
         // Do you have time-series data?
         Box timeSeriesDataBox = Box.createHorizontalBox();
-        JLabel timeSeriesDataLabel = new JLabel("Do you have time-series data? ");
-        JRadioButton timeSeriesDataYes1 = new JRadioButton("Yes (with a known lag)");
-        JRadioButton timeSeriesDataYes2 = new JRadioButton("Yes (and I don’t know the lag length)");
-        JRadioButton timeSeriesDataYes3 = new JRadioButton("Yes (I have continuous-time/ODE data)");
-        JRadioButton timeSeriesDataNo = new JRadioButton("No");
 
-        timeSeriesDataBox.add(timeSeriesDataLabel);
-        timeSeriesDataBox.add(timeSeriesDataYes1);
-        timeSeriesDataBox.add(timeSeriesDataYes2);
-        timeSeriesDataBox.add(timeSeriesDataYes3);
-        timeSeriesDataBox.add(timeSeriesDataNo);
+        // Add label into this label box to size
+        Box timeSeriesDataLabelBox = Box.createHorizontalBox();
+        timeSeriesDataLabelBox.setPreferredSize(labelSize);
+        timeSeriesDataLabelBox.add(new JLabel("Do you have time-series data? "));
+
+        // Option 1
+        Box timeSeriesDataOption1Box = Box.createHorizontalBox();
+        timeSeriesDataOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton timeSeriesDataYes1 = new JRadioButton("Yes (with a known lag)");
+        timeSeriesDataOption1Box.add(timeSeriesDataYes1);
+
+        // Option 2
+        Box timeSeriesDataOption2Box = Box.createHorizontalBox();
+        timeSeriesDataOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton timeSeriesDataYes2 = new JRadioButton("Yes (and I don’t know the lag length)");
+        timeSeriesDataOption2Box.add(timeSeriesDataYes2);
+
+        // Option 3
+        Box timeSeriesDataOption3Box = Box.createHorizontalBox();
+        timeSeriesDataOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton timeSeriesDataYes3 = new JRadioButton("Yes (continuous-time/ODE data)");
+        timeSeriesDataOption3Box.add(timeSeriesDataYes3);
+
+        // Option 4
+        Box timeSeriesDataOption4Box = Box.createHorizontalBox();
+        timeSeriesDataOption4Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton timeSeriesDataNo = new JRadioButton("No");
+        timeSeriesDataOption4Box.add(timeSeriesDataNo);
+
+        timeSeriesDataBox.add(timeSeriesDataLabelBox);
+        timeSeriesDataBox.add(timeSeriesDataOption1Box);
+        timeSeriesDataBox.add(timeSeriesDataOption2Box);
+        timeSeriesDataBox.add(timeSeriesDataOption3Box);
+        timeSeriesDataBox.add(timeSeriesDataOption4Box);
+        timeSeriesDataBox.add(Box.createHorizontalGlue());
 
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createHorizontalBox();
-        JLabel varLinearRelationshipsLabel = new JLabel("Are the relationships between your variables linear? ");
-        JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
-        JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
-        JRadioButton varLinearRelationshipsUnknown = new JRadioButton("I don’t know. Test this on my data.");
 
-        varLinearRelationshipsBox.add(varLinearRelationshipsLabel);
-        varLinearRelationshipsBox.add(varLinearRelationshipsYes);
-        varLinearRelationshipsBox.add(varLinearRelationshipsNo);
-        varLinearRelationshipsBox.add(varLinearRelationshipsUnknown);
+        // Add label into this label box to size
+        Box varLinearRelationshipsLabelBox = Box.createHorizontalBox();
+        varLinearRelationshipsLabelBox.setPreferredSize(labelSize);
+        varLinearRelationshipsLabelBox.add(new JLabel("Are the relationships between your variables linear? "));
+
+        // Option 1
+        Box varLinearRelationshipsOption1Box = Box.createHorizontalBox();
+        varLinearRelationshipsOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
+        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
+
+        // Option 2
+        Box varLinearRelationshipsOption2Box = Box.createHorizontalBox();
+        varLinearRelationshipsOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
+        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
+
+        // Option 3
+        Box varLinearRelationshipsOption3Box = Box.createHorizontalBox();
+        varLinearRelationshipsOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton varLinearRelationshipsUnknown = new JRadioButton("I don’t know. Test this on my data.");
+        varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
+
+        varLinearRelationshipsBox.add(varLinearRelationshipsLabelBox);
+        varLinearRelationshipsBox.add(varLinearRelationshipsOption1Box);
+        varLinearRelationshipsBox.add(varLinearRelationshipsOption2Box);
+        varLinearRelationshipsBox.add(varLinearRelationshipsOption3Box);
+        varLinearRelationshipsBox.add(Box.createHorizontalGlue());
 
         // Are your variables Gaussian?
         Box gaussianVariablesBox = Box.createHorizontalBox();
-        JLabel gaussianVariablesLabel = new JLabel("Are your variables Gaussian? ");
-        JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
-        JRadioButton gaussianVariablesNo = new JRadioButton("No");
-        JRadioButton gaussianVariablesUnknown = new JRadioButton("I don’t know. Test this on my data.");
 
-        gaussianVariablesBox.add(gaussianVariablesLabel);
-        gaussianVariablesBox.add(gaussianVariablesYes);
-        gaussianVariablesBox.add(gaussianVariablesNo);
-        gaussianVariablesBox.add(gaussianVariablesUnknown);
+        // Add label into this label box to size
+        Box gaussianVariablesLabelBox = Box.createHorizontalBox();
+        gaussianVariablesLabelBox.setPreferredSize(labelSize);
+        gaussianVariablesLabelBox.add(new JLabel("Are your variables Gaussian? "));
+
+        // Option 1
+        Box gaussianVariablesOption1Box = Box.createHorizontalBox();
+        gaussianVariablesOption1Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
+        gaussianVariablesOption1Box.add(gaussianVariablesYes);
+
+        // Option 2
+        Box gaussianVariablesOption2Box = Box.createHorizontalBox();
+        gaussianVariablesOption2Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton gaussianVariablesNo = new JRadioButton("No");
+        gaussianVariablesOption2Box.add(gaussianVariablesNo);
+
+        // Option 3
+        Box gaussianVariablesOption3Box = Box.createHorizontalBox();
+        gaussianVariablesOption3Box.setPreferredSize(new Dimension(160, 30));
+        JRadioButton gaussianVariablesUnknown = new JRadioButton("I don’t know. Test this on my data.");
+        gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
+
+        gaussianVariablesBox.add(gaussianVariablesLabelBox);
+        gaussianVariablesBox.add(gaussianVariablesOption1Box);
+        gaussianVariablesBox.add(gaussianVariablesOption2Box);
+        gaussianVariablesBox.add(gaussianVariablesOption3Box);
+        gaussianVariablesBox.add(Box.createHorizontalGlue());
 
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
@@ -1414,27 +1610,28 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d0.add(label0);
         d0.add(Box.createHorizontalGlue());
 
-        Box c = Box.createVerticalBox();
+        Box algoBox = Box.createVerticalBox();
 
-        // Add mockup UI - Zhou
-        c.add(outputGoalsBox);
-        c.add(includeUnmeasuredConfoundersBox);
-        c.add(dataTypeBox);
-        c.add(howManyVariablesBox);
-        c.add(generatingModelIncludeCyclesBox);
-        c.add(timeSeriesDataBox);
-        c.add(varLinearRelationshipsBox);
-        c.add(gaussianVariablesBox);
+        // Add mockup UI components - Zhou
+        algoBox.add(outputGoalsBox);
+        algoBox.add(includeUnmeasuredConfoundersBox);
+        algoBox.add(dataTypeBox);
+        algoBox.add(howManyVariablesBox);
+        algoBox.add(generatingModelIncludeCyclesBox);
+        algoBox.add(timeSeriesDataBox);
+        algoBox.add(varLinearRelationshipsBox);
+        algoBox.add(gaussianVariablesBox);
 
-        c.add(d3);
-        c.add(d1);
-        c.add(d2);
+        // Joe's current UI components - Zhou
+        algoBox.add(d3);
+        algoBox.add(d1);
+        algoBox.add(d2);
 //        c.add(Box.createVerticalGlue());
-        c.add(d0);
-        c.add(Box.createVerticalStrut(10));
-        c.add(scroll);
+        algoBox.add(d0);
+        algoBox.add(Box.createVerticalStrut(10));
+        algoBox.add(scroll);
 
-        panel.add(c, BorderLayout.CENTER);
+        panel.add(algoBox);
 
         Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
