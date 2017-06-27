@@ -1263,17 +1263,91 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Playing with Harry's mockup - Zhou
         // Output Goals, use checkboxes to allow multiple goals
         Box outputGoalsBox = Box.createHorizontalBox();
-        JLabel outputGoalsLabel = new JLabel("Output Goals (check all that apply)");
-        JCheckBox pairwiseOrientation = new JCheckBox("Pairwise orientation");
-        JCheckBox markovBlanket = new JCheckBox("Markov blanket");
-        JCheckBox undirectedGraph = new JCheckBox("Undirected graph");
-        JCheckBox causalGraph = new JCheckBox("Causal graph");
+        JLabel outputGoalsLabel = new JLabel("Output Goals (check all that apply): ");
+        JCheckBox outputGoalsPairwiseOrientation = new JCheckBox("Pairwise orientation");
+        JCheckBox outputGoalsMarkovBlanket = new JCheckBox("Markov blanket");
+        JCheckBox outputGoalsUndirectedGraph = new JCheckBox("Undirected graph");
+        JCheckBox outputGoalsCausalGraph = new JCheckBox("Causal graph");
 
         outputGoalsBox.add(outputGoalsLabel);
-        outputGoalsBox.add(pairwiseOrientation);
-        outputGoalsBox.add(markovBlanket);
-        outputGoalsBox.add(undirectedGraph);
-        outputGoalsBox.add(causalGraph);
+        outputGoalsBox.add(outputGoalsPairwiseOrientation);
+        outputGoalsBox.add(outputGoalsMarkovBlanket);
+        outputGoalsBox.add(outputGoalsUndirectedGraph);
+        outputGoalsBox.add(outputGoalsCausalGraph);
+
+        // Include unmeasured confounders?
+        Box includeUnmeasuredConfoundersBox = Box.createHorizontalBox();
+        JLabel includeUnmeasuredConfoundersLabel = new JLabel("Include unmeasured confounders? ");
+        JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
+        JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
+        JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("That's what I want to know");
+
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabel);
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersYes);
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersNo);
+        includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersUnknown);
+
+        // Data type
+        Box dataTypeBox = Box.createHorizontalBox();
+        JLabel dataTypeLabel = new JLabel("Include unmeasured confounders? ");
+        JRadioButton dataTypeCont = new JRadioButton("Continuous");
+        JRadioButton dataTypeDisc = new JRadioButton("Discrete");
+        JRadioButton dataTypeMixed = new JRadioButton("Mixed");
+
+        dataTypeBox.add(dataTypeLabel);
+        dataTypeBox.add(dataTypeCont);
+        dataTypeBox.add(dataTypeDisc);
+        dataTypeBox.add(dataTypeMixed);
+
+        // How many variables
+        Box howManyVariablesBox = Box.createHorizontalBox();
+        JLabel howManyVariablesLabel = new JLabel("How many variables do you have? ");
+        JRadioButton howManyVariablesS = new JRadioButton("3-30");
+        JRadioButton howManyVariablesM = new JRadioButton("31-300");
+        JRadioButton howManyVariablesL = new JRadioButton("301-3000");
+        JRadioButton howManyVariablesXL = new JRadioButton("> 3000");
+
+        howManyVariablesBox.add(howManyVariablesLabel);
+        howManyVariablesBox.add(howManyVariablesS);
+        howManyVariablesBox.add(howManyVariablesM);
+        howManyVariablesBox.add(howManyVariablesL);
+        howManyVariablesBox.add(howManyVariablesXL);
+
+        // Multiple datasets?
+        Box multipleDatasetsBox = Box.createHorizontalBox();
+        JLabel multipleDatasetsLabel = new JLabel("Do you have multiple datasets? ");
+        JRadioButton multipleDatasetsYes = new JRadioButton("Yes");
+        JRadioButton multipleDatasetsNo = new JRadioButton("No");
+
+        multipleDatasetsBox.add(multipleDatasetsLabel);
+        multipleDatasetsBox.add(multipleDatasetsYes);
+        multipleDatasetsBox.add(multipleDatasetsNo);
+
+        // Does the generating model include cycles?
+        Box generatingModelIncludeCyclesBox = Box.createHorizontalBox();
+        JLabel generatingModelIncludeCyclesLabel = new JLabel("Does the generating model include cycles? ");
+        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("Yes (I have equilibrium data)");
+        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("Yes (My data is not from an equilibrium state)");
+        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
+
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesLabel);
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesBoxYes1);
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesBoxYes2);
+        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesBoxNo);
+
+        // Do you have time-series data?
+        Box timeSeriesDataBox = Box.createHorizontalBox();
+        JLabel timeSeriesDataLabel = new JLabel("Do you have time-series data? ");
+        JRadioButton timeSeriesDataYes1 = new JRadioButton("Yes (with a known lag)");
+        JRadioButton timeSeriesDataYes2 = new JRadioButton("Yes (and I don’t know the lag length)");
+        JRadioButton timeSeriesDataYes3 = new JRadioButton("Yes (I have continuous-time/ODE data)");
+        JRadioButton timeSeriesDataNo = new JRadioButton("No");
+
+        timeSeriesDataBox.add(timeSeriesDataLabel);
+        timeSeriesDataBox.add(timeSeriesDataYes1);
+        timeSeriesDataBox.add(timeSeriesDataYes2);
+        timeSeriesDataBox.add(timeSeriesDataYes3);
+        timeSeriesDataBox.add(timeSeriesDataNo);
 
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
@@ -1320,6 +1394,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add mockup UI - Zhou
         c.add(outputGoalsBox);
+        c.add(includeUnmeasuredConfoundersBox);
+        c.add(dataTypeBox);
+        c.add(howManyVariablesBox);
+        c.add(generatingModelIncludeCyclesBox);
+        c.add(timeSeriesDataBox);
 
         c.add(d3);
         c.add(d1);
