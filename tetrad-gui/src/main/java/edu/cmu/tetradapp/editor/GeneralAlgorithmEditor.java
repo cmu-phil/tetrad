@@ -1349,6 +1349,30 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         timeSeriesDataBox.add(timeSeriesDataYes3);
         timeSeriesDataBox.add(timeSeriesDataNo);
 
+        // Are the relationships between your variables linear?
+        Box varLinearRelationshipsBox = Box.createHorizontalBox();
+        JLabel varLinearRelationshipsLabel = new JLabel("Are the relationships between your variables linear? ");
+        JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
+        JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
+        JRadioButton varLinearRelationshipsUnknown = new JRadioButton("I don’t know. Test this on my data.");
+
+        varLinearRelationshipsBox.add(varLinearRelationshipsLabel);
+        varLinearRelationshipsBox.add(varLinearRelationshipsYes);
+        varLinearRelationshipsBox.add(varLinearRelationshipsNo);
+        varLinearRelationshipsBox.add(varLinearRelationshipsUnknown);
+
+        // Are your variables Gaussian?
+        Box gaussianVariablesBox = Box.createHorizontalBox();
+        JLabel gaussianVariablesLabel = new JLabel("Are your variables Gaussian? ");
+        JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
+        JRadioButton gaussianVariablesNo = new JRadioButton("No");
+        JRadioButton gaussianVariablesUnknown = new JRadioButton("I don’t know. Test this on my data.");
+
+        gaussianVariablesBox.add(gaussianVariablesLabel);
+        gaussianVariablesBox.add(gaussianVariablesYes);
+        gaussianVariablesBox.add(gaussianVariablesNo);
+        gaussianVariablesBox.add(gaussianVariablesUnknown);
+
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
@@ -1399,6 +1423,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         c.add(howManyVariablesBox);
         c.add(generatingModelIncludeCyclesBox);
         c.add(timeSeriesDataBox);
+        c.add(varLinearRelationshipsBox);
+        c.add(gaussianVariablesBox);
 
         c.add(d3);
         c.add(d1);
