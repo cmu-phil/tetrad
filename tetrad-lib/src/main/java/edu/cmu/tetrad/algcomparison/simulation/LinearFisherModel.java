@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesData;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -55,6 +56,8 @@ public class LinearFisherModel implements Simulation, TakesData {
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
         Graph graph = randomGraph.createGraph(parameters);
+
+        System.out.println("degree = " + GraphUtils.getDegree(graph));
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));

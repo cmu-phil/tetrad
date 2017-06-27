@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
@@ -49,24 +50,24 @@ public class ExampleCompareSimulation {
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 1);
+        parameters.set("numRuns", 10);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 500);
+        parameters.set("numMeasures", 50);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 10);
+        parameters.set("avgDegree", 2.5);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
         parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 0.7);
+        parameters.set("coefHigh", 0.9);
 //        parameters.set("varLow");
 //        parameters.set("varHigh");
 //        parameters.set("verbose");
-//        parameters.set("coefSymmetric");
+        parameters.set("coefSymmetric", true);
 //        parameters.set("numRuns");
 //        parameters.set("percentDiscrete");
 //        parameters.set("numCategories");
@@ -76,15 +77,18 @@ public class ExampleCompareSimulation {
 //        parameters.set("intervalBetweenRecordings");
 //        parameters.set("fisherEpsilon");
 
-        parameters.set("sampleSize", 1000);
-
-        parameters.set("alpha", 1e-10);
+        parameters.set("alpha", 1e-8);
         parameters.set("depth", -1);
         parameters.set("penaltyDiscount", 4);
 
-        parameters.set("useMaxPOrientationHeuristic", true);
-        parameters.set("maxPOrientationMaxPathLength", 2);
+        parameters.set("useMaxPOrientationHeuristic", false);
+        parameters.set("maxPOrientationMaxPathLength", 3);
         parameters.set("verbose", false);
+
+        parameters.set("scaleFreeAlpha", 0.001);
+        parameters.set("scaleFreeBeta", 0.4);
+        parameters.set("scaleFreeDeltaIn", .1);
+        parameters.set("scaleFreeDeltaOut", 3);
 
         Statistics statistics = new Statistics();
 
@@ -108,12 +112,13 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new Pc(new SemBicTest()));
 //        algorithms.add(new Cpc(new FisherZ()));
+//        algorithms.add(new PcStable(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
-        algorithms.add(new PcStableMax(new FisherZ(), false));
+//        algorithms.add(new PcStableMax(new FisherZ(), false));
+//        algorithms.add(new PcStableMax(new SemBicTest(), false));
         algorithms.add(new Fges(new FisherZScore(), false));
-//        algorithms.add(new PcMax(new SemBicTest(), false));
 //        algorithms.add(new Fges(new SemBicScore(), false));
 
         Simulations simulations = new Simulations();
@@ -126,7 +131,6 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(true);
-//        comparison.setParallelized(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
