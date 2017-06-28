@@ -55,7 +55,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "PC-Max (\"Peter and Clark\") using " + test.getDescription()
+        return "PC-Stable-Max (\"Peter and Clark\") using " + test.getDescription()
                 + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }

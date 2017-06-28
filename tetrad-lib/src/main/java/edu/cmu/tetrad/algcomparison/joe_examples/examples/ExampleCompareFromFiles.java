@@ -23,10 +23,7 @@ package edu.cmu.tetrad.algcomparison.joe_examples.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStableMax;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.joe_examples.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -53,6 +50,8 @@ public class ExampleCompareFromFiles {
         parameters.set("alpha", .001);
         parameters.set("numRuns", 10);
         parameters.set("penaltyDiscount", 4);
+        parameters.set("useMaxPOrientationHeuristic", true);
+        parameters.set("maxPOrientationMaxPathLength", 3);
 
         Statistics statistics = new Statistics();
 
@@ -80,6 +79,7 @@ public class ExampleCompareFromFiles {
         algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new PcStableMax(new FisherZ(), false));
         algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new CpcStable(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
 //        algorithms.add(new Fges(new SemBicScore()));

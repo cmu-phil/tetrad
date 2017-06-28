@@ -241,9 +241,9 @@ public class Pc implements GraphSearch {
         IFas fas = null;
 
         if (initialGraph == null) {
-            fas = new FasStableConcurrent(getIndependenceTest());
+            fas = new Fas(getIndependenceTest());
         } else {
-            fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
+            fas = new Fas(initialGraph, getIndependenceTest());
         }
         fas.setVerbose(verbose);
         return search(fas, nodes);
