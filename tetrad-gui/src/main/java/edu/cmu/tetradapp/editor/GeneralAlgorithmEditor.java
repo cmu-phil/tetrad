@@ -1374,19 +1374,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Option 1
         Box timeSeriesDataOption1Box = Box.createHorizontalBox();
         timeSeriesDataOption1Box.setPreferredSize(new Dimension(160, 30));
-        JRadioButton timeSeriesDataYes1 = new JRadioButton("Yes (with a known lag)");
+        JRadioButton timeSeriesDataYes1 = new JRadioButton("with a known lag");
         timeSeriesDataOption1Box.add(timeSeriesDataYes1);
 
         // Option 2
         Box timeSeriesDataOption2Box = Box.createHorizontalBox();
         timeSeriesDataOption2Box.setPreferredSize(new Dimension(160, 30));
-        JRadioButton timeSeriesDataYes2 = new JRadioButton("Yes (and I don’t know the lag length)");
+        JRadioButton timeSeriesDataYes2 = new JRadioButton("with unknown lag length");
         timeSeriesDataOption2Box.add(timeSeriesDataYes2);
 
         // Option 3
         Box timeSeriesDataOption3Box = Box.createHorizontalBox();
         timeSeriesDataOption3Box.setPreferredSize(new Dimension(160, 30));
-        JRadioButton timeSeriesDataYes3 = new JRadioButton("Yes (continuous-time/ODE data)");
+        JRadioButton timeSeriesDataYes3 = new JRadioButton("continuous-time/ODE data");
         timeSeriesDataOption3Box.add(timeSeriesDataYes3);
 
         // Option 4
@@ -1544,18 +1544,18 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Add label into this label box to size
         Box generatingModelIncludeCyclesLabelBox = Box.createHorizontalBox();
         generatingModelIncludeCyclesLabelBox.setPreferredSize(labelSize);
-        generatingModelIncludeCyclesLabelBox.add(new JLabel("Generating model include cycles: "));
+        generatingModelIncludeCyclesLabelBox.add(new JLabel("Include cycles: "));
 
         // Option 1
         Box generatingModelIncludeCyclesOption1Box = Box.createHorizontalBox();
         generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(160, 30));
-        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("Yes (I have equilibrium data)");
+        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("I have equilibrium data");
         generatingModelIncludeCyclesOption1Box.add(generatingModelIncludeCyclesBoxYes1);
 
         // Option 2
         Box generatingModelIncludeCyclesOption2Box = Box.createHorizontalBox();
         generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(160, 30));
-        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("Yes (My data is not from an equilibrium state)");
+        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("My data is not from an equilibrium state");
         generatingModelIncludeCyclesOption2Box.add(generatingModelIncludeCyclesBoxYes2);
 
         // Option 3
