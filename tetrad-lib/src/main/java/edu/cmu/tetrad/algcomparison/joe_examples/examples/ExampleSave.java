@@ -25,7 +25,10 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
+
+import java.text.DecimalFormat;
 
 /**
  * An example script to save out data files and graphs from a simulation.
@@ -40,6 +43,8 @@ public class ExampleSave {
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 1000);
+
+        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
 
         Simulation simulation = new SemSimulation(new RandomForward());
         Comparison comparison = new Comparison();

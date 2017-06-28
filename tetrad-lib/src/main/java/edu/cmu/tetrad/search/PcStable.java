@@ -238,7 +238,7 @@ public class PcStable implements GraphSearch {
 //        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, initialGraph, verbose);
 //        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
 //        SearchGraphUtils.orientColeelidersLocally(knowledge, graph, independenceTest, depth);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, true);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

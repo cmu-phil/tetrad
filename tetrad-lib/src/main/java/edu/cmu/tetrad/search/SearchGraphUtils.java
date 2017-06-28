@@ -126,7 +126,7 @@ public final class SearchGraphUtils {
 
                 List<Node> sepset = sepset(graph, x, z, new HashSet<Node>(), new HashSet<Node>(),
                         -1, test);
-                        //set.get(x, z);
+                //set.get(x, z);
 
                 if (sepset == null) {
                     continue;
@@ -179,7 +179,7 @@ public final class SearchGraphUtils {
     }
 
     private static List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, int depth,
-                              IndependenceTest independenceTest) {
+                                     IndependenceTest independenceTest) {
         List<Node> adj = graph.getAdjacentNodes(a);
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
@@ -273,7 +273,8 @@ public final class SearchGraphUtils {
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
      * case y is in Sepset({x, z}).
      */
-    public static List<Triple> orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, boolean verbose) {
+    public static List<Triple> orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, boolean verbose,
+                                                           boolean enforcePattern) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         List<Triple> colliders = new ArrayList<>();
 
@@ -308,8 +309,14 @@ public final class SearchGraphUtils {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
 
+                    if (enforcePattern) {
+                        if (graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)
+                            continue;
+                    }
+
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
+
                     colliders.add(new Triple(a, b, c));
                     TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
                 }
@@ -1443,11 +1450,9 @@ public final class SearchGraphUtils {
 
                     if (!(dag.isAncestorOf(node2, node1)) && !dag.getParents(node2).isEmpty()) {
                         edge.setEndpoint2(Endpoint.ARROW);
-                    }
-                    else if (!dag.getParents(node1).isEmpty()) {
+                    } else if (!dag.getParents(node1).isEmpty()) {
                         edge.setEndpoint1(Endpoint.ARROW);
-                    }
-                    else {
+                    } else {
                         throw new IllegalArgumentException("Can't orient " + edge);
                     }
 
@@ -2992,7 +2997,6 @@ public final class SearchGraphUtils {
         }
         return error;
     }
-
 
     private static class AhdCounts {
         private int ahdFp = 0;

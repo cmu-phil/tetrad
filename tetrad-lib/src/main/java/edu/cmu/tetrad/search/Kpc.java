@@ -279,7 +279,7 @@ public class Kpc implements GraphSearch {
         enumerateTriples();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(sepset, knowledge, graph, verbose);
+        SearchGraphUtils.orientCollidersUsingSepsets(sepset, knowledge, graph, verbose, true);
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(knowledge);

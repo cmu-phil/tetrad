@@ -41,6 +41,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
+        search.setEnforcePattern(true);
         return search.search();
     }
 
