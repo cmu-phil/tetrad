@@ -80,6 +80,7 @@ import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import org.apache.commons.lang3.StringUtils;
 
@@ -1612,15 +1613,34 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box algoBox = Box.createVerticalBox();
 
-        // Add mockup UI components - Zhou
-        algoBox.add(outputGoalsBox);
-        algoBox.add(includeUnmeasuredConfoundersBox);
-        algoBox.add(dataTypeBox);
-        algoBox.add(howManyVariablesBox);
-        algoBox.add(generatingModelIncludeCyclesBox);
-        algoBox.add(timeSeriesDataBox);
-        algoBox.add(varLinearRelationshipsBox);
-        algoBox.add(gaussianVariablesBox);
+        // Contains data description and result description as well as Joe's old settings - Zhou
+        Box algoFiltersContainer = Box.createVerticalBox();
+
+        // Describe your data
+        Box dataDescriptionBox = Box.createVerticalBox();
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String dataDescriptionBoxBorderTitle = "Describe your data";
+        dataDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(dataDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Items to put in data description box
+        dataDescriptionBox.add(dataTypeBox);
+        dataDescriptionBox.add(howManyVariablesBox);
+        dataDescriptionBox.add(timeSeriesDataBox);
+        dataDescriptionBox.add(varLinearRelationshipsBox);
+        dataDescriptionBox.add(gaussianVariablesBox);
+
+        // Describe your result
+        Box resultDescriptionBox = Box.createVerticalBox();
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String resultDescriptionBoxBorderTitle = "Describe your result";
+        resultDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(resultDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        // Items to put in result description box
+        resultDescriptionBox.add(outputGoalsBox);
+        resultDescriptionBox.add(includeUnmeasuredConfoundersBox);
+        resultDescriptionBox.add(generatingModelIncludeCyclesBox);
 
         // Joe's current UI components - Zhou
         algoBox.add(d3);
@@ -1631,7 +1651,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoBox.add(Box.createVerticalStrut(10));
         algoBox.add(scroll);
 
-        panel.add(algoBox);
+        // Addd to algoFiltersContainer
+        algoFiltersContainer.add(dataDescriptionBox);
+        algoFiltersContainer.add(Box.createVerticalStrut(10));
+        algoFiltersContainer.add(resultDescriptionBox);
+        algoFiltersContainer.add(Box.createVerticalStrut(10));
+        algoFiltersContainer.add(algoBox);
+
+        // Add to big panel
+        panel.add(algoFiltersContainer);
 
         Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
