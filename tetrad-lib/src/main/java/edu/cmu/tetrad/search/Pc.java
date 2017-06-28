@@ -241,9 +241,9 @@ public class Pc implements GraphSearch {
         IFas fas = null;
 
         if (initialGraph == null) {
-            fas = new Fas(getIndependenceTest());
+            fas = new FasStableConcurrent(getIndependenceTest());
         } else {
-            fas = new Fas(initialGraph, getIndependenceTest());
+            fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         }
         fas.setVerbose(verbose);
         return search(fas, nodes);
@@ -281,12 +281,19 @@ public class Pc implements GraphSearch {
 //        enumerateTriples();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, enforcePattern);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, false);
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                graph.removeEdge(edge.getNode1(), edge.getNode2());
+                graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
 
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+//        rules.setAggressivelyPreventCycles(false);
         rules.setKnowledge(knowledge);
-        rules.setUndirectUnforcedEdges(false);
+//        rules.setUndirectUnforcedEdges(false);
         rules.orientImplied(graph);
 
         this.logger.log("graph", "\nReturning this graph: " + graph);

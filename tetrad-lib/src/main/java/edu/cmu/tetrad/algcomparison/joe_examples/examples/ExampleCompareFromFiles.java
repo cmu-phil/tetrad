@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.joe_examples.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStableMax;
@@ -49,7 +50,7 @@ public class ExampleCompareFromFiles {
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
-        parameters.set("alpha", .0001);
+        parameters.set("alpha", .001);
         parameters.set("numRuns", 10);
         parameters.set("penaltyDiscount", 4);
 
@@ -61,12 +62,13 @@ public class ExampleCompareFromFiles {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new MathewsCorrAdj());
-        statistics.add(new MathewsCorrArrow());
-        statistics.add(new F1Adj());
-        statistics.add(new F1Arrow());
-        statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new PercentBidirectedEdges());
+//        statistics.add(new MathewsCorrAdj());
+//        statistics.add(new MathewsCorrArrow());
+//        statistics.add(new F1Adj());
+//        statistics.add(new F1Arrow());
+//        statistics.add(new SHD());
+//        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -77,10 +79,10 @@ public class ExampleCompareFromFiles {
 
         algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new PcStableMax(new FisherZ(), false));
-//        algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
-        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
 
         algorithms.add(new ExternalAlgorithm("rgraph"));
 
