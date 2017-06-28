@@ -40,13 +40,13 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class ExampleCompareFromFiles {
+public class ExampleCompareFromFilesSimple {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
-        parameters.set("alpha", 1e-3, 1e-2);
+        parameters.set("alpha", 1e-3);
         parameters.set("numRuns", 10);
 
         Statistics statistics = new Statistics();
@@ -71,11 +71,7 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new Cpc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-
+//        algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new ExternalAlgorithm("rgraph"));
 
         Comparison comparison = new Comparison();
@@ -85,7 +81,7 @@ public class ExampleCompareFromFiles {
         comparison.setShowUtilities(true);
         comparison.setParallelized(true);
 
-        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        comparison.compareFromFiles("comparison_simple", algorithms, statistics, parameters);
     }
 }
 

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.joe_examples.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LoadDataAndGraphs;
@@ -75,6 +76,7 @@ public class Comparison {
     private boolean parallelized = true;
     private boolean savePatterns = false;
     private boolean savePags = false;
+    private ArrayList<String> dirs = null;
 
     /**
      * Compares algorithms.
@@ -98,8 +100,11 @@ public class Comparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
+        this.dirs = new ArrayList<String>();
+
         for (File dir : dirs) {
             simulations.add(new LoadDataAndGraphs(dir.getAbsolutePath()));
+            this.dirs.add(dir.getAbsolutePath()); // For ExternalAlgorithms.
         }
 
         compareFromSimulations(filePath, simulations, algorithms, statistics, parameters);
@@ -196,6 +201,12 @@ public class Comparison {
                 if (!(algDataType == DataType.Mixed || (algDataType == simDataType))) {
                     System.out.println("Type mismatch: " + algorithmWrapper.getDescription()
                             + " / " + simulationWrapper.getDescription());
+                }
+
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                    external.setSimulation(simulationWrapper.getSimulation());
+                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
                 }
 
                 algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
