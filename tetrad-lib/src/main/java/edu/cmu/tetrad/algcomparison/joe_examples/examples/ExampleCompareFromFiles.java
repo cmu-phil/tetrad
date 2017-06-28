@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.joe_examples.ExternalAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -76,13 +77,13 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new PcStableMax(new FisherZ(), false));
-        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new PcStableMax(new FisherZ(), false));
+//        algorithms.add(new Cpc(new FisherZ()));
+//        algorithms.add(new CpcStable(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
-//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new FisherZScore()));
 
         algorithms.add(new ExternalAlgorithm("rgraph"));
 
