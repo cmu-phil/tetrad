@@ -106,6 +106,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JTabbedPane pane;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
+    private final JComboBox<AlgName> allAlgorithmsDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
@@ -121,6 +122,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private String jsonResult;
 
     private final Dimension labelSize;
+
+    private final List<AlgorithmDescription> descriptions;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -182,7 +185,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<ScoreType> dsepScores = new ArrayList<>();
         dsepScores.add(ScoreType.D_SEPARATION);
 
-        final List<AlgorithmDescription> descriptions = new ArrayList<>();
+        descriptions = new ArrayList<>();
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
@@ -1267,6 +1270,32 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
         // Playing with Harry's mockup - Zhou
+        Box algoGuideBox = Box.createHorizontalBox();
+        JRadioButton filterAlgoRadioBtn = new JRadioButton("Help me choose the applicable algorithms");
+
+        Box chooseAlgoBox = Box.createHorizontalBox();
+
+        JRadioButton chooseAlgoRadioBtn = new JRadioButton("I know which algorithm to choose: ");
+        allAlgorithmsDropdown.setPreferredSize(new Dimension(180, 30));
+
+        for (AlgorithmDescription description : descriptions) {
+            allAlgorithmsDropdown.addItem(description.getAlgName());
+        }
+
+        chooseAlgoBox.add(chooseAlgoRadioBtn);
+        chooseAlgoBox.add(allAlgorithmsDropdown);
+
+        // Default
+        filterAlgoRadioBtn.setSelected(true);
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup algoGuideBtnGrp = new ButtonGroup();
+        algoGuideBtnGrp.add(filterAlgoRadioBtn);
+        algoGuideBtnGrp.add(chooseAlgoRadioBtn);
+
+        algoGuideBox.add(filterAlgoRadioBtn);
+        algoGuideBox.add(chooseAlgoBox);
+
         // How many variables
         Box howManyVariablesBox = Box.createHorizontalBox();
 
@@ -1620,6 +1649,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoBox.add(scroll);
 
         // Addd to algoFiltersContainer
+        algoFiltersContainer.add(algoGuideBox);
+        algoFiltersContainer.add(Box.createVerticalStrut(10));
         algoFiltersContainer.add(dataDescriptionBox);
         algoFiltersContainer.add(Box.createVerticalStrut(10));
         algoFiltersContainer.add(resultDescriptionBox);
