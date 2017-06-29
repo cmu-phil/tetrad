@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.joe_examples;
+package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;

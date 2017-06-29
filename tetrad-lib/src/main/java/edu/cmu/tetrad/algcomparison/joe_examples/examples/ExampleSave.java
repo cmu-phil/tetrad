@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.joe_examples.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -40,13 +41,47 @@ public class ExampleSave {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4);
+        parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 4);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.9);
+//        parameters.set("varLow");
+//        parameters.set("varHigh");
+//        parameters.set("verbose");
+        parameters.set("coefSymmetric", true);
+//        parameters.set("numRuns");
+//        parameters.set("percentDiscrete");
+//        parameters.set("numCategories");
+//        parameters.set("differentGraphs");
+//        parameters.set("sampleSize");
+//        parameters.set("intervalBetweenShocks");
+//        parameters.set("intervalBetweenRecordings");
+//        parameters.set("fisherEpsilon");
+
+        parameters.set("alpha", 1e-8);
+        parameters.set("depth", -1);
+        parameters.set("penaltyDiscount", 4);
+
+        parameters.set("useMaxPOrientationHeuristic", false);
+        parameters.set("maxPOrientationMaxPathLength", 3);
+        parameters.set("verbose", false);
+
+        parameters.set("scaleFreeAlpha", 0.001);
+        parameters.set("scaleFreeBeta", 0.4);
+        parameters.set("scaleFreeDeltaIn", .1);
+        parameters.set("scaleFreeDeltaOut", 3);
+;
         NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
 
-        Simulation simulation = new SemSimulation(new RandomForward());
+        Simulation simulation = new LinearFisherModel(new RandomForward());
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison", simulation, parameters);
