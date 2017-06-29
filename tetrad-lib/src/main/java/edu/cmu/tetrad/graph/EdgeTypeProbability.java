@@ -11,7 +11,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public class EdgeTypeProbability implements TetradSerializable {
 
-	private static final long serialVersionUID = -7113824078059194568L;
+	private static final long serialVersionUID = 23L;
 
 	public enum EdgeType {
 		nil, ta, at, ca, ac, cc, aa, tt
