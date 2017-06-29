@@ -48,7 +48,7 @@ public class ExampleCompareFromFiles {
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
-        parameters.set("alpha", .001);
+        parameters.set("alpha", 0.001, 1e-8);
         parameters.set("numRuns", 10);
         parameters.set("penaltyDiscount", 4);
         parameters.set("useMaxPOrientationHeuristic", true);
