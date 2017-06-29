@@ -1267,38 +1267,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
         // Playing with Harry's mockup - Zhou
-        // Data type
-        Box dataTypeBox = Box.createHorizontalBox();
-
-        // Add label into this label box to size
-        Box dataTypeLabelBox = Box.createHorizontalBox();
-        dataTypeLabelBox.setPreferredSize(labelSize);
-        dataTypeLabelBox.add(new JLabel("Data type: "));
-
-        // Option 1
-        Box dataTypeOption1Box = Box.createHorizontalBox();
-        dataTypeOption1Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton dataTypeCont = new JRadioButton("Continuous");
-        dataTypeOption1Box.add(dataTypeCont);
-
-        // Option 2
-        Box dataTypeOption2Box = Box.createHorizontalBox();
-        dataTypeOption2Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton dataTypeDisc = new JRadioButton("Discrete");
-        dataTypeOption2Box.add(dataTypeDisc);
-
-        // Option 2
-        Box dataTypeOption3Box = Box.createHorizontalBox();
-        dataTypeOption3Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton dataTypeMixed = new JRadioButton("Mixed");
-        dataTypeOption3Box.add(dataTypeMixed);
-
-        dataTypeBox.add(dataTypeLabelBox);
-        dataTypeBox.add(dataTypeOption1Box);
-        dataTypeBox.add(dataTypeOption2Box);
-        dataTypeBox.add(dataTypeOption3Box);
-        dataTypeBox.add(Box.createHorizontalGlue());
-
         // How many variables
         Box howManyVariablesBox = Box.createHorizontalBox();
 
@@ -1363,45 +1331,45 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         multipleDatasetsBox.add(multipleDatasetsOption2Box);
         multipleDatasetsBox.add(Box.createHorizontalGlue());
 
-        // Do you have time-series data?
-        Box timeSeriesDataBox = Box.createHorizontalBox();
-
-        // Add label into this label box to size
-        Box timeSeriesDataLabelBox = Box.createHorizontalBox();
-        timeSeriesDataLabelBox.setPreferredSize(labelSize);
-        timeSeriesDataLabelBox.add(new JLabel("Time series data: "));
-
-        // Option 1
-        Box timeSeriesDataOption1Box = Box.createHorizontalBox();
-        timeSeriesDataOption1Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton timeSeriesDataYes1 = new JRadioButton("with a known lag");
-        timeSeriesDataOption1Box.add(timeSeriesDataYes1);
-
-        // Option 2
-        Box timeSeriesDataOption2Box = Box.createHorizontalBox();
-        timeSeriesDataOption2Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton timeSeriesDataYes2 = new JRadioButton("with unknown lag");
-        timeSeriesDataOption2Box.add(timeSeriesDataYes2);
-
-        // Option 3
-        Box timeSeriesDataOption3Box = Box.createHorizontalBox();
-        timeSeriesDataOption3Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton timeSeriesDataYes3 = new JRadioButton("continuous-time/ODE");
-        timeSeriesDataOption3Box.add(timeSeriesDataYes3);
-
-        // Option 4
-        Box timeSeriesDataOption4Box = Box.createHorizontalBox();
-        timeSeriesDataOption4Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton timeSeriesDataNo = new JRadioButton("No");
-        timeSeriesDataOption4Box.add(timeSeriesDataNo);
-
-        timeSeriesDataBox.add(timeSeriesDataLabelBox);
-        timeSeriesDataBox.add(timeSeriesDataOption1Box);
-        timeSeriesDataBox.add(timeSeriesDataOption2Box);
-        timeSeriesDataBox.add(timeSeriesDataOption3Box);
-        timeSeriesDataBox.add(timeSeriesDataOption4Box);
-        timeSeriesDataBox.add(Box.createHorizontalGlue());
-
+        // Not ready yet - Zhou
+//        // Do you have time-series data?
+//        Box timeSeriesDataBox = Box.createHorizontalBox();
+//
+//        // Add label into this label box to size
+//        Box timeSeriesDataLabelBox = Box.createHorizontalBox();
+//        timeSeriesDataLabelBox.setPreferredSize(labelSize);
+//        timeSeriesDataLabelBox.add(new JLabel("Time series data: "));
+//
+//        // Option 1
+//        Box timeSeriesDataOption1Box = Box.createHorizontalBox();
+//        timeSeriesDataOption1Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton timeSeriesDataYes1 = new JRadioButton("with a known lag");
+//        timeSeriesDataOption1Box.add(timeSeriesDataYes1);
+//
+//        // Option 2
+//        Box timeSeriesDataOption2Box = Box.createHorizontalBox();
+//        timeSeriesDataOption2Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton timeSeriesDataYes2 = new JRadioButton("with unknown lag");
+//        timeSeriesDataOption2Box.add(timeSeriesDataYes2);
+//
+//        // Option 3
+//        Box timeSeriesDataOption3Box = Box.createHorizontalBox();
+//        timeSeriesDataOption3Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton timeSeriesDataYes3 = new JRadioButton("continuous-time/ODE");
+//        timeSeriesDataOption3Box.add(timeSeriesDataYes3);
+//
+//        // Option 4
+//        Box timeSeriesDataOption4Box = Box.createHorizontalBox();
+//        timeSeriesDataOption4Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton timeSeriesDataNo = new JRadioButton("No");
+//        timeSeriesDataOption4Box.add(timeSeriesDataNo);
+//
+//        timeSeriesDataBox.add(timeSeriesDataLabelBox);
+//        timeSeriesDataBox.add(timeSeriesDataOption1Box);
+//        timeSeriesDataBox.add(timeSeriesDataOption2Box);
+//        timeSeriesDataBox.add(timeSeriesDataOption3Box);
+//        timeSeriesDataBox.add(timeSeriesDataOption4Box);
+//        timeSeriesDataBox.add(Box.createHorizontalGlue());
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createHorizontalBox();
 
@@ -1538,38 +1506,38 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
         includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
-        // Does the generating model include cycles?
-        Box generatingModelIncludeCyclesBox = Box.createHorizontalBox();
-
-        // Add label into this label box to size
-        Box generatingModelIncludeCyclesLabelBox = Box.createHorizontalBox();
-        generatingModelIncludeCyclesLabelBox.setPreferredSize(labelSize);
-        generatingModelIncludeCyclesLabelBox.add(new JLabel("Cycles: "));
-
-        // Option 1
-        Box generatingModelIncludeCyclesOption1Box = Box.createHorizontalBox();
-        generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("I have equilibrium data");
-        generatingModelIncludeCyclesOption1Box.add(generatingModelIncludeCyclesBoxYes1);
-
-        // Option 2
-        Box generatingModelIncludeCyclesOption2Box = Box.createHorizontalBox();
-        generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("My data is not from an equilibrium state");
-        generatingModelIncludeCyclesOption2Box.add(generatingModelIncludeCyclesBoxYes2);
-
-        // Option 3
-        Box generatingModelIncludeCyclesOption3Box = Box.createHorizontalBox();
-        generatingModelIncludeCyclesOption3Box.setPreferredSize(new Dimension(180, 30));
-        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
-        generatingModelIncludeCyclesOption3Box.add(generatingModelIncludeCyclesBoxNo);
-
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesLabelBox);
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption1Box);
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption2Box);
-        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption3Box);
-        generatingModelIncludeCyclesBox.add(Box.createHorizontalGlue());
-
+        // Not ready yet - Zhou
+//        // Does the generating model include cycles?
+//        Box generatingModelIncludeCyclesBox = Box.createHorizontalBox();
+//
+//        // Add label into this label box to size
+//        Box generatingModelIncludeCyclesLabelBox = Box.createHorizontalBox();
+//        generatingModelIncludeCyclesLabelBox.setPreferredSize(labelSize);
+//        generatingModelIncludeCyclesLabelBox.add(new JLabel("Cycles: "));
+//
+//        // Option 1
+//        Box generatingModelIncludeCyclesOption1Box = Box.createHorizontalBox();
+//        generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("I have equilibrium data");
+//        generatingModelIncludeCyclesOption1Box.add(generatingModelIncludeCyclesBoxYes1);
+//
+//        // Option 2
+//        Box generatingModelIncludeCyclesOption2Box = Box.createHorizontalBox();
+//        generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("My data is not from an equilibrium state");
+//        generatingModelIncludeCyclesOption2Box.add(generatingModelIncludeCyclesBoxYes2);
+//
+//        // Option 3
+//        Box generatingModelIncludeCyclesOption3Box = Box.createHorizontalBox();
+//        generatingModelIncludeCyclesOption3Box.setPreferredSize(new Dimension(180, 30));
+//        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
+//        generatingModelIncludeCyclesOption3Box.add(generatingModelIncludeCyclesBoxNo);
+//
+//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesLabelBox);
+//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption1Box);
+//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption2Box);
+//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption3Box);
+//        generatingModelIncludeCyclesBox.add(Box.createHorizontalGlue());
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
@@ -1624,10 +1592,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         dataDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(dataDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Items to put in data description box
-        dataDescriptionBox.add(dataTypeBox);
         dataDescriptionBox.add(howManyVariablesBox);
         dataDescriptionBox.add(multipleDatasetsBox);
-        dataDescriptionBox.add(timeSeriesDataBox);
+        //dataDescriptionBox.add(timeSeriesDataBox);
         dataDescriptionBox.add(varLinearRelationshipsBox);
         dataDescriptionBox.add(gaussianVariablesBox);
 
@@ -1641,7 +1608,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Items to put in result description box
         resultDescriptionBox.add(outputGoalsBox);
         resultDescriptionBox.add(includeUnmeasuredConfoundersBox);
-        resultDescriptionBox.add(generatingModelIncludeCyclesBox);
+        //resultDescriptionBox.add(generatingModelIncludeCyclesBox);
 
         // Joe's current UI components - Zhou
         algoBox.add(d3);
