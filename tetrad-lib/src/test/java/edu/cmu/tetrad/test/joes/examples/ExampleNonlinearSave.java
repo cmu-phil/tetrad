@@ -19,69 +19,49 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.joe_examples.examples;
+package edu.cmu.tetrad.test.joes.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LinearSineSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
-
-import java.text.DecimalFormat;
 
 /**
  * An example script to save out data files and graphs from a simulation.
  *
  * @author jdramsey
  */
-public class ExampleSave {
+public class ExampleNonlinearSave {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
-        parameters.set("differentGraphs", true);
-        parameters.set("sampleSize", 1000);
+        parameters.set("numRuns", 100);
+        parameters.set("numMeasures", 20);
+        parameters.set("avgDegree", 3);
+        parameters.set("sampleSize", 500);
+        parameters.set("percentDiscrete", 0);
+        parameters.set("minCategories", 2);
+        parameters.set("maxCategories", 5);
+        parameters.set("differentGraphs",true);
 
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4);
-        parameters.set("maxDegree", 100);
-        parameters.set("maxIndegree", 100);
-        parameters.set("maxOutdegree", 100);
-        parameters.set("connected", false);
+        parameters.set("interceptLow", 0);
+        parameters.set("interceptHigh", 1);
+        parameters.set("contiuousInfluence", 0.5);
+        parameters.set("linearLow", 0.5);
+        parameters.set("linearHigh", 1.0);
+        parameters.set("quadraticLow", 0.5);
+        parameters.set("quadraticHigh", 1.0);
+        parameters.set("cubicLow", 0.2);
+        parameters.set("cubicHigh", 0.3);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 1);
+        parameters.set("betaLow", 5);
+        parameters.set("betaHigh", 8);
+        parameters.set("gammaLow", 1.0);
+        parameters.set("gammaHigh", 1.5);
 
-        parameters.set("coefLow", 0.2);
-        parameters.set("coefHigh", 0.9);
-//        parameters.set("varLow");
-//        parameters.set("varHigh");
-//        parameters.set("verbose");
-        parameters.set("coefSymmetric", true);
-//        parameters.set("numRuns");
-//        parameters.set("percentDiscrete");
-//        parameters.set("numCategories");
-//        parameters.set("differentGraphs");
-//        parameters.set("sampleSize");
-//        parameters.set("intervalBetweenShocks");
-//        parameters.set("intervalBetweenRecordings");
-//        parameters.set("fisherEpsilon");
-
-        parameters.set("alpha", 1e-8);
-        parameters.set("depth", -1);
-        parameters.set("penaltyDiscount", 4);
-
-        parameters.set("useMaxPOrientationHeuristic", false);
-        parameters.set("maxPOrientationMaxPathLength", 3);
-        parameters.set("verbose", false);
-
-        parameters.set("scaleFreeAlpha", 0.001);
-        parameters.set("scaleFreeBeta", 0.4);
-        parameters.set("scaleFreeDeltaIn", .1);
-        parameters.set("scaleFreeDeltaOut", 3);
-;
-        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
-
-        Simulation simulation = new LinearFisherModel(new RandomForward());
+        Simulation simulation = new LinearSineSimulation(new RandomForward());
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison", simulation, parameters);
