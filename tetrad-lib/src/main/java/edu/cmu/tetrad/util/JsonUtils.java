@@ -12,12 +12,14 @@ import org.json.JSONObject;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraphSingleConnections;
+import edu.cmu.tetrad.graph.EdgeTypeProbability;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 
 /**
  * 
@@ -110,6 +112,7 @@ public class JsonUtils {
 		Endpoint endpoint1 = Endpoint.TYPES[jObj.getJSONObject("endpoint1").getInt("ordinal")];
 		Endpoint endpoint2 = Endpoint.TYPES[jObj.getJSONObject("endpoint2").getInt("ordinal")];
 		Edge edge = new Edge(node1, node2, endpoint1, endpoint2);
+		
 		try {
 		    // properties
 		    JSONArray jArray = jObj.getJSONArray("properties");
@@ -122,7 +125,38 @@ public class JsonUtils {
 		    // TODO Auto-generated catch block
 		    //e.printStackTrace();
 		}
+		
+		try {
+		    // properties
+		    JSONArray jArray = jObj.getJSONArray("edgeTypeProbabilities");
+		    if(jArray != null){
+		    	for (int i = 0; i < jArray.length(); i++) {
+		    		edge.addEdgeTypeProbability(parseJSONObjectToEdgeTypeProperty(jArray.getJSONObject(i)));
+		    	}
+		    }
+		} catch (JSONException e) {
+		    // TODO Auto-generated catch block
+		    //e.printStackTrace();
+		}
+		
 		return edge;
+	}
+	
+	public static EdgeTypeProbability parseJSONObjectToEdgeTypeProperty(JSONObject jObj){
+		String _edgeType = jObj.getString("edgeType");
+		EdgeType edgeType = EdgeType.nil;
+		switch(_edgeType){
+			case "ta" : edgeType = EdgeType.ta; break;
+			case "at" : edgeType = EdgeType.at; break;
+			case "ca" : edgeType = EdgeType.ca; break;
+			case "ac" : edgeType = EdgeType.ac; break;
+			case "cc" : edgeType = EdgeType.cc; break;
+			case "aa" : edgeType = EdgeType.aa; break;
+			case "tt" : edgeType = EdgeType.tt; break;
+		}
+		double probability = jObj.getDouble("probability");
+		EdgeTypeProbability edgeTypeProbability = new EdgeTypeProbability(edgeType, probability);
+		return edgeTypeProbability;
 	}
 
 	public static Edge.Property parseJSONObjectToEdgeProperty(String prop){

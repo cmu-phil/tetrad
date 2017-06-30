@@ -4,11 +4,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mahdi on 1/16/17.
@@ -27,6 +31,8 @@ public class BootstrapTest {
 	private boolean runParallel = true;
 
 	private BootstrapAlgName algName = BootstrapAlgName.RFCI;
+	
+	private long seed = -1;
 
 	private List<Graph> PAGs;
 
@@ -134,6 +140,15 @@ public class BootstrapTest {
 		this.initialGraph = initialGraph;
 	}
 
+	public long getSeed() {
+		return seed;
+	}
+
+	public void setSeed(long seed) {
+		this.seed = seed;
+		RandomUtil.getInstance().setSeed(seed);
+	}
+
 	public BootstrapTest(DataSet data, String algName) {
 		this.algName = BootstrapAlgName.FGES;
 		if(algName.equalsIgnoreCase("GFCI")){
@@ -223,6 +238,12 @@ public class BootstrapTest {
 			double AbB = 0.0;
 			double AuB = 0.0;
 
+			// dd, nl, pd, pl
+			double dd = 0.0;
+			double nl = 0.0;
+			double pd = 0.0;
+			double pl = 0.0;
+			
 			Node n1 = e.getNode1();
 			Node n2 = e.getNode2();
 
@@ -310,12 +331,67 @@ public class BootstrapTest {
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.aa, AbB));
 				edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.tt, AuB));
 
+				Map<Property, Double> properties = getPropertyProbability(n1, n2);
+				if(properties != null && properties.size() > 0){
+					for(Property property : properties.keySet()){
+						double prob = properties.get(property);
+						if(edgeEnsemble == BootstrapEdgeEnsemble.Majority){
+							if(prob > .5){
+								edge.addProperty(property);
+							}
+						}else{
+							edge.addProperty(property);
+						}
+					}
+				}
+				
 				graph.addEdge(edge);
 			}
 
 		}
 
 		return graph;
+	}
+
+	private Map<Property, Double> getPropertyProbability(Node node1, Node node2) {
+		Map<Property, Double> count = null;
+		int n = PAGs.size();
+		for (Graph g : PAGs) {
+			if (!g.containsNode(node1)) {
+				throw new IllegalArgumentException();
+			}
+			if (!g.containsNode(node2)) {
+				throw new IllegalArgumentException();
+			}
+
+			if (g.isAdjacentTo(node1, node2)) {
+				Edge edge = g.getEdge(node1, node2);
+				List<Property> properties = edge.getProperties();
+				if(properties != null && properties.size() > 0){
+					if(count == null){
+						count = new HashMap<>();
+					}
+					for(Property property : properties){
+						Double _no = count.get(property);
+						if(_no == null){
+							_no = 0.0;
+						}
+						_no++;
+						count.put(property, _no);
+					}
+				}
+			}
+		}
+		
+		if(count != null && count.size() > 0){
+			for(Property property : count.keySet()){
+				Double _no = count.get(property);
+				_no = _no/(double)n;
+				count.put(property, _no);
+			}
+		}
+
+		return count;
 	}
 
 	private double getProbability(Edge e) {
