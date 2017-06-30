@@ -206,7 +206,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("Colliders");
+//        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
     }

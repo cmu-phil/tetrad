@@ -77,14 +77,26 @@ public class ExampleCompareFromFiles {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new PcStable(new FisherZ()));
         algorithms.add(new PcStableMax(new FisherZ(), false));
         algorithms.add(new Cpc(new FisherZ()));
         algorithms.add(new CpcStable(new FisherZ()));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
         algorithms.add(new Fges(new FisherZScore()));
 
-        algorithms.add(new ExternalAlgorithmPcalgPc("rgraph"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.original", "PC from pcalg, original adjacency search, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.stable", "PC from pcalg, stable adjacency search, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.stable.fast", "PC from pcalg, stable fast adjacency search, alpha = 0.001"));
+
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.relaxed", "PC from pcalg, relaxed, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.rand", "PC from pcalg, rand, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.retry", "PC from pcalg, retry, alpha = 0.001"));
+
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.NAdelete.FAlSE", "PC from pcalg, NAdelete=FALSE, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.conservative.FAlSE", "PC from pcalg, conservative=FALSE, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.conservative.TRUE", "PC from pcalg, conservative=TRUE, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.maj.rule.TRUE", "PC from pcalg, maj.rule=TRUE, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.solve.confl.FALSE", "PC from pcalg, solve.confl=FALSE, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("pc.solve.confl.TRUE", "PC from pcalg, solve.confl=TRUE, alpha = 0.001"));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -92,7 +104,7 @@ public class ExampleCompareFromFiles {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
 
-        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        comparison.compareFromFiles("comparison-final", algorithms, statistics, parameters);
     }
 }
 

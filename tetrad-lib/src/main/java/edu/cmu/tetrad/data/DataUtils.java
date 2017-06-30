@@ -1524,6 +1524,7 @@ public final class DataUtils {
     }
 
     public static DataSet reorderColumns(DataSet dataModel) {
+        String name = dataModel.getName();
         List<Node> vars = new ArrayList<>();
 
         List<Node> variables = dataModel.getVariables();
@@ -1537,7 +1538,9 @@ public final class DataUtils {
             }
         }
 
-        return dataModel.subsetColumns(vars);
+        DataSet dataSet = dataModel.subsetColumns(vars);
+        dataSet.setName(name);
+        return dataSet;
     }
 
     public static List<DataSet> reorderColumns(List<DataSet> dataSets) {

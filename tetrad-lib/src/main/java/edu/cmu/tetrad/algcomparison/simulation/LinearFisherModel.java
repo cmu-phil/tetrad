@@ -149,6 +149,10 @@ public class LinearFisherModel implements Simulation, TakesData {
                 dataSet.setName(name);
             }
 
+            if (parameters.getBoolean("randomizeColumns")) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSets.add(DataUtils.restrictToMeasured(dataSet));
         }
     }
@@ -192,6 +196,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add("intervalBetweenShocks");
         parameters.add("intervalBetweenRecordings");
         parameters.add("fisherEpsilon");
+        parameters.add("randomizeColumns");
         return parameters;
     }
 

@@ -192,10 +192,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         final List<AlgorithmDescription> descriptions = new ArrayList<>();
 
         descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
+//        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -924,30 +925,37 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                    algorithm = new FgesMeasurement(scoreWrapper);
 //                }
 //                break;
-            case PC:
+            case PC :
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                    algorithm = new PcAll(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
-                    algorithm = new Pc(independenceWrapper);
+                    algorithm = new PcAll(independenceWrapper);
                 }
                 break;
-            case CPC:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new Cpc(independenceWrapper);
-                }
-                break;
-            case CPCStable:
-                algorithm = new CpcStable(independenceWrapper);
-                break;
-            case PCStable:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new PcStable(independenceWrapper);
-                }
-                break;
+//            case PC:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new Pc(independenceWrapper);
+//                }
+//                break;
+//            case CPC:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new Cpc(independenceWrapper);
+//                }
+//                break;
+//            case CPCStable:
+//                algorithm = new CpcStable(independenceWrapper);
+//                break;
+//            case PCStable:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new PcStable(independenceWrapper);
+//                }
+//                break;
             case GFCI:
                 algorithm = new Gfci(independenceWrapper, scoreWrapper);
                 break;
@@ -1409,7 +1417,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
+        PC_ALL, PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,

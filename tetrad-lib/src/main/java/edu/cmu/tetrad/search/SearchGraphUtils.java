@@ -314,8 +314,14 @@ public final class SearchGraphUtils {
                             continue;
                     }
 
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+//                    graph.setEndpoint(a, b, Endpoint.ARROW);
+//                    graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    graph.removeEdge(a, b);
+                    graph.removeEdge(c, b);
+
+                    graph.addDirectedEdge(a, b);
+                    graph.addDirectedEdge(c, b);
 
                     colliders.add(new Triple(a, b, c));
                     TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
