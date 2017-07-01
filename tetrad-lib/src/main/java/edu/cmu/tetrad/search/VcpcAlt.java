@@ -239,7 +239,7 @@ public final class VcpcAlt implements GraphSearch {
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
 //    public final Graph search() {
-//        return search(independenceTest.getVariables());
+//        return search(independenceTest.getVariable());
 //    }
 
 ////    public Graph search(List<Node> nodes) {
@@ -262,7 +262,7 @@ public final class VcpcAlt implements GraphSearch {
         definitelyNonadjacencies = new HashSet<>();
         markovInAllPatterns = new HashSet<>();
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariables());
+//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 

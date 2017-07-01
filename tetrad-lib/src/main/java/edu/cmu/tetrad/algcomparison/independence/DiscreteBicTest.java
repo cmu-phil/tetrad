@@ -27,12 +27,12 @@ public class DiscreteBicTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "SEM BIC test";
+        return "Discrete BIC test";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Discrete;
     }
 
     @Override

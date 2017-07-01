@@ -186,7 +186,7 @@ public final class ProbFci implements GraphSearch {
 
         setMaxReachablePathLength(maxReachablePathLength);
 
-        //List<Node> variables = independenceTest.getVariables();       - Robert Tillman 2008
+        //List<Node> variables = independenceTest.getVariable();       - Robert Tillman 2008
         List<Node> nodes = new LinkedList<>();
 
         for (Node variable : variables) {
@@ -250,7 +250,7 @@ public final class ProbFci implements GraphSearch {
 
             // Step CI C (Zhang's step F3.)
             long time5 = System.currentTimeMillis();
-            //fciOrientbk(getKnowledge(), graph, independenceTest.getVariables());    - Robert Tillman 2008
+            //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
             fciOrientbk(getKnowledge(), graph, variables);
             ruleR0();
 

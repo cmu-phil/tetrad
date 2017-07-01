@@ -71,7 +71,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 //                    reader.setDelimiter(DelimiterType.COMMA);
                     DataSet dataSet;// = reader.parseTabular(file);
 
-//                    if (dataSet.getVariables().size() == 1) {
+//                    if (dataSet.getVariable().size() == 1) {
                         DataReader reader2 = new DataReader();
                         reader2.setVariablesSupplied(false);
                         reader2.setDelimiter(DelimiterType.WHITESPACE);

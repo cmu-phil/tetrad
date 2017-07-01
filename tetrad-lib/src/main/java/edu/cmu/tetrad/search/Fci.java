@@ -246,7 +246,7 @@ public final class Fci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
         long time5 = System.currentTimeMillis();
-        //fciOrientbk(getKnowledge(), graph, independenceTest.getVariables());    - Robert Tillman 2008
+        //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 //        fciOrientbk(getKnowledge(), graph, variables);
 //        new FciOrient(graph, new Sepsets(this.sepsets)).ruleR0(new Sepsets(this.sepsets));
 

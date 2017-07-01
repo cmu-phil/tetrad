@@ -144,7 +144,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 //            Proposition proposition = evidence.getProposition();
 //
 //            for (int i = 0; i < proposition.getNumVariables(); i++) {
-//                Node variable = proposition.getVariableSource().getVariables().get(i);
+//                Node variable = proposition.getVariableSource().getVariable().get(i);
 //                int category = proposition.getSingleCategory(i);
 //
 //                if (category != -1) {

@@ -1,16 +1,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScoreD;
+import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -46,12 +42,12 @@ public class Pcd implements Algorithm, HasKnowledge {
         IndTestScore test;
 
         if (dataSet instanceof ICovarianceMatrix) {
-            SemBicScoreD score = new SemBicScoreD((ICovarianceMatrix) dataSet);
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
             test = new IndTestScore(score);
         } else if (dataSet instanceof DataSet) {
-            SemBicScoreD score = new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet));
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
             test = new IndTestScore(score);

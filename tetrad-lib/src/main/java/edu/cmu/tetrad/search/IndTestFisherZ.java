@@ -188,9 +188,9 @@ public final class IndTestFisherZ implements IndependenceTest {
             r = partialCorrelation(x, y, z);
         } catch (SingularMatrixException e) {
             System.out.println(SearchLogUtils.determinismDetected(z, x));
-            return true;
+            this.fisherZ = Double.POSITIVE_INFINITY;
+            return false;
         }
-
 
         double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
         this.fisherZ = fisherZ;
@@ -295,7 +295,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             parents[j] = covMatrix.getVariables().indexOf(z.get(j));
         }
 
-//        int i = covMatrix.getVariables().indexOf(x);
+//        int i = covMatrix.getVariable().indexOf(x);
 
 //        double variance = covMatrix.getValue(i, i);
 

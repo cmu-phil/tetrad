@@ -186,6 +186,12 @@ public class ParamDescriptions {
         put("thresholdForReversing", new ParamDescription(
                 "Variables with skewnesses less than this value will be reversed in sign",
                 0.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+        
+        // Bootstrapping
+        put("bootstrapSampleSize", new ParamDescription(
+                	"The number of bootstraps", 
+                	10, 1, Integer.MAX_VALUE));
+        put("bootstrapEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
 
         put("fasRule", new ParamDescription(
                 "Adjacency search: 1 = PC, 2 = PC-Stable, 3 = Concurrent PC-Stable",

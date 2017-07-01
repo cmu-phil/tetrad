@@ -363,10 +363,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 //        int size = zList.size();
 //        int[] zCols = new int[size];
 //
-//        int xIndex = getVariables().indexOf(xVar);
+//        int xIndex = getVariable().indexOf(xVar);
 //
 //        for (int i = 0; i < zList.size(); i++) {
-//            zCols[i] = getVariables().indexOf(zList.get(i));
+//            zCols[i] = getVariable().indexOf(zList.get(i));
 //        }
 //
 //        int[] zRows = new int[data.rows()];

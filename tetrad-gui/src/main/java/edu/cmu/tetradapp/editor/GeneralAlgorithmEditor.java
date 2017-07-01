@@ -22,6 +22,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapFges;
+import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapGfci;
+import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Bpc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
@@ -237,6 +240,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.orient_pairwise, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
 
+        descriptions.add(new AlgorithmDescription(AlgName.BootstrapFGES,
+        		AlgType.bootstrapping, OracleType.Score));
+        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
+        		AlgType.bootstrapping, OracleType.Score));
+        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
+        		AlgType.bootstrapping, OracleType.Score));
+        	
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescription description : descriptions) {
@@ -1080,6 +1090,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
                 break;
 
+             // Bootstrapping
+             case BootstrapFGES:
+             	    algorithm = new BootstrapFges(scoreWrapper);
+             	    break;
+             case BootstrapGFCI:
+             	    algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
+             	    break;
+             case BootstrapRFCI:
+             	    algorithm = new BootstrapRfci(independenceWrapper);
+             	    break;
+                
             default:
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
@@ -1424,7 +1445,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn,
+        BootstrapFGES, BootstrapGFCI, BootstrapRFCI
     }
 
     private enum OracleType {None, Test, Score, Both}
@@ -1432,7 +1454,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private enum AlgType {
         ALL, forbid_latent_common_causes, allow_latent_common_causes, /*DAG, */
         search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise,
-        search_for_structure_over_latents
+        search_for_structure_over_latents, bootstrapping
     }
 
     private enum TestType {

@@ -15,15 +15,15 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class SemBicScoreD implements ScoreWrapper {
+public class SemBicScoreDeterministic implements ScoreWrapper {
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.SemBicScoreD semBicScore
-                = new edu.cmu.tetrad.search.SemBicScoreD(DataUtils.getCovMatrix(dataSet));
+        edu.cmu.tetrad.search.SemBicScoreDeterministic semBicScore
+                = new edu.cmu.tetrad.search.SemBicScoreDeterministic(DataUtils.getCovMatrix(dataSet));
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
         return semBicScore;
@@ -31,7 +31,7 @@ public class SemBicScoreD implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score D";
+        return "Sem BIC Score Deterministic";
     }
 
     @Override
