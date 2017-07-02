@@ -24,10 +24,8 @@ package edu.cmu.tetrad.test.joes.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBnlearnMmhc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
+import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -42,13 +40,13 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class ExampleCompareFromFiles {
+public class ExampleCompareFromFilesCondition1 {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
-        parameters.set("alpha", 1e-8);
+        parameters.set("alpha", 0.001);
         parameters.set("numRuns", 10);
         parameters.set("penaltyDiscount", 4);
         parameters.set("useMaxPOrientationHeuristic", true);
@@ -56,6 +54,7 @@ public class ExampleCompareFromFiles {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
@@ -68,7 +67,7 @@ public class ExampleCompareFromFiles {
 //        statistics.add(new F1Adj());
 //        statistics.add(new F1Arrow());
 //        statistics.add(new SHD());
-//        statistics.add(new ElapsedTime());
+//        statistics.add(new Ela\zpsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -77,38 +76,23 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new PcStableMax(new FisherZ(), false));
-//        algorithms.add(new Cpc(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-        algorithms.add(new Fges(new FisherZScore()));
-//
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.original", "PC from pcalg, original adjacency search, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.stable", "PC from pcalg, stable adjacency search, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.stable.fast", "PC from pcalg, stable fast adjacency search, alpha = 0.001"));
-//
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.relaxed", "PC from pcalg, relaxed, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.rand", "PC from pcalg, rand, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.retry", "PC from pcalg, retry, alpha = 0.001"));
-//
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.NAdelete.FAlSE", "PC from pcalg, NAdelete=FALSE, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.conservative.FAlSE", "PC from pcalg, conservative=FALSE, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.conservative.TRUE", "PC from pcalg, conservative=TRUE, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.maj.rule.TRUE", "PC from pcalg, maj.rule=TRUE, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.solve.confl.FALSE", "PC from pcalg, solve.confl=FALSE, alpha = 0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("pc.solve.confl.TRUE", "PC from pcalg, solve.confl=TRUE, alpha = 0.001"));
-
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("bnlearn.mmhc", "MMHC from bnlearn, alpha = 0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\")_using_Fisher_Z_test,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable)_using_Fisher_Z_test,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\")_using_Fisher_Z_test,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\")_using_Fisher_Z_test,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable)_using_Fisher_Z_test,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setSaveGraphs(true);
+        comparison.setSaveGraphs(false);
 
-        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
+        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);
     }

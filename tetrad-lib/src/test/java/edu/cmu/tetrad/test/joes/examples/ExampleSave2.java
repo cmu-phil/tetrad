@@ -24,7 +24,6 @@ package edu.cmu.tetrad.test.joes.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
@@ -36,14 +35,14 @@ import java.text.DecimalFormat;
  *
  * @author jdramsey
  */
-public class ExampleSave {
+public class ExampleSave2 {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 50, 100, 500);
-        parameters.set("avgDegree", 2, 4, 6);
-        parameters.set("sampleSize", 100, 500, 1000);
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 4);
+        parameters.set("sampleSize", 1000);
 
         parameters.set("differentGraphs", true);
         parameters.set("maxDegree", 100);
@@ -64,7 +63,7 @@ public class ExampleSave {
 
         Simulation simulation = new LinearFisherModel(new RandomForward());
         Comparison comparison = new Comparison();
-        comparison.saveToFiles("/Users/user/causal-comparisons/condition_1", simulation, parameters);
+        comparison.saveToFiles("compare2", simulation, parameters);
     }
 }
 

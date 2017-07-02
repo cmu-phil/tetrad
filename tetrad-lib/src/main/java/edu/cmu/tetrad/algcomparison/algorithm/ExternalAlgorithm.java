@@ -19,4 +19,8 @@ public interface ExternalAlgorithm extends Algorithm {
     void setSimulation(Simulation simulation);
 
     void setPath(String s);
+
+    void setSimIndex(int simIndex);
+
+    Simulation getSimulation();
 }

@@ -10,7 +10,8 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;
@@ -34,13 +35,15 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.PcStableMax search = new edu.cmu.tetrad.search.PcStableMax(
-                test.getTest(dataSet, parameters));
-        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
-        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
+        search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE);
+        search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
         search.setVerbose(parameters.getBoolean("verbose"));
+        search.setUseHeuristic(parameters.getBoolean("useMaxPOrientationHeuristic"));
+        search.setMaxPathLength(parameters.getInt("maxPOrientationMaxPathLength"));
         return search.search();
     }
 

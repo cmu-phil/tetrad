@@ -7,10 +7,11 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
 
@@ -30,9 +31,13 @@ public class CpcStable implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.CpcStable search = new edu.cmu.tetrad.search.CpcStable(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
+        search.setFasRule(PcAll.FasRule.FAS_STABLE);
+        search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.CONSERVATIVE);
+        search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 

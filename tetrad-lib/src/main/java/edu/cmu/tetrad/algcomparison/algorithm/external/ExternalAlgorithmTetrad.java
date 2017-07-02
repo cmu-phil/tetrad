@@ -6,13 +6,13 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
+public class ExternalAlgorithmTetrad implements ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
@@ -56,12 +56,12 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
     private Simulation simulation;
     private int simIndex = -1;
 
-    public ExternalAlgorithmPcalgPc(String extDir) {
+    public  ExternalAlgorithmTetrad(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmPcalgPc(String extDir, String shortDecription) {
+    public ExternalAlgorithmTetrad(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
@@ -88,21 +88,11 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
 
         System.out.println(file.getAbsolutePath());
 
-        try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(true);
-            DataSet dataSet2 = reader.parseTabular(file);
-            System.out.println("Loading graph from " + file.getAbsolutePath());
-            Graph graph = GraphUtils.loadGraphPcAlgMatrix(dataSet2);
+        Graph graph = GraphUtils.loadGraphTxt(file);
 
-            GraphUtils.circleLayout(graph, 225, 200, 150);
+        GraphUtils.circleLayout(graph, 225, 200, 150);
 
-            System.out.println(graph);
-
-            return graph;
-        } catch (IOException e) {
-            throw new RuntimeException("Couldn't parse graph.");
-        }
+        return graph;
     }
 
     @Override
@@ -154,5 +144,3 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
     }
 
 }
-
-

@@ -7,11 +7,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
 
@@ -37,11 +38,14 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
+
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
+        search.setFasRule(PcAll.FasRule.FAS);
+        search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        search.setConflictRule(PcAll.ConflictRule.PRIORITY);
         search.setVerbose(parameters.getBoolean("verbose"));
-        search.setEnforcePattern(true);
         return search.search();
     }
 

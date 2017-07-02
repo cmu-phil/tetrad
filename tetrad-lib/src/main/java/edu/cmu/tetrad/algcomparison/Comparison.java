@@ -36,7 +36,6 @@ import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
@@ -72,28 +71,35 @@ public class Comparison {
     private boolean showAlgorithmIndices = false;
     private boolean showUtilities = false;
     private boolean sortByUtility = false;
-    private String filePath = null;
+    private String dataPath = null;
+    private String resultsPath = null;
     private boolean parallelized = true;
     private boolean savePatterns = false;
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
 
+    public void compareFromFiles(String filePath, Algorithms algorithms,
+                                 Statistics statistics, Parameters parameters) {
+        compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
+    }
+
     /**
      * Compares algorithms.
      *
-     * @param filePath   Path to the directory where files have been saved.
-     * @param filePath   Path to the file where the output should be printed.
+     * @param dataPath   Path to the directory where data and graph files have been saved.
+     * @param resultsPath   Path to the file where the results should be stored.
      * @param algorithms The list of algorithms to be compared.
      * @param statistics The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters The list of parameters and their values.
      */
-    public void compareFromFiles(String filePath, Algorithms algorithms,
+    public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
-        this.filePath = filePath;
+        this.dataPath = dataPath;
+        this.resultsPath = resultsPath;
 
         Simulations simulations = new Simulations();
 
-        File file = new File(filePath, "save");
+        File file = new File(this.dataPath, "save");
         File[] dirs = file.listFiles();
 
         if (dirs == null) {
@@ -103,28 +109,60 @@ public class Comparison {
         this.dirs = new ArrayList<String>();
 
         for (File dir : dirs) {
+            if (dir.getName().contains("DS_Store")) continue;
             simulations.add(new LoadDataAndGraphs(dir.getAbsolutePath()));
             this.dirs.add(dir.getAbsolutePath()); // For ExternalAlgorithms.
         }
 
-        compareFromSimulations(filePath, simulations, algorithms, statistics, parameters);
+        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
+    }
+
+    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
+                                                     Statistics statistics, Parameters parameters) {
+        this.saveGraphs = false;
+        this.dataPath = dataPath;
+        this.resultsPath = resultsPath;
+
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            if (!(algorithm instanceof  ExternalAlgorithm)) throw new IllegalArgumentException(
+                    "Expecting all algorithms to implement ExternalAlgorithm.");
+        }
+
+        Simulations simulations = new Simulations();
+
+        File file = new File(this.dataPath, "save");
+        File[] dirs = file.listFiles();
+
+        if (dirs == null) {
+            throw new NullPointerException("No files in " + file.getAbsolutePath());
+        }
+
+        this.dirs = new ArrayList<String>();
+
+        for (File dir : dirs) {
+            if (dir.getName().contains("DS_Store")) continue;
+            simulations.add(new LoadDataAndGraphs(dir.getAbsolutePath()));
+            this.dirs.add(dir.getAbsolutePath()); // For ExternalAlgorithms.
+        }
+
+        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
     }
 
     /**
      * Compares algorithms.
      *
-     * @param filePath    Path to the file where the output should be printed.
+     * @param resultsPath    Path to the file where the output should be printed.
      * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
-    public void compareFromSimulations(String filePath, Simulations simulations, Algorithms algorithms,
+    public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
-        this.filePath = filePath;
+        this.resultsPath = resultsPath;
 
         // Create output file.
         try {
-            File dir = new File(filePath);
+            File dir = new File(resultsPath);
             dir.mkdirs();
             File file = new File(dir, "Comparison.txt");
             this.out = new PrintStream(new FileOutputStream(file));
@@ -205,8 +243,10 @@ public class Comparison {
 
                 if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
                     ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
-                    external.setSimulation(simulationWrapper.getSimulation());
-                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
+//                    external.setSimulation(simulationWrapper.getSimulation());
+//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
+//                    external.setPath(resultsPath);
+                    external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
                 algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
@@ -349,14 +389,14 @@ public class Comparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param path       The path to the directory where the simulationWrapper data should be saved.
+     * @param dataPath       The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
-    public void saveToFiles(String path, Simulation simulation, Parameters parameters) {
+    public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
         List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
-        File dir0 = new File(path);
+        File dir0 = new File(dataPath);
         File dir;
         int i = 0;
 
@@ -958,6 +998,14 @@ public class Comparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                external.setSimulation(simulationWrapper.getSimulation());
+//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
+                external.setPath(resultsPath);
+                external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
+            }
+
             if (algorithm instanceof MultiDataSetAlgorithm) {
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
@@ -986,14 +1034,14 @@ public class Comparison {
 
         String path = null;
 
-        if (simulationWrapper.getSimulation() instanceof SimulationPath) {
-            path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
-        }
-
+//        if (simulationWrapper.getSimulation() instanceof SimulationPath) {
+//            path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
+//        }
+//
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        printGraph(path, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper);
+        saveGraph(resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper);
 
         long stop = System.currentTimeMillis();
 
@@ -1055,28 +1103,28 @@ public class Comparison {
         }
     }
 
-    private void printGraph(String path, Graph graph, int i, int simIndex, int algIndex,
-                            AlgorithmWrapper algorithmWrapper) {
+    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex, AlgorithmWrapper algorithmWrapper) {
         if (!saveGraphs) {
             return;
         }
 
         try {
+            String description = algorithmWrapper.getDescription().replace(" ", "_");
+
             File file;
 
-            File dir = new File(filePath, "output_graphs");
+            File dir = new File(resultsPath, "results/" + description + "/" + simIndex);
             dir.mkdirs();
 
-            if (path != null) {
-                file = new File(dir, path + "." + simIndex + "." + algIndex + ".graph" + "."
-                        + (i + 1) + ".txt");
+
+            if (resultsPath != null) {
+                file = new File(dir, "graph." + (i + 1) + ".txt");
             } else {
-                file = new File(dir,  simIndex + "." + algIndex + ".graph" + "."
-                        + (i + 1) + ".txt");
+                throw new IllegalArgumentException("Results path not provided.");
             }
 
             PrintStream out = new PrintStream(file);
-            System.out.println("Printing graph to " + file.getAbsolutePath());
+            System.out.println("Saving graph to " + file.getAbsolutePath());
             out.println(graph);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
