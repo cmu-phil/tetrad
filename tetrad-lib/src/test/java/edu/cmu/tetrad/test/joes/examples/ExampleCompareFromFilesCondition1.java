@@ -26,6 +26,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBnlearnMmhc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -44,8 +48,6 @@ public class ExampleCompareFromFilesCondition1 {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        // Can leave the simulation parameters out since
-        // we're loading from file here.
         parameters.set("alpha", 0.001);
         parameters.set("numRuns", 10);
         parameters.set("penaltyDiscount", 4);
@@ -62,12 +64,6 @@ public class ExampleCompareFromFilesCondition1 {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new PercentBidirectedEdges());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
-//        statistics.add(new SHD());
-//        statistics.add(new Ela\zpsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -76,22 +72,46 @@ public class ExampleCompareFromFilesCondition1 {
 
         Algorithms algorithms = new Algorithms();
 
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new PcStableMax(new FisherZ(), false));
+//        algorithms.add(new Cpc(new FisherZ()));
+//        algorithms.add(new CpcStable(new FisherZ()));
+//        algorithms.add(new Fges(new FisherZScore()));
+
+//        parameters.set("alpha", 1e-8);
+//        algorithms.add(new Fges(new FisherZScore()));
+
+//        parameters.set("penaltyDiscount", 2, 4);
+//        algorithms.add(new Fges(new SemBicScore()));
+
+
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\")_using_Fisher_Z_test,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable)_using_Fisher_Z_test,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\")_using_Fisher_Z_test,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\")_using_Fisher_Z_test,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable)_using_Fisher_Z_test,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_2.0,_penaltyDiscount_=_2"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_4.0,_penaltyDiscount_=_4"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001"));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setSaveGraphs(false);
+        comparison.setSaveGraphs(true);
 
+//        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
+//                "/Users/user/causal-comparisons/condition_1",
+//                algorithms, statistics, parameters);
+////
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);

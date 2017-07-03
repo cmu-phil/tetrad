@@ -19,19 +19,22 @@ import java.util.List;
 public class SemBicScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
+    private double penaltyDiscount = 2.0;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.SemBicScore semBicScore
                 = new edu.cmu.tetrad.search.SemBicScore(DataUtils.getCovMatrix(dataSet));
-        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        double penaltyDiscount = parameters.getDouble("penaltyDiscount");
+        this.penaltyDiscount = penaltyDiscount;
+        semBicScore.setPenaltyDiscount(penaltyDiscount);
         return semBicScore;
     }
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score";
+        return "Sem BIC Score, penalty discount = " + penaltyDiscount;
     }
 
     @Override

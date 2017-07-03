@@ -40,6 +40,7 @@ public class ArrowConfusion {
 
 
         this.est = GraphUtils.replaceNodes(est, truth.getNodes());
+        this.truth = GraphUtils.replaceNodes(truth, est.getNodes());
 
 
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
