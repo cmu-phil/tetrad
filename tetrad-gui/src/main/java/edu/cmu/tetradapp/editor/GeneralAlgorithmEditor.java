@@ -1639,6 +1639,58 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         resultDescriptionBox.add(includeUnmeasuredConfoundersBox);
         //resultDescriptionBox.add(generatingModelIncludeCyclesBox);
 
+        // Suggested algorithms and corresponding description
+        Box alogChooserContainer = Box.createHorizontalBox();
+        alogChooserContainer.setPreferredSize(new Dimension(900, 200));
+
+        // Show a list of filtered algorithms
+        Box suggestedAlgosBox = Box.createVerticalBox();
+        suggestedAlgosBox.setMinimumSize(new Dimension(600, 200));
+        suggestedAlgosBox.setMaximumSize(new Dimension(600, 200));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String suggestedAlgosBoxBorderTitle = "Suggested algorithms based on your input";
+        suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        DefaultListModel suggestedAlgosListModel = new DefaultListModel();
+
+        // Add algo to list model
+        for (AlgorithmDescription algo : descriptions) {
+            // Add each algo name to the list model
+            suggestedAlgosListModel.addElement(algo.algName);
+        }
+
+        JList suggestedAlgosList = new JList(suggestedAlgosListModel);
+        // Display data in multiple columns
+        suggestedAlgosList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+
+        // Put the list in a scrollable area
+        JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
+        suggestedAlgosListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+
+        suggestedAlgosBox.add(suggestedAlgosListScrollPane);
+
+        // Algo description
+        Box algoDescriptionBox = Box.createVerticalBox();
+        algoDescriptionBox.setMinimumSize(new Dimension(305, 200));
+        algoDescriptionBox.setMaximumSize(new Dimension(305, 200));
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String algoDescriptionBoxBorderTitle = "Algorithm description";
+        algoDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        JTextArea algoDescriptionTextArea = new JTextArea();
+        // Use a hard coded example for now - Zhou
+        String algoDescriptionText = "FGESc is a version of FGES (Fast Greedy Search is an optimization and parallelized version of the Greedy Equivalence Search algorithm (GES)) that works with continuous variables";
+        algoDescriptionTextArea.setText(algoDescriptionText);
+
+        algoDescriptionBox.add(algoDescriptionTextArea);
+
+        alogChooserContainer.add(suggestedAlgosBox);
+        // Add some gap between algo chooser and description box
+        alogChooserContainer.add(Box.createHorizontalStrut(10), 1);
+        alogChooserContainer.add(algoDescriptionBox);
+
         // Joe's current UI components - Zhou
         algoBox.add(d3);
         algoBox.add(d1);
@@ -1654,6 +1706,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersContainer.add(dataDescriptionBox);
         algoFiltersContainer.add(Box.createVerticalStrut(10));
         algoFiltersContainer.add(resultDescriptionBox);
+        algoFiltersContainer.add(Box.createVerticalStrut(10));
+        algoFiltersContainer.add(alogChooserContainer);
         algoFiltersContainer.add(Box.createVerticalStrut(10));
         algoFiltersContainer.add(algoBox);
 
