@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -2159,6 +2160,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 					}
 					JLabel edgeTypeDistLabel = new JLabel(text);
 					edgeTypeDistLabel.setOpaque(true);
+					edgeTypeDistLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 					setEdgeLabel(edge, edgeTypeDistLabel);
 
 				}
