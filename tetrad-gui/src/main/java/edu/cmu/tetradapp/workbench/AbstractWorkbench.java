@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -558,6 +559,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 		registerKeys();
 		firePropertyChange("graph", null, graph);
 		firePropertyChange("modelChanged", null, null);
+	}
+	
+	public final void setEdgeTypeDistLabel(JComponent label){
+		
 	}
 
 	/**
@@ -2099,8 +2104,25 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 			if (graph.containsEdge(edge)) {
 				List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
 				if (edgeProb != null) {
-					String text = edge.getNode1().getName() + " -- " + edge.getNode2().getName() + "\n";
-					int i = 0;
+					String endpoint1 = edge.getEndpoint1().toString();
+					switch(endpoint1){
+						case "Tail" : endpoint1 = "-"; break;
+						case "Arrow" : endpoint1 = "&lt;"; break;
+						case "Circle" : endpoint1 = "o"; break;
+						case "Star" : endpoint1 = "&#42;"; break;
+						case "Null" : endpoint1 = "Null"; break;
+					}
+					String endpoint2 = edge.getEndpoint2().toString();
+					switch(endpoint2){
+					case "Tail" : endpoint2 = "-"; break;
+					case "Arrow" : endpoint2 = "&gt;"; break;
+					case "Circle" : endpoint2 = "o"; break;
+					case "Star" : endpoint2 = "&#42;"; break;
+					case "Null" : endpoint2 = "Null"; break;
+				}
+					String text = "<html><b>" + edge.getNode1().getName() + 
+							" " + endpoint1 + "-" + endpoint2 + " " + 
+							edge.getNode2().getName() + "</b><br>";
 					for (EdgeTypeProbability edgeTypeProb : edgeProb) {
 						String _type = "" + edgeTypeProb.getEdgeType();
 						switch (edgeTypeProb.getEdgeType()) {
@@ -2108,22 +2130,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 							_type = "no edge";
 							break;
 						case ta:
-							_type = "-->";
+							_type = "--&gt;";
 							break;
 						case at:
-							_type = "<--";
+							_type = "&lt;--";
 							break;
 						case ca:
-							_type = "o->";
+							_type = "o-&gt;";
 							break;
 						case ac:
-							_type = "<-o";
+							_type = "&lt;-o";
 							break;
 						case cc:
 							_type = "o-o";
 							break;
 						case aa:
-							_type = "<->";
+							_type = "&lt;-&gt;";
 							break;
 						case tt:
 							_type = "---";
@@ -2131,16 +2153,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 						default:
 							break;
 						}
-						text += "[" + _type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
-						if (i == 3) {
-							text += "\n";
-						} else {
-							text += " ";
+						if(edgeTypeProb.getProbability() > 0){
+							text += "[" + _type + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
+							text += "<br>";
 						}
-						i++;
 					}
-
-					setEdgeLabel(edge, new JLabel(text));
+					JLabel edgeTypeDistLabel = new JLabel(text);
+					edgeTypeDistLabel.setOpaque(true);
+					edgeTypeDistLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+					setEdgeLabel(edge, edgeTypeDistLabel);
 
 				}
 			}
