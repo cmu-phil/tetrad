@@ -60,7 +60,7 @@ public class Parameters implements TetradSerializable {
      * Returns the integer value of the given parameter, looking up its default in the
      * ParamDescriptions map.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
@@ -71,7 +71,7 @@ public class Parameters implements TetradSerializable {
      * Returns the boolean value of the given parameter, looking up its default in the
      * ParamDescriptions map.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name) {
@@ -86,7 +86,7 @@ public class Parameters implements TetradSerializable {
      * Returns the double value of the given parameter, looking up its default in the
      * ParamDescriptions map.
      *
-     * @param name The name parameter.
+     * @param name The name or the parameter.
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
@@ -97,7 +97,7 @@ public class Parameters implements TetradSerializable {
      * Returns the string value of the given parameter, looking up its default in the
      * ParamDescriptions map.
      *
-     * @param name The name parameter.
+     * @param name The name or the parameter.
      * @return The string value of this parameter.
      */
     public String getString(String name) {
@@ -108,7 +108,7 @@ public class Parameters implements TetradSerializable {
      * Returns the object value of the given parameter, looking up its default in the
      * ParamDescriptions map.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The object value of this parameter.
      */
     public Object get(String name) {
@@ -119,7 +119,7 @@ public class Parameters implements TetradSerializable {
      * Returns the integer value of the given parameter, looking up its default in the
      * ParamDescriptions map.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The integer value of this parameter.
      */
     public int getInt(String name, int defaultValue) {
@@ -129,7 +129,7 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the boolean value of the given parameter, using the given default.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name, boolean defaultValue) {
@@ -145,7 +145,7 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the object value of the given parameter, using the given default.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The double value of this parameter.
      */
     public double getDouble(String name, double defaultValue) {
@@ -155,7 +155,7 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the string value of the given parameter, using the given default.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The string value of this parameter.
      */
     public String getString(String name, String defaultValue) {
@@ -165,7 +165,7 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the object value of the given parameter, using the given default.
      *
-     * @param name The name parameter.
+     * @param name The name of the parameter.
      * @return The object value of this parameter.
      */
     public Object get(String name, Object defaultValue) {

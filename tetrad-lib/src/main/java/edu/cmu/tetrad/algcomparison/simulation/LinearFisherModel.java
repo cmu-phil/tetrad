@@ -172,7 +172,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public String getDescription() {
-        return "Large scale SEM simulation";
+        return "Linear Fisher model simulation";
     }
 
     @Override

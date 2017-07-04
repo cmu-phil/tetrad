@@ -23,6 +23,7 @@ public class LoadDataAndGraphs implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
+    private String description = "";
 
     public LoadDataAndGraphs(String path) {
         this.path = path;
@@ -77,6 +78,10 @@ public class LoadDataAndGraphs implements Simulation {
 
                 String line;
 
+                line = r.readLine();
+
+                if (line != null) this.description = line;
+
                 while ((line = r.readLine()) != null) {
                     if (line.contains(" = ")) {
                         String[] tokens = line.split(" = ");
@@ -113,23 +118,25 @@ public class LoadDataAndGraphs implements Simulation {
 
     @Override
     public String getDescription() {
-        try {
-            File file = new File(path, "parameters.txt");
-            BufferedReader r = new BufferedReader(new FileReader(file));
+        return "Load data sets and graphs from a directory" + (!("".equals(description)) ? ": " + description : "");
 
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            String line;
-
-            while ((line = r.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
-                b.append(line).append("\n");
-            }
-
-            return b.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            File file = new File(path, "parameters.txt");
+//            BufferedReader r = new BufferedReader(new FileReader(file));
+//
+//            StringBuilder b = new StringBuilder();
+//            b.append("Load data sets and graphs from a directory.").append("\n\n");
+//            String line;
+//
+//            while ((line = r.readLine()) != null) {
+//                if (line.trim().isEmpty()) continue;
+//                b.append(line).append("\n");
+//            }
+//
+//            return b.toString();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @Override

@@ -64,6 +64,7 @@ public class ExampleCompareFromFilesCondition1 {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new PercentBidirectedEdges());
+//        statistics.add(new NumAmbiguousTriples());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -96,7 +97,7 @@ public class ExampleCompareFromFilesCondition1 {
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_2.0,_penaltyDiscount_=_2"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_4.0,_penaltyDiscount_=_4"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001"));
@@ -104,8 +105,8 @@ public class ExampleCompareFromFilesCondition1 {
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(false);
-        comparison.setShowUtilities(false);
+        comparison.setSortByUtility(true);
+        comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);
 
 //        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
