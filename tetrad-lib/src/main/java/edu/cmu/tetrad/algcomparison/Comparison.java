@@ -60,8 +60,13 @@ import java.util.concurrent.RecursiveTask;
  *
  * @author jdramsey
  * @author Daniel Malinsky
+ *
  */
 public class Comparison {
+
+
+    public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+
     private boolean[] graphTypeUsed;
     private PrintStream out;
     private boolean tabDelimitedTables = false;
@@ -77,6 +82,7 @@ public class Comparison {
     private boolean savePatterns = false;
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
+    private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -356,7 +362,9 @@ public class Comparison {
             if (isSortByUtility()) {
                 out.println();
                 out.println("Sorting by utility, high to low.");
+            }
 
+            if (isShowUtilities()) {
                 out.println();
                 out.println("Weighting of statistics:");
                 out.println();
@@ -378,6 +386,8 @@ public class Comparison {
                 out.println("interval [0, 1], with higher being better.");
                 out.println();
             }
+
+            out.println("Graphs are being compared to the " + comparisonGraph.toString().replace("_", " ") + ".");
 
             out.println();
 
@@ -415,25 +425,6 @@ public class Comparison {
         out.close();
     }
 
-    private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
-        ParamDescriptions descriptions = new ParamDescriptions();
-
-        for (String name : names) {
-            ParamDescription description = descriptions.get(name);
-            Object value = parameters.get(name);
-
-            if (value instanceof Double) {
-                out.println(description.getDescription() + " = " + value.toString());
-            } else if (value instanceof Integer) {
-                out.println(description.getDescription() + " = " + value.toString());
-            } else if (value instanceof Boolean) {
-                boolean b = (Boolean) value;
-                out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
-            } else if (value instanceof String) {
-                out.println(description.getDescription() + " = " + value);
-            }
-        }
-    }
 
     /**
      * Saves simulationWrapper data.
@@ -532,25 +523,6 @@ public class Comparison {
         }
     }
 
-    private void deleteFilesThenDirectory(File dir) {
-        if (dir == null) return;
-
-        String[] entries = dir.list();
-
-        if (entries == null) return;
-
-        for (String s : entries) {
-            File currentFile = new File(dir.getPath(), s);
-
-            if (currentFile.isDirectory()) {
-                deleteFilesThenDirectory(currentFile);
-            } else {
-                currentFile.delete();
-            }
-        }
-
-        dir.delete();
-    }
 
     /**
      *
@@ -922,7 +894,6 @@ public class Comparison {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
-
     /**
      * @return True iff a column of utilities marked "W" should be shown
      * in the output.
@@ -990,6 +961,67 @@ public class Comparison {
         this.savePags = savePags;
     }
 
+
+    /**
+     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
+     */
+    public boolean isTabDelimitedTables() {
+        return tabDelimitedTables;
+    }
+
+    /**
+     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy
+     *                           pasting into Excel).
+     */
+    public void setTabDelimitedTables(boolean tabDelimitedTables) {
+        this.tabDelimitedTables = tabDelimitedTables;
+    }
+
+    /**
+     * @param saveGraphs True if all graphs should be saved to files.
+     */
+    public void setSaveGraphs(boolean saveGraphs) {
+        this.saveGraphs = saveGraphs;
+    }
+
+    /**
+     * @return True if all graphs should be saved to files.
+     */
+    public boolean isSaveGraphs() {
+        return saveGraphs;
+    }
+
+    /**
+     * @return True if data should be copied before analyzing it.
+     */
+    public boolean isCopyData() {
+        return copyData;
+    }
+
+    /**
+     * @param copyData True if data should be copied before analyzing it.
+     */
+    public void setCopyData(boolean copyData) {
+        this.copyData = copyData;
+    }
+
+
+    /**
+     * The type of graph the results are compared to.
+     */
+    public ComparisonGraph getComparisonGraph() {
+        return comparisonGraph;
+    }
+
+    /**
+     * The type of graph the results are compared to.
+     */
+    public void setComparisonGraph(ComparisonGraph comparisonGraph) {
+        if (comparisonGraph == null) throw new NullPointerException("Null compare graph.");
+        this.comparisonGraph = comparisonGraph;
+    }
+
+
     private class AlgorithmTask extends RecursiveTask<Boolean> {
         private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
         private List<AlgorithmWrapper> algorithmWrappers;
@@ -1017,6 +1049,47 @@ public class Comparison {
                     simulationWrappers, statistics, numGraphTypes, allStats, run);
             return true;
         }
+    }
+
+    private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
+        ParamDescriptions descriptions = new ParamDescriptions();
+
+        for (String name : names) {
+            ParamDescription description = descriptions.get(name);
+            Object value = parameters.get(name);
+
+            if (value instanceof Double) {
+                out.println(description.getDescription() + " = " + value.toString());
+            } else if (value instanceof Integer) {
+                out.println(description.getDescription() + " = " + value.toString());
+            } else if (value instanceof Boolean) {
+                boolean b = (Boolean) value;
+                out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
+            } else if (value instanceof String) {
+                out.println(description.getDescription() + " = " + value);
+            }
+        }
+    }
+
+
+    private void deleteFilesThenDirectory(File dir) {
+        if (dir == null) return;
+
+        String[] entries = dir.list();
+
+        if (entries == null) return;
+
+        for (String s : entries) {
+            File currentFile = new File(dir.getPath(), s);
+
+            if (currentFile.isDirectory()) {
+                deleteFilesThenDirectory(currentFile);
+            } else {
+                currentFile.delete();
+            }
+        }
+
+        dir.delete();
     }
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
@@ -1050,7 +1123,6 @@ public class Comparison {
             if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
                 ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
                 external.setSimulation(simulationWrapper.getSimulation());
-//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
                 external.setPath(resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             }
@@ -1081,12 +1153,6 @@ public class Comparison {
             return;
         }
 
-        String path = null;
-
-//        if (simulationWrapper.getSimulation() instanceof SimulationPath) {
-//            path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
-//        }
-//
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
@@ -1102,7 +1168,19 @@ public class Comparison {
 
         Graph[] est = new Graph[numGraphTypes];
 
-        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
+        Graph comparisonGraph;
+
+        if (this.comparisonGraph == ComparisonGraph.true_DAG) {
+            comparisonGraph = new EdgeListGraph(trueGraph);
+        } else if (this.comparisonGraph == ComparisonGraph.Pattern_of_the_true_DAG) {
+            comparisonGraph = new EdgeListGraph(trueGraph);
+        } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
+            comparisonGraph = new EdgeListGraph(trueGraph);
+        } else {
+            throw new IllegalArgumentException("Unrecognized graph type.");
+        }
+
+//        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
 
         est[0] = out;
         graphTypeUsed[0] = true;
@@ -1178,49 +1256,6 @@ public class Comparison {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
-     */
-    public boolean isTabDelimitedTables() {
-        return tabDelimitedTables;
-    }
-
-    /**
-     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy
-     *                           pasting into Excel).
-     */
-    public void setTabDelimitedTables(boolean tabDelimitedTables) {
-        this.tabDelimitedTables = tabDelimitedTables;
-    }
-
-    /**
-     * @param saveGraphs True if all graphs should be saved to files.
-     */
-    public void setSaveGraphs(boolean saveGraphs) {
-        this.saveGraphs = saveGraphs;
-    }
-
-    /**
-     * @return True if all graphs should be saved to files.
-     */
-    public boolean isSaveGraphs() {
-        return saveGraphs;
-    }
-
-    /**
-     * @return True if data should be copied before analyzing it.
-     */
-    public boolean isCopyData() {
-        return copyData;
-    }
-
-    /**
-     * @param copyData True if data should be copied before analyzing it.
-     */
-    public void setCopyData(boolean copyData) {
-        this.copyData = copyData;
     }
 
     private enum Mode {

@@ -743,7 +743,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * True if this graph has been "stamped" as a PAG. The search algorithm should do this.
+     * True if this graph has been "stamped" as a PAG_of_the_true_DAG. The search algorithm should do this.
      */
     @Override
     public boolean isPag() {
