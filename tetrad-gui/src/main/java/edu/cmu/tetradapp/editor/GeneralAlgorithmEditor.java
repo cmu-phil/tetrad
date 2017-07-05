@@ -237,12 +237,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
 
         descriptions.add(new AlgorithmDescription(AlgName.BootstrapFGES,
-        		AlgType.bootstrapping, OracleType.Score));
-        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
-        		AlgType.bootstrapping, OracleType.Score));
-        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
-        		AlgType.bootstrapping, OracleType.Score));
-        	
+                AlgType.bootstrapping, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
+                AlgType.bootstrapping, OracleType.Score));
+        descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
+                AlgType.bootstrapping, OracleType.Score));
+
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescription description : descriptions) {
@@ -1078,17 +1078,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
                 break;
 
-             // Bootstrapping
-             case BootstrapFGES:
-             	    algorithm = new BootstrapFges(scoreWrapper);
-             	    break;
-             case BootstrapGFCI:
-             	    algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
-             	    break;
-             case BootstrapRFCI:
-             	    algorithm = new BootstrapRfci(independenceWrapper);
-             	    break;
-                
+            // Bootstrapping
+            case BootstrapFGES:
+                algorithm = new BootstrapFges(scoreWrapper);
+                break;
+            case BootstrapGFCI:
+                algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
+                break;
+            case BootstrapRFCI:
+                algorithm = new BootstrapRfci(independenceWrapper);
+                break;
+
             default:
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
@@ -1293,88 +1293,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Based on Harry's mockup - Zhou
         Box algoGuideBox = Box.createHorizontalBox();
-
-        // How many variables
-        Box howManyVariablesBox = Box.createHorizontalBox();
-
-        // Add label into this label box to size
-        Box howManyVariablesLabelBox = Box.createHorizontalBox();
-        howManyVariablesLabelBox.setPreferredSize(labelSize);
-        howManyVariablesLabelBox.add(new JLabel("Variables count: "));
-
-        // Option 1
-        Box howManyVariablesOption1Box = Box.createHorizontalBox();
-        howManyVariablesOption1Box.setPreferredSize(new Dimension(175, 30));
-        JRadioButton howManyVariablesS = new JRadioButton("3-30");
-
-        // Option 2
-        Box howManyVariablesOption2Box = Box.createHorizontalBox();
-        howManyVariablesOption2Box.setPreferredSize(new Dimension(175, 30));
-        JRadioButton howManyVariablesM = new JRadioButton("31-300");
-
-        // Option 3
-        Box howManyVariablesOption3Box = Box.createHorizontalBox();
-        howManyVariablesOption3Box.setPreferredSize(new Dimension(175, 30));
-        JRadioButton howManyVariablesL = new JRadioButton("301-3000");
-
-        // Option 4
-        Box howManyVariablesOption4Box = Box.createHorizontalBox();
-        howManyVariablesOption4Box.setPreferredSize(new Dimension(175, 30));
-        JRadioButton howManyVariablesXL = new JRadioButton("> 3000");
-
-        // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup howManyVariablesBtnGrp = new ButtonGroup();
-        howManyVariablesBtnGrp.add(howManyVariablesS);
-        howManyVariablesBtnGrp.add(howManyVariablesM);
-        howManyVariablesBtnGrp.add(howManyVariablesL);
-        howManyVariablesBtnGrp.add(howManyVariablesXL);
-
-        // Add to each option box
-        howManyVariablesOption1Box.add(howManyVariablesS);
-        howManyVariablesOption2Box.add(howManyVariablesM);
-        howManyVariablesOption3Box.add(howManyVariablesL);
-        howManyVariablesOption4Box.add(howManyVariablesXL);
-
-        // Add to containing box
-        howManyVariablesBox.add(howManyVariablesLabelBox);
-        howManyVariablesBox.add(howManyVariablesOption1Box);
-        howManyVariablesBox.add(howManyVariablesOption2Box);
-        howManyVariablesBox.add(howManyVariablesOption3Box);
-        howManyVariablesBox.add(howManyVariablesOption4Box);
-        howManyVariablesBox.add(Box.createHorizontalGlue());
-
-        // Multiple datasets?
-        Box multipleDatasetsBox = Box.createHorizontalBox();
-
-        // Add label into this label box to size
-        Box multipleDatasetsLabelBox = Box.createHorizontalBox();
-        multipleDatasetsLabelBox.setPreferredSize(labelSize);
-        multipleDatasetsLabelBox.add(new JLabel("Multiple datasets: "));
-
-        // Option 1
-        Box multipleDatasetsOption1Box = Box.createHorizontalBox();
-        multipleDatasetsOption1Box.setPreferredSize(new Dimension(175, 30));
-        JRadioButton multipleDatasetsYes = new JRadioButton("Yes");
-
-        // Option 2
-        Box multipleDatasetsOption2Box = Box.createHorizontalBox();
-        multipleDatasetsOption2Box.setPreferredSize(new Dimension(175, 30));
-        JRadioButton multipleDatasetsNo = new JRadioButton("No");
-
-        // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup multipleDatasetsBtnGrp = new ButtonGroup();
-        multipleDatasetsBtnGrp.add(multipleDatasetsYes);
-        multipleDatasetsBtnGrp.add(multipleDatasetsNo);
-
-        // Add to each option box
-        multipleDatasetsOption1Box.add(multipleDatasetsYes);
-        multipleDatasetsOption2Box.add(multipleDatasetsNo);
-
-        // Add to contianing box
-        multipleDatasetsBox.add(multipleDatasetsLabelBox);
-        multipleDatasetsBox.add(multipleDatasetsOption1Box);
-        multipleDatasetsBox.add(multipleDatasetsOption2Box);
-        multipleDatasetsBox.add(Box.createHorizontalGlue());
 
         // Not ready yet - Zhou
 //        // Do you have time-series data?
@@ -1629,8 +1547,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 // Just enable disabled buttons, do not change the previous selections - Zhou
                 if (button.isSelected()) {
                     // Reset/clear all selections - the radio bottons and checkboxes
-                    howManyVariablesBtnGrp.clearSelection();
-                    multipleDatasetsBtnGrp.clearSelection();
                     varLinearRelationshipsBtnGrp.clearSelection();
                     gaussianVariablesBtnGrp.clearSelection();
                     includeUnmeasuredConfoundersBtnGrp.clearSelection();
@@ -1653,50 +1569,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     }
 
                     // Disable all selections
-                    Enumeration<AbstractButton> howManyVariablesButtons = howManyVariablesBtnGrp.getElements();
-                    while (howManyVariablesButtons.hasMoreElements()) {
-                        AbstractButton btn = howManyVariablesButtons.nextElement();
-
-                        if (btn.isEnabled()) {
-                            btn.setEnabled(false);
-                        }
-                    }
-
-                    Enumeration<AbstractButton> multipleDatasetsButtons = multipleDatasetsBtnGrp.getElements();
-                    while (multipleDatasetsButtons.hasMoreElements()) {
-                        AbstractButton btn = multipleDatasetsButtons.nextElement();
-
-                        if (btn.isEnabled()) {
-                            btn.setEnabled(false);
-                        }
-                    }
-
-                    Enumeration<AbstractButton> varLinearRelationshipsButtons = varLinearRelationshipsBtnGrp.getElements();
-                    while (varLinearRelationshipsButtons.hasMoreElements()) {
-                        AbstractButton btn = varLinearRelationshipsButtons.nextElement();
-
-                        if (btn.isEnabled()) {
-                            btn.setEnabled(false);
-                        }
-                    }
-
-                    Enumeration<AbstractButton> gaussianVariablesButtons = gaussianVariablesBtnGrp.getElements();
-                    while (gaussianVariablesButtons.hasMoreElements()) {
-                        AbstractButton btn = gaussianVariablesButtons.nextElement();
-
-                        if (btn.isEnabled()) {
-                            btn.setEnabled(false);
-                        }
-                    }
-
-                    Enumeration<AbstractButton> includeUnmeasuredConfoundersButtons = includeUnmeasuredConfoundersBtnGrp.getElements();
-                    while (includeUnmeasuredConfoundersButtons.hasMoreElements()) {
-                        AbstractButton btn = includeUnmeasuredConfoundersButtons.nextElement();
-
-                        if (btn.isEnabled()) {
-                            btn.setEnabled(false);
-                        }
-                    }
+                    enableButtonGroup(varLinearRelationshipsBtnGrp, false);
+                    enableButtonGroup(gaussianVariablesBtnGrp, false);
+                    enableButtonGroup(includeUnmeasuredConfoundersBtnGrp, false);
 
                     // Have to take care of the outputGoals since we can't use buttonGroup on it
                     outputGoalsPairwiseOrientation.setEnabled(false);
@@ -1716,35 +1591,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 // Just enable disabled buttons, do not change the previous selections - Zhou
                 if (button.isSelected()) {
                     // Enable all selections
-                    Enumeration<AbstractButton> howManyVariablesButtons = howManyVariablesBtnGrp.getElements();
-                    while (howManyVariablesButtons.hasMoreElements()) {
-                        AbstractButton btn = howManyVariablesButtons.nextElement();
-                        btn.setEnabled(true);
-                    }
-
-                    Enumeration<AbstractButton> multipleDatasetsButtons = multipleDatasetsBtnGrp.getElements();
-                    while (multipleDatasetsButtons.hasMoreElements()) {
-                        AbstractButton btn = multipleDatasetsButtons.nextElement();
-                        btn.setEnabled(true);
-                    }
-
-                    Enumeration<AbstractButton> varLinearRelationshipsButtons = varLinearRelationshipsBtnGrp.getElements();
-                    while (varLinearRelationshipsButtons.hasMoreElements()) {
-                        AbstractButton btn = varLinearRelationshipsButtons.nextElement();
-                        btn.setEnabled(true);
-                    }
-
-                    Enumeration<AbstractButton> gaussianVariablesButtons = gaussianVariablesBtnGrp.getElements();
-                    while (gaussianVariablesButtons.hasMoreElements()) {
-                        AbstractButton btn = gaussianVariablesButtons.nextElement();
-                        btn.setEnabled(true);
-                    }
-
-                    Enumeration<AbstractButton> includeUnmeasuredConfoundersButtons = includeUnmeasuredConfoundersBtnGrp.getElements();
-                    while (includeUnmeasuredConfoundersButtons.hasMoreElements()) {
-                        AbstractButton btn = includeUnmeasuredConfoundersButtons.nextElement();
-                        btn.setEnabled(true);
-                    }
+                    enableButtonGroup(varLinearRelationshipsBtnGrp, true);
+                    enableButtonGroup(gaussianVariablesBtnGrp, true);
+                    enableButtonGroup(includeUnmeasuredConfoundersBtnGrp, true);
 
                     // Have to take care of the outputGoals since we can't use buttonGroup on it
                     outputGoalsPairwiseOrientation.setEnabled(true);
@@ -1818,8 +1667,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         dataDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(dataDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Items to put in data description box
-        dataDescriptionBox.add(howManyVariablesBox);
-        dataDescriptionBox.add(multipleDatasetsBox);
         //dataDescriptionBox.add(timeSeriesDataBox);
         dataDescriptionBox.add(varLinearRelationshipsBox);
         dataDescriptionBox.add(gaussianVariablesBox);
@@ -1943,6 +1790,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         runner.setAlgorithm(algorithm);
 
         return panel;
+    }
+
+    /**
+     * Enable or disable the selections in a button group
+     *
+     * @param btnGrp
+     * @param flag
+     */
+    private void enableButtonGroup(ButtonGroup btnGrp, Boolean flag) {
+        Enumeration<AbstractButton> buttons = btnGrp.getElements();
+        while (buttons.hasMoreElements()) {
+            AbstractButton btn = buttons.nextElement();
+            btn.setEnabled(flag);
+        }
     }
 
     private Parameters getParameters() {
