@@ -1864,17 +1864,39 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
+        // Add components to alogChooserContainer
         alogChooserContainer.add(suggestedAlgosBox);
         // Add some gap between algo chooser and description box
         alogChooserContainer.add(Box.createHorizontalStrut(10), 1);
         alogChooserContainer.add(algoDescriptionBox);
 
+        // Choose corresponding test and score based on algorithm
+        Box testAndScoreBox = Box.createHorizontalBox();
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String testAndScoreBoxBorderTitle = "Choose corresponding test and score based on algorithm";
+        testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        testAndScoreBox.add(d1);
+        // Add some gap between test and score
+        testAndScoreBox.add(Box.createHorizontalStrut(10), 1);
+        testAndScoreBox.add(d2);
+
+        // Parameters
+        Box parametersBox = Box.createVerticalBox();
+
+        // Use a titled border with 5 px inside padding - Zhou
+        String parametersBoxBorderTitle = "Specify algorithm parameters";
+        parametersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(parametersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+
+        parametersBox.add(d0);
+
         // Joe's current UI components - Zhou
-        algoBox.add(d3);
-        algoBox.add(d1);
-        algoBox.add(d2);
+        //algoBox.add(d3);
+        //algoBox.add(d1);
+        //algoBox.add(d2);
 //        c.add(Box.createVerticalGlue());
-        algoBox.add(d0);
+        //algoBox.add(d0);
         algoBox.add(Box.createVerticalStrut(10));
         algoBox.add(scroll);
 
@@ -1887,7 +1909,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersContainer.add(Box.createVerticalStrut(10));
         algoFiltersContainer.add(alogChooserContainer);
         algoFiltersContainer.add(Box.createVerticalStrut(10));
-        algoFiltersContainer.add(algoBox);
+        algoFiltersContainer.add(testAndScoreBox);
+        algoFiltersContainer.add(Box.createVerticalStrut(10));
+        algoFiltersContainer.add(parametersBox);
+        algoFiltersContainer.add(Box.createVerticalStrut(10));
+        //algoFiltersContainer.add(algoBox);
 
         // Add to big panel
         panel.add(algoFiltersContainer);
