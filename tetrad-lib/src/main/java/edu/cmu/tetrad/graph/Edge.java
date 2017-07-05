@@ -33,373 +33,425 @@ import java.util.List;
  * Represents an edge node1 *-# node2 where * and # are endpoints of type
  * Endpoint--that is, Endpoint.TAIL, Endpoint.ARROW, or Endpoint.CIRCLE.
  * <p>
- * Note that because speed is of the essence, and Edge cannot be compared
- * to an object of any other type; this will throw an exception.
+ * Note that because speed is of the essence, and Edge cannot be compared to an
+ * object of any other type; this will throw an exception.
  *
  * @author Joseph Ramsey
  */
 public class Edge implements TetradSerializable, Comparable {
-    static final long serialVersionUID = 23L;
+	static final long serialVersionUID = 23L;
 
-    public enum Property {dd, nl, pd, pl}
+	public enum Property {
+		dd, nl, pd, pl
+	}
 
+	private Node node1;
+	private Node node2;
+	private Endpoint endpoint1;
+	private Endpoint endpoint2;
 
-    private Node node1;
-    private Node node2;
-    private Endpoint endpoint1;
-    private Endpoint endpoint2;
+	// Usual coloring--set to something else for a special line color.
+	private transient Color lineColor = null;
 
-    // Usual coloring--set to something else for a special line color.
-    private transient Color lineColor = null;
+	private boolean dashed = false;
 
-    private boolean dashed = false;
+	private List<Property> properties = new ArrayList<>();
 
-    private List<Property> properties = new ArrayList<>();
+    private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
 
-    //=========================CONSTRUCTORS============================//
+	// =========================CONSTRUCTORS============================//
 
-    /**
-     * Constructs a new edge by specifying the nodes it connects and the
-     * endpoint types.
-     *
-     * @param node1     the first node
-     * @param node2     the second node            _
-     * @param endpoint1 the endpoint at the first node
-     * @param endpoint2 the endpoint at the second node
-     */
-    public Edge(Node node1, Node node2, Endpoint endpoint1,
-                Endpoint endpoint2) {
-        if (node1 == null || node2 == null) {
-            throw new NullPointerException("Nodes must not be null.");
+	/**
+	 * Constructs a new edge by specifying the nodes it connects and the
+	 * endpoint types.
+	 *
+	 * @param node1
+	 *            the first node
+	 * @param node2
+	 *            the second node _
+	 * @param endpoint1
+	 *            the endpoint at the first node
+	 * @param endpoint2
+	 *            the endpoint at the second node
+	 */
+	public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2) {
+		if (node1 == null || node2 == null) {
+			throw new NullPointerException("Nodes must not be null.");
+		}
+
+		if (endpoint1 == null || endpoint2 == null) {
+			throw new NullPointerException("Endpoints must not be null.");
+		}
+
+		// Flip edges pointing left the other way.
+		if (pointingLeft(endpoint1, endpoint2)) {
+			this.node1 = node2;
+			this.node2 = node1;
+			this.endpoint1 = endpoint2;
+			this.endpoint2 = endpoint1;
+		} else {
+			this.node1 = node1;
+			this.node2 = node2;
+			this.endpoint1 = endpoint1;
+			this.endpoint2 = endpoint2;
+		}
+	}
+
+	public Edge(Edge edge) {
+		this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
+		this.lineColor = edge.getLineColor();
+	}
+
+	/**
+	 * Generates a simple exemplar of this class to test serialization.
+	 */
+	public static Edge serializableInstance() {
+		return new Edge(GraphNode.serializableInstance(), GraphNode.serializableInstance(), Endpoint.ARROW,
+				Endpoint.ARROW);
+	}
+
+	// ==========================PUBLIC METHODS===========================//
+
+	/**
+	 * @return the A node.
+	 */
+	public final Node getNode1() {
+		return this.node1;
+	}
+
+	/**
+	 * @return the B node.
+	 */
+	public final Node getNode2() {
+		return this.node2;
+	}
+
+	/**
+	 * @return the endpoint of the edge at the A node.
+	 */
+	public final Endpoint getEndpoint1() {
+		return this.endpoint1;
+	}
+
+	/**
+	 * @return the endpoint of the edge at the B node.
+	 */
+	public final Endpoint getEndpoint2() {
+		return this.endpoint2;
+	}
+
+	public final void setEndpoint1(Endpoint e) {
+		this.endpoint1 = e;
+	}
+
+	public final void setEndpoint2(Endpoint e) {
+		this.endpoint2 = e;
+	}
+
+	/**
+	 * @return the endpoint nearest to the given node.
+	 * @throws IllegalArgumentException
+	 *             if the given node is not along the edge.
+	 */
+	public final Endpoint getProximalEndpoint(Node node) {
+		if (this.node1 == node) {
+			return getEndpoint1();
+		} else if (this.node2 == node) {
+			return getEndpoint2();
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return the endpoint furthest from the given node.
+	 * @throws IllegalArgumentException
+	 *             if the given node is not along the edge.
+	 */
+	public final Endpoint getDistalEndpoint(Node node) {
+		if (this.node1 == node) {
+			return getEndpoint2();
+		} else if (this.node2 == node) {
+			return getEndpoint1();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Traverses the edge in an undirected fashion--given one node along the
+	 * edge, returns the node at the opposite end of the edge.
+	 */
+	public final Node getDistalNode(Node node) {
+		if (this.node1 == node) {
+			return this.node2;
+		}
+
+		if (this.node2 == node) {
+			return this.node1;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return true just in case this edge is directed.
+	 */
+	public boolean isDirected() {
+		return Edges.isDirectedEdge(this);
+	}
+
+	/**
+	 * @return true just in case the edge is pointing toward the given node--
+	 *         that is, x --> node or x o--> node.
+	 */
+	public boolean pointsTowards(Node node) {
+		Endpoint proximal = getProximalEndpoint(node);
+		Endpoint distal = getDistalEndpoint(node);
+		return (proximal == Endpoint.ARROW && (distal == Endpoint.TAIL || distal == Endpoint.CIRCLE));
+	}
+
+	/**
+	 * @return the edge with endpoints reversed.
+	 */
+	public Edge reverse() {
+		return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+	}
+
+	/**
+	 * Produces a string representation of the edge.
+	 */
+	public final String toString() {
+		StringBuilder buf = new StringBuilder();
+
+		Endpoint endptTypeA = getEndpoint1();
+		Endpoint endptTypeB = getEndpoint2();
+
+		buf.append(getNode1());
+		buf.append(" ");
+
+		if (endptTypeA == Endpoint.TAIL) {
+			buf.append("-");
+		} else if (endptTypeA == Endpoint.ARROW) {
+			buf.append("<");
+		} else if (endptTypeA == Endpoint.CIRCLE) {
+			buf.append("o");
+		}
+
+		buf.append("-");
+
+		if (endptTypeB == Endpoint.TAIL) {
+			buf.append("-");
+		} else if (endptTypeB == Endpoint.ARROW) {
+			buf.append(">");
+		} else if (endptTypeB == Endpoint.CIRCLE) {
+			buf.append("o");
+		}
+
+		buf.append(" ");
+		buf.append(getNode2());
+
+        // Bootstrapping edge type distribution
+        List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
+        if(edgeTypeDist.size() > 0){
+            buf.append(" ");
+            for (int i = 0; i < edgeTypeDist.size(); i++) {
+            	EdgeTypeProbability etp = edgeTypeDist.get(i);
+    			String _type = "" + etp.getEdgeType();
+    			switch (etp.getEdgeType()) {
+    			case nil:
+    				_type = "no edge";
+    				break;
+    			case ta:
+    				_type = "-->";
+    				break;
+    			case at:
+    				_type = "<--";
+    				break;
+    			case ca:
+    				_type = "o->";
+    				break;
+    			case ac:
+    				_type = "<-o";
+    				break;
+    			case cc:
+    				_type = "o-o";
+    				break;
+    			case aa:
+    				_type = "<->";
+    				break;
+    			case tt:
+    				_type = "---";
+    				break;
+    			default:
+    				break;
+    			}
+    			
+    			buf.append("[" + _type + "]:" + String.format("%.4f", etp.getProbability()));
+            }
         }
+        
+		return buf.toString();
+	}
 
-        if (endpoint1 == null || endpoint2 == null) {
-            throw new NullPointerException("Endpoints must not be null.");
-        }
+	public final int hashCode() {
+		return node1.hashCode() + node2.hashCode();
+	}
 
-        // Flip edges pointing left the other way.
-        if (pointingLeft(endpoint1, endpoint2)) {
-            this.node1 = node2;
-            this.node2 = node1;
-            this.endpoint1 = endpoint2;
-            this.endpoint2 = endpoint1;
-        } else {
-            this.node1 = node1;
-            this.node2 = node2;
-            this.endpoint1 = endpoint1;
-            this.endpoint2 = endpoint2;
-        }
-    }
+	/**
+	 * Two edges are equal just in case they connect the same nodes and have the
+	 * same endpoints proximal to each node.
+	 */
+	public final boolean equals(Object o) {
+		if (o == this)
+			return true;
+		if (!(o instanceof Edge))
+			return false;
 
-    public Edge(Edge edge) {
-        this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
-        this.lineColor = edge.getLineColor();
-    }
+		Edge edge = (Edge) o;
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static Edge serializableInstance() {
-        return new Edge(GraphNode.serializableInstance(),
-                GraphNode.serializableInstance(), Endpoint.ARROW,
-                Endpoint.ARROW);
-    }
+		if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
+			Node node1 = getNode1();
+			Node node2 = getNode2();
+			Node node1b = edge.getNode1();
+			Node node2b = edge.getNode2();
 
-    //==========================PUBLIC METHODS===========================//
+			Endpoint end1 = getEndpoint1();
+			Endpoint end2 = getEndpoint2();
+			Endpoint end1b = edge.getEndpoint1();
+			Endpoint end2b = edge.getEndpoint2();
 
-    /**
-     * @return the A node.
-     */
-    public final Node getNode1() {
-        return this.node1;
-    }
+			boolean equal;
 
-    /**
-     * @return the B node.
-     */
-    public final Node getNode2() {
-        return this.node2;
-    }
+			// if ((node1 == node1b && node2 == node2b) || (node1 == node2b &&
+			// node2 == node1b)) {
+			// System.out.println();
+			// }
 
-    /**
-     * @return the endpoint of the edge at the A node.
-     */
-    public final Endpoint getEndpoint1() {
-        return this.endpoint1;
-    }
+			if (node1 == node1b && node2 == node2b) {
+				equal = end1 == end1b && end2 == end2b;
+			} else
+				equal = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
 
-    /**
-     * @return the endpoint of the edge at the B node.
-     */
-    public final Endpoint getEndpoint2() {
-        return this.endpoint2;
-    }
+			return equal;
+		} else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
+			String name1 = getNode1().getName();
+			String name2 = getNode2().getName();
+			String name1b = edge.getNode1().getName();
+			String name2b = edge.getNode2().getName();
 
-    public final void setEndpoint1(Endpoint e) {
-        this.endpoint1 = e;
-    }
+			Endpoint end1 = getEndpoint1();
+			Endpoint end2 = getEndpoint2();
+			Endpoint end1b = edge.getEndpoint1();
+			Endpoint end2b = edge.getEndpoint2();
 
-    public final void setEndpoint2(Endpoint e) {
-        this.endpoint2 = e;
-    }
+			if (name1.equals(name1b) && name2.equals(name2b)) {
+				return end1 == end1b && end2 == end2b;
+			} else
+				return name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
+		} else {
+			throw new IllegalStateException();
+		}
+	}
 
+	public int compareTo(Object o) {
+		Edge _edge = (Edge) o;
 
-    /**
-     * @return the endpoint nearest to the given node.
-     * @throws IllegalArgumentException if the given node is not along the
-     *                                  edge.
-     */
-    public final Endpoint getProximalEndpoint(Node node) {
-        if (this.node1 == node) {
-            return getEndpoint1();
-        } else if (this.node2 == node) {
-            return getEndpoint2();
-        }
+		int comp1 = getNode1().compareTo(_edge.getNode1());
 
-        return null;
-    }
+		if (comp1 != 0) {
+			return comp1;
+		}
 
-    /**
-     * @return the endpoint furthest from the given node.
-     * @throws IllegalArgumentException if the given node is not along the
-     *                                  edge.
-     */
-    public final Endpoint getDistalEndpoint(Node node) {
-        if (this.node1 == node) {
-            return getEndpoint2();
-        } else if (this.node2 == node) {
-            return getEndpoint1();
-        }
+		return getNode2().compareTo(_edge.getNode2());
+	}
 
-        return null;
-    }
+	// ===========================PRIVATE METHODS===========================//
 
-    /**
-     * Traverses the edge in an undirected fashion--given one node along the
-     * edge, returns the node at the opposite end of the edge.
-     */
-    public final Node getDistalNode(Node node) {
-        if (this.node1 == node) {
-            return this.node2;
-        }
+	private boolean pointingLeft(Endpoint endpoint1, Endpoint endpoint2) {
+		return (endpoint1 == Endpoint.ARROW && (endpoint2 == Endpoint.TAIL || endpoint2 == Endpoint.CIRCLE));
+	}
 
-        if (this.node2 == node) {
-            return this.node1;
-        }
+	/**
+	 * Adds semantic checks to the default deserialization method. This method
+	 * must have the standard signature for a readObject method, and the body of
+	 * the method must begin with "s.defaultReadObject();". Other than that, any
+	 * semantic checks can be specified and do not need to stay the same from
+	 * version to version. A readObject method of this form may be added to any
+	 * class, even if Tetrad sessions were previously saved out using a version
+	 * of the class that didn't include it. (That's what the
+	 * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+	 *
+	 * @throws java.io.IOException
+	 * @throws ClassNotFoundException
+	 */
+	private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
+		s.defaultReadObject();
 
-        return null;
-    }
+		if (node1 == null) {
+			throw new NullPointerException();
+		}
 
+		if (node2 == null) {
+			throw new NullPointerException();
+		}
 
-    /**
-     * @return true just in case this edge is directed.
-     */
-    public boolean isDirected() {
-        return Edges.isDirectedEdge(this);
-    }
+		if (endpoint1 == null) {
+			throw new NullPointerException();
+		}
 
-    /**
-     * @return true just in case the edge is pointing toward the given node--
-     * that is, x --> node or x o--> node.
-     */
-    public boolean pointsTowards(Node node) {
-        Endpoint proximal = getProximalEndpoint(node);
-        Endpoint distal = getDistalEndpoint(node);
-        return (proximal == Endpoint.ARROW &&
-                (distal == Endpoint.TAIL || distal == Endpoint.CIRCLE));
-    }
+		if (endpoint2 == null) {
+			throw new NullPointerException();
+		}
+	}
 
-    /**
-     * @return the edge with endpoints reversed.
-     */
-    public Edge reverse() {
-        return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
-    }
+	public boolean isNull() {
+		return endpoint1 == Endpoint.NULL && endpoint2 == Endpoint.NULL;
+	}
 
-    /**
-     * Produces a string representation of the edge.
-     */
-    public final String toString() {
-        StringBuilder buf = new StringBuilder();
+	public Color getLineColor() {
+		return this.lineColor;
+	}
 
-        Endpoint endptTypeA = getEndpoint1();
-        Endpoint endptTypeB = getEndpoint2();
+	public void setLineColor(Color lineColor) {
+		if (lineColor != null) {
+			this.lineColor = lineColor;
+		}
+	}
 
-        buf.append(getNode1());
-        buf.append(" ");
+	public boolean isDashed() {
+		return dashed;
+	}
 
-        if (endptTypeA == Endpoint.TAIL) {
-            buf.append("-");
-        } else if (endptTypeA == Endpoint.ARROW) {
-            buf.append("<");
-        } else if (endptTypeA == Endpoint.CIRCLE) {
-            buf.append("o");
-        }
+	public void setDashed(boolean dashed) {
+		this.dashed = dashed;
+	}
 
-        buf.append("-");
+	public void addProperty(Property property) {
+		if (!properties.contains(property)) {
+			this.properties.add(property);
+		}
+	}
 
-        if (endptTypeB == Endpoint.TAIL) {
-            buf.append("-");
-        } else if (endptTypeB == Endpoint.ARROW) {
-            buf.append(">");
-        } else if (endptTypeB == Endpoint.CIRCLE) {
-            buf.append("o");
-        }
+	public void removeProperty(Property property) {
+		this.properties.remove(property);
+	}
 
-        buf.append(" ");
-        buf.append(getNode2());
+	public ArrayList<Property> getProperties() {
+		return new ArrayList<>(this.properties);
+	}
 
-        return buf.toString();
-    }
+	public void addEdgeTypeProbability(EdgeTypeProbability prob) {
+		if (!edgeTypeProbabilities.contains(prob)) {
+			this.edgeTypeProbabilities.add(prob);
+		}
+	}
 
-    public final int hashCode() {
-        return node1.hashCode() + node2.hashCode();
-    }
+	public void removeEdgeTypeProbability(EdgeTypeProbability prob) {
+		this.edgeTypeProbabilities.remove(prob);
+	}
 
-    /**
-     * Two edges are equal just in case they connect the same nodes and have the
-     * same endpoints proximal to each node.
-     */
-    public final boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Edge)) return false;
-
-        Edge edge = (Edge) o;
-
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            Node node1 = getNode1();
-            Node node2 = getNode2();
-            Node node1b = edge.getNode1();
-            Node node2b = edge.getNode2();
-
-            Endpoint end1 = getEndpoint1();
-            Endpoint end2 = getEndpoint2();
-            Endpoint end1b = edge.getEndpoint1();
-            Endpoint end2b = edge.getEndpoint2();
-
-            boolean equal;
-
-//            if ((node1 == node1b && node2 == node2b) || (node1 == node2b && node2 == node1b)) {
-//                System.out.println();
-//            }
-
-            if (node1 == node1b && node2 == node2b) {
-                equal = end1 == end1b && end2 == end2b;
-            } else
-                equal = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
-
-            return equal;
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            String name1 = getNode1().getName();
-            String name2 = getNode2().getName();
-            String name1b = edge.getNode1().getName();
-            String name2b = edge.getNode2().getName();
-
-            Endpoint end1 = getEndpoint1();
-            Endpoint end2 = getEndpoint2();
-            Endpoint end1b = edge.getEndpoint1();
-            Endpoint end2b = edge.getEndpoint2();
-
-            if (name1.equals(name1b) && name2.equals(name2b)) {
-                return end1 == end1b && end2 == end2b;
-            } else
-                return name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
-        } else {
-            throw new IllegalStateException();
-        }
-    }
-
-    public int compareTo(Object o) {
-        Edge _edge = (Edge) o;
-
-        int comp1 = getNode1().compareTo(_edge.getNode1());
-
-        if (comp1 != 0) {
-            return comp1;
-        }
-
-        return getNode2().compareTo(_edge.getNode2());
-    }
-
-    //===========================PRIVATE METHODS===========================//
-
-    private boolean pointingLeft(Endpoint endpoint1, Endpoint endpoint2) {
-        return (endpoint1 == Endpoint.ARROW &&
-                (endpoint2 == Endpoint.TAIL || endpoint2 == Endpoint.CIRCLE));
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (node1 == null) {
-            throw new NullPointerException();
-        }
-
-        if (node2 == null) {
-            throw new NullPointerException();
-        }
-
-        if (endpoint1 == null) {
-            throw new NullPointerException();
-        }
-
-        if (endpoint2 == null) {
-            throw new NullPointerException();
-        }
-    }
-
-    public boolean isNull() {
-        return endpoint1 == Endpoint.NULL && endpoint2 == Endpoint.NULL;
-    }
-
-    public Color getLineColor() {
-        return this.lineColor;
-    }
-
-    public void setLineColor(Color lineColor) {
-        if (lineColor != null) {
-            this.lineColor = lineColor;
-        }
-    }
-
-    public boolean isDashed() {
-        return dashed;
-    }
-
-    public void setDashed(boolean dashed) {
-        this.dashed = dashed;
-    }
-
-    public void addProperty(Property property) {
-        if (!properties.contains(property)) {
-            this.properties.add(property);
-        }
-    }
-
-    public void removeProperty(Property property) {
-        this.properties.remove(property);
-    }
-
-    public ArrayList<Property> getProperties() {
-        return new ArrayList<>(this.properties);
-    }
+	public List<EdgeTypeProbability> getEdgeTypeProbabilities() {
+		return edgeTypeProbabilities;
+	}
 }
-
-
-
-
-

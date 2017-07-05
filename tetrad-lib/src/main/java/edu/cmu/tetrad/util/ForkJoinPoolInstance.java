@@ -40,7 +40,7 @@ public class ForkJoinPoolInstance {
     }
 
     public ForkJoinPool getPool() {
-        return ForkJoinPool.commonPool();
+        return pool;
     }
 }
 

@@ -21,6 +21,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapFges;
+import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapGfci;
+import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Bpc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
@@ -192,7 +195,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcMax, AlgType.forbid_latent_common_causes, OracleType.Test));
+        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
         descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
         descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
@@ -233,6 +236,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.orient_pairwise, OracleType.None));
 //        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
 
+        descriptions.add(new AlgorithmDescription(AlgName.BootstrapFGES,
+        		AlgType.bootstrapping, OracleType.Score));
+        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
+        		AlgType.bootstrapping, OracleType.Score));
+        	descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
+        		AlgType.bootstrapping, OracleType.Score));
+        	
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescription description : descriptions) {
@@ -1001,8 +1011,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case MBFS:
                 algorithm = new MBFS(independenceWrapper);
                 break;
-            case PcMax:
-                algorithm = new PcMax(independenceWrapper, false);
+            case PcStableMax:
+                algorithm = new PcStableMax(independenceWrapper, false);
                 break;
             case JCPC:
                 algorithm = new Jcpc(independenceWrapper, scoreWrapper);
@@ -1068,6 +1078,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
                 break;
 
+             // Bootstrapping
+             case BootstrapFGES:
+             	    algorithm = new BootstrapFges(scoreWrapper);
+             	    break;
+             case BootstrapGFCI:
+             	    algorithm = new BootstrapGfci(independenceWrapper, scoreWrapper);
+             	    break;
+             case BootstrapRFCI:
+             	    algorithm = new BootstrapRfci(independenceWrapper);
+             	    break;
+                
             default:
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
@@ -1999,14 +2020,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcMax, FAS,
+        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
         FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
         FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
         LiNGAM, MGM,
         IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
         Bpc, Fofc, Ftfc,
         GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn
+        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn,
+        BootstrapFGES, BootstrapGFCI, BootstrapRFCI
     }
 
     private enum OracleType {
@@ -2016,7 +2038,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private enum AlgType {
         ALL, forbid_latent_common_causes, allow_latent_common_causes, /*DAG, */
         search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise,
-        search_for_structure_over_latents
+        search_for_structure_over_latents, bootstrapping
     }
 
     private enum TestType {

@@ -103,8 +103,8 @@
     <mapID target="pc" url="manual/boxes/search/pc.html"/>
     <mapID target="pcd" url="manual/boxes/search/pcd.html"/>
     <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
-    <mapID target="pcmax" url="manual/boxes/search/pcmax.html"/>
-    <mapID target="pcmaxlocal" url="manual/boxes/search/pcmaxlocal.html"/>
+    <mapID target="pcstablemax" url="manual/boxes/search/pcstablemax.html"/>
+    <mapID target="pcstablemaxlocal" url="manual/boxes/search/pcstablemaxlocal.html"/>
     <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>
     <mapID target="pcstable" url="manual/boxes/search/pcs.html"/>
     <mapID target="purify" url="manual/boxes/search/purify.html"/>
