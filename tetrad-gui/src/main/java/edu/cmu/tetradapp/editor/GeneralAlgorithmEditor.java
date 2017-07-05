@@ -74,6 +74,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import javax.help.CSH;
@@ -245,7 +246,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         whatYouChose = new JLabel();
 
         // All labels should share the save size - Zhou
-        this.labelSize = new Dimension(200, 30);
+        this.labelSize = new Dimension(210, 30);
 
 //        if (runner.getDataModelList() == null) {
 //            throw new NullPointerException("No data has been provided.");
@@ -1269,32 +1270,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        // Playing with Harry's mockup - Zhou
+        // Based on Harry's mockup - Zhou
         Box algoGuideBox = Box.createHorizontalBox();
-        JRadioButton filterAlgoRadioBtn = new JRadioButton("Help me choose the applicable algorithms");
-
-        Box chooseAlgoBox = Box.createHorizontalBox();
-
-        JRadioButton chooseAlgoRadioBtn = new JRadioButton("I know which algorithm to choose: ");
-        allAlgorithmsDropdown.setPreferredSize(new Dimension(180, 30));
-
-        for (AlgorithmDescription description : descriptions) {
-            allAlgorithmsDropdown.addItem(description.getAlgName());
-        }
-
-        chooseAlgoBox.add(chooseAlgoRadioBtn);
-        chooseAlgoBox.add(allAlgorithmsDropdown);
-
-        // Default
-        filterAlgoRadioBtn.setSelected(true);
-
-        // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup algoGuideBtnGrp = new ButtonGroup();
-        algoGuideBtnGrp.add(filterAlgoRadioBtn);
-        algoGuideBtnGrp.add(chooseAlgoRadioBtn);
-
-        algoGuideBox.add(filterAlgoRadioBtn);
-        algoGuideBox.add(chooseAlgoBox);
 
         // How many variables
         Box howManyVariablesBox = Box.createHorizontalBox();
@@ -1306,28 +1283,38 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Option 1
         Box howManyVariablesOption1Box = Box.createHorizontalBox();
-        howManyVariablesOption1Box.setPreferredSize(new Dimension(180, 30));
+        howManyVariablesOption1Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton howManyVariablesS = new JRadioButton("3-30");
-        howManyVariablesOption1Box.add(howManyVariablesS);
 
         // Option 2
         Box howManyVariablesOption2Box = Box.createHorizontalBox();
-        howManyVariablesOption2Box.setPreferredSize(new Dimension(180, 30));
+        howManyVariablesOption2Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton howManyVariablesM = new JRadioButton("31-300");
-        howManyVariablesOption2Box.add(howManyVariablesM);
 
         // Option 3
         Box howManyVariablesOption3Box = Box.createHorizontalBox();
-        howManyVariablesOption3Box.setPreferredSize(new Dimension(180, 30));
+        howManyVariablesOption3Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton howManyVariablesL = new JRadioButton("301-3000");
-        howManyVariablesOption3Box.add(howManyVariablesL);
 
         // Option 4
         Box howManyVariablesOption4Box = Box.createHorizontalBox();
-        howManyVariablesOption4Box.setPreferredSize(new Dimension(180, 30));
+        howManyVariablesOption4Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton howManyVariablesXL = new JRadioButton("> 3000");
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup howManyVariablesBtnGrp = new ButtonGroup();
+        howManyVariablesBtnGrp.add(howManyVariablesS);
+        howManyVariablesBtnGrp.add(howManyVariablesM);
+        howManyVariablesBtnGrp.add(howManyVariablesL);
+        howManyVariablesBtnGrp.add(howManyVariablesXL);
+
+        // Add to each option box
+        howManyVariablesOption1Box.add(howManyVariablesS);
+        howManyVariablesOption2Box.add(howManyVariablesM);
+        howManyVariablesOption3Box.add(howManyVariablesL);
         howManyVariablesOption4Box.add(howManyVariablesXL);
 
+        // Add to containing box
         howManyVariablesBox.add(howManyVariablesLabelBox);
         howManyVariablesBox.add(howManyVariablesOption1Box);
         howManyVariablesBox.add(howManyVariablesOption2Box);
@@ -1345,16 +1332,24 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Option 1
         Box multipleDatasetsOption1Box = Box.createHorizontalBox();
-        multipleDatasetsOption1Box.setPreferredSize(new Dimension(180, 30));
+        multipleDatasetsOption1Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton multipleDatasetsYes = new JRadioButton("Yes");
-        multipleDatasetsOption1Box.add(multipleDatasetsYes);
 
         // Option 2
         Box multipleDatasetsOption2Box = Box.createHorizontalBox();
-        multipleDatasetsOption2Box.setPreferredSize(new Dimension(180, 30));
+        multipleDatasetsOption2Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton multipleDatasetsNo = new JRadioButton("No");
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup multipleDatasetsBtnGrp = new ButtonGroup();
+        multipleDatasetsBtnGrp.add(multipleDatasetsYes);
+        multipleDatasetsBtnGrp.add(multipleDatasetsNo);
+
+        // Add to each option box
+        multipleDatasetsOption1Box.add(multipleDatasetsYes);
         multipleDatasetsOption2Box.add(multipleDatasetsNo);
 
+        // Add to contianing box
         multipleDatasetsBox.add(multipleDatasetsLabelBox);
         multipleDatasetsBox.add(multipleDatasetsOption1Box);
         multipleDatasetsBox.add(multipleDatasetsOption2Box);
@@ -1371,25 +1366,25 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //
 //        // Option 1
 //        Box timeSeriesDataOption1Box = Box.createHorizontalBox();
-//        timeSeriesDataOption1Box.setPreferredSize(new Dimension(180, 30));
+//        timeSeriesDataOption1Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton timeSeriesDataYes1 = new JRadioButton("with a known lag");
 //        timeSeriesDataOption1Box.add(timeSeriesDataYes1);
 //
 //        // Option 2
 //        Box timeSeriesDataOption2Box = Box.createHorizontalBox();
-//        timeSeriesDataOption2Box.setPreferredSize(new Dimension(180, 30));
+//        timeSeriesDataOption2Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton timeSeriesDataYes2 = new JRadioButton("with unknown lag");
 //        timeSeriesDataOption2Box.add(timeSeriesDataYes2);
 //
 //        // Option 3
 //        Box timeSeriesDataOption3Box = Box.createHorizontalBox();
-//        timeSeriesDataOption3Box.setPreferredSize(new Dimension(180, 30));
+//        timeSeriesDataOption3Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton timeSeriesDataYes3 = new JRadioButton("continuous-time/ODE");
 //        timeSeriesDataOption3Box.add(timeSeriesDataYes3);
 //
 //        // Option 4
 //        Box timeSeriesDataOption4Box = Box.createHorizontalBox();
-//        timeSeriesDataOption4Box.setPreferredSize(new Dimension(180, 30));
+//        timeSeriesDataOption4Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton timeSeriesDataNo = new JRadioButton("No");
 //        timeSeriesDataOption4Box.add(timeSeriesDataNo);
 //
@@ -1409,22 +1404,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Option 1
         Box varLinearRelationshipsOption1Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption1Box.setPreferredSize(new Dimension(180, 30));
+        varLinearRelationshipsOption1Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
-        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
 
         // Option 2
         Box varLinearRelationshipsOption2Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption2Box.setPreferredSize(new Dimension(180, 30));
+        varLinearRelationshipsOption2Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
-        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
 
         // Option 3
         Box varLinearRelationshipsOption3Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption3Box.setPreferredSize(new Dimension(180, 30));
+        varLinearRelationshipsOption3Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton varLinearRelationshipsUnknown = new JRadioButton("Let's find out");
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
+        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsYes);
+        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsNo);
+        varLinearRelationshipsBtnGrp.add(varLinearRelationshipsUnknown);
+
+        // Add to each option box
+        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
+        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
         varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
 
+        // Add to containing box
         varLinearRelationshipsBox.add(varLinearRelationshipsLabelBox);
         varLinearRelationshipsBox.add(varLinearRelationshipsOption1Box);
         varLinearRelationshipsBox.add(varLinearRelationshipsOption2Box);
@@ -1441,22 +1445,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Option 1
         Box gaussianVariablesOption1Box = Box.createHorizontalBox();
-        gaussianVariablesOption1Box.setPreferredSize(new Dimension(180, 30));
+        gaussianVariablesOption1Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
-        gaussianVariablesOption1Box.add(gaussianVariablesYes);
 
         // Option 2
         Box gaussianVariablesOption2Box = Box.createHorizontalBox();
-        gaussianVariablesOption2Box.setPreferredSize(new Dimension(180, 30));
+        gaussianVariablesOption2Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton gaussianVariablesNo = new JRadioButton("No");
-        gaussianVariablesOption2Box.add(gaussianVariablesNo);
 
         // Option 3
         Box gaussianVariablesOption3Box = Box.createHorizontalBox();
-        gaussianVariablesOption3Box.setPreferredSize(new Dimension(180, 30));
+        gaussianVariablesOption3Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton gaussianVariablesUnknown = new JRadioButton("Let's find out");
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
+        gaussianVariablesBtnGrp.add(gaussianVariablesYes);
+        gaussianVariablesBtnGrp.add(gaussianVariablesNo);
+        gaussianVariablesBtnGrp.add(gaussianVariablesUnknown);
+
+        // Add to each option box
+        gaussianVariablesOption1Box.add(gaussianVariablesYes);
+        gaussianVariablesOption2Box.add(gaussianVariablesNo);
         gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
 
+        // Add to containing box
         gaussianVariablesBox.add(gaussianVariablesLabelBox);
         gaussianVariablesBox.add(gaussianVariablesOption1Box);
         gaussianVariablesBox.add(gaussianVariablesOption2Box);
@@ -1464,6 +1477,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         gaussianVariablesBox.add(Box.createHorizontalGlue());
 
         // Output Goals, use checkboxes to allow multiple goals
+        // Can't use buttonGroup on checkboxes since it's multiple-exclusion
         Box outputGoalsBox = Box.createHorizontalBox();
 
         // Add label into this label box to size
@@ -1473,28 +1487,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Option 1
         Box outputGoalsOption1Box = Box.createHorizontalBox();
-        outputGoalsOption1Box.setPreferredSize(new Dimension(180, 30));
+        outputGoalsOption1Box.setPreferredSize(new Dimension(175, 30));
         JCheckBox outputGoalsPairwiseOrientation = new JCheckBox("Pairwise orientation");
-        outputGoalsOption1Box.add(outputGoalsPairwiseOrientation);
 
         // Option 2
         Box outputGoalsOption2Box = Box.createHorizontalBox();
-        outputGoalsOption2Box.setPreferredSize(new Dimension(180, 30));
+        outputGoalsOption2Box.setPreferredSize(new Dimension(175, 30));
         JCheckBox outputGoalsMarkovBlanket = new JCheckBox("Markov blanket");
-        outputGoalsOption2Box.add(outputGoalsMarkovBlanket);
 
         // Option 3
         Box outputGoalsOption3Box = Box.createHorizontalBox();
-        outputGoalsOption3Box.setPreferredSize(new Dimension(180, 30));
+        outputGoalsOption3Box.setPreferredSize(new Dimension(175, 30));
         JCheckBox outputGoalsUndirectedGraph = new JCheckBox("Undirected graph");
-        outputGoalsOption3Box.add(outputGoalsUndirectedGraph);
 
         // Option 4
         Box outputGoalsOption4Box = Box.createHorizontalBox();
         outputGoalsOption4Box.setPreferredSize(new Dimension(180, 30));
         JCheckBox outputGoalsCausalGraph = new JCheckBox("Causal graph");
+
+        // Add to each option box
+        outputGoalsOption1Box.add(outputGoalsPairwiseOrientation);
+        outputGoalsOption2Box.add(outputGoalsMarkovBlanket);
+        outputGoalsOption3Box.add(outputGoalsUndirectedGraph);
         outputGoalsOption4Box.add(outputGoalsCausalGraph);
 
+        // Add to containg box
         outputGoalsBox.add(outputGoalsLabelBox);
         outputGoalsBox.add(outputGoalsOption1Box);
         outputGoalsBox.add(outputGoalsOption2Box);
@@ -1509,26 +1526,35 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Add label into this label box to size
         Box includeUnmeasuredConfoundersLabelBox = Box.createHorizontalBox();
         includeUnmeasuredConfoundersLabelBox.setPreferredSize(labelSize);
-        includeUnmeasuredConfoundersLabelBox.add(new JLabel("Unmeasured confounders? "));
+        includeUnmeasuredConfoundersLabelBox.add(new JLabel("Unmeasured confounders: "));
 
         // Option 1
         Box includeUnmeasuredConfoundersOption1Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption1Box.setPreferredSize(new Dimension(180, 30));
+        includeUnmeasuredConfoundersOption1Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
-        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
 
         // Option 2
         Box includeUnmeasuredConfoundersOption2Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption2Box.setPreferredSize(new Dimension(180, 30));
+        includeUnmeasuredConfoundersOption2Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
-        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
 
         // Option 3
         Box includeUnmeasuredConfoundersOption3Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption3Box.setPreferredSize(new Dimension(180, 30));
+        includeUnmeasuredConfoundersOption3Box.setPreferredSize(new Dimension(175, 30));
         JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("Let's find out");
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
+        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersYes);
+        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersNo);
+        includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersUnknown);
+
+        // Add to each option box
+        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
+        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
         includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
 
+        // Add to containing box
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabelBox);
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption1Box);
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption2Box);
@@ -1546,19 +1572,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //
 //        // Option 1
 //        Box generatingModelIncludeCyclesOption1Box = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(180, 30));
+//        generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("I have equilibrium data");
 //        generatingModelIncludeCyclesOption1Box.add(generatingModelIncludeCyclesBoxYes1);
 //
 //        // Option 2
 //        Box generatingModelIncludeCyclesOption2Box = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(180, 30));
+//        generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("My data is not from an equilibrium state");
 //        generatingModelIncludeCyclesOption2Box.add(generatingModelIncludeCyclesBoxYes2);
 //
 //        // Option 3
 //        Box generatingModelIncludeCyclesOption3Box = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesOption3Box.setPreferredSize(new Dimension(180, 30));
+//        generatingModelIncludeCyclesOption3Box.setPreferredSize(new Dimension(175, 30));
 //        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
 //        generatingModelIncludeCyclesOption3Box.add(generatingModelIncludeCyclesBoxNo);
 //
@@ -1567,6 +1593,155 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption2Box);
 //        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption3Box);
 //        generatingModelIncludeCyclesBox.add(Box.createHorizontalGlue());
+        JRadioButton filterAlgoRadioBtn = new JRadioButton("Help me choose the applicable algorithms");
+        JRadioButton chooseAlgoRadioBtn = new JRadioButton("I know which algorithm to choose");
+
+        // Default
+        filterAlgoRadioBtn.setSelected(true);
+
+        // Clicking chooseAlgoRadioBtn will rest all the selections and disable the guide selections
+        // Event listener
+        chooseAlgoRadioBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                // Just enable disabled buttons, do not change the previous selections - Zhou
+                if (button.isSelected()) {
+                    // Reset/clear all selections - the radio bottons and checkboxes
+                    howManyVariablesBtnGrp.clearSelection();
+                    multipleDatasetsBtnGrp.clearSelection();
+                    varLinearRelationshipsBtnGrp.clearSelection();
+                    gaussianVariablesBtnGrp.clearSelection();
+                    includeUnmeasuredConfoundersBtnGrp.clearSelection();
+
+                    // Have to take care of the outputGoals since we can't use buttonGroup on it
+                    if (outputGoalsPairwiseOrientation.isSelected()) {
+                        outputGoalsPairwiseOrientation.setSelected(false);
+                    }
+
+                    if (outputGoalsMarkovBlanket.isSelected()) {
+                        outputGoalsMarkovBlanket.setSelected(false);
+                    }
+
+                    if (outputGoalsUndirectedGraph.isSelected()) {
+                        outputGoalsUndirectedGraph.setSelected(false);
+                    }
+
+                    if (outputGoalsCausalGraph.isSelected()) {
+                        outputGoalsCausalGraph.setSelected(false);
+                    }
+
+                    // Disable all selections
+                    Enumeration<AbstractButton> howManyVariablesButtons = howManyVariablesBtnGrp.getElements();
+                    while (howManyVariablesButtons.hasMoreElements()) {
+                        AbstractButton btn = howManyVariablesButtons.nextElement();
+
+                        if (btn.isEnabled()) {
+                            btn.setEnabled(false);
+                        }
+                    }
+
+                    Enumeration<AbstractButton> multipleDatasetsButtons = multipleDatasetsBtnGrp.getElements();
+                    while (multipleDatasetsButtons.hasMoreElements()) {
+                        AbstractButton btn = multipleDatasetsButtons.nextElement();
+
+                        if (btn.isEnabled()) {
+                            btn.setEnabled(false);
+                        }
+                    }
+
+                    Enumeration<AbstractButton> varLinearRelationshipsButtons = varLinearRelationshipsBtnGrp.getElements();
+                    while (varLinearRelationshipsButtons.hasMoreElements()) {
+                        AbstractButton btn = varLinearRelationshipsButtons.nextElement();
+
+                        if (btn.isEnabled()) {
+                            btn.setEnabled(false);
+                        }
+                    }
+
+                    Enumeration<AbstractButton> gaussianVariablesButtons = gaussianVariablesBtnGrp.getElements();
+                    while (gaussianVariablesButtons.hasMoreElements()) {
+                        AbstractButton btn = gaussianVariablesButtons.nextElement();
+
+                        if (btn.isEnabled()) {
+                            btn.setEnabled(false);
+                        }
+                    }
+
+                    Enumeration<AbstractButton> includeUnmeasuredConfoundersButtons = includeUnmeasuredConfoundersBtnGrp.getElements();
+                    while (includeUnmeasuredConfoundersButtons.hasMoreElements()) {
+                        AbstractButton btn = includeUnmeasuredConfoundersButtons.nextElement();
+
+                        if (btn.isEnabled()) {
+                            btn.setEnabled(false);
+                        }
+                    }
+
+                    // Have to take care of the outputGoals since we can't use buttonGroup on it
+                    outputGoalsPairwiseOrientation.setEnabled(false);
+                    outputGoalsMarkovBlanket.setEnabled(false);
+                    outputGoalsUndirectedGraph.setEnabled(false);
+                    outputGoalsCausalGraph.setEnabled(false);
+                }
+            }
+        });
+
+        // Clicking filterAlgoRadioBtn will enable the guide selections
+        // Event listener
+        filterAlgoRadioBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                // Just enable disabled buttons, do not change the previous selections - Zhou
+                if (button.isSelected()) {
+                    // Enable all selections
+                    Enumeration<AbstractButton> howManyVariablesButtons = howManyVariablesBtnGrp.getElements();
+                    while (howManyVariablesButtons.hasMoreElements()) {
+                        AbstractButton btn = howManyVariablesButtons.nextElement();
+                        btn.setEnabled(true);
+                    }
+
+                    Enumeration<AbstractButton> multipleDatasetsButtons = multipleDatasetsBtnGrp.getElements();
+                    while (multipleDatasetsButtons.hasMoreElements()) {
+                        AbstractButton btn = multipleDatasetsButtons.nextElement();
+                        btn.setEnabled(true);
+                    }
+
+                    Enumeration<AbstractButton> varLinearRelationshipsButtons = varLinearRelationshipsBtnGrp.getElements();
+                    while (varLinearRelationshipsButtons.hasMoreElements()) {
+                        AbstractButton btn = varLinearRelationshipsButtons.nextElement();
+                        btn.setEnabled(true);
+                    }
+
+                    Enumeration<AbstractButton> gaussianVariablesButtons = gaussianVariablesBtnGrp.getElements();
+                    while (gaussianVariablesButtons.hasMoreElements()) {
+                        AbstractButton btn = gaussianVariablesButtons.nextElement();
+                        btn.setEnabled(true);
+                    }
+
+                    Enumeration<AbstractButton> includeUnmeasuredConfoundersButtons = includeUnmeasuredConfoundersBtnGrp.getElements();
+                    while (includeUnmeasuredConfoundersButtons.hasMoreElements()) {
+                        AbstractButton btn = includeUnmeasuredConfoundersButtons.nextElement();
+                        btn.setEnabled(true);
+                    }
+
+                    // Have to take care of the outputGoals since we can't use buttonGroup on it
+                    outputGoalsPairwiseOrientation.setEnabled(true);
+                    outputGoalsMarkovBlanket.setEnabled(true);
+                    outputGoalsUndirectedGraph.setEnabled(true);
+                    outputGoalsCausalGraph.setEnabled(true);
+                }
+            }
+        });
+
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup algoGuideBtnGrp = new ButtonGroup();
+        algoGuideBtnGrp.add(filterAlgoRadioBtn);
+        algoGuideBtnGrp.add(chooseAlgoRadioBtn);
+
+        algoGuideBox.add(filterAlgoRadioBtn);
+        algoGuideBox.add(chooseAlgoRadioBtn);
+
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
@@ -1612,6 +1787,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Contains data description and result description as well as Joe's old settings - Zhou
         Box algoFiltersContainer = Box.createVerticalBox();
+        algoFiltersContainer.setPreferredSize(new Dimension(940, 640));
 
         // Describe your data
         Box dataDescriptionBox = Box.createVerticalBox();
@@ -1641,15 +1817,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Suggested algorithms and corresponding description
         Box alogChooserContainer = Box.createHorizontalBox();
-        alogChooserContainer.setPreferredSize(new Dimension(900, 200));
 
         // Show a list of filtered algorithms
         Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(600, 200));
-        suggestedAlgosBox.setMaximumSize(new Dimension(600, 200));
+        suggestedAlgosBox.setMinimumSize(new Dimension(610, 180));
+        suggestedAlgosBox.setMaximumSize(new Dimension(610, 180));
 
         // Use a titled border with 5 px inside padding - Zhou
-        String suggestedAlgosBoxBorderTitle = "Suggested algorithms based on your input";
+        String suggestedAlgosBoxBorderTitle = "Choose algorithm";
         suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         DefaultListModel suggestedAlgosListModel = new DefaultListModel();
@@ -1672,8 +1847,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(305, 200));
-        algoDescriptionBox.setMaximumSize(new Dimension(305, 200));
+        algoDescriptionBox.setMinimumSize(new Dimension(320, 180));
+        algoDescriptionBox.setMaximumSize(new Dimension(320, 180));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -1683,8 +1858,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Use a hard coded example for now - Zhou
         String algoDescriptionText = "FGESc is a version of FGES (Fast Greedy Search is an optimization and parallelized version of the Greedy Equivalence Search algorithm (GES)) that works with continuous variables";
         algoDescriptionTextArea.setText(algoDescriptionText);
+        algoDescriptionTextArea.setWrapStyleWord(true);
+        algoDescriptionTextArea.setLineWrap(true);
+        JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
 
-        algoDescriptionBox.add(algoDescriptionTextArea);
+        algoDescriptionBox.add(algoDescriptionScrollPane);
 
         alogChooserContainer.add(suggestedAlgosBox);
         // Add some gap between algo chooser and description box
