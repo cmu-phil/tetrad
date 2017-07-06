@@ -1286,9 +1286,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        // Based on Harry's mockup - Zhou
-        Box algoGuideBox = Box.createHorizontalBox();
-
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
 
@@ -1499,87 +1496,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption2Box);
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
         includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
-
-        // Allow users to decide if they want to use the chooser guide
-        JRadioButton filterAlgoRadioBtn = new JRadioButton("Help me choose the applicable algorithms");
-        JRadioButton chooseAlgoRadioBtn = new JRadioButton("I know which algorithm to choose");
-
-        // Default
-        filterAlgoRadioBtn.setSelected(true);
-
-        // Clicking chooseAlgoRadioBtn will rest all the selections and disable the guide selections
-        // Event listener
-        chooseAlgoRadioBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                // Just enable disabled buttons, do not change the previous selections - Zhou
-                if (button.isSelected()) {
-                    // Reset/clear all selections - the radio bottons and checkboxes
-                    varLinearRelationshipsBtnGrp.clearSelection();
-                    gaussianVariablesBtnGrp.clearSelection();
-                    includeUnmeasuredConfoundersBtnGrp.clearSelection();
-
-                    // Have to take care of the outputGoals since we can't use buttonGroup on it
-                    if (outputGoalsPairwiseOrientation.isSelected()) {
-                        outputGoalsPairwiseOrientation.setSelected(false);
-                    }
-
-                    if (outputGoalsMarkovBlanket.isSelected()) {
-                        outputGoalsMarkovBlanket.setSelected(false);
-                    }
-
-                    if (outputGoalsUndirectedGraph.isSelected()) {
-                        outputGoalsUndirectedGraph.setSelected(false);
-                    }
-
-                    if (outputGoalsCausalGraph.isSelected()) {
-                        outputGoalsCausalGraph.setSelected(false);
-                    }
-
-                    // Disable all selections
-                    enableButtonGroup(varLinearRelationshipsBtnGrp, false);
-                    enableButtonGroup(gaussianVariablesBtnGrp, false);
-                    enableButtonGroup(includeUnmeasuredConfoundersBtnGrp, false);
-
-                    // Have to take care of the outputGoals since we can't use buttonGroup on it
-                    outputGoalsPairwiseOrientation.setEnabled(false);
-                    outputGoalsMarkovBlanket.setEnabled(false);
-                    outputGoalsUndirectedGraph.setEnabled(false);
-                    outputGoalsCausalGraph.setEnabled(false);
-                }
-            }
-        });
-
-        // Clicking filterAlgoRadioBtn will enable the guide selections
-        // Event listener
-        filterAlgoRadioBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                // Just enable disabled buttons, do not change the previous selections - Zhou
-                if (button.isSelected()) {
-                    // Enable all selections
-                    enableButtonGroup(varLinearRelationshipsBtnGrp, true);
-                    enableButtonGroup(gaussianVariablesBtnGrp, true);
-                    enableButtonGroup(includeUnmeasuredConfoundersBtnGrp, true);
-
-                    // Have to take care of the outputGoals since we can't use buttonGroup on it
-                    outputGoalsPairwiseOrientation.setEnabled(true);
-                    outputGoalsMarkovBlanket.setEnabled(true);
-                    outputGoalsUndirectedGraph.setEnabled(true);
-                    outputGoalsCausalGraph.setEnabled(true);
-                }
-            }
-        });
-
-        // We need to group the radio buttons, otherwise all can be selected
-        ButtonGroup algoGuideBtnGrp = new ButtonGroup();
-        algoGuideBtnGrp.add(filterAlgoRadioBtn);
-        algoGuideBtnGrp.add(chooseAlgoRadioBtn);
-
-        algoGuideBox.add(filterAlgoRadioBtn);
-        algoGuideBox.add(chooseAlgoRadioBtn);
 
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
