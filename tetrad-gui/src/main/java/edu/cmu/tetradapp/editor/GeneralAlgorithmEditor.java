@@ -77,7 +77,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import javax.help.CSH;
@@ -110,7 +109,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final JTabbedPane pane;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
-    private final JComboBox<AlgName> allAlgorithmsDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
@@ -1684,28 +1682,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoChooserContainer.add(rightContainer);
 
         // Add to big panel
-        panel.add(algoGuideBox);
-        panel.add(Box.createVerticalStrut(10));
         panel.add(algoChooserContainer);
 
         Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
 
         return panel;
-    }
-
-    /**
-     * Enable or disable the selections in a button group
-     *
-     * @param btnGrp
-     * @param flag
-     */
-    private void enableButtonGroup(ButtonGroup btnGrp, Boolean flag) {
-        Enumeration<AbstractButton> buttons = btnGrp.getElements();
-        while (buttons.hasMoreElements()) {
-            AbstractButton btn = buttons.nextElement();
-            btn.setEnabled(flag);
-        }
     }
 
     private Parameters getParameters() {
