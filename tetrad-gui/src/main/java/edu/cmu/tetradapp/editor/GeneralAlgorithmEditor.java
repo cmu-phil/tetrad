@@ -1609,8 +1609,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(480, 140));
-        algoDescriptionBox.setMaximumSize(new Dimension(480, 140));
+        algoDescriptionBox.setMinimumSize(new Dimension(480, 120));
+        algoDescriptionBox.setMaximumSize(new Dimension(480, 120));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -1640,8 +1640,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Parameters
         Box parametersBox = Box.createVerticalBox();
-        parametersBox.setMinimumSize(new Dimension(480, 360));
-        parametersBox.setMaximumSize(new Dimension(480, 360));
+        parametersBox.setMinimumSize(new Dimension(480, 340));
+        parametersBox.setMaximumSize(new Dimension(480, 340));
 
         // Use a titled border with 5 px inside padding - Zhou
         String parametersBoxBorderTitle = "Specify algorithm parameters";
@@ -1664,6 +1664,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         rightContainer.add(testAndScoreBox);
         rightContainer.add(Box.createVerticalStrut(10));
         rightContainer.add(parametersBox);
+        rightContainer.add(Box.createVerticalStrut(10));
+        rightContainer.add(algorithmTabSearchBtn);
 
         //algoFiltersContainer.add(algoBox);
         // Add to algoChooserContainer as the first column
