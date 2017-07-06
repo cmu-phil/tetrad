@@ -125,8 +125,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private String jsonResult;
 
-    private final Dimension labelSize;
-
     private final List<AlgorithmDescription> descriptions;
 
     //=========================CONSTRUCTORS============================//
@@ -254,9 +252,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setLayout(new BorderLayout());
 
         whatYouChose = new JLabel();
-
-        // All labels should share the save size - Zhou
-        this.labelSize = new Dimension(210, 30);
 
 //        if (runner.getDataModelList() == null) {
 //            throw new NullPointerException("No data has been provided.");
@@ -1294,78 +1289,49 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Based on Harry's mockup - Zhou
         Box algoGuideBox = Box.createHorizontalBox();
 
-        // Not ready yet - Zhou
-//        // Do you have time-series data?
-//        Box timeSeriesDataBox = Box.createHorizontalBox();
-//
-//        // Add label into this label box to size
-//        Box timeSeriesDataLabelBox = Box.createHorizontalBox();
-//        timeSeriesDataLabelBox.setPreferredSize(labelSize);
-//        timeSeriesDataLabelBox.add(new JLabel("Time series data: "));
-//
-//        // Option 1
-//        Box timeSeriesDataOption1Box = Box.createHorizontalBox();
-//        timeSeriesDataOption1Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton timeSeriesDataYes1 = new JRadioButton("with a known lag");
-//        timeSeriesDataOption1Box.add(timeSeriesDataYes1);
-//
-//        // Option 2
-//        Box timeSeriesDataOption2Box = Box.createHorizontalBox();
-//        timeSeriesDataOption2Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton timeSeriesDataYes2 = new JRadioButton("with unknown lag");
-//        timeSeriesDataOption2Box.add(timeSeriesDataYes2);
-//
-//        // Option 3
-//        Box timeSeriesDataOption3Box = Box.createHorizontalBox();
-//        timeSeriesDataOption3Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton timeSeriesDataYes3 = new JRadioButton("continuous-time/ODE");
-//        timeSeriesDataOption3Box.add(timeSeriesDataYes3);
-//
-//        // Option 4
-//        Box timeSeriesDataOption4Box = Box.createHorizontalBox();
-//        timeSeriesDataOption4Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton timeSeriesDataNo = new JRadioButton("No");
-//        timeSeriesDataOption4Box.add(timeSeriesDataNo);
-//
-//        timeSeriesDataBox.add(timeSeriesDataLabelBox);
-//        timeSeriesDataBox.add(timeSeriesDataOption1Box);
-//        timeSeriesDataBox.add(timeSeriesDataOption2Box);
-//        timeSeriesDataBox.add(timeSeriesDataOption3Box);
-//        timeSeriesDataBox.add(timeSeriesDataOption4Box);
-//        timeSeriesDataBox.add(Box.createHorizontalGlue());
         // Are the relationships between your variables linear?
-        Box varLinearRelationshipsBox = Box.createHorizontalBox();
+        Box varLinearRelationshipsBox = Box.createVerticalBox();
 
         // Add label into this label box to size
         Box varLinearRelationshipsLabelBox = Box.createHorizontalBox();
-        varLinearRelationshipsLabelBox.setPreferredSize(labelSize);
         varLinearRelationshipsLabelBox.add(new JLabel("Linear variables: "));
+        varLinearRelationshipsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option 1
         Box varLinearRelationshipsOption1Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption1Box.setPreferredSize(new Dimension(175, 30));
+        varLinearRelationshipsOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton varLinearRelationshipsYes = new JRadioButton("Yes");
+
+        // Add padding and option
+        varLinearRelationshipsOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
 
         // Option 2
         Box varLinearRelationshipsOption2Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption2Box.setPreferredSize(new Dimension(175, 30));
+        varLinearRelationshipsOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton varLinearRelationshipsNo = new JRadioButton("No");
+
+        // Add padding and option
+        varLinearRelationshipsOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
 
         // Option 3
         Box varLinearRelationshipsOption3Box = Box.createHorizontalBox();
-        varLinearRelationshipsOption3Box.setPreferredSize(new Dimension(175, 30));
+        varLinearRelationshipsOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton varLinearRelationshipsUnknown = new JRadioButton("Let's find out");
+
+        // Add padding and option
+        varLinearRelationshipsOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup varLinearRelationshipsBtnGrp = new ButtonGroup();
         varLinearRelationshipsBtnGrp.add(varLinearRelationshipsYes);
         varLinearRelationshipsBtnGrp.add(varLinearRelationshipsNo);
         varLinearRelationshipsBtnGrp.add(varLinearRelationshipsUnknown);
-
-        // Add to each option box
-        varLinearRelationshipsOption1Box.add(varLinearRelationshipsYes);
-        varLinearRelationshipsOption2Box.add(varLinearRelationshipsNo);
-        varLinearRelationshipsOption3Box.add(varLinearRelationshipsUnknown);
 
         // Add to containing box
         varLinearRelationshipsBox.add(varLinearRelationshipsLabelBox);
@@ -1375,38 +1341,48 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         varLinearRelationshipsBox.add(Box.createHorizontalGlue());
 
         // Are your variables Gaussian?
-        Box gaussianVariablesBox = Box.createHorizontalBox();
+        Box gaussianVariablesBox = Box.createVerticalBox();
 
         // Add label into this label box to size
         Box gaussianVariablesLabelBox = Box.createHorizontalBox();
-        gaussianVariablesLabelBox.setPreferredSize(labelSize);
         gaussianVariablesLabelBox.add(new JLabel("Gaussian variables: "));
+        gaussianVariablesLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option 1
         Box gaussianVariablesOption1Box = Box.createHorizontalBox();
-        gaussianVariablesOption1Box.setPreferredSize(new Dimension(175, 30));
+        gaussianVariablesOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton gaussianVariablesYes = new JRadioButton("Yes");
+
+        // Add padding and option
+        gaussianVariablesOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        gaussianVariablesOption1Box.add(gaussianVariablesYes);
 
         // Option 2
         Box gaussianVariablesOption2Box = Box.createHorizontalBox();
-        gaussianVariablesOption2Box.setPreferredSize(new Dimension(175, 30));
+        gaussianVariablesOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton gaussianVariablesNo = new JRadioButton("No");
+
+        // Add padding and option
+        gaussianVariablesOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        gaussianVariablesOption2Box.add(gaussianVariablesNo);
 
         // Option 3
         Box gaussianVariablesOption3Box = Box.createHorizontalBox();
-        gaussianVariablesOption3Box.setPreferredSize(new Dimension(175, 30));
+        gaussianVariablesOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton gaussianVariablesUnknown = new JRadioButton("Let's find out");
+
+        // Add padding and option
+        gaussianVariablesOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup gaussianVariablesBtnGrp = new ButtonGroup();
         gaussianVariablesBtnGrp.add(gaussianVariablesYes);
         gaussianVariablesBtnGrp.add(gaussianVariablesNo);
         gaussianVariablesBtnGrp.add(gaussianVariablesUnknown);
-
-        // Add to each option box
-        gaussianVariablesOption1Box.add(gaussianVariablesYes);
-        gaussianVariablesOption2Box.add(gaussianVariablesNo);
-        gaussianVariablesOption3Box.add(gaussianVariablesUnknown);
 
         // Add to containing box
         gaussianVariablesBox.add(gaussianVariablesLabelBox);
@@ -1417,37 +1393,51 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Output Goals, use checkboxes to allow multiple goals
         // Can't use buttonGroup on checkboxes since it's multiple-exclusion
-        Box outputGoalsBox = Box.createHorizontalBox();
+        Box outputGoalsBox = Box.createVerticalBox();
 
         // Add label into this label box to size
         Box outputGoalsLabelBox = Box.createHorizontalBox();
-        outputGoalsLabelBox.setPreferredSize(labelSize);
         outputGoalsLabelBox.add(new JLabel("Output Goals: "));
+        outputGoalsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option 1
         Box outputGoalsOption1Box = Box.createHorizontalBox();
-        outputGoalsOption1Box.setPreferredSize(new Dimension(175, 30));
+        outputGoalsOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JCheckBox outputGoalsPairwiseOrientation = new JCheckBox("Pairwise orientation");
+
+        // Add padding and option
+        outputGoalsOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        outputGoalsOption1Box.add(outputGoalsPairwiseOrientation);
 
         // Option 2
         Box outputGoalsOption2Box = Box.createHorizontalBox();
-        outputGoalsOption2Box.setPreferredSize(new Dimension(175, 30));
+        outputGoalsOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JCheckBox outputGoalsMarkovBlanket = new JCheckBox("Markov blanket");
+
+        // Add padding and option
+        outputGoalsOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        outputGoalsOption2Box.add(outputGoalsMarkovBlanket);
 
         // Option 3
         Box outputGoalsOption3Box = Box.createHorizontalBox();
-        outputGoalsOption3Box.setPreferredSize(new Dimension(175, 30));
+        outputGoalsOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JCheckBox outputGoalsUndirectedGraph = new JCheckBox("Undirected graph");
+
+        // Add padding and option
+        outputGoalsOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        outputGoalsOption3Box.add(outputGoalsUndirectedGraph);
 
         // Option 4
         Box outputGoalsOption4Box = Box.createHorizontalBox();
-        outputGoalsOption4Box.setPreferredSize(new Dimension(180, 30));
+        outputGoalsOption4Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JCheckBox outputGoalsCausalGraph = new JCheckBox("Causal graph");
 
-        // Add to each option box
-        outputGoalsOption1Box.add(outputGoalsPairwiseOrientation);
-        outputGoalsOption2Box.add(outputGoalsMarkovBlanket);
-        outputGoalsOption3Box.add(outputGoalsUndirectedGraph);
+        // Add padding and option
+        outputGoalsOption4Box.add(Box.createRigidArea(new Dimension(20, 20)));
         outputGoalsOption4Box.add(outputGoalsCausalGraph);
 
         // Add to containg box
@@ -1460,38 +1450,48 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         outputGoalsBox.add(Box.createHorizontalGlue());
 
         // Include unmeasured confounders?
-        Box includeUnmeasuredConfoundersBox = Box.createHorizontalBox();
+        Box includeUnmeasuredConfoundersBox = Box.createVerticalBox();
 
         // Add label into this label box to size
         Box includeUnmeasuredConfoundersLabelBox = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersLabelBox.setPreferredSize(labelSize);
         includeUnmeasuredConfoundersLabelBox.add(new JLabel("Unmeasured confounders: "));
+        includeUnmeasuredConfoundersLabelBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Option 1
         Box includeUnmeasuredConfoundersOption1Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption1Box.setPreferredSize(new Dimension(175, 30));
+        includeUnmeasuredConfoundersOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton includeUnmeasuredConfoundersYes = new JRadioButton("Yes");
+
+        // Add padding and option
+        includeUnmeasuredConfoundersOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
 
         // Option 2
         Box includeUnmeasuredConfoundersOption2Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption2Box.setPreferredSize(new Dimension(175, 30));
+        includeUnmeasuredConfoundersOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton includeUnmeasuredConfoundersNo = new JRadioButton("No");
+
+        // Add padding and option
+        includeUnmeasuredConfoundersOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
 
         // Option 3
         Box includeUnmeasuredConfoundersOption3Box = Box.createHorizontalBox();
-        includeUnmeasuredConfoundersOption3Box.setPreferredSize(new Dimension(175, 30));
+        includeUnmeasuredConfoundersOption3Box.setAlignmentX(LEFT_ALIGNMENT);
+
         JRadioButton includeUnmeasuredConfoundersUnknown = new JRadioButton("Let's find out");
+
+        // Add padding and option
+        includeUnmeasuredConfoundersOption3Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup includeUnmeasuredConfoundersBtnGrp = new ButtonGroup();
         includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersYes);
         includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersNo);
         includeUnmeasuredConfoundersBtnGrp.add(includeUnmeasuredConfoundersUnknown);
-
-        // Add to each option box
-        includeUnmeasuredConfoundersOption1Box.add(includeUnmeasuredConfoundersYes);
-        includeUnmeasuredConfoundersOption2Box.add(includeUnmeasuredConfoundersNo);
-        includeUnmeasuredConfoundersOption3Box.add(includeUnmeasuredConfoundersUnknown);
 
         // Add to containing box
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersLabelBox);
@@ -1500,38 +1500,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
         includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
-        // Not ready yet - Zhou
-//        // Does the generating model include cycles?
-//        Box generatingModelIncludeCyclesBox = Box.createHorizontalBox();
-//
-//        // Add label into this label box to size
-//        Box generatingModelIncludeCyclesLabelBox = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesLabelBox.setPreferredSize(labelSize);
-//        generatingModelIncludeCyclesLabelBox.add(new JLabel("Cycles: "));
-//
-//        // Option 1
-//        Box generatingModelIncludeCyclesOption1Box = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesOption1Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton generatingModelIncludeCyclesBoxYes1 = new JRadioButton("I have equilibrium data");
-//        generatingModelIncludeCyclesOption1Box.add(generatingModelIncludeCyclesBoxYes1);
-//
-//        // Option 2
-//        Box generatingModelIncludeCyclesOption2Box = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesOption2Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton generatingModelIncludeCyclesBoxYes2 = new JRadioButton("My data is not from an equilibrium state");
-//        generatingModelIncludeCyclesOption2Box.add(generatingModelIncludeCyclesBoxYes2);
-//
-//        // Option 3
-//        Box generatingModelIncludeCyclesOption3Box = Box.createHorizontalBox();
-//        generatingModelIncludeCyclesOption3Box.setPreferredSize(new Dimension(175, 30));
-//        JRadioButton generatingModelIncludeCyclesBoxNo = new JRadioButton("No");
-//        generatingModelIncludeCyclesOption3Box.add(generatingModelIncludeCyclesBoxNo);
-//
-//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesLabelBox);
-//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption1Box);
-//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption2Box);
-//        generatingModelIncludeCyclesBox.add(generatingModelIncludeCyclesOption3Box);
-//        generatingModelIncludeCyclesBox.add(Box.createHorizontalGlue());
+        // Allow users to decide if they want to use the chooser guide
         JRadioButton filterAlgoRadioBtn = new JRadioButton("Help me choose the applicable algorithms");
         JRadioButton chooseAlgoRadioBtn = new JRadioButton("I know which algorithm to choose");
 
@@ -1655,41 +1624,50 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         Box algoBox = Box.createVerticalBox();
 
-        // Contains data description and result description as well as Joe's old settings - Zhou
-        Box algoFiltersContainer = Box.createVerticalBox();
-        algoFiltersContainer.setPreferredSize(new Dimension(940, 640));
+        // This container contains 3 columns, leftContainer, middleContainer, and rightContainer
+        Box algoChooserContainer = Box.createHorizontalBox();
+        algoChooserContainer.setPreferredSize(new Dimension(940, 620));
 
-        // Describe your data
-        Box dataDescriptionBox = Box.createVerticalBox();
+        // Contains data description and result description
+        Box leftContainer = Box.createVerticalBox();
+        leftContainer.setPreferredSize(new Dimension(240, 620));
+
+        // Contains suggested list of algorithms
+        Box middleContainer = Box.createVerticalBox();
+        middleContainer.setPreferredSize(new Dimension(200, 620));
+
+        // Contains algo description, test, score, and parameters
+        Box rightContainer = Box.createVerticalBox();
+        rightContainer.setPreferredSize(new Dimension(480, 620));
+
+        // Describe your data and result using these filters
+        Box algoFiltersBox = Box.createVerticalBox();
+        algoFiltersBox.setMinimumSize(new Dimension(240, 614));
+        algoFiltersBox.setMaximumSize(new Dimension(240, 614));
+        algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Use a titled border with 5 px inside padding - Zhou
-        String dataDescriptionBoxBorderTitle = "Describe your data";
-        dataDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(dataDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        String algoFiltersBoxBorderTitle = "Algorithm filters";
+        algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Items to put in data description box
         //dataDescriptionBox.add(timeSeriesDataBox);
-        dataDescriptionBox.add(varLinearRelationshipsBox);
-        dataDescriptionBox.add(gaussianVariablesBox);
+        algoFiltersBox.add(varLinearRelationshipsBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(gaussianVariablesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(outputGoalsBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(includeUnmeasuredConfoundersBox);
 
-        // Describe your result
-        Box resultDescriptionBox = Box.createVerticalBox();
+        // Add to leftContainer
+        leftContainer.add(algoFiltersBox);
 
-        // Use a titled border with 5 px inside padding - Zhou
-        String resultDescriptionBoxBorderTitle = "Describe your result";
-        resultDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(resultDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
-
-        // Items to put in result description box
-        resultDescriptionBox.add(outputGoalsBox);
-        resultDescriptionBox.add(includeUnmeasuredConfoundersBox);
-        //resultDescriptionBox.add(generatingModelIncludeCyclesBox);
-
-        // Suggested algorithms and corresponding description
-        Box alogChooserContainer = Box.createHorizontalBox();
-
+        // Components in middleContainer
         // Show a list of filtered algorithms
         Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(610, 180));
-        suggestedAlgosBox.setMaximumSize(new Dimension(610, 180));
+        suggestedAlgosBox.setMinimumSize(new Dimension(200, 614));
+        suggestedAlgosBox.setMaximumSize(new Dimension(200, 614));
 
         // Use a titled border with 5 px inside padding - Zhou
         String suggestedAlgosBoxBorderTitle = "Choose algorithm";
@@ -1704,8 +1682,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         JList suggestedAlgosList = new JList(suggestedAlgosListModel);
-        // Display data in multiple columns
-        suggestedAlgosList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
@@ -1713,10 +1689,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         suggestedAlgosBox.add(suggestedAlgosListScrollPane);
 
+        // Add to middleContainer
+        middleContainer.add(suggestedAlgosBox);
+
+        // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(320, 180));
-        algoDescriptionBox.setMaximumSize(new Dimension(320, 180));
+        algoDescriptionBox.setMinimumSize(new Dimension(480, 140));
+        algoDescriptionBox.setMaximumSize(new Dimension(480, 140));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -1732,26 +1712,22 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
-        // Add components to alogChooserContainer
-        alogChooserContainer.add(suggestedAlgosBox);
-        // Add some gap between algo chooser and description box
-        alogChooserContainer.add(Box.createHorizontalStrut(10), 1);
-        alogChooserContainer.add(algoDescriptionBox);
-
         // Choose corresponding test and score based on algorithm
-        Box testAndScoreBox = Box.createHorizontalBox();
+        Box testAndScoreBox = Box.createVerticalBox();
 
         // Use a titled border with 5 px inside padding - Zhou
-        String testAndScoreBoxBorderTitle = "Choose corresponding test and score based on algorithm";
+        String testAndScoreBoxBorderTitle = "Choose Test and Score";
         testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         testAndScoreBox.add(d1);
         // Add some gap between test and score
-        testAndScoreBox.add(Box.createHorizontalStrut(10), 1);
+        testAndScoreBox.add(Box.createVerticalStrut(10), 1);
         testAndScoreBox.add(d2);
 
         // Parameters
         Box parametersBox = Box.createVerticalBox();
+        parametersBox.setMinimumSize(new Dimension(480, 360));
+        parametersBox.setMaximumSize(new Dimension(480, 360));
 
         // Use a titled border with 5 px inside padding - Zhou
         String parametersBoxBorderTitle = "Specify algorithm parameters";
@@ -1768,23 +1744,33 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoBox.add(Box.createVerticalStrut(10));
         algoBox.add(scroll);
 
-        // Addd to algoFiltersContainer
-        algoFiltersContainer.add(algoGuideBox);
-        algoFiltersContainer.add(Box.createVerticalStrut(10));
-        algoFiltersContainer.add(dataDescriptionBox);
-        algoFiltersContainer.add(Box.createVerticalStrut(10));
-        algoFiltersContainer.add(resultDescriptionBox);
-        algoFiltersContainer.add(Box.createVerticalStrut(10));
-        algoFiltersContainer.add(alogChooserContainer);
-        algoFiltersContainer.add(Box.createVerticalStrut(10));
-        algoFiltersContainer.add(testAndScoreBox);
-        algoFiltersContainer.add(Box.createVerticalStrut(10));
-        algoFiltersContainer.add(parametersBox);
-        algoFiltersContainer.add(Box.createVerticalStrut(10));
+        // Add to rightContainer
+        rightContainer.add(algoDescriptionBox);
+        rightContainer.add(Box.createVerticalStrut(10));
+        rightContainer.add(testAndScoreBox);
+        rightContainer.add(Box.createVerticalStrut(10));
+        rightContainer.add(parametersBox);
+
         //algoFiltersContainer.add(algoBox);
+        // Add to algoChooserContainer as the first column
+        algoChooserContainer.add(leftContainer);
+
+        // Add some gap
+        algoChooserContainer.add(Box.createHorizontalStrut(10), 1);
+
+        // Add to algoChooserContainer as the second column
+        algoChooserContainer.add(middleContainer);
+
+        // Add some gap
+        algoChooserContainer.add(Box.createHorizontalStrut(10), 1);
+
+        // Add to algoChooserContainer as the third column
+        algoChooserContainer.add(rightContainer);
 
         // Add to big panel
-        panel.add(algoFiltersContainer);
+        panel.add(algoGuideBox);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(algoChooserContainer);
 
         Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
