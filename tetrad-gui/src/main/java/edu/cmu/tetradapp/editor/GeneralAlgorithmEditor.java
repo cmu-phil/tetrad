@@ -85,6 +85,8 @@ import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -1631,6 +1633,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         JList suggestedAlgosList = new JList(suggestedAlgosListModel);
+
+        suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    // Get selected algo
+                }
+            }
+        });
 
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
