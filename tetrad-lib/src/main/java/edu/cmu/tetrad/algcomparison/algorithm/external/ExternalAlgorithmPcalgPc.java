@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.BufferedReader;
@@ -151,6 +150,25 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
     @Override
     public Simulation getSimulation() {
         return simulation;
+    }
+
+    @Override
+    public long getElapsedTime(String resultsPath, int index) {
+        if (index == -1) {
+            throw new IllegalArgumentException("Not a dataset for this simulation.");
+        }
+
+        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+
+//        System.out.println(file.getAbsolutePath());
+
+        try {
+            BufferedReader r = new BufferedReader(new FileReader(file));
+            String l = r.readLine(); // Skip the first line.
+            return Long.parseLong(l);
+        } catch (IOException e) {
+            return -99;
+        }
     }
 
 }

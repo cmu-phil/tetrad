@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test.joes.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBnlearnMmhc;
+import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmIntersection;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
@@ -63,6 +64,7 @@ public class ExampleCompareFromFilesCondition1 {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new ElapsedTime());
 //        statistics.add(new PercentBidirectedEdges());
 //        statistics.add(new NumAmbiguousTriples());
 
@@ -73,16 +75,16 @@ public class ExampleCompareFromFilesCondition1 {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new PcStableMax(new FisherZ(), false));
-//        algorithms.add(new Cpc(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
-//        algorithms.add(new Fges(new FisherZScore()));
-
-//        parameters.set("alpha", 1e-8);
-//        algorithms.add(new Fges(new FisherZScore()));
-
+////        algorithms.add(new Pc(new FisherZ()));
+////        algorithms.add(new PcStable(new FisherZ()));
+////        algorithms.add(new PcStableMax(new FisherZ(), false));
+////        algorithms.add(new Cpc(new FisherZ()));
+////        algorithms.add(new CpcStable(new FisherZ()));
+////        algorithms.add(new Fges(new FisherZScore()));
+////
+////        parameters.set("alpha", 1e-8);
+////        algorithms.add(new Fges(new FisherZScore()));
+//
 //        parameters.set("penaltyDiscount", 2, 4);
 //        algorithms.add(new Fges(new SemBicScore()));
 
@@ -103,6 +105,25 @@ public class ExampleCompareFromFilesCondition1 {
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001"));
 
+        algorithms.add(new ExternalAlgorithmIntersection("Intersection (Tetrad) CPC, PC_Stable-Max, CPC-Stable",
+                new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),
+                new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),
+                new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001")
+
+        ));
+
+        algorithms.add(new ExternalAlgorithmIntersection("Intersection FGES alpha .001, 1e-8, penalty 2",
+                new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"),
+                new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"),
+                new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_2.0")
+        ));
+
+        algorithms.add(new ExternalAlgorithmIntersection("Intersection PC, CPC, CPC majority, pcalg",
+                new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"),
+                new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"),
+                new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001")
+        ));
+
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -110,13 +131,13 @@ public class ExampleCompareFromFilesCondition1 {
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);
 
-//        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
-//                "/Users/user/causal-comparisons/condition_1",
-//                algorithms, statistics, parameters);
-////
-        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
+        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);
+//
+//        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
+//                "/Users/user/causal-comparisons/condition_1",
+//                algorithms, statistics, parameters);
     }
 }
 

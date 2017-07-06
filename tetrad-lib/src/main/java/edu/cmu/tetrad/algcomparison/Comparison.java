@@ -1156,14 +1156,23 @@ public class Comparison {
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        saveGraph(resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper);
 
         long stop = System.currentTimeMillis();
 
         long elapsed = stop - start;
 
+        saveGraph(resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
+
         if (trueGraph != null) {
             out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
+        }
+
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+            extAlg.setSimIndex(simulationWrappers.indexOf(extAlg.getSimulation()));
+            extAlg.setSimulation(simulationWrapper.getSimulation());
+            extAlg.setPath(resultsPath);
+            elapsed = extAlg.getElapsedTime(resultsPath, run.getRunIndex());
         }
 
         Graph[] est = new Graph[numGraphTypes];
@@ -1230,7 +1239,8 @@ public class Comparison {
         }
     }
 
-    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex, AlgorithmWrapper algorithmWrapper) {
+    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
+                           AlgorithmWrapper algorithmWrapper, long elapsed) {
         if (!saveGraphs) {
             return;
         }
@@ -1239,13 +1249,18 @@ public class Comparison {
             String description = algorithmWrapper.getDescription().replace(" ", "_");
 
             File file;
+            File fileElapsed;
 
             File dir = new File(resultsPath, "results/" + description + "/" + simIndex);
             dir.mkdirs();
 
 
+            File dirElapsed = new File(resultsPath, "elapsed/" + description + "/" + simIndex);
+            dirElapsed.mkdirs();
+
             if (resultsPath != null) {
                 file = new File(dir, "graph." + (i + 1) + ".txt");
+                fileElapsed = new File(dirElapsed, "graph." + (i + 1) + ".txt");
             } else {
                 throw new IllegalArgumentException("Results path not provided.");
             }
@@ -1253,6 +1268,12 @@ public class Comparison {
             PrintStream out = new PrintStream(file);
             System.out.println("Saving graph to " + file.getAbsolutePath());
             out.println(graph);
+            out.close();
+
+            PrintStream outElapsed = new PrintStream(fileElapsed);
+//            System.out.println("Saving graph to " + file.getAbsolutePath());
+            outElapsed.println(elapsed);
+            outElapsed.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

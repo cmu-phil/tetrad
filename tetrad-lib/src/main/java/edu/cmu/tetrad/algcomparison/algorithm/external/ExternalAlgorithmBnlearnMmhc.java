@@ -179,4 +179,23 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
         return simulation;
     }
 
+    @Override
+    public long getElapsedTime(String resultsPath, int index) {
+        if (index == -1) {
+            throw new IllegalArgumentException("Not a dataset for this simulation.");
+        }
+
+        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+
+//        System.out.println(file.getAbsolutePath());
+
+        try {
+            BufferedReader r = new BufferedReader(new FileReader(file));
+            String l = r.readLine(); // Skip the first line.
+            return Long.parseLong(l);
+        } catch (IOException e) {
+            return -99;
+        }
+    }
+
 }

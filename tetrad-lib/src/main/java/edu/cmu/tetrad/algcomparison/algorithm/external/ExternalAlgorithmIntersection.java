@@ -4,17 +4,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm
@@ -46,23 +41,19 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmTetrad implements ExternalAlgorithm {
+public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
     static final long serialVersionUID = 23L;
-    private final String extDir;
+    private final ExternalAlgorithm[] algorithms;
     private String shortDescription = null;
-    private String path;
     private List<String> usedParameters = new ArrayList<>();
     private Simulation simulation;
-    private int simIndex = -1;
+    private String path;
+    private int simIndex;
+    private long elapsed = -99;
 
-    public  ExternalAlgorithmTetrad(String extDir) {
-        this.extDir = extDir;
-        this.shortDescription = new File(extDir).getName().replace("_", " ");
-    }
-
-    public ExternalAlgorithmTetrad(String extDir, String shortDecription) {
-        this.extDir = extDir;
-        this.shortDescription = shortDecription;
+    public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
+        this.algorithms = algorithms;
+        this.shortDescription = shortDescription;
     }
 
     @Override
@@ -70,28 +61,29 @@ public class ExternalAlgorithmTetrad implements ExternalAlgorithm {
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
-        int index = -1;
+        this.elapsed = 0;
 
-        for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
-                index = i + 1;
-                break;
-            }
+        for (ExternalAlgorithm algorithm : algorithms) {
+            algorithm.setPath(this.path);
+            algorithm.setSimIndex(this.simIndex);
+            algorithm.setSimulation(this.simulation);
+            elapsed += algorithm.getElapsedTime(this.path, this.simIndex);
         }
 
-        if (index == -1) {
-            throw new IllegalArgumentException("Not a dataset for this simulation.");
+        Graph graph0 = algorithms[0].search(dataSet, parameters);
+        Set<Edge> edges = graph0.getEdges();
+
+        for (int i = 1; i < algorithms.length; i++) {
+            edges.retainAll(algorithms[i].search(dataSet, parameters).getEdges());
         }
 
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        EdgeListGraph intersection = new EdgeListGraph(graph0.getNodes());
 
-        System.out.println(file.getAbsolutePath());
+        for (Edge edge : edges) {
+            intersection.addEdge(edge);
+        }
 
-        Graph graph = GraphUtils.loadGraphTxt(file);
-
-        GraphUtils.circleLayout(graph, 225, 200, 150);
-
-        return graph;
+        return intersection;
     }
 
     @Override
@@ -99,16 +91,11 @@ public class ExternalAlgorithmTetrad implements ExternalAlgorithm {
      * Returns the pattern of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        return algorithms[0].getComparisonGraph(graph);
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
-        } else {
-            return shortDescription;
-        }
+        return shortDescription;
     }
 
     @Override
@@ -144,21 +131,7 @@ public class ExternalAlgorithmTetrad implements ExternalAlgorithm {
 
     @Override
     public long getElapsedTime(String resultsPath, int index) {
-        if (index == -1) {
-            throw new IllegalArgumentException("Not a dataset for this simulation.");
-        }
-
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex +  1) + "/graph." + index + ".txt");
-
-//        System.out.println(file.getAbsolutePath());
-
-        try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
-            String l = r.readLine(); // Skip the first line.
-            return Long.parseLong(l);
-        } catch (IOException e) {
-            return -99;
-        }
+        return this.elapsed;
     }
 
 }
