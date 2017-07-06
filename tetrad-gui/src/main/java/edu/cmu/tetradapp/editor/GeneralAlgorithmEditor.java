@@ -1386,6 +1386,39 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         gaussianVariablesBox.add(gaussianVariablesOption3Box);
         gaussianVariablesBox.add(Box.createHorizontalGlue());
 
+        // Is there a prior knowledge file?
+        Box priorKnowledgeBox = Box.createVerticalBox();
+
+        // Add label into this label box to size
+        Box priorKnowledgeLabelBox = Box.createHorizontalBox();
+        priorKnowledgeLabelBox.add(new JLabel("Prior knowledge file: "));
+        priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Option 1
+        Box priorKnowledgeOption1Box = Box.createHorizontalBox();
+        priorKnowledgeOption1Box.setAlignmentX(LEFT_ALIGNMENT);
+
+        JRadioButton priorKnowledgeYes = new JRadioButton("Yes");
+
+        // Add padding and option
+        priorKnowledgeOption1Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        priorKnowledgeOption1Box.add(priorKnowledgeYes);
+
+        // Option 2
+        Box priorKnowledgeOption2Box = Box.createHorizontalBox();
+        priorKnowledgeOption2Box.setAlignmentX(LEFT_ALIGNMENT);
+
+        JRadioButton priorKnowledgeNo = new JRadioButton("No");
+
+        // Add padding and option
+        priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
+        priorKnowledgeOption2Box.add(priorKnowledgeNo);
+
+        // Add to containg box
+        priorKnowledgeBox.add(priorKnowledgeLabelBox);
+        priorKnowledgeBox.add(priorKnowledgeOption1Box);
+        priorKnowledgeBox.add(priorKnowledgeOption2Box);
+
         // Output Goals, use checkboxes to allow multiple goals
         // Can't use buttonGroup on checkboxes since it's multiple-exclusion
         Box outputGoalsBox = Box.createVerticalBox();
@@ -1569,6 +1602,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersBox.add(varLinearRelationshipsBox);
         algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(gaussianVariablesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(priorKnowledgeBox);
         algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(outputGoalsBox);
         algoFiltersBox.add(Box.createVerticalStrut(10));
