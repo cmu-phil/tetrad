@@ -1555,6 +1555,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         includeUnmeasuredConfoundersBox.add(includeUnmeasuredConfoundersOption3Box);
         includeUnmeasuredConfoundersBox.add(Box.createHorizontalGlue());
 
+        // Clear filter selections
+        JButton clearFilterSelectionsBtn = new JButton("Clear filter selections");
+
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
         JLabel label3 = new JLabel("List Algorithms that ");
@@ -1627,6 +1630,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersBox.add(outputGoalsBox);
         algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(includeUnmeasuredConfoundersBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
+        algoFiltersBox.add(clearFilterSelectionsBtn);
 
         // Add to leftContainer
         leftContainer.add(algoFiltersBox);
