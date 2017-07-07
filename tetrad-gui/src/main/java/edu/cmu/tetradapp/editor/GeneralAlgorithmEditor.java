@@ -127,12 +127,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final List<AlgorithmDescription> descriptions;
 
+    private JList suggestedAlgosList;
+
+    private String selectedAlgoName;
+
+    private JTextArea algoDescriptionTextArea;
+
     //=========================CONSTRUCTORS============================//
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
+
+        // Initialize variables
+        algoDescriptionTextArea = new JTextArea();
 
         String helpHS = "/resources/javahelp/TetradHelp.hs";
 
@@ -336,6 +345,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         algTypesDropdown.setSelectedItem(getAlgType().toString().replace("_", " "));
         algNamesDropdown.setSelectedItem(getAlgName());
+
+        // Initialize selectedAlgoName before calling setAlgorithm()
+        // Use the first algorithm as default - Zhou
+        selectedAlgoName = descriptions.get(0).getAlgName().toString();
 
         if (tests.contains(getTestType())) {
             testDropdown.setSelectedItem(getTestType());
@@ -1163,7 +1176,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private void setAlgorithm() {
-        AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+        // Comment out this to test new UI - Zhou
+        //AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+
+        // Get the equivalent enum type of selectedAlgoName string
+        AlgName name = AlgName.valueOf(selectedAlgoName);
+
         AlgorithmDescription description = mappedDescriptions.get(name);
 
         if (name == null) {
@@ -1199,7 +1217,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setAlgName(name);
         setTestType(test);
         setScoreType(score);
-        setAlgType(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
+        setAlgType(selectedAlgoName.replace(" ", "_"));
 
         if (whatYouChose != null) {
             whatYouChose.setText("You chose: " + algorithm.getDescription());
@@ -1632,12 +1650,23 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             suggestedAlgosListModel.addElement(algo.algName);
         }
 
-        JList suggestedAlgosList = new JList(suggestedAlgosListModel);
+        suggestedAlgosList = new JList(suggestedAlgosListModel);
+
+        // Default to select the first algo in the list and show its description  - Zhou
+        suggestedAlgosList.setSelectedIndex(0);
+        // Set default description as the first algorithm
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
 
         suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    // Get selected algo
+                    // Show the description of this algo in descriptopn text area
+                    selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+                    System.out.println("Selected algo ..." + selectedAlgoName);
+                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
+
+                    // Use the selected algo and update the test and score dropdown menus
+                    setAlgorithm();
                 }
             }
         });
@@ -1661,10 +1690,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         String algoDescriptionBoxBorderTitle = "Algorithm description";
         algoDescriptionBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoDescriptionBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        JTextArea algoDescriptionTextArea = new JTextArea();
-        // Use a hard coded example for now - Zhou
-        String algoDescriptionText = "FGESc is a version of FGES (Fast Greedy Search is an optimization and parallelized version of the Greedy Equivalence Search algorithm (GES)) that works with continuous variables";
-        algoDescriptionTextArea.setText(algoDescriptionText);
+        // Set line arap
         algoDescriptionTextArea.setWrapStyleWord(true);
         algoDescriptionTextArea.setLineWrap(true);
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
