@@ -133,9 +133,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private JTextArea algoDescriptionTextArea;
 
+    private ParameterPanel parametersPanel;
+
+    private JScrollPane parametersScrollPane;
+
     //=========================CONSTRUCTORS============================//
     /**
      * Opens up an editor to let the user view the given PcRunner.
+     *
+     * @param runner
      */
     public GeneralAlgorithmEditor(final GeneralAlgorithmRunner runner) {
         this.runner = runner;
@@ -405,7 +411,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         });
 
         pane = new JTabbedPane();
-        pane.add("Algorithm", getParametersPane());
+        pane.add("Algorithm", getAlgorithmPane());
         getAlgorithmFromInterface();
         pane.add("Output Graphs", graphEditor);
         add(pane, BorderLayout.CENTER);
@@ -421,13 +427,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        knowledgeTabSearchBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doSearch(runner);
-            }
-        });
-
+        // Hide the knowledge tab - Zhou
+//        knowledgeTabSearchBtn.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                doSearch(runner);
+//            }
+//        });
         setAlgorithm();
 
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -540,6 +546,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     graphEditor.replace(runner.getGraphs());
                     graphEditor.validate();
                     firePropertyChange("modelChanged", null, null);
+
                     pane.setSelectedComponent(graphEditor);
                 } else {
                     try {
@@ -883,6 +890,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         graphEditor.validate();
         System.out.println("Remote graph result assigned to runner!");
         firePropertyChange("modelChanged", null, null);
+
         pane.setSelectedComponent(graphEditor);
     }
 
@@ -1219,26 +1227,24 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setScoreType(score);
         setAlgType(selectedAlgoName.replace(" ", "_"));
 
-        if (whatYouChose != null) {
-            whatYouChose.setText("You chose: " + algorithm.getDescription());
-        }
+        // Rerender the parameters
+        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
 
-        if (pane != null) {
-            pane.setComponentAt(0, getParametersPane());
-        }
-
+//        if (whatYouChose != null) {
+//            whatYouChose.setText("You chose: " + algorithm.getDescription());
+//        }
+//
+//        if (pane != null) {
+//            pane.setComponentAt(0, getAlgorithmPane());
+//        }
     }
 
     //=============================== Public Methods ==================================//
-    private JPanel getParametersPane() {
+    private JPanel getAlgorithmPane() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         helpSet.setHomeID("tetrad_overview");
-
-        ParameterPanel comp = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        final JScrollPane scroll = new JScrollPane(comp);
-        scroll.setPreferredSize(new Dimension(800, 300));
 
         JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
         JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
@@ -1583,14 +1589,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d2.add(explain4);
         d2.add(Box.createHorizontalGlue());
 
-        Box d0 = Box.createHorizontalBox();
-        JLabel label0 = new JLabel("Parameters:");
-        label0.setFont(new Font("Dialog", Font.BOLD, 13));
-        d0.add(label0);
-        d0.add(Box.createHorizontalGlue());
-
-        Box algoBox = Box.createVerticalBox();
-
         // This container contains 3 columns, leftContainer, middleContainer, and rightContainer
         Box algoChooserContainer = Box.createHorizontalBox();
         algoChooserContainer.setPreferredSize(new Dimension(940, 620));
@@ -1718,16 +1716,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         String parametersBoxBorderTitle = "Specify algorithm parameters";
         parametersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(parametersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        parametersBox.add(d0);
+        // Parameters
+        // This is only the parameters pane of the default algorithm - Zhou
+        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+        parametersScrollPane = new JScrollPane(parametersPanel);
+        parametersScrollPane.setPreferredSize(new Dimension(460, 320));
 
-        // Joe's current UI components - Zhou
-        //algoBox.add(d3);
-        //algoBox.add(d1);
-        //algoBox.add(d2);
-//        c.add(Box.createVerticalGlue());
-        //algoBox.add(d0);
-        algoBox.add(Box.createVerticalStrut(10));
-        algoBox.add(scroll);
+        // Add to parameters box
+        parametersBox.add(parametersScrollPane);
 
         // Add to rightContainer
         rightContainer.add(algoDescriptionBox);
