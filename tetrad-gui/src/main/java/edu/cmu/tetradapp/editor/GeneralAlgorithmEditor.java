@@ -135,6 +135,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private ParameterPanel parametersPanel;
 
+    private Box parametersBox;
+
     private JScrollPane parametersScrollPane;
 
     //=========================CONSTRUCTORS============================//
@@ -900,7 +902,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     public Algorithm getAlgorithmFromInterface() {
-        AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+        AlgName name = AlgName.valueOf(selectedAlgoName);
 
         if (name == null) {
             throw new NullPointerException();
@@ -1199,7 +1201,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         TestType test = (TestType) testDropdown.getSelectedItem();
         ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
 
+        // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
+        runner.setAlgorithm(algorithm);
 
         OracleType oracle = description.getOracleType();
 
@@ -1220,8 +1224,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("testEnabled", testDropdown.isEnabled());
         parameters.set("scoreEnabled", scoreDropdown.isEnabled());
 
-        runner.setAlgorithm(algorithm);
-
         setAlgName(name);
         setTestType(test);
         setScoreType(score);
@@ -1229,6 +1231,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Rerender the parameters
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+        parametersScrollPane = new JScrollPane(parametersPanel);
+        parametersBox.remove(0);
+        parametersBox.add(parametersScrollPane);
 
 //        if (whatYouChose != null) {
 //            whatYouChose.setText("You chose: " + algorithm.getDescription());
@@ -1708,7 +1713,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testAndScoreBox.add(d2);
 
         // Parameters
-        Box parametersBox = Box.createVerticalBox();
+        parametersBox = Box.createVerticalBox();
         parametersBox.setMinimumSize(new Dimension(480, 340));
         parametersBox.setMaximumSize(new Dimension(480, 340));
 
@@ -1723,7 +1728,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parametersScrollPane.setPreferredSize(new Dimension(460, 320));
 
         // Add to parameters box
-        parametersBox.add(parametersScrollPane);
+        parametersBox.add(parametersScrollPane, 0);
 
         // Add to rightContainer
         rightContainer.add(algoDescriptionBox);
@@ -1753,6 +1758,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Add to big panel
         panel.add(algoChooserContainer);
 
+        // Set default algo in runner
         Algorithm algorithm = getAlgorithmFromInterface();
         runner.setAlgorithm(algorithm);
 
