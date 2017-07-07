@@ -107,7 +107,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
     private final JButton algorithmTabSearchBtn = new JButton("Search");
-    private final JButton knowledgeTabSearchBtn = new JButton("Search");
+    //private final JButton knowledgeTabSearchBtn = new JButton("Search");
     private final JTabbedPane pane;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
@@ -131,13 +131,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private String selectedAlgoName;
 
+    private int selectedAlgoIndex;
+
     private JTextArea algoDescriptionTextArea;
 
     private ParameterPanel parametersPanel;
 
     private Box parametersBox;
-
-    private JScrollPane parametersScrollPane;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -356,7 +356,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Initialize selectedAlgoName before calling setAlgorithm()
         // Use the first algorithm as default - Zhou
-        selectedAlgoName = descriptions.get(0).getAlgName().toString();
+        selectedAlgoIndex = 0;
+        selectedAlgoName = descriptions.get(selectedAlgoIndex).getAlgName().toString();
 
         if (tests.contains(getTestType())) {
             testDropdown.setSelectedItem(getTestType());
@@ -1201,6 +1202,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Set the algo on each selection change
         Algorithm algorithm = getAlgorithmFromInterface();
+
+        System.out.println("algo parameters ..............");
+        System.out.println(algorithm.getParameters());
+
         runner.setAlgorithm(algorithm);
 
         OracleType oracle = description.getOracleType();
@@ -1227,19 +1232,14 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setScoreType(score);
         setAlgType(selectedAlgoName.replace(" ", "_"));
 
-        // Rerender the parameters
-        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        parametersScrollPane = new JScrollPane(parametersPanel);
-        parametersBox.remove(0);
-        parametersBox.add(parametersScrollPane);
+        if (whatYouChose != null) {
+            whatYouChose.setText("You chose: " + algorithm.getDescription());
+        }
 
-//        if (whatYouChose != null) {
-//            whatYouChose.setText("You chose: " + algorithm.getDescription());
-//        }
-//
-//        if (pane != null) {
-//            pane.setComponentAt(0, getAlgorithmPane());
-//        }
+        // This handles the parameters update by reset the algorithms content - Zhou
+        if (pane != null) {
+            pane.setComponentAt(0, getAlgorithmPane());
+        }
     }
 
     private JPanel getAlgorithmPane() {
@@ -1650,21 +1650,30 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         suggestedAlgosList = new JList(suggestedAlgosListModel);
+        // Only allow single selection
+        suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Default to select the first algo in the list and show its description  - Zhou
-        suggestedAlgosList.setSelectedIndex(0);
+        // Use the currently selected index every time getAlgorithmPane() is called - Zhou
+        suggestedAlgosList.setSelectedIndex(selectedAlgoIndex);
         // Set default description as the first algorithm
         algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
 
         suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
+                // More about why use getValueIsAdjusting()
+                // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
                 if (!e.getValueIsAdjusting()) {
+                    // Currently selected item index
+                    // we'll need to set this because getAlgorithmPane() gets called
+                    // every time setAlgorithm() is called - Zhou
+                    selectedAlgoIndex = suggestedAlgosList.getSelectedIndex();
+
                     // Show the description of this algo in descriptopn text area
                     selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
                     System.out.println("Selected algo ..." + selectedAlgoName);
                     algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
 
-                    // Use the selected algo and update the test and score dropdown menus
+                    // Finally, set the selected algo and update the test and score dropdown menus
                     setAlgorithm();
                 }
             }
@@ -1724,11 +1733,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Parameters
         // This is only the parameters pane of the default algorithm - Zhou
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
-        parametersScrollPane = new JScrollPane(parametersPanel);
-        parametersScrollPane.setPreferredSize(new Dimension(460, 320));
+        // We need to use a scrollPane since some algorithm's parameters have long labels - Zhou
+        JScrollPane parametersScrollPane = new JScrollPane(parametersPanel);
+        parametersScrollPane.setMaximumSize(new Dimension(660, 320));
 
         // Add to parameters box
-        parametersBox.add(parametersScrollPane, 0);
+        parametersBox.add(parametersScrollPane);
 
         // Add to rightContainer
         rightContainer.add(algoDescriptionBox);
@@ -1773,6 +1783,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("algType", algType.replace(" ", "_"));
     }
 
+    /**
+     * Returns the object value of the given parameter, using "PC" as default.
+     *
+     * @return AlgName
+     */
     private AlgName getAlgName() {
         return AlgName.valueOf(parameters.getString("algName", "PC"));
     }
