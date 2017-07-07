@@ -414,7 +414,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         pane = new JTabbedPane();
         pane.add("Algorithm", getAlgorithmPane());
-        getAlgorithmFromInterface();
         pane.add("Output Graphs", graphEditor);
         add(pane, BorderLayout.CENTER);
 
@@ -436,8 +435,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                doSearch(runner);
 //            }
 //        });
-        setAlgorithm();
-
+        //setAlgorithm();
         this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
 
@@ -1244,7 +1242,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //        }
     }
 
-    //=============================== Public Methods ==================================//
     private JPanel getAlgorithmPane() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -1312,7 +1309,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         });
 
         algorithmTabSearchBtn.setPreferredSize(algorithmTabSearchBtnSize);
-
         algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
         // Are the relationships between your variables linear?
@@ -1674,6 +1670,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
+        // Set default algo in runner
+        Algorithm algorithm = getAlgorithmFromInterface();
+        runner.setAlgorithm(algorithm);
+
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
         suggestedAlgosListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
@@ -1757,10 +1757,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Add to big panel
         panel.add(algoChooserContainer);
-
-        // Set default algo in runner
-        Algorithm algorithm = getAlgorithmFromInterface();
-        runner.setAlgorithm(algorithm);
 
         return panel;
     }
