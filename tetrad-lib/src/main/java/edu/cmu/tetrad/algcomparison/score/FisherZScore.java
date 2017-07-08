@@ -36,7 +36,7 @@ public class FisherZScore implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z Score, alpha = " + alpha;
+        return "Fisher Z Score";
     }
 
     @Override

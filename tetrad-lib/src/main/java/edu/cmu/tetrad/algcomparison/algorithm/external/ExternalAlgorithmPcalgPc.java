@@ -153,7 +153,16 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(String resultsPath, int index) {
+    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+        int index = -1;
+
+        for (int i = 0; i < getNumDataModels(); i++) {
+            if (dataSet == simulation.getDataModel(i)) {
+                index = i + 1;
+                break;
+            }
+        }
+
         if (index == -1) {
             throw new IllegalArgumentException("Not a dataset for this simulation.");
         }

@@ -100,6 +100,12 @@ public class Comparison {
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            if (algorithm instanceof  ExternalAlgorithm) {
+                throw new IllegalArgumentException("Not expecting any implementations of ExternalAlgorithm here.");
+            }
+        }
+
         this.dataPath = dataPath;
         this.resultsPath = resultsPath;
 
@@ -1143,9 +1149,9 @@ public class Comparison {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
-                DataModel DataModel = copyData ? data.copy() : data;
+                DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = algorithm.search(DataModel, _params);
+                out = algorithm.search(dataModel, _params);
             }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
@@ -1169,10 +1175,10 @@ public class Comparison {
 
         if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
             ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
-            extAlg.setSimIndex(simulationWrappers.indexOf(extAlg.getSimulation()));
+            extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(resultsPath);
-            elapsed = extAlg.getElapsedTime(resultsPath, run.getRunIndex());
+            elapsed = extAlg.getElapsedTime(data, simulationWrapper.getSimulationSpecificParameters());
         }
 
         Graph[] est = new Graph[numGraphTypes];

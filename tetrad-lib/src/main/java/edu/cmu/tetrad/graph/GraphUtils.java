@@ -2818,6 +2818,25 @@ public final class GraphUtils {
         return graph;
     }
 
+    public static Graph loadGraphBNTPcMatrix(List<Node> vars, DataSet dataSet) {
+        Graph graph = new EdgeListGraph(vars);
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                int g = dataSet.getInt(i, j);
+                int h = dataSet.getInt(j, i);
+
+                if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
+                    graph.addUndirectedEdge(vars.get(i), vars.get(j));
+                } else if (g == -1 && h == 0) {
+                    graph.addDirectedEdge(vars.get(i), vars.get(j));
+                }
+            }
+        }
+
+        return graph;
+    }
+
     public static String graphRMatrixTxt(Graph graph) throws IllegalArgumentException {
         int[][] m = incidenceMatrix(graph);
 

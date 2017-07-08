@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.external;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -67,7 +68,7 @@ public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
             algorithm.setPath(this.path);
             algorithm.setSimIndex(this.simIndex);
             algorithm.setSimulation(this.simulation);
-            elapsed += algorithm.getElapsedTime(this.path, this.simIndex);
+            elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
         }
 
         Graph graph0 = algorithms[0].search(dataSet, parameters);
@@ -130,7 +131,7 @@ public class ExternalAlgorithmIntersection implements ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(String resultsPath, int index) {
+    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         return this.elapsed;
     }
 

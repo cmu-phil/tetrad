@@ -3,8 +3,12 @@ package edu.cmu.tetrad.algcomparison.algorithm.external;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.BufferedReader;
@@ -44,7 +48,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
+public class ExternalAlgorithmBNTPc implements ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
@@ -53,12 +57,12 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
     private Simulation simulation;
     private int simIndex = -1;
 
-    public ExternalAlgorithmBnlearnMmhc(String extDir) {
+    public ExternalAlgorithmBNTPc(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmBnlearnMmhc(String extDir, String shortDecription) {
+    public ExternalAlgorithmBNTPc(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
@@ -86,37 +90,11 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
         System.out.println(file.getAbsolutePath());
 
         try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
-
-            r.readLine(); // Skip the first line.
-            String line;
-
-            Graph graph = new EdgeListGraph();
-
-            while ((line = r.readLine()) != null) {
-                if (line.isEmpty()) continue;
-                String[] tokens = line.split("\t");
-                String name1 = tokens[0].replace(" ", "").replace("\"","");
-                String name2 = tokens[1].replace(" ", "").replace("\"","");
-
-                if (graph.getNode(name1) == null) {
-                    graph.addNode(new GraphNode(name1));
-                }
-
-                if (graph.getNode(name2) == null) {
-                    graph.addNode(new GraphNode(name2));
-                }
-
-                Node node1 = graph.getNode(name1);
-                Node node2 = graph.getNode(name2);
-
-                if (!graph.isAdjacentTo(node1, node2)) {
-                    graph.addDirectedEdge(node1, node2);
-                } else {
-                    graph.removeEdge(node1, node2);
-                    graph.addUndirectedEdge(node1, node2);
-                }
-            }
+            DataReader reader = new DataReader();
+            reader.setVariablesSupplied(false);
+            DataSet dataSet2 = reader.parseTabular(file);
+            System.out.println("Loading graph from " + file.getAbsolutePath());
+            Graph graph = GraphUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 
             GraphUtils.circleLayout(graph, 225, 200, 150);
 
@@ -198,10 +176,12 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));
             String l = r.readLine(); // Skip the first line.
-            return Long.parseLong(l);
+            return (long) Double.parseDouble(l);
         } catch (IOException e) {
             return -99;
         }
     }
 
 }
+
+

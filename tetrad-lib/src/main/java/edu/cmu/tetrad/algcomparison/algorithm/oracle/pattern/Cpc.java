@@ -55,7 +55,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
+        return "CPC (Conservative \"Peter and Clark\"), Priority Rule, using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

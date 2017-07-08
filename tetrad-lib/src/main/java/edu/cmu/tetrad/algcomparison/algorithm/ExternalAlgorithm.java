@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Tags an an algorithm that loads up external graphs for inclusion in reports.
@@ -16,5 +18,5 @@ public interface ExternalAlgorithm extends Algorithm {
 
     Simulation getSimulation();
 
-    long getElapsedTime(String resultsPath, int index);
+    long getElapsedTime(DataModel dataSet, Parameters parameters);
 }

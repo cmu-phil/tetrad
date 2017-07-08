@@ -82,6 +82,8 @@ public class TestPcStableMax {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
+        System.out.println(knowledge);
+
         checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
@@ -170,7 +172,6 @@ public class TestPcStableMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        Score score = new GraphScore(graph);
         PcStableMax pc = new PcStableMax(independence);
 
         // Set up search.
@@ -183,7 +184,7 @@ public class TestPcStableMax {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(trueGraph, resultGraph);
     }
 
     @Test

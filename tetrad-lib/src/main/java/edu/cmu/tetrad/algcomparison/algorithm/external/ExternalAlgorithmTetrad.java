@@ -143,21 +143,30 @@ public class ExternalAlgorithmTetrad implements ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(String resultsPath, int index) {
+    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+        int index = -1;
+
+        for (int i = 0; i < getNumDataModels(); i++) {
+            if (dataSet == simulation.getDataModel(i)) {
+                index = i + 1;
+                break;
+            }
+        }
+
         if (index == -1) {
             throw new IllegalArgumentException("Not a dataset for this simulation.");
         }
 
         File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex +  1) + "/graph." + index + ".txt");
 
-//        System.out.println(file.getAbsolutePath());
+        System.out.println(file.getAbsolutePath());
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));
             String l = r.readLine(); // Skip the first line.
             return Long.parseLong(l);
         } catch (IOException e) {
-            return -99;
+            throw new IllegalArgumentException();
         }
     }
 

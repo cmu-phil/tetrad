@@ -56,7 +56,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "PC (\"Peter and Clark\") using " + test.getDescription()
+        return "PC (\"Peter and Clark\"), Priority Rule, using " + test.getDescription()
                 + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }

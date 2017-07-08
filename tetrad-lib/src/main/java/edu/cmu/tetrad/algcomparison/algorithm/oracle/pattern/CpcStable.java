@@ -48,7 +48,7 @@ public class CpcStable implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CPC-Stable (Conservative \"Peter and Clark\" Stable) using " + test.getDescription();
+        return "CPC-Stable (Conservative \"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription();
     }
 
     @Override
