@@ -147,6 +147,7 @@ public class Condition1 {
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*0.5*log(nrow(data)"));
