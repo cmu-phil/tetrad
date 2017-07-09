@@ -5,9 +5,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints.
@@ -21,9 +19,13 @@ public class ArrowConfusion {
     private Graph truth;
     private Graph est;
     private int arrowsTp;
+    private int arrowsTpc;
     private int arrowsFp;
+    private int arrowsFpc;
     private int arrowsFn;
+    private int arrowsFnc;
     private int arrowsTn;
+    private int arrowsTnc;
     private int TCtp;
     private int TCfn;
     private int TCfp;
@@ -32,8 +34,11 @@ public class ArrowConfusion {
         this.truth = truth;
         this.est = est;
         arrowsTp = 0;
+        arrowsTpc = 0;
         arrowsFp = 0;
+        arrowsFpc = 0;
         arrowsFn = 0;
+        arrowsFnc = 0;
         TCtp = 0; //for the two-cycle accuracy
         TCfn = 0;
         TCfp = 0;
@@ -99,12 +104,29 @@ public class ArrowConfusion {
                 arrowsFn++;
             }
 
+            if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsFnc = getArrowsFnc() + 1;
+            }
+
+            if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsFnc = getArrowsFnc() + 1;
+            }
+
+
             if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW) {
                 arrowsTp++;
             }
 
             if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
                 arrowsTp++;
+            }
+
+            if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsTpc = getArrowsTpc() + 1;
+            }
+
+            if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsTpc = getArrowsTpc() + 1;
             }
 
             if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW) {
@@ -115,7 +137,13 @@ public class ArrowConfusion {
                 arrowsTn++;
             }
 
+            if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsTnc = getArrowsTnc() + 1;
+            }
 
+            if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsTnc = getArrowsTnc() + 1;
+            }
         }
 // Get edges from the estimated graph to compute only FalsePositives
         // System.out.println(this.est.getEdges());
@@ -173,6 +201,13 @@ public class ArrowConfusion {
                 arrowsFp++;
             }
 
+            if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsFpc = getArrowsFpc() + 1;
+            }
+
+            if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW && edge1 != null && edge2 != null) {
+                arrowsFpc = getArrowsFpc() + 1;
+            }
 
         }
 
@@ -185,17 +220,16 @@ public class ArrowConfusion {
         for (Edge edge : this.truth.getEdges()) {
 
 
-
             List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
-  //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
+                //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
                 TCtp++;
             }
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() != 2) {
-   //             System.out.println("2-cycle not inferred " + TwoCycle1);
+                //             System.out.println("2-cycle not inferred " + TwoCycle1);
                 TCfn++;
             }
         }
@@ -206,7 +240,7 @@ public class ArrowConfusion {
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
-  //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
+                //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
                 TCfp++;
             }
         }
@@ -220,9 +254,9 @@ public class ArrowConfusion {
         TCtp = TCtp / 2;
         TCfn = TCfn / 2;
         TCfp = TCfp / 2;
- //       System.out.println(TCtp);
- //       System.out.println(TCfn);
- //       System.out.println(TCfp);
+        //       System.out.println(TCtp);
+        //       System.out.println(TCfn);
+        //       System.out.println(TCfp);
 
     }
 
@@ -255,5 +289,31 @@ public class ArrowConfusion {
         return TCfn;
     }
 
+    /**
+     * Two positives for common edges.
+     */
+    public int getArrowsTpc() {
+        return arrowsTpc;
+    }
 
+    /**
+     * False positives for common edges.
+     */
+    public int getArrowsFpc() {
+        return arrowsFpc;
+    }
+
+    /**
+     * False negatives for common edges.
+     */
+    public int getArrowsFnc() {
+        return arrowsFnc;
+    }
+
+    /**
+     * True Negatives for common edges.
+     */
+    public int getArrowsTnc() {
+        return arrowsTnc;
+    }
 }

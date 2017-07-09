@@ -104,6 +104,7 @@ public class Condition1 {
         parameters.set("penaltyDiscount", 2, 4);
 
         algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
