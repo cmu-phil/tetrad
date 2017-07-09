@@ -46,7 +46,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
+public class ExternalAlgorithmPcalgGes implements ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
@@ -55,12 +55,12 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
     private Simulation simulation;
     private int simIndex = -1;
 
-    public ExternalAlgorithmPcalgPc(String extDir) {
+    public ExternalAlgorithmPcalgGes(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmPcalgPc(String extDir, String shortDecription) {
+    public ExternalAlgorithmPcalgGes(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
@@ -83,23 +83,56 @@ public class ExternalAlgorithmPcalgPc implements ExternalAlgorithm {
             throw new IllegalArgumentException("Not a dataset for this simulation.");
         }
 
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        File nodes = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/nodes." + index + ".txt");
+        System.out.println(nodes.getAbsolutePath());
 
-        System.out.println(file.getAbsolutePath());
+        List<Node> vars = new ArrayList<>();
 
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(true);
-            DataSet dataSet2 = reader.parseTabular(file);
-            System.out.println("Loading graph from " + file.getAbsolutePath());
-            Graph graph = GraphUtils.loadGraphPcAlgMatrix(dataSet2);
+            BufferedReader r = new BufferedReader(new FileReader(nodes));
+            String name;
 
-            GraphUtils.circleLayout(graph, 225, 200, 150);
+            while ((name = r.readLine()) != null) {
+                GraphNode node = new GraphNode(name.trim());
+                vars.add(node);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        File inEdges = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/in.edges." + index + ".txt");
+
+        try {
+            BufferedReader r = new BufferedReader(new FileReader(inEdges));
+            String line;
+            Graph graph = new EdgeListGraph(vars);
+
+            for (int i = 0; i < vars.size(); i++) {
+                line = r.readLine();
+                String[] tokens = line.split(",");
+
+                for (String token : tokens) {
+                    String trim = token.trim();
+                    if (trim.isEmpty()) continue;
+                    int j = Integer.parseInt(trim) - 1;
+                    Node v1 = vars.get(i);
+                    Node v2 = vars.get(j);
+
+                    if (!graph.isAdjacentTo(v2, v1)) {
+                        graph.addDirectedEdge(v2, v1);
+                    } else {
+                        graph.removeEdge(v2, v1);
+                        graph.addUndirectedEdge(v2, v1);
+                    }
+                }
+            }
 
             return graph;
-        } catch (IOException e) {
-            throw new RuntimeException("Couldn't parse graph.");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        throw new IllegalArgumentException("Could not parse graph.");
     }
 
     @Override

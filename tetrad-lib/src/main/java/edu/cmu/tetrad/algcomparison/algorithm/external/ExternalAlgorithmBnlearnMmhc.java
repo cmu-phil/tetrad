@@ -120,8 +120,6 @@ public class ExternalAlgorithmBnlearnMmhc implements ExternalAlgorithm {
 
             GraphUtils.circleLayout(graph, 225, 200, 150);
 
-            System.out.println(graph);
-
             return graph;
         } catch (IOException e) {
             throw new RuntimeException("Couldn't parse graph.");
