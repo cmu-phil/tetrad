@@ -1405,17 +1405,6 @@ public class Comparison {
 
             int initialColumn = 0;
 
-            if (isShowAlgorithmIndices()) {
-                table.setToken(0, initialColumn, "Alg");
-
-                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-                    AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
-                    table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
-                }
-
-                initialColumn++;
-            }
-
             if (isShowSimulationIndices()) {
                 table.setToken(0, initialColumn, "Sim");
 
@@ -1423,6 +1412,17 @@ public class Comparison {
                     Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).
                             getSimulationWrapper();
                     table.setToken(t + 1, initialColumn, "" + (simulationWrappers.indexOf(simulation) + 1));
+                }
+
+                initialColumn++;
+            }
+
+            if (isShowAlgorithmIndices()) {
+                table.setToken(0, initialColumn, "Alg");
+
+                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+                    AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
+                    table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
                 }
 
                 initialColumn++;
