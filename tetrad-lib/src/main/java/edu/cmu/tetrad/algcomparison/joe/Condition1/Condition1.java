@@ -190,7 +190,7 @@ public class Condition1 {
     }
 
     public static void main(String... args) {
-        new Condition1().generateTetradResults();
+        new Condition1().compileTable();
     }
 }
 
