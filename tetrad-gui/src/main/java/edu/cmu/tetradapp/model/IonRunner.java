@@ -246,7 +246,7 @@ public class IonRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("Definite Colliders");
+//        names.add("Definite ColliderDiscovery");
 //        names.add("Definite Noncolliders");
         return names;
     }

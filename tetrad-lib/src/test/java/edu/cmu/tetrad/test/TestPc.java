@@ -205,6 +205,19 @@ public class TestPc {
     }
 
     @Test
+    public void checkPattern() {
+        for (int i = 0; i < 2; i++) {
+            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100,
+                    100, 100, false);
+            IndTestDSep test = new IndTestDSep(graph);
+            Pc pc = new Pc(test);
+            Graph pattern = pc.search();
+            Graph pattern2 = SearchGraphUtils.patternFromDag(graph);
+            assertEquals(pattern, pattern2);
+        }
+    }
+
+    @Test
     public void testPcStable2() {
         RandomUtil.getInstance().setSeed(1450030184196L);
         List<Node> nodes = new ArrayList<>();
@@ -221,14 +234,14 @@ public class TestPc {
         TetradLogger.getInstance().setForceLog(false);
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
-        PcStable pc = new PcStable(test);
+        PcStableMax pc = new PcStableMax(test);
         pc.setVerbose(false);
         Graph pattern = pc.search();
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
             IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStable pc2 = new PcStable(test2);
+            PcStableMax pc2 = new PcStableMax(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));

@@ -62,7 +62,7 @@ public class TestBootstrapTest {
 		DagToPag dagToPag = new DagToPag(dag);
 		Graph truePag = dagToPag.convert();
 
-		System.out.println("Truth PAG Graph:");
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
 		System.out.println(truePag.toString());
 
 		int[] causalOrdering = new int[numVars];
@@ -87,7 +87,7 @@ public class TestBootstrapTest {
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
 		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated PAG Graph:");
+		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
@@ -121,7 +121,7 @@ public class TestBootstrapTest {
 		DagToPag dagToPag = new DagToPag(dag);
 		Graph truePag = dagToPag.convert();
 
-		System.out.println("Truth PAG Graph:");
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
 		System.out.println(truePag.toString());
 
 		BayesPm pm = new BayesPm(dag, 2, 3);
@@ -142,7 +142,7 @@ public class TestBootstrapTest {
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
 		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated PAG Graph:");
+		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
@@ -174,7 +174,7 @@ public class TestBootstrapTest {
 		DagToPag dagToPag = new DagToPag(dag);
 		Graph truePag = dagToPag.convert();
 
-		System.out.println("Truth PAG Graph:");
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
 		System.out.println(truePag.toString());
 
 		int[] causalOrdering = new int[numVars];
@@ -199,7 +199,7 @@ public class TestBootstrapTest {
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
 		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated PAG Graph:");
+		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
@@ -233,7 +233,7 @@ public class TestBootstrapTest {
 		DagToPag dagToPag = new DagToPag(dag);
 		Graph truePag = dagToPag.convert();
 
-		System.out.println("Truth PAG Graph:");
+		System.out.println("Truth PAG_of_the_true_DAG Graph:");
 		System.out.println(truePag.toString());
 
 		BayesPm pm = new BayesPm(dag, 2, 3);
@@ -254,7 +254,7 @@ public class TestBootstrapTest {
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(BootstrapEdgeEnsemble.Highest);
 		Graph resultGraph = bootstrapTest.search();
-		System.out.println("Estimated Bootstrapped PAG Graph:");
+		System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
@@ -276,7 +276,7 @@ public class TestBootstrapTest {
 
 		GFci gfci = new GFci(test, score);
 		resultGraph = gfci.search();
-		System.out.println("Estimated PAG Graph:");
+		System.out.println("Estimated PAG_of_the_true_DAG Graph:");
 		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix

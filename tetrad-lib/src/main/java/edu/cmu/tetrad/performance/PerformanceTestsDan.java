@@ -174,7 +174,7 @@ public class PerformanceTestsDan {
             final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
             final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
 
-            out6.println("GFCI.PAG");
+            out6.println("GFCI.PAG_of_the_true_DAG");
 
             GFci gFci = new GFci(independenceTestGFci, scoreGfci);
             gFci.setVerbose(false);
@@ -188,7 +188,7 @@ public class PerformanceTestsDan {
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);
 
-            out8.println("PATTERN OVER MEASURED VARIABLES");
+            out8.println("Pattern_of_the_true_DAG OVER MEASURED VARIABLES");
 
             final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 
@@ -204,7 +204,7 @@ public class PerformanceTestsDan {
 
             out10.println(data);
 
-            out11.println("True PAG");
+            out11.println("True PAG_of_the_true_DAG");
             final Graph truePag = new DagToPag(dag).convert();
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);

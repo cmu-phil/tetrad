@@ -82,7 +82,7 @@ public class ScoredIndTest implements Score {
 
     @Override
     public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
+        return localScoreDiff(x, y, new int[0]);
     }
 
 

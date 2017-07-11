@@ -177,7 +177,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    final int maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //===========================CONSTRUCTORS=============================//
 
@@ -423,7 +423,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * Creates a new processors pool with the specified number of threads.
      */
     public void setParallelism(int numProcessors) {
-        this.pool = new ForkJoinPool(numProcessors);
+//        this.pool = new ForkJoinPool(numProcessors);
     }
 
     /**

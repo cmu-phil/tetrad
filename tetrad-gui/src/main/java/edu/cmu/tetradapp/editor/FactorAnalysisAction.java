@@ -96,7 +96,7 @@ public class FactorAnalysisAction extends AbstractAction {
         double threshold = .2;
 
         TetradMatrix unrotatedSolution = analysis.successiveResidual();
-        TetradMatrix rotatedSolution = FactorAnalysis.successiveFactorVarimax(unrotatedSolution);
+        TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();

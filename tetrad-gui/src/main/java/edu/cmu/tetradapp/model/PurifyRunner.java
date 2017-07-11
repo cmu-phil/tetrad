@@ -63,7 +63,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 //        Graph mim = graphWrapper.getGraph();
 //        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
 //
-//        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariables());
+//        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariable());
 //        Clusters clusters = ClusterUtils.partitionToClusters(partition);
 //        setClusters(clusters);
 //        params.set("clusters", clusters);

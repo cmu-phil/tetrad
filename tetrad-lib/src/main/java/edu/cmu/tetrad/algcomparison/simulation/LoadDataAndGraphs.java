@@ -1,12 +1,14 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.ContinuousTabularDataset;
+import edu.pitt.dbmi.data.Dataset;
+import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class LoadDataAndGraphs implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
     private List<String> usedParameters = new ArrayList<>();
+    private String description = "";
 
     public LoadDataAndGraphs(String path) {
         this.path = path;
@@ -48,16 +51,36 @@ public class LoadDataAndGraphs implements Simulation {
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
-                    DataReader reader = new DataReader();
-                    reader.setVariablesSupplied(true);
-                    reader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
-                    dataSets.add(reader.parseTabular(file1));
+
+                    ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(file1, Delimiter.WHITESPACE) ;
+
+                    // Header in first row or not
+                    dataReader.setHasHeader(true);
+
+                    // Set comment marker
+                    dataReader.setCommentMarker("//");
+
+                    dataReader.setMissingValueMarker("*");
+
+//                    DataReader reader = new DataReader();
+//                    reader.setVariablesSupplied(true);
+//                    reader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
+                    ContinuousTabularDataset dataset = (ContinuousTabularDataset) dataReader.readInData();
+                    DoubleDataBox box = new DoubleDataBox(dataset.getData());
+                    List<Node> variables = new ArrayList<>();
+                    for (String s : dataset.getVariables()) variables.add(new ContinuousVariable(s));
+                    BoxDataSet _dataSet = new BoxDataSet(box, variables);
+                    dataSets.add(_dataSet);
                 }
 
                 File file = new File(path, "parameters.txt");
                 BufferedReader r = new BufferedReader(new FileReader(file));
 
                 String line;
+
+                line = r.readLine();
+
+                if (line != null) this.description = line;
 
                 while ((line = r.readLine()) != null) {
                     if (line.contains(" = ")) {
@@ -95,23 +118,25 @@ public class LoadDataAndGraphs implements Simulation {
 
     @Override
     public String getDescription() {
-        try {
-            File file = new File(path, "parameters.txt");
-            BufferedReader r = new BufferedReader(new FileReader(file));
+        return "Load data sets and graphs from a directory" + (!("".equals(description)) ? ": " + description : "");
 
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            String line;
-
-            while ((line = r.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
-                b.append(line).append("\n");
-            }
-
-            return b.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            File file = new File(path, "parameters.txt");
+//            BufferedReader r = new BufferedReader(new FileReader(file));
+//
+//            StringBuilder b = new StringBuilder();
+//            b.append("Load data sets and graphs from a directory.").append("\n\n");
+//            String line;
+//
+//            while ((line = r.readLine()) != null) {
+//                if (line.trim().isEmpty()) continue;
+//                b.append(line).append("\n");
+//            }
+//
+//            return b.toString();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @Override

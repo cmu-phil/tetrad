@@ -110,7 +110,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     /**
      * The container storing the data. Rows are cases; columns are variables.
      * The order of columns is coordinated with the order of variables in
-     * getVariables().
+     * getVariable().
      *
      * @serial
      */
@@ -599,7 +599,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 
     /**
      * @return the index of the column of the given variable. You can also get
-     * this by calling getVariables().indexOf(variable).
+     * this by calling getVariable().indexOf(variable).
      */
     public final int getColumn(Node variable) {
         return variables.indexOf(variable);
@@ -1163,7 +1163,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * all of the tetradMatrix in this dataset, discrete tetradMatrix included. Discrete tetradMatrix
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
-     * which they occur in the matrix, is given by getVariables().
+     * which they occur in the matrix, is given by getVariable().
      * <p>
      * If isMultipliersCollapsed() returns false, multipliers in the dataset are
      * first expanded before returning the matrix, so the number of rows in the

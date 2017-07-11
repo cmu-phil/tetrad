@@ -692,14 +692,14 @@ public class TestFges {
         TetradLogger.getInstance().setForceLog(false);
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
-        PcStable pc = new PcStable(test);
+        PcStableMax pc = new PcStableMax(test);
         pc.setVerbose(false);
         Graph pattern = pc.search();
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
             IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStable pc2 = new PcStable(test2);
+            PcStableMax pc2 = new PcStableMax(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));

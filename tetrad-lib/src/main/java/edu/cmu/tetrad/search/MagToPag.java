@@ -42,7 +42,7 @@ import java.util.List;
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  * </p>
- * Converts a MAG to a PAG. (Not well-tested.)
+ * Converts a MAG to a PAG_of_the_true_DAG. (Not well-tested.)
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
@@ -54,7 +54,7 @@ public final class MagToPag {
     private final EdgeListGraphSingleConnections mag;
     private final IndTestDSep dsep;
     /**
-     * The PAG being constructed.
+     * The PAG_of_the_true_DAG being constructed.
      */
     private Graph graph;
 
@@ -120,7 +120,7 @@ public final class MagToPag {
     }
 
     public Graph convert() {
-        logger.log("info", "Starting DAG to PAG.");
+        logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 
         setMaxPathLength(maxPathLength);
 

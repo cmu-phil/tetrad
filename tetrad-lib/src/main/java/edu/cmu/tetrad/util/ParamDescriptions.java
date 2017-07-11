@@ -18,7 +18,7 @@ public class ParamDescriptions {
         put("numMeasures", new ParamDescription("Number of measured variables", 10, 1, Integer.MAX_VALUE));
         put("numLatents", new ParamDescription("Number of latent variables", 0, 0, Integer.MAX_VALUE));
         put("avgDegree", new ParamDescription("Average degree of graph", 2, 1, Integer.MAX_VALUE));
-        put("maxDegree", new ParamDescription("The maximum degree of the graph.", 100, -1, Integer.MAX_VALUE));
+        put("maxDegree", new ParamDescription("The maximum degree of the graph", 100, -1, Integer.MAX_VALUE));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100, 1, Integer.MAX_VALUE));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100, 1, Integer.MAX_VALUE));
         put("connected", new ParamDescription("Yes if graph should be connected", false));
@@ -31,6 +31,8 @@ public class ParamDescriptions {
         put("standardize", new ParamDescription("Yes if the data should be standardized", false));
         put("measurementVariance", new ParamDescription("Additive measurement noise variance", 0.0, 0, Double.MAX_VALUE));
         put("depth", new ParamDescription("Maximum size of conditioning set", -1, -1, Integer.MAX_VALUE));
+        put("meanLow", new ParamDescription("Low end of mean range", 0.5, 0.0, Double.MAX_VALUE));
+        put("meanHigh", new ParamDescription("High end of mean range", 1.5, 0.0, Double.MAX_VALUE));
         put("coefLow", new ParamDescription("Low end of coefficient range", 0.5, 0.0, Double.MAX_VALUE));
         put("coefHigh", new ParamDescription("High end of coefficient range", 1.5, 0.0, Double.MAX_VALUE));
         put("covLow", new ParamDescription("Low end of covariance range", 0.5, 0.0, Double.MAX_VALUE));
@@ -193,6 +195,21 @@ public class ParamDescriptions {
                 	10, 1, Integer.MAX_VALUE));
         put("bootstrapEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
 
+        put("fasRule", new ParamDescription(
+                "Adjacency search: 1 = PC, 2 = PC-Stable, 3 = Concurrent PC-Stable",
+                1, 1, 3));
+
+        put("colliderDiscoveryRule", new ParamDescription(
+                "Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P",
+                1, 1, 3));
+
+        put("conflictRule", new ParamDescription(
+                "Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders",
+                1, 1, 3));
+
+        put("randomizeColumns", new ParamDescription(
+                "Yes if the order of the columns in each datasets should be randomized",
+                false));
     }
 
     public static ParamDescriptions instance() {
