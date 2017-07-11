@@ -1851,6 +1851,8 @@ public final class GraphUtils {
         Graph reference = new EdgeListGraph(newVariables);
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
+        if (originalGraph == null) return null;
+
         for (Edge edge : originalGraph.getEdges()) {
             Node node1 = reference.getNode(edge.getNode1().getName());
             Node node2 = reference.getNode(edge.getNode2().getName());

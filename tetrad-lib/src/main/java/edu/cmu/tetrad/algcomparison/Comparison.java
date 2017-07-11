@@ -60,7 +60,6 @@ import java.util.concurrent.RecursiveTask;
  *
  * @author jdramsey
  * @author Daniel Malinsky
- *
  */
 public class Comparison {
 
@@ -101,7 +100,7 @@ public class Comparison {
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
-            if (algorithm instanceof  ExternalAlgorithm) {
+            if (algorithm instanceof ExternalAlgorithm) {
                 throw new IllegalArgumentException("Not expecting any implementations of ExternalAlgorithm here.");
             }
         }
@@ -1465,7 +1464,9 @@ public class Comparison {
 
                     double stat = statTables[u][newOrder[t]][statIndex];
 
-                    if (stat == Double.POSITIVE_INFINITY) {
+                    if (stat == 0.0) {
+                        table.setToken(t + 1, initialColumn + statIndex, "-");
+                    } else if (stat == Double.POSITIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
@@ -1520,7 +1521,8 @@ public class Comparison {
         return utilities;
     }
 
-    private int[] sort(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, final double[] utilities) {
+    private int[] sort(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                       final double[] utilities) {
         List<Integer> order = new ArrayList<>();
         for (int t = 0; t < algorithmSimulationWrappers.size(); t++) order.add(t);
 
