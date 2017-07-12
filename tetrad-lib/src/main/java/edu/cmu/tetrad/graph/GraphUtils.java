@@ -2808,8 +2808,9 @@ public final class GraphUtils {
                 int g = dataSet.getInt(i, j);
                 int h = dataSet.getInt(j, i);
 
+
                 if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
-                    graph.addUndirectedEdge(vars.get(i), vars.get(j));
+                    graph.addUndirectedEdge(vars.get(i), vars.get(j)); //
                 } else if (g == 1 && h == 0) {
                     graph.addDirectedEdge(vars.get(j), vars.get(i));
                 }

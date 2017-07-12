@@ -148,6 +148,9 @@ public class Condition1 {
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("IAMB_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Fast.IAMB_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Inter.IAMB_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_defaults_alpha_=_0.001"));
@@ -180,7 +183,7 @@ public class Condition1 {
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
-        comparison.setShowUtilities(true);
+        comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",

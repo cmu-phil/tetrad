@@ -389,9 +389,9 @@ public class Comparison {
                 out.println();
                 out.println("Note that f for each statistic is a function that maps the statistic to the ");
                 out.println("interval [0, 1], with higher being better.");
-                out.println();
             }
 
+            out.println();
             out.println("Graphs are being compared to the " + comparisonGraph.toString().replace("_", " ") + ".");
 
             out.println();
