@@ -2804,6 +2804,7 @@ public final class GraphUtils {
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                if (i == j) continue;
                 int g = dataSet.getInt(i, j);
                 int h = dataSet.getInt(j, i);
 
@@ -2811,8 +2812,6 @@ public final class GraphUtils {
                     graph.addUndirectedEdge(vars.get(i), vars.get(j));
                 } else if (g == 1 && h == 0) {
                     graph.addDirectedEdge(vars.get(j), vars.get(i));
-                } else if (h == 1 && g == 0) {
-                    graph.addDirectedEdge(vars.get(i), vars.get(j));
                 }
             }
         }
