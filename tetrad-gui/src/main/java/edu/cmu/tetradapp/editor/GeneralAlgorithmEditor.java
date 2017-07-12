@@ -106,7 +106,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
-    private final JButton algorithmTabSearchBtn = new JButton("Search");
+    private final JButton searchBtn = new JButton("Search");
     //private final JButton knowledgeTabSearchBtn = new JButton("Search");
 
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
@@ -116,7 +116,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
-    private final Dimension algorithmTabSearchBtnSize;
+    private final Dimension searchBtnSize;
     //private Box knowledgePanel;
     private JLabel whatYouChose;
 
@@ -168,7 +168,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
 
         // Set the search button size
-        algorithmTabSearchBtnSize = new Dimension(150, 30);
+        searchBtnSize = new Dimension(150, 30);
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -416,13 +416,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Show the algo chooser
         showAlgoChooserDialog();
 
-        algorithmTabSearchBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doSearch(runner);
-            }
-        });
-
         // Hide the knowledge tab - Zhou
 //        knowledgeTabSearchBtn.addActionListener(new ActionListener() {
 //            @Override
@@ -526,7 +519,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             public void watch() {
                 HpcAccount hpcAccount = null;
 
-                AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+                AlgName name = AlgName.valueOf(selectedAlgoName);
                 switch (name) {
                     case FGES:
                     case GFCI:
@@ -536,11 +529,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 }
 
                 if (hpcAccount == null) {
-                    graphEditor.saveLayout();
+
                     runner.execute();
-                    graphEditor.replace(runner.getGraphs());
-                    graphEditor.validate();
-                    firePropertyChange("modelChanged", null, null);
+
                 } else {
                     try {
                         doRemoteCompute(runner, hpcAccount);
@@ -1304,8 +1295,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        algorithmTabSearchBtn.setPreferredSize(algorithmTabSearchBtnSize);
-        algorithmTabSearchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
+        searchBtn.setPreferredSize(searchBtnSize);
+        searchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
 
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
@@ -1568,7 +1559,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d3.add(algNamesDropdown);
         d3.add(explain2);
         d3.add(new JLabel("    "));
-        d3.add(algorithmTabSearchBtn);
         d3.add(Box.createHorizontalGlue());
 
         Box d1 = Box.createHorizontalBox();
@@ -1774,6 +1764,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         rightContainer.add(Box.createVerticalStrut(10));
         parametersContainer.add(step1Btn);
 
+        searchBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doSearch(runner);
+            }
+        });
+
+        // Add search button
+        parametersContainer.add(searchBtn);
+
         // Hide step 2
         parametersContainer.setVisible(false);
         JButton step2Btn = new JButton("Set Parameters >");
@@ -1800,7 +1800,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Step 2 button
         rightContainer.add(step2Btn);
 
-        //rightContainer.add(algorithmTabSearchBtn);
+        //rightContainer.add(searchBtn);
         //algoFiltersContainer.add(algoBox);
         // Add to algoChooserContainer as the first column
         algoChooserContainer.add(leftContainer);
