@@ -1223,6 +1223,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         setScoreType(score);
         setAlgType(selectedAlgoName.replace(" ", "_"));
 
+        // Also need to update the corresponding parameters
+        parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
+        // Remove all and add new
+        parametersBox.removeAll();
+        parametersBox.add(parametersPanel);
+
         if (whatYouChose != null) {
             whatYouChose.setText("You chose: " + algorithm.getDescription());
         }
