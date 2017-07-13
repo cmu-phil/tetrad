@@ -423,7 +423,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * Creates a new processors pool with the specified number of threads.
      */
     public void setParallelism(int numProcessors) {
-//        this.pool = new ForkJoinPool(numProcessors);
+        this.pool = new ForkJoinPool(numProcessors);
     }
 
     /**
