@@ -18,16 +18,16 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class EFang implements Algorithm, HasKnowledge {
+public class Fask implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();
 
-    public EFang() {
+    public Fask() {
         this.empirical = false;
     }
 
-    public EFang(boolean empirical) {
+    public Fask(boolean empirical) {
         this.empirical = empirical;
     }
 

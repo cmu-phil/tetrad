@@ -2,7 +2,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.EFang;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -47,7 +47,7 @@ public class SpecialExampleSimulationClark {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new EFang());
+        algorithms.add(new Fask());
 
         Simulations simulations = new Simulations();
 
