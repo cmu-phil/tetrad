@@ -39,6 +39,7 @@ import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.pitt.dbmi.data.Dataset;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -272,13 +273,18 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < parameters.getInt("numRuns"); k++) {
                     for (DataModel dataModel : getDataModelList()) {
-                        DataSet dataSet = (DataSet) dataModel;
+                        if (dataModel instanceof ICovarianceMatrix) {
+                            ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
+                            graphList.add(algorithm.search(dataSet, parameters));
+                        } else if (dataModel instanceof Dataset){
+                            DataSet dataSet = (DataSet) dataModel;
 
-                        if (!dataSet.isContinuous()) {
-                            throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
+                            if (!dataSet.isContinuous()) {
+                                throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
+                            }
+
+                            graphList.add(algorithm.search(dataSet, parameters));
                         }
-
-                        graphList.add(algorithm.search(dataSet, parameters));
                     }
                 }
             } else {
