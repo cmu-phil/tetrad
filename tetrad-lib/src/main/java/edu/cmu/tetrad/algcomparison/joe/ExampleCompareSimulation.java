@@ -38,18 +38,21 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class ExampleCompareSimulation {
     public static void main(String... args) {
+        int numMeasures = 50;//Integer.parseInt(args[0]);
+        int avgDegree = 2;//Integer.parseInt(args[1]);
+
         Parameters parameters = new Parameters();
 
 //        parameters.set("minCategories", 3);
 //        parameters.set("maxCategories", 3);
 
-        parameters.set("numRuns", 10);
+        parameters.set("numRuns", 2);
         parameters.set("differentGraphs", true);
         parameters.set("sampleSize", 1000);
 
-        parameters.set("numMeasures", 50);
+        parameters.set("numMeasures", numMeasures);
         parameters.set("numLatents", 0);
-        parameters.set("avgDegree", 2.5);
+        parameters.set("avgDegree", avgDegree);
         parameters.set("maxDegree", 100);
         parameters.set("maxIndegree", 100);
         parameters.set("maxOutdegree", 100);
@@ -57,20 +60,21 @@ public class ExampleCompareSimulation {
 
         parameters.set("coefLow", 0.2);
         parameters.set("coefHigh", 0.9);
-//        parameters.set("varLow");
-//        parameters.set("varHigh");
-//        parameters.set("verbose");
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
+        parameters.set("verbose", false);
         parameters.set("coefSymmetric", true);
-//        parameters.set("numRuns");
-//        parameters.set("percentDiscrete");
-//        parameters.set("numCategories");
-//        parameters.set("differentGraphs");
-//        parameters.set("sampleSize");
-//        parameters.set("intervalBetweenShocks");
-//        parameters.set("intervalBetweenRecordings");
-//        parameters.set("fisherEpsilon");
+        parameters.set("numRuns", 1);
+        parameters.set("percentDiscrete", 0);
+        parameters.set("numCategories", 3);
+        parameters.set("differentGraphs", true);
+        parameters.set("sampleSize", 1000);
+        parameters.set("intervalBetweenShocks", 10);
+        parameters.set("intervalBetweenRecordings", 10);
+        parameters.set("fisherEpsilon", 0.001);
+        parameters.set("randomizeColumns", true);
 
-        parameters.set("alpha", 1e-8);
+        parameters.set("alpha", 1e-12);
         parameters.set("depth", -1);
         parameters.set("penaltyDiscount", 4);
 
@@ -82,6 +86,10 @@ public class ExampleCompareSimulation {
         parameters.set("scaleFreeBeta", 0.4);
         parameters.set("scaleFreeDeltaIn", .1);
         parameters.set("scaleFreeDeltaOut", 3);
+
+        parameters.set("symmetricFirstStep", false);
+        parameters.set("faithfulnessAssumed", true);
+        parameters.set("maxDegree", 100);
 
         Statistics statistics = new Statistics();
 
