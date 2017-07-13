@@ -105,7 +105,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
-    private final JButton searchBtn = new JButton("Run Search & Generate Graph");
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
@@ -113,7 +112,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final GraphSelectionEditor graphEditor;
     private final Parameters parameters;
     private final HelpSet helpSet;
-    private final Dimension searchBtnSize;
+
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
 
@@ -136,6 +135,16 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JDialog loadingIndicatorDialog;
 
     private Box graphContainer;
+
+    private JButton step1BackBtn;
+
+    private JButton step2Btn;
+
+    private JButton step2BackBtn;
+
+    private JButton step3Btn;
+
+    private JButton doneBtn;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -166,9 +175,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algNamesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
         testDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
         scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-
-        // Set the search button size
-        searchBtnSize = new Dimension(150, 30);
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -417,92 +423,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
 
-    // Hide knowledge tab - Zhou
-//    private Box getKnowledgePanel(GeneralAlgorithmRunner runner) {
-//        class MyKnowledgeInput implements KnowledgeBoxInput {
-//
-//            private static final long serialVersionUID = 1344090367098647696L;
-//
-//            private String name;
-//            private List<Node> variables;
-//            private List<String> varNames;
-//
-//            public MyKnowledgeInput(List<Node> variables, List<String> varNames) {
-//                this.variables = variables;
-//                this.varNames = varNames;
-//            }
-//
-//            @Override
-//            public Graph getSourceGraph() {
-//                return null;
-//            }
-//
-//            @Override
-//            public Graph getResultGraph() {
-//                return null;
-//            }
-//
-//            @Override
-//            public void setName(String name) {
-//                this.name = name;
-//            }
-//
-//            @Override
-//            public String getName() {
-//                return name;
-//            }
-//
-//            @Override
-//            public List<Node> getVariables() {
-//                return variables;
-//            }
-//
-//            @Override
-//            public List<String> getVariableNames() {
-//                return varNames;
-//            }
-//        }
-//
-//        List<Node> variables = null;
-//        MyKnowledgeInput myKnowledgeInput;
-//
-//        if (runner.getDataModel() != null) {
-//            DataModelList dataModelList = runner.getDataModelList();
-//            if (dataModelList.size() > 0) {
-//                variables = dataModelList.get(0).getVariables();
-//            }
-//        }
-//
-//        if ((variables == null || variables.isEmpty()) && runner.getSourceGraph() != null) {
-//            variables = runner.getSourceGraph().getNodes();
-//        }
-//
-//        if (variables == null) {
-//            throw new IllegalArgumentException("No source of variables!");
-//        }
-//
-//        List<String> varNames = new ArrayList<>();
-//
-//        for (Node node : variables) {
-//            varNames.add(node.getName());
-//        }
-//
-//        myKnowledgeInput = new MyKnowledgeInput(variables, varNames);
-//
-//        JPanel knowledgePanel = new JPanel();
-//        knowledgePanel.setLayout(new BorderLayout());
-//        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(new KnowledgeBoxInput[]{myKnowledgeInput}, parameters);
-//        knowledgeBoxModel.setKnowledge(runner.getKnowledge());
-//        KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(knowledgeBoxModel);
-//        Box f = Box.createVerticalBox();
-//        f.add(knowledgeEditor);
-//        Box g = Box.createHorizontalBox();
-//        g.add(Box.createHorizontalGlue());
-//        g.add(knowledgeTabSearchBtn);
-//        g.add(Box.createHorizontalGlue());
-//        f.add(g);
-//        return f;
-//    }
     private void doSearch(final GeneralAlgorithmRunner runner) {
         HpcAccount hpcAccount = null;
 
@@ -1272,9 +1192,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        searchBtn.setPreferredSize(searchBtnSize);
-        searchBtn.setFont(new Font("Dialog", Font.BOLD, 14));
-
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
 
@@ -1559,31 +1476,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // This container, step 1
         // contains 3 columns, leftContainer, middleContainer, and rightContainer
         Box algoChooserContainer = Box.createHorizontalBox();
-        algoChooserContainer.setPreferredSize(new Dimension(940, 640));
+        algoChooserContainer.setPreferredSize(new Dimension(940, 600));
 
         // Parameters container, step 2
         Box parametersContainer = Box.createVerticalBox();
-        parametersContainer.setPreferredSize(new Dimension(940, 640));
+        parametersContainer.setPreferredSize(new Dimension(940, 600));
 
         // Graph container, step 3
         graphContainer = Box.createVerticalBox();
-        graphContainer.setPreferredSize(new Dimension(940, 640));
+        graphContainer.setPreferredSize(new Dimension(940, 580));
 
         // Contains data description and result description
         Box leftContainer = Box.createVerticalBox();
-        leftContainer.setPreferredSize(new Dimension(260, 620));
+        leftContainer.setPreferredSize(new Dimension(260, 580));
 
         Box middleContainer = Box.createVerticalBox();
-        middleContainer.setPreferredSize(new Dimension(260, 620));
+        middleContainer.setPreferredSize(new Dimension(260, 580));
 
         // Contains algo list, algo description, test, score, and parameters
         Box rightContainer = Box.createVerticalBox();
-        rightContainer.setPreferredSize(new Dimension(400, 620));
+        rightContainer.setPreferredSize(new Dimension(400, 580));
 
         // Describe your data and result using these filters
         Box algoFiltersBox = Box.createVerticalBox();
-        algoFiltersBox.setMinimumSize(new Dimension(250, 610));
-        algoFiltersBox.setMaximumSize(new Dimension(250, 610));
+        algoFiltersBox.setMinimumSize(new Dimension(250, 570));
+        algoFiltersBox.setMaximumSize(new Dimension(250, 570));
         algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Use a titled border with 5 px inside padding - Zhou
@@ -1610,8 +1527,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in middleContainer
         // Show a list of filtered algorithms
         Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(250, 610));
-        suggestedAlgosBox.setMaximumSize(new Dimension(250, 610));
+        suggestedAlgosBox.setMinimumSize(new Dimension(250, 570));
+        suggestedAlgosBox.setMaximumSize(new Dimension(250, 570));
 
         // Use a titled border with 5 px inside padding - Zhou
         String suggestedAlgosBoxBorderTitle = "Choose algorithm";
@@ -1662,8 +1579,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
-        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(250, 610));
-        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(250, 610));
+        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(250, 570));
+        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(250, 570));
 
         suggestedAlgosBox.add(suggestedAlgosListScrollPane);
 
@@ -1708,7 +1625,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Parameters
         parametersBox = Box.createVerticalBox();
-        parametersBox.setMinimumSize(new Dimension(920, 600));
+        parametersBox.setMinimumSize(new Dimension(920, 560));
         parametersBox.setMaximumSize(new Dimension(920, 600));
 
         // Use a titled border with 5 px inside padding - Zhou
@@ -1719,17 +1636,20 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // This is only the parameters pane of the default algorithm - Zhou
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
 
-        parametersPanel.setMinimumSize(new Dimension(920, 600));
-        parametersPanel.setMaximumSize(new Dimension(920, 600));
+        parametersPanel.setMinimumSize(new Dimension(920, 560));
+        parametersPanel.setMaximumSize(new Dimension(920, 560));
 
         // Add to parameters box
         parametersBox.add(parametersPanel);
 
-        // Back button
-        JButton step1Btn = new JButton("< Choose Algorithm");
+        // Add to parametersContainer
+        parametersContainer.add(parametersBox);
+
+        // Back to step 1 button
+        step1BackBtn = new JButton("< Choose Algorithm");
 
         // Step 1 button listener
-        step1Btn.addActionListener(new ActionListener() {
+        step1BackBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Hide parameters
@@ -1737,22 +1657,78 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
                 // Show algo step 1
                 algoChooserContainer.setVisible(true);
+
+                // Show step 2 button
+                step2Btn.setVisible(true);
+
+                // Hide step 3 button
+                step3Btn.setVisible(false);
+
+                // Hide back button
+                step1BackBtn.setVisible(false);
             }
         });
 
-        // Add to parametersContainer
-        parametersContainer.add(parametersBox);
-        rightContainer.add(Box.createVerticalStrut(10));
-        parametersContainer.add(step1Btn);
+        // Hide step 2
+        parametersContainer.setVisible(false);
 
-        searchBtn.addActionListener(new ActionListener() {
+        // Parameters button
+        step2Btn = new JButton("Set Parameters >");
+        step2BackBtn = new JButton("< Set Parameters");
+
+        // Step 2 button listener
+        step2Btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Hide parameters
-                parametersContainer.setVisible(false);
+                // Show parameters
+                parametersContainer.setVisible(true);
 
-                // Show graphContainer
-                graphContainer.setVisible(true);
+                // Hide algo step 1
+                algoChooserContainer.setVisible(false);
+
+                // SHow back to step 1 button and search button
+                step1BackBtn.setVisible(true);
+                step3Btn.setVisible(true);
+
+                // Hide step 2 button
+                step2Btn.setVisible(false);
+            }
+        });
+
+        // Step 2 button listener
+        step2BackBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Show parameters
+                parametersContainer.setVisible(true);
+
+                // Hide algo step 1
+                algoChooserContainer.setVisible(false);
+
+                // Hide step 3 graph
+                graphContainer.setVisible(false);
+
+                // SHow back to step 1 button and search button
+                step1BackBtn.setVisible(true);
+                step3Btn.setVisible(true);
+
+                // Hide step 2 button
+                step2Btn.setVisible(false);
+
+                // Hide back button
+                step2BackBtn.setVisible(false);
+
+                // Hide done button
+                doneBtn.setVisible(false);
+            }
+        });
+
+        // Step 3 button
+        step3Btn = new JButton("Run Search & Generate Graph >");
+
+        step3Btn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
                 // Load all data files and hide the loading indicator once done
                 new Thread(new Runnable() {
@@ -1770,11 +1746,26 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                                 // Hide the loading indicator
                                 hideLoadingIndicator();
 
-                                // Close the data loader dialog
-                                Window w = SwingUtilities.getWindowAncestor(searchBtn);
-                                if (w != null) {
-                                    w.setVisible(false);
-                                }
+                                // Hide algo chooser
+                                algoChooserContainer.setVisible(false);
+
+                                // Hide parameters
+                                parametersContainer.setVisible(false);
+
+                                // Show graphContainer
+                                graphContainer.setVisible(true);
+
+                                // Show back to step 2 button
+                                step2BackBtn.setVisible(true);
+
+                                // Show done button
+                                doneBtn.setVisible(true);
+
+                                // Hide step 1 back button
+                                step1BackBtn.setVisible(false);
+
+                                // Hide step 3 button
+                                step3Btn.setVisible(false);
                             }
                         });
                     }
@@ -1785,22 +1776,19 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        // Add search button
-        parametersContainer.add(searchBtn);
+        // Done button
+        doneBtn = new JButton("Done");
 
-        // Hide step 2
-        parametersContainer.setVisible(false);
-        JButton step2Btn = new JButton("Set Parameters >");
-
-        // Step 2 button listener
-        step2Btn.addActionListener(new ActionListener() {
+        // Close the dialog
+        doneBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Show parameters
-                parametersContainer.setVisible(true);
+                Window w = SwingUtilities.getWindowAncestor(doneBtn);
+                if (w != null) {
+                    w.setVisible(false);
+                }
 
-                // Hide algo step 1
-                algoChooserContainer.setVisible(false);
+                // Will also need to close the old search window
             }
         });
 
@@ -1811,8 +1799,33 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         rightContainer.add(testAndScoreBox);
         rightContainer.add(Box.createVerticalStrut(10));
 
-        // Step 2 button
-        rightContainer.add(step2Btn);
+        // Buttons container
+        Box buttonsContainer = Box.createVerticalBox();
+
+        // Add some padding between preview/summary and buttons container
+        buttonsContainer.add(Box.createVerticalStrut(20));
+
+        // Buttons box
+        Box buttonsBox = Box.createHorizontalBox();
+        buttonsBox.add(step1BackBtn);
+        // Don't use Box.createHorizontalStrut(20)
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step2Btn);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step2BackBtn);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(step3Btn);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(doneBtn);
+
+        // Default to only show step 2 forward button
+        step1BackBtn.setVisible(false);
+        step2BackBtn.setVisible(false);
+        step3Btn.setVisible(false);
+        doneBtn.setVisible(false);
+
+        // Add to buttons container
+        buttonsContainer.add(buttonsBox);
 
         //rightContainer.add(searchBtn);
         //algoFiltersContainer.add(algoBox);
@@ -1837,6 +1850,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         container.add(parametersContainer);
 
         container.add(graphContainer);
+
+        container.add(buttonsContainer);
 
         JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
                 "Algorithm Chooser", JOptionPane.OK_CANCEL_OPTION,
