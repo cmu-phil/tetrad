@@ -114,9 +114,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final Parameters parameters;
     private final HelpSet helpSet;
     private final Dimension searchBtnSize;
-    //private Box knowledgePanel;
-    private JLabel whatYouChose;
-
     private final TetradDesktop desktop;
     private HpcJobInfo hpcJobInfo;
 
@@ -270,8 +267,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         this.parameters = runner.getParameters();
 
         graphEditor = new GraphSelectionEditor(new GraphSelectionWrapper(runner.getGraphs(), new Parameters()));
-
-        whatYouChose = new JLabel();
 
 //        if (runner.getDataModelList() == null) {
 //            throw new NullPointerException("No data has been provided.");
@@ -1206,11 +1201,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Remove all and add new
         parametersBox.removeAll();
         parametersBox.add(parametersPanel);
-
-        if (whatYouChose != null) {
-            whatYouChose.setText("You chose: " + algorithm.getDescription());
-        }
-
     }
 
     private void showAlgoChooserDialog() {
