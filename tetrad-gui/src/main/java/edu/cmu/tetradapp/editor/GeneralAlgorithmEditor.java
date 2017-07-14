@@ -1455,23 +1455,21 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d3.add(new JLabel("    "));
         d3.add(Box.createHorizontalGlue());
 
-        Box d1 = Box.createHorizontalBox();
+        Box testBox = Box.createHorizontalBox();
         JLabel label1 = new JLabel("Test if needed:");
-        label1.setFont(new Font("Dialog", Font.BOLD, 13));
-        d1.add(label1);
+        testBox.add(label1);
         testDropdown.setMaximumSize(testDropdown.getPreferredSize());
-        d1.add(testDropdown);
-        d1.add(explain3);
-        d1.add(Box.createHorizontalGlue());
+        testBox.add(testDropdown);
+        testBox.add(explain3);
+        testBox.add(Box.createHorizontalGlue());
 
-        Box d2 = Box.createHorizontalBox();
+        Box scoreBox = Box.createHorizontalBox();
         JLabel label2 = new JLabel("Score if needed:");
-        label2.setFont(new Font("Dialog", Font.BOLD, 13));
-        d2.add(label2);
+        scoreBox.add(label2);
         scoreDropdown.setMaximumSize(scoreDropdown.getPreferredSize());
-        d2.add(scoreDropdown);
-        d2.add(explain4);
-        d2.add(Box.createHorizontalGlue());
+        scoreBox.add(scoreDropdown);
+        scoreBox.add(explain4);
+        scoreBox.add(Box.createHorizontalGlue());
 
         // This container, step 1
         // contains 3 columns, leftContainer, middleContainer, and rightContainer
@@ -1589,8 +1587,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(390, 180));
-        algoDescriptionBox.setMaximumSize(new Dimension(390, 180));
+        algoDescriptionBox.setMinimumSize(new Dimension(390, 250));
+        algoDescriptionBox.setMaximumSize(new Dimension(390, 250));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -1604,8 +1602,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(390, 170));
-        algoDescriptionScrollPane.setMaximumSize(new Dimension(390, 170));
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(390, 240));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(390, 240));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
@@ -1618,10 +1616,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         String testAndScoreBoxBorderTitle = "Choose Test and Score";
         testAndScoreBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(testAndScoreBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        testAndScoreBox.add(d1);
+        testAndScoreBox.add(testBox);
         // Add some gap between test and score
         testAndScoreBox.add(Box.createVerticalStrut(10), 1);
-        testAndScoreBox.add(d2);
+        testAndScoreBox.add(scoreBox);
 
         // Parameters
         parametersBox = Box.createVerticalBox();
@@ -1803,7 +1801,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         Box buttonsContainer = Box.createVerticalBox();
 
         // Add some padding between preview/summary and buttons container
-        buttonsContainer.add(Box.createVerticalStrut(20));
+        buttonsContainer.add(Box.createVerticalStrut(10));
 
         // Buttons box
         Box buttonsBox = Box.createHorizontalBox();
