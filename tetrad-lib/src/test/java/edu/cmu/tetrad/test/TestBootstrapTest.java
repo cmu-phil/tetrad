@@ -50,11 +50,11 @@ public class TestBootstrapTest {
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
 
-		int numVars = 40;
+		int numVars = 20;
 		int edgesPerNode = 2;
 		int numLatentConfounders = 2;
-		int numCases = 100;
-		int numBootstrapSamples = 10;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
 		boolean verbose = false;
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -108,11 +108,11 @@ public class TestBootstrapTest {
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
 
-		int numVars = 40;
+		int numVars = 20;
 		int edgesPerNode = 2;
 		int numLatentConfounders = 2;
-		int numCases = 100;
-		int numBootstrapSamples = 10;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
 		boolean verbose = false;
 		long seed = 123;
 
@@ -162,11 +162,11 @@ public class TestBootstrapTest {
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
 
-		int numVars = 40;
+		int numVars = 20;
 		int edgesPerNode = 2;
 		int numLatentConfounders = 2;
-		int numCases = 100;
-		int numBootstrapSamples = 10;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
 		boolean verbose = false;
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -220,11 +220,11 @@ public class TestBootstrapTest {
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
 
-		int numVars = 40;
+		int numVars = 20;
 		int edgesPerNode = 2;
 		int numLatentConfounders = 4;
-		int numCases = 100;
-		int numBootstrapSamples = 100;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
 		boolean verbose = false;
 		long seed = 123;
 
@@ -297,11 +297,11 @@ public class TestBootstrapTest {
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
 
-		int numVars = 40;
+		int numVars = 20;
 		int edgesPerNode = 2;
 		int numLatentConfounders = 0;
-		int numCases = 1000;
-		int numBootstrapSamples = 100;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
 		boolean verbose = true;
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
@@ -351,11 +351,11 @@ public class TestBootstrapTest {
 		boolean faithfulnessAssumed = false;
 		int maxDegree = -1;
 
-		int numVars = 40;
+		int numVars = 20;
 		int edgesPerNode = 2;
 		int numLatentConfounders = 0;
-		int numCases = 100;
-		int numBootstrapSamples = 10;
+		int numCases = 50;
+		int numBootstrapSamples = 5;
 		boolean verbose = false;
 		long seed = 123;
 

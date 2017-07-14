@@ -43,7 +43,7 @@ import static java.lang.Math.max;
  *
  * @author Joseph Ramsey
  */
-public final class EFang implements GraphSearch {
+public final class Fask implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -79,7 +79,7 @@ public final class EFang implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public EFang(DataSet dataSet) {
+    public Fask(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 

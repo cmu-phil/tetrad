@@ -13,9 +13,11 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BDeuScore;
+import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.IndTestChiSquare;
+import edu.cmu.tetrad.search.IndTestConditionalGaussianLRT;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Rfci;
@@ -73,26 +75,39 @@ public class BootstrapSearchAction extends RecursiveAction {
 	public Graph learnGraph(DataSet dataSet) {
 		Score score = null;
 
-		if (dataSet.isContinuous()) {
-			ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
-			SemBicScore semBicScore = new SemBicScore(cov);
-			double penaltyDiscount = parameters.getDouble("penaltyDiscount", 4.0);
-			semBicScore.setPenaltyDiscount(penaltyDiscount);
-			score = semBicScore;
-		} else if (dataSet.isDiscrete()) {
-			BDeuScore bDeuScore = new BDeuScore(dataSet);
-			double samplePrior = parameters.getDouble("samplePrior", 1.0);
-			double structurePrior = parameters.getDouble("structurePrior", 1.0);
-			bDeuScore.setSamplePrior(samplePrior);
-			bDeuScore.setStructurePrior(structurePrior);
-			score = bDeuScore;
+		if (algName == BootstrapAlgName.FGES || algName == BootstrapAlgName.GFCI) {
+			if (dataSet.isContinuous()) {
+				ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(dataSet);
+				SemBicScore semBicScore = new SemBicScore(cov);
+				double penaltyDiscount = parameters.getDouble("penaltyDiscount", 4.0);
+				semBicScore.setPenaltyDiscount(penaltyDiscount);
+				score = semBicScore;
+			} else if (dataSet.isDiscrete()) {
+				BDeuScore bDeuScore = new BDeuScore(dataSet);
+				double samplePrior = parameters.getDouble("samplePrior", 1.0);
+				double structurePrior = parameters.getDouble("structurePrior", 1.0);
+				bDeuScore.setSamplePrior(samplePrior);
+				bDeuScore.setStructurePrior(structurePrior);
+				score = bDeuScore;
+			} else if (dataSet.isMixed()) {
+				double structurePrior = parameters.getDouble("structurePrior", 1.0);
+				ConditionalGaussianScore conditionalGaussianScore = new ConditionalGaussianScore(dataSet,
+						structurePrior, true);
+				double penaltyDiscount = parameters.getDouble("penaltyDiscount", 4.0);
+				conditionalGaussianScore.setPenaltyDiscount(penaltyDiscount);
+				score = conditionalGaussianScore;
+			}
 		}
 
 		IndependenceTest independenceTest = null;
-		if (dataSet.isContinuous()) {
-			independenceTest = new IndTestFisherZ(dataSet, parameters.getDouble("alpha", 0.5));
-		} else if (dataSet.isDiscrete()) {
-			independenceTest = new IndTestChiSquare(dataSet, parameters.getDouble("alpha", 0.5));
+		if (algName == BootstrapAlgName.GFCI || algName == BootstrapAlgName.RFCI) {
+			if (dataSet.isContinuous()) {
+				independenceTest = new IndTestFisherZ(dataSet, parameters.getDouble("alpha", 0.5));
+			} else if (dataSet.isDiscrete()) {
+				independenceTest = new IndTestChiSquare(dataSet, parameters.getDouble("alpha", 0.5));
+			} else if (dataSet.isMixed()) {
+				independenceTest = new IndTestConditionalGaussianLRT(dataSet, parameters.getDouble("alpha", 0.5));
+			}
 		}
 
 		if (algName == BootstrapAlgName.FGES) {
@@ -130,7 +145,7 @@ public class BootstrapSearchAction extends RecursiveAction {
 			if (verbose) {
 				out.println("thread started ... ");
 			}
-			
+
 			DataSet data = bootstrapSearch.getData();
 			DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows());
 			Graph graph = learnGraph(dataSet);

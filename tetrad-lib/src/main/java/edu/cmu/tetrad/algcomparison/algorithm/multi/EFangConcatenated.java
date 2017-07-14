@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class EFangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         DataSet dataSet = DataUtils.concatenate(centered);
-        edu.cmu.tetrad.search.EFang search = new edu.cmu.tetrad.search.EFang(dataSet);
+        edu.cmu.tetrad.search.Fask search = new Fask(dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));

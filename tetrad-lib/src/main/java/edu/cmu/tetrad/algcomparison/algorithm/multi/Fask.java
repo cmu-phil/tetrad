@@ -31,13 +31,13 @@ public class Fask implements Algorithm, HasKnowledge {
         this.empirical = empirical;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.EFang search) {
+    private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
         return search.search();
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.EFang search = new edu.cmu.tetrad.search.EFang((DataSet) dataSet);
+        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
         search.setDepth(parameters.getInt("depth"));
         search.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
