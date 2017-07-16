@@ -185,6 +185,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<ScoreType> continuousScores = new ArrayList<>();
         continuousScores.add(ScoreType.SEM_BIC);
         continuousScores.add(ScoreType.Fisher_Z_Score);
+        continuousScores.add(ScoreType.Arges_Score);
         continuousScores.add(ScoreType.Conditional_Gaussian_BIC);
 
         List<ScoreType> mixedScores = new ArrayList<>();
@@ -1129,6 +1130,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case Fisher_Z_Score:
                 scoreWrapper = new FisherZScore();
                 break;
+            case Arges_Score:
+                scoreWrapper = new ArgesScore();
+                break;
             case D_SEPARATION:
                 scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
                 break;
@@ -1397,7 +1401,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private ScoreType getScoreType() {
-        return ScoreType.valueOf(parameters.getString("scoreType", "BDeu"));
+        String string = parameters.getString("scoreType", "BDeu");
+        return ScoreType.valueOf(string);
     }
 
     private void setScoreType(ScoreType scoreType) {
@@ -1467,7 +1472,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     public enum ScoreType {BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION,
-        Fisher_Z_Score
+        Fisher_Z_Score, Arges_Score
     }
 
 }

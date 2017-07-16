@@ -84,6 +84,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private boolean verbose = true;
     private double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
+    private double rho;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -194,6 +195,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
         this.fisherZ = fisherZ;
+        this.rho = r;
 
         return Math.abs(fisherZ) < cutoff;
     }
@@ -420,6 +422,10 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public double getRho() {
+        return rho;
     }
 }
 
