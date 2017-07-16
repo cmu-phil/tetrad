@@ -102,7 +102,7 @@ public class ParamDescriptions {
 
         put("targetName", new ParamDescription("Target name", ""));
         put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
-        put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", false));
+        put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
 
         put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
         put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));

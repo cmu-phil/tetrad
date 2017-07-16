@@ -49,7 +49,7 @@ public class Condition1 {
 
         parameters.set("alpha", 0.001);
         parameters.set("numRuns", 10);
-        parameters.set("penaltyDiscount", 4);
+//        parameters.set("penaltyDiscount", 4);
         parameters.set("useMaxPOrientationHeuristic", true);
         parameters.set("maxPOrientationMaxPathLength", 3);
 
@@ -92,21 +92,21 @@ public class Condition1 {
 //
 //        algorithms = new Algorithms();
 //
-        parameters.set("alpha", 0.001, 0.0001, 1e-8);
-        parameters.set("faithfulnessAssumed", true);
+//        parameters.set("alpha", 0.001, 0.0001, 1e-8);
+//        parameters.set("faithfulnessAssumed", true);
+////
+//        algorithms.add(new Fges(new FisherZScore()));
 //
-        algorithms.add(new Fges(new FisherZScore()));
-
-        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
-                "/Users/user/causal-comparisons/condition_1",
-                algorithms, statistics, parameters);
+//        comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
+//                "/Users/user/causal-comparisons/condition_1",
+//                algorithms, statistics, parameters);
 //
 //        algorithms = new Algorithms();
 
-//        parameters.set("penaltyDiscount", 2, 4);
+        parameters.set("penaltyDiscount", 2, 4);
 //
-////        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new Fges(new ArgesScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new ArgesScore()));
 
         comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
@@ -145,8 +145,10 @@ public class Condition1 {
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-4"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"));
+
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_2"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4"));
+
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Arges_Score,_penaltyDiscount_=_2"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Arges_Score,_penaltyDiscount_=_4"));
 

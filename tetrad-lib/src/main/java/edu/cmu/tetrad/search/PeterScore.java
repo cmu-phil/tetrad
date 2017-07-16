@@ -21,29 +21,24 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.Math.log;
 
 /**
  * Implements Chickering and Meek's (2002) locally consistent score criterion.
  *
  * @author Joseph Ramsey
  */
-public class ArgesScore implements Score {
+public class PeterScore implements Score {
 
     private final IndTestFisherZ test;
-    private final ICovarianceMatrix covMatrix;
+    private final DataSet dataSet;
 
     // The variables of the covariance matrix.
     private List<Node> variables;
@@ -52,15 +47,12 @@ public class ArgesScore implements Score {
     private boolean verbose = false;
     private double penaltyDiscount = 1.0;
 
-    private Map<Node, Integer> indexMap;
-
-
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ArgesScore(DataSet dataSet) {
+    public PeterScore(DataSet dataSet) {
         this.test = new IndTestFisherZ(dataSet, 0.001);
-        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
+        this.dataSet = dataSet;
 
         this.variables = new ArrayList<>();
 
@@ -69,20 +61,6 @@ public class ArgesScore implements Score {
                 this.variables.add(node);
             }
         }
-
-        this.indexMap = indexMap(variables);
-
-
-    }
-
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i), i);
-        }
-
-        return indexMap;
     }
 
     /**
@@ -102,22 +80,11 @@ public class ArgesScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        Node _x = variables.get(x);
-        Node _y = variables.get(y);
-        List<Node> _z = getVariableList(z);
-
-        int n = getSampleSize();
-        double r;
-
-        try {
-            r = partialCorrelation(_x, _y, _z);
-        } catch (SingularMatrixException e) {
-            System.out.println(SearchLogUtils.determinismDetected(_z, _x));
-            return Double.NaN;
-        }
-
-        int N = test.getSampleSize();
-        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * Math.log(N);
+        test.isIndependent(variables.get(x), variables.get(y), getVariableList(z));
+        double p = test.getPValue();
+        int N = getSampleSize();
+        return -log(p) - (2 + z.length) * log(N);
+//        return 0.000001 - p;
     }
 
     @Override
@@ -153,7 +120,7 @@ public class ArgesScore implements Score {
     }
 
     public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
+        return dataSet;
     }
 
     public boolean isVerbose() {
@@ -170,7 +137,7 @@ public class ArgesScore implements Score {
     }
 
     public int getSampleSize() {
-        return 0;
+        return dataSet.getNumRows();
     }
 
     public boolean getAlternativePenalty() {
@@ -204,25 +171,6 @@ public class ArgesScore implements Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-    }
-
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-        if (z.isEmpty()) {
-            double a = covMatrix.getValue(indexMap.get(x), indexMap.get(y));
-            double b = covMatrix.getValue(indexMap.get(x), indexMap.get(x));
-            double c = covMatrix.getValue(indexMap.get(y), indexMap.get(y));
-
-            if (b * c == 0) throw new SingularMatrixException();
-
-            return -a / Math.sqrt(b * c);
-        } else {
-            int[] indices = new int[z.size() + 2];
-            indices[0] = indexMap.get(x);
-            indices[1] = indexMap.get(y);
-            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-            TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
-            return StatUtils.partialCorrelation(submatrix);
-        }
     }
 }
 
