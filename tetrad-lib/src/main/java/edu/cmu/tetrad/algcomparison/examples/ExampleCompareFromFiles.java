@@ -46,6 +46,7 @@ public class ExampleCompareFromFiles {
         // Can leave the simulation parameters out since
         // we're loading from file here.
         parameters.set("alpha", 1e-4);
+        parameters.set("numRuns", 10);
 
         Statistics statistics = new Statistics();
 

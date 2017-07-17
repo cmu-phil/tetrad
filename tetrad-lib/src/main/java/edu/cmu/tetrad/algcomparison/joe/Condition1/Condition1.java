@@ -127,7 +127,9 @@ public class Condition1 {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
+        statistics.add(new F1All());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
@@ -192,6 +194,7 @@ public class Condition1 {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
