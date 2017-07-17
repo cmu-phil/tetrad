@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,16 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
+        ICovarianceMatrix cov = null;
+
+        if (dataSet instanceof Dataset) {
+            cov = DataUtils.getCovMatrix(dataSet);
+        } else if (dataSet instanceof  ICovarianceMatrix){
+            cov = (ICovarianceMatrix) dataSet;
+        } else {
+            throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
+        }
+
         double alpha = parameters.getDouble("alpha");
 
         boolean gap = parameters.getBoolean("useGap", true);
