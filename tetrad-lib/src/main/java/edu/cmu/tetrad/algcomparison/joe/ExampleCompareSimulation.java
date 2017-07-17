@@ -41,7 +41,6 @@ public class ExampleCompareSimulation {
         if (args.length > 0) {
             int numMeasures = Integer.parseInt(args[0]);
             int avgDegree = Integer.parseInt(args[1]);
-            double alpha = Double.parseDouble(args[2]);
 
             Parameters parameters = new Parameters();
 
@@ -76,7 +75,7 @@ public class ExampleCompareSimulation {
             parameters.set("fisherEpsilon", 0.001);
             parameters.set("randomizeColumns", true);
 
-            parameters.set("alpha", alpha);
+            parameters.set("alpha", 1e-8);
             parameters.set("depth", -1);
             parameters.set("penaltyDiscount", 4);
 
@@ -138,7 +137,7 @@ public class ExampleCompareSimulation {
             comparison.setSortByUtility(false);
             comparison.setShowUtilities(true);
 
-            comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+            comparison.compareFromSimulations("comparisonJoe", simulations, algorithms, statistics, parameters);
         }
     }
 }
