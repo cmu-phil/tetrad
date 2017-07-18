@@ -1252,6 +1252,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         priorKnowledgeOption2Box.add(Box.createRigidArea(new Dimension(20, 20)));
         priorKnowledgeOption2Box.add(priorKnowledgeNo);
 
+        // We need to group the radio buttons, otherwise all can be selected
+        ButtonGroup priorKnowledgeBtnGrp = new ButtonGroup();
+        priorKnowledgeBtnGrp.add(priorKnowledgeYes);
+        priorKnowledgeBtnGrp.add(priorKnowledgeNo);
+
         // Add to containg box
         priorKnowledgeBox.add(priorKnowledgeLabelBox);
         priorKnowledgeBox.add(priorKnowledgeOption1Box);
@@ -1368,6 +1373,35 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Clear filter selections
         JButton clearFilterSelectionsBtn = new JButton("Clear filter selections");
+
+        // Event listener of clearFilterSelectionsBtn
+        clearFilterSelectionsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                // Reset/clear all selections - the radio bottons and checkboxes
+                varLinearRelationshipsBtnGrp.clearSelection();
+                gaussianVariablesBtnGrp.clearSelection();
+                priorKnowledgeBtnGrp.clearSelection();
+                includeUnmeasuredConfoundersBtnGrp.clearSelection();
+
+                // Have to take care of the outputGoals since we can't use buttonGroup on it
+                if (outputGoalsPairwiseOrientation.isSelected()) {
+                    outputGoalsPairwiseOrientation.setSelected(false);
+                }
+
+                if (outputGoalsMarkovBlanket.isSelected()) {
+                    outputGoalsMarkovBlanket.setSelected(false);
+                }
+
+                if (outputGoalsUndirectedGraph.isSelected()) {
+                    outputGoalsUndirectedGraph.setSelected(false);
+                }
+
+                if (outputGoalsCausalGraph.isSelected()) {
+                    outputGoalsCausalGraph.setSelected(false);
+                }
+            }
+        });
 
         // Joe's current UI - Zhou
         Box d3 = Box.createHorizontalBox();
