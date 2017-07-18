@@ -144,8 +144,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private JButton step3Btn;
 
-    private JButton doneBtn;
-
     //=========================CONSTRUCTORS============================//
     /**
      * Opens up an editor to let the user view the given PcRunner.
@@ -417,8 +415,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        // Show the algo chooser
-        showAlgoChooserDialog();
+        // Embed the algo chooser panel into EditorWindow
+        add(createAlgoChooserPanel(), BorderLayout.CENTER);
 
         this.desktop = (TetradDesktop) DesktopController.getInstance();
     }
@@ -1123,7 +1121,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parametersBox.add(parametersPanel);
     }
 
-    private void showAlgoChooserDialog() {
+    private JPanel createAlgoChooserPanel() {
         // Overall container
         // contains data preview panel, loading params panel, and load button
         Box container = Box.createVerticalBox();
@@ -1715,9 +1713,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
                 // Hide back button
                 step2BackBtn.setVisible(false);
-
-                // Hide done button
-                doneBtn.setVisible(false);
             }
         });
 
@@ -1756,9 +1751,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                                 // Show back to step 2 button
                                 step2BackBtn.setVisible(true);
 
-                                // Show done button
-                                doneBtn.setVisible(true);
-
                                 // Hide step 1 back button
                                 step1BackBtn.setVisible(false);
 
@@ -1771,22 +1763,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
                 // Create the loading indicator dialog and show
                 showLoadingIndicator("Runing...");
-            }
-        });
-
-        // Done button
-        doneBtn = new JButton("Done");
-
-        // Close the dialog
-        doneBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Window w = SwingUtilities.getWindowAncestor(doneBtn);
-                if (w != null) {
-                    w.setVisible(false);
-                }
-
-                // Will also need to close the old search window
             }
         });
 
@@ -1813,14 +1789,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         buttonsBox.add(step2BackBtn);
         buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonsBox.add(step3Btn);
-        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonsBox.add(doneBtn);
 
         // Default to only show step 2 forward button
         step1BackBtn.setVisible(false);
         step2BackBtn.setVisible(false);
         step3Btn.setVisible(false);
-        doneBtn.setVisible(false);
 
         // Add to buttons container
         buttonsContainer.add(buttonsBox);
@@ -1851,9 +1824,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         container.add(buttonsContainer);
 
-        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
-                "Algorithm Chooser", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+        JPanel p = new JPanel(new BorderLayout());
+        p.add(container, BorderLayout.CENTER);
+//        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), container,
+//                "Algorithm Chooser", JOptionPane.OK_CANCEL_OPTION,
+//                JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+
+        return p;
     }
 
     /**
