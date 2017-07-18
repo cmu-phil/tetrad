@@ -158,7 +158,7 @@ public class SessionNode implements Node, TetradSerializable {
 
     /**
      * The number of times this session node should be executed (in depth first
-     * order) in a simulation study.
+     * order) in a simulation edu.cmu.tetrad.study.
      *
      * @serial Range > 0.
      */
@@ -1852,7 +1852,7 @@ public class SessionNode implements Node, TetradSerializable {
         }
 
         /**
-         * When a new execution is begun of a simulation study, this event is
+         * When a new execution is begun of a simulation edu.cmu.tetrad.study, this event is
          * sent downstream so that certain parameter objects can reset
          * themselves.
          */

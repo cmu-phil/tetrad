@@ -70,7 +70,7 @@ public interface SessionListener extends EventListener {
     void modelUnclear(SessionEvent event);
 
     /**
-     * Indicates that a new execution of a simulation study has begun. (Some
+     * Indicates that a new execution of a simulation edu.cmu.tetrad.study has begun. (Some
      * parameter objects need to be reset for every execution.
      */
     void executionStarted(SessionEvent event);
