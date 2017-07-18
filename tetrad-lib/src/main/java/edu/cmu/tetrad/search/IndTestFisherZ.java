@@ -126,7 +126,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
         this.dataSet = ColtDataSet.makeContinuousData(variables, data);
-        this.covMatrix = new CovarianceMatrix(dataSet);
+        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
