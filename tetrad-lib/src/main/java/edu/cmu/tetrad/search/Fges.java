@@ -477,7 +477,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * The maximum of parents any nodes can have in output pattern.
-     *
      * @return -1 for unlimited.
      */
     public int getMaxDegree() {
@@ -486,7 +485,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * The maximum of parents any nodes can have in output pattern.
-     *
      * @param maxDegree -1 for unlimited.
      */
     public void setMaxDegree(int maxDegree) {
@@ -601,9 +599,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 //            System.out.println("heuristicSpeedup = true");
 //        }
 
-        ForkJoinPool pool1 = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-        ForkJoinPool pool2 = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
@@ -614,10 +609,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
 
-            private final int t;
-
-            public InitializeFromEmptyGraphTask(int t) {
-                this.t = t;
+            public InitializeFromEmptyGraphTask() {
             }
 
             @Override
@@ -627,23 +619,21 @@ public final class Fges implements GraphSearch, GraphScorer {
                 int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
 
                 for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
-                    if (i % 2 == t) {
-                        NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
-                                nodes, emptySet);
-                        tasks.add(task);
-                        task.fork();
+                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+                            nodes, emptySet);
+                    tasks.add(task);
+                    task.fork();
 
-                        for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                            if (_task.isDone()) {
-                                _task.join();
-                                tasks.remove(_task);
-                            }
-                        }
-
-                        while (tasks.size() > maxThreads) {
-                            NodeTaskEmptyGraph _task = tasks.poll();
+                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
+                        if (_task.isDone()) {
                             _task.join();
+                            tasks.remove(_task);
                         }
+                    }
+
+                    while (tasks.size() > maxThreads) {
+                        NodeTaskEmptyGraph _task = tasks.poll();
+                        _task.join();
                     }
                 }
 
@@ -655,17 +645,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
-        pool1.execute(new InitializeFromEmptyGraphTask(0));
-        pool2.execute(new InitializeFromEmptyGraphTask(1));
-
-        try {
-            pool1.shutdown();
-            pool2.shutdown();
-            pool1.awaitTermination(10, TimeUnit.MINUTES);
-            pool2.awaitTermination(10, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        pool.invoke(new InitializeFromEmptyGraphTask());
 
         long stop = System.currentTimeMillis();
 
@@ -789,6 +769,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 //        if (verbose) {
 //            System.out.println("heuristicSpeedup = false");
 //        }
+
         count[0] = 0;
 
         sortedArrows = new ConcurrentSkipListSet<>();
