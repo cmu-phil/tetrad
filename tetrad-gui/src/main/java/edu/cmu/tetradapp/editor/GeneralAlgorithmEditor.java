@@ -56,7 +56,6 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.pitt.dbmi.ccd.commons.file.MessageDigestHash;
 import edu.pitt.dbmi.ccd.rest.client.dto.user.JsonWebToken;
 import edu.pitt.dbmi.ccd.rest.client.service.algo.AbstractAlgorithmRequest;
@@ -78,8 +77,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import javax.help.CSH;
-import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -168,11 +165,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             System.out.println("HelpSet " + helpHS + " not found");
             throw new IllegalArgumentException();
         }
-
-        algTypesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-        algNamesDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-        testDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
-        scoreDropdown.setFont(new Font("Dialog", Font.PLAIN, 13));
 
         List<TestType> discreteTests = new ArrayList<>();
         discreteTests.add(TestType.ChiSquare);
@@ -1130,66 +1122,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         helpSet.setHomeID("tetrad_overview");
 
-        JButton explain1 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        JButton explain2 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        JButton explain3 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-        JButton explain4 = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-
-        explain1.setBorder(new EmptyBorder(0, 0, 0, 0));
-        explain2.setBorder(new EmptyBorder(0, 0, 0, 0));
-        explain3.setBorder(new EmptyBorder(0, 0, 0, 0));
-        explain4.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-        explain1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-//                helpSet.setHomeID("types_of_algorithms");
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
-        explain2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) algNamesDropdown;
-                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
-        explain3.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) testDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
-        explain4.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) scoreDropdown;
-//                String name = box.getSelectedItem().toString();
-//                helpSet.setHomeID(name.toLowerCase());
-                helpSet.setHomeID("under_construction");
-                HelpBroker broker = helpSet.createHelpBroker();
-                ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                listener.actionPerformed(e);
-            }
-        });
-
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
 
@@ -1449,7 +1381,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         d3.add(label4);
         algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
         d3.add(algNamesDropdown);
-        d3.add(explain2);
         d3.add(new JLabel("    "));
         d3.add(Box.createHorizontalGlue());
 
@@ -1458,7 +1389,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         testBox.add(label1);
         testDropdown.setMaximumSize(testDropdown.getPreferredSize());
         testBox.add(testDropdown);
-        testBox.add(explain3);
         testBox.add(Box.createHorizontalGlue());
 
         Box scoreBox = Box.createHorizontalBox();
@@ -1466,7 +1396,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         scoreBox.add(label2);
         scoreDropdown.setMaximumSize(scoreDropdown.getPreferredSize());
         scoreBox.add(scoreDropdown);
-        scoreBox.add(explain4);
         scoreBox.add(Box.createHorizontalGlue());
 
         // This container, step 1
@@ -1585,8 +1514,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(390, 250));
-        algoDescriptionBox.setMaximumSize(new Dimension(390, 250));
+        algoDescriptionBox.setMinimumSize(new Dimension(390, 440));
+        algoDescriptionBox.setMaximumSize(new Dimension(390, 440));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -1600,8 +1529,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(390, 240));
-        algoDescriptionScrollPane.setMaximumSize(new Dimension(390, 240));
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(390, 430));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(390, 430));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
