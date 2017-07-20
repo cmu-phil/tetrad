@@ -93,6 +93,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
+        parameters.add("faithfulnessAssumed");
         parameters.add("symmetricFirstStep");
         parameters.add("maxDegree");
         parameters.add("verbose");

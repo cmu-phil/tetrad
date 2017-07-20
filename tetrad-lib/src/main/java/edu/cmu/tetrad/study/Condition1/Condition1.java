@@ -24,8 +24,8 @@ package edu.cmu.tetrad.study.Condition1;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.score.ArgesScore;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -102,8 +102,7 @@ public class Condition1 {
 
         parameters.set("penaltyDiscount", 2, 4);
 //
-//        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Fges(new ArgesScore()));
+        algorithms.add(new Fges(new SemBicScore()));
 
         comparison.compareFromFiles("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
@@ -148,9 +147,6 @@ public class Condition1 {
 
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_2"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4"));
-
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Arges_Score,_penaltyDiscount_=_2"));
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Arges_Score,_penaltyDiscount_=_4"));
 
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));

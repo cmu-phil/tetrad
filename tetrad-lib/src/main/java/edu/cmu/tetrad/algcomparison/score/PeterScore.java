@@ -29,7 +29,7 @@ public class PeterScore implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Arges Score";
+        return "Peter Score";
     }
 
     @Override
