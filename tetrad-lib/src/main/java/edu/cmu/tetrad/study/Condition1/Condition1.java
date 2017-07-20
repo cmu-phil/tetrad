@@ -160,6 +160,21 @@ public class Condition1 {
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
 
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=cor"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-cor"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-mi-g"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-zf"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g-sh"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-cor"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-mi-g"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-zf"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=zf"));
+
+
+
+
+
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));

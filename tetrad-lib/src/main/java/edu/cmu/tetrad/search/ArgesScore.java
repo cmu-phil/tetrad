@@ -71,8 +71,6 @@ public class ArgesScore implements Score {
         }
 
         this.indexMap = indexMap(variables);
-
-
     }
 
     private Map<Node, Integer> indexMap(List<Node> variables) {
@@ -106,7 +104,6 @@ public class ArgesScore implements Score {
         Node _y = variables.get(y);
         List<Node> _z = getVariableList(z);
 
-        int n = getSampleSize();
         double r;
 
         try {
@@ -117,7 +114,7 @@ public class ArgesScore implements Score {
         }
 
         int N = test.getSampleSize();
-        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * Math.log(N);
+        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * 2.0 * Math.log(N);
     }
 
     @Override
