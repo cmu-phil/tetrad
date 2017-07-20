@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -26,22 +25,22 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
 
 /**
- * Edits a list of parameters. Descriptions and defaults are looked up in ParamDescriptions.
+ * Edits a list of parameters. Descriptions and defaults are looked up in
+ * ParamDescriptions.
  *
  * @author Joseph Ramsey
  */
 class ParameterPanel extends JPanel {
+
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
@@ -64,9 +63,7 @@ class ParameterPanel extends JPanel {
 //        d.add(label);
 //        d.add(Box.createHorizontalGlue());
 //        b.add(d);
-
 //        b.add(Box.createVerticalStrut(10));
-
         for (String parameter : parametersToEdit) {
             Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
 
@@ -83,7 +80,10 @@ class ParameterPanel extends JPanel {
                 int upperBoundInt = ParamDescriptions.instance().get(parameter).getUpperBoundInt();
                 p = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
             } else if (defaultValue instanceof Boolean) {
-                p = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
+                // Joe's old implementation with dropdown yes or no
+                //p = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
+                // Zhou's new implementation with yes/no radio buttons
+                p = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
             } else if (defaultValue instanceof String) {
                 p = getStringField(parameter, parameters, (String) defaultValue);
             } else {
@@ -106,7 +106,7 @@ class ParameterPanel extends JPanel {
     }
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-                                           double defaultValue, final double lowerBound, final double upperBound) {
+            double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -138,7 +138,7 @@ class ParameterPanel extends JPanel {
     }
 
     private IntTextField getIntTextField(final String parameter, final Parameters parameters,
-                                         final int defaultValue, final double lowerBound, final double upperBound) {
+            final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter(new IntTextField.Filter() {
@@ -168,6 +168,7 @@ class ParameterPanel extends JPanel {
         return field;
     }
 
+    // Joe's old implementation with dropdown yes or no
     private JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
         JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
@@ -197,6 +198,58 @@ class ParameterPanel extends JPanel {
         return box;
     }
 
+    // Zhou's new implementation with yes/no radio buttons
+    private Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        // Button group to ensure only only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        System.out.println(parameter + " = " + aBoolean);
+
+        // Set default selection
+        if (aBoolean) {
+            yesButton.setSelected(true);
+        } else {
+            noButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        // Event listener
+        yesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    parameters.set(parameter, true);
+                }
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
+                if (button.isSelected()) {
+                    parameters.set(parameter, false);
+                }
+            }
+        });
+
+        return selectionBox;
+    }
+
     private StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
         final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
@@ -219,8 +272,3 @@ class ParameterPanel extends JPanel {
         return field;
     }
 }
-
-
-
-
-
