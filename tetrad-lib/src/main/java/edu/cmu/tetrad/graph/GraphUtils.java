@@ -3825,106 +3825,43 @@ public final class GraphUtils {
         return sb.toString();
     }
 
-    public static String graphEdgesToText(Graph graph, String title) {
-        Formatter fmt = new Formatter();
+	public static String graphEdgesToText(Graph graph, String title) {
+		Formatter fmt = new Formatter();
 
-        if (title != null && title.length() > 0) {
-            fmt.format("%s%n", title);
-        }
+		if (title != null && title.length() > 0) {
+			fmt.format("%s%n", title);
+		}
 
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-        Edges.sortEdges(edges);
+		List<Edge> edges = new ArrayList<>(graph.getEdges());
+		Edges.sortEdges(edges);
 
-        int size = edges.size();
-        int count = 0;
+		int size = edges.size();
+		int count = 0;
 
-        for (Edge edge : edges) {
-            count++;
+		for (Edge edge : edges) {
+			count++;
 
-            List<Edge.Property> properties = edge.getProperties();
+			List<Edge.Property> properties = edge.getProperties();
 
-            List<EdgeTypeProbability> edgeTypeDist = edge.getEdgeTypeProbabilities();
-            
-            if (count < size) {
-                String f = "%d. %s";
+			List<EdgeTypeProbability> edgeTypeDist = edge.getEdgeTypeProbabilities();
 
-                for (int i = 0; i < properties.size(); i++) {
-                    f += " %s";
-                }
+			if (count < size) {
+				String f = "%d. %s";
 
-                Object[] o = new Object[2 + properties.size()];
-
-                o[0] = count;
-                o[1] = edge;
-
-                for (int i = 0; i < properties.size(); i++) {
-                    o[2 + i] = properties.get(i);
-                }
-
-                fmt.format(f, o);
-                
-                // Bootstrap edge type distribution
-				f = " ";
-
-				for (int i = 0; i < edgeTypeDist.size(); i++) {
-					f += "%s ";
+				for (int i = 0; i < properties.size(); i++) {
+					f += " %s";
 				}
-				o = new Object[edgeTypeDist.size()];
 
-				for (int i = 0; i < edgeTypeDist.size(); i++) {
-					EdgeTypeProbability etp = edgeTypeDist.get(i);
-					String _type = "" + etp.getEdgeType();
-					switch (etp.getEdgeType()) {
-					case nil:
-						_type = "no edge";
-						break;
-					case ta:
-						_type = "-->";
-						break;
-					case at:
-						_type = "<--";
-						break;
-					case ca:
-						_type = "o->";
-						break;
-					case ac:
-						_type = "<-o";
-						break;
-					case cc:
-						_type = "o-o";
-						break;
-					case aa:
-						_type = "<->";
-						break;
-					case tt:
-						_type = "---";
-						break;
-					default:
-						break;
-					}
+				Object[] o = new Object[2 + properties.size()];
 
-					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
+				o[0] = count;
+				o[1] = edge;
+
+				for (int i = 0; i < properties.size(); i++) {
+					o[2 + i] = properties.get(i);
 				}
 
 				fmt.format(f, o);
-				
-                fmt.format("\n");
-            } else {
-                String f = "%d. %s";
-
-                for (int i = 0; i < properties.size(); i++) {
-                    f += " %s";
-                }
-                Object[] o = new Object[2 + properties.size()];
-
-                o[0] = count;
-                o[1] = edge;
-
-                for (int i = 0; i < properties.size(); i++) {
-                    o[2 + i] = properties.get(i);
-                }
-
-                fmt.format(f, o);
 
 				// Bootstrap edge type distribution
 				f = " ";
@@ -3968,15 +3905,78 @@ public final class GraphUtils {
 
 					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
 				}
-				
-                fmt.format(f, o);
-                
-                fmt.format("\n");
-            }
-        }
 
-        return fmt.toString();
-    }
+				fmt.format(f, o);
+
+				fmt.format("\n");
+			} else {
+				String f = "%d. %s";
+
+				for (int i = 0; i < properties.size(); i++) {
+					f += " %s";
+				}
+				Object[] o = new Object[2 + properties.size()];
+
+				o[0] = count;
+				o[1] = edge;
+
+				for (int i = 0; i < properties.size(); i++) {
+					o[2 + i] = properties.get(i);
+				}
+
+				fmt.format(f, o);
+
+				// Bootstrap edge type distribution
+				f = " ";
+
+				for (int i = 0; i < edgeTypeDist.size(); i++) {
+					f += "%s ";
+				}
+				o = new Object[edgeTypeDist.size()];
+
+				for (int i = 0; i < edgeTypeDist.size(); i++) {
+					EdgeTypeProbability etp = edgeTypeDist.get(i);
+					String _type = "" + etp.getEdgeType();
+					switch (etp.getEdgeType()) {
+					case nil:
+						_type = "no edge";
+						break;
+					case ta:
+						_type = "-->";
+						break;
+					case at:
+						_type = "<--";
+						break;
+					case ca:
+						_type = "o->";
+						break;
+					case ac:
+						_type = "<-o";
+						break;
+					case cc:
+						_type = "o-o";
+						break;
+					case aa:
+						_type = "<->";
+						break;
+					case tt:
+						_type = "---";
+						break;
+					default:
+						break;
+					}
+
+					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
+				}
+
+				fmt.format(f, o);
+
+				fmt.format("\n");
+			}
+		}
+
+		return fmt.toString();
+	}
 
     public static String triplesToText(Set<Triple> triples, String title) {
         Formatter fmt = new Formatter();
