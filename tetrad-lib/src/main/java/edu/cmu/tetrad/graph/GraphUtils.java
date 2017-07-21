@@ -3841,8 +3841,10 @@ public final class GraphUtils {
         for (Edge edge : edges) {
             count++;
 
-            ArrayList<Edge.Property> properties = edge.getProperties();
+            List<Edge.Property> properties = edge.getProperties();
 
+            List<EdgeTypeProbability> edgeTypeDist = edge.getEdgeTypeProbabilities();
+            
             if (count < size) {
                 String f = "%d. %s";
 
@@ -3860,6 +3862,52 @@ public final class GraphUtils {
                 }
 
                 fmt.format(f, o);
+                
+                // Bootstrap edge type distribution
+				f = " ";
+
+				for (int i = 0; i < edgeTypeDist.size(); i++) {
+					f += "%s ";
+				}
+				o = new Object[edgeTypeDist.size()];
+
+				for (int i = 0; i < edgeTypeDist.size(); i++) {
+					EdgeTypeProbability etp = edgeTypeDist.get(i);
+					String _type = "" + etp.getEdgeType();
+					switch (etp.getEdgeType()) {
+					case nil:
+						_type = "no edge";
+						break;
+					case ta:
+						_type = "-->";
+						break;
+					case at:
+						_type = "<--";
+						break;
+					case ca:
+						_type = "o->";
+						break;
+					case ac:
+						_type = "<-o";
+						break;
+					case cc:
+						_type = "o-o";
+						break;
+					case aa:
+						_type = "<->";
+						break;
+					case tt:
+						_type = "---";
+						break;
+					default:
+						break;
+					}
+
+					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
+				}
+
+				fmt.format(f, o);
+				
                 fmt.format("\n");
             } else {
                 String f = "%d. %s";
@@ -3877,6 +3925,52 @@ public final class GraphUtils {
                 }
 
                 fmt.format(f, o);
+
+				// Bootstrap edge type distribution
+				f = " ";
+
+				for (int i = 0; i < edgeTypeDist.size(); i++) {
+					f += "%s ";
+				}
+				o = new Object[edgeTypeDist.size()];
+
+				for (int i = 0; i < edgeTypeDist.size(); i++) {
+					EdgeTypeProbability etp = edgeTypeDist.get(i);
+					String _type = "" + etp.getEdgeType();
+					switch (etp.getEdgeType()) {
+					case nil:
+						_type = "no edge";
+						break;
+					case ta:
+						_type = "-->";
+						break;
+					case at:
+						_type = "<--";
+						break;
+					case ca:
+						_type = "o->";
+						break;
+					case ac:
+						_type = "<-o";
+						break;
+					case cc:
+						_type = "o-o";
+						break;
+					case aa:
+						_type = "<->";
+						break;
+					case tt:
+						_type = "---";
+						break;
+					default:
+						break;
+					}
+
+					o[i] = "[" + _type + "]:" + String.format("%.4f", etp.getProbability());
+				}
+				
+                fmt.format(f, o);
+                
                 fmt.format("\n");
             }
         }
