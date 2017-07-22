@@ -109,9 +109,10 @@ public class SemBicScore implements Score {
             }
 
             int n = getSampleSize();
-            int k = 2 * p + 1;
+            int k = p + 1;
             s2 = ((n) / (double) (n - k)) * s2;
             return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+                   // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -125,6 +126,18 @@ public class SemBicScore implements Score {
             }
 
             return Double.NaN;
+        }
+    }
+
+    double sp = 6.0;
+
+    private double getStructurePrior(int parents) {
+        if (sp <= 0) { return 0; }
+        else {
+            int i = parents + 1;
+            int c = variables.size();
+            double p = sp / (double) c;
+            return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
         }
     }
 

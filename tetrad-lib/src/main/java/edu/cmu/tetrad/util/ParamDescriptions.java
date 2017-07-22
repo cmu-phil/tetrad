@@ -210,6 +210,11 @@ public class ParamDescriptions {
         put("randomizeColumns", new ParamDescription(
                 "Yes if the order of the columns in each datasets should be randomized",
                 false));
+
+        put("logScale", new ParamDescription(
+                "Yes if the parameters are in log scale",
+                false));
+
     }
 
     public static ParamDescriptions instance() {

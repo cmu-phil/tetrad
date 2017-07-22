@@ -100,7 +100,7 @@ public class Condition1 {
 //
 //        algorithms = new Algorithms();
 
-        parameters.set("penaltyDiscount", 2, 4);
+        parameters.set("penaltyDiscount", 1, 2);
 //
         algorithms.add(new Fges(new SemBicScore()));
 
@@ -145,8 +145,8 @@ public class Condition1 {
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-4"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"));
 
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_1"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_2"));
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4"));
 
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));
@@ -176,8 +176,8 @@ public class Condition1 {
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*0.5*log(nrow(data)"));
-        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_4*0.5*log(nrow(data)"));
+        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_1.0*log(nrow(data)"));
+        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2.0*log(nrow(data)"));
 
         algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
 
