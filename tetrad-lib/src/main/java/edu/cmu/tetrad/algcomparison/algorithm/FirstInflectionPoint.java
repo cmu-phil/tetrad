@@ -185,7 +185,7 @@ public class FirstInflectionPoint implements Algorithm, TakesInitialGraph {
 
     @Override
     public String getDescription() {
-        return "Finding first inflection point for " + algorithm + " parameters = " + parameter;
+        return "First inflection for " + algorithm.getDescription() + " parameter = " + parameter;
     }
 
     @Override

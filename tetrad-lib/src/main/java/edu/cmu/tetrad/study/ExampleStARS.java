@@ -25,11 +25,9 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.FirstInflectionPoint;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CpcStable;
+import edu.cmu.tetrad.algcomparison.algorithm.StARS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -41,14 +39,19 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class ExampleFirstInflection {
+public class ExampleStARS {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numMeasures", 40, 100);
-        parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 400, 800);
-        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 2, 4);
+        parameters.set("sampleSize", 100, 500);
+        parameters.set("numRuns", 5);
+
+//        parameters.set("numMeasures", 100);
+//        parameters.set("avgDegree", 2);
+//        parameters.set("sampleSize", 100);
+//        parameters.set("numRuns", 1);
 
         parameters.set("differentGraphs", true);
         parameters.set("numLatents", 0);
@@ -111,7 +114,8 @@ public class ExampleFirstInflection {
 
         Algorithm fges = new Fges(new SemBicScore());
 //        algorithms.add(new FirstInflectionPoint(fges, "alpha", -7, -2, -.5));
-        algorithms.add(new FirstInflectionPoint(fges, "penaltyDiscount", 0.7, 5, .1));
+        algorithms.add(new StARS(fges, "penaltyDiscount", 0.5, 5));
+        algorithms.add(new FirstInflectionPoint(fges, "penaltyDiscount", 0.5, 5, .1));
 
         Simulations simulations = new Simulations();
 
