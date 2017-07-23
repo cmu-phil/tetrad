@@ -215,6 +215,22 @@ public class ParamDescriptions {
                 "Yes if the parameters are in log scale",
                 false));
 
+        put("StARS.percentageB", new ParamDescription(
+                "Percentage of rows to include in each subsample",
+                0.5, 0.0, 1.0));
+
+        put("StARS.tolerance", new ParamDescription(
+                "Parameter tolerance for binary search",
+                .5, 0.0, Double.POSITIVE_INFINITY));
+
+        put("StARS.cutoff", new ParamDescription(
+                "Cutoff for D in the StARS procedure",
+                0.01, 0.0, 1.0));
+
+        put("numSubsamples", new ParamDescription(
+                "The number of subsamples to take for the StARZ procedure",
+                8, 1, Integer.MAX_VALUE));
+
     }
 
     public static ParamDescriptions instance() {

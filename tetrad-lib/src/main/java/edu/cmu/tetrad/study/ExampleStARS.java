@@ -24,10 +24,11 @@ package edu.cmu.tetrad.study;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.FirstInflectionPoint;
+import edu.cmu.tetrad.algcomparison.algorithm.FirstInflection;
 import edu.cmu.tetrad.algcomparison.algorithm.StARS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -43,15 +44,15 @@ public class ExampleStARS {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
+//        parameters.set("numMeasures", 100);
+//        parameters.set("avgDegree", 2, 4);
+//        parameters.set("sampleSize", 100, 500);
+//        parameters.set("numRuns", 5);
+
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 2, 4);
-        parameters.set("sampleSize", 100, 500);
-        parameters.set("numRuns", 5);
-
-//        parameters.set("numMeasures", 100);
-//        parameters.set("avgDegree", 2);
-//        parameters.set("sampleSize", 100);
-//        parameters.set("numRuns", 1);
+        parameters.set("sampleSize", 100, 1000);
+        parameters.set("numRuns", 2);
 
         parameters.set("differentGraphs", true);
         parameters.set("numLatents", 0);
@@ -91,8 +92,10 @@ public class ExampleStARS {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-//        parameters.set("logScale", true);
-
+        parameters.set("StARS.percentageB", 0.9);
+        parameters.set("StARS.tolerance", 0.05);
+        parameters.set("StARS.cutoff", 0.05);
+        parameters.set("numSubsamples", 2);
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
@@ -112,10 +115,15 @@ public class ExampleStARS {
 
         Algorithms algorithms = new Algorithms();
 
-        Algorithm fges = new Fges(new SemBicScore());
-//        algorithms.add(new FirstInflectionPoint(fges, "alpha", -7, -2, -.5));
-        algorithms.add(new StARS(fges, "penaltyDiscount", 0.5, 5));
-        algorithms.add(new FirstInflectionPoint(fges, "penaltyDiscount", 0.5, 5, .1));
+//        parameters.set("logScale", false);
+//        Algorithm fges = new Fges(new SemBicScore());
+//        algorithms.add(new StARS(fges, "penaltyDiscount", 0.7, 10, 0.3));
+//        algorithms.add(new FirstInflection(fges, "penaltyDiscount", 0.7, 5, 1));
+
+        parameters.set("logScale", true);
+        Algorithm fges = new Fges(new FisherZScore());
+        algorithms.add(new StARS(fges, "alpha", -10, -2, -8));
+        algorithms.add(new FirstInflection(fges, "alpha", -10, -2, -3));
 
         Simulations simulations = new Simulations();
 

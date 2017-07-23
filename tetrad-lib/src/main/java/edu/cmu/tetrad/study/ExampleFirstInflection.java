@@ -24,12 +24,9 @@ package edu.cmu.tetrad.study;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.FirstInflectionPoint;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CpcStable;
+import edu.cmu.tetrad.algcomparison.algorithm.FirstInflection;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -110,8 +107,8 @@ public class ExampleFirstInflection {
         Algorithms algorithms = new Algorithms();
 
         Algorithm fges = new Fges(new SemBicScore());
-//        algorithms.add(new FirstInflectionPoint(fges, "alpha", -7, -2, -.5));
-        algorithms.add(new FirstInflectionPoint(fges, "penaltyDiscount", 0.7, 5, .1));
+//        algorithms.add(new FirstInflection(fges, "alpha", -7, -2, -.5));
+        algorithms.add(new FirstInflection(fges, "penaltyDiscount", 0.7, 5, 1));
 
         Simulations simulations = new Simulations();
 
