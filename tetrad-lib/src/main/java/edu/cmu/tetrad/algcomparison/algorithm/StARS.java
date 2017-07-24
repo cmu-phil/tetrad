@@ -6,19 +6,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
-import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Math.abs;
 
@@ -34,10 +24,9 @@ public class StARS implements Algorithm, TakesInitialGraph {
     private final String parameter;
     private Algorithm algorithm;
     private DataSet _dataSet;
-    Map<Double, Double> archive;
 
 
-    public StARS(Algorithm algorithm, String parameter, double low, double high, double initialGuess) {
+    public StARS(Algorithm algorithm, String parameter, double low, double high) {
         if (low >= high) throw new IllegalArgumentException("Must have low < high");
         this.algorithm = algorithm;
         this.low = low;
@@ -74,13 +63,13 @@ public class StARS implements Algorithm, TakesInitialGraph {
         double pTo = high;
         double pMid = high;
 
-        double lastD = getD(parameters, parameter, high, samples, samples.size(), algorithm, archive);
+        double lastD = getD(parameters, parameter, high, samples, samples.size(), algorithm);
 
         while (abs(pFrom - pTo) > tolerance) {
             pMid = (pFrom + pTo) / 2.0;
             _parameters.set(parameter, getValue(pMid, parameters));
 
-            double D = getD(parameters, parameter, pMid, samples, samples.size(), algorithm, archive);
+            double D = getD(parameters, parameter, pMid, samples, samples.size(), algorithm);
             System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
 
             if (D > lastD && D < cutoff) {
@@ -100,7 +89,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
     }
 
     private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> samples,
-                               int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
+                               int numSamples, Algorithm algorithm) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
@@ -121,19 +110,18 @@ public class StARS implements Algorithm, TakesInitialGraph {
             for (int j = i + 1; j < p; j++) {
                 double theta = 0.0;
 
-                for (int k = 0; k < numBootstraps; k++) {
+                for (int k = 0; k < numSamples; k++) {
                     boolean adj = graphs.get(k).isAdjacentTo(nodes.get(i), nodes.get(j));
                     theta += adj ? 1.0 : 0.0;
                 }
 
-                theta /= numBootstraps;
+                theta /= numSamples;
                 double xsi = 2 * theta * (1.0 - theta);
                 D += xsi;
             }
         }
 
         D /= (double) (p * (p - 1) / 2);
-        System.out.println(paramName + " = " + paramValue + " D = " + D);
         return D;
     }
 
