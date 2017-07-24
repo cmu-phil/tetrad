@@ -18,7 +18,9 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import javax.xml.crypto.Data;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -180,13 +182,24 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
         MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
         FittingFunction f = new FittingFunction(_parameters, algorithm, low, high, parameter, (DataSet) dataSet);
         PointValuePair p = search.optimize(
-                new InitialGuess(new double[]{increment}),
+                new InitialGuess(new double[]{increment, increment}),
                 new ObjectiveFunction(f),
                 GoalType.MINIMIZE,
                 new MaxEval(100000)
         );
 
-        double value = p.getPoint()[0];
+
+        double[] point = p.getPoint();
+
+        double p1 = point[0];
+        double p2 = point[1];
+
+        p1 = Math.round(p1 * 10.0) / 10.0;
+        p2 = Math.round(p2 * 10.0) / 10.0;
+
+        double value = Math.max(p1, p2);
+
+//        double value = (p.getPoint()[0] + p.getPoint()[1]) / 2;
         System.out.println(parameter + " = " + getValue(value, parameters));
         _parameters.set(parameter, getValue(value, parameters));
 
@@ -199,6 +212,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
         private final double low;
         private final double high;
         private final String paramName;
+        private final DataSet _dataSet;
         private Parameters params;
         private DataSet dataSet;
         Graph _previous = null;
@@ -214,6 +228,12 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
             this.high = high;
             this.paramName = paramName;
             this.dataSet = dataSet;
+            int numVars = Math.min(20, ((DataSet) dataSet).getNumColumns());
+
+            int[] cols = new int[numVars];
+            for (int i = 0; i < numVars; i++) cols[i] = i;
+
+            _dataSet = dataSet.subsetColumns(cols);
         }
 
         /**
@@ -222,37 +242,87 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
          * parameter values.
          */
 
+//        public double value0(double[] parameters) {
+//            double p = parameters[0];
+//            if (p < low) return 10000;
+//            if (p > high) return 10000;
+//            double _p = getValue(p, params);
+//            params.set(paramName, _p);
+//            Graph out = algorithm.search(dataSet, params);
+//
+//            if (_previous == null) {
+//                _previous = out;
+//                return out.getNumEdges();
+//            }
+//
+//            out = GraphUtils.replaceNodes(out, _previous.getNodes());
+//
+//            Set<Edge> e1 = out.getEdges();
+//            e1.removeAll(_previous.getEdges());
+//
+//            Set<Edge> e2 = _previous.getEdges();
+//            e2.removeAll(out.getEdges());
+//
+//            int numEdges = out.getNumEdges();
+//
+//            int diff = e1.size() + e2.size();
+//
+//            System.out.println(paramName + " = " + params.getDouble(paramName)
+//                    + " # edges = " + numEdges
+//                    + " # additional = " + diff);
+//
+//            _previous = out;
+//            return diff;
+//        }
+
+        private Map<Double, Graph> archive = new HashMap<>();
+
         @Override
         public double value(double[] parameters) {
-            double p = parameters[0];
-            if (p < low) return 10000;
-            if (p > high) return 10000;
-            double _p = getValue(p, params);
-            params.set(paramName, _p);
-            Graph out = algorithm.search(dataSet, params);
+            double p1 = parameters[0];
+            double p2 = parameters[1];
 
-            if (_previous == null) {
-                _previous = out;
-                return out.getNumEdges();
+            p1 = Math.round(p1 * 10.0) / 10.0;
+            p2 = Math.round(p2 * 10.0) / 10.0;
+
+            if (p1 < low) return 10000;
+            if (p1 > high) return 10000;
+            if (p2 < low) return 10000;
+            if (p2 > high) return 10000;
+//            if (p1 == p2) return 10000;
+            if (Math.abs(p1 - p2) < 0.1) return 100000;
+
+            double _p1 = getValue(p1, params);
+            double _p2 = getValue(p2, params);
+
+            if (archive.get(_p1) == null) {
+                params.set(paramName, _p1);
+                archive.put(_p1, algorithm.search(_dataSet, params));
             }
 
-            out = GraphUtils.replaceNodes(out, _previous.getNodes());
+            Graph out1 = archive.get(_p1);
 
-            Set<Edge> e1 = out.getEdges();
-            e1.removeAll(_previous.getEdges());
+            if (archive.get(_p2) == null) {
+                params.set(paramName, _p2);
+                archive.put(_p2, algorithm.search(_dataSet, params));
+            }
 
-            Set<Edge> e2 = _previous.getEdges();
-            e2.removeAll(out.getEdges());
+            Graph out2 = archive.get(_p2);
 
-            int numEdges = out.getNumEdges();
+            Set<Edge> e1 = out1.getEdges();
+            e1.removeAll(out2.getEdges());
+
+            Set<Edge> e2 = out2.getEdges();
+            e2.removeAll(out1.getEdges());
 
             int diff = e1.size() + e2.size();
 
-            System.out.println(paramName + " = " + params.getDouble(paramName)
-                    + " # edges = " + numEdges
+            int numEdges1 = out1.getNumEdges();
+            int numEdges2 = out2.getNumEdges();
+            System.out.println(paramName + " = " + p1 + ", " + p2
+                    + " # edges 1 = " + numEdges1 + " # edges 2  " + numEdges2
                     + " # additional = " + diff);
 
-            _previous = out;
             return diff;
         }
     }

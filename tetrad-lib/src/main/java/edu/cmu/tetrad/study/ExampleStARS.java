@@ -49,8 +49,8 @@ public class ExampleStARS {
 //        parameters.set("sampleSize", 100, 500);
 //        parameters.set("numRuns", 5);
 
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 2, 4);
+        parameters.set("numMeasures", 200);
+        parameters.set("avgDegree", 2, 4, 6);
         parameters.set("sampleSize", 100, 1000);
         parameters.set("numRuns", 2);
 
@@ -77,7 +77,7 @@ public class ExampleStARS {
 
         parameters.set("alpha", 1e-8);
         parameters.set("depth", -1);
-        parameters.set("penaltyDiscount", 4);
+        parameters.set("penaltyDiscount", 2);
 
         parameters.set("useMaxPOrientationHeuristic", false);
         parameters.set("maxPOrientationMaxPathLength", 3);
@@ -93,9 +93,9 @@ public class ExampleStARS {
         parameters.set("maxDegree", 100);
 
         parameters.set("StARS.percentageB", 0.9);
-        parameters.set("StARS.tolerance", 0.05);
+        parameters.set("StARS.tolerance", .5);
         parameters.set("StARS.cutoff", 0.05);
-        parameters.set("numSubsamples", 2);
+        parameters.set("numSubsamples", 4);
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
@@ -115,15 +115,16 @@ public class ExampleStARS {
 
         Algorithms algorithms = new Algorithms();
 
-//        parameters.set("logScale", false);
-//        Algorithm fges = new Fges(new SemBicScore());
-//        algorithms.add(new StARS(fges, "penaltyDiscount", 0.7, 10, 0.3));
-//        algorithms.add(new FirstInflection(fges, "penaltyDiscount", 0.7, 5, 1));
+        parameters.set("logScale", false);
+        algorithms.add(new StARS(new Fges(new SemBicScore()), "penaltyDiscount", 1, 8
+                , 4));
+//        algorithms.add(new FirstInflection(new Fges(new SemBicScore()), "penaltyDiscount", 0.7, 5, 1));
+//        algorithms.add(new Fges(new SemBicScore()));
 
-        parameters.set("logScale", true);
-        Algorithm fges = new Fges(new FisherZScore());
-        algorithms.add(new StARS(fges, "alpha", -10, -2, -8));
-        algorithms.add(new FirstInflection(fges, "alpha", -10, -2, -3));
+//        parameters.set("logScale", true);
+//        Algorithm fges = new Fges(new FisherZScore());
+//        algorithms.add(new StARS(fges, "alpha", -10, -2, -8));
+//        algorithms.add(new FirstInflection(fges, "alpha", -10, -2, -3));
 
         Simulations simulations = new Simulations();
 

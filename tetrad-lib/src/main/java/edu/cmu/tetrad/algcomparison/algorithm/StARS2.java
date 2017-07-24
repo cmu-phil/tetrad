@@ -6,17 +6,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
-import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,21 +18,24 @@ import static java.lang.Math.abs;
  *
  * @author jdramsey
  */
-public class StARS implements Algorithm, TakesInitialGraph {
+public class StARS2 implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
     private final String parameter;
+    private final double initialGuess;
     private Algorithm algorithm;
+    private IKnowledge knowledge = new Knowledge2();
     private DataSet _dataSet;
     Map<Double, Double> archive;
 
 
-    public StARS(Algorithm algorithm, String parameter, double low, double high, double initialGuess) {
+    public StARS2(Algorithm algorithm, String parameter, double low, double high, double initialGuess) {
         if (low >= high) throw new IllegalArgumentException("Must have low < high");
         this.algorithm = algorithm;
         this.low = low;
         this.high = high;
+        this.initialGuess = initialGuess;
         this.parameter = parameter;
     }
 
@@ -50,6 +44,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
         this._dataSet = (DataSet) dataSet;
 
 //        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
+
 //        int[] cols = new int[numVars];
 //        for (int i = 0; i < numVars; i++) cols[i] = i;
 
@@ -62,6 +57,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
         Parameters _parameters = new Parameters(parameters);
 
+        // Draw 5 samples without replacement.
         List<DataSet> samples = new ArrayList<>();
 
         for (int i = 0; i < numSubsamples; i++) {
@@ -91,28 +87,97 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
             lastD = D;
         }
-
+//
+//        archive = new HashMap<>();
+//
+//        MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
+//        FittingFunction f = new FittingFunction(samples, numSubsamples, _parameters, algorithm, cutoff, low, high, parameter,
+//                _dataSet, archive);
+//        PointValuePair p = search.optimize(
+//                new InitialGuess(new double[]{initialGuess}),
+//                new ObjectiveFunction(f),
+//                GoalType.MAXIMIZE,
+//                MaxEval.unlimited()
+//        );
+//
+//        double _p = getValue(p.getPoint()[0], parameters);
        double _p = getValue(pMid, parameters);
+//        _p = Math.round(_p * 10.0) / 10.0;
         System.out.println(parameter + " = " + _p);
         _parameters.set(parameter, getValue(_p, parameters));
-
+//
         return algorithm.search(dataSet, _parameters);
     }
 
-    private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> samples,
+//    static class FittingFunction implements MultivariateFunction {
+//
+//        private final List<DataSet> samples;
+//        private final int numSamples;
+//        private final Algorithm algorithm;
+//        private final double cutoff;
+//        private final double low;
+//        private final double high;
+//        private final String paramName;
+//        private final DataSet _dataSet;
+//        private Parameters params;
+//        Map<Double, Double> archive = new HashMap<>();
+//
+//        /**
+//         * Constructs a new CoefFittingFunction for the given Sem.
+//         */
+//        public FittingFunction(List<DataSet> samples, int numSamples, Parameters params, Algorithm algorithm,
+//                               double cutoff, double low, double high, String paramName, DataSet _dataSet,
+//                               Map<Double, Double> archive
+//        ) {
+//            this.samples = samples;
+//            this.numSamples = numSamples;
+//            this.params = params;
+//            this.algorithm = algorithm;
+//            this.cutoff = cutoff;
+//            this.low = low;
+//            this.high = high;
+//            this.paramName = paramName;
+//            this._dataSet = _dataSet;
+//            this.archive = archive;
+//        }
+//
+//        /**
+//         * Computes the maximum likelihood function value for the given
+//         * parameter values as given by the optimizer. These values are mapped to
+//         * parameter values.
+//         */
+//
+//        @Override
+//        public double value(double[] parameters) {
+//            double paramValue = parameters[0];
+//            paramValue = getValue(paramValue, params);
+////            paramValue = Math.round(paramValue * 10.0) / 10.0;
+//            if (paramValue < low) return -10000;
+//            if (paramValue > high) return -10000;
+//            if (archive.containsKey(paramValue)) {
+//                return archive.get(paramValue);
+//            }
+//            double D = getD(params, paramName, paramValue, samples, numSamples, algorithm, archive);
+//            if (D > cutoff) return -10000;
+//            archive.put(paramValue, D);
+//            return D;
+//        }
+//    }
+
+    private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> boostraps,
                                int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
 
-        for (DataSet d : samples) {
+        for (DataSet d : boostraps) {
             Graph e = GraphUtils.undirectedGraph(algorithm.search(d, params));
-            e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
+            e = GraphUtils.replaceNodes(e, boostraps.get(0).getVariables());
             graphs.add(e);
 
         }
 
-        int p = samples.get(0).getNumColumns();
+        int p = boostraps.get(0).getNumColumns();
         List<Node> nodes = graphs.get(0).getNodes();
 
         double D = 0.0;
