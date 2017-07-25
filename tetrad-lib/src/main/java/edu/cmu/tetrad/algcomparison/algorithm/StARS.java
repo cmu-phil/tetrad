@@ -13,7 +13,7 @@ import java.util.List;
 import static java.lang.Math.abs;
 
 /**
- * First inflection point.
+ * StARS
  *
  * @author jdramsey
  */
@@ -44,7 +44,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
         _dataSet = (DataSet) dataSet;//.subsetColumns(cols);
 
-        double percentageB = parameters.getDouble("StARS.percentageB");
+        double percentageB = parameters.getDouble("percentSubsampleSize");
         double tolerance = parameters.getDouble("StARS.tolerance");
         double cutoff = parameters.getDouble("StARS.cutoff");
         int numSubsamples = parameters.getInt("numSubsamples");
@@ -79,6 +79,20 @@ public class StARS implements Algorithm, TakesInitialGraph {
             }
 
             lastD = D;
+        }
+
+        if (pFrom == low) {
+            double D = getD(parameters, parameter, low, samples, samples.size(), algorithm);
+            System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
+            if (D > pMid) {
+                pMid = D;
+            }
+        } else if (pTo == high) {
+            double D = getD(parameters, parameter, high, samples, samples.size(), algorithm);
+            System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
+            if (D > pMid) {
+                pMid = high;
+            }
         }
 
        double _p = getValue(pMid, parameters);

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.study;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.StARS;
+import edu.cmu.tetrad.algcomparison.algorithm.StabilitySelection;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -89,10 +90,13 @@ public class ExampleStARS {
         parameters.set("faithfulnessAssumed", true);
         parameters.set("maxDegree", 100);
 
-        parameters.set("StARS.percentageB", 0.9);
         parameters.set("StARS.tolerance", .5);
         parameters.set("StARS.cutoff", 0.05);
-        parameters.set("numSubsamples", 4);
+        parameters.set("numSubsamples", 7);
+
+        parameters.set("percentSubsampleSize", .5);
+        parameters.set("percentStability", .5);
+
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
@@ -113,8 +117,8 @@ public class ExampleStARS {
         Algorithms algorithms = new Algorithms();
 
         parameters.set("logScale", false);
-        algorithms.add(new StARS(new Fges(new SemBicScore()), "penaltyDiscount", 1, 8
-        ));
+        algorithms.add(new StARS(new Fges(new SemBicScore()), "penaltyDiscount", 1, 8));
+        algorithms.add(new StabilitySelection(new Fges(new SemBicScore()), "penaltyDiscount", 1, 8));
 //        algorithms.add(new FirstInflection(new Fges(new SemBicScore()), "penaltyDiscount", 0.7, 5, 1));
 //        algorithms.add(new Fges(new SemBicScore()));
 

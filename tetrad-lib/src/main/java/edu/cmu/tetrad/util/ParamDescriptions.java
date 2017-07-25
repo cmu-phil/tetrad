@@ -231,6 +231,17 @@ public class ParamDescriptions {
                 "The number of subsamples to take for the StARZ procedure",
                 8, 1, Integer.MAX_VALUE));
 
+        put("percentSubsampleSize", new ParamDescription(
+                "Percentage of records to include in a random subsample",
+                0.5, 0.0, 1.0));
+
+
+        put("percentStability", new ParamDescription(
+                "Percentage of subsamples each feature in the output must agree on",
+                0.5, 0.0, 1.0));
+
+
+
     }
 
     public static ParamDescriptions instance() {
