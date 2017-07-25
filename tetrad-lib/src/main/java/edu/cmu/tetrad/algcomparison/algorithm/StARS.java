@@ -50,7 +50,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
         double tolerance = parameters.getDouble("StARS.tolerance");
-        double cutoff = parameters.getDouble("StARS.cutoff");
+        double beta = parameters.getDouble("StARS.cutoff");
         int numSubsamples = parameters.getInt("numSubsamples");
 
         Parameters _parameters = new Parameters(parameters);
@@ -63,72 +63,93 @@ public class StARS implements Algorithm, TakesInitialGraph {
             samples.add(sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows())));
         }
 
-        double pFrom = low;
-        double pTo = high;
+//        double pFrom = low;
+//        double pTo = high;
 
-        double D1 = getD(parameters, parameter, low, samples, samples.size(), algorithm);
-        System.out.println("D1 (low) = " + D1);
-        double D2 = getD(parameters, parameter, high, samples, samples.size(), algorithm);
-        System.out.println("D2 (high) = " + D2);
+        double maxD = Double.NEGATIVE_INFINITY;
+        double _lambda = Double.NaN;
 
-        double lastD;
-        double pMid;
-        double pBest;
+        for (double lambda = low; lambda <= high; lambda += 0.5) {
+            double D = getD(parameters, parameter, lambda, samples, algorithm);
+            System.out.println("lambda = " + lambda + " D = " + D);
 
-        if (D1 > D2 && D1 < cutoff) {
-            lastD = D1;
-            pBest = low;
-        } else if (D2 > D1 && D2 < cutoff) {
-            lastD = D2;
-            pBest = high;
-        } else {
-            lastD = Double.NEGATIVE_INFINITY;
-            pBest = low;
-        }
-
-        System.out.println("lastD = " + lastD);
-
-        while (abs(pFrom - pTo) > tolerance) {
-            pMid = (pFrom + pTo) / 2.0;
-            double D = getD(parameters, parameter, pMid, samples, samples.size(), algorithm);
-            System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
-
-            if (D1 > D2) {
-                if (D > lastD && D < cutoff) {
-                    pTo = pMid;
-                    pBest = pMid;
-                } else {
-                    pFrom = pMid;
-                }
-            } else {
-                if (D > lastD && D < cutoff) {
-                    pFrom = pMid;
-                    pBest = pMid;
-                } else {
-                    pTo = pMid;
-                }
+            if (D > maxD && D < beta) {
+                maxD = D;
+                _lambda = lambda;
             }
-
-            lastD = D;
-            System.out.println("lastD = " + lastD + " pBest = " + pBest);
         }
 
-        if (D1 > lastD) {
-            pBest = low;
-        } else if (D2 > lastD) {
-            pBest = high;
-        }
+//        double D1 = getD(parameters, parameter, low, samples, algorithm);
+//        System.out.println("D1 (low) = " + D1);
+//        double D2 = getD(parameters, parameter, high, samples, algorithm);
+//        System.out.println("D2 (high) = " + D2);
+//
+//        double lastD;
+//        double pMid;
+//        double pBest;
+//        double bestD;
+//
+//        if (D1 > D2 && D1 < beta) {
+//            lastD = D1;
+//            pBest = low;
+//            bestD = D1;
+//        } else if (D2 > D1 && D2 < beta) {
+//            lastD = D2;
+//            pBest = high;
+//            bestD = D2;
+//        } else {
+//            lastD = Double.NEGATIVE_INFINITY;
+//            pBest = (low + high) / 2.0;
+//            bestD = Double.NEGATIVE_INFINITY;
+//        }
+//
+//        System.out.println("lastD = " + lastD);
+//
+//        while (abs(pFrom - pTo) > tolerance) {
+//            pMid = (pFrom + pTo) / 2.0;
+//            double D = getD(parameters, parameter, pMid, samples, algorithm);
+//            System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
+//
+//            if (D1 > D2) {
+//                if (D > bestD && D < beta) {
+//                    pTo = pMid;
+//                    pBest = pMid;
+//                    bestD = D;
+//                } else {
+//                    pFrom = pMid;
+//                }
+//            } else {
+//                if (D > bestD && D < beta) {
+//                    pFrom = pMid;
+//                    pBest = pMid;
+//                    bestD = D;
+//                } else {
+//                    pTo = pMid;
+//                }
+//            }
+//
+//            lastD = D;
+//            System.out.println("lastD = " + lastD + " pBest = " + pBest);
+//        }
+//
+//        if (D1 > bestD) {
+//            pBest = low;
+//        }
+//
+//        if (D2 > bestD) {
+//            pBest = high;
+//        }
 
-        System.out.println("lastD = " + lastD + " pBest = " + pBest);
+        System.out.println("FINAL: lambda = " + _lambda + " D = " + maxD);
 
-        System.out.println(parameter + " = " + getValue(pBest, parameters));
-        _parameters.set(parameter, getValue(pBest, parameters));
+        System.out.println(parameter + " = " + getValue(_lambda, parameters));
+        _parameters.set(parameter, getValue(_lambda, parameters));
 
         return algorithm.search(dataSet, _parameters);
     }
 
     private static double getD(Parameters params, String paramName, double paramValue, final List<DataSet> samples,
-                               int numSamples, Algorithm algorithm) {
+                               Algorithm algorithm) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
@@ -181,39 +202,29 @@ public class StARS implements Algorithm, TakesInitialGraph {
         List<Node> nodes = graphs.get(0).getNodes();
 
         double D = 0.0;
+        int count = 0;
 
         for (int i = 0; i < p; i++) {
             for (int j = i + 1; j < p; j++) {
-                for (int m = 0; m < 3; m++) {
-                    double theta = 0.0;
-                    Node x = nodes.get(i);
-                    Node y = nodes.get(j);
+                double theta = 0.0;
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
-                    for (int k = 0; k < numSamples; k++) {
-                        Edge edge = graphs.get(k).getEdge(x, y);
-
-                        switch (m) {
-                            case 0:
-                                if (edge != null && edge.pointsTowards(x)) theta += 1.0;
-                                break;
-                            case 1:
-                                if (edge != null && edge.pointsTowards(y)) theta += 1.0;
-                                break;
-                            case 2:
-                                if (edge != null) theta += 1.0;
-
-                                break;
-                        }
-                    }
-
-                    theta /= numSamples;
-                    double xsi = 2 * theta * (1.0 - theta);
-                    D += xsi;
+                for (int k = 0; k < graphs.size(); k++) {
+                    if (graphs.get(k).isAdjacentTo(x, y)) theta += 1.0;
                 }
+
+                theta /= graphs.size();
+                double xsi = 2 * theta * (1.0 - theta);
+
+//                if (xsi != 0){
+                    D += xsi;
+                    count++;
+//                }
             }
         }
 
-        D /= (double) 3 * (p * (p - 1) / 2);
+        D /= (double) count;
         return D;
     }
 

@@ -37,12 +37,12 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
     private Algorithm algorithm;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double initialValue) {
+    public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
         if (low >= high) throw new IllegalArgumentException("Must have low < high");
         this.algorithm = algorithm;
         this.low = low;
         this.high = high;
-        this.increment = initialValue;
+        this.increment = increment;
         this.parameter = parameter;
     }
 
@@ -50,160 +50,160 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
     public Graph search(DataModel dataSet, Parameters parameters) {
         Parameters _parameters = new Parameters(parameters);
 
-//        Graph _previous = null;
-//        int _prevDiff = Integer.MAX_VALUE;
-//        double _value = 0.0;
-//
-//        if (increment > 0) {
-//
-//            for (double value = low; value <= high + 0.0000001; value += increment) {
-//                double value0 = getValue(value, parameters);
-//
-//                _parameters.set(parameter, value0);
-//                Graph out = algorithm.search(dataSet, _parameters);
-//
-//                if (_previous == null) {
-//                    _previous = out;
-//                    continue;
-//                }
-//
-//                out = GraphUtils.replaceNodes(out, _previous.getNodes());
-//                Set<Edge> edges1 = out.getEdges();
-//
-//                int numEdges = edges1.size();
-//
-//                Set<Edge> edges2 = _previous.getEdges();
-//                edges2.removeAll(edges1);
-//                int diff = edges2.size();
-//
-//                System.out.println(parameter + " = " + _parameters.getDouble(parameter)
-//                        + " # edges = " + numEdges
-//                        + " # additional = " + diff);
-//
-//                if (diff >= _prevDiff) break;
-//                _previous = out;
-//                _value = _parameters.getDouble(parameter);
-//                _prevDiff = diff;
-//            }
-//
-//            if (_value == Math.round((low + increment) * 1000000000.0) / 1000000000.0) {
-//                for (double value = low; value >= Double.NEGATIVE_INFINITY; value -= increment) {
-//                    value = getValue(value, parameters);
-//
-//                    _parameters.set(parameter, value);
-//                    Graph out = algorithm.search(dataSet, _parameters);
-//
-//                    out = GraphUtils.replaceNodes(out, _previous.getNodes());
-//                    Set<Edge> edges1 = out.getEdges();
-//
-//                    int numEdges = edges1.size();
-//
-//                    Set<Edge> edges2 = out.getEdges();
-//                    edges2.removeAll(_previous.getEdges());
-//                    int diff = edges2.size();
-//
-//                    System.out.println(parameter + " = " + _parameters.getDouble(parameter)
-//                            + " # edges = " + numEdges
-//                            + " # additional = " + diff);
-//
-//                    if (diff >= _prevDiff) break;
-//                    _previous = out;
-//                    _value = _parameters.getDouble(parameter);
-//                    _prevDiff = diff;
-//                }
-//            }
-//
-//        } else {
-//            for (double value = high; value >= low - 0.0000001; value += increment) {
-//                double value0 = getValue(value, parameters);
-//
-//                _parameters.set(parameter, value0);
-//                Graph out = algorithm.search(dataSet, _parameters);
-//
-//                if (_previous == null) {
-//                    _previous = out;
-//                    continue;
-//                }
-//
-//                out = GraphUtils.replaceNodes(out, _previous.getNodes());
-//                Set<Edge> edges1 = out.getEdges();
-//
-//                int numEdges = edges1.size();
-//
-//                Set<Edge> edges2 = _previous.getEdges();
-//                edges2.removeAll(edges1);
-//                int diff = edges2.size();
-//
-//                System.out.println(parameter + " = " + _parameters.getDouble(parameter)
-//                        + " # edges = " + numEdges
-//                        + " # additional = " + diff);
-//
-//                if (diff >= _prevDiff) break;
-//                _previous = out;
-//                _value = _parameters.getDouble(parameter);
-//                _prevDiff = diff;
-//            }
-//
-//            if (_value == Math.round((high - increment) * 1000000000.0) / 1000000000.0) {
-//                for (double value = low; value >= Double.NEGATIVE_INFINITY; value -= increment) {
-//                    value = getValue(value, parameters);
-//
-//                    _parameters.set(parameter, value);
-//                    Graph out = algorithm.search(dataSet, _parameters);
-//
-//                    out = GraphUtils.replaceNodes(out, _previous.getNodes());
-//                    Set<Edge> edges1 = out.getEdges();
-//
-//                    int numEdges = edges1.size();
-//
-//                    Set<Edge> edges2 = out.getEdges();
-//                    edges2.removeAll(_previous.getEdges());
-//                    int diff = edges2.size();
-//
-//                    System.out.println(parameter + " = " + _parameters.getDouble(parameter)
-//                            + " # edges = " + numEdges
-//                            + " # additional = " + diff);
-//
-//                    if (diff >= _prevDiff) break;
-//                    _previous = out;
-//                    _value = _parameters.getDouble(parameter);
-//                    _prevDiff = diff;
-//                }
-//            }
-//
-//        }
-//
-//        System.out.println(parameter + " = " + _value);
-//
-//        return _previous;
+        Graph _previous = null;
+        int _prevDiff = Integer.MAX_VALUE;
+        double _value = 0.0;
 
-        double tolerance = parameters.getDouble("StARS.tolerance");
+        if (increment > 0) {
 
-        MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
-        FittingFunction f = new FittingFunction(_parameters, algorithm, low, high, parameter, (DataSet) dataSet);
-        PointValuePair p = search.optimize(
-                new InitialGuess(new double[]{increment, increment}),
-                new ObjectiveFunction(f),
-                GoalType.MINIMIZE,
-                new MaxEval(100000)
-        );
+            for (double value = low - increment; value <= high + 0.0000001; value += increment) {
+                double value0 = getValue(value, parameters);
 
+                _parameters.set(parameter, value0);
+                Graph out = algorithm.search(dataSet, _parameters);
 
-        double[] point = p.getPoint();
+                if (_previous == null) {
+                    _previous = out;
+                    continue;
+                }
 
-        double p1 = point[0];
-        double p2 = point[1];
+                out = GraphUtils.replaceNodes(out, _previous.getNodes());
+                Set<Edge> edges1 = out.getEdges();
 
-        p1 = Math.round(p1 * 10.0) / 10.0;
-        p2 = Math.round(p2 * 10.0) / 10.0;
+                int numEdges = edges1.size();
 
-        double value = Math.max(p1, p2);
+                Set<Edge> edges2 = _previous.getEdges();
+                edges2.removeAll(edges1);
+                int diff = edges2.size();
 
-//        double value = (p.getPoint()[0] + p.getPoint()[1]) / 2;
-        System.out.println(parameter + " = " + getValue(value, parameters));
-        _parameters.set(parameter, getValue(value, parameters));
+                System.out.println(parameter + " = " + _parameters.getDouble(parameter)
+                        + " # edges = " + numEdges
+                        + " # additional = " + diff);
 
-        return algorithm.search(dataSet, _parameters);
+                if (diff >= _prevDiff) break;
+                _previous = out;
+                _value = _parameters.getDouble(parameter);
+                _prevDiff = diff;
+            }
+
+            if (_value == Math.round((low + increment) * 1000000000.0) / 1000000000.0) {
+                for (double value = low; value >= Double.NEGATIVE_INFINITY; value -= increment) {
+                    value = getValue(value, parameters);
+
+                    _parameters.set(parameter, value);
+                    Graph out = algorithm.search(dataSet, _parameters);
+
+                    out = GraphUtils.replaceNodes(out, _previous.getNodes());
+                    Set<Edge> edges1 = out.getEdges();
+
+                    int numEdges = edges1.size();
+
+                    Set<Edge> edges2 = out.getEdges();
+                    edges2.removeAll(_previous.getEdges());
+                    int diff = edges2.size();
+
+                    System.out.println(parameter + " = " + _parameters.getDouble(parameter)
+                            + " # edges = " + numEdges
+                            + " # additional = " + diff);
+
+                    if (diff >= _prevDiff) break;
+                    _previous = out;
+                    _value = _parameters.getDouble(parameter);
+                    _prevDiff = diff;
+                }
+            }
+
+        } else {
+            for (double value = high; value >= low - 0.0000001; value += increment) {
+                double value0 = getValue(value, parameters);
+
+                _parameters.set(parameter, value0);
+                Graph out = algorithm.search(dataSet, _parameters);
+
+                if (_previous == null) {
+                    _previous = out;
+                    continue;
+                }
+
+                out = GraphUtils.replaceNodes(out, _previous.getNodes());
+                Set<Edge> edges1 = out.getEdges();
+
+                int numEdges = edges1.size();
+
+                Set<Edge> edges2 = _previous.getEdges();
+                edges2.removeAll(edges1);
+                int diff = edges2.size();
+
+                System.out.println(parameter + " = " + _parameters.getDouble(parameter)
+                        + " # edges = " + numEdges
+                        + " # additional = " + diff);
+
+                if (diff >= _prevDiff) break;
+                _previous = out;
+                _value = _parameters.getDouble(parameter);
+                _prevDiff = diff;
+            }
+
+            if (_value == Math.round((high - increment) * 1000000000.0) / 1000000000.0) {
+                for (double value = low; value >= Double.NEGATIVE_INFINITY; value -= increment) {
+                    value = getValue(value, parameters);
+
+                    _parameters.set(parameter, value);
+                    Graph out = algorithm.search(dataSet, _parameters);
+
+                    out = GraphUtils.replaceNodes(out, _previous.getNodes());
+                    Set<Edge> edges1 = out.getEdges();
+
+                    int numEdges = edges1.size();
+
+                    Set<Edge> edges2 = out.getEdges();
+                    edges2.removeAll(_previous.getEdges());
+                    int diff = edges2.size();
+
+                    System.out.println(parameter + " = " + _parameters.getDouble(parameter)
+                            + " # edges = " + numEdges
+                            + " # additional = " + diff);
+
+                    if (diff >= _prevDiff) break;
+                    _previous = out;
+                    _value = _parameters.getDouble(parameter);
+                    _prevDiff = diff;
+                }
+            }
+
+        }
+
+        System.out.println(parameter + " = " + _value);
+
+        return _previous;
+
+//        double tolerance = parameters.getDouble("StARS.tolerance");
+//
+//        MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
+//        FittingFunction f = new FittingFunction(_parameters, algorithm, low, high, parameter, (DataSet) dataSet);
+//        PointValuePair p = search.optimize(
+//                new InitialGuess(new double[]{increment, increment}),
+//                new ObjectiveFunction(f),
+//                GoalType.MINIMIZE,
+//                new MaxEval(100000)
+//        );
+//
+//
+//        double[] point = p.getPoint();
+//
+//        double p1 = point[0];
+//        double p2 = point[1];
+//
+//        p1 = Math.round(p1 * 10.0) / 10.0;
+//        p2 = Math.round(p2 * 10.0) / 10.0;
+//
+//        double value = Math.max(p1, p2);
+//
+////        double value = (p.getPoint()[0] + p.getPoint()[1]) / 2;
+//        System.out.println(parameter + " = " + getValue(value, parameters));
+//        _parameters.set(parameter, getValue(value, parameters));
+//
+//        return algorithm.search(dataSet, _parameters);
     }
 
     static class FittingFunction implements MultivariateFunction {
