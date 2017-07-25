@@ -73,7 +73,7 @@ public class ExampleStARS {
         parameters.set("fisherEpsilon", 0.001);
         parameters.set("randomizeColumns", true);
 
-        parameters.set("alpha", 1e-8);
+        parameters.set("alpha", 0.01);
         parameters.set("depth", -1);
         parameters.set("penaltyDiscount", 2);
 
@@ -118,7 +118,8 @@ public class ExampleStARS {
 
         parameters.set("logScale", false);
         algorithms.add(new StARS(new Fges(new SemBicScore()), "penaltyDiscount", 1, 8));
-        algorithms.add(new StabilitySelection(new Fges(new SemBicScore()), "penaltyDiscount", 1, 8));
+//        algorithms.add(new StabilitySelection(new Fges(new SemBicScore())));
+//        algorithms.add(new StabilitySelection(new CpcStable(new FisherZ())));
 //        algorithms.add(new FirstInflection(new Fges(new SemBicScore()), "penaltyDiscount", 0.7, 5, 1));
 //        algorithms.add(new Fges(new SemBicScore()));
 

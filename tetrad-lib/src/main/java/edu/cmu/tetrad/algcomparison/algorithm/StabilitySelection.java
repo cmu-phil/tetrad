@@ -6,12 +6,15 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 import static java.lang.Math.abs;
 
@@ -22,13 +25,10 @@ import static java.lang.Math.abs;
  */
 public class StabilitySelection implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
-    private final String parameter;
     private Algorithm algorithm;
 
-    public StabilitySelection(Algorithm algorithm, String parameter, double low, double high) {
-        if (low >= high) throw new IllegalArgumentException("Must have low < high");
+    public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
-        this.parameter = parameter;
     }
 
     @Override
@@ -40,12 +40,57 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
 
         Map<Edge, Integer> counts = new HashMap<>();
 
-        for (int i = 0; i < numSubsamples; i++) {
-            BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
-            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-            Graph graph = algorithm.search(sample, parameters);
+        List<Graph> graphs = new ArrayList<>();
 
+        final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+
+        class StabilityAction extends RecursiveAction {
+            private int chunk;
+            private int from;
+            private int to;
+
+            private StabilityAction(int chunk, int from, int to){
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            protected void compute(){
+                if (to - from <= chunk) {
+                    for (int s = from; s < to; s++) {
+                        BootstrapSampler sampler = new BootstrapSampler();
+                        sampler.setWithoutReplacements(true);
+                        DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+                        Graph graph = algorithm.search(sample, parameters);
+                        graphs.add(graph);
+                    }
+                } else {
+                    final int mid = (to + from) / 2;
+
+                    StabilityAction left = new StabilityAction(chunk, from, mid);
+                    StabilityAction right = new StabilityAction(chunk, mid, to);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+                }
+            }
+        }
+
+        final int chunk = 2;
+
+        pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
+
+//        for (int i = 0; i < numSubsamples; i++) {
+//            BootstrapSampler sampler = new BootstrapSampler();
+//            sampler.setWithoutReplacements(true);
+//            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+//            Graph graph = algorithm.search(sample, parameters);
+//            graphs.add(graph);
+//        }
+
+        for (Graph graph : graphs) {
             for (Edge edge : graph.getEdges()) {
                 increment(edge, counts);
             }
@@ -64,13 +109,9 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
     }
 
     private void increment(Edge edge, Map<Edge, Integer> counts) {
-        if (counts.get(edge) == null) {
-            counts.put(edge, 0);
-        }
-
+        counts.putIfAbsent(edge, 0);
         counts.put(edge, counts.get(edge) + 1);
     }
-
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
