@@ -69,23 +69,23 @@ class ParameterPanel extends JPanel {
 
             System.out.println(parameter + " " + defaultValue);
 
-            JComponent p;
+            JComponent parameterSelection;
 
             if (defaultValue instanceof Double) {
                 double lowerBoundDouble = ParamDescriptions.instance().get(parameter).getLowerBoundDouble();
                 double upperBoundDouble = ParamDescriptions.instance().get(parameter).getUpperBoundDouble();
-                p = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+                parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
             } else if (defaultValue instanceof Integer) {
                 int lowerBoundInt = ParamDescriptions.instance().get(parameter).getLowerBoundInt();
                 int upperBoundInt = ParamDescriptions.instance().get(parameter).getUpperBoundInt();
-                p = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+                parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
             } else if (defaultValue instanceof Boolean) {
                 // Joe's old implementation with dropdown yes or no
-                //p = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
+                //parameterSelection = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
                 // Zhou's new implementation with yes/no radio buttons
-                p = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+                parameterSelection = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
             } else if (defaultValue instanceof String) {
-                p = getStringField(parameter, parameters, (String) defaultValue);
+                parameterSelection = getStringField(parameter, parameters, (String) defaultValue);
             } else {
                 throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
             }
@@ -95,7 +95,7 @@ class ParameterPanel extends JPanel {
             _label.setFont(new Font("Dialog", Font.BOLD, 13));
             c.add(_label);
             c.add(Box.createHorizontalGlue());
-            c.add(p);
+            c.add(parameterSelection);
             b.add(c);
         }
 
