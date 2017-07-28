@@ -23,9 +23,13 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
+
+import java.text.DecimalFormat;
 
 /**
  * An example script to save out data files and graphs from a simulation.
@@ -36,21 +40,32 @@ public class ExampleSave {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 1);
-//        parameters.set("numMeasures", 20,100,1000);
-        parameters.set("numMeasures",1000);
-        parameters.set("numLatents", 200);
-        parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 1000);
-//        parameters.set("maxCategories",3);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 50, 100, 500);
+        parameters.set("avgDegree", 2, 4, 6);
+        parameters.set("sampleSize", 100, 500, 1000);
 
-//        Simulation simulation = new BayesNetSimulation(new RandomForward());
+        parameters.set("differentGraphs", true);
+        parameters.set("maxDegree", 100);
+        parameters.set("maxIndegree", 100);
+        parameters.set("maxOutdegree", 100);
+        parameters.set("connected", false);
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.9);
+        parameters.set("coefSymmetric", true);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
+        parameters.set("randomizeColumns", true);
+
+        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
+
         Simulation simulation = new SemSimulation(new RandomForward());
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.saveToFiles("comparison1", simulation, parameters);
+        comparison.saveToFiles("/Users/user/comparison-data/condition_2", simulation, parameters);
+
     }
 }
+
 
 
 

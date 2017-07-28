@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.study.Condition1;
+package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
@@ -100,7 +100,7 @@ public class Condition1 {
 //
 //        algorithms = new Algorithms();
 
-        parameters.set("penaltyDiscount", 1, 2);
+        parameters.set("penaltyDiscount", 4);
 //
         algorithms.add(new Fges(new SemBicScore()));
 
@@ -135,47 +135,50 @@ public class Condition1 {
 
         Algorithms algorithms = new Algorithms();
 //
-        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-4"));
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//
+//        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-4"));
+//        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"));
 
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_1"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_2"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4"));
 
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("IAMB_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Fast.IAMB_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Inter.IAMB_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
-
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=cor"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-cor"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-mi-g"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-zf"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g-sh"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-cor"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-mi-g"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-zf"));
-        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=zf"));
-
-        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_defaults_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("IAMB_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Fast.IAMB_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Inter.IAMB_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
+//
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=cor"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-cor"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-mi-g"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-zf"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g-sh"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-cor"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-mi-g"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-zf"));
+//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=zf"));
+//
+//        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001.parallize.dynamic"));
+//
+//        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_defaults_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));
+////        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_1.0*log(nrow(data)"));
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2.0*log(nrow(data)"));
 
-        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
 
 //        algorithms.add(new ExternalAlgorithmIntersection("Intersection (Tetrad) CPC, PC_Stable-Max, CPC-Stable",
 //                new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),

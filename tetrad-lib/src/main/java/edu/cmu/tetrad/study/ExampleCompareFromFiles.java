@@ -54,6 +54,9 @@ public class ExampleCompareFromFiles {
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);
 
+        parameters.set("penaltyDisount", 2);
+        parameters.set("alpha", 1e-4);
+
 
         Statistics statistics = new Statistics();
 
@@ -79,14 +82,14 @@ public class ExampleCompareFromFiles {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Gfci(new ChiSquare(), new BdeuScore()));
-        algorithms.add(new Fci(new FisherZ()));
+//        algorithms.add(new Fci(new FisherZ()));
 //        algorithms.add(new Fci(new ChiSquare()));
 //        algorithms.add(new Rfci(new ChiSquare()));
-        algorithms.add(new Rfci(new FisherZ()));
+//        algorithms.add(new Rfci(new FisherZ()));
         algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fges(new BdeuScore(),true));
 //        algorithms.add(new Fges(new DiscreteBicScore(),true));
-        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Gfci(new ChiSquare(), new DiscreteBicScore())));
 //        algorithms.add(new Fges(new BdeuScore()));
 //        algorithms.add(new Fges(new DiscreteBicScore()));
@@ -104,7 +107,7 @@ public class ExampleCompareFromFiles {
         comparison.setSaveGraphs(true);
         //DagToPag p = new DagToPag(graph);
 
-        comparison.compareFromFiles("comparison1", algorithms, statistics, parameters);
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 

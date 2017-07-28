@@ -34,7 +34,7 @@ public class SemBicScore implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score";
+        return "Sem BIC Score, penalty discount = " + penaltyDiscount;
     }
 
     @Override

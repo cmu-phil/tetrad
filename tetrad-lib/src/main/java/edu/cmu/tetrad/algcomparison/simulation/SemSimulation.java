@@ -82,6 +82,10 @@ public class SemSimulation implements Simulation {
                 }
             }
 
+            if (parameters.getBoolean("randomizeColumns")) {
+                dataSet = DataUtils.reorderColumns(dataSet);
+            }
+
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
