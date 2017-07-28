@@ -197,26 +197,26 @@ public final class Fask implements GraphSearch {
 //                graph.addEdge(edge1);
 //                graph.addEdge(edge2);
 //            }
-            else if (equals(c, c1) && equals(c, c2)) {
-                Edge edge1 = Edges.directedEdge(X, Y);
-                Edge edge2 = Edges.directedEdge(Y, X);
-
-                edge1.setLineColor(Color.GREEN);
-                edge2.setLineColor(Color.GREEN);
-
-                graph.addEdge(edge1);
-                graph.addEdge(edge2);
-            } else if (!(sameSign(c, c1) && sameSign(c, c3)
-                    || (sameSign(c, c2) && sameSign(c, c4)))) {
-                Edge edge1 = Edges.directedEdge(X, Y);
-                Edge edge2 = Edges.directedEdge(Y, X);
-
-                edge1.setLineColor(Color.RED);
-                edge2.setLineColor(Color.RED);
-
-                graph.addEdge(edge1);
-                graph.addEdge(edge2);
-            }
+//            else if (equals(c, c1) && equals(c, c2)) {
+//                Edge edge1 = Edges.directedEdge(X, Y);
+//                Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                edge1.setLineColor(Color.GREEN);
+//                edge2.setLineColor(Color.GREEN);
+//
+//                graph.addEdge(edge1);
+//                graph.addEdge(edge2);
+//            } else if (!(sameSign(c, c1) && sameSign(c, c3)
+//                    || (sameSign(c, c2) && sameSign(c, c4)))) {
+//                Edge edge1 = Edges.directedEdge(X, Y);
+//                Edge edge2 = Edges.directedEdge(Y, X);
+//
+//                edge1.setLineColor(Color.RED);
+//                edge2.setLineColor(Color.RED);
+//
+//                graph.addEdge(edge1);
+//                graph.addEdge(edge2);
+//            }
             else if (R > 0) {
                 graph.addDirectedEdge(X, Y);
             } else if (R < 0) {

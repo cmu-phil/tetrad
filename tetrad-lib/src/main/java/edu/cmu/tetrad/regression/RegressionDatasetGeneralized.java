@@ -143,7 +143,7 @@ public class RegressionDatasetGeneralized implements Regression {
         }
 
 //        for (int i = 0; i < zList.size(); i++) {
-//            zCols[i] = getVariables().indexOf(zList.get(i));
+//            zCols[i] = getVariable().indexOf(zList.get(i));
 //        }
 
 //        int[] zRows = new int[data.rows()];

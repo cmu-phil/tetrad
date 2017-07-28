@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -35,13 +36,13 @@ import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
@@ -62,6 +63,10 @@ import java.util.concurrent.RecursiveTask;
  * @author Daniel Malinsky
  */
 public class Comparison {
+
+
+    public enum ComparisonGraph {true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG}
+
     private boolean[] graphTypeUsed;
     private PrintStream out;
     private boolean tabDelimitedTables = false;
@@ -71,55 +76,119 @@ public class Comparison {
     private boolean showAlgorithmIndices = false;
     private boolean showUtilities = false;
     private boolean sortByUtility = false;
-    private String filePath = null;
+    private String dataPath = null;
+    private String resultsPath = null;
     private boolean parallelized = true;
     private boolean savePatterns = false;
     private boolean savePags = false;
+    private ArrayList<String> dirs = null;
+    private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
+
+    public void compareFromFiles(String filePath, Algorithms algorithms,
+                                 Statistics statistics, Parameters parameters) {
+        compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
+    }
 
     /**
      * Compares algorithms.
      *
-     * @param filePath   Path to the directory where files have been saved.
-     * @param filePath   Path to the file where the output should be printed.
-     * @param algorithms The list of algorithms to be compared.
-     * @param statistics The list of statistics on which to compare the algorithm, and their utility weights.
-     * @param parameters The list of parameters and their values.
+     * @param dataPath    Path to the directory where data and graph files have been saved.
+     * @param resultsPath Path to the file where the results should be stored.
+     * @param algorithms  The list of algorithms to be compared.
+     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param parameters  The list of parameters and their values.
      */
-    public void compareFromFiles(String filePath, Algorithms algorithms,
+    public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
-        this.filePath = filePath;
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            if (algorithm instanceof ExternalAlgorithm) {
+                throw new IllegalArgumentException("Not expecting any implementations of ExternalAlgorithm here.");
+            }
+        }
+
+        this.dataPath = dataPath;
+        this.resultsPath = resultsPath;
 
         Simulations simulations = new Simulations();
 
-        File file = new File(filePath, "save");
+        File file = new File(this.dataPath, "save");
         File[] dirs = file.listFiles();
 
         if (dirs == null) {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
+        this.dirs = new ArrayList<String>();
+
+        int count = 0;
+
         for (File dir : dirs) {
-            simulations.add(new LoadDataAndGraphs(dir.getAbsolutePath()));
+            if (dir.getName().contains("DS_Store")) continue;
+            count++;
         }
 
-        compareFromSimulations(filePath, simulations, algorithms, statistics, parameters);
+        for (int i = 1; i <= count; i++) {
+            File _dir = new File(dataPath, "save/" + i);
+            simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
+            this.dirs.add(_dir.getAbsolutePath());
+        }
+
+        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
+    }
+
+    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
+                                                     Statistics statistics, Parameters parameters) {
+        this.saveGraphs = false;
+        this.dataPath = dataPath;
+        this.resultsPath = resultsPath;
+
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            if (!(algorithm instanceof ExternalAlgorithm)) throw new IllegalArgumentException(
+                    "Expecting all algorithms to implement ExternalAlgorithm.");
+        }
+
+        Simulations simulations = new Simulations();
+
+        File file = new File(this.dataPath, "save");
+        File[] dirs = file.listFiles();
+
+        if (dirs == null) {
+            throw new NullPointerException("No files in " + file.getAbsolutePath());
+        }
+
+        this.dirs = new ArrayList<String>();
+
+        int count = 0;
+
+        for (File dir : dirs) {
+            if (dir.getName().contains("DS_Store")) continue;
+            count++;
+        }
+
+        for (int i = 1; i <= count; i++) {
+            File _dir = new File(dataPath, "save/" + i);
+            simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
+            this.dirs.add(_dir.getAbsolutePath());
+        }
+
+        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
     }
 
     /**
      * Compares algorithms.
      *
-     * @param filePath    Path to the file where the output should be printed.
+     * @param resultsPath Path to the file where the output should be printed.
      * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
-    public void compareFromSimulations(String filePath, Simulations simulations, Algorithms algorithms,
+    public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
-        this.filePath = filePath;
+        this.resultsPath = resultsPath;
 
         // Create output file.
         try {
-            File dir = new File(filePath);
+            File dir = new File(resultsPath);
             dir.mkdirs();
             File file = new File(dir, "Comparison.txt");
             this.out = new PrintStream(new FileOutputStream(file));
@@ -198,6 +267,14 @@ public class Comparison {
                             + " / " + simulationWrapper.getDescription());
                 }
 
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+//                    external.setSimulation(simulationWrapper.getSimulation());
+//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
+//                    external.setPath(resultsPath);
+                    external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
+                }
+
                 algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
                         algorithmWrapper, simulationWrapper));
             }
@@ -221,7 +298,11 @@ public class Comparison {
 
         out.println();
         out.println("Parameters:");
-        out.println(parameters);
+//        out.println(parameters);
+        out.println();
+
+        printParameters(new ArrayList<>(parameters.getParametersNames()), parameters, out);
+
         out.println();
 
         if (allStats != null) {
@@ -250,25 +331,28 @@ public class Comparison {
                 }
             }
 
-            out.println("Simulation:");
+            out.println("Simulations:");
             out.println();
 
-            if (simulationWrappers.size() == 1) {
-                out.println(simulationWrappers.get(0).getDescription());
-            } else {
-                int i = 0;
+//            if (simulationWrappers.size() == 1) {
+//                out.println(simulationWrappers.get(0).getDescription());
+//            } else {
+            int i = 0;
 
-                for (SimulationWrapper simulation : simulationWrappers) {
-                    out.println("Simulation " + (++i) + ":");
-                    out.println(simulation.getDescription());
+            for (SimulationWrapper simulation : simulationWrappers) {
+                out.print("Simulation " + (++i) + ": ");
+                out.println(simulation.getDescription());
+                out.println();
 
-                    for (String param : simulation.getParameters()) {
-                        out.println(param + " = " + simulation.getValue(param));
-                    }
+                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), out);
 
-                    out.println();
-                }
+//                    for (String param : simulation.getParameters()) {
+//                        out.println(param + " = " + simulation.getValue(param));
+//                    }
+
+                out.println();
             }
+//            }
 
             out.println("Algorithms:");
             out.println();
@@ -281,23 +365,35 @@ public class Comparison {
                 }
             }
 
-            out.println();
-            out.println("Weighting of statistics:");
-            out.println();
-            out.println("U = ");
+            if (isSortByUtility()) {
+                out.println();
+                out.println("Sorting by utility, high to low.");
+            }
 
-            for (Statistic stat : statistics.getStatistics()) {
-                String statName = stat.getAbbreviation();
-                double weight = statistics.getWeight(stat);
-                if (weight != 0.0) {
-                    out.println("    " + weight + " * f(" + statName + ")");
+            if (isShowUtilities()) {
+                out.println();
+                out.println("Weighting of statistics:");
+                out.println();
+                out.println("U = ");
+
+                for (Statistic stat : statistics.getStatistics()) {
+                    String statName = stat.getAbbreviation();
+                    double weight = statistics.getWeight(stat);
+                    if (weight != 0.0) {
+                        out.println("    " + weight + " * f(" + statName + ")");
+                    }
                 }
+
+                out.println();
+                out.println("...normed to range between 0 and 1.");
+
+                out.println();
+                out.println("Note that f for each statistic is a function that maps the statistic to the ");
+                out.println("interval [0, 1], with higher being better.");
             }
 
             out.println();
-            out.println("Note that f for each statistic is a function that maps the statistic to the ");
-            out.println("interval [0, 1], with higher being better.");
-            out.println();
+            out.println("Graphs are being compared to the " + comparisonGraph.toString().replace("_", " ") + ".");
 
             out.println();
 
@@ -335,17 +431,18 @@ public class Comparison {
         out.close();
     }
 
+
     /**
      * Saves simulationWrapper data.
      *
-     * @param path       The path to the directory where the simulationWrapper data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
-    public void saveToFiles(String path, Simulation simulation, Parameters parameters) {
+    public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
         List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
-        File dir0 = new File(path);
+        File dir0 = new File(dataPath);
         File dir;
         int i = 0;
 
@@ -432,25 +529,6 @@ public class Comparison {
         }
     }
 
-    private void deleteFilesThenDirectory(File dir) {
-        if (dir == null) return;
-
-        String[] entries = dir.list();
-
-        if (entries == null) return;
-
-        for (String s : entries) {
-            File currentFile = new File(dir.getPath(), s);
-
-            if (currentFile.isDirectory()) {
-                deleteFilesThenDirectory(currentFile);
-            } else {
-                currentFile.delete();
-            }
-        }
-
-        dir.delete();
-    }
 
     /**
      *
@@ -498,7 +576,7 @@ public class Comparison {
                                 FisherZ.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm, out, allParams);
+                            printParameters(algorithm.getParameters(), allParams, out);
                         }
                         if (TakesInitialGraph.class.isAssignableFrom(clazz)) {
                             out.println("\t" + clazz.getSimpleName() + " can take an initial graph from some other algorithm as input");
@@ -525,7 +603,7 @@ public class Comparison {
                                 BdeuScore.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm, out, allParams);
+                            printParameters(algorithm.getParameters(), allParams, out);
                         }
                     }
 
@@ -549,7 +627,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm, out, allParams);
+                            printParameters(algorithm.getParameters(), allParams, out);
                         }
                     }
                 }
@@ -591,7 +669,7 @@ public class Comparison {
                         IndependenceWrapper independence = (IndependenceWrapper) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + independence.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(independence, out, allParams);
+                            printParameters(independence.getParameters(), allParams, out);
                         }
                     }
                 }
@@ -613,7 +691,7 @@ public class Comparison {
                         ScoreWrapper score = (ScoreWrapper) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + score.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(score, out, allParams);
+                            printParameters(score.getParameters(), allParams, out);
                         }
                     }
                 }
@@ -635,7 +713,7 @@ public class Comparison {
                         Simulation simulation = (Simulation) constructor.newInstance();
                         out.println(clazz.getSimpleName() + ": " + simulation.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(simulation, out, allParams);
+                            printParameters(simulation.getParameters(), allParams, out);
                         }
                     }
                 }
@@ -649,39 +727,39 @@ public class Comparison {
         }
     }
 
-    private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
-        List<String> paramDescriptions = new ArrayList<>(hasParameters.getParameters());
-        if (paramDescriptions.isEmpty()) return;
-        out.print("\tParameters: ");
-
-        for (int i = 0; i < paramDescriptions.size(); i++) {
-            out.print(paramDescriptions.get(i));
-            out.print(" = ");
-            Object[] values = allParams.getValues(paramDescriptions.get(i));
-            if (values == null || values.length == 0) {
-                out.print("no default");
-
-                if (i < paramDescriptions.size() - 1) {
-                    out.print("; ");
-                    if ((i + 1) % 4 == 0) out.print("\n\t\t");
-                }
-
-                continue;
-            }
-
-            for (int j = 0; j < values.length; j++) {
-                out.print(values[j]);
-                if (j < values.length - 1) out.print(",");
-            }
-
-            if (i < paramDescriptions.size() - 1) {
-                out.print("; ");
-                if ((i + 1) % 4 == 0) out.print("\n\t\t");
-            }
-        }
-
-        out.println();
-    }
+//    private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
+//        List<String> paramDescriptions = new ArrayList<>(hasParameters.getParameters());
+//        if (paramDescriptions.isEmpty()) return;
+//        out.print("\tParameters: ");
+//
+//        for (int i = 0; i < paramDescriptions.size(); i++) {
+//            out.print(paramDescriptions.get(i));
+//            out.print(" = ");
+//            Object[] values = allParams.getValues(paramDescriptions.get(i));
+//            if (values == null || values.length == 0) {
+//                out.print("no default");
+//
+//                if (i < paramDescriptions.size() - 1) {
+//                    out.print("; ");
+//                    if ((i + 1) % 4 == 0) out.print("\n\t\t");
+//                }
+//
+//                continue;
+//            }
+//
+//            for (int j = 0; j < values.length; j++) {
+//                out.print(values[j]);
+//                if (j < values.length - 1) out.print(",");
+//            }
+//
+//            if (i < paramDescriptions.size() - 1) {
+//                out.print("; ");
+//                if ((i + 1) % 4 == 0) out.print("\n\t\t");
+//            }
+//        }
+//
+//        out.println();
+//    }
 
     private List<Class> getClasses(Class type) {
         Reflections reflections = new Reflections();
@@ -822,7 +900,6 @@ public class Comparison {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
-
     /**
      * @return True iff a column of utilities marked "W" should be shown
      * in the output.
@@ -890,6 +967,67 @@ public class Comparison {
         this.savePags = savePags;
     }
 
+
+    /**
+     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
+     */
+    public boolean isTabDelimitedTables() {
+        return tabDelimitedTables;
+    }
+
+    /**
+     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy
+     *                           pasting into Excel).
+     */
+    public void setTabDelimitedTables(boolean tabDelimitedTables) {
+        this.tabDelimitedTables = tabDelimitedTables;
+    }
+
+    /**
+     * @param saveGraphs True if all graphs should be saved to files.
+     */
+    public void setSaveGraphs(boolean saveGraphs) {
+        this.saveGraphs = saveGraphs;
+    }
+
+    /**
+     * @return True if all graphs should be saved to files.
+     */
+    public boolean isSaveGraphs() {
+        return saveGraphs;
+    }
+
+    /**
+     * @return True if data should be copied before analyzing it.
+     */
+    public boolean isCopyData() {
+        return copyData;
+    }
+
+    /**
+     * @param copyData True if data should be copied before analyzing it.
+     */
+    public void setCopyData(boolean copyData) {
+        this.copyData = copyData;
+    }
+
+
+    /**
+     * The type of graph the results are compared to.
+     */
+    public ComparisonGraph getComparisonGraph() {
+        return comparisonGraph;
+    }
+
+    /**
+     * The type of graph the results are compared to.
+     */
+    public void setComparisonGraph(ComparisonGraph comparisonGraph) {
+        if (comparisonGraph == null) throw new NullPointerException("Null compare graph.");
+        this.comparisonGraph = comparisonGraph;
+    }
+
+
     private class AlgorithmTask extends RecursiveTask<Boolean> {
         private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
         private List<AlgorithmWrapper> algorithmWrappers;
@@ -917,6 +1055,47 @@ public class Comparison {
                     simulationWrappers, statistics, numGraphTypes, allStats, run);
             return true;
         }
+    }
+
+    private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
+        ParamDescriptions descriptions = new ParamDescriptions();
+
+        for (String name : names) {
+            ParamDescription description = descriptions.get(name);
+            Object value = parameters.get(name);
+
+            if (value instanceof Double) {
+                out.println(description.getDescription() + " = " + value.toString());
+            } else if (value instanceof Integer) {
+                out.println(description.getDescription() + " = " + value.toString());
+            } else if (value instanceof Boolean) {
+                boolean b = (Boolean) value;
+                out.println(description.getDescription() + " = " + (b ? "Yes" : "No"));
+            } else if (value instanceof String) {
+                out.println(description.getDescription() + " = " + value);
+            }
+        }
+    }
+
+
+    private void deleteFilesThenDirectory(File dir) {
+        if (dir == null) return;
+
+        String[] entries = dir.list();
+
+        if (entries == null) return;
+
+        for (String s : entries) {
+            File currentFile = new File(dir.getPath(), s);
+
+            if (currentFile.isDirectory()) {
+                deleteFilesThenDirectory(currentFile);
+            } else {
+                currentFile.delete();
+            }
+        }
+
+        dir.delete();
     }
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
@@ -947,6 +1126,13 @@ public class Comparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                external.setSimulation(simulationWrapper.getSimulation());
+                external.setPath(resultsPath);
+                external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
+            }
+
             if (algorithm instanceof MultiDataSetAlgorithm) {
                 List<Integer> indices = new ArrayList<>();
                 int numDataModels = simulationWrapper.getSimulation().getNumDataModels();
@@ -963,9 +1149,9 @@ public class Comparison {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
-                DataModel DataModel = copyData ? data.copy() : data;
+                DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
-                out = algorithm.search(DataModel, _params);
+                out = algorithm.search(dataModel, _params);
             }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
@@ -973,28 +1159,43 @@ public class Comparison {
             return;
         }
 
-        String path = null;
-
-        if (simulationWrapper.getSimulation() instanceof SimulationPath) {
-            path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
-        }
-
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        printGraph(path, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper);
 
         long stop = System.currentTimeMillis();
 
         long elapsed = stop - start;
 
+        saveGraph(resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
+
         if (trueGraph != null) {
             out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
         }
 
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
+            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+            extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
+            extAlg.setSimulation(simulationWrapper.getSimulation());
+            extAlg.setPath(resultsPath);
+            elapsed = extAlg.getElapsedTime(data, simulationWrapper.getSimulationSpecificParameters());
+        }
+
         Graph[] est = new Graph[numGraphTypes];
 
-        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
+        Graph comparisonGraph;
+
+        if (this.comparisonGraph == ComparisonGraph.true_DAG) {
+            comparisonGraph = new EdgeListGraph(trueGraph);
+        } else if (this.comparisonGraph == ComparisonGraph.Pattern_of_the_true_DAG) {
+            comparisonGraph = SearchGraphUtils.patternForDag(new EdgeListGraph(trueGraph));
+        } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
+            comparisonGraph = new DagToPag(new EdgeListGraph(trueGraph)).convert();
+        } else {
+            throw new IllegalArgumentException("Unrecognized graph type.");
+        }
+
+//        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
 
         est[0] = out;
         graphTypeUsed[0] = true;
@@ -1044,75 +1245,44 @@ public class Comparison {
         }
     }
 
-    private void printGraph(String path, Graph graph, int i, int simIndex, int algIndex,
-                            AlgorithmWrapper algorithmWrapper) {
+    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
+                           AlgorithmWrapper algorithmWrapper, long elapsed) {
         if (!saveGraphs) {
             return;
         }
 
         try {
-            File file;
+            String description = algorithmWrapper.getDescription().replace(" ", "_");
 
-            File dir = new File(filePath, "output_graphs");
+            File file;
+            File fileElapsed;
+
+            File dir = new File(resultsPath, "results/" + description + "/" + simIndex);
             dir.mkdirs();
 
-            if (path != null) {
-                file = new File(dir, path + "." + simIndex + "." + algIndex + ".graph" + "."
-                        + (i + 1) + ".txt");
+
+            File dirElapsed = new File(resultsPath, "elapsed/" + description + "/" + simIndex);
+            dirElapsed.mkdirs();
+
+            if (resultsPath != null) {
+                file = new File(dir, "graph." + (i + 1) + ".txt");
+                fileElapsed = new File(dirElapsed, "graph." + (i + 1) + ".txt");
             } else {
-                file = new File(dir,  simIndex + "." + algIndex + ".graph" + "."
-                        + (i + 1) + ".txt");
+                throw new IllegalArgumentException("Results path not provided.");
             }
 
             PrintStream out = new PrintStream(file);
-            System.out.println("Printing graph to " + file.getAbsolutePath());
+            System.out.println("Saving graph to " + file.getAbsolutePath());
             out.println(graph);
+            out.close();
+
+            PrintStream outElapsed = new PrintStream(fileElapsed);
+//            System.out.println("Saving graph to " + file.getAbsolutePath());
+            outElapsed.println(elapsed);
+            outElapsed.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
-     */
-    public boolean isTabDelimitedTables() {
-        return tabDelimitedTables;
-    }
-
-    /**
-     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy
-     *                           pasting into Excel).
-     */
-    public void setTabDelimitedTables(boolean tabDelimitedTables) {
-        this.tabDelimitedTables = tabDelimitedTables;
-    }
-
-    /**
-     * @param saveGraphs True if all graphs should be saved to files.
-     */
-    public void setSaveGraphs(boolean saveGraphs) {
-        this.saveGraphs = saveGraphs;
-    }
-
-    /**
-     * @return True if all graphs should be saved to files.
-     */
-    public boolean isSaveGraphs() {
-        return saveGraphs;
-    }
-
-    /**
-     * @return True if data should be copied before analyzing it.
-     */
-    public boolean isCopyData() {
-        return copyData;
-    }
-
-    /**
-     * @param copyData True if data should be copied before analyzing it.
-     */
-    public void setCopyData(boolean copyData) {
-        this.copyData = copyData;
     }
 
     private enum Mode {
@@ -1235,17 +1405,6 @@ public class Comparison {
 
             int initialColumn = 0;
 
-            if (isShowAlgorithmIndices()) {
-                table.setToken(0, initialColumn, "Alg");
-
-                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-                    AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
-                    table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
-                }
-
-                initialColumn++;
-            }
-
             if (isShowSimulationIndices()) {
                 table.setToken(0, initialColumn, "Sim");
 
@@ -1253,6 +1412,17 @@ public class Comparison {
                     Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).
                             getSimulationWrapper();
                     table.setToken(t + 1, initialColumn, "" + (simulationWrappers.indexOf(simulation) + 1));
+                }
+
+                initialColumn++;
+            }
+
+            if (isShowAlgorithmIndices()) {
+                table.setToken(0, initialColumn, "Alg");
+
+                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+                    AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
+                    table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
                 }
 
                 initialColumn++;
@@ -1295,7 +1465,9 @@ public class Comparison {
 
                     double stat = statTables[u][newOrder[t]][statIndex];
 
-                    if (stat == Double.POSITIVE_INFINITY) {
+                    if (stat == 0.0) {
+                        table.setToken(t + 1, initialColumn + statIndex, "-");
+                    } else if (stat == Double.POSITIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
@@ -1325,11 +1497,12 @@ public class Comparison {
         double[] utilities = new double[wrappers.size()];
 
         for (int t = 0; t < wrappers.size(); t++) {
-            double sum = 0.0;
             int j = -1;
 
             Iterator it2 = statistics.getStatistics().iterator();
-            int count = 0;
+
+            double sum = 0.0;
+            double max = 0.0;
 
             while (it2.hasNext()) {
                 Statistic stat = (Statistic) it2.next();
@@ -1339,17 +1512,18 @@ public class Comparison {
 
                 if (weight != 0.0) {
                     sum += weight * stat.getNormValue(stats[t][j]);
-                    count++;
+                    max += weight;
                 }
             }
 
-            utilities[t] = sum / count;
+            utilities[t] = sum / max;
         }
 
         return utilities;
     }
 
-    private int[] sort(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, final double[] utilities) {
+    private int[] sort(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                       final double[] utilities) {
         List<Integer> order = new ArrayList<>();
         for (int t = 0; t < algorithmSimulationWrappers.size(); t++) order.add(t);
 

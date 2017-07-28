@@ -261,7 +261,7 @@ public class Dci {
          * these orientations using the rules in propagateInitialOrientations
          */
         orientColliders(graph);
-        System.out.println("Oriented Colliders");
+        System.out.println("Oriented ColliderDiscovery");
         propagateInitialOrientations(graph);
         System.out.println("Propagated initial orientations");
         System.out.println(graph);

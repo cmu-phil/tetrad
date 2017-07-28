@@ -26,9 +26,13 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -37,22 +41,20 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static java.lang.Math.exp;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -409,7 +411,7 @@ public class TestFges {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test = new FisherZ();
 
-        Algorithm fges  = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score, false);
+        Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score, false);
 
         Graph fgesGraph = fges.search(dataSet, parameters);
 
@@ -589,7 +591,7 @@ public class TestFges {
                 "\n" +
                 "Graph Edges: \n" +
                 "1. ABILITY --> GPQ\n" +
-//                "2. ABILITY --> PREPROD\n" +
+                "2. ABILITY --> PREPROD\n" +
 //                "3. ABILITY --> PUBS\n" +
                 "3. GPQ --> QFJ\n" +
                 "4. PREPROD --> CITES\n" +
@@ -692,14 +694,14 @@ public class TestFges {
         TetradLogger.getInstance().setForceLog(false);
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
-        PcStable pc = new PcStable(test);
+        PcStableMax pc = new PcStableMax(test);
         pc.setVerbose(false);
         Graph pattern = pc.search();
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
             IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStable pc2 = new PcStable(test2);
+            PcStableMax pc2 = new PcStableMax(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));
@@ -1456,9 +1458,143 @@ public class TestFges {
         return dag;
     }
 
-//    public static void main(String... args) {
-//        new TestFges().testBestAlgorithms();
-//    }
+    public void test9() {
+
+        Parameters parameters = new Parameters();
+
+        parameters.set("numMeasures", 50);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 2);
+        parameters.set("maxDegree", 20);
+        parameters.set("maxIndegree", 20);
+        parameters.set("maxOutdegree", 20);
+        parameters.set("connected", false);
+
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.9);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
+        parameters.set("verbose", false);
+        parameters.set("coefSymmetric", true);
+        parameters.set("numRuns", 1);
+        parameters.set("percentDiscrete", 0);
+        parameters.set("numCategories", 3);
+        parameters.set("differentGraphs", true);
+        parameters.set("sampleSize", 500);
+        parameters.set("intervalBetweenShocks", 10);
+        parameters.set("intervalBetweenRecordings", 10);
+        parameters.set("fisherEpsilon", 0.001);
+        parameters.set("randomizeColumns", true);
+
+        RandomGraph graph = new RandomForward();
+        LinearFisherModel sim = new LinearFisherModel(graph);
+        sim.createData(parameters);
+        Graph previous = null;
+        int prevDiff = Integer.MAX_VALUE;
+
+//        for (int l = 7; l >= 1; l--) {
+        for (int i = 2; i <= 20; i++) {
+            parameters.set("penaltyDiscount", i / (double) 10);
+//            parameters.set("alpha", Double.parseDouble("1E-" + l));
+
+//            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+//            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
+
+            IndependenceWrapper test = new SemBicTest();
+//            IndependenceWrapper test = new FisherZ();
+            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc(test);
+
+            Graph out = alg.search(sim.getDataModel(0), parameters);
+//            Graph out = GraphUtils.undirectedGraph(alg.search(sim.getDataModel(0), parameters));
+
+            Set<Edge> edges1 = out.getEdges();
+
+            int numEdges = edges1.size();
+
+            if (previous != null) {
+                Set<Edge> edges2 = previous.getEdges();
+                edges2.removeAll(edges1);
+                int diff = edges2.size();
+//
+                System.out.println("Penalty discount =" + parameters.getDouble("penaltyDiscount")
+                        + " # edges = " + numEdges
+                        + " # additional = " + diff);
+
+                previous = out;
+                if (diff > prevDiff) break;
+                prevDiff = diff;
+            } else {
+                previous = out;
+            }
+        }
+
+        Graph estGraph = previous;
+        Graph trueGraph = sim.getTrueGraph(0);
+
+        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+
+        Statistic ap = new AdjacencyPrecision();
+        Statistic ar = new AdjacencyRecall();
+        Statistic ahp = new ArrowheadPrecision();
+        Statistic ahr = new ArrowheadRecall();
+
+        System.out.println("AP = " + ap.getValue(trueGraph, estGraph));
+        System.out.println("AR = " + ar.getValue(trueGraph, estGraph));
+        System.out.println("AHP = " + ahp.getValue(trueGraph, estGraph));
+        System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph));
+    }
+
+
+    public static void main(String... args) {
+        if (args.length > 0) {
+            int numMeasures = Integer.parseInt(args[0]);
+            int avgDegree = Integer.parseInt(args[1]);
+
+            Parameters parameters = new Parameters();
+
+            parameters.set("numMeasures", numMeasures);
+            parameters.set("numLatents", 0);
+            parameters.set("avgDegree", avgDegree);
+            parameters.set("maxDegree", 20);
+            parameters.set("maxIndegree", 20);
+            parameters.set("maxOutdegree", 20);
+            parameters.set("connected", false);
+
+            parameters.set("coefLow", 0.2);
+            parameters.set("coefHigh", 0.9);
+            parameters.set("varLow", 1);
+            parameters.set("varHigh", 3);
+            parameters.set("verbose", false);
+            parameters.set("coefSymmetric", true);
+            parameters.set("numRuns", 1);
+            parameters.set("percentDiscrete", 0);
+            parameters.set("numCategories", 3);
+            parameters.set("differentGraphs", true);
+            parameters.set("sampleSize", 1000);
+            parameters.set("intervalBetweenShocks", 10);
+            parameters.set("intervalBetweenRecordings", 10);
+            parameters.set("fisherEpsilon", 0.001);
+            parameters.set("randomizeColumns", true);
+
+            RandomGraph graph = new RandomForward();
+            LinearFisherModel sim = new LinearFisherModel(graph);
+            sim.createData(parameters);
+            ScoreWrapper score = new FisherZScore();
+            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges(score);
+
+            parameters.set("alpha", 1e-8);
+
+            for (int i = 0; i < 5; i++) {
+                Graph out1 = alg.search(sim.getDataModel(0), parameters);
+
+                System.out.println(out1);
+            }
+
+        } else {
+            new TestFges().test9();
+        }
+    }
+
 }
 
 

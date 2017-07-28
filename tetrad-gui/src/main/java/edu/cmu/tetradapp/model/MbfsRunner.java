@@ -226,7 +226,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 */
 	public List<String> getTriplesClassificationTypes() {
 		List<String> names = new ArrayList<>();
-		names.add("Colliders");
+		names.add("ColliderDiscovery");
 		names.add("Noncolliders");
 		names.add("Ambiguous Triples");
 		return names;

@@ -78,7 +78,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         threshold = .2;
 
         TetradMatrix unrotatedSolution = analysis.successiveResidual();
-        rotatedSolution = FactorAnalysis.successiveFactorVarimax(unrotatedSolution);
+        rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 

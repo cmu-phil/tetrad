@@ -1352,7 +1352,7 @@ public class PerformanceTests {
             dagToPag.setMaxPathLength(maxPathLength);
             Graph truePag = dagToPag.convert();
 
-            System.out.println("True PAG done");
+            System.out.println("True PAG_of_the_true_DAG done");
 
             // Data.
             System.out.println("Starting simulation");
@@ -1444,7 +1444,7 @@ public class PerformanceTests {
 
     }
 
-    // Compares two different ways of calculating a PAG from a DAG, to see if they match up
+    // Compares two different ways of calculating a PAG_of_the_true_DAG from a DAG, to see if they match up
     public void testCompareDagToPattern(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
@@ -1491,7 +1491,7 @@ public class PerformanceTests {
 
         System.out.println("True DAG = " + dag);
         System.out.println("FCI DAG with dsep = " + left);
-        System.out.println("DAG to PAG = " + top);
+        System.out.println("DAG to PAG_of_the_true_DAG = " + top);
 
         System.out.println("Correcting nodes");
         top = GraphUtils.replaceNodes(top, left.getNodes());
@@ -1690,7 +1690,7 @@ public class PerformanceTests {
 //
 //            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
 //
-//            out6.println("FCI.FGES.PAG");
+//            out6.println("FCI.FGES.PAG_of_the_true_DAG");
 //
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
@@ -1726,7 +1726,7 @@ public class PerformanceTests {
 //
 //            out10.println(data);
 //
-//            out11.println("True PAG");
+//            out11.println("True PAG_of_the_true_DAG");
 //            final Graph truePag = new DagToPag(dag).convert();
 //            out11.println(truePag);
 //            printDanMatrix(_vars, truePag, out12);

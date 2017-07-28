@@ -75,7 +75,7 @@ public class SessionAdapter implements SessionListener {
     }
 
     /**
-     * Indicates that a new execution of a simulation study has begun. (Some
+     * Indicates that a new execution of a simulation edu.cmu.tetrad.study has begun. (Some
      * parameter objects need to be reset for every execution.
      */
     public void executionStarted(SessionEvent event) {

@@ -84,22 +84,22 @@ public final class DagToPag {
     public Graph convert() {
         if (dag == null) throw new NullPointerException();
 
-        logger.log("info", "Starting DAG to PAG.");
+        logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 
         if (verbose) {
-            System.out.println("DAG to PAG: Starting adjacency search");
+            System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
         Graph graph = calcAdjacencyGraph();
 
         if (verbose) {
-            System.out.println("DAG to PAG: Starting collider orientation");
+            System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
         }
 
         orientUnshieldedColliders2(graph, dag);
 
         if (verbose) {
-            System.out.println("DAG to PAG: Starting final orientation");
+            System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));

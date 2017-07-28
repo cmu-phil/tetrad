@@ -316,7 +316,7 @@ public final class EmBayesProperties {
 //    private double[] logsProbDataGivenStructure() {
 //        BayesIm bayesIm = this.estimator.estimate(bayesPm, dataSet);
 //        BayesImProbs probs = new BayesImProbs(bayesIm);
-//        List<Node> variables = bayesIm.getVariables();
+//        List<Node> variables = bayesIm.getVariable();
 //        DataSet reorderedDataSet = dataSet.subsetColumns(variables);
 //
 //        int n = reorderedDataSet.getNumRows();

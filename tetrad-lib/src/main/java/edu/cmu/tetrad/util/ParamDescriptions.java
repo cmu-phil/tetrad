@@ -18,7 +18,7 @@ public class ParamDescriptions {
         put("numMeasures", new ParamDescription("Number of measured variables", 10, 1, Integer.MAX_VALUE));
         put("numLatents", new ParamDescription("Number of latent variables", 0, 0, Integer.MAX_VALUE));
         put("avgDegree", new ParamDescription("Average degree of graph", 2, 1, Integer.MAX_VALUE));
-        put("maxDegree", new ParamDescription("The maximum degree of the graph.", 100, -1, Integer.MAX_VALUE));
+        put("maxDegree", new ParamDescription("The maximum degree of the graph", 100, -1, Integer.MAX_VALUE));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100, 1, Integer.MAX_VALUE));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100, 1, Integer.MAX_VALUE));
         put("connected", new ParamDescription("Yes if graph should be connected", false));
@@ -31,6 +31,8 @@ public class ParamDescriptions {
         put("standardize", new ParamDescription("Yes if the data should be standardized", false));
         put("measurementVariance", new ParamDescription("Additive measurement noise variance", 0.0, 0, Double.MAX_VALUE));
         put("depth", new ParamDescription("Maximum size of conditioning set", -1, -1, Integer.MAX_VALUE));
+        put("meanLow", new ParamDescription("Low end of mean range", 0.5, 0.0, Double.MAX_VALUE));
+        put("meanHigh", new ParamDescription("High end of mean range", 1.5, 0.0, Double.MAX_VALUE));
         put("coefLow", new ParamDescription("Low end of coefficient range", 0.5, 0.0, Double.MAX_VALUE));
         put("coefHigh", new ParamDescription("High end of coefficient range", 1.5, 0.0, Double.MAX_VALUE));
         put("covLow", new ParamDescription("Low end of covariance range", 0.5, 0.0, Double.MAX_VALUE));
@@ -100,7 +102,7 @@ public class ParamDescriptions {
 
         put("targetName", new ParamDescription("Target name", ""));
         put("verbose", new ParamDescription("Yes if verbose output should be printed or logged", false));
-        put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", false));
+        put("faithfulnessAssumed", new ParamDescription("Yes if (one edge) faithfulness should be assumed", true));
 
         put("useWishart", new ParamDescription("Yes if the Wishart test shoud be used. No if the Delta test should be used", false));
         put("useGap", new ParamDescription("Yes if the GAP algorithms should be used. No if the SAG algorithm should be used", false));
@@ -192,6 +194,51 @@ public class ParamDescriptions {
                 	"The number of bootstraps", 
                 	10, 1, Integer.MAX_VALUE));
         put("bootstrapEnsemble", new ParamDescription("Ensemble method: Preserved (0), Highest (1), Majority (2)", 1, 0, 2));
+
+        put("fasRule", new ParamDescription(
+                "Adjacency search: 1 = PC, 2 = PC-Stable, 3 = Concurrent PC-Stable",
+                1, 1, 3));
+
+        put("colliderDiscoveryRule", new ParamDescription(
+                "Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P",
+                1, 1, 3));
+
+        put("conflictRule", new ParamDescription(
+                "Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders",
+                1, 1, 3));
+
+        put("randomizeColumns", new ParamDescription(
+                "Yes if the order of the columns in each datasets should be randomized",
+                false));
+
+        put("logScale", new ParamDescription(
+                "Yes if the parameters are in log scale",
+                false));
+
+        put("StARS.percentageB", new ParamDescription(
+                "Percentage of rows to include in each subsample",
+                0.5, 0.0, 1.0));
+
+        put("StARS.tolerance", new ParamDescription(
+                "Parameter tolerance for binary search",
+                .5, 0.0, Double.POSITIVE_INFINITY));
+
+        put("StARS.cutoff", new ParamDescription(
+                "Cutoff for D in the StARS procedure",
+                0.01, 0.0, 1.0));
+
+        put("numSubsamples", new ParamDescription(
+                "The number of subsamples to take for the StARZ procedure",
+                8, 1, Integer.MAX_VALUE));
+
+        put("percentSubsampleSize", new ParamDescription(
+                "Percentage of records to include in a random subsample",
+                0.5, 0.0, 1.0));
+
+
+        put("percentStability", new ParamDescription(
+                "Percentage of subsamples each feature in the output must agree on",
+                0.5, 0.0, 1.0));
 
     }
 

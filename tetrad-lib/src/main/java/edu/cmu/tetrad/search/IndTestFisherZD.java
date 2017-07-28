@@ -298,7 +298,7 @@ public final class IndTestFisherZD implements IndependenceTest {
             parents[j] = covMatrix.getVariables().indexOf(z.get(j));
         }
 
-//        int i = covMatrix.getVariables().indexOf(x);
+//        int i = covMatrix.getVariable().indexOf(x);
 
 //        double variance = covMatrix.getValue(i, i);
 

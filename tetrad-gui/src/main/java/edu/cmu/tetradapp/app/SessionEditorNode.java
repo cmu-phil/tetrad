@@ -70,7 +70,7 @@ public final class SessionEditorNode extends DisplayNode {
     private EditorWindow spawnedEditor;
 
     /**
-     * The simulation study (used to edit the repetition values).
+     * The simulation edu.cmu.tetrad.study (used to edit the repetition values).
      */
     private SimulationStudy simulationStudy;
 
@@ -100,7 +100,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         if (simulationStudy == null) {
             throw new NullPointerException(
-                    "Simulation study must not be null.");
+                    "Simulation edu.cmu.tetrad.study must not be null.");
         }
         SessionDisplayComp displayComp = this.config.getSessionDisplayCompInstance();
 

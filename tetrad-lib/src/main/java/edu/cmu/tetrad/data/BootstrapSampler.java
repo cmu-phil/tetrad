@@ -23,6 +23,9 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Provides a static method for sampling with replacement from a dataset to
  * create a new dataset with a sample size supplied by the user.
@@ -36,6 +39,8 @@ public final class BootstrapSampler {
 
 
     // private TetradLogger logger = TetradLogger.getInstance();
+
+    private boolean withoutReplacements = false;
 
 
     /**
@@ -84,10 +89,19 @@ public final class BootstrapSampler {
 //                newDataSet.setObject(row, col, dataSet.getObject(indices.get(row), col));
 //            }
 //        }
+        Set<Integer> oldCases = new HashSet<>();
 
         // (not keeping order)
         for (int row = 0; row < newSampleSize; row++) {
             int oldCase = RandomUtil.getInstance().nextInt(oldSampleSize);
+
+            if (isWithoutReplacements()) {
+                if (oldCases.contains(oldCase)) {
+                    row--;
+                    continue;
+                }
+                oldCases.add(oldCase);
+            }
 
             for (int col = 0; col < ncols; col++) {
                 newDataSet.setObject(row, col, dataSet.getObject(oldCase, col));
@@ -100,6 +114,13 @@ public final class BootstrapSampler {
     }
 
 
+    public boolean isWithoutReplacements() {
+        return withoutReplacements;
+    }
+
+    public void setWithoutReplacements(boolean withoutReplacements) {
+        this.withoutReplacements = withoutReplacements;
+    }
 }
 
 
