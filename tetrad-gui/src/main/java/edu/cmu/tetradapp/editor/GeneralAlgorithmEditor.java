@@ -103,7 +103,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
-    private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
     private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
     private final GraphSelectionEditor graphEditor;
@@ -339,14 +338,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             algTypesDropdown.addItem(item.toString().replace("_", " "));
         }
 
-        for (AlgorithmDescription description : descriptions) {
-            if (description.getAlgType() == getAlgType() || getAlgType() == AlgType.ALL) {
-                algNamesDropdown.addItem(description.getAlgName());
-            }
-        }
-
         algTypesDropdown.setSelectedItem(getAlgType().toString().replace("_", " "));
-        algNamesDropdown.setSelectedItem(getAlgName());
 
         // Initialize selectedAlgoName before calling setAlgorithm()
         // Use the first algorithm as default - Zhou
@@ -363,35 +355,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         testDropdown.setEnabled(parameters.getBoolean("testEnabled", true));
         scoreDropdown.setEnabled(parameters.getBoolean("scoreEnabled", false));
-
-        algTypesDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                algNamesDropdown.removeAllItems();
-
-                for (AlgorithmDescription description : descriptions) {
-                    AlgType selectedItem = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
-                    if (description.getAlgType() == selectedItem
-                            || selectedItem == AlgType.ALL) {
-                        algNamesDropdown.addItem(description.getAlgName());
-                    }
-                }
-            }
-        });
-
-        algNamesDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setAlgorithm();
-
-                JComboBox<AlgName> box = (JComboBox<AlgName>) e.getSource();
-                Object selectedItem = box.getSelectedItem();
-
-                if (selectedItem != null) {
-                    helpSet.setHomeID(selectedItem.toString());
-                }
-            }
-        });
 
         testDropdown.addActionListener(new ActionListener() {
             @Override
@@ -613,7 +576,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             String algorithmName = AbstractAlgorithmRequest.FGES;
             Algorithm algorithm = runner.getAlgorithm();
             System.out.println("Algorithm: " + algorithm.getDescription());
-            AlgName name = (AlgName) algNamesDropdown.getSelectedItem();
+
+            // Get the equivalent enum type of selectedAlgoName string
+            AlgName name = AlgName.valueOf(selectedAlgoName);
+
             switch (name) {
                 case FGES:
                     algorithmName = AbstractAlgorithmRequest.FGES;
@@ -1122,10 +1088,31 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         helpSet.setHomeID("tetrad_overview");
 
+        // Filter based on algo types dropdown
+        Box algoTypesBox = Box.createVerticalBox();
+
+        // Algo types label box
+        Box algTypesBoxLabelBox = Box.createHorizontalBox();
+        algTypesBoxLabelBox.add(new JLabel("List Algorithms that: "));
+        algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Option
+        Box algoTypesOptionBox = Box.createHorizontalBox();
+        algoTypesOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Add padding and option
+        algoTypesOptionBox.add(Box.createRigidArea(new Dimension(20, 20)));
+        algTypesDropdown.setPreferredSize(new Dimension(200, 30));
+        algoTypesOptionBox.add(algTypesDropdown);
+
+        // Add to containing box
+        algoTypesBox.add(algTypesBoxLabelBox);
+        algoTypesBox.add(algoTypesOptionBox);
+
         // Are the relationships between your variables linear?
         Box varLinearRelationshipsBox = Box.createVerticalBox();
 
-        // Add label into this label box to size
+        // Add label into this label box
         Box varLinearRelationshipsLabelBox = Box.createHorizontalBox();
         varLinearRelationshipsLabelBox.add(new JLabel("Linear variables: "));
         varLinearRelationshipsLabelBox.setAlignmentX(LEFT_ALIGNMENT);
@@ -1403,21 +1390,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             }
         });
 
-        // Joe's current UI - Zhou
-        Box d3 = Box.createHorizontalBox();
-        JLabel label3 = new JLabel("List Algorithms that ");
-        label3.setFont(new Font("Dialog", Font.BOLD, 13));
-        d3.add(label3);
-        algTypesDropdown.setMaximumSize(algTypesDropdown.getPreferredSize());
-        d3.add(algTypesDropdown);
-        JLabel label4 = new JLabel(" : ");
-        label4.setFont(new Font("Dialog", Font.BOLD, 13));
-        d3.add(label4);
-        algNamesDropdown.setMaximumSize(algNamesDropdown.getPreferredSize());
-        d3.add(algNamesDropdown);
-        d3.add(new JLabel("    "));
-        d3.add(Box.createHorizontalGlue());
-
+        // Test and score, Joe's old implementation
         Box testBox = Box.createHorizontalBox();
         JLabel label1 = new JLabel("Test if needed:");
         testBox.add(label1);
@@ -1443,23 +1416,23 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Graph container, step 3
         graphContainer = Box.createVerticalBox();
-        graphContainer.setPreferredSize(new Dimension(940, 580));
+        graphContainer.setPreferredSize(new Dimension(940, 590));
 
         // Contains data description and result description
         Box leftContainer = Box.createVerticalBox();
-        leftContainer.setPreferredSize(new Dimension(260, 580));
+        leftContainer.setPreferredSize(new Dimension(290, 590));
 
         Box middleContainer = Box.createVerticalBox();
-        middleContainer.setPreferredSize(new Dimension(260, 580));
+        middleContainer.setPreferredSize(new Dimension(260, 590));
 
         // Contains algo list, algo description, test, score, and parameters
         Box rightContainer = Box.createVerticalBox();
-        rightContainer.setPreferredSize(new Dimension(400, 580));
+        rightContainer.setPreferredSize(new Dimension(380, 590));
 
         // Describe your data and result using these filters
         Box algoFiltersBox = Box.createVerticalBox();
-        algoFiltersBox.setMinimumSize(new Dimension(250, 570));
-        algoFiltersBox.setMaximumSize(new Dimension(250, 570));
+        algoFiltersBox.setMinimumSize(new Dimension(280, 580));
+        algoFiltersBox.setMaximumSize(new Dimension(280, 580));
         algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
 
         // Use a titled border with 5 px inside padding - Zhou
@@ -1467,7 +1440,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoFiltersBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(algoFiltersBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Items to put in data description box
-        //dataDescriptionBox.add(timeSeriesDataBox);
+        algoFiltersBox.add(algoTypesBox);
+        algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(varLinearRelationshipsBox);
         algoFiltersBox.add(Box.createVerticalStrut(10));
         algoFiltersBox.add(gaussianVariablesBox);
@@ -1486,8 +1460,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in middleContainer
         // Show a list of filtered algorithms
         Box suggestedAlgosBox = Box.createVerticalBox();
-        suggestedAlgosBox.setMinimumSize(new Dimension(250, 570));
-        suggestedAlgosBox.setMaximumSize(new Dimension(250, 570));
+        suggestedAlgosBox.setMinimumSize(new Dimension(260, 580));
+        suggestedAlgosBox.setMaximumSize(new Dimension(260, 580));
 
         // Use a titled border with 5 px inside padding - Zhou
         String suggestedAlgosBoxBorderTitle = "Choose algorithm";
@@ -1538,8 +1512,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Put the list in a scrollable area
         JScrollPane suggestedAlgosListScrollPane = new JScrollPane(suggestedAlgosList);
-        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(250, 570));
-        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(250, 570));
+        suggestedAlgosListScrollPane.setMinimumSize(new Dimension(260, 580));
+        suggestedAlgosListScrollPane.setMaximumSize(new Dimension(260, 580));
 
         suggestedAlgosBox.add(suggestedAlgosListScrollPane);
 
@@ -1548,8 +1522,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Components in rightContainer
         // Algo description
         Box algoDescriptionBox = Box.createVerticalBox();
-        algoDescriptionBox.setMinimumSize(new Dimension(390, 440));
-        algoDescriptionBox.setMaximumSize(new Dimension(390, 440));
+        algoDescriptionBox.setMinimumSize(new Dimension(370, 445));
+        algoDescriptionBox.setMaximumSize(new Dimension(370, 445));
 
         // Use a titled border with 5 px inside padding - Zhou
         String algoDescriptionBoxBorderTitle = "Algorithm description";
@@ -1563,15 +1537,15 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         algoDescriptionTextArea.setEditable(false);
 
         JScrollPane algoDescriptionScrollPane = new JScrollPane(algoDescriptionTextArea);
-        algoDescriptionScrollPane.setMinimumSize(new Dimension(390, 430));
-        algoDescriptionScrollPane.setMaximumSize(new Dimension(390, 430));
+        algoDescriptionScrollPane.setMinimumSize(new Dimension(370, 440));
+        algoDescriptionScrollPane.setMaximumSize(new Dimension(370, 440));
 
         algoDescriptionBox.add(algoDescriptionScrollPane);
 
         // Choose corresponding test and score based on algorithm
         Box testAndScoreBox = Box.createVerticalBox();
-        testAndScoreBox.setMinimumSize(new Dimension(390, 120));
-        testAndScoreBox.setMaximumSize(new Dimension(390, 120));
+        testAndScoreBox.setMinimumSize(new Dimension(370, 120));
+        testAndScoreBox.setMaximumSize(new Dimension(370, 120));
 
         // Use a titled border with 5 px inside padding - Zhou
         String testAndScoreBoxBorderTitle = "Choose Test and Score";
@@ -1584,8 +1558,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         // Parameters
         parametersBox = Box.createVerticalBox();
-        parametersBox.setMinimumSize(new Dimension(920, 560));
-        parametersBox.setMaximumSize(new Dimension(920, 600));
+        parametersBox.setMinimumSize(new Dimension(920, 580));
+        parametersBox.setMaximumSize(new Dimension(920, 580));
 
         // Use a titled border with 5 px inside padding - Zhou
         String parametersBoxBorderTitle = "Specify algorithm parameters";
@@ -1595,8 +1569,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // This is only the parameters pane of the default algorithm - Zhou
         parametersPanel = new ParameterPanel(runner.getAlgorithm().getParameters(), getParameters());
 
-        parametersPanel.setMinimumSize(new Dimension(920, 560));
-        parametersPanel.setMaximumSize(new Dimension(920, 560));
+        parametersPanel.setMinimumSize(new Dimension(920, 580));
+        parametersPanel.setMaximumSize(new Dimension(920, 580));
 
         // Add to parameters box
         parametersBox.add(parametersPanel);
@@ -1739,9 +1713,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Buttons container
         Box buttonsContainer = Box.createVerticalBox();
 
-        // Add some padding between preview/summary and buttons container
-        buttonsContainer.add(Box.createVerticalStrut(10));
-
         // Buttons box
         Box buttonsBox = Box.createHorizontalBox();
         buttonsBox.add(step1BackBtn);
@@ -1761,19 +1732,17 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Add to buttons container
         buttonsContainer.add(buttonsBox);
 
-        //rightContainer.add(searchBtn);
-        //algoFiltersContainer.add(algoBox);
         // Add to algoChooserContainer as the first column
         algoChooserContainer.add(leftContainer);
 
         // Add some gap
-        algoChooserContainer.add(Box.createHorizontalStrut(10), 1);
+        algoChooserContainer.add(Box.createHorizontalStrut(10));
 
         // Add middleContainer
         algoChooserContainer.add(middleContainer);
 
         // Add some gap
-        algoChooserContainer.add(Box.createHorizontalStrut(10), 1);
+        algoChooserContainer.add(Box.createHorizontalStrut(10));
 
         // Add to algoChooserContainer as the third column
         algoChooserContainer.add(rightContainer);
