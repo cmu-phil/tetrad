@@ -23,21 +23,20 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
  * @author jdramsey
  */
-public class ExampleCompareSimulation {
+public class CompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
@@ -46,6 +45,8 @@ public class ExampleCompareSimulation {
         parameters.set("avgDegree", 4, 6);
         parameters.set("sampleSize", 500);
         parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+
+
 
         Statistics statistics = new Statistics();
 
@@ -65,10 +66,12 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+        algorithms.add(new Fges(new MVPBicScore()));
+
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
+//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new CpcStable(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
