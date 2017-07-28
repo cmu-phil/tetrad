@@ -12,7 +12,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.List;
 
 /**
@@ -22,6 +21,7 @@ import java.util.List;
  * @author Daniel Malinsky
  */
 public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -42,12 +42,14 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(new EdgeListGraph(graph)).convert(); }
+    public Graph getComparisonGraph(Graph graph) {
+        return new TsDagToPag(new EdgeListGraph(graph)).convert();
+    }
 
     public String getDescription() {
-        return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                        initialGraph.getDescription() : "");
+        return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription()
+                + (initialGraph != null ? " with initial graph from "
+                        + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -61,7 +63,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.addAll(score.getParameters());
         parameters.add("faithfulnessAssumed");
         parameters.add("maxIndegree");
-        parameters.add("printStream");
+
+        // Commentted this out according to Joe's reply - Zhou
+        //parameters.add("printStream");
         return parameters;
     }
 
