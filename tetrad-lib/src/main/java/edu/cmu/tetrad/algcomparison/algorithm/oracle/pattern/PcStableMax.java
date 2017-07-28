@@ -35,7 +35,13 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
+        Graph init = null;
+
+        if (initialGraph != null) {
+            init = initialGraph.search(dataSet, parameters);
+        }
+
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE);

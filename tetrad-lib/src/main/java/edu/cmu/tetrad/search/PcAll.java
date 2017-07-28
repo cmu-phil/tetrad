@@ -142,12 +142,13 @@ public final class PcAll implements GraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      */
-    public PcAll(IndependenceTest independenceTest) {
+    public PcAll(IndependenceTest independenceTest, Graph initialGraph) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
+        this.initialGraph = initialGraph;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -319,11 +320,11 @@ public final class PcAll implements GraphSearch {
         IFas fas;
 
         if (getFasRule() == FasRule.FAS) {
-            fas = new Fas(graph, getIndependenceTest());
+            fas = new Fas(initialGraph, getIndependenceTest());
         } else if (getFasRule() == FasRule.FAS_STABLE) {
-            fas = new FasStable(graph, getIndependenceTest());
+            fas = new FasStable(initialGraph, getIndependenceTest());
         } else if (getFasRule() == FasRule.FAS_STABLE_CONCURRENT) {
-            fas = new FasStableConcurrent(graph, getIndependenceTest());
+            fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         } else {
             throw new IllegalArgumentException("Not a supported FAS: " + getFasRule());
         }

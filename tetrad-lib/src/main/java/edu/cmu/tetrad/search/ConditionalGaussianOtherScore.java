@@ -74,17 +74,32 @@ public class ConditionalGaussianOtherScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + getStructurePrior(parents);
+
+        double strucPrior = getStructurePrior(parents);
+        if (strucPrior > 0) {
+            strucPrior = -2 * k * strucPrior;
+        }
+
+        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + strucPrior;
     }
 
     private double getStructurePrior(int[] parents) {
-        if (sp <= 0) { return 0; }
+        if (sp == -1) { return getEBICprior(); }
+        else if (sp <= 0) { return 0; }
         else {
-            int i = parents.length + 1;
-            int c = dataSet.getNumColumns();
+            int i = parents.length;
+            int c = dataSet.getNumColumns() - 1;
             double p = sp / (double) c;
             return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
         }
+    }
+
+    private double getEBICprior() {
+
+        double n = dataSet.getNumColumns();
+        double gamma = -sp;
+        return gamma * Math.log(n);
+
     }
 
     public double localScoreDiff(int x, int y, int[] z) {

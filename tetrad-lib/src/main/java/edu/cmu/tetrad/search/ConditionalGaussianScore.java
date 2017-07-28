@@ -43,34 +43,19 @@ public class ConditionalGaussianScore implements Score {
 
     private double penaltyDiscount = 1;
     private int numCategoriesToDiscretize = 3;
-    private double structurePrior;
+    private double sp;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet) {
+    public ConditionalGaussianScore(DataSet dataSet, double sp, boolean discretize) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.setStructurePrior(1);
-        this.likelihood.setDiscretize(true);
-        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
-    }
-
-    /**
-     * Constructs the score using a covariance matrix.
-     */
-    public ConditionalGaussianScore(DataSet dataSet, double structurePrior, boolean discretize) {
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
-
-        this.dataSet = dataSet;
-        this.variables = dataSet.getVariables();
-        this.setStructurePrior(structurePrior);
+        this.sp = sp;
 
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
         this.likelihood.setDiscretize(discretize);
@@ -89,21 +74,31 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        // added the penalty discount back
-        
-        return 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + 2.0 * getStructurePrior(parents);
+        double strucPrior = getStructurePrior(parents);
+        if (strucPrior > 0) {
+            strucPrior = -2 * k * strucPrior;
+        }
+
+        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + strucPrior;
     }
 
-    // fixed the structure prior
-    
     private double getStructurePrior(int[] parents) {
-        if (getStructurePrior() <= 0) { return 0; }
+        if (sp == -1) { return getEBICprior(); }
+        else if (sp <= 0) { return 0; }
         else {
-            int i = parents.length + 1;
-            int c = dataSet.getNumColumns();
-            double p = getStructurePrior() / (double) (c - 1);
+            int i = parents.length;
+            int c = dataSet.getNumColumns() - 1;
+            double p = sp / (double) c;
             return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
         }
+    }
+
+    private double getEBICprior() {
+
+        double n = dataSet.getNumColumns();
+        double gamma = -sp;
+        return gamma * Math.log(n);
+
     }
 
     public double localScoreDiff(int x, int y, int[] z) {
@@ -181,14 +176,6 @@ public class ConditionalGaussianScore implements Score {
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
-    }
-
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
     }
 }
 
