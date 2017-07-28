@@ -24,66 +24,64 @@ package edu.cmu.tetrad.algcomparison.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * An example script to simulate data and run a comparison analysis on it.
+ * An example script to load in data sets and graphs from files and analyze them. The
+ * files loaded must be in the same format as
+ * </p>
+ * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
+ * </p>
+ * saves them. For other formats, specialty data loaders can be written to implement the
+ * Simulation interface.
  *
  * @author jdramsey
  */
-public class ExampleCompareSimulation {
+public class CompareFromFiles {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
-        parameters.set("sampleSize", 500);
-        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        // Can leave the simulation parameters out since
+        // we're loading from file here.
+
+        parameters.set("maxDistinctValuesDiscrete", 5);
+
+        parameters.set("structurePrior", -0.5, 0, 1);
+        parameters.set("fDegree", 1, -1);
+        parameters.set("discretize", 0, 1);
+
+        parameters.set("alpha", 1e-3, 1e-4);
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("avgDegree"));
+        statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new MathewsCorrAdj());
-        statistics.add(new MathewsCorrArrow());
-        statistics.add(new F1Adj());
-        statistics.add(new F1Arrow());
-        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
-
-        Simulations simulations = new Simulations();
-
-        simulations.add(new SemSimulation(new RandomForward()));
+        algorithms.add(new Fges(new MVPBicScore()));
 
         Comparison comparison = new Comparison();
-
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
-        comparison.setShowUtilities(true);
-        comparison.setParallelized(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setParallelized(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 
