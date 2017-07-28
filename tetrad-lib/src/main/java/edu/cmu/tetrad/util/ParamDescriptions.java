@@ -50,7 +50,7 @@ public class ParamDescriptions {
         put("minCategories", new ParamDescription("Minimum number of categories", 2, 2, Integer.MAX_VALUE));
         put("maxCategories", new ParamDescription("Maximum number of categories", 2, 2, Integer.MAX_VALUE));
         put("samplePrior", new ParamDescription("Sample prior", 1.0, 1.0, Double.MAX_VALUE));
-        put("structurePrior", new ParamDescription("Structure prior coefficient", 1.0, 1.0, Double.MAX_VALUE));
+        put("structurePrior", new ParamDescription("Structure prior coefficient", 1.0, Double.MIN_VALUE, Double.MAX_VALUE));
         put("mgmParam1", new ParamDescription("MGM tuning parameter #1", 0.1, 0.0, Double.MAX_VALUE));
         put("mgmParam2", new ParamDescription("MGM tuning parameter #2", 0.1, 0.0, Double.MAX_VALUE));
         put("mgmParam3", new ParamDescription("MGM tuning parameter #3", 0.1, 0.0, Double.MAX_VALUE));
