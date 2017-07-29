@@ -297,13 +297,13 @@ public class Comparison {
         }
 
         out.println();
-        out.println("Parameters:");
-//        out.println(parameters);
-        out.println();
+//        out.println("Parameters:");
+////        out.println(parameters);
+//        out.println();
 
-        printParameters(new ArrayList<>(parameters.getParametersNames()), parameters, out);
-
-        out.println();
+//        printParameters(new ArrayList<>(parameters.getParametersNames()), parameters, out);
+//
+//        out.println();
 
         if (allStats != null) {
             int numTables = allStats.length;
