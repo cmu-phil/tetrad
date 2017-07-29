@@ -75,13 +75,13 @@ public class CompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
-//        algorithms.add(new Fges(new ConditionalGaussianOtherBicScore()));
-//        algorithms.add(new Fges(new MVPBicScore()));
-//        algorithms.add(new Fges(new MNLRBicScore()));
-//        algorithms.add(new Fges(new DiscreteMixedBicScore()));
-//        algorithms.add(new Cpc(new ConditionalGaussianLRT()));
-        algorithms.add(new Cpc(new MNLRLRT(), new FAS(new ConditionalGaussianLRT())));
+        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianOtherBicScore()));
+        algorithms.add(new Fges(new MVPBicScore()));
+        algorithms.add(new Fges(new MNLRBicScore()));
+        algorithms.add(new Fges(new DiscreteMixedBicScore()));
+        algorithms.add(new Cpc(new ConditionalGaussianLRT()));
+//        algorithms.add(new Cpc(new MNLRLRT(), new FAS(new ConditionalGaussianLRT())));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
