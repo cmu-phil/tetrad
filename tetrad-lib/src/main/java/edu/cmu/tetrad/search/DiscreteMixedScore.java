@@ -21,17 +21,17 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Implements a conditional Gaussian BIC score for FGS.
  *
  * @author Joseph Ramsey
  */
-public class ConditionalGaussianScore implements Score {
+public class DiscreteMixedScore implements Score {
 
     private DataSet dataSet;
 
@@ -39,7 +39,7 @@ public class ConditionalGaussianScore implements Score {
     private List<Node> variables;
 
     // Likelihood function
-    private ConditionalGaussianLikelihood likelihood;
+    private DiscreteMixedLikelihood likelihood;
 
     private double penaltyDiscount = 1;
     private int numCategoriesToDiscretize = 3;
@@ -48,7 +48,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet, double sp, boolean discretize) {
+    public DiscreteMixedScore(DataSet dataSet, double sp) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -57,8 +57,7 @@ public class ConditionalGaussianScore implements Score {
         this.variables = dataSet.getVariables();
         this.sp = sp;
 
-        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
-        this.likelihood.setDiscretize(discretize);
+        this.likelihood = new DiscreteMixedLikelihood(dataSet);
     }
 
     /**
@@ -68,7 +67,7 @@ public class ConditionalGaussianScore implements Score {
         likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
         likelihood.setPenaltyDiscount(penaltyDiscount);
 
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
+        DiscreteMixedLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
         int N = dataSet.getNumRows();
         double lik = ret.getLik();
