@@ -8,6 +8,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.ContinuousTabularDataset;
 import edu.pitt.dbmi.data.Dataset;
 import edu.pitt.dbmi.data.Delimiter;
+import edu.pitt.dbmi.data.MixedTabularDataset;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataFileReader;
 
 import java.io.*;
@@ -52,25 +53,29 @@ public class LoadDataAndGraphs implements Simulation {
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
 
-                    ContinuousTabularDataFileReader dataReader = new ContinuousTabularDataFileReader(file1, Delimiter.WHITESPACE) ;
+                    DataReader dataReader = new DataReader() ;
+                    dataReader.setVariablesSupplied(true);
+                    dataReader.setDelimiter(DelimiterType.TAB);
+                    dataReader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
 
                     // Header in first row or not
-                    dataReader.setHasHeader(true);
 
                     // Set comment marker
                     dataReader.setCommentMarker("//");
 
                     dataReader.setMissingValueMarker("*");
 
+                    DataSet ds = dataReader.parseTabular(file1);
+
 //                    DataReader reader = new DataReader();
 //                    reader.setVariablesSupplied(true);
 //                    reader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
-                    ContinuousTabularDataset dataset = (ContinuousTabularDataset) dataReader.readInData();
-                    DoubleDataBox box = new DoubleDataBox(dataset.getData());
-                    List<Node> variables = new ArrayList<>();
-                    for (String s : dataset.getVariables()) variables.add(new ContinuousVariable(s));
-                    BoxDataSet _dataSet = new BoxDataSet(box, variables);
-                    dataSets.add(_dataSet);
+//                    ContinuousTabularDataset dataset = (ContinuousTabularDataset) dataReader.readInData();
+//                    DoubleDataBox box = new DoubleDataBox(dataset.getData());
+//                    List<Node> variables = new ArrayList<>();
+//                    for (String s : dataset.getVariables()) variables.add(new ContinuousVariable(s));
+//                    BoxDataSet _dataSet = new BoxDataSet(box, variables);
+                    dataSets.add(ds);
                 }
 
                 File file = new File(path, "parameters.txt");

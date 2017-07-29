@@ -21,11 +21,18 @@ public class Mgm implements Algorithm {
     static final long serialVersionUID = 23L;
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _ds = DataUtils.getMixedDataSet(ds);
-        MGM m = new MGM(_ds, new double[]{
-                parameters.getDouble("mgmParam1"),
-                parameters.getDouble("mgmParam2"),
-                parameters.getDouble("mgmParam3")
-        });
+        double mgmParam1 = parameters.getDouble("mgmParam1");
+        double mgmParam2 = parameters.getDouble("mgmParam2");
+        double mgmParam3 = parameters.getDouble("mgmParam3");
+
+        double[] lambda = {
+                mgmParam1,
+                mgmParam2,
+                mgmParam3
+        };
+
+        MGM m = new MGM(_ds, lambda);
+
         return m.search();
     }
 
