@@ -258,7 +258,6 @@ public class MVPLikelihood {
         int p = continuous_parents.size();
 
         List<List<Integer>> cells = adTree.getCellLeaves(discrete_parents);
-//        List<int[]> cells = partition(discrete_parents);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
@@ -275,8 +274,6 @@ public class MVPLikelihood {
                     for (int j = 0; j < r; j++) {
                         mean[i] += continuousData[continuousCols[i]][cell.get(j)];
                         var[i] += Math.pow(continuousData[continuousCols[i]][cell.get(j)], 2);
-//                        mean[i] += continuousData[continuousCols[i]][cell[j]];
-//                        var[i] += Math.pow(continuousData[continuousCols[i]][cell[j]], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
@@ -296,7 +293,6 @@ public class MVPLikelihood {
                     for (int j = 0; j < p; j++) {
                         for (int d = 0; d < degree; d++) {
                             subset.set(i, p * d + j, Math.pow((continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
-//                            subset.set(i, p * d + j, Math.pow((continuousData[continuousCols[j]][cell[i]] - mean[j]) / var[j], d + 1));
                         }
                     }
                 }
@@ -312,7 +308,6 @@ public class MVPLikelihood {
                     TetradMatrix target = new TetradMatrix(r, ((DiscreteVariable) c).getNumCategories());
                     for (int i = 0; i < r; i++) {
                         target.set(i, discreteData[child_index][cell.get(i)], 1);
-//                        target.set(i, discreteData[child_index][cell[i]], 1);
                     }
                     lik += approxMultinomialRegression(target, subset);
                 }
@@ -348,15 +343,12 @@ public class MVPLikelihood {
         int p = continuous_parents.size();
 
         List<List<Integer>> cells = adTree.getCellLeaves(discrete_parents);
-//        List<int[]> cells = partition(discrete_parents);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
-//            for (int[] cell : cells) {
                 int r = cell.size();
-//                int r = cell.length;
                 if (r > 0) {
 
                 int degree = fDegree;
@@ -390,7 +382,7 @@ public class MVPLikelihood {
             double gamma = -structurePrior;
             return gamma * Math.log(n);
 
-        }
+    }
 
     private DataSet useErsatzVariables() {
         List<Node> nodes = new ArrayList<>();
