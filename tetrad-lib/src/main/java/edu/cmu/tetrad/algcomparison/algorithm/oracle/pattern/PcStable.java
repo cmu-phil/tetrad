@@ -38,7 +38,10 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph init = initialGraph.search(dataSet, parameters);
+        Graph init = null;
+        if (initialGraph != null) {
+            init = initialGraph.search(dataSet, parameters);
+        }
         edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
