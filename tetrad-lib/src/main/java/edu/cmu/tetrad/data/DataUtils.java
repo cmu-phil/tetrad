@@ -1786,7 +1786,7 @@ public final class DataUtils {
         if (dataModel instanceof ICovarianceMatrix) {
             return (ICovarianceMatrix) dataModel;
         } else if (dataModel instanceof DataSet) {
-            return new CovarianceMatrixOnTheFly((DataSet) dataModel);
+            return new CovarianceMatrix((DataSet) dataModel);
         } else {
             throw new IllegalArgumentException("Sorry, I was expecting either a tabular dataset or a covariance matrix.");
         }

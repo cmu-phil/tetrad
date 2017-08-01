@@ -110,9 +110,9 @@ public class SemBicScore implements Score {
 
             int n = getSampleSize();
             int k = p + 1;
-            s2 = ((n) / (double) (n - k)) * s2;
+//            s2 = ((n) / (double) (n - k)) * s2;
             return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
-                   // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
+            // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -132,8 +132,9 @@ public class SemBicScore implements Score {
     double sp = 6.0;
 
     private double getStructurePrior(int parents) {
-        if (sp <= 0) { return 0; }
-        else {
+        if (sp <= 0) {
+            return 0;
+        } else {
             int i = parents + 1;
             int c = variables.size();
             double p = sp / (double) c;
@@ -158,7 +159,7 @@ public class SemBicScore implements Score {
         }
 
         int N = covariances.getSampleSize();
-        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * 2.0 * Math.log(N);
+        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * Math.log(N);
 //        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
@@ -171,22 +172,22 @@ public class SemBicScore implements Score {
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-        if (z.isEmpty()) {
-            double a = covariances.getValue(indexMap.get(x), indexMap.get(y));
-            double b = covariances.getValue(indexMap.get(x), indexMap.get(x));
-            double c = covariances.getValue(indexMap.get(y), indexMap.get(y));
-
-            if (b * c == 0) throw new SingularMatrixException();
-
-            return -a / Math.sqrt(b * c);
-        } else {
-            int[] indices = new int[z.size() + 2];
-            indices[0] = indexMap.get(x);
-            indices[1] = indexMap.get(y);
-            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-            TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
-            return StatUtils.partialCorrelation(submatrix);
-        }
+//        if (z.isEmpty()) {
+//            double a = covariances.getValue(indexMap.get(x), indexMap.get(y));
+//            double b = covariances.getValue(indexMap.get(x), indexMap.get(x));
+//            double c = covariances.getValue(indexMap.get(y), indexMap.get(y));
+//
+//            if (b * c == 0) throw new SingularMatrixException();
+//
+//            return -a / Math.sqrt(b * c);
+//        } else {
+        int[] indices = new int[z.size() + 2];
+        indices[0] = indexMap.get(x);
+        indices[1] = indexMap.get(y);
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+        TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
+        return StatUtils.partialCorrelation(submatrix);
+//        }
     }
 
     private Map<Node, Integer> indexMap(List<Node> variables) {

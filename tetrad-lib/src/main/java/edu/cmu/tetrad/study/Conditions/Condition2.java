@@ -23,6 +23,7 @@ package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgGes;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
@@ -93,7 +94,7 @@ public class Condition2 {
         parameters.set("alpha", 0.001, 0.0001, 1e-8);
         parameters.set("faithfulnessAssumed", true);
 //
-        algorithms.add(new Fges(new FisherZScore()));
+//        algorithms.add(new Fges(new FisherZScore()));
 //
 //        comparison.compareFromFiles("/Users/user/comparison-data/condition_2",
 //                "/Users/user/causal-comparisons/condition_2",
@@ -101,7 +102,7 @@ public class Condition2 {
 //
 //        algorithms = new Algorithms();
 
-        parameters.set("penaltyDiscount", 1, 2);
+        parameters.set("penaltyDiscount", 2, 4);
 
         algorithms.add(new Fges(new SemBicScore()));
 
@@ -136,18 +137,18 @@ public class Condition2 {
 
         Algorithms algorithms = new Algorithms();
 //
-        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
+//        algorithms.add(new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
 //
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-4"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"));
 
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_1.0"));
-        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_2.0"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_2"));
+        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4"));
 
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));
@@ -175,8 +176,9 @@ public class Condition2 {
 //        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));
 ////        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
 //        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_1.0*log(nrow(data)"));
-//        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2.0*log(nrow(data)"));
+        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*log(nrow(data)"));
+        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_4*log(nrow(data)"));
+//        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*log(nrow(data)"));
 
 //        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
 
