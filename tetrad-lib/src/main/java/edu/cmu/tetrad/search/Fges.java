@@ -817,10 +817,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                             out.println("Initializing effect edges: " + (count[0]));
                         }
 
+                        // We want to recapture the variables that would have been effect edges if paths hadn't
+                        // exactly canceled. These are variables X which are d-connected to the target Y where
+                        // X--Y was noe identified as an effect edge earlier.
                         Node y = nodes.get(i);
                         Set<Node> D = new HashSet<>();
-                        List<Node> cond = new ArrayList<>();
-                        D.addAll(GraphUtils.getDconnectedVars(y, cond, graph));
+                        D.addAll(getUnconditionallyDconnectedVars(y, graph));
                         D.remove(y);
                         D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
 
@@ -1093,7 +1095,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                             adj = new ArrayList<>(g);
                         } else if (mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>();
-                            D.addAll(GraphUtils.getDconnectedVars(x, new ArrayList<Node>(), graph));
+                            D.addAll(getUnconditionallyDconnectedVars(x, graph));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1966,6 +1968,80 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         return builder.toString();
+    }
+
+    // Only need the unconditioal d-connection here.
+    public static Set<Node> getUnconditionallyDconnectedVars(Node x, Graph graph) {
+        Set<Node> Y = new HashSet<>();
+
+        class EdgeNode {
+
+            private Edge edge;
+            private Node node;
+
+            public EdgeNode(Edge edge, Node node) {
+                this.edge = edge;
+                this.node = node;
+            }
+
+            public int hashCode() {
+                return edge.hashCode() + node.hashCode();
+            }
+
+            public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode)) {
+                    throw new IllegalArgumentException();
+                }
+                EdgeNode _o = (EdgeNode) o;
+                return _o.edge == edge && _o.node == node;
+            }
+        }
+
+        Queue<EdgeNode> Q = new ArrayDeque<>();
+        Set<EdgeNode> V = new HashSet<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+            EdgeNode edgeNode = new EdgeNode(edge, x);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
+            Y.add(edge.getDistalNode(x));
+        }
+
+        while (!Q.isEmpty()) {
+            EdgeNode t = Q.poll();
+
+            Edge edge1 = t.edge;
+            Node a = t.node;
+            Node b = edge1.getDistalNode(a);
+
+            for (Edge edge2 : graph.getEdges(b)) {
+                Node c = edge2.getDistalNode(b);
+                if (c == a) {
+                    continue;
+                }
+
+                if (reachable(edge1, edge2, a, graph)) {
+                    EdgeNode u = new EdgeNode(edge2, b);
+
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                        Y.add(c);
+                    }
+                }
+            }
+        }
+
+        return Y;
+    }
+
+    private static boolean reachable(Edge e1, Edge e2, Node a, Graph graph) {
+        Node b = e1.getDistalNode(a);
+
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW
+                && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+
+        return !collider;
     }
 }
 

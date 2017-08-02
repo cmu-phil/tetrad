@@ -1329,7 +1329,13 @@ public class Comparison {
 
                         for (String name : parameterNames) {
                             if (name.equals(statName)) {
-                                stat = parameters.getDouble(name);
+                                if (parameters.get(name) instanceof Boolean) {
+                                    boolean b = parameters.getBoolean(name);
+                                    stat = b ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                                } else {
+                                    stat = parameters.getDouble(name);
+                                }
+
                                 break;
                             }
                         }

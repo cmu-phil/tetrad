@@ -1745,30 +1745,29 @@ public final class StatUtils {
      * @return the given partial correlation.
      */
     public static synchronized double partialCorrelation(TetradMatrix submatrix) {
-        double cov = partialCovariance(submatrix);
+//        double cov = partialCovariance(submatrix);
+//
+//        int[] selection1 = new int[submatrix.rows()];
+//        int[] selection2 = new int[submatrix.rows()];
+//
+//        selection1[0] = 0;
+//        selection1[1] = 0;
+//        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
+//
+//        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
+//        double var1 = partialCovariance(var1Matrix);
+//
+//        selection2[0] = 1;
+//        selection2[1] = 1;
+//        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
+//
+//        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
+//        double var2 = partialCovariance(var2Matrix);
+//
+//        return cov / Math.sqrt(var1 * var2);
 
-        int[] selection1 = new int[submatrix.rows()];
-        int[] selection2 = new int[submatrix.rows()];
-
-        selection1[0] = 0;
-        selection1[1] = 0;
-        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
-
-        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
-        double var1 = partialCovariance(var1Matrix);
-
-        selection2[0] = 1;
-        selection2[1] = 1;
-        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
-
-        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
-        double var2 = partialCovariance(var2Matrix);
-
-        return cov / Math.sqrt(var1 * var2);
-
-
-//        TetradMatrix inverse = submatrix.inverse();
-//        return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        TetradMatrix inverse = submatrix.inverse();
+        return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
     /**
