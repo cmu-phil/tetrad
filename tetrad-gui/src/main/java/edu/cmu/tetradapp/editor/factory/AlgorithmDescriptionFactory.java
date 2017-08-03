@@ -3,14 +3,13 @@ package edu.cmu.tetradapp.editor.factory;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetradapp.editor.AlgorithmDescriptionClass;
-import org.reflections.Reflections;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.reflections.Reflections;
 
 /**
  * Author : Jeremy Espino MD Created 6/30/17 11:20 AM
@@ -21,7 +20,7 @@ public class AlgorithmDescriptionFactory {
 
     private Map<String, Class> algorithmMap = new LinkedHashMap<>();
 
-    private ArrayList<AlgorithmDescriptionClass> algorithmDescriptions = new ArrayList<AlgorithmDescriptionClass>();
+    private ArrayList<AlgorithmDescriptionClass> algorithmDescriptions = new ArrayList<>();
 
     public static AlgorithmDescriptionFactory getInstance() {
         return ourInstance;
@@ -33,7 +32,7 @@ public class AlgorithmDescriptionFactory {
 
     private void init() {
 
-        algorithmDescriptions = new ArrayList<AlgorithmDescriptionClass>();
+        algorithmDescriptions = new ArrayList<>();
 
         // find all classes that implement algorithm
         Reflections reflections = new Reflections("edu.cmu.tetrad.algcomparison");
@@ -55,9 +54,7 @@ public class AlgorithmDescriptionFactory {
     }
 
     public List<AlgorithmDescriptionClass> getAlgorithmDescriptions() {
-
         return algorithmDescriptions;
-
     }
 
     public Algorithm getAlgorithmByName(String name) {

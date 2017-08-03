@@ -34,9 +34,10 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
     private IKnowledge knowledge = null;
 
     public TsImages(ScoreWrapper score) {
-        if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {
-            throw new IllegalArgumentException("Only SEM BIC score or BDeu score can be used with this, sorry.");
-        }
+        // Have to comment this out otherwise will see the popup message of this exception - Zhou
+//        if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {
+//            throw new IllegalArgumentException("Only SEM BIC score or BDeu score can be used with this, sorry.");
+//        }
 
         this.score = score;
     }

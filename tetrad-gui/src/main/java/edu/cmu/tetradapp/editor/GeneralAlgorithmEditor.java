@@ -37,6 +37,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
+import edu.cmu.tetrad.annotation.AlgName;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.OracleType;
+import edu.cmu.tetrad.annotation.ScoreType;
+import edu.cmu.tetrad.annotation.TestType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -52,6 +57,7 @@ import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
 import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
 import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.app.hpc.util.HpcAccountUtils;
+import edu.cmu.tetradapp.editor.factory.AlgorithmDescriptionFactory;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -100,7 +106,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // an instance of the algorithm.
     private static final long serialVersionUID = -5719467682865706447L;
 
-    private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
+    private final HashMap<String, AlgorithmDescriptionClass> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
@@ -114,7 +120,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private String jsonResult;
 
-    private final List<AlgorithmDescription> descriptions;
+    private final List<AlgorithmDescriptionClass> descriptions;
 
     private JList suggestedAlgosList;
 
@@ -139,6 +145,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     private JButton step2BackBtn;
 
     private JButton step3Btn;
+
+    private DefaultListModel suggestedAlgosListModel;
 
     //=========================CONSTRUCTORS============================//
     /**
@@ -199,63 +207,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         List<ScoreType> dsepScores = new ArrayList<>();
         dsepScores.add(ScoreType.D_SEPARATION);
 
-        descriptions = new ArrayList<>();
-
-        descriptions.add(new AlgorithmDescription(AlgName.PC, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPC, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.CPCStable, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.PcStableMax, AlgType.forbid_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.FGES, AlgType.forbid_latent_common_causes, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Discrete, AlgType.forbid_latent_common_causes, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_Continuous, AlgType.forbid_latent_common_causes, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.IMaGES_CCD, AlgType.forbid_latent_common_causes, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.CCD, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CCD_MAX, AlgType.forbid_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.FANG, AlgType.forbid_latent_common_causes, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.EFANG   , AlgType.forbid_latent_common_causes, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.FCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.RFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-//        descriptions.add(new AlgorithmDescription(AlgName.CFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.GFCI, AlgType.allow_latent_common_causes, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.TsFCI, AlgType.allow_latent_common_causes, OracleType.Test));
-        descriptions.add(new AlgorithmDescription(AlgName.TsGFCI, AlgType.allow_latent_common_causes, OracleType.Both));
-        descriptions.add(new AlgorithmDescription(AlgName.TsImages, AlgType.allow_latent_common_causes, OracleType.Test));
-
-        descriptions.add(new AlgorithmDescription(AlgName.FgesMb, AlgType.search_for_Markov_blankets, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.MBFS, AlgType.search_for_Markov_blankets, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.FAS, AlgType.produce_undirected_graphs, OracleType.Test));
-
-//        descriptions.add(new AlgorithmDescription(AlgName.LiNGAM, AlgType.DAG, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.MGM, AlgType.produce_undirected_graphs, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.GLASSO, AlgType.produce_undirected_graphs, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.Bpc, AlgType.search_for_structure_over_latents, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Fofc, AlgType.search_for_structure_over_latents, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Ftfc, AlgType.search_for_structure_over_latents, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.EB, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R1, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R2, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R3, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.R4, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.RSkew, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.RSkewE, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.Skew, AlgType.orient_pairwise, OracleType.None));
-        descriptions.add(new AlgorithmDescription(AlgName.SkewE, AlgType.orient_pairwise, OracleType.None));
-//        descriptions.add(new AlgorithmDescription(AlgName.Tahn, AlgType.orient_pairwise, OracleType.None));
-
-        descriptions.add(new AlgorithmDescription(AlgName.BootstrapFGES,
-                AlgType.bootstrapping, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.BootstrapGFCI,
-                AlgType.bootstrapping, OracleType.Score));
-        descriptions.add(new AlgorithmDescription(AlgName.BootstrapRFCI,
-                AlgType.bootstrapping, OracleType.Score));
+        // Use annotations to populate description list
+        descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
 
         mappedDescriptions = new HashMap<>();
 
-        for (AlgorithmDescription description : descriptions) {
+        for (AlgorithmDescriptionClass description : descriptions) {
             mappedDescriptions.put(description.getAlgName(), description);
         }
 
@@ -339,6 +296,27 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         algTypesDropdown.setSelectedItem(getAlgType().toString().replace("_", " "));
+
+        // Event listener of algo types dorpdown menu
+        algTypesDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // First clear the list model
+                suggestedAlgosListModel.removeAllElements();
+
+                // Create a new list model based on selections
+                for (AlgorithmDescriptionClass description : descriptions) {
+                    AlgType selectedItem = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
+                    if (description.getAlgType() == selectedItem
+                            || selectedItem == AlgType.ALL) {
+                        suggestedAlgosListModel.addElement(description.getAlgName());
+                    }
+                }
+
+                // Reset default algo
+                suggestedAlgosList.setSelectedIndex(0);
+            }
+        });
 
         // Initialize selectedAlgoName before calling setAlgorithm()
         // Use the first algorithm as default - Zhou
@@ -1031,7 +1009,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Get the equivalent enum type of selectedAlgoName string
         AlgName name = AlgName.valueOf(selectedAlgoName);
 
-        AlgorithmDescription description = mappedDescriptions.get(name);
+        AlgorithmDescriptionClass description = mappedDescriptions.get(name);
 
         if (name == null) {
             return;
@@ -1467,12 +1445,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         String suggestedAlgosBoxBorderTitle = "Choose algorithm";
         suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        DefaultListModel suggestedAlgosListModel = new DefaultListModel();
+        suggestedAlgosListModel = new DefaultListModel();
 
         // Add algo to list model
-        for (AlgorithmDescription algo : descriptions) {
-            // Add each algo name to the list model
-            suggestedAlgosListModel.addElement(algo.algName);
+        for (AlgorithmDescriptionClass algoDesc : descriptions) {
+            if (algoDesc.getAlgType() == getAlgType() || getAlgType() == AlgType.ALL) {
+                suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+            }
         }
 
         suggestedAlgosList = new JList(suggestedAlgosListModel);
@@ -1825,15 +1804,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         parameters.set("algType", algType.replace(" ", "_"));
     }
 
-    /**
-     * Returns the object value of the given parameter, using "PC" as default.
-     *
-     * @return AlgName
-     */
-    private AlgName getAlgName() {
-        return AlgName.valueOf(parameters.getString("algName", "PC"));
-    }
-
     private void setAlgName(AlgName algName) {
         parameters.set("algName", algName.toString());
     }
@@ -1865,62 +1835,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         }
 
         return true;
-    }
-
-    private class AlgorithmDescription {
-
-        private AlgName algName;
-        private AlgType algType;
-        private OracleType oracleType;
-
-        public AlgorithmDescription(AlgName name, AlgType algType, OracleType oracleType) {
-            this.algName = name;
-            this.algType = algType;
-            this.oracleType = oracleType;
-        }
-
-        public AlgName getAlgName() {
-            return algName;
-        }
-
-        public AlgType getAlgType() {
-            return algType;
-        }
-
-        public OracleType getOracleType() {
-            return oracleType;
-        }
-    }
-
-    private enum AlgName {
-        PC, PCStable, CPC, CPCStable, FGES, /*PcLocal,*/ PcStableMax, FAS,
-        FgesMb, MBFS, Wfges, JCPC, /*FgesMeasurement,*/
-        FCI, RFCI, CFCI, GFCI, TsFCI, TsGFCI, TsImages, CCD, CCD_MAX,
-        LiNGAM, MGM,
-        IMaGES_Discrete, IMaGES_Continuous, IMaGES_CCD,
-        Bpc, Fofc, Ftfc,
-        GLASSO,
-        EB, R1, R2, R3, R4, RSkew, RSkewE, Skew, SkewE, FANG, EFANG, Tahn,
-        BootstrapFGES, BootstrapGFCI, BootstrapRFCI
-    }
-
-    private enum OracleType {
-        None, Test, Score, Both
-    }
-
-    private enum AlgType {
-        ALL, forbid_latent_common_causes, allow_latent_common_causes, /*DAG, */
-        search_for_Markov_blankets, produce_undirected_graphs, orient_pairwise,
-        search_for_structure_over_latents, bootstrapping
-    }
-
-    private enum TestType {
-        ChiSquare, Conditional_Correlation, Conditional_Gaussian_LRT, Fisher_Z, GSquare,
-        SEM_BIC, D_SEPARATION, Discrete_BIC_Test, Correlation_T
-    }
-
-    public enum ScoreType {
-        BDeu, Conditional_Gaussian_BIC, Discrete_BIC, SEM_BIC, D_SEPARATION
     }
 
 }
