@@ -23,10 +23,7 @@ package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBnlearnMmhc;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgGes;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
+import edu.cmu.tetrad.algcomparison.algorithm.external.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
@@ -210,7 +207,8 @@ public class Condition2 {
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*log(nrow(data)"));
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_4*log(nrow(data)"));
 
-//        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBNTPc("learn.struct.pdag.pc_bnt_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBNTPc("learn.struct.pdag.pc_bnt_alpha_=_0.001"));
 
 //        algorithms.add(new ExternalAlgorithmIntersection("Intersection (Tetrad) CPC, PC_Stable-Max, CPC-Stable",
 //                new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),
