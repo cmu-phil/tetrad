@@ -7,11 +7,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
 
@@ -37,20 +38,17 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
+        Graph init = null;
         if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+            init = initialGraph.search(dataSet, parameters);
         }
-
-        edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
-
-//        if (initial != null) {
-//            search.setInitialGraph(initial);
-//        }
-
+        search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS);
+        search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
+        search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -61,7 +59,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
+        return "CPC (Conservative \"Peter and Clark\"), Priority Rule, using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

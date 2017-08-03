@@ -31,7 +31,7 @@ import java.util.*;
  * Implements the ION (Integration of Overlapping Networks) algorithm for distributed causal inference. The algorithm
  * takes as input a set of PAGs (presumably learned using a local learning algorithm) over variable sets that may have
  * some variables in common and others not in common. The algorithm returns a complete set of PAGs over every variable
- * form an input PAG that are consistent (same d-separations and d-connections) with every input PAG.
+ * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input PAG_of_the_true_DAG.
  *
  * @author Robert Tillman
  */
@@ -244,7 +244,7 @@ public class Ion {
                             }
                         }
                     }
-                    // accept PAG go to next PAG if no possibly d-connecting undirectedPaths
+                    // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths
                     if (dConnections.isEmpty()) {
 //                        doFinalOrientation(pag);
                         step3Pags.add(pag);

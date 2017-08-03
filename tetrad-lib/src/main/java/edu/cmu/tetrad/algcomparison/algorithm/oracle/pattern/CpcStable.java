@@ -7,10 +7,11 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
 
@@ -22,17 +23,31 @@ import java.util.List;
 public class CpcStable implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CpcStable(IndependenceWrapper test) {
-        this.test = test;
+    public CpcStable(IndependenceWrapper type) {
+        this.test = type;
+    }
+
+    public CpcStable(IndependenceWrapper type, Algorithm initialGraph) {
+        this.test = type;
+        this.initialGraph = initialGraph;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.CpcStable search = new edu.cmu.tetrad.search.CpcStable(test.getTest(dataSet, parameters));
+        Graph init =  null;
+        if (initialGraph != null) {
+            init = initialGraph.search(dataSet, parameters);
+        }
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
+        search.setFasRule(PcAll.FasRule.FAS_STABLE);
+        search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.CONSERVATIVE);
+        search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
+        search.setVerbose(parameters.getBoolean("verbose"));
         return search.search();
     }
 
@@ -43,7 +58,7 @@ public class CpcStable implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CPC-Stable (Conservative \"Peter and Clark\" Stable) using " + test.getDescription();
+        return "CPC-Stable (Conservative \"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription();
     }
 
     @Override

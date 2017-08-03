@@ -25,14 +25,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.log;
@@ -69,6 +69,9 @@ public class SemBicScore implements Score {
     // Variables that caused computational problems and so are to be avoided.
     private Set<Integer> forbidden = new HashSet<>();
 
+    private Map<Node, Integer> indexMap;
+
+
     /**
      * Constructs the score using a covariance matrix.
      */
@@ -80,6 +83,7 @@ public class SemBicScore implements Score {
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        this.indexMap = indexMap(variables);
     }
 
     /**
@@ -105,9 +109,10 @@ public class SemBicScore implements Score {
             }
 
             int n = getSampleSize();
-            int k = 2 * p + 1;
-            s2 = ((n) / (double) (n - k)) * s2;
+            int k = p + 1;
+//            s2 = ((n) / (double) (n - k)) * s2;
             return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+            // + getStructurePrior(parents.length);// - getStructurePrior(parents.length + 1);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -124,9 +129,75 @@ public class SemBicScore implements Score {
         }
     }
 
+    double sp = 6.0;
+
+    private double getStructurePrior(int parents) {
+        if (sp <= 0) {
+            return 0;
+        } else {
+            int i = parents + 1;
+            int c = variables.size();
+            double p = sp / (double) c;
+            return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
+        }
+    }
+
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+
+        Node _x = variables.get(x);
+        Node _y = variables.get(y);
+        List<Node> _z = getVariableList(z);
+
+        double r;
+
+        try {
+            r = partialCorrelation(_x, _y, _z);
+        } catch (SingularMatrixException e) {
+            System.out.println(SearchLogUtils.determinismDetected(_z, _x));
+            return Double.NaN;
+        }
+
+        int N = covariances.getSampleSize();
+        return -N * Math.log(1.0 - r * r) - getPenaltyDiscount() * Math.log(N);
+//        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    private List<Node> getVariableList(int[] indices) {
+        List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
+            variables.add(this.variables.get(i));
+        }
+        return variables;
+    }
+
+    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
+//        if (z.isEmpty()) {
+//            double a = covariances.getValue(indexMap.get(x), indexMap.get(y));
+//            double b = covariances.getValue(indexMap.get(x), indexMap.get(x));
+//            double c = covariances.getValue(indexMap.get(y), indexMap.get(y));
+//
+//            if (b * c == 0) throw new SingularMatrixException();
+//
+//            return -a / Math.sqrt(b * c);
+//        } else {
+        int[] indices = new int[z.size() + 2];
+        indices[0] = indexMap.get(x);
+        indices[1] = indexMap.get(y);
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+        TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
+        return StatUtils.partialCorrelation(submatrix);
+//        }
+    }
+
+    private Map<Node, Integer> indexMap(List<Node> variables) {
+        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            indexMap.put(variables.get(i), i);
+        }
+
+        return indexMap;
     }
 
     @Override

@@ -75,7 +75,8 @@ public class NodePair {
             return false;
         }
         NodePair thatPair = (NodePair) o;
-        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
+//        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
+        return (this.first == thatPair.first && this.second == thatPair.second) || (this.first == thatPair.second && this.second == thatPair.first);
     }
 
     public String toString() {

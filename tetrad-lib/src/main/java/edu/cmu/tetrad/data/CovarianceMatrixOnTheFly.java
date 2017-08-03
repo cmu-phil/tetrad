@@ -491,8 +491,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         double v = d;
 //        v /= (sampleSize - 1);
-//        v /= (count - 1);
-        v /= count;
+        v /= (count - 1);
+//        v /= count;
         return v;
     }
 
@@ -598,7 +598,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
 
 //        buf.append("\nCovariance matrix:");
-//        buf.append("\n\tVariables = ").append(getVariables());
+//        buf.append("\n\tVariables = ").append(getVariable());
 //        buf.append("\n\tSample size = ").append(getSampleSize());
 //        buf.append("\n");
 //        buf.append(MatrixUtils.toString(matrixC.toArray()));

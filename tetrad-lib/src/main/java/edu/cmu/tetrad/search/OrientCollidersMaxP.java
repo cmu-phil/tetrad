@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,8 +45,9 @@ public final class OrientCollidersMaxP {
     private IKnowledge knowledge = new Knowledge2();
     private boolean useHeuristic = true;
     private int maxPathLength = 3;
+    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
-    public OrientCollidersMaxP(IndependenceTest test) {
+    public OrientCollidersMaxP(IndependenceTest test, PcAll.ConflictRule conflictRule) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
     }
@@ -145,11 +147,11 @@ public final class OrientCollidersMaxP {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
+//            if (!(graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
 //                graph.setEndpoint(a, b, Endpoint.ARROW);
 //                graph.setEndpoint(c, b, Endpoint.ARROW);
-                orientCollider(graph, a, b, c);
-            }
+            orientCollider(graph, a, b, c, getConflictRule());
+//            }
         }
     }
 
@@ -187,6 +189,8 @@ public final class OrientCollidersMaxP {
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
         List<Node> adja = graph.getAdjacentNodes(a);
         List<Node> adjc = graph.getAdjacentNodes(c);
+        adja.remove(c);
+        adjc.remove(a);
 
         double score = Double.POSITIVE_INFINITY;
         List<Node> S = null;
@@ -255,17 +259,19 @@ public final class OrientCollidersMaxP {
         }
     }
 
-    private void orientCollider(Graph graph, Node a, Node b, Node c) {
-        if (wouldCreateBadCollider(graph, a, b)) return;
-        if (wouldCreateBadCollider(graph, c, b)) return;
-        if (graph.getEdges(a, b).size() > 1) return;
-        if (graph.getEdges(b, c).size() > 1) return;
+    private void orientCollider(Graph graph, Node a, Node b, Node c, PcAll.ConflictRule conflictRule) {
+//        if (wouldCreateBadCollider(graph, a, b)) return;
+//        if (wouldCreateBadCollider(graph, c, b)) return;
+//        if (graph.getEdges(a, b).size() > 1) return;
+//        if (graph.getEdges(b, c).size() > 1) return;
         if (knowledge.isForbidden(a.getName(), b.getName())) return;
         if (knowledge.isForbidden(c.getName(), b.getName())) return;
-        graph.removeEdge(a, b);
-        graph.removeEdge(c, b);
-        graph.addDirectedEdge(a, b);
-        graph.addDirectedEdge(c, b);
+//        graph.removeEdge(a, b);
+//        graph.removeEdge(c, b);
+//        graph.addDirectedEdge(a, b);
+//        graph.addDirectedEdge(c, b);
+
+        orientCollider(a, b, c, conflictRule, graph);
     }
 
     private boolean wouldCreateBadCollider(Graph graph, Node x, Node y) {
@@ -403,6 +409,35 @@ public final class OrientCollidersMaxP {
 
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
+    }
+
+    public static void orientCollider(Node x, Node y, Node z, PcAll.ConflictRule conflictRule, Graph graph) {
+        if (conflictRule == PcAll.ConflictRule.PRIORITY) {
+            if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
+                graph.removeEdge(x, y);
+                graph.removeEdge(z, y);
+                graph.addDirectedEdge(x, y);
+                graph.addDirectedEdge(z, y);
+            }
+        } else if (conflictRule == PcAll.ConflictRule.BIDIRECTED) {
+            graph.setEndpoint(x, y, Endpoint.ARROW);
+            graph.setEndpoint(z, y, Endpoint.ARROW);
+        } else if (conflictRule == PcAll.ConflictRule.OVERWRITE) {
+            graph.removeEdge(x, y);
+            graph.removeEdge(z, y);
+            graph.addDirectedEdge(x, y);
+            graph.addDirectedEdge(z, y);
+        }
+
+        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+    }
+
+    public PcAll.ConflictRule getConflictRule() {
+        return conflictRule;
+    }
+
+    public void setConflictRule(PcAll.ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
     }
 }
 

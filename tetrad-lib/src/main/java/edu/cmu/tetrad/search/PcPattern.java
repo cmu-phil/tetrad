@@ -157,7 +157,7 @@ public class PcPattern implements GraphSearch {
      * Runs PC on just the given variables, all of which must be in the domain of the independence test.
      */
     public Graph search(List<Node> nodes) {
-        this.logger.log("info", "Starting PC PATTERN algorithm");
+        this.logger.log("info", "Starting PC Pattern_of_the_true_DAG algorithm");
         this.logger.log("info", "Independence test = " + independenceTest + ".");
 
         long startTime = System.currentTimeMillis();
@@ -196,7 +196,7 @@ public class PcPattern implements GraphSearch {
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
         this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC PATTERN Algorithm.");
+        this.logger.log("info", "Finishing PC Pattern_of_the_true_DAG Algorithm.");
         this.logger.flush();
 
         return graph;

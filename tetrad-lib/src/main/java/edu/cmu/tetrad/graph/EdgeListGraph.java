@@ -743,7 +743,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * True if this graph has been "stamped" as a PAG. The search algorithm should do this.
+     * True if this graph has been "stamped" as a PAG_of_the_true_DAG. The search algorithm should do this.
      */
     @Override
     public boolean isPag() {
@@ -1565,6 +1565,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     public List<Edge> getEdges(Node node1, Node node2) {
         List<Edge> edges = edgeLists.get(node1);
+        if (edges == null) return new ArrayList<>();
+
         List<Edge> _edges = new ArrayList<>();
 
         for (Edge edge : edges) {

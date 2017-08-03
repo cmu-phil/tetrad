@@ -76,7 +76,7 @@ public class Hsim {
         DirichletBayesIm subgraphIM = DirichletBayesIm.symmetricDirichletIm(subgraphPM, 1.0);
         DirichletEstimator estimator = new DirichletEstimator();
         DirichletBayesIm fittedsubgraphIM = estimator.estimate(subgraphIM, data);
-        //if (verbose) System.out.println(fittedsubgraphIM.getVariables());
+        //if (verbose) System.out.println(fittedsubgraphIM.getVariable());
 
         /**Use the learned instantiated subgraph model to create the resimulated data**/
         if (verbose) System.out.println("Starting resimulation loop");

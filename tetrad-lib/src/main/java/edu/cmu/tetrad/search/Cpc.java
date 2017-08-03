@@ -38,8 +38,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class
-Cpc implements GraphSearch {
+public final class Cpc implements GraphSearch {
 
 //    private int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
 
@@ -261,7 +260,7 @@ Cpc implements GraphSearch {
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariables());
+//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 
@@ -348,7 +347,7 @@ Cpc implements GraphSearch {
 //     * constructor.
 //     */
 //    public final Graph orientationForGraph(Dag trueGraph) {
-//        Graph graph = new EdgeListGraphSingleConnections(independenceTest.getVariables());
+//        Graph graph = new EdgeListGraphSingleConnections(independenceTest.getVariable());
 //
 //        for (Edge edge : trueGraph.getEdges()) {
 //            Node nodeA = edge.getNode1();
@@ -423,8 +422,14 @@ Cpc implements GraphSearch {
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        graph.setEndpoint(x, y, Endpoint.ARROW);
-                        graph.setEndpoint(z, y, Endpoint.ARROW);
+                        graph.removeEdge(x, y);
+                        graph.removeEdge(z, y);
+                        graph.addDirectedEdge(x, y);
+                        graph.addDirectedEdge(z, y);
+
+
+//                        graph.setEndpoint(x, y, Endpoint.ARROW);
+//                        graph.setEndpoint(z, y, Endpoint.ARROW);
 
                         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
                     }

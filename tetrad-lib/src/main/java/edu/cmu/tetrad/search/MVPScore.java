@@ -44,7 +44,7 @@ public class MVPScore implements Score {
     // Log number of instances
     private double logn;
 
-    public MVPScore(DataSet dataSet, double structurePrior, int fDegree) {
+    public MVPScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
             if (dataSet == null) {
             throw new NullPointerException();
@@ -52,7 +52,7 @@ public class MVPScore implements Score {
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree);
+        this.likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree, discretize);
         this.logn = Math.log(dataSet.getNumRows());
     }
 
@@ -61,6 +61,10 @@ public class MVPScore implements Score {
         double lik = likelihood.getLik(i, parents);
         double dof = likelihood.getDoF(i, parents);
         double sp = likelihood.getStructurePrior(parents.length);
+
+        if (sp > 0) {
+            sp = -2 * dof * sp;
+        }
 
         return 2.0 * lik - dof * logn + sp;
     }

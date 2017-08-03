@@ -412,7 +412,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
 
     /**
      * A directed edge A->B is definitely visible if there is a node C not
-     * adjacent to B such that C*->A is in the PAG. Added by ekorber,
+     * adjacent to B such that C*->A is in the PAG_of_the_true_DAG. Added by ekorber,
      * 2004/06/11.
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)

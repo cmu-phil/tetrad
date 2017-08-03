@@ -76,7 +76,7 @@ public class HsimContinuous {
         SemEstimator subgraphEstimator = new SemEstimator(data,subgraphPM);
         SemIm subgraphIM = subgraphEstimator.estimate();
 
-        //if (verbose) System.out.println(fittedsubgraphIM.getVariables());
+        //if (verbose) System.out.println(fittedsubgraphIM.getVariable());
 
         /**Use the learned instantiated subgraph model to create the resimulated data**/
         if (verbose) System.out.println("Starting resimulation loop");

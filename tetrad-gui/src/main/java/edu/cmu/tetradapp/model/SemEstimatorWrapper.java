@@ -165,6 +165,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
                 estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", SemIm.ScoreType.Fgls));
+
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
 

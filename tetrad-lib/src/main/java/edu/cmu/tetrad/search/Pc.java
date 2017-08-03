@@ -248,7 +248,7 @@ public class Pc implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariables());
+//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 
@@ -276,10 +276,17 @@ public class Pc implements GraphSearch {
 //        enumerateTriples();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, false);
+
+        for (Edge edge : graph.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                graph.removeEdge(edge.getNode1(), edge.getNode2());
+                graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
 
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        rules.setAggressivelyPreventCycles(false);
         rules.setKnowledge(knowledge);
         rules.setUndirectUnforcedEdges(false);
         rules.orientImplied(graph);
@@ -432,6 +439,9 @@ public class Pc implements GraphSearch {
 
     public void setFdr(boolean fdr) {
         this.fdr = fdr;
+    }
+
+    public void setEnforcePattern(boolean enforcePattern) {
     }
 }
 

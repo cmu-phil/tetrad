@@ -21,9 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
@@ -33,6 +31,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static edu.cmu.tetrad.data.Discretizer.discretize;
+import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 
 
 /**
@@ -46,8 +48,13 @@ public class MVPLikelihood {
 
     private DataSet dataSet;
 
-    // The variables of the continuousData set.
+    private DataSet discreteDataSet;
+
+    // The variables of the dataset.
     private List<Node> variables;
+
+    // The variables of the discrete dataset.
+    private List<Node> discreteVariables;
 
     // Indices of variables.
     private Map<Node, Integer> nodesHash;
@@ -58,6 +65,9 @@ public class MVPLikelihood {
     // Discrete data only.
     private int[][] discreteData;
 
+    // All discrete data
+    private int[][] allDiscrete;
+
     // Partitions
     private AdLeafTree adTree;
 
@@ -67,7 +77,13 @@ public class MVPLikelihood {
     // Structure Prior
     private double structurePrior;
 
-    public MVPLikelihood(DataSet dataSet, double structurePrior, int fDegree) {
+    // Discretize
+    private boolean discretize;
+
+    // Number of categories to use to discretize continuous mixedVariables.
+    private int numCategoriesToDiscretize = 3;
+
+    public MVPLikelihood(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -77,6 +93,7 @@ public class MVPLikelihood {
         this.variables = dataSet.getVariables();
         this.structurePrior = structurePrior;
         this.fDegree = fDegree;
+        this.discretize = discretize;
 
         continuousData = new double[dataSet.getNumColumns()][];
         discreteData = new int[dataSet.getNumColumns()][];
@@ -103,7 +120,21 @@ public class MVPLikelihood {
             nodesHash.put(v, j);
         }
 
-        this.adTree = new AdLeafTree(dataSet);
+        if (discretize) {
+            this.discreteDataSet = useErsatzVariables();
+            this.discreteVariables = discreteDataSet.getVariables();
+            this.adTree = new AdLeafTree(discreteDataSet);
+            allDiscrete = new int[dataSet.getNumColumns()][];
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                int[] col = new int[discreteDataSet.getNumRows()];
+                for (int i = 0; i < discreteDataSet.getNumRows(); i++) {
+                    col[i] = discreteDataSet.getInt(i, j);
+                }
+                discreteData[j] = col;
+            }
+        } else {
+            this.adTree = new AdLeafTree(dataSet);
+        }
 
     }
 
@@ -111,27 +142,37 @@ public class MVPLikelihood {
 
         int n = X.rows();
         TetradVector r;
-
-        try {
-            TetradMatrix Xt = X.transpose();
-            TetradMatrix XtX = Xt.times(X);
-            r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
-        } catch (Exception e) {
+        if (X.columns() >= n) {
             TetradVector ones = new TetradVector(n);
-            for (int i = 0; i < n; i++) ones.set(i,1);
-            r = ones.scalarMult(ones.dotProduct(Y)/(double)n).minus(Y);
+            for (int i = 0; i < n; i++) ones.set(i, 1);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
+        } else {
+            try {
+                TetradMatrix Xt = X.transpose();
+                TetradMatrix XtX = Xt.times(X);
+                r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
+            } catch (Exception e) {
+                TetradVector ones = new TetradVector(n);
+                for (int i = 0; i < n; i++) ones.set(i, 1);
+                r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
+            }
         }
 
         double sigma2 = r.dotProduct(r) / n;
+        double lik;
 
-        if(sigma2 <= 0) {
+        if(sigma2 < 0) {
             TetradVector ones = new TetradVector(n);
             for (int i = 0; i < n; i++) ones.set(i,1);
             r = ones.scalarMult(ones.dotProduct(Y)/(double)Math.max(n,2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
+            lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
+        } else if (sigma2 == 0) {
+            lik = 0;
+        } else {
+            lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
         }
 
-        double lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
 
         if(Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
@@ -148,7 +189,7 @@ public class MVPLikelihood {
         TetradMatrix P;
 
 
-        if(d >= n) {
+        if(d >= n || X.columns() >= n) {
             TetradMatrix ones = new TetradMatrix(n, 1);
             for (int i = 0; i < n; i++) ones.set(i, 0, 1);
             P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
@@ -190,18 +231,27 @@ public class MVPLikelihood {
         return lik;
     }
 
+
     public double getLik(int child_index, int[] parents) {
 
         double lik = 0;
         Node c = variables.get(child_index);
         List<ContinuousVariable> continuous_parents = new ArrayList<>();
         List<DiscreteVariable> discrete_parents = new ArrayList<>();
-        for (int p : parents) {
-            Node parent = variables.get(p);
-            if (parent instanceof ContinuousVariable) {
-                continuous_parents.add((ContinuousVariable) parent);
-            } else {
+
+        if (c instanceof DiscreteVariable && discretize) {
+            for (int p : parents) {
+                Node parent = discreteVariables.get(p);
                 discrete_parents.add((DiscreteVariable) parent);
+            }
+        } else {
+            for (int p : parents) {
+                Node parent = variables.get(p);
+                if (parent instanceof ContinuousVariable) {
+                    continuous_parents.add((ContinuousVariable) parent);
+                } else {
+                    discrete_parents.add((DiscreteVariable) parent);
+                }
             }
         }
 
@@ -213,8 +263,10 @@ public class MVPLikelihood {
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
-            int r = cell.size();
-            if (r > 1) {
+//            for (int[] cell : cells) {
+                int r = cell.size();
+//                int r = cell.length;
+                if (r > 1) {
 
                 double[] mean = new double[p];
                 double[] var = new double[p];
@@ -249,6 +301,7 @@ public class MVPLikelihood {
                     TetradVector target = new TetradVector(r);
                     for (int i = 0; i < r; i++) {
                         target.set(i, continuousData[child_index][cell.get(i)]);
+//                        target.set(i, continuousData[child_index][cell[i]]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
@@ -270,12 +323,20 @@ public class MVPLikelihood {
         Node c = variables.get(child_index);
         List<ContinuousVariable> continuous_parents = new ArrayList<>();
         List<DiscreteVariable> discrete_parents = new ArrayList<>();
-        for (int p : parents) {
-            Node parent = variables.get(p);
-            if (parent instanceof ContinuousVariable) {
-                continuous_parents.add((ContinuousVariable) parent);
-            } else {
+
+        if (c instanceof DiscreteVariable && discretize) {
+            for (int p : parents) {
+                Node parent = discreteVariables.get(p);
                 discrete_parents.add((DiscreteVariable) parent);
+            }
+        } else {
+            for (int p : parents) {
+                Node parent = variables.get(p);
+                if (parent instanceof ContinuousVariable) {
+                    continuous_parents.add((ContinuousVariable) parent);
+                } else {
+                    discrete_parents.add((DiscreteVariable) parent);
+                }
             }
         }
 
@@ -287,8 +348,8 @@ public class MVPLikelihood {
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
-            int r = cell.size();
-            if (r > 0) {
+                int r = cell.size();
+                if (r > 0) {
 
                 int degree = fDegree;
                 if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
@@ -305,11 +366,63 @@ public class MVPLikelihood {
 
     public double getStructurePrior(int k) {
 
+        if (structurePrior < 0) { return getEBICprior(); }
+
         double n = dataSet.getNumColumns() - 1;
         double p = structurePrior/n;
 
-        if (structurePrior <= 0) { return 0; }
+        if (structurePrior == 0) { return 0; }
         return k*Math.log(p) + (n - k)*Math.log(1 - p);
 
     }
+
+    public double getEBICprior() {
+
+            double n = dataSet.getNumColumns();
+            double gamma = -structurePrior;
+            return gamma * Math.log(n);
+
+    }
+
+    private DataSet useErsatzVariables() {
+        List<Node> nodes = new ArrayList<>();
+        int numCategories = numCategoriesToDiscretize;
+
+        for (Node x : variables) {
+            if (x instanceof ContinuousVariable) {
+                nodes.add(new DiscreteVariable(x.getName(), numCategories));
+            } else {
+                nodes.add(x);
+            }
+        }
+
+        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(dataSet.getNumRows(), dataSet.getNumColumns()), nodes);
+
+        for (int j = 0; j < variables.size(); j++) {
+            if (variables.get(j) instanceof DiscreteVariable) {
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, dataSet.getInt(i, j));
+                }
+            } else {
+                double[] column = continuousData[j];
+
+                double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
+
+                List<String> categoryNames = new ArrayList<>();
+
+                for (int i = 0; i < numCategories; i++) {
+                    categoryNames.add("" + i);
+                }
+
+                Discretizer.Discretization d = discretize(column, breakpoints, variables.get(j).getName(), categoryNames);
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, d.getData()[i]);
+                }
+            }
+        }
+
+        return replaced;
+    }
+
 }
