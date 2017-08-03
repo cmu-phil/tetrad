@@ -1,16 +1,18 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +21,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "R2",
+        algType = AlgType.orient_pairwise,
+        oracleType = OracleType.None
+)
 public class R2 implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
@@ -34,8 +42,8 @@ public class R2 implements Algorithm, TakesInitialGraph {
         if (initial != null) {
             initial = initialGraph.search(dataSet, parameters);
         } else {
-            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
-                    "will orient the edges in the input graph using the data");
+            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data");
         }
 
         List<DataSet> dataSets = new ArrayList<>();
@@ -54,8 +62,8 @@ public class R2 implements Algorithm, TakesInitialGraph {
 
     @Override
     public String getDescription() {
-        return "R2, entropy based pairwise orientation" + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "R2, entropy based pairwise orientation" + (initialGraph != null ? " with initial graph from "
+                + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -66,5 +74,10 @@ public class R2 implements Algorithm, TakesInitialGraph {
     @Override
     public List<String> getParameters() {
         return initialGraph.getParameters();
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

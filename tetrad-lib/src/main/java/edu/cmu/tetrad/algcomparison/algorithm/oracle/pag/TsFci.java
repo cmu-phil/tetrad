@@ -3,15 +3,17 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
@@ -20,7 +22,13 @@ import java.util.List;
  * @author jdramsey
  * @author dmalinsky
  */
+@AlgorithmDescription(
+        name = "TsFCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Test
+)
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
@@ -44,12 +52,14 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new TsDagToPag(new EdgeListGraph(graph)).convert(); }
+    public Graph getComparisonGraph(Graph graph) {
+        return new TsDagToPag(new EdgeListGraph(graph)).convert();
+    }
 
     public String getDescription() {
-        return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                        initialGraph.getDescription() : "");
+        return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription()
+                + (initialGraph != null ? " with initial graph from "
+                        + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -70,5 +80,10 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

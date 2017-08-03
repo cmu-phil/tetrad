@@ -3,6 +3,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -10,7 +13,6 @@ import edu.cmu.tetrad.search.FindOneFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,12 +21,20 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "Fofc",
+        algType = AlgType.search_for_structure_over_latents,
+        oracleType = OracleType.None
+)
+
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
+
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fofc() {}
+    public Fofc() {
+    }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -89,5 +99,10 @@ public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

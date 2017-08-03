@@ -4,6 +4,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -12,7 +15,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.List;
 
 /**
@@ -20,7 +22,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "PCStableMax",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test
+)
 public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private IndependenceWrapper test;
@@ -56,8 +64,8 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public String getDescription() {
         return "PC-Max (\"Peter and Clark\") using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+                + (initialGraph != null ? " with initial graph from "
+                        + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -87,5 +95,10 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     public boolean isCompareToTrue() {
         return compareToTrue;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

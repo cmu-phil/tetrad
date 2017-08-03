@@ -19,7 +19,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+/*@AlgorithmDescription(
+        name = "Tanh",
+        algType = AlgType.orient_pairwise,
+        oracleType = OracleType.None
+)*/
 public class Tanh implements Algorithm, TakesInitialGraph {
+
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
@@ -34,8 +40,8 @@ public class Tanh implements Algorithm, TakesInitialGraph {
         if (initial != null) {
             initial = initialGraph.search(dataSet, parameters);
         } else {
-            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
-                    "will orient the edges in the input graph using the data");
+            throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data");
         }
 
         List<DataSet> dataSets = new ArrayList<>();
@@ -54,8 +60,8 @@ public class Tanh implements Algorithm, TakesInitialGraph {
 
     @Override
     public String getDescription() {
-        return "Tahn" + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "Tahn" + (initialGraph != null ? " with initial graph from "
+                + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -66,5 +72,9 @@ public class Tanh implements Algorithm, TakesInitialGraph {
     @Override
     public List<String> getParameters() {
         return initialGraph.getParameters();
+    }
+
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

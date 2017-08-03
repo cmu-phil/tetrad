@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.List;
 
 /**
@@ -16,7 +15,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+/*@AlgorithmDescription(
+        name = "CCD_MAX",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test
+)*/
 public class CcdMax implements Algorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();

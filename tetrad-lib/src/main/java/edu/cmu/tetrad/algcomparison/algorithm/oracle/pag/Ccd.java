@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
 
@@ -17,7 +16,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+/*@AlgorithmDescription(
+        name = "CCD",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test
+)*/
 public class Ccd implements Algorithm {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;

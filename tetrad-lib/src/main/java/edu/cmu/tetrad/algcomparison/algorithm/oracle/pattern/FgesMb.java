@@ -4,6 +4,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -11,7 +14,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -20,7 +22,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "FgesMb",
+        algType = AlgType.search_for_Markov_blankets,
+        oracleType = OracleType.Score
+)
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
@@ -47,7 +55,6 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
 //        Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
 //
 //        Score score =
-
         Score score = this.score.getScore(dataSet, parameters);
         edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
@@ -95,5 +102,9 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

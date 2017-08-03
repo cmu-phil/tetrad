@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mixed;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -8,7 +11,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.pitt.csb.mgm.MGM;
 
 import java.util.ArrayList;
@@ -17,14 +19,21 @@ import java.util.List;
 /**
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "MGM",
+        algType = AlgType.produce_undirected_graphs,
+        oracleType = OracleType.None
+)
 public class Mgm implements Algorithm {
+
     static final long serialVersionUID = 23L;
+
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _ds = DataUtils.getMixedDataSet(ds);
         MGM m = new MGM(_ds, new double[]{
-                parameters.getDouble("mgmParam1"),
-                parameters.getDouble("mgmParam2"),
-                parameters.getDouble("mgmParam3")
+            parameters.getDouble("mgmParam1"),
+            parameters.getDouble("mgmParam2"),
+            parameters.getDouble("mgmParam3")
         });
         return m.search();
     }

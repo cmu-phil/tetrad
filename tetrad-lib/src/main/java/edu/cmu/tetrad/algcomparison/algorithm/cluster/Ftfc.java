@@ -2,14 +2,15 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.data.Dataset;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,24 +20,23 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
+@AlgorithmDescription(
+        name = "Ftfc",
+        algType = AlgType.search_for_structure_over_latents,
+        oracleType = OracleType.None
+)
+
+public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Ftfc() {}
+    public Ftfc() {
+    }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        ICovarianceMatrix cov = null;
-
-        if (dataSet instanceof Dataset) {
-            cov = DataUtils.getCovMatrix(dataSet);
-        } else if (dataSet instanceof  ICovarianceMatrix){
-            cov = (ICovarianceMatrix) dataSet;
-        } else {
-            throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
-        }
-
+        ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
         double alpha = parameters.getDouble("alpha");
 
         boolean gap = parameters.getBoolean("useGap", true);
@@ -89,4 +89,5 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
 }

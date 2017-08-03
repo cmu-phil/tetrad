@@ -10,7 +10,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.List;
 
 /**
@@ -19,6 +18,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -54,8 +54,8 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "JCPC (Joe's CPC) using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "JCPC (Joe's CPC) using " + test.getDescription() + (initialGraph != null ? " with initial graph from "
+                + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -78,5 +78,10 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

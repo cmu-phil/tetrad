@@ -1,17 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.search.SemBicScoreD;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,5 +116,10 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

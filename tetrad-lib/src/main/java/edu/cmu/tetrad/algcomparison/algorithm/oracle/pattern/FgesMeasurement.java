@@ -11,7 +11,6 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-
 import java.util.List;
 
 /**
@@ -20,6 +19,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
@@ -92,5 +92,10 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

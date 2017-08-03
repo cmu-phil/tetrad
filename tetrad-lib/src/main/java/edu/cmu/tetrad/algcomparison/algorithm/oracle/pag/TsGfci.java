@@ -5,6 +5,9 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -20,6 +23,11 @@ import java.util.List;
  * @author jdramsey
  * @author Daniel Malinsky
  */
+@AlgorithmDescription(
+        name = "TsGFCI",
+        algType = AlgType.allow_latent_common_causes,
+        oracleType = OracleType.Both
+)
 public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -63,9 +71,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
         parameters.addAll(score.getParameters());
         parameters.add("faithfulnessAssumed");
         parameters.add("maxIndegree");
-
-        // Commentted this out according to Joe's reply - Zhou
-        //parameters.add("printStream");
+        parameters.add("printStream");
         return parameters;
     }
 
@@ -77,5 +83,10 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }

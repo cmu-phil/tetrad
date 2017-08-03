@@ -3,16 +3,19 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-
+import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
@@ -20,7 +23,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
+@AlgorithmDescription(
+        name = "PC",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.Test
+)
+public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
@@ -33,6 +42,17 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     public Pc(IndependenceWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;
+    }
+
+    public Pc() {
+    }
+
+    ;
+
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
@@ -52,8 +72,8 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public String getDescription() {
         return "PC (\"Peter and Clark\") using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+                + (initialGraph != null ? " with initial graph from "
+                        + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -77,5 +97,10 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public void setInitialGraph(Algorithm initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }
