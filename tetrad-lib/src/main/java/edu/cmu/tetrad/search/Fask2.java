@@ -43,7 +43,7 @@ import static java.lang.Math.max;
  *
  * @author Joseph Ramsey
  */
-public final class Fask implements GraphSearch {
+public final class Fask2 implements GraphSearch {
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -79,7 +79,7 @@ public final class Fask implements GraphSearch {
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
      */
-    public Fask(DataSet dataSet) {
+    public Fask2(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -148,6 +148,9 @@ public final class Fask implements GraphSearch {
                 double f1 = y[k] * h(x[k]);
                 double f2 = x[k] * h(y[k]);
 
+                f1 = x[k] * x[k] * x[k] * y[k];
+                f2 = x[k] * y[k] * y[k] * y[k];
+
                 sum1 += f1;
                 sum2 += f2;
 
@@ -181,6 +184,7 @@ public final class Fask implements GraphSearch {
             double p = (1.0 - new TDistribution(nn - 1).cumulativeProbability(abs(t)));
             double rho = correlation(x, y);
             double R = rho * (sum1 / n - sum2 / n);
+            R = rho * (sum1 - sum2);
 
             if (knowledgeOrients(X, Y)) {
                 graph.addDirectedEdge(X, Y);

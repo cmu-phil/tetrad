@@ -138,7 +138,9 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
 
-        algorithms.add(new EFangConcatenated(false));
+        algorithms.add(new FangConcatenated(false));
+        algorithms.add(new FaskConcatenated(false));
+        algorithms.add(new Fask2Concatenated(false));
 
 //        algorithms.add(new FasRSkewConcatenated(true));
 

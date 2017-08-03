@@ -23,6 +23,7 @@ package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBnlearnMmhc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgGes;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
@@ -51,8 +52,8 @@ public class Condition2 {
         parameters.set("alpha", 0.01);
         parameters.set("numRuns", 10);
 //        parameters.set("penaltyDiscount", 4);
-        parameters.set("useMaxPOrientationHeuristic", true);
-        parameters.set("maxPOrientationMaxPathLength", 3);
+        parameters.set("useMaxPOrientationHeuristic", false);
+//        parameters.set("maxPOrientationMaxPathLength", 3);
 
         Statistics statistics = new Statistics();
 
@@ -166,14 +167,26 @@ public class Condition2 {
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_2,_faithfulnessAssumed_=_true"));
         algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penaltyDiscount_=_4,_faithfulnessAssumed_=_true"));
 
-        //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("IAMB_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Fast.IAMB_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Inter.IAMB_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC_alpha_=_0.001"));
-//
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMPC_alpha_=_0.001"));
+
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink alpha = 0.01"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("GrowShrink alpha = 0.001"));
+
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("IAMB_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("IAMB_alpha_=_0.001"));
+
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Fast.IAMB_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Fast.IAMB_alpha_=_0.001"));
+
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Inter.IAMB_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("Inter.IAMB_alpha_=_0.001"));
+
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("si.hiton.pc_alpha_=_0.001"));
+
+        algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC"));
+
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=cor"));
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-cor"));
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-mi-g"));
@@ -184,23 +197,18 @@ public class Condition2 {
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-mi-g"));
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-zf"));
 //        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=zf"));
-//
-//        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001.parallize.dynamic"));
-//
-//        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_defaults_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));
-////        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
-//        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
 
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmPcalgPc("CPC_pcalg_majority.rule_defaults_alpha_=_0.001"));
 
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*log(nrow(data)"));
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_4*log(nrow(data)"));
-//        algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*log(nrow(data)"));
 
 //        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
 

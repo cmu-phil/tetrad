@@ -91,7 +91,12 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
                 throw new IllegalArgumentException("Not a choice.");
         }
 
-        Graph init = initialGraph.search(dataSet, parameters);
+        Graph init = null;
+
+        if (initial != null) {
+            init = initialGraph.search(dataSet, parameters);
+        }
+
         edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);

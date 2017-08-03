@@ -189,6 +189,8 @@ public final class OrientCollidersMaxP {
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
         List<Node> adja = graph.getAdjacentNodes(a);
         List<Node> adjc = graph.getAdjacentNodes(c);
+        adja.remove(c);
+        adjc.remove(a);
 
         double score = Double.POSITIVE_INFINITY;
         List<Node> S = null;
