@@ -4,21 +4,19 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.PcAll;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-
+import edu.cmu.tetrad.search.PcAll;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
@@ -40,8 +38,6 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
     public Cpc() {
     }
-
-    ;
 
     public Cpc(IndependenceWrapper type) {
         this.test = type;
