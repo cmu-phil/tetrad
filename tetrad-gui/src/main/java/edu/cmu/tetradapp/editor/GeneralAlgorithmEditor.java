@@ -126,8 +126,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private String selectedAlgoName;
 
-    private int selectedAlgoIndex;
-
     private JTextArea algoDescriptionTextArea;
 
     private ParameterPanel parametersPanel;
@@ -208,11 +206,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         dsepScores.add(ScoreType.D_SEPARATION);
 
         // Use annotations to populate description list
+        // List<AlgorithmDescriptionClass>
         descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
 
         mappedDescriptions = new HashMap<>();
 
         for (AlgorithmDescriptionClass description : descriptions) {
+            // Use algo name as key, description as value
             mappedDescriptions.put(description.getAlgName(), description);
         }
 
@@ -291,11 +291,61 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             scoreDropdown.addItem(item);
         }
 
+        // Get a list of algo types
         for (AlgType item : AlgType.values()) {
             algTypesDropdown.addItem(item.toString().replace("_", " "));
         }
 
-        algTypesDropdown.setSelectedItem(getAlgType().toString().replace("_", " "));
+        // Set the first option "All" as default selection
+        algTypesDropdown.setSelectedIndex(0);
+
+        // Convert the selected item into String object and get the corresponding enum type
+        AlgType selectedType = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
+
+        suggestedAlgosListModel = new DefaultListModel();
+
+        // Add algo to list model
+        for (AlgorithmDescriptionClass algoDesc : descriptions) {
+            if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
+                suggestedAlgosListModel.addElement(algoDesc.getAlgName());
+            }
+        }
+
+        suggestedAlgosList = new JList(suggestedAlgosListModel);
+
+        // Only allow single selection
+        suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Default to select the first algo name in list
+        suggestedAlgosList.setSelectedIndex(0);
+        selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+        // Event listener
+        suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                // More about why use getValueIsAdjusting()
+                // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
+                if (!e.getValueIsAdjusting()) {
+                    // After selecting a different algo type, even though we set the selection index,
+                    // but it won't be captured here - Zhou
+                    // Seems this only captures mouse selection
+                    if (suggestedAlgosList.getSelectedValue() == null) {
+                        return;
+                    }
+
+                    selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                    System.out.println("Selected algo ..." + selectedAlgoName);
+
+                    // Reset description
+                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
+
+                    // Finally, set the selected algo and update the test and score dropdown menus
+                    setAlgorithm();
+                }
+            }
+        });
 
         // Event listener of algo types dorpdown menu
         algTypesDropdown.addActionListener(new ActionListener() {
@@ -304,24 +354,27 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 // First clear the list model
                 suggestedAlgosListModel.removeAllElements();
 
+                // Convert the selected item into String object and get the corresponding enum type
+                AlgType selectedType = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
+                System.out.println("Selected algo Type ===> " + selectedType);
                 // Create a new list model based on selections
                 for (AlgorithmDescriptionClass description : descriptions) {
-                    AlgType selectedItem = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
-                    if (description.getAlgType() == selectedItem
-                            || selectedItem == AlgType.ALL) {
+                    if (description.getAlgType() == selectedType || selectedType == AlgType.ALL) {
                         suggestedAlgosListModel.addElement(description.getAlgName());
                     }
                 }
 
-                // Reset default algo
+                // Reset default algo selection
                 suggestedAlgosList.setSelectedIndex(0);
+                selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
+
+                // Reset description
+                algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
+
+                // Finally, set the selected algo and update the test and score dropdown menus
+                setAlgorithm();
             }
         });
-
-        // Initialize selectedAlgoName before calling setAlgorithm()
-        // Use the first algorithm as default - Zhou
-        selectedAlgoIndex = 0;
-        selectedAlgoName = descriptions.get(selectedAlgoIndex).getAlgName().toString();
 
         if (tests.contains(getTestType())) {
             testDropdown.setSelectedItem(getTestType());
@@ -1009,11 +1062,11 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         // Get the equivalent enum type of selectedAlgoName string
         AlgName name = AlgName.valueOf(selectedAlgoName);
 
-        AlgorithmDescriptionClass description = mappedDescriptions.get(name);
-
         if (name == null) {
             return;
         }
+
+        AlgorithmDescriptionClass description = mappedDescriptions.get(name.toString());
 
         TestType test = (TestType) testDropdown.getSelectedItem();
         ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
@@ -1445,45 +1498,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         String suggestedAlgosBoxBorderTitle = "Choose algorithm";
         suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
-        suggestedAlgosListModel = new DefaultListModel();
-
-        // Add algo to list model
-        for (AlgorithmDescriptionClass algoDesc : descriptions) {
-            if (algoDesc.getAlgType() == getAlgType() || getAlgType() == AlgType.ALL) {
-                suggestedAlgosListModel.addElement(algoDesc.getAlgName());
-            }
-        }
-
-        suggestedAlgosList = new JList(suggestedAlgosListModel);
-
-        // Only allow single selection
-        suggestedAlgosList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Use the currently selected index every time getAlgorithmPane() is called - Zhou
-        suggestedAlgosList.setSelectedIndex(selectedAlgoIndex);
         // Set default description as the first algorithm
         algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
-
-        suggestedAlgosList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                // More about why use getValueIsAdjusting()
-                // http://docs.oracle.com/javase/8/docs/api/javax/swing/ListSelectionModel.html#getValueIsAdjusting--
-                if (!e.getValueIsAdjusting()) {
-                    // Currently selected item index
-                    // we'll need to set this because getAlgorithmPane() gets called
-                    // every time setAlgorithm() is called - Zhou
-                    selectedAlgoIndex = suggestedAlgosList.getSelectedIndex();
-
-                    // Show the description of this algo in descriptopn text area
-                    selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
-                    System.out.println("Selected algo ..." + selectedAlgoName);
-                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
-
-                    // Finally, set the selected algo and update the test and score dropdown menus
-                    setAlgorithm();
-                }
-            }
-        });
 
         // Set default algo in runner
         Algorithm algorithm = getAlgorithmFromInterface();
