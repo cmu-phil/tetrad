@@ -27,6 +27,7 @@ public class Mgm implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
+    @Override
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _ds = DataUtils.getMixedDataSet(ds);
 
@@ -46,10 +47,12 @@ public class Mgm implements Algorithm {
     }
 
     // Need to marry the parents on this.
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    @Override
     public String getDescription() {
         return "Returns the output of the MGM (Mixed Graphical Model) algorithm (a Markov random field)";
     }
