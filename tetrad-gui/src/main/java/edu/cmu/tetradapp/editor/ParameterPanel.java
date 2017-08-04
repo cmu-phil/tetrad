@@ -42,8 +42,8 @@ import javax.swing.*;
 class ParameterPanel extends JPanel {
 
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
-        Box a = Box.createHorizontalBox();
-        Box b = Box.createVerticalBox();
+        Box container = Box.createHorizontalBox();
+        Box paramsBox = Box.createVerticalBox();
 
         List<String> removeDuplicates = new ArrayList<>();
 
@@ -55,53 +55,54 @@ class ParameterPanel extends JPanel {
 
         parametersToEdit = removeDuplicates;
 
-        a.add(b);
+        // Some algorithms don't have parameters to edit - Zhou
+        // E.g., EB, R1...R4, RSkew, RSkewE, Skew, SkewE
+        if (parametersToEdit.size() > 0) {
+            // Add each param row to box
+            for (String parameter : parametersToEdit) {
+                Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
 
-//        Box d = Box.createHorizontalBox();
-//        JLabel label = new JLabel("Please choose values for the following parameters:");
-//        label.setFont(new Font("Dialog", Font.BOLD, 13));
-//        d.add(label);
-//        d.add(Box.createHorizontalGlue());
-//        b.add(d);
-//        b.add(Box.createVerticalStrut(10));
-        for (String parameter : parametersToEdit) {
-            Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
+                System.out.println(parameter + " " + defaultValue);
 
-            System.out.println(parameter + " " + defaultValue);
+                JComponent parameterSelection;
 
-            JComponent parameterSelection;
+                if (defaultValue instanceof Double) {
+                    double lowerBoundDouble = ParamDescriptions.instance().get(parameter).getLowerBoundDouble();
+                    double upperBoundDouble = ParamDescriptions.instance().get(parameter).getUpperBoundDouble();
+                    parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+                } else if (defaultValue instanceof Integer) {
+                    int lowerBoundInt = ParamDescriptions.instance().get(parameter).getLowerBoundInt();
+                    int upperBoundInt = ParamDescriptions.instance().get(parameter).getUpperBoundInt();
+                    parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+                } else if (defaultValue instanceof Boolean) {
+                    // Joe's old implementation with dropdown yes or no
+                    //parameterSelection = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
+                    // Zhou's new implementation with yes/no radio buttons
+                    parameterSelection = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+                } else if (defaultValue instanceof String) {
+                    parameterSelection = getStringField(parameter, parameters, (String) defaultValue);
+                } else {
+                    throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+                }
 
-            if (defaultValue instanceof Double) {
-                double lowerBoundDouble = ParamDescriptions.instance().get(parameter).getLowerBoundDouble();
-                double upperBoundDouble = ParamDescriptions.instance().get(parameter).getUpperBoundDouble();
-                parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
-            } else if (defaultValue instanceof Integer) {
-                int lowerBoundInt = ParamDescriptions.instance().get(parameter).getLowerBoundInt();
-                int upperBoundInt = ParamDescriptions.instance().get(parameter).getUpperBoundInt();
-                parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
-            } else if (defaultValue instanceof Boolean) {
-                // Joe's old implementation with dropdown yes or no
-                //parameterSelection = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
-                // Zhou's new implementation with yes/no radio buttons
-                parameterSelection = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
-            } else if (defaultValue instanceof String) {
-                parameterSelection = getStringField(parameter, parameters, (String) defaultValue);
-            } else {
-                throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+                Box paramRow = Box.createHorizontalBox();
+                JLabel paramLabel = new JLabel(ParamDescriptions.instance().get(parameter).getDescription());
+                paramRow.add(paramLabel);
+                paramRow.add(Box.createHorizontalGlue());
+                paramRow.add(parameterSelection);
+                paramsBox.add(paramRow);
             }
-
-            Box c = Box.createHorizontalBox();
-            JLabel _label = new JLabel(ParamDescriptions.instance().get(parameter).getDescription());
-            _label.setFont(new Font("Dialog", Font.BOLD, 13));
-            c.add(_label);
-            c.add(Box.createHorizontalGlue());
-            c.add(parameterSelection);
-            b.add(c);
+        } else {
+            JLabel noParamsLabel = new JLabel("No parameters to edit");
+            paramsBox.add(noParamsLabel);
         }
 
-        b.add(Box.createVerticalGlue());
+        paramsBox.add(Box.createVerticalGlue());
+
+        container.add(paramsBox);
+
         setLayout(new BorderLayout());
-        add(a, BorderLayout.CENTER);
+        add(container, BorderLayout.CENTER);
 
     }
 
