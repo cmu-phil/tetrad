@@ -35,6 +35,9 @@ public class MBFS implements Algorithm, HasKnowledge {
     private IKnowledge knowledge = new Knowledge2();
     private String targetName;
 
+    public MBFS() {
+    }
+
     public MBFS(IndependenceWrapper test) {
         this.test = test;
     }

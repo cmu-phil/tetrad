@@ -32,6 +32,9 @@ public class Rfci implements Algorithm, HasKnowledge {
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
+    public Rfci() {
+    }
+
     public Rfci(IndependenceWrapper test) {
         this.test = test;
     }

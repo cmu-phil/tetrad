@@ -27,6 +27,9 @@ public class Mgm implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
+    public Mgm() {
+    }
+
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _ds = DataUtils.getMixedDataSet(ds);

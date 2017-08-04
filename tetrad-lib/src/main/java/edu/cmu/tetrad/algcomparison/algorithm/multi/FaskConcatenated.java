@@ -2,12 +2,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.AlgorithmDescription;
+import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,11 +18,18 @@ import java.util.List;
  * Wraps the IMaGES algorithm for continuous variables.
  * </p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * datasets should be taken at a time (randomly). This cannot given multiple
+ * values.
  *
  * @author jdramsey
  */
+@AlgorithmDescription(
+        name = "EFANG",
+        algType = AlgType.forbid_latent_common_causes,
+        oracleType = OracleType.None
+)
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+
     static final long serialVersionUID = 23L;
     private boolean empirical = false;
     private IKnowledge knowledge = new Knowledge2();

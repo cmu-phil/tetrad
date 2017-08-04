@@ -24,7 +24,7 @@ import java.util.List;
  * @author jdramsey
  */
 @AlgorithmDescription(
-        name = "PCStableMax",
+        name = "PcStableMax",
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.Test
 )
@@ -35,6 +35,9 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
+
+    public PcStableMax() {
+    }
 
     public PcStableMax(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;

@@ -36,6 +36,9 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = null;
 
+    public TsGfci() {
+    }
+
     public TsGfci(IndependenceWrapper type, ScoreWrapper score) {
         this.test = type;
         this.score = score;

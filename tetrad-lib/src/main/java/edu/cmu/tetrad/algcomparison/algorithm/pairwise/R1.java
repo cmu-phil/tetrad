@@ -31,6 +31,9 @@ public class R1 implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
+    public R1() {
+    }
+
     public R1(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }

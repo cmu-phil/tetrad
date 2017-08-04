@@ -31,6 +31,9 @@ public class SkewE implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
+    public SkewE() {
+    }
+
     public SkewE(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }

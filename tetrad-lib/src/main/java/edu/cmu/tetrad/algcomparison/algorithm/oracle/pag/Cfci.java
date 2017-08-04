@@ -18,11 +18,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-/*@AlgorithmDescription(
-        name = "CFCI",
-        algType = AlgType.allow_latent_common_causes,
-        oracleType = OracleType.Test
-)*/
 public class Cfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;

@@ -27,7 +27,7 @@ import java.util.List;
 @AlgorithmDescription(
         name = "FGES",
         algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.Test
+        oracleType = OracleType.Score
 )
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 

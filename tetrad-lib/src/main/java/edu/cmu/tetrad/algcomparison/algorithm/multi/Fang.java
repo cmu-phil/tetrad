@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +18,6 @@ import java.util.List;
  *
  * @author jdramsey
  */
-/*@AlgorithmDescription(
-        name = "FANG",
-        algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None
-)*/
 public class Fang implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;

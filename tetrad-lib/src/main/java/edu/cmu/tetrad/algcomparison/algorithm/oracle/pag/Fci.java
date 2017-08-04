@@ -34,6 +34,9 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
+    public Fci() {
+    }
+
     public Fci(IndependenceWrapper type) {
         this.test = type;
     }

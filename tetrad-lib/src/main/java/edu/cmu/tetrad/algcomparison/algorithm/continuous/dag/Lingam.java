@@ -17,7 +17,7 @@ import java.util.List;
  */
 /*@AlgorithmDescription(
         name = "LiNGAM",
-        algType = AlgType.forbid_latent_common_causes,
+        algType = AlgType.DAG,
         oracleType = OracleType.None
 )*/
 public class Lingam implements Algorithm {

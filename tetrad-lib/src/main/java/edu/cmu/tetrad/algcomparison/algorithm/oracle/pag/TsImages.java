@@ -33,6 +33,9 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm 
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = null;
 
+    public TsImages() {
+    }
+
     public TsImages(ScoreWrapper score) {
         // Have to comment this out otherwise will see the popup message of this exception - Zhou
 //        if (!(score instanceof SemBicScore || score instanceof BDeuScore)) {

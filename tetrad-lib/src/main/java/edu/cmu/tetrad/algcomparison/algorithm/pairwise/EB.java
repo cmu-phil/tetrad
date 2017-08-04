@@ -31,6 +31,9 @@ public class EB implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
+    public EB() {
+    }
+
     public EB(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }

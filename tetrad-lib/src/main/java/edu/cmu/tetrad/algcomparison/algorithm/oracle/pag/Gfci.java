@@ -32,6 +32,9 @@ public class Gfci implements Algorithm, HasKnowledge {
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
+    public Gfci() {
+    }
+
     public Gfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;

@@ -34,6 +34,9 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     private Algorithm initialGraph = null;
     private IKnowledge knowledge = null;
 
+    public TsFci() {
+    }
+
     public TsFci(IndependenceWrapper type) {
         this.test = type;
     }

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.bootstrap.BootstrapRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Bpc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Fofc;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.Ftfc;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
@@ -826,13 +825,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     algorithm = new PcAll(independenceWrapper);
                 }
                 break;
-//            case PC:
-//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-//                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-//                } else {
-//                    algorithm = new Pc(independenceWrapper);
-//                }
-//                break;
+
 //            case CPC:
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
 //                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
@@ -864,9 +857,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case RFCI:
                 algorithm = new Rfci(independenceWrapper);
                 break;
-            case CFCI:
-                algorithm = new Cfci(independenceWrapper);
-                break;
+//            case CFCI:
+//                algorithm = new Cfci(independenceWrapper);
+//                break;
             case TsFCI:
                 algorithm = new TsFci(independenceWrapper);
 //                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
@@ -881,12 +874,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case TsImages:
                 algorithm = new TsImages(scoreWrapper);
                 break;
-            case CCD:
-                algorithm = new Ccd(independenceWrapper);
-                break;
-            case CCD_MAX:
-                algorithm = new CcdMax(independenceWrapper);
-                break;
+//            case CCD:
+//                algorithm = new Ccd(independenceWrapper);
+//                break;
+//            case CCD_MAX:
+//                algorithm = new CcdMax(independenceWrapper);
+//                break;
             case FANG:
                 algorithm = new FangConcatenated();
                 break;
@@ -910,12 +903,12 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case PcStableMax:
                 algorithm = new PcStableMax(independenceWrapper, false);
                 break;
-            case JCPC:
-                algorithm = new Jcpc(independenceWrapper, scoreWrapper);
-                break;
-            case LiNGAM:
-                algorithm = new Lingam();
-                break;
+//            case JCPC:
+//                algorithm = new Jcpc(independenceWrapper, scoreWrapper);
+//                break;
+//            case LiNGAM:
+//                algorithm = new Lingam();
+//                break;
             case MGM:
                 algorithm = new Mgm();
                 break;
@@ -925,9 +918,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case IMaGES_Continuous:
                 algorithm = new ImagesSemBic();
                 break;
-            case IMaGES_CCD:
-                algorithm = new ImagesCcd();
-                break;
+//            case IMaGES_CCD:
+//                algorithm = new ImagesCcd();
+//                break;
             case GLASSO:
                 algorithm = new Glasso();
                 break;
@@ -970,9 +963,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             case SkewE:
                 algorithm = new SkewE(new SingleGraphAlg(runner.getSourceGraph()));
                 break;
-            case Tahn:
-                algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
-                break;
+//            case Tahn:
+//                algorithm = new Tanh(new SingleGraphAlg(runner.getSourceGraph()));
+//                break;
 
             // Bootstrapping
             case BootstrapFGES:

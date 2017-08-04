@@ -32,6 +32,9 @@ public class FAS implements Algorithm, HasKnowledge {
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
+    public FAS() {
+    }
+
     public FAS(IndependenceWrapper test) {
         this.test = test;
     }
