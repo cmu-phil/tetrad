@@ -409,8 +409,8 @@ public class TetradMatrix implements TetradSerializable {
         apacheData.setRow(row, doubles.toArray());
     }
 
-    public void assignColumn(int row, TetradVector doubles) {
-        apacheData.setColumn(row, doubles.toArray());
+    public void assignColumn(int col, TetradVector doubles) {
+        apacheData.setColumn(col, doubles.toArray());
     }
 
     public double trace() {

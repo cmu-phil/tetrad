@@ -6,13 +6,12 @@ import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.Graph;
 import edu.pitt.csb.mgm.MGM;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +29,19 @@ public class Mgm implements Algorithm {
 
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _ds = DataUtils.getMixedDataSet(ds);
-        MGM m = new MGM(_ds, new double[]{
-            parameters.getDouble("mgmParam1"),
-            parameters.getDouble("mgmParam2"),
-            parameters.getDouble("mgmParam3")
-        });
+
+        double mgmParam1 = parameters.getDouble("mgmParam1");
+        double mgmParam2 = parameters.getDouble("mgmParam2");
+        double mgmParam3 = parameters.getDouble("mgmParam3");
+
+        double[] lambda = {
+            mgmParam1,
+            mgmParam2,
+            mgmParam3
+        };
+
+        MGM m = new MGM(_ds, lambda);
+
         return m.search();
     }
 

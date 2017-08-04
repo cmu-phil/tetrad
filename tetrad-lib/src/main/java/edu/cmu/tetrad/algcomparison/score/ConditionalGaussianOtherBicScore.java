@@ -19,14 +19,11 @@ import java.util.List;
 public class ConditionalGaussianOtherBicScore implements ScoreWrapper, Experimental {
 
     static final long serialVersionUID = 23L;
-    private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        this.dataSet = dataSet;
         final ConditionalGaussianOtherScore conditionalGaussianScore
-                = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getBoolean("discretize"));
-        conditionalGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+                = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getInt("discretize") > 0);
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
     }
@@ -44,10 +41,7 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper, Experimen
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("cgExact");
-        // "assumeMixed" is renamed to "cgExact", according to Joe - Zhou
-        //parameters.add("assumeMixed");
+
         parameters.add("structurePrior");
         parameters.add("discretize");
         return parameters;
@@ -55,6 +49,6 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper, Experimen
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return null;
     }
 }

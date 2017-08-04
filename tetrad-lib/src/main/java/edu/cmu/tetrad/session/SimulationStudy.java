@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * Runs a simulation study for a session which traverses a subtree of the
+ * Runs a simulation edu.cmu.tetrad.study for a session which traverses a subtree of the
  * session graph in depth-first order and executes each node encountered a
  * specified number of times.
  *
@@ -36,7 +36,7 @@ import java.util.prefs.Preferences;
 public final class SimulationStudy {
 
     /**
-     * The session, nodes of which this simulation study is executing.
+     * The session, nodes of which this simulation edu.cmu.tetrad.study is executing.
      */
     private Session session;
 
@@ -53,7 +53,7 @@ public final class SimulationStudy {
     //===========================CONSTRUCTORS==============================//
 
     /**
-     * Constructs a new simulation study for the given session.
+     * Constructs a new simulation edu.cmu.tetrad.study for the given session.
      */
     public SimulationStudy(Session session) {
         if (session == null) {
@@ -187,7 +187,7 @@ public final class SimulationStudy {
 
     /**
      * Notify session nodes (and their parameters) downstream that a new
-     * execution has begun of a simulation study.
+     * execution has begun of a simulation edu.cmu.tetrad.study.
      */
     private void notifyDownstreamOfStart(final SessionNode sessionNode) {
         SessionSupport sessionSupport = new SessionSupport(this);

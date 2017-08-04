@@ -50,7 +50,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     private String nextButtonType;
 
     /**
-     * The simulation study. This contains a reference to the session being
+     * The simulation edu.cmu.tetrad.study. This contains a reference to the session being
      * edited.
      */
     private SimulationStudy simulationStudy;
@@ -192,7 +192,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     public void setSessionWrapper(SessionWrapper sessionWrapper) {
         super.setGraph(sessionWrapper);
 
-        // Force simulation study to be recreated.
+        // Force simulation edu.cmu.tetrad.study to be recreated.
         this.simulationStudy = null;
 
         sessionWrapper.addPropertyChangeListener(new PropertyChangeListener() {
@@ -276,7 +276,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     //===========================PRIVATE METHODS========================//
     /**
      * Adds a label to the session editor node for the given session node
-     * indicating how many times the simulation study will run that node. If the
+     * indicating how many times the simulation edu.cmu.tetrad.study will run that node. If the
      * number is one, the label is removed.
      */
     private void setRepetitionLabel(SessionNode sessionNode) {

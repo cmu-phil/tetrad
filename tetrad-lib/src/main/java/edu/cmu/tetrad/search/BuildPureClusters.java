@@ -699,18 +699,18 @@ public final class BuildPureClusters {
 
 //        if (getCovarianceMatrix() != null) {
 //            if (getIndependenceTest().isIndependent(
-//                    getCovarianceMatrix().getVariables().get(v1),
-//                    getCovarianceMatrix().getVariables().get(v2),
+//                    getCovarianceMatrix().getVariable().get(v1),
+//                    getCovarianceMatrix().getVariable().get(v2),
 //                    new ArrayList<Node>())) {
-////                System.out.println(getCovarianceMatrix().getVariables()
+////                System.out.println(getCovarianceMatrix().getVariable()
 ////                        .get(v1) + " " +
-////                        getCovarianceMatrix().getVariables().get(v2) +
+////                        getCovarianceMatrix().getVariable().get(v2) +
 ////                        " == " + getCovarianceMatrix().getValue(v1, v2));
 ////            }
 //
 //                return getIndependenceTest().isIndependent(
-//                        getCovarianceMatrix().getVariables().get(v1),
-//                        getCovarianceMatrix().getVariables().get(v2),
+//                        getCovarianceMatrix().getVariable().get(v1),
+//                        getCovarianceMatrix().getVariable().get(v2),
 //                        new ArrayList<Node>());
 //            } else {
 //                return getIndependenceTest().isIndependent(dataSet.getVariable(v1),

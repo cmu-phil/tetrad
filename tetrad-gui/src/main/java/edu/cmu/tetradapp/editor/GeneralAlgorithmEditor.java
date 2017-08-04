@@ -197,6 +197,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         List<ScoreType> continuousScores = new ArrayList<>();
         continuousScores.add(ScoreType.SEM_BIC);
+        continuousScores.add(ScoreType.Fisher_Z_Score);
         continuousScores.add(ScoreType.Conditional_Gaussian_BIC);
 
         List<ScoreType> mixedScores = new ArrayList<>();
@@ -820,28 +821,35 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 //                break;
             case PC:
                 if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+                    algorithm = new PcAll(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
                 } else {
-                    algorithm = new Pc(independenceWrapper);
+                    algorithm = new PcAll(independenceWrapper);
                 }
                 break;
-            case CPC:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new Cpc(independenceWrapper);
-                }
-                break;
-            case CPCStable:
-                algorithm = new CpcStable(independenceWrapper);
-                break;
-            case PCStable:
-                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
-                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
-                } else {
-                    algorithm = new PcStable(independenceWrapper);
-                }
-                break;
+//            case PC:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Pc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new Pc(independenceWrapper);
+//                }
+//                break;
+//            case CPC:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new Cpc(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new Cpc(independenceWrapper);
+//                }
+//                break;
+//            case CPCStable:
+//                algorithm = new CpcStable(independenceWrapper);
+//                break;
+//            case PCStable:
+//                if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+//                    algorithm = new PcStable(independenceWrapper, new SingleGraphAlg(runner.getSourceGraph()));
+//                } else {
+//                    algorithm = new PcStable(independenceWrapper);
+//                }
+//                break;
             case GFCI:
                 algorithm = new Gfci(independenceWrapper, scoreWrapper);
                 break;
@@ -883,7 +891,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 algorithm = new FangConcatenated();
                 break;
             case EFANG:
-                algorithm = new EFangConcatenated();
+                algorithm = new FaskConcatenated();
                 break;
             case FAS:
                 algorithm = new FAS(independenceWrapper);
@@ -1000,6 +1008,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 break;
             case SEM_BIC:
                 scoreWrapper = new SemBicScore();
+                break;
+            case Fisher_Z_Score:
+                scoreWrapper = new FisherZScore();
                 break;
             case D_SEPARATION:
                 scoreWrapper = new DseparationScore(new SingleGraph(runner.getSourceGraph()));
@@ -1833,7 +1844,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     private ScoreType getScoreType() {
-        return ScoreType.valueOf(parameters.getString("scoreType", "BDeu"));
+        String string = parameters.getString("scoreType", "BDeu");
+        return ScoreType.valueOf(string);
     }
 
     private void setScoreType(ScoreType scoreType) {

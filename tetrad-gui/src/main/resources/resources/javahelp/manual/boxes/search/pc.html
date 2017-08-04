@@ -54,13 +54,13 @@ a certain size, or &quot;depth&quot;) such that I(X, Y | S). Once the
 adjacency structure over V has been well estimated by this procedure,
 an orientation phase is begun. The first step of the orientation phase
 is to examine unshielded triples and consider whether to orient them
-as colliders. An unshielded triple is a triple &lt;X, Y, Z&gt; where X
+as colliderDiscovery. An unshielded triple is a triple &lt;X, Y, Z&gt; where X
 is adjacent to Y, Y is adjacent to Z, but X is not adjacent to
 Z. Since X is not adjacent to Z, the edge X---Z must have been removed
 during the adjacency search by conditioning on some set Sxz; &lt;X, Y,
 Z&gt; is oriented as a collider X--&gt;Y&lt;--Z just in case Y is not
 in this Sxz. Once all such unshielded triples have been oriented as
-colliders by this rule that can be, a series of orientation rules is
+colliderDiscovery by this rule that can be, a series of orientation rules is
 applied (in this case, the complete orientation rule set from Meek
 1995) to orient any edges whose orientations are implied by previous
 orientations. The log of particular decisions the algorithm makes, as
@@ -179,7 +179,7 @@ For each depth d = 0, 1, ...:
 
 Step C:
 
-Orient colliders in G, as follows:
+Orient colliderDiscovery in G, as follows:
 
 For each modelNode x:
    For each pair of nodes y, z adjacent to x:

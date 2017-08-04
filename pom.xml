@@ -136,5 +136,10 @@
             <artifactId>reflections</artifactId>
             <version>0.9.10</version>
         </dependency>
+        <dependency>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>liblinear</artifactId>
+            <version>1.95</version>
+        </dependency>
     </dependencies>
 </project>

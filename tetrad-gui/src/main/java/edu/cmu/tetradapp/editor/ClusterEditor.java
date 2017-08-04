@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.MeasurementModelWrapper;
+
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -111,8 +112,10 @@ public final class ClusterEditor extends JPanel {
         b1.add(new JLabel("Not in cluster:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("# Clusters = "));
+        int numClusters = clusters.getNumClusters();
+        numClusters = numClusters < 3 ? 3 : numClusters;
         SpinnerNumberModel spinnerNumberModel
-                = new SpinnerNumberModel(clusters.getNumClusters(), 3, 100, 1);
+                = new SpinnerNumberModel(numClusters, 3, 100, 1);
         spinnerNumberModel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
@@ -248,8 +251,8 @@ public final class ClusterEditor extends JPanel {
             setVisibleRowCount(0);
             this.setCellRenderer(new ListCellRenderer() {
                 public Component getListCellRendererComponent(JList list,
-                        Object value, int index, boolean isSelected,
-                        boolean cellHasFocus) {
+                                                              Object value, int index, boolean isSelected,
+                                                              boolean cellHasFocus) {
                     Color fillColor = new Color(153, 204, 204);
                     Color selectedFillColor = new Color(255, 204, 102);
 
@@ -418,7 +421,7 @@ public final class ClusterEditor extends JPanel {
          * Supported dataflavors--only one.
          */
         private final DataFlavor[] dataFlavors = new DataFlavor[]{
-            new DataFlavor(ListSelection.class, "String List Selection")};
+                new DataFlavor(ListSelection.class, "String List Selection")};
 
         /**
          * Constructs a new selection with the given list of graph nodes.
@@ -433,15 +436,14 @@ public final class ClusterEditor extends JPanel {
         }
 
         /**
+         * @param flavor the requested flavor for the data
          * @return an object which represents the data to be transferred. The
          * class of the object returned is defined by the representation class
          * of the flavor.
-         *
-         * @param flavor the requested flavor for the data
-         * @throws java.io.IOException if the data is no longer available in the
-         * requested flavor.
+         * @throws java.io.IOException                              if the data is no longer available in the
+         *                                                          requested flavor.
          * @throws java.awt.datatransfer.UnsupportedFlavorException if the
-         * requested data flavor is not supported.
+         *                                                          requested data flavor is not supported.
          * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
          */
         public Object getTransferData(DataFlavor flavor)

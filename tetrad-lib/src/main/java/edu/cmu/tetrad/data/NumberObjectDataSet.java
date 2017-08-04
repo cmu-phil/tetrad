@@ -111,7 +111,7 @@ public final class NumberObjectDataSet
     /**
      * The container storing the data. Rows are cases; columns are variables.
      * The order of columns is coordinated with the order of variables in
-     * getVariables().
+     * getVariable().
      *
      * @serial
      */
@@ -464,7 +464,7 @@ public final class NumberObjectDataSet
 
     /**
      * @return the index of the column of the given variable. You can also get
-     * this by calling getVariables().indexOf(variable).
+     * this by calling getVariable().indexOf(variable).
      */
     public final int getColumn(Node variable) {
         return variables.indexOf(variable);
@@ -1041,7 +1041,7 @@ public final class NumberObjectDataSet
      * all of the data in this dataset, discrete data included. Discrete data
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
-     * which they occur in the matrix, is given by getVariables().
+     * which they occur in the matrix, is given by getVariable().
 //     * <p>
 //     * If isMultipliersCollapsed() returns false, multipliers in the dataset are
 //     * first expanded before returning the matrix, so the number of rows in the

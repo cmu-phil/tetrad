@@ -7,7 +7,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScoreD;
+
+import edu.cmu.tetrad.search.SemBicScoreDeterministic;
+
 import edu.cmu.tetrad.util.Parameters;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -40,13 +42,13 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
         edu.cmu.tetrad.search.FgesD search;
 
         if (dataSet instanceof ICovarianceMatrix) {
-            SemBicScoreD score = new SemBicScoreD((ICovarianceMatrix) dataSet);
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
             search = new edu.cmu.tetrad.search.FgesD(score);
 
         } else if (dataSet instanceof DataSet) {
-            SemBicScoreD score = new SemBicScoreD(new CovarianceMatrix((DataSet) dataSet));
+            SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
             score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
             score.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
             search = new edu.cmu.tetrad.search.FgesD(score);

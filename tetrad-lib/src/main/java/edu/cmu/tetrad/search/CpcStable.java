@@ -220,7 +220,7 @@ public final class CpcStable implements GraphSearch {
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.allTriples = new HashSet<>();
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariables());
+//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 

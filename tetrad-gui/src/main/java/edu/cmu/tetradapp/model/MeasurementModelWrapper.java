@@ -98,7 +98,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
 
     public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
-        this.setClusters((Clusters) params.get("clusters", null));
+        this.setClusters(new Clusters());
 
         DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
 

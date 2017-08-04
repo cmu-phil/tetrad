@@ -70,7 +70,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         search.setKnowledge(knowledge);
         search.setVerbose(parameters.getBoolean("verbose"));
         search.setMaxDegree(parameters.getInt("maxDegree"));
-//        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
+        search.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
 
         Object obj = parameters.get("printStream");
         if (obj instanceof PrintStream) {
@@ -106,8 +106,8 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
     @Override
     public List<String> getParameters() {
         List<String> parameters = score.getParameters();
-        parameters.add("symmetricFirstStep");
         parameters.add("faithfulnessAssumed");
+        parameters.add("symmetricFirstStep");
         parameters.add("maxDegree");
         parameters.add("verbose");
         return parameters;

@@ -85,7 +85,7 @@ public class HsimRepeatAC {
                 study.setVerbose(true);
             }
 
-            //run the study! yay!
+            //run the edu.cmu.tetrad.study! yay!
             evalIncrement = study.run(i);
             //need to use if clauses to track each count separately.
             if (!Double.isNaN(evalIncrement[0])) {

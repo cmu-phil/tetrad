@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreD implements Score {
+public class SemBicScoreDeterministic implements Score {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
@@ -72,7 +73,7 @@ public class SemBicScoreD implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreD(ICovarianceMatrix covariances) {
+    public SemBicScoreDeterministic(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -89,55 +90,34 @@ public class SemBicScoreD implements Score {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
         double small = getDeterminismThreshold();
 
+        double s2 = getCovariances().getValue(i, i);
+        int p = parents.length;
+
+        TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
+        TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+
         try {
-            double s2 = getCovariances().getValue(i, i);
-            int p = parents.length;
-
-            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
-            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
-
-            if (s2 <= small) {
-//                if (isVerbose()) {
-//                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
-//                }
-
-//                s2 = (p + 1) * 1e-5;
-
-                printDeterminism(i, parents);
-
-//                return Double.POSITIVE_INFINITY;
-
-                s2 = small;
-            }
-
-            int n = getSampleSize();
-            int k = 2 * p + 1;
-            s2 = ((n) / (double) (n - k)) * s2;
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
-        } catch (Exception e) {
-            printDeterminism(i, parents);
-
-//            boolean removedOne = true;
-//
-//            while (removedOne) {
-//                List<Integer> _parents = new ArrayList<>();
-//                for (int parent : parents) _parents.add(parent);
-//                _parents.removeAll(forbidden);
-//                parents = new int[_parents.size()];
-//                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-//                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
-//            }
-////
-            int p = parents.length;
-            int n = getSampleSize();
-            int k = 2 * p + 1;
-            double s2 = small;
-//            s2 = ((n) / (double) (n - k)) * s2;
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+        } catch (SingularMatrixException e) {
+            s2 = 0;
         }
-    }
 
+//        System.out.println(s2);
+
+        int n = getSampleSize();
+        int k = 2 * p + 1;
+
+        if (s2 < small) {
+            s2 = 0;
+        }
+
+        if (s2 == 0) {
+            printDeterminism(i, parents);
+            return Double.NaN;
+        }
+
+        return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+    }
 
 
     @Override
@@ -146,11 +126,13 @@ public class SemBicScoreD implements Score {
 
         double v1 = localScore(y, append(z, x));
         double v2 = localScore(y, z);
+        double v3 = localScore(y, x);
 
-//        if (v1 == Double.POSITIVE_INFINITY || v2 == Double.POSITIVE_INFINITY) {
-//            return 0;
-//        }
-
+        if (Double.isNaN(v1) && !Double.isNaN(v2) && !Double.isNaN(v3)) {
+            return Double.NaN;
+        } else if (Double.isNaN(v1) || Double.isNaN(v2) || Double.isNaN(v3)) {
+            return Double.NEGATIVE_INFINITY;
+        }
 
         return v1 - v2;
     }
@@ -281,6 +263,7 @@ public class SemBicScoreD implements Score {
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
     private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+
         List<Node> _parents = new ArrayList<>();
         for (int p : parents) _parents.add(variables.get(p));
 
@@ -297,6 +280,7 @@ public class SemBicScoreD implements Score {
 
             TetradMatrix m = cov.getSelection(sel, sel);
 
+
             try {
                 m.inverse();
             } catch (Exception e2) {
@@ -308,6 +292,101 @@ public class SemBicScoreD implements Score {
         }
 
         return false;
+    }
+
+    private int[] getMinimalLinearlyDependentSet(int i, int[] parents, ICovarianceMatrix cov) {
+        double small = getDeterminismThreshold();
+
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(variables.get(p));
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            int[] sel = new int[choice.length];
+            List<Node> _sel = new ArrayList<>();
+            for (int m = 0; m < choice.length; m++) {
+                sel[m] = parents[m];
+                _sel.add(variables.get(sel[m]));
+            }
+
+            TetradMatrix m = cov.getSelection(sel, sel);
+
+            double s2 = getCovariances().getValue(i, i);
+
+            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
+            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
+
+            if (s2 <= small) {
+                out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
+                return sel;
+            }
+
+            try {
+                m.inverse();
+            } catch (Exception e2) {
+//                forbidden.add(sel[0]);
+                out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
+                return sel;
+            }
+        }
+
+        return new int[0];
+    }
+
+    private int[] getMaximalLinearlyDependentSet(int i, int[] parents, ICovarianceMatrix cov) {
+        double small = getDeterminismThreshold();
+
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(variables.get(p));
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            int[] sel0 = new int[choice.length];
+
+            List<Integer> all = new ArrayList<>();
+            for (int w = 0; w < parents.length; w++) all.add(parents[w]);
+            for (int w = 0; w < sel0.length; w++) all.remove(sel0[w]);
+            int[] sel = new int[all.size()];
+            for (int w = 0; w < all.size(); w++) sel[w] = all.get(w);
+
+            List<Node> _sel = new ArrayList<>();
+            for (int m = 0; m < choice.length; m++) {
+                sel[m] = parents[m];
+                _sel.add(variables.get(sel[m]));
+            }
+
+            TetradMatrix m = cov.getSelection(sel, sel);
+
+            double s2 = getCovariances().getValue(i, i);
+
+            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
+            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
+
+            if (s2 <= small) {
+                out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
+                return sel;
+            }
+
+            try {
+                m.inverse();
+            } catch (Exception e2) {
+//                forbidden.add(sel[0]);
+                out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
+                return sel;
+            }
+        }
+
+        return new int[0];
     }
 
     private void printDeterminism(int i, int[] parents) {

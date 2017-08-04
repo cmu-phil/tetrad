@@ -62,7 +62,7 @@ public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)"
+        return "FANG Concatenated "
                 + (empirical ? " (Empirical)" : "");
     }
 

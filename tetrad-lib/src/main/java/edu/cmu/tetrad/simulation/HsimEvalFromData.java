@@ -31,7 +31,7 @@ public class HsimEvalFromData {
         long timestart = System.nanoTime();
         System.out.println("Beginning Evaluation");
         String nl = System.lineSeparator();
-        String output = "Simulation study output comparing Fsim and Hsim on predicting graph discovery accuracy" + nl;
+        String output = "Simulation edu.cmu.tetrad.study output comparing Fsim and Hsim on predicting graph discovery accuracy" + nl;
         int iterations = 100;
 
         int vars = 20;

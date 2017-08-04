@@ -130,7 +130,6 @@ public class FasStable implements IFas {
     }
 
     public FasStable(IndependenceTest test) {
-        this.graph = new EdgeListGraphSingleConnections(test.getVariables());
         this.test = test;
     }
 
@@ -148,6 +147,8 @@ public class FasStable implements IFas {
      */
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
+
+        if (graph == null) graph = new EdgeListGraphSingleConnections(test.getVariables());
         graph.removeEdges(graph.getEdges());
 
         sepset = new SepsetMap();

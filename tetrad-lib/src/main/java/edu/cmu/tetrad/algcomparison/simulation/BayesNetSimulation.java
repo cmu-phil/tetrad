@@ -144,6 +144,7 @@ public class BayesNetSimulation implements Simulation {
                 return im.simulateData(parameters.getInt("sampleSize"), false);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n" +
                     "the parameters have been specified.");
         }

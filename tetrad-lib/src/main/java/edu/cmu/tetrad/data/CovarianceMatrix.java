@@ -494,7 +494,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return a copy of the covariance matrix.
+     * @return a the covariance matrix (not a copy).
      */
     public final TetradMatrix getMatrix() {
         return matrix;
@@ -555,7 +555,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
 
 //        buf.append("\nCovariance matrix:");
-//        buf.append("\n\tVariables = ").append(getVariables());
+//        buf.append("\n\tVariables = ").append(getVariable());
 //        buf.append("\n\tSample size = ").append(getSampleSize());
 //        buf.append("\n");
 //        buf.append(MatrixUtils.toString(matrixC.toArray()));

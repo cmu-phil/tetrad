@@ -177,7 +177,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    final int maxThreads = 10 * ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //===========================CONSTRUCTORS=============================//
 
@@ -264,10 +264,13 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
-        this.logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
-        this.logger.flush();
+        if (verbose) {
+            this.logger.log("graph", "\nReturning this graph: " + graph);
+
+            this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+            this.logger.flush();
+        }
 
         this.modelScore = totalScore;
 
@@ -477,6 +480,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * The maximum of parents any nodes can have in output pattern.
+     *
      * @return -1 for unlimited.
      */
     public int getMaxDegree() {
@@ -485,6 +489,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * The maximum of parents any nodes can have in output pattern.
+     *
      * @param maxDegree -1 for unlimited.
      */
     public void setMaxDegree(int maxDegree) {
@@ -812,10 +817,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                             out.println("Initializing effect edges: " + (count[0]));
                         }
 
+                        // We want to recapture the variables that would have been effect edges if paths hadn't
+                        // exactly canceled. These are variables X which are d-connected to the target Y where
+                        // X--Y was noe identified as an effect edge earlier.
                         Node y = nodes.get(i);
                         Set<Node> D = new HashSet<>();
-                        List<Node> cond = new ArrayList<>();
-                        D.addAll(GraphUtils.getDconnectedVars(y, cond, graph));
+                        D.addAll(getUnconditionallyDconnectedVars(y, graph));
                         D.remove(y);
                         D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
 
@@ -858,7 +865,9 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void fes() {
-        TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+        if (verbose) {
+            TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+        }
 
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
@@ -917,7 +926,9 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void bes() {
-        TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
+        if (verbose) {
+            TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
+        }
 
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
@@ -950,7 +961,13 @@ public final class Fges implements GraphSearch, GraphScorer {
             double bump = arrow.getBump();
 
             boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
-            if (!deleted) continue;
+
+            if (!deleted) {
+                continue;
+            }
+
+            orientNodeAway(x);
+            orientNodeAway(y);
 
             totalScore += bump;
 
@@ -977,7 +994,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             reevaluateBackward(toProcess);
         }
 
-        meekOrientRestricted(getVariables(), getKnowledge());
+//        meekOrientRestricted(getVariables(), getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -1078,7 +1095,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                             adj = new ArrayList<>(g);
                         } else if (mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>();
-                            D.addAll(GraphUtils.getDconnectedVars(x, new ArrayList<Node>(), graph));
+                            D.addAll(getUnconditionallyDconnectedVars(x, graph));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1547,6 +1564,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
+
         return true;
     }
 
@@ -1607,7 +1625,10 @@ public final class Fges implements GraphSearch, GraphScorer {
             if (!graph.isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
-                TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                }
             }
         }
         for (Edge edge : graph.getEdges()) {
@@ -1623,7 +1644,10 @@ public final class Fges implements GraphSearch, GraphScorer {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
                     }
                 }
 
@@ -1631,7 +1655,10 @@ public final class Fges implements GraphSearch, GraphScorer {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
                     }
                 }
             } else if (knowledge.isForbidden(B, A)) {
@@ -1643,14 +1670,20 @@ public final class Fges implements GraphSearch, GraphScorer {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
                     }
                 }
             }
@@ -1775,6 +1808,15 @@ public final class Fges implements GraphSearch, GraphScorer {
         rules.setUndirectUnforcedEdges(true);
         rules.orientImplied(graph, nodes);
         return rules.getVisited();
+    }
+
+    private void orientNodeAway(Node node) {
+        MeekRules rules = new MeekRules();
+        rules.setKnowledge(knowledge);
+//        rules.setUndirectUnforcedEdges(true);
+        rules.orientImplied(graph, Collections.singletonList(node));
+//        return rules.getVisited();
+
     }
 
     // Maps adj to their indices for quick lookup.
@@ -1926,6 +1968,80 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         return builder.toString();
+    }
+
+    // Only need the unconditioal d-connection here.
+    public static Set<Node> getUnconditionallyDconnectedVars(Node x, Graph graph) {
+        Set<Node> Y = new HashSet<>();
+
+        class EdgeNode {
+
+            private Edge edge;
+            private Node node;
+
+            public EdgeNode(Edge edge, Node node) {
+                this.edge = edge;
+                this.node = node;
+            }
+
+            public int hashCode() {
+                return edge.hashCode() + node.hashCode();
+            }
+
+            public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode)) {
+                    throw new IllegalArgumentException();
+                }
+                EdgeNode _o = (EdgeNode) o;
+                return _o.edge == edge && _o.node == node;
+            }
+        }
+
+        Queue<EdgeNode> Q = new ArrayDeque<>();
+        Set<EdgeNode> V = new HashSet<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+            EdgeNode edgeNode = new EdgeNode(edge, x);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
+            Y.add(edge.getDistalNode(x));
+        }
+
+        while (!Q.isEmpty()) {
+            EdgeNode t = Q.poll();
+
+            Edge edge1 = t.edge;
+            Node a = t.node;
+            Node b = edge1.getDistalNode(a);
+
+            for (Edge edge2 : graph.getEdges(b)) {
+                Node c = edge2.getDistalNode(b);
+                if (c == a) {
+                    continue;
+                }
+
+                if (reachable(edge1, edge2, a, graph)) {
+                    EdgeNode u = new EdgeNode(edge2, b);
+
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                        Y.add(c);
+                    }
+                }
+            }
+        }
+
+        return Y;
+    }
+
+    private static boolean reachable(Edge e1, Edge e2, Node a, Graph graph) {
+        Node b = e1.getDistalNode(a);
+
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW
+                && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+
+        return !collider;
     }
 }
 

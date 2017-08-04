@@ -31,10 +31,6 @@ public class Fask implements Algorithm, HasKnowledge {
         this.empirical = empirical;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
-        return search.search();
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet);
@@ -43,7 +39,7 @@ public class Fask implements Algorithm, HasKnowledge {
         search.setAlpha(parameters.getDouble("twoCycleAlpha"));
         search.setKnowledge(knowledge);
         search.setThresholdForReversing(parameters.getDouble("thresholdForReversing"));
-        return getGraph(search);
+        return search.search();
     }
 
     @Override
@@ -53,7 +49,7 @@ public class Fask implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FANG (Fast Adjacency search followed by Non-Gaussian orientation)";
+        return "FASK";
     }
 
     @Override

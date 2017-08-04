@@ -82,6 +82,8 @@ public class TestPcStableMax {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
+        System.out.println(knowledge);
+
         checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
@@ -170,7 +172,6 @@ public class TestPcStableMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        Score score = new GraphScore(graph);
         PcStableMax pc = new PcStableMax(independence);
 
         // Set up search.
@@ -183,7 +184,7 @@ public class TestPcStableMax {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(trueGraph, resultGraph);
     }
 
     @Test
@@ -203,14 +204,14 @@ public class TestPcStableMax {
         TetradLogger.getInstance().setForceLog(false);
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
-        PcStable pc = new PcStable(test);
+        PcStableMax pc = new PcStableMax(test);
         pc.setVerbose(false);
         Graph pattern = pc.search();
 
         for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
             IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStable pc2 = new PcStable(test2);
+            PcStableMax pc2 = new PcStableMax(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));

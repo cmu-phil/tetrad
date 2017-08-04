@@ -3,8 +3,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SemBicScore;
-import edu.cmu.tetrad.search.SemBicScoreD;
+import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class SemBicDTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        SemBicScoreD score = new SemBicScoreD(new CovarianceMatrix((ICovarianceMatrix) dataSet));
+        SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((ICovarianceMatrix) dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         return new IndTestScore(score, dataSet);
     }

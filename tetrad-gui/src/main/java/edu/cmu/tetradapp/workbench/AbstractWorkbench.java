@@ -2657,6 +2657,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
 			if (source instanceof DisplayNode) {
 				Node modelNode = (Node) (workbench.getDisplayToModel().get(source));
+				
+				// Adding a null pointer check
+                                if (modelNode == null) {
+                                    return;
+                                }
+				
 				int centerX = bounds.x + bounds.width / 2;
 				int centerY = bounds.y + bounds.height / 2;
 

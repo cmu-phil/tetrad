@@ -207,7 +207,7 @@ public class DagToPattern {
 
         this.logger.log("info", "Starting PC algorithm");
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariables());
+//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 
@@ -240,7 +240,7 @@ public class DagToPattern {
         enumerateTriples();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, measured);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, true);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

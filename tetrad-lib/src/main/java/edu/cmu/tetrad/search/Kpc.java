@@ -249,7 +249,7 @@ public class Kpc implements GraphSearch {
         this.logger.log("info", "Starting kPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariables());
+//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 
@@ -279,7 +279,7 @@ public class Kpc implements GraphSearch {
         enumerateTriples();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(sepset, knowledge, graph, verbose);
+        SearchGraphUtils.orientCollidersUsingSepsets(sepset, knowledge, graph, verbose, true);
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(knowledge);

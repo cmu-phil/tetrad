@@ -1685,8 +1685,6 @@ public final class StatUtils {
      * @return the given partial covariance.
      */
     public static double partialCovariance(TetradMatrix submatrix) {
-//        submatrix = TetradAlgebra.inverse(submatrix);
-//        return -1.0 * submatrix.get(0, 1);
 
         // Using the method in Whittacker.
         // cov(X, Y | Z) = cov(X, Y) - cov(X, Z) inverse(cov(Z, Z)) cov(Z, Y)
@@ -1695,9 +1693,9 @@ public final class StatUtils {
         int[] _z = new int[submatrix.rows() - 2];
         for (int i = 0; i < submatrix.rows() - 2; i++) _z[i] = i + 2;
 
-        TetradMatrix covXz = submatrix.getSelection(new int[]{0}, _z).copy();
-        TetradMatrix covZy = submatrix.getSelection(_z, new int[]{1}).copy();
-        TetradMatrix covZ = submatrix.getSelection(_z, _z).copy();
+        TetradMatrix covXz = submatrix.getSelection(new int[]{0}, _z);
+        TetradMatrix covZy = submatrix.getSelection(_z, new int[]{1});
+        TetradMatrix covZ = submatrix.getSelection(_z, _z);
 
         TetradMatrix _zInverse = covZ.inverse();
 
@@ -1767,7 +1765,6 @@ public final class StatUtils {
 //        double var2 = partialCovariance(var2Matrix);
 //
 //        return cov / Math.sqrt(var1 * var2);
-
 
         TetradMatrix inverse = submatrix.inverse();
         return -(1.0 * inverse.get(0, 1)) / Math.sqrt(inverse.get(0, 0) * inverse.get(1, 1));

@@ -155,6 +155,7 @@ public final class Fang implements GraphSearch {
                         graph.addDirectedEdge(Y, X);
                     } else {
                         graph.addUndirectedEdge(X, Y);
+
                     }
                 }
             }

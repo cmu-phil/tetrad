@@ -28,7 +28,7 @@
     eliminated for such reasons.</p>
 <p>To correct the problem, PCD checks before performing an independence check of the form X _||_ Z | S, whether X
     determines either X or Y, and if it does, refuses to do the independence check. This correct the problem for the
-    adjacency search. There is an additional problem in the step where colliders are oriented. In this case, PCD, when
+    adjacency search. There is an additional problem in the step where colliderDiscovery are oriented. In this case, PCD, when
     considering whether to orient an unshielded triple &lt;X, Y, Z&gt; as a collider, based on a conderation of the set
     Sxz that was used to remove the edge X---Z from the graph during the adjacency search, first asks whether Sxz
     determines X or Y. If it does not, then &lt;X, Y, Z&gt; is oriented as a collider X--&gt;Y&lt;--Z if Y is not
