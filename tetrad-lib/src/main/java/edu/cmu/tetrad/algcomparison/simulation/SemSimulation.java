@@ -126,6 +126,7 @@ public class SemSimulation implements Simulation {
         parameters.add("measurementVariance");
         parameters.add("numRuns");
         parameters.add("differentGraphs");
+        parameters.add("randomizeColumns");
         parameters.add("sampleSize");
         return parameters;
     }
