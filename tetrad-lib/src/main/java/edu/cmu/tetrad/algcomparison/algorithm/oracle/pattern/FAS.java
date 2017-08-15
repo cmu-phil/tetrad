@@ -24,7 +24,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "FAS",
         algType = AlgType.produce_undirected_graphs,
-        oracleType = OracleType.Test
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here"
 )
 public class FAS implements Algorithm, HasKnowledge {
 

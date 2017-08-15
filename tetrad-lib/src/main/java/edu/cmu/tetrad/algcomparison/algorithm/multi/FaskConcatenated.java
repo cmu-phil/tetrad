@@ -26,7 +26,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "EFANG",
         algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None
+        oracleType = OracleType.None,
+        description = "Short blurb goes here"
 )
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 

@@ -26,7 +26,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "PcStableMax",
         algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.Test
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here"
 )
 public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 

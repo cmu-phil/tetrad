@@ -45,7 +45,7 @@ public class AlgorithmDescriptionFactory {
             if (annotation instanceof AlgorithmDescription) {
                 AlgorithmDescription myAnnotation = (AlgorithmDescription) annotation;
 
-                algorithmDescription = new AlgorithmDescriptionClass(myAnnotation.name(), myAnnotation.algType(), myAnnotation.oracleType());
+                algorithmDescription = new AlgorithmDescriptionClass(myAnnotation.name(), myAnnotation.algType(), myAnnotation.oracleType(), myAnnotation.description());
                 algorithmDescriptions.add(algorithmDescription);
 
                 algorithmMap.put(myAnnotation.name(), clazz);

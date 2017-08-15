@@ -23,7 +23,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "GFCI",
         algType = AlgType.allow_latent_common_causes,
-        oracleType = OracleType.Both
+        oracleType = OracleType.Both,
+        description = "Short blurb goes here"
 )
 public class Gfci implements Algorithm, HasKnowledge {
 

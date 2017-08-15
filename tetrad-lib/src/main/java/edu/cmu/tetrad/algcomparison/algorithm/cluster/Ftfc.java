@@ -11,7 +11,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "Ftfc",
         algType = AlgType.search_for_structure_over_latents,
-        oracleType = OracleType.None
+        oracleType = OracleType.None,
+        description = "Short blurb goes here"
 )
 
 public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {

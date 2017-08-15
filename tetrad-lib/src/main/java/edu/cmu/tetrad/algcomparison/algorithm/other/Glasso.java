@@ -13,7 +13,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "GLASSO",
         algType = AlgType.produce_undirected_graphs,
-        oracleType = OracleType.Test
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here"
 )
 
 public class Glasso implements Algorithm {

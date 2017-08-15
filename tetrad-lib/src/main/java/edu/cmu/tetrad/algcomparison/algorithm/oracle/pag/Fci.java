@@ -25,7 +25,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "FCI",
         algType = AlgType.allow_latent_common_causes,
-        oracleType = OracleType.Test
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here"
 )
 public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
 

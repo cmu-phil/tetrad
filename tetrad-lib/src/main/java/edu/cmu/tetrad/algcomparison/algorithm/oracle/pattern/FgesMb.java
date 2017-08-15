@@ -25,7 +25,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "FgesMb",
         algType = AlgType.search_for_Markov_blankets,
-        oracleType = OracleType.Score
+        oracleType = OracleType.Score,
+        description = "Short blurb goes here"
 )
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
 

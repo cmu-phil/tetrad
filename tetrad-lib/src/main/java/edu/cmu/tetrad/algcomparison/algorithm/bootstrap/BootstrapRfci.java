@@ -29,7 +29,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "BootstrapRFCI",
         algType = AlgType.bootstrapping,
-        oracleType = OracleType.Test
+        oracleType = OracleType.Test,
+        description = "Short blurb goes here"
 )
 public class BootstrapRfci implements Algorithm, HasKnowledge {
 

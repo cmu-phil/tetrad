@@ -24,7 +24,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "R1",
         algType = AlgType.orient_pairwise,
-        oracleType = OracleType.None
+        oracleType = OracleType.None,
+        description = "Short blurb goes here"
 )
 public class R1 implements Algorithm, TakesInitialGraph {
 

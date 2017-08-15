@@ -11,11 +11,13 @@ public class AlgorithmDescriptionClass {
     private String algName;
     private AlgType algType;
     private OracleType oracleType;
+    private String description;
 
-    public AlgorithmDescriptionClass(String name, AlgType algType, OracleType oracleType) {
+    public AlgorithmDescriptionClass(String name, AlgType algType, OracleType oracleType, String description) {
         this.algName = name;
         this.algType = algType;
         this.oracleType = oracleType;
+        this.description = description;
     }
 
     public String getAlgName() {
@@ -28,5 +30,9 @@ public class AlgorithmDescriptionClass {
 
     public OracleType getOracleType() {
         return oracleType;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

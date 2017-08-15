@@ -24,7 +24,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "Fofc",
         algType = AlgType.search_for_structure_over_latents,
-        oracleType = OracleType.None
+        oracleType = OracleType.None,
+        description = "Short blurb goes here"
 )
 
 public class Fofc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {

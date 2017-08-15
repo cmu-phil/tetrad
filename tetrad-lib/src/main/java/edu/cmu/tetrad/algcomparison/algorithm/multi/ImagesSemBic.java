@@ -9,9 +9,9 @@ import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetrad.annotation.OracleType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SemBicScoreImages;
+import edu.cmu.tetrad.util.Parameters;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +27,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "IMaGES_Continuous",
         algType = AlgType.forbid_latent_common_causes,
-        oracleType = OracleType.None
+        oracleType = OracleType.None,
+        description = "Short blurb goes here"
 )
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 

@@ -24,7 +24,8 @@ import java.util.List;
 @AlgorithmDescription(
         name = "SkewE",
         algType = AlgType.orient_pairwise,
-        oracleType = OracleType.None
+        oracleType = OracleType.None,
+        description = "Short blurb goes here"
 )
 public class SkewE implements Algorithm, TakesInitialGraph {
 

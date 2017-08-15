@@ -339,7 +339,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     System.out.println("Selected algo ..." + selectedAlgoName);
 
                     // Reset description
-                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
+                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + mappedDescriptions.get(selectedAlgoName).getDescription());
 
                     // Finally, set the selected algo and update the test and score dropdown menus
                     setAlgorithm();
@@ -369,7 +369,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
 
                 // Reset description
-                algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
+                algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + mappedDescriptions.get(selectedAlgoName).getDescription());
 
                 // Finally, set the selected algo and update the test and score dropdown menus
                 setAlgorithm();
@@ -1503,7 +1503,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Set default description as the first algorithm
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName);
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + mappedDescriptions.get(selectedAlgoName).getDescription());
 
         // Set default algo in runner
         Algorithm algorithm = getAlgorithmFromInterface();
