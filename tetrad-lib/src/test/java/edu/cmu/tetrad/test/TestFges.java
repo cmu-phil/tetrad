@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -728,45 +729,57 @@ public class TestFges {
 
     @Test
     public void testFromData() {
-        int numNodes = 100;
-        int numLatents = 0;
-        int numEdges = 100;
-        int sampleSize = 1000;
+        Parameters parameters = new Parameters();
+        parameters.set("standardize", false);
+        parameters.set("measurementVariance", 0);
+        parameters.set("numRuns", 1);
+        parameters.set("differentGraphs", true);
+        parameters.set("sampleSize", 1000);
 
-//        System.out.println(RandomUtil.getInstance().getSeed());
-//
-//        RandomUtil.getInstance().setSeed(1461186701390L);
+        parameters.set("numMeasures", 100);
+        parameters.set("numLatents", 0);
+        parameters.set("avgDegree", 6);
 
+//        parameters.set("maxDegree", 100);
+//        parameters.set("maxIndegree", 100);
+//        parameters.set("maxOutdegree", 100);
 
-        List<Node> variables = new ArrayList<>();
+        parameters.set("symmetricFirstStep", true);
 
-        for (int i = 0; i < numNodes; i++) {
-            variables.add(new ContinuousVariable("X" + (i + 1)));
-        }
+        parameters.set("faithfulnessAssumed", false);
+        parameters.set("penaltyDisount", 2);
+        parameters.set("alpha", 0.001);
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+        parameters.set("coefLow", 0.2);
+        parameters.set("coefHigh", 0.9);
+        parameters.set("varLow", 1);
+        parameters.set("varHigh", 3);
+        parameters.set("coefSymmetric", true);
+        parameters.set("covSymmetric", true);
 
-        LargeScaleSimulation semSimulator = new LargeScaleSimulation(dag);
+        parameters.set("randomizeColumns", true);
 
-        DataSet data = semSimulator.simulateDataFisher(sampleSize);
+        SemSimulation simulation = new SemSimulation(new RandomForward());
+        simulation.createData(parameters);
+        Graph dag = simulation.getTrueGraph(0);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
-        score.setPenaltyDiscount(4);
-        Fges fges = new Fges(score);
+        DataModel dataSet = simulation.getDataModel(0);
+
+        edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges pcFges
+                = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges(
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore(),false);
 
         long start = System.currentTimeMillis();
 
-        Graph graph = fges.search();
+        Graph graph = pcFges.search(dataSet, parameters);
 
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        Graph pattern = SearchGraphUtils.patternForDag(dag);
+        graph = GraphUtils.replaceNodes(graph, dag.getNodes());
 
-        pattern = GraphUtils.replaceNodes(pattern, graph.getNodes());
-
-        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, pattern));
+        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dag));
 
     }
 

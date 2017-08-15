@@ -24,7 +24,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
         final IndTestConditionalGaussianLRT test
                 = new IndTestConditionalGaussianLRT(DataUtils.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"),
-                parameters.getInt("discretize") > 0);
+                parameters.getBoolean("discretize"));
         test.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return test;
     }

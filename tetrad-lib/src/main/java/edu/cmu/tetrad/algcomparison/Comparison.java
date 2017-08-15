@@ -138,6 +138,13 @@ public class Comparison {
 
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
+        generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
+                statistics, parameters);
+    }
+
+    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
+                                                     Statistics statistics, Parameters parameters) {
+
         this.saveGraphs = false;
         this.dataPath = dataPath;
         this.resultsPath = resultsPath;
@@ -171,7 +178,12 @@ public class Comparison {
             this.dirs.add(_dir.getAbsolutePath());
         }
 
-        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
+        compareFromSimulations(this.resultsPath, simulations, outputFileName, algorithms, statistics, parameters);
+    }
+
+    public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
+                                       Statistics statistics, Parameters parameters) {
+        compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
     }
 
     /**
@@ -182,7 +194,7 @@ public class Comparison {
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
-    public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
 
@@ -190,7 +202,7 @@ public class Comparison {
         try {
             File dir = new File(resultsPath);
             dir.mkdirs();
-            File file = new File(dir, "Comparison.txt");
+            File file = new File(dir, outputFileName);
             this.out = new PrintStream(new FileOutputStream(file));
         } catch (Exception e) {
             throw new RuntimeException(e);
