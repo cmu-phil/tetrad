@@ -80,8 +80,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -105,7 +106,6 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     // an instance of the algorithm.
     private static final long serialVersionUID = -5719467682865706447L;
 
-    private final HashMap<String, AlgorithmDescriptionClass> mappedDescriptions;
     private final GeneralAlgorithmRunner runner;
     private final JComboBox<String> algTypesDropdown = new JComboBox<>();
     private final JComboBox<TestType> testDropdown = new JComboBox<>();
@@ -119,7 +119,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
     private String jsonResult;
 
-    private final List<AlgorithmDescriptionClass> descriptions;
+    private final TreeMap<String, AlgorithmDescriptionClass> descriptions;
 
     private JList suggestedAlgosList;
 
@@ -206,15 +206,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         dsepScores.add(ScoreType.D_SEPARATION);
 
         // Use annotations to populate description list
-        // List<AlgorithmDescriptionClass>
+        // TreeMap<String, AlgorithmDescriptionClass>
         descriptions = AlgorithmDescriptionFactory.getInstance().getAlgorithmDescriptions();
-
-        mappedDescriptions = new HashMap<>();
-
-        for (AlgorithmDescriptionClass description : descriptions) {
-            // Use algo name as key, description as value
-            mappedDescriptions.put(description.getAlgName(), description);
-        }
 
         this.parameters = runner.getParameters();
 
@@ -305,7 +298,8 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosListModel = new DefaultListModel();
 
         // Add algo to list model
-        for (AlgorithmDescriptionClass algoDesc : descriptions) {
+        for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+            AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
             if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
                 suggestedAlgosListModel.addElement(algoDesc.getAlgName());
             }
@@ -339,7 +333,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                     System.out.println("Selected algo ..." + selectedAlgoName);
 
                     // Reset description
-                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + mappedDescriptions.get(selectedAlgoName).getDescription());
+                    algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
 
                     // Finally, set the selected algo and update the test and score dropdown menus
                     setAlgorithm();
@@ -358,9 +352,10 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 AlgType selectedType = AlgType.valueOf(((String) algTypesDropdown.getSelectedItem()).replace(" ", "_"));
                 System.out.println("Selected algo Type ===> " + selectedType);
                 // Create a new list model based on selections
-                for (AlgorithmDescriptionClass description : descriptions) {
-                    if (description.getAlgType() == selectedType || selectedType == AlgType.ALL) {
-                        suggestedAlgosListModel.addElement(description.getAlgName());
+                for (Map.Entry<String, AlgorithmDescriptionClass> algoDescEntry : descriptions.entrySet()) {
+                    AlgorithmDescriptionClass algoDesc = algoDescEntry.getValue();
+                    if (algoDesc.getAlgType() == selectedType || selectedType == AlgType.ALL) {
+                        suggestedAlgosListModel.addElement(algoDesc.getAlgName());
                     }
                 }
 
@@ -369,7 +364,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 selectedAlgoName = suggestedAlgosList.getSelectedValue().toString();
 
                 // Reset description
-                algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + mappedDescriptions.get(selectedAlgoName).getDescription());
+                algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
 
                 // Finally, set the selected algo and update the test and score dropdown menus
                 setAlgorithm();
@@ -1070,7 +1065,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
             return;
         }
 
-        AlgorithmDescriptionClass description = mappedDescriptions.get(name.toString());
+        AlgorithmDescriptionClass description = descriptions.get(name.toString());
 
         TestType test = (TestType) testDropdown.getSelectedItem();
         ScoreType score = (ScoreType) scoreDropdown.getSelectedItem();
@@ -1503,7 +1498,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         suggestedAlgosBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(suggestedAlgosBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Set default description as the first algorithm
-        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + mappedDescriptions.get(selectedAlgoName).getDescription());
+        algoDescriptionTextArea.setText("Description of " + selectedAlgoName + ": " + descriptions.get(selectedAlgoName).getDescription());
 
         // Set default algo in runner
         Algorithm algorithm = getAlgorithmFromInterface();
