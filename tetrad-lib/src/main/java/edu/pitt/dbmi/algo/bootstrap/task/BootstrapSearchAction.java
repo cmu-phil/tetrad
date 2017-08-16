@@ -116,6 +116,7 @@ public class BootstrapSearchAction extends RecursiveAction {
             fges.setNumPatternsToStore(parameters.getInt("numPatternsToStore", 0));
             fges.setSymmetricFirstStep(parameters.getBoolean("symmetricFirstStep"));
             fges.setParallelism(parameters.getInt("numofthreads", 2));
+            fges.setKnowledge(knowledge);
             if (initialGraph != null)
                 fges.setInitialGraph(initialGraph);
             return fges.search();
@@ -125,12 +126,14 @@ public class BootstrapSearchAction extends RecursiveAction {
             gFci.setMaxPathLength(parameters.getInt("maxPathLength", -1));
             gFci.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed", true));
             gFci.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed", false));
+            gFci.setKnowledge(knowledge);
             return gFci.search();
         } else if (algName == BootstrapAlgName.RFCI) {
             Rfci rfci = new Rfci(independenceTest);
             rfci.setCompleteRuleSetUsed(parameters.getBoolean("completeRuleSetUsed", true));
             rfci.setDepth(parameters.getInt("depth", 3));
             rfci.setMaxPathLength(parameters.getInt("maxPathLength", -1));
+            rfci.setKnowledge(knowledge);
             return rfci.search();
         } else {
             throw new IllegalArgumentException("Bootstrap Search does not support the " + algName + " algorithm yet.");

@@ -24,25 +24,25 @@ import java.util.List;
 public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Cpc(IndependenceWrapper type) {
         this.test = type;
     }
 
-    public Cpc(IndependenceWrapper type, Algorithm initialGraph) {
+    public Cpc(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph init = null;
-        if (initialGraph != null) {
-            init = initialGraph.search(dataSet, parameters);
+        if (algorithm != null) {
+        	initialGraph = algorithm.search(dataSet, parameters);
         }
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS);
@@ -59,8 +59,8 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CPC (Conservative \"Peter and Clark\"), Priority Rule, using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "CPC (Conservative \"Peter and Clark\"), Priority Rule, using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
+        		algorithm.getDescription() : "");
     }
 
     @Override
@@ -84,4 +84,16 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		this.initialGraph = initialGraph;
+	}
 }

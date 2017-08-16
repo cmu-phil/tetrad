@@ -26,105 +26,111 @@ import java.util.List;
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  * 
  */
-public class BootstrapFges implements Algorithm, TakesInitialGraph,
-	HasKnowledge {
+public class BootstrapFges implements Algorithm, TakesInitialGraph, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
-    private Algorithm initialGraph = null;
-    private IKnowledge knowledge = new Knowledge2();
+	static final long serialVersionUID = 23L;
+	private ScoreWrapper score;
+	private Algorithm algorithm = null;
+	private Graph initialGraph = null;
+	private IKnowledge knowledge = new Knowledge2();
 
-    public BootstrapFges(ScoreWrapper score) {
-	this.score = score;
-    }
-
-    public BootstrapFges(ScoreWrapper score, Algorithm initialGraph) {
-	this.score = score;
-	this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-	Graph initial = null;
-
-	if (initialGraph != null) {
-	    initial = initialGraph.search(dataSet, parameters);
+	public BootstrapFges(ScoreWrapper score) {
+		this.score = score;
 	}
 
-	if (dataSet == null || !(dataSet instanceof DataSet)) {
-	    throw new IllegalArgumentException(
-		    "Sorry, I was expecting a (tabular) data set.");
-	}
-	DataSet data = (DataSet) dataSet;
-	edu.pitt.dbmi.algo.bootstrap.BootstrapTest search = new edu.pitt.dbmi.algo.bootstrap.BootstrapTest(
-		data, BootstrapAlgName.FGES);
-	search.setParameters(parameters);
-	search.setKnowledge(knowledge);
-	search.setVerbose(parameters.getBoolean("verbose"));
-	search.setNumBootstrapSamples(parameters.getInt("bootstrapSampleSize"));
-
-	BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-	switch (parameters.getInt("bootstrapEnsemble", 1)) {
-	case 0:
-	    edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
-	    break;
-	case 1:
-	    edgeEnsemble = BootstrapEdgeEnsemble.Highest;
-	    break;
-	case 2:
-	    edgeEnsemble = BootstrapEdgeEnsemble.Majority;
-	}
-	search.setEdgeEnsemble(edgeEnsemble);
-
-	Object obj = parameters.get("printStedu.cmream");
-	if (obj instanceof PrintStream) {
-	    search.setOut((PrintStream) obj);
+	public BootstrapFges(ScoreWrapper score, Algorithm algorithm) {
+		this.score = score;
+		this.algorithm = algorithm;
 	}
 
-	if (initial != null) {
-	    search.setInitialGraph(initial);
+	@Override
+	public Graph search(DataModel dataSet, Parameters parameters) {
+		if (algorithm != null) {
+			initialGraph = algorithm.search(dataSet, parameters);
+		}
+
+		if (dataSet == null || !(dataSet instanceof DataSet)) {
+			throw new IllegalArgumentException("Sorry, I was expecting a (tabular) data set.");
+		}
+		DataSet data = (DataSet) dataSet;
+		edu.pitt.dbmi.algo.bootstrap.BootstrapTest search = new edu.pitt.dbmi.algo.bootstrap.BootstrapTest(data,
+				BootstrapAlgName.FGES);
+		search.setParameters(parameters);
+		search.setKnowledge(knowledge);
+		search.setVerbose(parameters.getBoolean("verbose"));
+		search.setNumBootstrapSamples(parameters.getInt("bootstrapSampleSize"));
+
+		BootstrapEdgeEnsemble edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+		switch (parameters.getInt("bootstrapEnsemble", 1)) {
+		case 0:
+			edgeEnsemble = BootstrapEdgeEnsemble.Preserved;
+			break;
+		case 1:
+			edgeEnsemble = BootstrapEdgeEnsemble.Highest;
+			break;
+		case 2:
+			edgeEnsemble = BootstrapEdgeEnsemble.Majority;
+		}
+		search.setEdgeEnsemble(edgeEnsemble);
+
+		Object obj = parameters.get("printStedu.cmream");
+		if (obj instanceof PrintStream) {
+			search.setOut((PrintStream) obj);
+		}
+
+		if (initialGraph != null) {
+			search.setInitialGraph(initialGraph);
+		}
+
+		return search.search();
 	}
 
-	return search.search();
-    }
+	@Override
+	public Graph getComparisonGraph(Graph graph) {
+		// return new EdgeListGraph(graph);
+		return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+	}
 
-    @Override
-    public Graph getComparisonGraph(Graph graph) {
-	// return new EdgeListGraph(graph);
-	return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
-    }
+	@Override
+	public String getDescription() {
+		return "Bootstrapping FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
+	}
 
-    @Override
-    public String getDescription() {
-	return "Bootstrapping FGES (Fast Greedy Equivalence Search) using "
-		+ score.getDescription();
-    }
+	@Override
+	public DataType getDataType() {
+		return score.getDataType();
+	}
 
-    @Override
-    public DataType getDataType() {
-	return score.getDataType();
-    }
+	@Override
+	public List<String> getParameters() {
+		List<String> parameters = score.getParameters();
+		parameters.add("symmetricFirstStep");
+		parameters.add("faithfulnessAssumed");
+		parameters.add("maxDegree");
+		parameters.add("verbose");
+		parameters.add("bootstrapSampleSize");
+		parameters.add("bootstrapEnsemble");
+		return parameters;
+	}
 
-    @Override
-    public List<String> getParameters() {
-	List<String> parameters = score.getParameters();
-	parameters.add("symmetricFirstStep");
-	parameters.add("faithfulnessAssumed");
-	parameters.add("maxDegree");
-	parameters.add("verbose");
-	parameters.add("bootstrapSampleSize");
-	parameters.add("bootstrapEnsemble");
-	return parameters;
-    }
+	@Override
+	public IKnowledge getKnowledge() {
+		return knowledge;
+	}
 
-    @Override
-    public IKnowledge getKnowledge() {
-	return knowledge;
-    }
+	@Override
+	public void setKnowledge(IKnowledge knowledge) {
+		this.knowledge = knowledge;
+	}
 
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-	this.knowledge = knowledge;
-    }
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 
 }

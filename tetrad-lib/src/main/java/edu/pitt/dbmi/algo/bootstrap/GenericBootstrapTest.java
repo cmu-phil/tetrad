@@ -21,7 +21,7 @@ import java.util.Map;
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 4/5/2017
  * 
  */
-public class BootstrapTest {
+public class GenericBootstrapTest {
 
 	private PrintStream out = System.out;
 
@@ -31,6 +31,8 @@ public class BootstrapTest {
 
 	private boolean runParallel = true;
 
+	private BootstrapAlgorithm algorithm;
+	
 	private BootstrapAlgName algName = BootstrapAlgName.RFCI;
 	
 	private long seed = -1;
@@ -150,23 +152,13 @@ public class BootstrapTest {
 		RandomUtil.getInstance().setSeed(seed);
 	}
 
-	public BootstrapTest(DataSet data, String algName) {
-		this.algName = BootstrapAlgName.FGES;
-		if(algName.equalsIgnoreCase("GFCI")){
-			this.algName = BootstrapAlgName.GFCI;
-		}else if(algName.equalsIgnoreCase("RFCI")){
-			this.algName = BootstrapAlgName.RFCI;
-		}
-		bootstrapSearch = new BootstrapSearch(data);
-	}
-	
-	public BootstrapTest(DataSet data, BootstrapAlgName algName) {
-		this.algName = algName;
+	public GenericBootstrapTest(DataSet data, BootstrapAlgorithm algorithm) {
+		this.algorithm = algorithm;
 		bootstrapSearch = new BootstrapSearch(data);
 	}
 
-	public BootstrapTest(DataSet data, BootstrapAlgName algName, int numBootstrapSamples) {
-		this.algName = algName;
+	public GenericBootstrapTest(DataSet data, BootstrapAlgorithm algorithm, int numBootstrapSamples) {
+		this.algorithm = algorithm;
 		bootstrapSearch = new BootstrapSearch(data);
 		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
 	}
