@@ -23,7 +23,8 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public FgesD() {
@@ -32,10 +33,8 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+        if (algorithm != null) {
+        	initialGraph = algorithm.search(dataSet, parameters);
         }
 
         edu.cmu.tetrad.search.FgesD search;
@@ -67,8 +66,8 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
             search.setOut((PrintStream) obj);
         }
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
+        if (initialGraph != null) {
+            search.setInitialGraph(initialGraph);
         }
 
         return search.search();
@@ -118,4 +117,14 @@ public class FgesD implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

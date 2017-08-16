@@ -25,7 +25,8 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcStableMax(IndependenceWrapper test, boolean compareToTrue) {
@@ -35,13 +36,11 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph init = null;
-
-        if (initialGraph != null) {
-            init = initialGraph.search(dataSet, parameters);
+        if (algorithm != null) {
+        	initialGraph = algorithm.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setFasRule(edu.cmu.tetrad.search.PcAll.FasRule.FAS_STABLE);
@@ -65,8 +64,8 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public String getDescription() {
         return "PC-Stable-Max (\"Peter and Clark\"), Priority Rule, using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+                + (algorithm != null ? " with initial graph from " +
+                algorithm.getDescription() : "");
     }
 
     @Override
@@ -97,4 +96,14 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge {
     public boolean isCompareToTrue() {
         return compareToTrue;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

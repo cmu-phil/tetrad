@@ -25,7 +25,8 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
     public TsGfci(IndependenceWrapper type, ScoreWrapper score) {
@@ -46,8 +47,8 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     public String getDescription() {
         return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                        initialGraph.getDescription() : "");
+                (algorithm != null ? " with initial graph from " +
+                		algorithm.getDescription() : "");
     }
 
     @Override
@@ -74,4 +75,14 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

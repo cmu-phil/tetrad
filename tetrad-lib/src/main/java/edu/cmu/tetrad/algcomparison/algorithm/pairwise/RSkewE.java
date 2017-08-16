@@ -21,18 +21,19 @@ import java.util.List;
  */
 public class RSkewE implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
 
-    public RSkewE(Algorithm initialGraph) {
-        this.initialGraph = initialGraph;
+    public RSkewE(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = initialGraph.search(dataSet, parameters);
+        Graph initial = algorithm.search(dataSet, parameters);
 
         if (initial != null) {
-            initial = initialGraph.search(dataSet, parameters);
+            initial = algorithm.search(dataSet, parameters);
         } else {
             throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
                     "will orient the edges in the input graph using the data");
@@ -55,7 +56,7 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
     @Override
     public String getDescription() {
         return "RSkewE" + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        		algorithm.getDescription() : "");
     }
 
     @Override
@@ -65,6 +66,16 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
-        return initialGraph.getParameters();
+        return algorithm.getParameters();
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

@@ -35,6 +35,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
     private final double increment;
     private final String parameter;
     private Algorithm algorithm;
+    private Graph intialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
@@ -60,15 +61,15 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                 double value0 = getValue(value, parameters);
 
                 _parameters.set(parameter, value0);
-                Graph out = algorithm.search(dataSet, _parameters);
+                intialGraph = algorithm.search(dataSet, _parameters);
 
                 if (_previous == null) {
-                    _previous = out;
+                    _previous = intialGraph;
                     continue;
                 }
 
-                out = GraphUtils.replaceNodes(out, _previous.getNodes());
-                Set<Edge> edges1 = out.getEdges();
+                intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                Set<Edge> edges1 = intialGraph.getEdges();
 
                 int numEdges = edges1.size();
 
@@ -81,7 +82,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                         + " # additional = " + diff);
 
                 if (diff >= _prevDiff) break;
-                _previous = out;
+                _previous = intialGraph;
                 _value = _parameters.getDouble(parameter);
                 _prevDiff = diff;
             }
@@ -91,14 +92,14 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                     value = getValue(value, parameters);
 
                     _parameters.set(parameter, value);
-                    Graph out = algorithm.search(dataSet, _parameters);
+                    intialGraph = algorithm.search(dataSet, _parameters);
 
-                    out = GraphUtils.replaceNodes(out, _previous.getNodes());
-                    Set<Edge> edges1 = out.getEdges();
+                    intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                    Set<Edge> edges1 = intialGraph.getEdges();
 
                     int numEdges = edges1.size();
 
-                    Set<Edge> edges2 = out.getEdges();
+                    Set<Edge> edges2 = intialGraph.getEdges();
                     edges2.removeAll(_previous.getEdges());
                     int diff = edges2.size();
 
@@ -107,7 +108,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                             + " # additional = " + diff);
 
                     if (diff >= _prevDiff) break;
-                    _previous = out;
+                    _previous = intialGraph;
                     _value = _parameters.getDouble(parameter);
                     _prevDiff = diff;
                 }
@@ -118,15 +119,15 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                 double value0 = getValue(value, parameters);
 
                 _parameters.set(parameter, value0);
-                Graph out = algorithm.search(dataSet, _parameters);
+                intialGraph = algorithm.search(dataSet, _parameters);
 
                 if (_previous == null) {
-                    _previous = out;
+                    _previous = intialGraph;
                     continue;
                 }
 
-                out = GraphUtils.replaceNodes(out, _previous.getNodes());
-                Set<Edge> edges1 = out.getEdges();
+                intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                Set<Edge> edges1 = intialGraph.getEdges();
 
                 int numEdges = edges1.size();
 
@@ -139,7 +140,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                         + " # additional = " + diff);
 
                 if (diff >= _prevDiff) break;
-                _previous = out;
+                _previous = intialGraph;
                 _value = _parameters.getDouble(parameter);
                 _prevDiff = diff;
             }
@@ -149,14 +150,14 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                     value = getValue(value, parameters);
 
                     _parameters.set(parameter, value);
-                    Graph out = algorithm.search(dataSet, _parameters);
+                    intialGraph = algorithm.search(dataSet, _parameters);
 
-                    out = GraphUtils.replaceNodes(out, _previous.getNodes());
-                    Set<Edge> edges1 = out.getEdges();
+                    intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                    Set<Edge> edges1 = intialGraph.getEdges();
 
                     int numEdges = edges1.size();
 
-                    Set<Edge> edges2 = out.getEdges();
+                    Set<Edge> edges2 = intialGraph.getEdges();
                     edges2.removeAll(_previous.getEdges());
                     int diff = edges2.size();
 
@@ -165,7 +166,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
                             + " # additional = " + diff);
 
                     if (diff >= _prevDiff) break;
-                    _previous = out;
+                    _previous = intialGraph;
                     _value = _parameters.getDouble(parameter);
                     _prevDiff = diff;
                 }
@@ -357,4 +358,15 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
         parameters.add("verbose");
         return parameters;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return intialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		this.intialGraph = intialGraph;
+	}
 }

@@ -21,18 +21,19 @@ import java.util.List;
  */
 public class R4 implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
 
-    public R4(Algorithm initialGraph) {
-        this.initialGraph = initialGraph;
+    public R4(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = initialGraph.search(dataSet, parameters);
+    	initialGraph = algorithm.search(dataSet, parameters);
 
-        if (initial != null) {
-            initial = initialGraph.search(dataSet, parameters);
+        if (initialGraph != null) {
+        	initialGraph = algorithm.search(dataSet, parameters);
         } else {
             throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
                     "will orient the edges in the input graph using the data");
@@ -41,7 +42,7 @@ public class R4 implements Algorithm, TakesInitialGraph {
         List<DataSet> dataSets = new ArrayList<>();
         dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-        Lofs2 lofs = new Lofs2(initial, dataSets);
+        Lofs2 lofs = new Lofs2(initialGraph, dataSets);
         lofs.setRule(Lofs2.Rule.R4);
 
         return lofs.orient();
@@ -54,8 +55,8 @@ public class R4 implements Algorithm, TakesInitialGraph {
 
     @Override
     public String getDescription() {
-        return "R4, restriction of LING" + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "R4, restriction of LING" + (algorithm != null ? " with initial graph from " +
+        		algorithm.getDescription() : "");
     }
 
     @Override
@@ -65,6 +66,16 @@ public class R4 implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
-        return initialGraph.getParameters();
+        return algorithm.getParameters();
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

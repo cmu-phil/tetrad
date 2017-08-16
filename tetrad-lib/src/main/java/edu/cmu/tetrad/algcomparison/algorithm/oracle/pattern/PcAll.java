@@ -23,24 +23,25 @@ import java.util.List;
 public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcAll(IndependenceWrapper type) {
         this.test = type;
     }
 
-    public PcAll(IndependenceWrapper type, Algorithm initialGraph) {
+    public PcAll(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         Graph initial = null;
 
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+        if (algorithm != null) {
+            initial = algorithm.search(dataSet, parameters);
         }
 
         edu.cmu.tetrad.search.PcAll.FasRule fasRule;
@@ -91,13 +92,11 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
                 throw new IllegalArgumentException("Not a choice.");
         }
 
-        Graph init = null;
-
         if (initial != null) {
-            init = initialGraph.search(dataSet, parameters);
+        	initialGraph = algorithm.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), init);
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
         search.setDepth(parameters.getInt("depth"));
         search.setKnowledge(knowledge);
         search.setFasRule(fasRule);
@@ -116,8 +115,8 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
+        		algorithm.getDescription() : "");
     }
 
     @Override
@@ -152,4 +151,14 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

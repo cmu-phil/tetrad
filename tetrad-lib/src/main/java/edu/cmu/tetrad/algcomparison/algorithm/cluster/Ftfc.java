@@ -89,4 +89,22 @@ public class Ftfc implements Algorithm, TakesInitialGraph, HasKnowledge, Cluster
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	/* (non-Javadoc)
+	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#getInitialGraph()
+	 */
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#setInitialGraph(edu.cmu.tetrad.graph.Graph)
+	 */
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		
+	}
 }

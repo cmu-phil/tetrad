@@ -22,16 +22,17 @@ import java.util.List;
 public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
     }
 
-    public FgesMeasurement(ScoreWrapper score, Algorithm initialGraph) {
+    public FgesMeasurement(ScoreWrapper score, Algorithm algorithm) {
         this.score = score;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
@@ -93,4 +94,14 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

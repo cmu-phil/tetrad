@@ -22,6 +22,7 @@ import java.util.List;
 public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private Graph graph;
+    private Graph initialGraph = null;
 
     public SingleGraphAlg(Graph graph) {
         this.graph = graph;
@@ -60,4 +61,14 @@ public class SingleGraphAlg implements Algorithm, TakesInitialGraph, HasKnowledg
     @Override
     public void setKnowledge(IKnowledge knowledge) {
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

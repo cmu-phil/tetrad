@@ -23,24 +23,23 @@ import java.util.List;
 public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Fci(IndependenceWrapper type) {
         this.test = type;
     }
 
-    public Fci(IndependenceWrapper type, Algorithm initialGraph) {
+    public Fci(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+        if (algorithm != null) {
+        	initialGraph = algorithm.search(dataSet, parameters);
         }
 
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
@@ -63,8 +62,8 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     public String getDescription() {
         return "FCI (Fast Causal Inference) using " + test.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                        initialGraph.getDescription() : "");
+                (algorithm != null ? " with initial graph from " +
+                        algorithm.getDescription() : "");
     }
 
     @Override
@@ -90,4 +89,14 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

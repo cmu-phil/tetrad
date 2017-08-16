@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-import static java.lang.Math.abs;
-
 /**
  * Stability selection.
  *
@@ -26,6 +24,7 @@ import static java.lang.Math.abs;
 public class StabilitySelection implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
+    private Graph initialGraph = null;
 
     public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
@@ -96,16 +95,16 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
             }
         }
 
-        Graph out = new EdgeListGraph(dataSet.getVariables());
+        initialGraph = new EdgeListGraph(dataSet.getVariables());
         double percentStability = parameters.getDouble("percentStability");
 
         for (Edge edge : counts.keySet()) {
             if (counts.get(edge) > percentStability * numSubsamples) {
-                out.addEdge(edge);
+            	initialGraph.addEdge(edge);
             }
         }
 
-        return out;
+        return initialGraph;
     }
 
     private void increment(Edge edge, Map<Edge, Integer> counts) {
@@ -139,4 +138,14 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
 
         return parameters;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

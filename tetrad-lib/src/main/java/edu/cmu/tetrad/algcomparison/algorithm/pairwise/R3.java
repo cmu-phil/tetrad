@@ -18,19 +18,20 @@ import java.util.List;
  */
 public class R3 implements Algorithm, TakesInitialGraph {
     static final long serialVersionUID = 23L;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge;
 
-    public R3(Algorithm initialGraph) {
-        this.initialGraph = initialGraph;
+    public R3(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = initialGraph.search(dataSet, parameters);
+        Graph initial = algorithm.search(dataSet, parameters);
 
         if (initial != null) {
-            initial = initialGraph.search(dataSet, parameters);
+            initial = algorithm.search(dataSet, parameters);
         } else {
             throw new IllegalArgumentException("This algorithm needs both data and a graph source as inputs; it \n" +
                     "will orient the edges in the input graph using the data");
@@ -53,8 +54,8 @@ public class R3 implements Algorithm, TakesInitialGraph {
 
     @Override
     public String getDescription() {
-        return "R3, entropy based pairwise orientation" + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "R3, entropy based pairwise orientation" + (algorithm != null ? " with initial graph from " +
+        		algorithm.getDescription() : "");
     }
 
     @Override
@@ -64,10 +65,20 @@ public class R3 implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
-        return initialGraph.getParameters();
+        return algorithm.getParameters();
     }
 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

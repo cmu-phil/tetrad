@@ -32,6 +32,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
     private ScoreWrapper score = new SemBicScoreDeterministic();
 
@@ -242,4 +243,14 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         return "\n" + table.toString();
 
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

@@ -23,16 +23,17 @@ import java.util.List;
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
     public TsFci(IndependenceWrapper type) {
         this.test = type;
     }
 
-    public TsFci(IndependenceWrapper type, Algorithm initialGraph) {
+    public TsFci(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
@@ -48,8 +49,8 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     public String getDescription() {
         return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                        initialGraph.getDescription() : "");
+                (algorithm != null ? " with initial graph from " +
+                		algorithm.getDescription() : "");
     }
 
     @Override
@@ -71,4 +72,14 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

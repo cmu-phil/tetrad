@@ -21,7 +21,8 @@ import java.util.List;
  */
 public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
     static final long serialVersionUID = 23L;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Bpc() {}
@@ -81,4 +82,22 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	/* (non-Javadoc)
+	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#getInitialGraph()
+	 */
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return initialGraph;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#setInitialGraph(edu.cmu.tetrad.graph.Graph)
+	 */
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		
+	}
 }

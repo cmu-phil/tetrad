@@ -237,4 +237,22 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
 
         return parameters;
     }
+
+	/* (non-Javadoc)
+	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#getInitialGraph()
+	 */
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph#setInitialGraph(edu.cmu.tetrad.graph.Graph)
+	 */
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -23,7 +23,8 @@ import java.util.List;
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
     private String targetName;
 
@@ -31,17 +32,15 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.score = score;
     }
 
-    public FgesMb(ScoreWrapper score, Algorithm initialGraph) {
+    public FgesMb(ScoreWrapper score, Algorithm algorithm) {
         this.score = score;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        Graph initial = null;
-
-        if (initialGraph != null) {
-            initial = initialGraph.search(dataSet, parameters);
+        if (algorithm != null) {
+        	initialGraph = algorithm.search(dataSet, parameters);
         }
 
 //        Score score = this.score.getScore(DataUtils.getContinuousDataSet(dataSet), parameters);
@@ -53,8 +52,8 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
         search.setFaithfulnessAssumed(parameters.getBoolean("faithfulnessAssumed"));
         search.setKnowledge(knowledge);
 
-        if (initial != null) {
-            search.setInitialGraph(initial);
+        if (initialGraph != null) {
+            search.setInitialGraph(initialGraph);
         }
 
         this.targetName = parameters.getString("targetName");
@@ -96,4 +95,14 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

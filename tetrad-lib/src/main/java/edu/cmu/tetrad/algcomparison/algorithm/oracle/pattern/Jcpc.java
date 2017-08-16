@@ -22,7 +22,8 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private Algorithm initialGraph = null;
+    private Algorithm algorithm = null;
+    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Jcpc(IndependenceWrapper type, ScoreWrapper score) {
@@ -30,9 +31,9 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.score = score;
     }
 
-    public Jcpc(IndependenceWrapper type, Algorithm initialGraph) {
+    public Jcpc(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
-        this.initialGraph = initialGraph;
+        this.algorithm = algorithm;
     }
 
     @Override
@@ -54,8 +55,8 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "JCPC (Joe's CPC) using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "JCPC (Joe's CPC) using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
+        		algorithm.getDescription() : "");
     }
 
     @Override
@@ -79,4 +80,14 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }

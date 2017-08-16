@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -13,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
-
-import static java.lang.Math.abs;
 
 /**
  * StARS
@@ -27,6 +24,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
     private final double high;
     private final String parameter;
     private Algorithm algorithm;
+    private Graph initialGraph = null;
     private DataSet _dataSet;
 
 
@@ -263,4 +261,16 @@ public class StARS implements Algorithm, TakesInitialGraph {
 
         return parameters;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		// TODO Auto-generated method stub
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		// TODO Auto-generated method stub
+		this.initialGraph = initialGraph;
+	}
 }
