@@ -1547,13 +1547,13 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
 
         testAndScoreBox.add(testBox);
         // Add some gap between test and score
-        testAndScoreBox.add(Box.createVerticalStrut(10), 1);
+        testAndScoreBox.add(Box.createVerticalStrut(10));
         testAndScoreBox.add(scoreBox);
 
         // Parameters
         parametersBox = Box.createVerticalBox();
-        parametersBox.setMinimumSize(new Dimension(940, 600));
-        parametersBox.setMaximumSize(new Dimension(940, 600));
+        parametersBox.setMinimumSize(new Dimension(940, 590));
+        parametersBox.setMaximumSize(new Dimension(940, 590));
 
         // Use a titled border with 5 px inside padding - Zhou
         String parametersBoxBorderTitle = "Specify algorithm parameters";

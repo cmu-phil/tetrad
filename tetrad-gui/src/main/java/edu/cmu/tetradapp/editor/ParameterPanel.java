@@ -85,12 +85,19 @@ class ParameterPanel extends JPanel {
                     throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
                 }
 
+                // Each parameter row contains parameter label and selection/input field
                 Box paramRow = Box.createHorizontalBox();
+
                 JLabel paramLabel = new JLabel(ParamDescriptions.instance().get(parameter).getDescription());
                 paramRow.add(paramLabel);
                 paramRow.add(Box.createHorizontalGlue());
                 paramRow.add(parameterSelection);
+
+                // Add each paramRow to paramsBox
                 paramsBox.add(paramRow);
+
+                // Also add some gap between rows
+                paramsBox.add(Box.createVerticalStrut(10));
             }
         } else {
             JLabel noParamsLabel = new JLabel("No parameters to edit");
