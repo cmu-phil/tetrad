@@ -15,5 +15,7 @@ public @interface AlgorithmDescription {
 
     OracleType oracleType();
 
+    Assumptions[] assumptions();
+
     String description();
 }
