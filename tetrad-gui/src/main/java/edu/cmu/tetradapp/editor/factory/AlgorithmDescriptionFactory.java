@@ -4,11 +4,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgorithmDescription;
 import edu.cmu.tetradapp.editor.AlgorithmDescriptionClass;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.reflections.Reflections;
 
 /**
@@ -20,7 +19,7 @@ public class AlgorithmDescriptionFactory {
 
     private Map<String, Class> algorithmMap = new LinkedHashMap<>();
 
-    private ArrayList<AlgorithmDescriptionClass> algorithmDescriptions = new ArrayList<>();
+    private TreeMap<String, AlgorithmDescriptionClass> algorithmDescriptions = new TreeMap<>();
 
     public static AlgorithmDescriptionFactory getInstance() {
         return ourInstance;
@@ -32,7 +31,7 @@ public class AlgorithmDescriptionFactory {
 
     private void init() {
 
-        algorithmDescriptions = new ArrayList<>();
+        algorithmDescriptions = new TreeMap<>();
 
         // find all classes that implement algorithm
         Reflections reflections = new Reflections("edu.cmu.tetrad.algcomparison");
@@ -46,14 +45,21 @@ public class AlgorithmDescriptionFactory {
                 AlgorithmDescription myAnnotation = (AlgorithmDescription) annotation;
 
                 algorithmDescription = new AlgorithmDescriptionClass(myAnnotation.name(), myAnnotation.algType(), myAnnotation.oracleType(), myAnnotation.description());
-                algorithmDescriptions.add(algorithmDescription);
+
+                algorithmDescriptions.put(myAnnotation.name(), algorithmDescription);
 
                 algorithmMap.put(myAnnotation.name(), clazz);
             }
         }
     }
 
-    public List<AlgorithmDescriptionClass> getAlgorithmDescriptions() {
+    /**
+     * The tree map is sorted according to the natural ordering of its keys
+     * (algo names)
+     *
+     * @return
+     */
+    public TreeMap<String, AlgorithmDescriptionClass> getAlgorithmDescriptions() {
         return algorithmDescriptions;
     }
 
