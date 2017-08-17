@@ -38,7 +38,7 @@ public class BootstrapSearchRunnable implements Runnable {
 
 	private DataSet dataSet;
 
-	private BootstrapAlgorithm algorithm;
+	private Algorithm algorithm;
 	
 	private Parameters parameters;
 
@@ -58,7 +58,7 @@ public class BootstrapSearchRunnable implements Runnable {
 
 	private PrintStream out = System.out;
 
-	public BootstrapSearchRunnable(DataSet dataSet, BootstrapAlgorithm algorithm, Parameters parameters,
+	public BootstrapSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
 			GenericBootstrapSearch bootstrapAlgorithmSearch, boolean verbose){
 		this.dataSet = dataSet;
 		this.algorithm = algorithm;
@@ -123,7 +123,7 @@ public class BootstrapSearchRunnable implements Runnable {
 			out.println("thread started ... ");
 		}
 
-		algorithm.setKnowledge(knowledge);
+		//algorithm.setKnowledge(knowledge);
 		Graph graph = algorithm.search(dataSet, parameters);
 
 		stop = System.currentTimeMillis();

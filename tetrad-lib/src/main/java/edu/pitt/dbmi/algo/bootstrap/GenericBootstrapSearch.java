@@ -28,7 +28,7 @@ import edu.pitt.dbmi.algo.bootstrap.task.BootstrapSearchRunnable;
  */
 public class GenericBootstrapSearch {
 
-	private BootstrapAlgorithm algorithm;
+	private Algorithm algorithm;
 	private int numBootstrap = 1;
 	private boolean runParallel = false;
 	private boolean verbose = false;
@@ -69,7 +69,7 @@ public class GenericBootstrapSearch {
 		bootstrapDatasets.add(dataSet);
 	}*/
 
-	public void setAlgorithm(BootstrapAlgorithm algorithm) {
+	public void setAlgorithm(Algorithm algorithm) {
 		this.algorithm = algorithm;
 	}
 
@@ -181,6 +181,17 @@ public class GenericBootstrapSearch {
 				task.setInitialGraph(initialGraph);
 				task.setKnowledge(knowledge);
 				pool.submit(task);
+			}
+			
+			pool.shutdown();
+			
+			if(!pool.isTerminated()){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 		}

@@ -25,15 +25,13 @@ public class GenericBootstrapTest {
 
 	private PrintStream out = System.out;
 
-	private final BootstrapSearch bootstrapSearch;
+	private final GenericBootstrapSearch bootstrapSearch;
 
 	private Parameters parameters;
 
 	private boolean runParallel = true;
 
-	private BootstrapAlgorithm algorithm;
-	
-	private BootstrapAlgName algName = BootstrapAlgName.RFCI;
+	private Algorithm algorithm;
 	
 	private long seed = -1;
 
@@ -51,7 +49,7 @@ public class GenericBootstrapTest {
 	/**
 	 * An initial graph to start from.
 	 */
-	private Graph initialGraph;
+	private Graph initialGraph = null;
 
 	public void setParallelMode(boolean runParallel) {
 		this.runParallel = runParallel;
@@ -152,14 +150,14 @@ public class GenericBootstrapTest {
 		RandomUtil.getInstance().setSeed(seed);
 	}
 
-	public GenericBootstrapTest(DataSet data, BootstrapAlgorithm algorithm) {
+	public GenericBootstrapTest(DataSet data, Algorithm algorithm) {
 		this.algorithm = algorithm;
-		bootstrapSearch = new BootstrapSearch(data);
+		bootstrapSearch = new GenericBootstrapSearch(data);
 	}
 
-	public GenericBootstrapTest(DataSet data, BootstrapAlgorithm algorithm, int numBootstrapSamples) {
+	public GenericBootstrapTest(DataSet data, Algorithm algorithm, int numBootstrapSamples) {
 		this.algorithm = algorithm;
-		bootstrapSearch = new BootstrapSearch(data);
+		bootstrapSearch = new GenericBootstrapSearch(data);
 		bootstrapSearch.setNumOfBootstrap(numBootstrapSamples);
 	}
 
@@ -168,13 +166,21 @@ public class GenericBootstrapTest {
 
 		start = System.currentTimeMillis();
 
-		bootstrapSearch.setAlgorithm(algName);
+		bootstrapSearch.setAlgorithm(algorithm);
 		bootstrapSearch.setRunningMode(runParallel);
 		bootstrapSearch.setVerbose(verbose);
 		bootstrapSearch.setParameters(parameters);
+		
+		if(!knowledge.isEmpty()){
+			bootstrapSearch.setKnowledge(knowledge);
+		}
+		
+		if(initialGraph != null){
+			bootstrapSearch.setInitialGraph(initialGraph);
+		}
 
 		if (verbose) {
-			out.println("Bootstrapping on the " + algName + " algorithm");
+			out.println("Bootstrapping on the " + algorithm.getDescription());
 		}
 
 		PAGs = bootstrapSearch.search();
