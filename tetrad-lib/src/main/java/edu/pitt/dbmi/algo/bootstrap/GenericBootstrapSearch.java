@@ -50,7 +50,7 @@ public class GenericBootstrapSearch {
 	/**
 	 * An initial graph to start from.
 	 */
-	private Graph initialGraph;
+	private Graph initialGraph = null;
 
 	public GenericBootstrapSearch(DataSet data) {
 		this.data = data;
@@ -160,7 +160,9 @@ public class GenericBootstrapSearch {
 
 	            DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
 				BootstrapSearchRunnable task = new BootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-				task.setInitialGraph(initialGraph);
+				if(initialGraph != null){
+					task.setInitialGraph(initialGraph);
+				}
 				task.setKnowledge(knowledge);
 				task.run();
 
@@ -178,7 +180,9 @@ public class GenericBootstrapSearch {
 			for (int i1 = 0; i1 < this.numBootstrap; i1++) {
 				DataSet dataSet = DataUtils.getBootstrapSample(data, data.getNumRows()); 
 				BootstrapSearchRunnable task = new BootstrapSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-				task.setInitialGraph(initialGraph);
+				if(initialGraph != null){
+					task.setInitialGraph(initialGraph);
+				}
 				task.setKnowledge(knowledge);
 				pool.submit(task);
 			}
