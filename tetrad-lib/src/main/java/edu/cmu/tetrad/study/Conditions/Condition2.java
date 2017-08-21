@@ -23,10 +23,7 @@ package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBnlearnMmhc;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgGes;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
+import edu.cmu.tetrad.algcomparison.algorithm.external.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
@@ -139,7 +136,7 @@ public class Condition2 {
         statistics.setWeight("AHR", 0.5);
 
         Algorithms algorithms = new Algorithms();
-//
+
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
 
@@ -210,7 +207,8 @@ public class Condition2 {
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_2*log(nrow(data)"));
         algorithms.add(new ExternalAlgorithmPcalgGes("GES_pcalg_defaults_4*log(nrow(data)"));
 
-//        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
+        algorithms.add(new ExternalAlgorithmBNTPc("learn.struct.pdag.pc_bnt_alpha_=_0.01"));
+        algorithms.add(new ExternalAlgorithmBNTPc("learn.struct.pdag.pc_bnt_alpha_=_0.001"));
 
 //        algorithms.add(new ExternalAlgorithmIntersection("Intersection (Tetrad) CPC, PC_Stable-Max, CPC-Stable",
 //                new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),
@@ -240,8 +238,28 @@ public class Condition2 {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
-                "/Users/user/causal-comparisons/condition_2",
+                "/Users/user/causal-comparisons/condition_2", "Comparison.txt",
                 algorithms, statistics, parameters);
+
+
+        Statistics statistics2 = new Statistics();
+
+        statistics2.add(new ParameterColumn("numMeasures"));
+        statistics2.add(new ParameterColumn("avgDegree"));
+        statistics2.add(new ParameterColumn("sampleSize"));
+        statistics2.add(new AdjacencyFP());
+        statistics2.add(new AdjacencyFN());
+        statistics2.add(new AdjacencyTP());
+        statistics2.add(new AdjacencyTN());
+        statistics2.add(new ArrowheadFP());
+        statistics2.add(new ArrowheadFN());
+        statistics2.add(new ArrowheadTP());
+        statistics2.add(new ArrowheadTN());
+        statistics2.add(new ElapsedTime());
+//
+        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
+                "/Users/user/causal-comparisons/condition_2", "Counts.txt",
+                algorithms, statistics2, parameters);
 
     }
 

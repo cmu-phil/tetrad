@@ -100,7 +100,7 @@ public class ExternalAlgorithmBNTPc implements ExternalAlgorithm {
 
             return graph;
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't parse graph.");
+            throw new RuntimeException("Couldn't parse graph.", e);
         }
     }
 
