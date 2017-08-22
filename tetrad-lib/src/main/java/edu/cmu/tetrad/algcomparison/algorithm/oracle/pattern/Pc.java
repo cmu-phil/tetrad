@@ -28,7 +28,8 @@ import java.util.List;
         name = "PC",
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.Test,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 

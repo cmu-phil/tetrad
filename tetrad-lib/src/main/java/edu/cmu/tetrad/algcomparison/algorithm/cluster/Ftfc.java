@@ -23,7 +23,8 @@ import java.util.List;
         name = "Ftfc",
         algType = AlgType.search_for_structure_over_latents,
         oracleType = OracleType.None,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here" ,
+                assumptions = {}
 )
 
 public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {

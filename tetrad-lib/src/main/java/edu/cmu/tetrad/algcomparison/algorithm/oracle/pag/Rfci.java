@@ -25,7 +25,8 @@ import java.util.List;
         name = "RFCI",
         algType = AlgType.allow_latent_common_causes,
         oracleType = OracleType.Test,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here" ,
+                assumptions = {}
 )
 public class Rfci implements Algorithm, HasKnowledge {
 

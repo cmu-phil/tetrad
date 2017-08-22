@@ -36,6 +36,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.*;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.*;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgName;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.OracleType;
@@ -779,7 +783,7 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
     }
 
     public Algorithm getAlgorithmFromInterface() {
-        AlgName name = AlgName.valueOf(selectedAlgoName);
+        String name = suggestedAlgosList.getSelectedValue().toString() ;
 
         if (name == null) {
             throw new NullPointerException();
@@ -793,10 +797,40 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
         return algorithm;
     }
 
-    private Algorithm getAlgorithm(AlgName name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
-        Algorithm algorithm;
+    private Algorithm getAlgorithm(String name, IndependenceWrapper independenceWrapper, ScoreWrapper scoreWrapper) {
 
-        switch (name) {
+        Algorithm algorithm = AlgorithmDescriptionFactory.getInstance().getAlgorithmByName(name);
+
+        if (algorithm instanceof UsesScoreWrapper) {
+            ((UsesScoreWrapper) algorithm).setScoreWrapper(scoreWrapper);
+        }
+
+//        if (algorithm instanceof HasKnowledge) {
+//            ((HasKnowledge) algorithm).setKnowledge();
+//        }
+
+        if (algorithm instanceof TakesIndependenceWrapper) {
+            ((TakesIndependenceWrapper) algorithm).setIndependenceWrapper(independenceWrapper);
+        }
+
+        if (algorithm instanceof TakesInitialGraph) {
+            if (runner.getSourceGraph() != null && !runner.getDataModelList().isEmpty()) {
+                ((TakesInitialGraph) algorithm).setInitialGraph(new SingleGraphAlg(runner.getSourceGraph()));
+            }
+        }
+
+
+
+        AlgName enumName = AlgName.valueOf(name);
+
+
+
+        // ToDO: commenting this section out but need to test each algorithm for correct setters depending on interfaces and annotations
+
+        /**
+        switch (enumName) {
+
+
             case FGES:
                 algorithm = new Fges(scoreWrapper);
 
@@ -977,6 +1011,9 @@ public class GeneralAlgorithmEditor extends JPanel implements FinalizingEditor {
                 throw new IllegalArgumentException("Please configure that algorithm: " + name);
 
         }
+         **/
+
+
         return algorithm;
     }
 

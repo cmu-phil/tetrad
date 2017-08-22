@@ -26,7 +26,8 @@ import java.util.List;
         name = "TsFCI",
         algType = AlgType.allow_latent_common_causes,
         oracleType = OracleType.Test,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
 

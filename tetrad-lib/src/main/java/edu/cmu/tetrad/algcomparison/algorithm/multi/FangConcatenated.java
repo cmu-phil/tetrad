@@ -26,7 +26,8 @@ import java.util.List;
         name = "FANG",
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.None,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class FangConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 

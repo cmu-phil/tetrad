@@ -25,7 +25,8 @@ import java.util.List;
         name = "RSkewE",
         algType = AlgType.orient_pairwise,
         oracleType = OracleType.None,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class RSkewE implements Algorithm, TakesInitialGraph {
 

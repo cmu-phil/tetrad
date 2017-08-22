@@ -28,7 +28,8 @@ import java.util.List;
         name = "IMaGES_Continuous",
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.None,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 

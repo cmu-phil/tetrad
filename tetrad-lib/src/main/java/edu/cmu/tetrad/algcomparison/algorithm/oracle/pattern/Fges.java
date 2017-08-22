@@ -28,7 +28,8 @@ import java.util.List;
         name = "FGES",
         algType = AlgType.forbid_latent_common_causes,
         oracleType = OracleType.Score,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
 

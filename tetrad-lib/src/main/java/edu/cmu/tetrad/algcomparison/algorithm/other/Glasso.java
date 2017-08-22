@@ -23,7 +23,8 @@ import java.util.List;
         name = "GLASSO",
         algType = AlgType.produce_undirected_graphs,
         oracleType = OracleType.Test,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 
 public class Glasso implements Algorithm {

@@ -22,7 +22,8 @@ import java.util.List;
         name = "MGM",
         algType = AlgType.produce_undirected_graphs,
         oracleType = OracleType.None,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class Mgm implements Algorithm {
 

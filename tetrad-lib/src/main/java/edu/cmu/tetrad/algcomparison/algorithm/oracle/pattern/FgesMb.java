@@ -26,7 +26,8 @@ import java.util.List;
         name = "FgesMb",
         algType = AlgType.search_for_Markov_blankets,
         oracleType = OracleType.Score,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge {
 

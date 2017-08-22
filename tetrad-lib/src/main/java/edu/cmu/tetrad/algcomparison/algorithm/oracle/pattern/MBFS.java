@@ -27,7 +27,8 @@ import java.util.List;
         name = "MBFS",
         algType = AlgType.search_for_Markov_blankets,
         oracleType = OracleType.Score,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class MBFS implements Algorithm, HasKnowledge {
 

@@ -27,7 +27,8 @@ import java.util.List;
         name = "BootstrapGFCI",
         algType = AlgType.bootstrapping,
         oracleType = OracleType.Both,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+                assumptions = {}
 )
 public class BootstrapGfci implements Algorithm, HasKnowledge {
 

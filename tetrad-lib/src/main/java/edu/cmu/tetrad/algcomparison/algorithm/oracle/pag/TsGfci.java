@@ -27,7 +27,8 @@ import java.util.List;
         name = "TsGFCI",
         algType = AlgType.allow_latent_common_causes,
         oracleType = OracleType.Both,
-        description = "Short blurb goes here"
+        description = "Short blurb goes here",
+        assumptions = {}
 )
 public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge {
 
