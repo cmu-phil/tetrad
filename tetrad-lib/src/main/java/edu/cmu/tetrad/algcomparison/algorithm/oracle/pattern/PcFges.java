@@ -1,18 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.data.Dataset;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -28,7 +25,7 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
     private boolean compareToTrue = false;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
-
+    private Graph initialGraph = null;
 
     public PcFges(ScoreWrapper score, boolean compareToTrueGraph) {
         this.score = score;
@@ -105,4 +102,14 @@ public class PcFges implements Algorithm, TakesInitialGraph, HasKnowledge {
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
+
+	@Override
+	public Graph getInitialGraph() {
+		return initialGraph;
+	}
+
+	@Override
+	public void setInitialGraph(Graph initialGraph) {
+		this.initialGraph = initialGraph;
+	}
 }
